@@ -795,7 +795,9 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 #endif
 
     /* --- backtrace through the instantiation that produced each result --- */
-    dprint(DT_BACKTRACE,  "Backtracing through base instantiation: \n%7that produced result preferences:\n%6\n", m_inst, NULL, m_results);
+    outputManager->set_print_test_format(true, false);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst, NULL, m_results);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -813,19 +815,23 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
         }
     }
 
-    dprint(DT_BACKTRACE, "Backtracing through results DONE. Grounds:\n%3", grounds);
+    trace_locals(grounds_level);
+    outputManager->clear_print_test_format();
+    dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
+        dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+        dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
+        dprint(DT_BACKTRACE, "Locals:\n%3", locals);
+//    while (true)
+//    {
+//        trace_locals(grounds_level);
+//        trace_grounded_potentials();
+//        if (! trace_ungrounded_potentials(grounds_level))
+//        {
+//            break;
+//        }
+//    }
 
-    while (true)
-    {
-        trace_locals(grounds_level);
-        trace_grounded_potentials();
-        if (! trace_ungrounded_potentials(grounds_level))
-        {
-            break;
-        }
-    }
-
-    dprint(DT_BACKTRACE, "Tracing DONE. Grounds after tracing:\n%3", grounds);
+//    dprint(DT_BACKTRACE, "Dependency analysis complete. Conditions compiled:\n%3", grounds);
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 
     free_list(thisAgent, positive_potentials);
@@ -1025,7 +1031,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
     if (chunks_this_d_cycle > max_chunks)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->outputManager->settings[OM_WARNINGS]);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_chunks();
@@ -1036,7 +1042,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->outputManager->settings[OM_WARNINGS]);
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
         #endif
@@ -1070,7 +1076,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
     if (!m_inst_top)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, PRINT_WARNINGS_SYSPARAM);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();

@@ -371,10 +371,10 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
         if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->matched_sym->id->level;
-            add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
         } else {
             dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n", lDanglingSymInfo->matched_sym->id->level, targetLevel);
         }
+        add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
     }
 
     tc_number tc;

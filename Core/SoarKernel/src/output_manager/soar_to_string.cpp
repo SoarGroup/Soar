@@ -406,7 +406,7 @@ void Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top
 
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent) return;
 
     if (prod)
@@ -523,7 +523,7 @@ void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector
 
 void Output_Manager::print_all_inst(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent) return;
 
     print( "--- Instantiations: ---\n");
@@ -544,14 +544,14 @@ void Output_Manager::print_all_inst(TraceMode mode)
 
 void Output_Manager::print_saved_test(TraceMode mode, saved_test* st)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     print_sf("  Index: %y  Test: %t\n", st->var, st->the_test);
 }
 
 void Output_Manager::print_saved_test_list(TraceMode mode, saved_test* st)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     while (st)
     {
@@ -564,7 +564,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
 {
     cons* c;;
 
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!var_names)
     {
@@ -587,7 +587,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
 void Output_Manager::print_varnames_node(TraceMode mode, node_varnames* var_names_node)
 {
 
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!var_names_node)
     {
@@ -702,7 +702,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 {
     TraceMode mode = * static_cast < TraceMode* >(vMode);
 
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return false;
+    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return false;
 
     Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
     return false;
@@ -710,7 +710,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
 void Output_Manager::print_identifiers(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
 
@@ -720,7 +720,7 @@ void Output_Manager::print_identifiers(TraceMode mode)
 
 void Output_Manager::print_variables(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
 

@@ -22,6 +22,7 @@
 #include "condition.h"
 #include "decide.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -319,7 +320,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     int       pass;
     wme*       lowest_goal_wme;
 
-    if (thisAgent->soar_verbose_flag == true)
+    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         printf("\n      in calculate_support_for_instantiation_preferences:");
         xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
@@ -1369,7 +1370,7 @@ void calculate_compile_time_o_support(agent* thisAgent, condition* lhs, action* 
 
                 /* REW: begin 09.15.96 */
                 /* in operand, operator proposals are now only i-supported.*/
-                if (thisAgent->soar_verbose_flag == true)
+                if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
                 {
                     printf("\n         operator creation: setting a->support to I_SUPPORT");
                     xml_generate_verbose(thisAgent, "operator creation: setting a->support to I_SUPPORT");

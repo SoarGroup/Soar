@@ -146,38 +146,21 @@
 #define TRACE_CHUNKS_SYSPARAM                    13
 #define TRACE_JUSTIFICATIONS_SYSPARAM            14
 #define TRACE_BACKTRACING_SYSPARAM               15
-/* ===== watch loading flag =====  KJC 7/96 */
 #define TRACE_LOADING_SYSPARAM                   16
-/* ====== Max Elaborations === */
-#define MAX_ELABORATIONS_SYSPARAM                17
 /* ====== User Select === */
-#define USER_SELECT_MODE_SYSPARAM                18
-/* ====== Print Warnings === */
-#define PRINT_WARNINGS_SYSPARAM                  19
-/* ====== Whether to print out aliases as they're defined === */
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         20
-#define REAL_TIME_SYSPARAM                       21
-#define ATTENTION_LAPSE_ON_SYSPARAM              22
-/* limit number of cycles in run_til_output */
-#define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           23
-#define TRACE_INDIFFERENT_SYSPARAM               24
-#define TIMERS_ENABLED                           25
-#define MAX_GOAL_DEPTH                           26
-/* generate warning and event if memory usage exceeds this value */
-#define MAX_MEMORY_USAGE_SYSPARAM                27
+#define USER_SELECT_MODE_SYSPARAM                17
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         18
+#define TRACE_INDIFFERENT_SYSPARAM               19
+#define TIMERS_ENABLED                           20
 /* auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM              28
-/* Soar-RL trace information */
-#define TRACE_RL_SYSPARAM                        29
-/* Chunk through local negations */
-#define TRACE_WATERFALL_SYSPARAM                 30
-#define TRACE_WMA_SYSPARAM                       31
-#define TRACE_EPMEM_SYSPARAM                     32
-#define TRACE_SMEM_SYSPARAM                      33
-#define TRACE_GDS_SYSPARAM                       34
-/* Break on long decision cycle time */
-#define DECISION_CYCLE_MAX_USEC_INTERRUPT        35
+#define USER_SELECT_REDUCE_SYSPARAM              21
+#define TRACE_RL_SYSPARAM                        22
+#define TRACE_WATERFALL_SYSPARAM                 23
+#define TRACE_WMA_SYSPARAM                       24
+#define TRACE_EPMEM_SYSPARAM                     25
+#define TRACE_SMEM_SYSPARAM                      26
+#define TRACE_GDS_SYSPARAM                       27
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  36
+#define HIGHEST_SYSPARAM_NUMBER                  28
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_CONSTANTS_H_ */

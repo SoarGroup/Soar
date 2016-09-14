@@ -124,7 +124,7 @@ void Output_Manager::sprint_sf(std::string &destString, const char* format, ...)
 
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent)
     {
@@ -141,7 +141,7 @@ void Output_Manager::debug_print(TraceMode mode, const char* msg)
 
 void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -161,7 +161,7 @@ void Output_Manager::debug_print_sf(TraceMode mode, const char* format, ...)
 
 void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format, ...)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -180,7 +180,7 @@ void Output_Manager::debug_print_sf_noprefix(TraceMode mode, const char* format,
 
 void Output_Manager::debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent)
     {
         std::cout << format;
@@ -229,7 +229,7 @@ void Output_Manager::buffer_start_fresh_line(agent* thisAgent, std::string &dest
 
 void Output_Manager::debug_start_fresh_line(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent)
     {

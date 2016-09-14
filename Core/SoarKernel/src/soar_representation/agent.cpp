@@ -18,10 +18,12 @@
  */
 
 
+#include <decider.h>
 #include "agent.h"
 #include "callback.h"
 #include "debug.h"
 #include "decide.h"
+#include "decider.h"
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -172,7 +174,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->current_phase                      = INPUT_PHASE;
     thisAgent->applyPhase                         = false;
     thisAgent->current_wme_timetag                = 1;
-    thisAgent->default_wme_depth                  = 1;
     thisAgent->disconnected_ids                   = NIL;
     thisAgent->existing_output_links              = NIL;
     thisAgent->output_link_changed                = false;
@@ -206,7 +207,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->multi_attributes                   = NIL;
 
     thisAgent->did_PE                             = false;
-    thisAgent->soar_verbose_flag                  = false;
     thisAgent->FIRING_TYPE                        = IE_PRODS;
     thisAgent->ms_o_assertions                    = NIL;
     thisAgent->ms_i_assertions                    = NIL;
@@ -219,9 +219,6 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->nil_goal_retractions               = NIL;
 
-    thisAgent->waitsnc                            = false;
-    thisAgent->waitsnc_detect                     = false;
-
     /* Initializing rete stuff */
     for (int i = 0; i < 256; i++)
     {
@@ -231,9 +228,6 @@ agent* create_soar_agent(char* agent_name)                                      
     }
 
     reset_max_stats(thisAgent);
-
-    thisAgent->real_time_tracker = 0;
-    thisAgent->attention_lapse_tracker = 0;
 
     if (!getcwd(cur_path, MAXPATHLEN))
     {
@@ -290,6 +284,7 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->visualizationManager = new GraphViz_Visualizer(thisAgent);
     thisAgent->RL = new RL_Manager(thisAgent);
     thisAgent->WM = new WM_Manager(thisAgent);
+    thisAgent->Decider = new SoarDecider(thisAgent);
 
     /* Something used for one of Alex's unit tests.  Should remove. */
     thisAgent->lastCue = NULL;
@@ -326,6 +321,7 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->WM->clean_up_for_agent_deletion();
     delete_agent->EpMem->clean_up_for_agent_deletion();
     delete_agent->SMem->clean_up_for_agent_deletion();
+    delete_agent->Decider->clean_up_for_agent_deletion();
 
     delete delete_agent->debug_params;
     delete delete_agent->output_settings;
@@ -385,10 +381,12 @@ void destroy_soar_agent(agent* delete_agent)
 
     /* Release module managers */
     delete delete_agent->WM;
+    delete delete_agent->Decider;
     delete delete_agent->RL;
     delete delete_agent->EpMem;
     delete delete_agent->SMem;
     delete delete_agent->symbolManager;
+
 
     delete delete_agent->dyn_counters;
 

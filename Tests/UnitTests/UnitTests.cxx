@@ -1,6 +1,5 @@
 #include "src/aliastest.cpp"
 #include "src/chunkingtest.cpp"
-#include "src/cliparsertest.cpp"
 #include "src/elementxmltest.cpp"
 #include "src/epmemtest.cpp"
 #include "src/fulltests.cpp"

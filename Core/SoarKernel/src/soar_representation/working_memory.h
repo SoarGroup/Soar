@@ -97,8 +97,6 @@ typedef struct wme_struct
     struct preference_struct* preference;     /* pref. supporting it, or NIL */
     struct output_link_struct* output_link;   /* for top-state output commands */
     tc_number grounds_tc;                     /* for chunker use only */
-    tc_number potentials_tc, locals_tc;
-    struct preference_struct* chunker_bt_pref;
     struct condition_struct* chunker_bt_last_ground_cond;
 
     struct gds_struct* gds;

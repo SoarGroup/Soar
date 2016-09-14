@@ -189,21 +189,21 @@ void FullTests::runAllTestTypes()
     m_Options.set(USE_CLIENT_THREAD);
     m_Options.set(FULLY_OPTIMIZED);
     runTest();
-    std::cout << "1";
-    std::cout.flush();
+//    std::cout << "1";
+//    std::cout.flush();
 
     // test 2
     m_Options.reset();
     m_Options.set(USE_CLIENT_THREAD);
     runTest();
-    std::cout << "2";
-    std::cout.flush();
+//    std::cout << "2";
+//    std::cout.flush();
 
     // test 3
     m_Options.reset();
     runTest();
-    std::cout << "3";
-    std::cout.flush();
+//    std::cout << "3";
+//    std::cout.flush();
 
     if (!g_NoRemote)
     {
@@ -211,8 +211,8 @@ void FullTests::runAllTestTypes()
         m_Options.reset();
         m_Options.set(REMOTE);
         runTest();
-        std::cout << "4";
-        std::cout.flush();
+//        std::cout << "4";
+//        std::cout.flush();
     }
 }
 
@@ -283,8 +283,8 @@ void FullTests::createSoar()
     CPPUNIT_ASSERT(m_pKernel->UnregisterForAgentEvent(agentCreationCallback));
 
     // a number of tests below depend on running full decision cycles.
-    m_pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
-    CPPUNIT_ASSERT_MESSAGE("set-stop-phase --before --input", m_pAgent->GetLastCommandLineResult());
+    m_pAgent->ExecuteCommandLine("soar stop-phase input") ;
+    CPPUNIT_ASSERT_MESSAGE("soar stop-phase input", m_pAgent->GetLastCommandLineResult());
 
     CPPUNIT_ASSERT(m_pKernel->GetNumberAgents() == 1);
 
@@ -731,9 +731,9 @@ TEST_DEFINITION(testAgent)
 
     // Register for a String event
     bool stringEventHandlerReceived(false);
-    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_EDIT_PRODUCTION, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("edit-production my*production", NULL));
-    CPPUNIT_ASSERT_MESSAGE("edit-production my*production", m_pAgent->GetLastCommandLineResult());
+    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("tcl on", NULL));
+    CPPUNIT_ASSERT_MESSAGE("puts hello world", m_pAgent->GetLastCommandLineResult());
     CPPUNIT_ASSERT(stringEventHandlerReceived);
     stringEventHandlerReceived = false;
     CPPUNIT_ASSERT(m_pKernel->UnregisterForStringEvent(stringCall));

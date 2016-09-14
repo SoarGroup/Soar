@@ -12,7 +12,11 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "sml_Names.h"
+#include "sml_AgentSML.h"
+
 #include "agent.h"
+#include "episodic_memory.h"
 #include "lexer.h"
 #include "misc.h"
 #include "semantic_memory.h"
@@ -20,13 +24,12 @@
 #include "smem_stats.h"
 #include "smem_timers.h"
 #include "slot.h"
-#include "sml_Names.h"
-#include "sml_AgentSML.h"
+#include "soar_db.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, const std::string* pVal)
+bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, const std::string* pArg2, const std::string* pArg3)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempString;
@@ -35,7 +38,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     {
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
-        PrintCLIMessage_Item("learning:", thisAgent->SMem->settings->learning, 40);
+        PrintCLIMessage_Item("enabled:", thisAgent->SMem->settings->learning, 40);
         PrintCLIMessage_Section("Storage", 40);
         PrintCLIMessage_Item("database:", thisAgent->SMem->settings->database, 40);
         PrintCLIMessage_Item("append:", thisAgent->SMem->settings->append_db, 40);
@@ -60,7 +63,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'a')
     {
         std::string* err = new std::string("");
-        bool result = thisAgent->SMem->CLI_add(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->CLI_add(pArg1->c_str(), &(err));
 
         if (!result)
         {
@@ -76,7 +79,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'b')
     {
         std::string err;
-        bool result = thisAgent->SMem->backup_db(pAttr->c_str(), &(err));
+        bool result = thisAgent->SMem->backup_db(pArg1->c_str(), &(err));
 
         if (!result)
         {
@@ -84,7 +87,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            tempString << "Semantic memory database backed up to " << pAttr->c_str();
+            tempString << "Semantic memory database backed up to " << pArg1->c_str();
             PrintCLIMessage(&tempString);
         }
 
@@ -122,7 +125,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 'g')
     {
-        soar_module::param* my_param = thisAgent->SMem->settings->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->SMem->settings->get(pArg1->c_str());
         if (!my_param)
         {
             return SetError("Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings.");
@@ -150,9 +153,9 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
             return SetError("Semantic memory database not connected.");
         }
 
-        if (pAttr)
+        if (pArg1)
         {
-            const char* pAttr_c_str = pAttr->c_str();
+            const char* pAttr_c_str = pArg1->c_str();
             soar::Lexer lexer(thisAgent, pAttr_c_str);
             if (!lexer.get_lexeme()) return SetError("Value not found.");
             if (lexer.current_lexeme.type == AT_LEXEME)
@@ -190,12 +193,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         std::string* retrieved = new std::string;
         uint64_t number_to_retrieve = 1;
 
-        if (pVal)
+        if (pArg2)
         {
-            from_c_string(number_to_retrieve, pVal->c_str());
+            from_c_string(number_to_retrieve, pArg2->c_str());
         }
 
-        bool result = thisAgent->SMem->CLI_query(pAttr->c_str(), &(err), &(retrieved), number_to_retrieve);
+        bool result = thisAgent->SMem->CLI_query(pArg1->c_str(), &(err), &(retrieved), number_to_retrieve);
 
         if (!result)
         {
@@ -215,12 +218,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         std::string* err = new std::string;
         std::string* retrieved = new std::string;
         bool force = false;
-        if (pVal)
+        if (pArg2)
         {
-            force = (!strcmp(pVal->c_str(), "f") || (!strcmp(pVal->c_str(), "force")));
+            force = (!strcmp(pArg2->c_str(), "f") || (!strcmp(pArg2->c_str(), "force")));
         }
 
-        bool result = thisAgent->SMem->CLI_remove(pAttr->c_str(), &(err), &(retrieved), force);
+        bool result = thisAgent->SMem->CLI_remove(pArg1->c_str(), &(err), &(retrieved), force);
 
         if (!result)
         {
@@ -238,19 +241,19 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 's')
     {
-        soar_module::param* my_param = thisAgent->SMem->settings->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->SMem->settings->get(pArg1->c_str());
         if (!my_param)
         {
             return SetError("Invalid SMem parameter.");
         }
 
-        if (!my_param->validate_string(pVal->c_str()))
+        if (!my_param->validate_string(pArg2->c_str()))
         {
             return SetError("Invalid setting for SMem parameter.");
         }
 
         smem_param_container::db_choices last_db_mode = thisAgent->SMem->settings->database->get_value();
-        bool result = my_param->set_string(pVal->c_str());
+        bool result = my_param->set_string(pArg2->c_str());
 
         if (!result)
         {
@@ -258,17 +261,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            tempString << pAttr->c_str() << " = " << pVal->c_str();
+            tempString << pArg1->c_str() << " = " << pArg2->c_str();
             PrintCLIMessage(&tempString);
             if (thisAgent->SMem->connected())
             {
-                if (((!strcmp(pAttr->c_str(), "database")) && (thisAgent->SMem->settings->database->get_value() != last_db_mode)) ||
-                        (!strcmp(pAttr->c_str(), "path")))
+                if (((!strcmp(pArg1->c_str(), "database")) && (thisAgent->SMem->settings->database->get_value() != last_db_mode)) ||
+                        (!strcmp(pArg1->c_str(), "path")))
                 {
                     PrintCLIMessage("To finalize database switch, issue an smem --init command.\n");
                 }
             }
-            if (!strcmp(pAttr->c_str(), "append"))
+            if (!strcmp(pArg1->c_str(), "append"))
             {
                 if (thisAgent->SMem->settings->append_db->get_value() == off)
                 {
@@ -283,7 +286,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     else if (pOp == 'S')
     {
         thisAgent->SMem->attach();
-        if (!pAttr)
+        if (!pArg1)
         {
             // Print SMem Settings
             PrintCLIMessage_Header("Semantic Memory Statistics", 40);
@@ -299,7 +302,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            soar_module::statistic* my_stat = thisAgent->SMem->statistics->get(pAttr->c_str());
+            soar_module::statistic* my_stat = thisAgent->SMem->statistics->get(pArg1->c_str());
             if (!my_stat)
             {
                 return SetError("Invalid statistic.");
@@ -312,7 +315,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
     }
     else if (pOp == 't')
     {
-        if (!pAttr)
+        if (!pArg1)
         {
             struct foo: public soar_module::accumulator< soar_module::timer* >
             {
@@ -342,7 +345,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            soar_module::timer* my_timer = thisAgent->SMem->timers->get(pAttr->c_str());
+            soar_module::timer* my_timer = thisAgent->SMem->timers->get(pArg1->c_str());
             if (!my_timer)
             {
                 return SetError("Invalid timer.");
@@ -352,6 +355,103 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pAttr, cons
         }
 
         return true;
+    }
+    else if (pOp == 'x')
+    {
+        std::string* err = new std::string("");
+        uint64_t lti_id = NIL;
+
+        if (pArg2)
+        {
+            thisAgent->SMem->attach();
+            if (!thisAgent->SMem->connected())
+            {
+                return SetError("Semantic memory database not connected.");
+            }
+
+            const char* pAttr_c_str = pArg2->c_str();
+            soar::Lexer lexer(thisAgent, pAttr_c_str);
+            if (!lexer.get_lexeme()) return SetError("LTI not found.");
+            if (lexer.current_lexeme.type == AT_LEXEME)
+            {
+                if (!lexer.get_lexeme()) return SetError("Nothing found after @");
+            }
+            if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
+            {
+                if (thisAgent->SMem->connected())
+                {
+                    lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
+                }
+            }
+
+            if (lti_id == NIL)
+            {
+                return SetError("LTI not found.");
+            }
+        }
+
+        std::string export_text;
+        bool result = thisAgent->SMem->export_smem(lti_id, export_text, &(err));
+
+        if (!result)
+        {
+            SetError(*err);
+        }
+        else
+        {
+            if (!DoCLog(LOG_NEW, pArg1, 0, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_ADD, 0, &export_text, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_CLOSE, 0, 0, true))
+            {
+                return false;
+            }
+
+            PrintCLIMessage("Exported semantic memory to file.");
+        }
+        delete err;
+        return result;
+    }
+    else if (pOp == 'x')
+    {
+        std::string* err = new std::string("smem_export.soar");
+        uint64_t lti_id = NIL;
+
+        std::string export_text;
+        bool result = thisAgent->SMem->export_smem(0, export_text, &(err));
+
+        if (!result)
+        {
+            SetError(*err);
+        }
+        else
+        {
+            if (!DoCLog(LOG_NEW, err, 0, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_ADD, 0, &export_text, true))
+            {
+                return false;
+            }
+
+            if (!DoCLog(LOG_CLOSE, 0, 0, true))
+            {
+                return false;
+            }
+
+            PrintCLIMessage("Exported semantic memory to file.");
+        }
+        delete err;
+        return result;
     }
 
     return SetError("Unknown option.");

@@ -171,15 +171,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
-    epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());
-    smem_commands = new soar_module::boolean_param("smem", off, new soar_module::f_predicate<boolean>());
-    sql_commands = new soar_module::boolean_param("sql", off, new soar_module::f_predicate<boolean>());
-    use_new_chunking = new soar_module::boolean_param("chunk", on, new soar_module::f_predicate<boolean>());
-
-    add(epmem_commands);
-    add(smem_commands);
-    add(sql_commands);
-    add(use_new_chunking);
 }
 
 #include "sqlite3.h"

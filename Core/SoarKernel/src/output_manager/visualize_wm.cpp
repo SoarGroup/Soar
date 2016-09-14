@@ -127,5 +127,4 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         }
     }
-
 }

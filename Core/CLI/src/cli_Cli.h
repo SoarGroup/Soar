@@ -57,11 +57,6 @@ namespace cli
             virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             /**
-             * @brief cli command
-             */
-            virtual bool DoCLIMessage(const std::string& pMessage) = 0;
-
-            /**
              * @brief cd command
              * @param pDirectory Pointer to the directory to pass in to. Pass null to return
              *        to the initial (home) directory.
@@ -95,13 +90,6 @@ namespace cli
             virtual bool DoDebug(std::vector< std::string >* argv = 0) = 0;
 
             /**
-             * @brief default-wme-depth command
-             * @param pDepth The pointer to the new wme depth, a positive integer.
-             *        Pass 0 (null) pointer for query.
-             */
-            virtual bool DoDefaultWMEDepth(const int* pDepth) = 0;
-
-            /**
              * @brief dirs command
              */
             virtual bool DoDirs() = 0;
@@ -114,23 +102,8 @@ namespace cli
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline) = 0;
 
             /**
-             * @brief echo-commands command
-             * @param onlyGetValue
-             * @param echoCommands
-             */
-            virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands) = 0;
-
-            /**
              * @brief edit-production command
              * @param productionName Production to edit
-             */
-            virtual bool DoEditProduction(std::string productionName) = 0;
-
-            /**
-             * @brief epmem command
-             * @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
-             * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-             * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
              */
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0) = 0;
 
@@ -226,12 +199,6 @@ namespace cli
             virtual bool DoGP(const std::string& productionString) = 0;
 
             /**
-             * @brief gp-max command
-             * @param maximum The maximum number of productions to allow generation of
-             */
-            virtual bool DoGPMax(const int& maximum) = 0;
-
-            /**
              * @brief help command
              */
             virtual bool DoHelp(const std::vector<std::string>& argv) = 0;
@@ -249,11 +216,6 @@ namespace cli
              * @brief init-soar command
              */
             virtual bool DoInitSoar() = 0;
-
-            /**
-             * @brief internal-symbols command
-             */
-            virtual bool DoInternalSymbols() = 0;
 
             enum eLearnOptions
             {
@@ -313,36 +275,6 @@ namespace cli
              */
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0) = 0;
 
-            /**
-             * @brief max-dc-time command
-             * @param n The new max dc time value in microseconds, use
-             * 0 to query, negative to disable.
-             */
-            virtual bool DoMaxDCTime(const int n = 0) = 0;
-            /**
-             * @brief max-elaborations command
-             * @param n The new max elaborations value, use 0 to query
-             */
-            virtual bool DoMaxElaborations(const int n = 0) = 0;
-
-            /**
-             * @brief max-goal-depth command
-             * @param n The new max goal depth value, use 0 to query
-             */
-            virtual bool DoMaxGoalDepth(const int n = 0) = 0;
-
-            /**
-             * @brief max-memory-usage command
-             * @param n The new memory usage value, in bytes
-             */
-            virtual bool DoMaxMemoryUsage(const int n = 0) = 0;
-
-            /**
-             * @brief max-nil-output-cycles command
-             * @param n The new max nil output cycles value, use 0 to query
-             */
-            virtual bool DoMaxNilOutputCycles(const int n = 0) = 0;
-
             enum eMemoriesOptions
             {
                 MEMORIES_CHUNKS,
@@ -380,10 +312,10 @@ namespace cli
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM) = 0;
 
             /**
-             * @brief o-support-mode command
-             * @param mode The new o-support mode.  Use -1 to query.
+             * @brief output command
+             * @param options The various options set on the command line
              */
-            virtual bool DoOSupportMode(int mode = -1) = 0;
+            virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             /**
              * @brief pbreak command
@@ -395,11 +327,6 @@ namespace cli
              * @brief popd command
              */
             virtual bool DoPopD() = 0;
-
-            /**
-             * @brief port command
-             */
-            virtual bool DoPort() = 0;
 
             /**
              * @brief predict command
@@ -550,25 +477,18 @@ namespace cli
             virtual bool DoSelect(const std::string* pOp = 0) = 0;
 
             /**
-             * @brief set-stop-phase command
-             * @param setPhase
-             * @param before
-             * @param phase
-             */
-            virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase) = 0;
-
-            /**
              * @brief smem command
              * @param pOp the smem switch to implement, pass 0 (null) for full parameter configuration
              * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
              * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
              */
-            virtual bool DoSMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
             /**
-             * @brief soarnews command
+             * @brief soar command
+             * @param options The various options set on the command line
              */
-            virtual bool DoSoarNews() = 0;
+            virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             enum eSourceOptions
             {
@@ -630,6 +550,11 @@ namespace cli
             virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0) = 0;
 
             /**
+             * @brief tcl command
+             */
+            virtual bool DoTclCommand(const std::string& pMessage) = 0;
+
+            /**
              * @brief time command
              * @param argv The command line with the time arg removed
              */
@@ -643,13 +568,6 @@ namespace cli
             virtual bool DoTimers(bool* pSetting = 0) = 0;
 
             virtual bool DoUnalias(std::vector<std::string>& argv) = 0;
-
-            /**
-             * @brief verbose command
-             * @param pSetting The verbose setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
-             */
-            virtual bool DoVerbose(bool* pSetting = 0) = 0;
 
             /**
              * @brief version command
@@ -692,15 +610,6 @@ namespace cli
              *        this argument ignored if pProduction is 0 (null)
              */
             virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth) = 0;
-
-            virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
-
-            /**
-             * @brief warnings command
-             * @param pSetting The warnings setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
-             */
-            virtual bool DoWarnings(bool* pSetting = 0) = 0;
 
             enum eWatchOptions
             {

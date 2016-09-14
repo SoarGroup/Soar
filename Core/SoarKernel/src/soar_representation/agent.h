@@ -151,6 +151,7 @@ typedef struct EXPORT agent_struct
 
     /* Various classes for this agent that manage different aspects of Soar */
     Symbol_Manager*             symbolManager;
+    SoarDecider*                Decider;
     WM_Manager*                 WM;
     RL_Manager*                 RL;
     SMem_Manager*               SMem;
@@ -167,9 +168,6 @@ typedef struct EXPORT agent_struct
     production*         all_productions_of_type[NUM_PRODUCTION_TYPES];
     /* --- counts of how many productions there are of each type --- */
     uint64_t            num_productions_of_type[NUM_PRODUCTION_TYPES];
-
-    /* --- default depth for "print" command --- */
-    int                 default_wme_depth;      /* AGR 646 */
 
     /* --- stuff for "input-period" command --- */
     /* --- in Soar8, input runs once at beginning of D cycle, no matter what */
@@ -376,18 +374,6 @@ typedef struct EXPORT agent_struct
     /* REW: end 28.07.96 */
 #endif // NO_TIMING_STUFF
 
-    /* RMJ */
-    /* Keep track of real time steps for constant real-time per decision */
-    /* used only if #def'd REAL_TIME_BEHAVIOR */
-    struct timeval*   real_time_tracker;
-    bool              real_time_idling;
-
-    /* RMJ */
-    /* Keep track of duration of attentional lapses */
-    /* Used only if #def'd ATTENTION_LAPSE in */
-    struct timeval*   attention_lapse_tracker;
-    bool              attention_lapsing;
-
     /* ----------------------- Firer stuff -------------------------- */
 
     instantiation*      newly_created_instantiations;
@@ -479,31 +465,22 @@ typedef struct EXPORT agent_struct
 
     char*               name;  /* name of this Soar agent */
 
-    /* --------- I (RBD) don't know what the following stuff is ------------ */
-
     /* Soar uses these to generate nicely formatted output strings */
     char          current_line[1024];
     int           current_line_index;
 
-    /*mvp 5-17-94 */
     ::list*             variables_set;
 
     multi_attribute*    multi_attributes;
-    /* char                path[MAXPATHLEN];    AGR 568 */
 
-    //soar_callback_array soar_callbacks;
     ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
 
-    /* RCHONG: begin 10.11 */
     bool      did_PE;
-    bool      soar_verbose_flag;
     int        FIRING_TYPE;
     Symbol*     PE_level;
 
     struct ms_change_struct* ms_o_assertions;   /* changes to match set */
     struct ms_change_struct* ms_i_assertions;   /* changes to match set */
-    /* RCHONG: end 10.11 */
-
     struct ms_change_struct* postponed_assertions;   /* New waterfall model: postponed assertion list */
 
     goal_stack_level active_level;
@@ -537,12 +514,6 @@ typedef struct EXPORT agent_struct
     /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
     bool      applyPhase;
 
-    /* REW: begin 10.24.97 */
-    bool      waitsnc;
-    bool      waitsnc_detect;
-    /* REW: end   10.24.97 */
-
-    /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
     rhs_function* rhs_functions;
 
     enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */

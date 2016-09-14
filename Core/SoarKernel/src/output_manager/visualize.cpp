@@ -23,6 +23,7 @@
 #include "condition_record.h"
 #include "identity_record.h"
 #include "instantiation_record.h"
+#include "semantic_memory.h"
 #include "production_record.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
@@ -61,6 +62,73 @@ void GraphViz_Visualizer::visualize_wm()
     delete wme_map;
 }
 
+void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int depth)
+{
+    ltm_set store_set;
+    std::string graphviz_connections, idStr;
+    bool lRecordStarted ;
+
+    if (!lti_id)
+    {
+        thisAgent->SMem->create_full_store_set(&store_set);
+    } else {
+        thisAgent->SMem->create_store_set(&store_set, lti_id, depth);
+    }
+
+    graphviz_output.clear();
+    viz_graph_start(false);
+
+    for (auto it = store_set.begin(); it != store_set.end(); ++it)
+    {
+        ltm_object* current_ltm = *it;
+        idStr = "@";
+        idStr.append(std::to_string(current_ltm->lti_id));
+
+        thisAgent->visualizationManager->viz_object_start_string(idStr, current_ltm->lti_id, viz_id_and_augs);
+        lRecordStarted = false;
+
+        for (auto map_it = current_ltm->slots->begin(); map_it != current_ltm->slots->end(); ++map_it)
+        {
+            Symbol* attr = map_it->first;
+            ltm_slot* current_slot  = map_it->second;
+
+            for (auto slot_it = current_slot->begin(); slot_it != current_slot->end(); ++slot_it)
+            {
+                if ((*slot_it)->val_lti.val_type == value_lti_t)
+                {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"@%u\":s -\xF2 \"@%u\":n [label = \"%y\"]\n", current_ltm->lti_id, (*slot_it)->val_lti.val_value->lti_id, attr);
+                }
+                else
+                {
+                    if (!lRecordStarted)
+                    {
+                        thisAgent->visualizationManager->viz_record_start();
+                        lRecordStarted = true;
+                    }
+                    thisAgent->visualizationManager->viz_table_element_start();
+                    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", attr);
+                    thisAgent->visualizationManager->viz_table_element_end();
+                    thisAgent->visualizationManager->viz_table_element_start();
+                    thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", (*slot_it)->val_const.val_value);
+                    thisAgent->visualizationManager->viz_table_element_end();
+                }
+                if (lRecordStarted)
+                {
+                    thisAgent->visualizationManager->viz_record_end();
+                    thisAgent->visualizationManager->viz_endl();
+                    lRecordStarted = false;
+                }
+            }
+        }
+        thisAgent->visualizationManager->viz_object_end(viz_id_and_augs);
+        thisAgent->visualizationManager->viz_endl();
+    }
+    thisAgent->visualizationManager->graphviz_output += graphviz_connections;
+    viz_graph_end();
+
+    thisAgent->SMem->clear_store_set(&store_set);
+}
+
 void GraphViz_Visualizer::viz_graph_start(bool pLeftRight)
 {
     graphviz_output.clear();
@@ -88,6 +156,12 @@ void GraphViz_Visualizer::viz_graph_end()
 
 void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
 {
+    std::string pNameString = pName->to_string();
+    viz_object_start_string(pNameString, node_id, objectType);
+}
+
+void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType)
+{
     switch (objectType)
     {
         case viz_inst_record:
@@ -97,7 +171,7 @@ void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visu
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%y\xF3/TD\xF2 \xF3/TR\xF2\n", node_id, pName);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%s\xF3/TD\xF2 \xF3/TR\xF2\n", node_id, pName.c_str());
             break;
 
         case viz_chunk_record:
@@ -107,35 +181,35 @@ void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visu
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%y (i %u)\xF3/TD\xF2 \xF3/TR\xF2\n", pName, node_id);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%s (i %u)\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str(), node_id);
             break;
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "   \"%y\" [\n"
+                "   \"%s\" [\n"
                 "      penwidth = \"0\"\n"
-                "      label = \xF3", pName);
+                "      label = \xF3", pName.c_str());
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%y\xF3/TD\xF2 \xF3/TR\xF2\n", pName);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%s\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str());
             break;
         case viz_simple_inst:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
                 "      shape = \"box\" style = \"rounded\"\n"
-                "      label = \"%y (i %u)", node_id, pName, node_id);
+                "      label = \"%s (i %u)", node_id, pName.c_str(), node_id);
             break;
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "   \"%y\" [\n"
+                "   \"%s\" [\n"
                 "      shape = \"box\" style = \"rounded\"\n"
-                "      label = \"%y", pName, pName);
+                "      label = \"%s", pName.c_str(), pName.c_str());
             break;
 
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "   \"%y\" [\n"
+                "   \"%s\" [\n"
                 "      shape = \"circle\" style = \"rounded\"\n"
-                "      label = \"%y", pName, pName);
+                "      label = \"%s", pName.c_str(), pName.c_str());
             break;
 
         default:

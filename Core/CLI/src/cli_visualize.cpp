@@ -216,14 +216,15 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 }
             }
 
-            if (lti_id == NIL)
-            {
-                thisAgent->SMem->visualize_store(&thisAgent->visualizationManager->graphviz_output);
-            }
-            else
-            {
-                thisAgent->SMem->visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
-            }
+//            if (lti_id == NIL)
+//            {
+//                thisAgent->SMem->visualize_store(&thisAgent->visualizationManager->graphviz_output);
+//            }
+//            else
+//            {
+//                thisAgent->SMem->visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
+//            }
+            thisAgent->visualizationManager->visualize_smem(lti_id, pDepth);
             lValidVisualizationGenerated = true;
         }
         if (options.test(Cli::VISUALIZE_WM))

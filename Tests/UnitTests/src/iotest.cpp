@@ -149,8 +149,8 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
     CPPUNIT_ASSERT(pAgent != NULL);
 
     // a number of tests below depend on running full decision cycles.
-    pAgent->ExecuteCommandLine("set-stop-phase --before --input") ;
-    CPPUNIT_ASSERT_MESSAGE("set-stop-phase --before --input", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine("soar stop-phase input") ;
+    CPPUNIT_ASSERT_MESSAGE("soar stop-phase input", pAgent->GetLastCommandLineResult());
 
     pAgent->ExecuteCommandLine("watch 0") ;
     pAgent->ExecuteCommandLine("waitsnc --on") ;

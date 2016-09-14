@@ -11,7 +11,9 @@
 
 
 #include "lexer.h"
+
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
 #include "misc.h"
 #include "xml.h"
@@ -168,7 +170,7 @@ bool Lexer::determine_type_of_constituent_string () {
 
     if (possible_sc) {
         current_lexeme.type = STR_CONSTANT_LEXEME;
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
+        if (thisAgent->outputManager->settings[OM_WARNINGS]) {
             if ( (current_lexeme.lex_string[0] == '<') ||
                 (current_lexeme.lex_string[current_lexeme.length()-1] == '>') )
             {
@@ -197,6 +199,11 @@ void Lexer::lex_eof () {
 }
 
 void Lexer::lex_at () {
+    //store state
+    int old_cur_char = current_char;
+    int old_prev_char = prev_char;
+    const char* old_prod_string = production_string;
+
     read_constituent_string();
     if (current_lexeme.length()==2)
     {
@@ -211,6 +218,10 @@ void Lexer::lex_at () {
             return;
         }
     }
+
+    current_char = old_cur_char;
+    prev_char = old_prev_char;
+    production_string = old_prod_string;
 
     store_and_advance();
     current_lexeme.type = AT_LEXEME;

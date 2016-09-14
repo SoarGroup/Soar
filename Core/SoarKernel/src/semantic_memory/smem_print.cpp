@@ -7,345 +7,120 @@
 
 #include "semantic_memory.h"
 #include "smem_db.h"
-#include "dprint.h"
 
+#include "dprint.h"
+#include "output_manager.h"
 #include "lexer.h"
 
 #include <algorithm>
 
-void SMem_Manager::visualize_store(std::string* return_val)
+bool SMem_Manager::export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg)
 {
-    // header
-    return_val->append("digraph smem {");
-    return_val->append("\n");
+    ltm_set store_set;
 
-    // LTIs
-    return_val->append("node [ shape = doublecircle ];");
-    return_val->append("\n");
-
-    std::map< uint64_t, std::string > lti_names;
-    std::map< uint64_t, std::string >::iterator n_p;
+    if (!lti_id)
     {
-        soar_module::sqlite_statement* q;
-
-        uint64_t lLTI_ID;
-
-        std::string* lti_name;
-        std::string temp_str;
-        int64_t temp_int;
-        double temp_double;
-
-        // id, soar_letter, number
-        q = thisAgent->SMem->SQL->vis_lti;
-        while (q->execute() == soar_module::row)
-        {
-            lLTI_ID = q->column_int(0);
-
-            lti_name = & lti_names[ lLTI_ID ];
-            lti_name->append(" @");
-            to_string(lLTI_ID, temp_str);
-            lti_name->append(temp_str);
-
-            return_val->append((*lti_name));
-            return_val->append(" [ label=\"");
-            return_val->append((*lti_name));
-            return_val->append("\\n[");
-
-            temp_double = q->column_double(1);
-            to_string(temp_double, temp_str, 3, true);
-            if (temp_double >= 0)
-            {
-                return_val->append("+");
-            }
-            return_val->append(temp_str);
-
-            return_val->append("]\"");
-            return_val->append(" ];");
-            return_val->append("\n");
-        }
-        q->reinitialize();
-
-        if (!lti_names.empty())
-        {
-            // terminal nodes first
-            {
-                std::map< uint64_t, std::list<std::string> > lti_terminals;
-                std::map< uint64_t, std::list<std::string> >::iterator t_p;
-                std::list<std::string>::iterator a_p;
-
-                std::list<std::string>* my_terminals;
-                std::list<std::string>::size_type terminal_num;
-
-                return_val->append("\n");
-
-                // proceed to terminal nodes
-                return_val->append("node [ shape = plaintext ];");
-                return_val->append("\n");
-
-                // lti_id, attr_type, attr_hash, val_type, val_hash
-                q = thisAgent->SMem->SQL->vis_value_const;
-                while (q->execute() == soar_module::row)
-                {
-                    lLTI_ID = q->column_int(0);
-                    my_terminals = & lti_terminals[ lLTI_ID ];
-                    lti_name = & lti_names[ lLTI_ID ];
-
-                    // parent prefix
-                    return_val->append((*lti_name));
-                    return_val->append("_");
-
-                    // terminal count
-                    terminal_num = my_terminals->size();
-                    to_string(terminal_num, temp_str);
-                    return_val->append(temp_str);
-
-                    // prepare for value
-                    return_val->append(" [ label = \"");
-
-                    // output value
-                    {
-                        switch (q->column_int(3))
-                        {
-                            case STR_CONSTANT_SYMBOL_TYPE:
-                                rhash__str(q->column_int(4), temp_str);
-                                break;
-
-                            case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = rhash__int(q->column_int(4));
-                                to_string(temp_int, temp_str);
-                                break;
-
-                            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = rhash__float(q->column_int(4));
-                                to_string(temp_double, temp_str);
-                                break;
-
-                            default:
-                                temp_str.clear();
-                                break;
-                        }
-
-                        return_val->append(temp_str);
-                    }
-
-                    // store terminal (attribute for edge label)
-                    {
-                        switch (q->column_int(1))
-                        {
-                            case STR_CONSTANT_SYMBOL_TYPE:
-                                rhash__str(q->column_int(2), temp_str);
-                                break;
-
-                            case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = rhash__int(q->column_int(2));
-                                to_string(temp_int, temp_str);
-                                break;
-
-                            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = rhash__float(q->column_int(2));
-                                to_string(temp_double, temp_str);
-                                break;
-
-                            default:
-                                temp_str.clear();
-                                break;
-                        }
-
-                        my_terminals->push_back(temp_str);
-                    }
-
-                    // footer
-                    return_val->append("\" ];");
-                    return_val->append("\n");
-                }
-                q->reinitialize();
-
-                // output edges
-                {
-                    unsigned int terminal_counter;
-
-                    for (n_p = lti_names.begin(); n_p != lti_names.end(); n_p++)
-                    {
-                        t_p = lti_terminals.find(n_p->first);
-
-                        if (t_p != lti_terminals.end())
-                        {
-                            terminal_counter = 0;
-
-                            for (a_p = t_p->second.begin(); a_p != t_p->second.end(); a_p++)
-                            {
-                                return_val->append(n_p->second);
-                                return_val ->append(" -> ");
-                                return_val->append(n_p->second);
-                                return_val->append("_");
-
-                                to_string(terminal_counter, temp_str);
-                                return_val->append(temp_str);
-                                return_val->append(" [ label=\"");
-
-                                return_val->append((*a_p));
-
-                                return_val->append("\" ];");
-                                return_val->append("\n");
-
-                                terminal_counter++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // then links to other LTIs
-            {
-                // lti_id, attr_type, attr_hash, value_lti_id
-                q = thisAgent->SMem->SQL->vis_value_lti;
-                while (q->execute() == soar_module::row)
-                {
-                    // source
-                    lLTI_ID = q->column_int(0);
-                    lti_name = & lti_names[ lLTI_ID ];
-                    return_val->append((*lti_name));
-                    return_val->append(" -> ");
-
-                    // destination
-                    lLTI_ID = q->column_int(3);
-                    lti_name = & lti_names[ lLTI_ID ];
-                    return_val->append((*lti_name));
-                    return_val->append(" [ label =\"");
-
-                    // output attribute
-                    {
-                        switch (q->column_int(1))
-                        {
-                            case STR_CONSTANT_SYMBOL_TYPE:
-                                rhash__str(q->column_int(2), temp_str);
-                                break;
-
-                            case INT_CONSTANT_SYMBOL_TYPE:
-                                temp_int = rhash__int(q->column_int(2));
-                                to_string(temp_int, temp_str);
-                                break;
-
-                            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                temp_double = rhash__float(q->column_int(2));
-                                to_string(temp_double, temp_str);
-                                break;
-
-                            default:
-                                temp_str.clear();
-                                break;
-                        }
-
-                        return_val->append(temp_str);
-                    }
-
-                    // footer
-                    return_val->append("\" ];");
-                    return_val->append("\n");
-                }
-                q->reinitialize();
-            }
-        }
+        thisAgent->SMem->create_full_store_set(&store_set);
+    } else {
+        thisAgent->SMem->create_store_set(&store_set, lti_id, 0);
     }
 
-    // footer
-    return_val->append("}");
-    return_val->append("\n");
+    thisAgent->outputManager->sprinta_sf(thisAgent, result_text, "smem --add {\n");
+
+    for (auto it = store_set.begin(); it != store_set.end(); ++it)
+    {
+        ltm_object* current_ltm = *it;
+
+        /* Skip if LTI has no augmentations.  Will be added by other smem --add clause */
+        if (current_ltm->slots->size() > 0)
+        {
+            thisAgent->outputManager->sprinta_sf(thisAgent, result_text, "(@%u", current_ltm->lti_id);
+
+            for (auto map_it = current_ltm->slots->begin(); map_it != current_ltm->slots->end(); ++map_it)
+            {
+                Symbol* attr = map_it->first;
+                ltm_slot* current_slot  = map_it->second;
+
+                thisAgent->outputManager->sprinta_sf(thisAgent, result_text, " ^%y", attr);
+
+                for (auto slot_it = current_slot->begin(); slot_it != current_slot->end(); ++slot_it)
+                {
+                    if ((*slot_it)->val_lti.val_type == value_lti_t)
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, result_text, " @%u", (*slot_it)->val_lti.val_value->lti_id);
+                    }
+                    else
+                    {
+                        thisAgent->outputManager->sprinta_sf(thisAgent, result_text, " %y", (*slot_it)->val_const.val_value);
+                    }
+                }
+            }
+            thisAgent->outputManager->sprinta_sf(thisAgent, result_text, ")\n");
+        }
+
+    }
+    thisAgent->outputManager->sprinta_sf(thisAgent, result_text, "}\n");
+
+    thisAgent->SMem->clear_store_set(&store_set);
+    return true;
 }
 
-void SMem_Manager::visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::string* return_val)
+void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth)
 {
-    // buffer
-    std::string return_val2;
-
+    /*
+     * This populates the input argument store_set (a ltm set) with a given lti_id's contents.
+     * scijones Sept 9, 2016.
+     */
     soar_module::sqlite_statement* expand_q = thisAgent->SMem->SQL->web_expand;
+    std::string attr_str;
+    int64_t attr_int;
+    double attr_double;
+    std::string val_str;
+    int64_t val_int;
+    double val_double;
 
-    uint64_t child_counter;
-
-    std::string temp_str;
-    std::string temp_str2;
-    int64_t temp_int;
-    double temp_double;
-
-    std::queue<smem_vis_lti*> bfs;
     smem_vis_lti* new_lti;
     smem_vis_lti* parent_lti;
 
     std::map< uint64_t, smem_vis_lti* > close_list;
     std::map< uint64_t, smem_vis_lti* >::iterator cl_p;
 
-    // header
-    return_val->append("digraph smem_lti {");
-    return_val->append("\n");
-
-    // root
-    {
-        new_lti = new smem_vis_lti;
-        new_lti->lti_id = pLTI_ID;
-        new_lti->level = NO_WME_LEVEL;
-        get_lti_name(pLTI_ID, new_lti->lti_name);
-
-        bfs.push(new_lti);
-        close_list.insert(std::make_pair(pLTI_ID, new_lti));
-
-        new_lti = NULL;
-    }
-
+    std::queue<smem_vis_lti*> bfs;
+    new_lti = new smem_vis_lti;
+    new_lti->lti_id = lti_id;
+    new_lti->level = 0;
+    thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
+    bfs.push(new_lti);
     // optionally depth-limited breadth-first-search of children
     while (!bfs.empty())
     {
         parent_lti = bfs.front();
         bfs.pop();
-
-        child_counter = 0;
-
-        // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
+        ltm_object* new_ltm = new ltm_object();
+        new_ltm->lti_id = parent_lti->lti_id;
+        new_ltm->slots = new ltm_slot_map();
+        // get direct children: attr_type, attr_hash, value_type, value_hash, value_lti
         expand_q->bind_int(1, parent_lti->lti_id);
         while (expand_q->execute() == soar_module::row)
         {
-            // identifier vs. constant
+            Symbol* attr = rhash_(static_cast<byte>(expand_q->column_int(0)), static_cast<smem_hash_id>(expand_q->column_int(1)));
+            //thisAgent->symbolManager->symbol_remove_ref(&attr);
+            if (new_ltm->slots->find(attr) == new_ltm->slots->end())
+            {
+                (*(new_ltm->slots))[attr] = new ltm_slot();
+            }
+            ltm_value* new_value = new ltm_value();
+
             if (expand_q->column_int(4) != SMEM_AUGMENTATIONS_NULL)
             {
                 new_lti = new smem_vis_lti;
                 new_lti->lti_id = expand_q->column_int(4);
                 new_lti->level = (parent_lti->level + 1);
-                get_lti_name(new_lti->lti_id, new_lti->lti_name);
-
-
-                // add linkage
-                {
-                    // get attribute
-                    switch (expand_q->column_int(0))
-                    {
-                        case STR_CONSTANT_SYMBOL_TYPE:
-                            rhash__str(expand_q->column_int(1), temp_str);
-                            break;
-
-                        case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = rhash__int(expand_q->column_int(1));
-                            to_string(temp_int, temp_str);
-                            break;
-
-                        case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = rhash__float(expand_q->column_int(1));
-                            to_string(temp_double, temp_str);
-                            break;
-
-                        default:
-                            temp_str.clear();
-                            break;
-                    }
-
-                    // output linkage
-                    return_val2.append(parent_lti->lti_name);
-                    return_val2.append(" -> ");
-                    return_val2.append(new_lti->lti_name);
-                    return_val2.append(" [ label = \"");
-                    return_val2.append(temp_str);
-                    return_val2.append("\" ];");
-                    return_val2.append("\n");
-                }
-
+                thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
+                new_value->val_lti.val_type = value_lti_t;
+                new_value->val_const.val_type = value_lti_t;
+                new_value->val_lti.val_value = new ltm_object();
+                new_value->val_lti.val_value->lti_id = new_lti->lti_id;
                 // prevent looping
                 {
                     cl_p = close_list.find(new_lti->lti_id);
@@ -361,141 +136,73 @@ void SMem_Manager::visualize_lti(uint64_t pLTI_ID, unsigned int depth, std::stri
                     else
                     {
                         delete new_lti;
+                        new_lti = NULL;
                     }
                 }
-
-                new_lti = NULL;
             }
             else
             {
-                // add value node
-                {
-                    // get node name
-                    {
-                        temp_str2.assign(parent_lti->lti_name);
-                        temp_str2.append("_");
-
-                        to_string(child_counter, temp_str);
-                        temp_str2.append(temp_str);
-                    }
-
-                    // get value
-                    switch (expand_q->column_int(2))
-                    {
-                        case STR_CONSTANT_SYMBOL_TYPE:
-                            rhash__str(expand_q->column_int(3), temp_str);
-                            break;
-
-                        case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = rhash__int(expand_q->column_int(3));
-                            to_string(temp_int, temp_str);
-                            break;
-
-                        case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = rhash__float(expand_q->column_int(3));
-                            to_string(temp_double, temp_str);
-                            break;
-
-                        default:
-                            temp_str.clear();
-                            break;
-                    }
-
-                    // output node
-                    return_val2.append("node [ shape = plaintext ];");
-                    return_val2.append("\n");
-                    return_val2.append(temp_str2);
-                    return_val2.append(" [ label=\"");
-                    return_val2.append(temp_str);
-                    return_val2.append("\" ];");
-                    return_val2.append("\n");
-                }
-
-                // add linkage
-                {
-                    // get attribute
-                    switch (expand_q->column_int(0))
-                    {
-                        case STR_CONSTANT_SYMBOL_TYPE:
-                            rhash__str(expand_q->column_int(1), temp_str);
-                            break;
-
-                        case INT_CONSTANT_SYMBOL_TYPE:
-                            temp_int = rhash__int(expand_q->column_int(1));
-                            to_string(temp_int, temp_str);
-                            break;
-
-                        case FLOAT_CONSTANT_SYMBOL_TYPE:
-                            temp_double = rhash__float(expand_q->column_int(1));
-                            to_string(temp_double, temp_str);
-                            break;
-
-                        default:
-                            temp_str.clear();
-                            break;
-                    }
-
-                    // output linkage
-                    return_val2.append(parent_lti->lti_name);
-                    return_val2.append(" -> ");
-                    return_val2.append(temp_str2);
-                    return_val2.append(" [ label = \"");
-                    return_val2.append(temp_str);
-                    return_val2.append("\" ];");
-                    return_val2.append("\n");
-                }
-
-                child_counter++;
+                new_value->val_const.val_type = value_const_t;
+                new_value->val_lti.val_type = value_const_t;
+                new_value->val_const.val_value  = rhash_(expand_q->column_int(2),expand_q->column_int(3));
+                //thisAgent->symbolManager->symbol_remove_ref(&(new_value->val_const.val_value));
             }
+            new_ltm->slots->at(attr)->push_back(new_value);
         }
+        store_set->insert(new_ltm);
         expand_q->reinitialize();
     }
-
-    // footer
-    return_val2.append("}");
-    return_val2.append("\n");
-
-    // handle lti nodes at once
-    {
-        soar_module::sqlite_statement* act_q = thisAgent->SMem->SQL->vis_lti_act;
-
-        return_val->append("node [ shape = doublecircle ];");
-        return_val->append("\n");
-
-        for (cl_p = close_list.begin(); cl_p != close_list.end(); cl_p++)
-        {
-            return_val->append(cl_p->second->lti_name);
-            return_val->append(" [ label=\"");
-            return_val->append(cl_p->second->lti_name);
-            return_val->append("\\n[");
-
-            act_q->bind_int(1, cl_p->first);
-            if (act_q->execute() == soar_module::row)
-            {
-                temp_double = act_q->column_double(0);
-                to_string(temp_double, temp_str, 3, true);
-                if (temp_double >= 0)
-                {
-                    return_val->append("+");
-                }
-                return_val->append(temp_str);
-            }
-            act_q->reinitialize();
-
-            return_val->append("]\"");
-            return_val->append(" ];");
-            return_val->append("\n");
-
-            delete cl_p->second;
-        }
-    }
-
-    // transfer buffer after nodes
-    return_val->append(return_val2);
 }
 
-id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history)
+void SMem_Manager::create_full_store_set(ltm_set* store_set)
 {
+    //This makes a set that contains the entire contents of smem.
+    soar_module::sqlite_statement* q;
+    q = thisAgent->SMem->SQL->vis_lti;
+    while (q->execute() == soar_module::row)
+    {
+        create_store_set(store_set, q->column_int(0), 1);
+    }
+    q->reinitialize();
+}
+
+void SMem_Manager::clear_store_set(ltm_set* store_set)
+{
+    //this doesn't delete the set itself. This deletes the contents.
+    ltm_set::iterator set_it;
+    for (set_it = store_set->begin(); set_it != store_set->end(); ++set_it)
+    {
+        ltm_object* current_ltm = *set_it;
+        ltm_slot_map* current_ltm_slot_map = current_ltm->slots;
+        ltm_slot_map::iterator map_it;
+        for (map_it = current_ltm_slot_map->begin(); map_it != current_ltm_slot_map->end(); ++map_it)
+        {
+            Symbol* attr = map_it->first;
+            ltm_slot* current_slot  = map_it->second;
+            ltm_slot::iterator slot_it;
+            for (slot_it = current_slot->begin(); slot_it != current_slot->end(); ++slot_it)
+            {
+                if ((*slot_it)->val_lti.val_type == value_lti_t)
+                {
+                    delete ((*slot_it)->val_lti.val_value);
+                }
+                else
+                {
+                    thisAgent->symbolManager->symbol_remove_ref(&((*slot_it)->val_const.val_value));
+                }
+                delete (*slot_it);
+            }
+            delete current_slot;
+            thisAgent->symbolManager->symbol_remove_ref(&(attr));
+        }
+        delete current_ltm_slot_map;
+        delete current_ltm;
+    }
+}
+
+id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history)
+{
+
     id_set next;
 
     std::string temp_str, temp_str2, temp_str3;
@@ -535,19 +242,19 @@ id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* re
                 }
 
                 soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
-                        strlen(temp_str.c_str()),
-                        &possible_id,
-                        &possible_var,
-                        &possible_sc,
-                        &possible_ic,
-                        &possible_fc,
-                        &is_rereadable);
+                    strlen(temp_str.c_str()),
+                    &possible_id,
+                    &possible_var,
+                    &possible_sc,
+                    &possible_ic,
+                    &possible_fc,
+                    &is_rereadable);
 
                 bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
 
                 if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                        (!is_rereadable) ||
-                        has_angle_bracket)
+                    (!is_rereadable) ||
+                    has_angle_bracket)
                 {
                     /* BUGBUG if in context where id's could occur, should check
                      possible_id flag here also */
@@ -580,7 +287,7 @@ id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* re
 
             /* The following line prints the children indented.  It seems redundant when printing the
              * smem store, but perhaps it's useful for printing something rooted in an lti? */
-             next.insert(temp_lti_id);
+            next.insert(temp_lti_id);
         }
         else
         {
@@ -598,19 +305,19 @@ id_set SMem_Manager::print_lti(uint64_t pLTI_ID, double lti_act, std::string* re
                     }
 
                     soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
-                            temp_str2.length(),
-                            &possible_id,
-                            &possible_var,
-                            &possible_sc,
-                            &possible_ic,
-                            &possible_fc,
-                            &is_rereadable);
+                        temp_str2.length(),
+                        &possible_id,
+                        &possible_var,
+                        &possible_sc,
+                        &possible_ic,
+                        &possible_fc,
+                        &is_rereadable);
 
                     bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
 
                     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                            (!is_rereadable) ||
-                            has_angle_bracket)
+                        (!is_rereadable) ||
+                        has_angle_bracket)
                     {
                         /* BUGBUG if in context where id's could occur, should check
                          possible_id flag here also */
@@ -694,16 +401,10 @@ void SMem_Manager::print_store(std::string* return_val)
         print_smem_object(q->column_int(0), 1, return_val);
     }
     q->reinitialize();
-    ltm_set store_set;
-    create_store_set(&store_set);
-    clear_store_set(&store_set);
 }
 
 void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history)
 {
-    ltm_set store_set;
-    create_store_set(&store_set, pLTI_ID,depth);
-    clear_store_set(&store_set);
     id_set visited;
     std::pair< id_set::iterator, bool > visited_ins_result;
 
@@ -761,11 +462,11 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
 
             if (history && !access_history.empty())
             {
-                next = print_lti(c.first, act_q->column_double(0), return_val, &(access_history));
+                next = print_LTM(c.first, act_q->column_double(0), return_val, &(access_history));
             }
             else
             {
-                next = print_lti(c.first, act_q->column_double(0), return_val);
+                next = print_LTM(c.first, act_q->column_double(0), return_val);
             }
 
             // done with lookup
