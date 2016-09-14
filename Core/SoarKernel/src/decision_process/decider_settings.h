@@ -26,6 +26,8 @@ class decider_param_container: public soar_module::param_container
         soar_module::integer_param* max_memory_usage;
         soar_module::integer_param* max_nil_output_cycles;
 
+        soar_module::boolean_param* wait_snc;
+
         soar_module::boolean_param* help_cmd;
         soar_module::boolean_param* qhelp_cmd;
 

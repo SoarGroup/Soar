@@ -34,6 +34,7 @@
 #include "src/output_manager/database.cpp"
 #include "src/output_manager/errors.cpp"
 #include "src/output_manager/output_manager.cpp"
+#include "src/output_manager/output_settings.cpp"
 #include "src/output_manager/print.cpp"
 #include "src/output_manager/soar_to_string.cpp"
 #include "src/output_manager/visualize.cpp"

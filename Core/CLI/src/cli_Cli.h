@@ -90,13 +90,6 @@ namespace cli
             virtual bool DoDebug(std::vector< std::string >* argv = 0) = 0;
 
             /**
-             * @brief default-wme-depth command
-             * @param pDepth The pointer to the new wme depth, a positive integer.
-             *        Pass 0 (null) pointer for query.
-             */
-            virtual bool DoDefaultWMEDepth(const int* pDepth) = 0;
-
-            /**
              * @brief dirs command
              */
             virtual bool DoDirs() = 0;
@@ -107,13 +100,6 @@ namespace cli
              * @param echoNewline True means a newline character will be appended to string
              */
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline) = 0;
-
-            /**
-             * @brief echo-commands command
-             * @param onlyGetValue
-             * @param echoCommands
-             */
-            virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands) = 0;
 
             /**
              * @brief edit-production command
@@ -584,13 +570,6 @@ namespace cli
             virtual bool DoUnalias(std::vector<std::string>& argv) = 0;
 
             /**
-             * @brief verbose command
-             * @param pSetting The verbose setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
-             */
-            virtual bool DoVerbose(bool* pSetting = 0) = 0;
-
-            /**
              * @brief version command
              */
             virtual bool DoVersion() = 0;
@@ -631,15 +610,6 @@ namespace cli
              *        this argument ignored if pProduction is 0 (null)
              */
             virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth) = 0;
-
-            virtual bool DoWaitSNC(bool* pSetting = 0) = 0;
-
-            /**
-             * @brief warnings command
-             * @param pSetting The warnings setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
-             */
-            virtual bool DoWarnings(bool* pSetting = 0) = 0;
 
             enum eWatchOptions
             {

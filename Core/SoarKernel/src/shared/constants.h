@@ -146,29 +146,21 @@
 #define TRACE_CHUNKS_SYSPARAM                    13
 #define TRACE_JUSTIFICATIONS_SYSPARAM            14
 #define TRACE_BACKTRACING_SYSPARAM               15
-/* ===== watch loading flag =====  KJC 7/96 */
 #define TRACE_LOADING_SYSPARAM                   16
 /* ====== User Select === */
 #define USER_SELECT_MODE_SYSPARAM                17
-/* ====== Print Warnings === */
-#define PRINT_WARNINGS_SYSPARAM                  18
-/* ====== Whether to print out aliases as they're defined === */
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         19
-#define REAL_TIME_SYSPARAM                       20
-#define ATTENTION_LAPSE_ON_SYSPARAM              21
-#define TRACE_INDIFFERENT_SYSPARAM               22
-#define TIMERS_ENABLED                           23
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         18
+#define TRACE_INDIFFERENT_SYSPARAM               19
+#define TIMERS_ENABLED                           20
 /* auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM              24
-/* Soar-RL trace information */
-#define TRACE_RL_SYSPARAM                        25
-/* Chunk through local negations */
-#define TRACE_WATERFALL_SYSPARAM                 26
-#define TRACE_WMA_SYSPARAM                       27
-#define TRACE_EPMEM_SYSPARAM                     28
-#define TRACE_SMEM_SYSPARAM                      29
-#define TRACE_GDS_SYSPARAM                       30
+#define USER_SELECT_REDUCE_SYSPARAM              21
+#define TRACE_RL_SYSPARAM                        22
+#define TRACE_WATERFALL_SYSPARAM                 23
+#define TRACE_WMA_SYSPARAM                       24
+#define TRACE_EPMEM_SYSPARAM                     25
+#define TRACE_SMEM_SYSPARAM                      26
+#define TRACE_GDS_SYSPARAM                       27
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  31
+#define HIGHEST_SYSPARAM_NUMBER                  28
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_CONSTANTS_H_ */

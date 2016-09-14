@@ -735,7 +735,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (depth < 0)
     {
-        depth = thisAgent->default_wme_depth;
+        depth = thisAgent->outputManager->settings[OM_PRINT_DEPTH];
     }
 
     if (options.test(PRINT_STACK))

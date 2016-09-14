@@ -174,7 +174,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->current_phase                      = INPUT_PHASE;
     thisAgent->applyPhase                         = false;
     thisAgent->current_wme_timetag                = 1;
-    thisAgent->default_wme_depth                  = 1;
     thisAgent->disconnected_ids                   = NIL;
     thisAgent->existing_output_links              = NIL;
     thisAgent->output_link_changed                = false;
@@ -208,7 +207,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->multi_attributes                   = NIL;
 
     thisAgent->did_PE                             = false;
-    thisAgent->soar_verbose_flag                  = false;
     thisAgent->FIRING_TYPE                        = IE_PRODS;
     thisAgent->ms_o_assertions                    = NIL;
     thisAgent->ms_i_assertions                    = NIL;
@@ -221,9 +219,6 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->nil_goal_retractions               = NIL;
 
-    thisAgent->waitsnc                            = false;
-    thisAgent->waitsnc_detect                     = false;
-
     /* Initializing rete stuff */
     for (int i = 0; i < 256; i++)
     {
@@ -233,9 +228,6 @@ agent* create_soar_agent(char* agent_name)                                      
     }
 
     reset_max_stats(thisAgent);
-
-    thisAgent->real_time_tracker = 0;
-    thisAgent->attention_lapse_tracker = 0;
 
     if (!getcwd(cur_path, MAXPATHLEN))
     {

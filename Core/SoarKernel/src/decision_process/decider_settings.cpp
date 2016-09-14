@@ -25,6 +25,7 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     pDecider_settings[DECIDER_MAX_GOAL_DEPTH] = 100;
     pDecider_settings[DECIDER_MAX_MEMORY_USAGE] = 100000000;
     pDecider_settings[DECIDER_MAX_NIL_OUTPUT_CYCLES] = 15;
+    pDecider_settings[DECIDER_WAIT_SNC] = 0;
 
     o_support_mode = new soar_module::constant_param<OSupportModes>("o-support-mode", OMode4, new soar_module::f_predicate<OSupportModes>());
     o_support_mode->add_mapping(OMode4, "4");
@@ -51,6 +52,8 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     add(max_memory_usage);
     max_nil_output_cycles = new soar_module::integer_param("max-nil-output-cycles", pDecider_settings[DECIDER_MAX_NIL_OUTPUT_CYCLES], new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
     add(max_nil_output_cycles);
+    wait_snc = new soar_module::boolean_param("wait-snc", pDecider_settings[DECIDER_WAIT_SNC] ? on : off, new soar_module::f_predicate<boolean>());
+    add(wait_snc);
 
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
@@ -61,7 +64,10 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
 
 void decider_param_container::update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam )
 {
-
+    if (pChangedParam == wait_snc)
+    {
+        thisAgent->Decider->settings[DECIDER_WAIT_SNC] = pChangedParam->get_value();
+    }
 }
 void decider_param_container::update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam)
 {
@@ -142,6 +148,7 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     outputManager->set_column_indent(1, 50);
     outputManager->printa(thisAgent, "=========== Soar General Settings ===========\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 45).c_str(), "Phase before which Soar will stop");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 45).c_str(), "Wait after state-no-change");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 45).c_str(), "Maximum elaboration in a phase");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 45).c_str(), "Maximum goal stack depth");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 45).c_str(), "Used with run --out");

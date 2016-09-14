@@ -56,7 +56,7 @@ namespace cli
 
                     if (option != 0)
                     {
-                        cli.SetError("output takes only one option at a time.");
+                        cli.SetError("The 'output' command takes only one option at a time.");
                         return cli.AppendError(GetSyntax());
                     }
 
@@ -82,7 +82,7 @@ namespace cli
                 // bad: no option, but more than two argument
                 if (argv.size() > 3)
                 {
-                    return cli.SetError("Too many arguments.");
+                    return cli.SetError("Too many arguments for the 'output' command.");
                 }
 
                 // case: nothing = full configuration information

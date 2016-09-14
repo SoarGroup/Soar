@@ -49,23 +49,8 @@
 #include <assert.h>
 #include <time.h>
 
-/* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
 extern void determine_highest_active_production_level_in_stack_apply(agent* thisAgent);
-/* REW: end   08.20.97 */
-
-#if (defined(REAL_TIME_BEHAVIOR) || defined(ATTENTION_LAPSE))
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global
-      and allocate memory for it in init_soar() (init agent.c) */
-struct timeval* current_real_time;
-#endif
-
-#ifdef ATTENTION_LAPSE
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global */
-int64_t lapse_duration;
-#endif
 
 /* ===================================================================
 
@@ -200,14 +185,9 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
-#ifdef ATTENTION_LAPSE
-    /* RMJ */
-    thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM] = false;
-#endif /* ATTENTION_LAPSE */
 
     thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
-    thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
 }
@@ -517,13 +497,6 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_DECISION_CYCLE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
             }  /* end if e_cycles_this_d_cycle == 0 */
-
-#ifdef REAL_TIME_BEHAVIOR  /* RM Jones */
-            test_for_input_delay(thisAgent);
-#endif
-#ifdef ATTENTION_LAPSE  /* RM Jones */
-            determine_lapsing(thisAgent);
-#endif
 
             if (thisAgent->input_cycle_flag == true)   /* Soar 7 flag, but always true for Soar8 */
             {

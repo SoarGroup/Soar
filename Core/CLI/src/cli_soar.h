@@ -82,7 +82,7 @@ namespace cli
                 // bad: no option, but more than two argument
                 if (argv.size() > 3)
                 {
-                    return cli.SetError("Too many arguments.");
+                    return cli.SetError("Too many arguments for the 'soar' command.");
                 }
 
                 // case: nothing = full configuration information

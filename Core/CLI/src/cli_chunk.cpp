@@ -73,7 +73,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << "Chunking parameter change:" << pAttr->c_str() << " =" ;
+            tempStringStream << pAttr->c_str() << " =" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         }
         return true;
@@ -99,7 +99,7 @@ bool CommandLineInterface::DoChunk(const char pOp, const std::string* pAttr, con
         }
         else
         {
-            tempStringStream << "Chunking parameter " << pAttr->c_str() << " = " << pVal->c_str();
+            tempStringStream << pAttr->c_str() << " = " << pVal->c_str();
             PrintCLIMessage(&tempStringStream);
         }
         /* The following code assumes that all parameters except learn are boolean */

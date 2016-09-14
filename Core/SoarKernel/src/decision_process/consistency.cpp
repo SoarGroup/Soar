@@ -23,6 +23,7 @@
 #include "agent.h"
 #include "decide.h"
 #include "decider.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -95,7 +96,7 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
             remove_wmes_for_context_slot(thisAgent, s);
             if (s->id->id->lower_goal)
             {
-                if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                 {
                     print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
                 }
@@ -409,7 +410,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #ifdef DEBUG_CONSISTENCY_CHECK
                     print_with_symbols(thisAgent, "   The current preferences indicate that the decision at [%y] needs to be removed.\n", goal);
 #endif
-                    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                     {
                         print_with_symbols(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
                         print_with_symbols(thisAgent, "consistent with the current preferences.\n");
@@ -756,7 +757,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
     if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
             print(thisAgent,  "\nWarning: reached max-elaborations; proceeding to output phase.");
             xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to output phase.");
@@ -1022,7 +1023,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
     if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
             print(thisAgent,  "\nWarning: reached max-elaborations; proceeding to decision phase.");
             xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");

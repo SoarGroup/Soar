@@ -121,10 +121,8 @@ namespace cli
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
             virtual bool DoDebug(std::vector< std::string >* argv = 0);
-            virtual bool DoDefaultWMEDepth(const int* pDepth);
             virtual bool DoDirs();
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
-            virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands);
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0);
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
             virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2);
@@ -170,11 +168,8 @@ namespace cli
             virtual bool DoTime(std::vector<std::string>& argv);
             virtual bool DoTimers(bool* pSetting = 0);
             virtual bool DoUnalias(std::vector<std::string>& argv);
-            virtual bool DoVerbose(bool* pSetting = 0);
             virtual bool DoVersion();
             virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth);
-            virtual bool DoWaitSNC(bool* pSetting = 0);
-            virtual bool DoWarnings(bool* pSetting = 0);
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
