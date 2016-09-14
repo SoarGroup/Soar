@@ -38,6 +38,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::integer_param* thresh;
 
         soar_module::boolean_param* activate_on_query;
+        soar_module::boolean_param* activate_on_add;
         soar_module::constant_param<act_choices>* activation_mode;
         soar_module::decimal_param* base_decay;
 
@@ -45,6 +46,13 @@ class smem_param_container: public soar_module::param_container
         soar_module::constant_param<base_update_choices>* base_update;
 
         soar_module::int_set_param* base_incremental_threshes;
+
+        soar_module::boolean_param* spreading;
+        soar_module::integer_param* spreading_limit;
+        soar_module::integer_param* spreading_depth_limit;
+        soar_module::decimal_param* spreading_baseline;
+        soar_module::decimal_param* spreading_continue_probability;
+        soar_module::boolean_param* spreading_loop_avoidance;
 
         smem_param_container(agent* new_agent);
 };

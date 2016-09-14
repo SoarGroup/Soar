@@ -38,6 +38,9 @@ smem_timer_container::smem_timer_container(agent* new_agent): soar_module::timer
 
     act = new smem_timer("three_activation", thisAgent, soar_module::timer::three);
     add(act);
+
+    spreading = new smem_timer("spreading", thisAgent, soar_module::timer::three);
+    add(spreading);
 }
 
 smem_timer_level_predicate::smem_timer_level_predicate(agent* new_agent): soar_module::agent_predicate<soar_module::timer::timer_level>(new_agent) {}

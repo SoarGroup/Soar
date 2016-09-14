@@ -72,6 +72,27 @@ struct smem_compare_activated_lti
 typedef std::priority_queue<smem_weighted_cue_element*, std::vector<smem_weighted_cue_element*>, smem_compare_weighted_cue_elements>    smem_prioritized_weighted_cue;
 typedef std::priority_queue< smem_activated_lti, std::vector<smem_activated_lti>, smem_compare_activated_lti>                           smem_prioritized_activated_lti_queue;
 
+typedef std::pair<double, std::list<std::pair<uint64_t,double>>*> smem_activated_lti_list;
+
+struct smem_compare_activated_lti_list
+{
+    bool operator()(const smem_activated_lti_list a, const smem_activated_lti_list b) const
+    {
+        return (b.first > a.first);
+    }
+};
+
+typedef std::priority_queue<smem_activated_lti_list, std::vector<smem_activated_lti_list>, smem_compare_activated_lti_list> smem_prioritized_lti_traversal_queue;
+
+typedef struct smem_edge_update_struct
+{
+    uint64_t lti_edge_id;
+    double num_touches;
+    uint64_t update_time;
+} smem_edge_update;
+
+typedef std::unordered_map<uint64_t, std::list<smem_edge_update*>> smem_update_map;
+
 typedef union ltm_value_union
 {
     struct ltm_value_const       val_const;

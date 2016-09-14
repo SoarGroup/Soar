@@ -160,12 +160,13 @@ typedef std::unordered_map< uint64_t, sym_to_id_map >           inst_to_id_map;
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
-typedef std::set<ltm_object*>                   ltm_set;
-typedef std::list<ltm_value*>                   ltm_slot;
-typedef std::map<Symbol*, ltm_slot*>            ltm_slot_map;
-typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;
-typedef std::pair< double, uint64_t >           smem_activated_lti;
-typedef std::map<std::string, ltm_object*>      str_to_ltm_map;
-typedef std::map<Symbol*, ltm_object*>          sym_to_ltm_map;
+typedef std::set<ltm_object*>                                   ltm_set;
+typedef std::list<ltm_value*>                                   ltm_slot;
+typedef std::map<Symbol*, ltm_slot*>                            ltm_slot_map;
+typedef std::list<smem_weighted_cue_element*>                   smem_weighted_cue_list;
+typedef std::pair< double, uint64_t >                           smem_activated_lti;
+typedef std::map<std::string, ltm_object*>                      str_to_ltm_map;
+typedef std::map<Symbol*, ltm_object*>                          sym_to_ltm_map;
+typedef std::unordered_multimap<uint64_t,wma_decay_element*>    smem_wma_map;
 
 #endif /* STL_TYPEDEFS_H_ */

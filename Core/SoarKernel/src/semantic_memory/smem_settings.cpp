@@ -18,6 +18,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     learning = new soar_module::boolean_param("learning", off, new soar_module::f_predicate<boolean>());
     add(learning);
 
+    // spreading
+    spreading = new soar_module::boolean_param("spreading", off, new soar_module::f_predicate<boolean>());
+    add(spreading);
+
     // database
     database = new soar_module::constant_param<db_choices>("database", memory, new soar_module::f_predicate<db_choices>());
     database->add_mapping(memory, "memory");
@@ -73,6 +77,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     activate_on_query = new soar_module::boolean_param("activate-on-query", on, new soar_module::f_predicate<boolean>());
     add(activate_on_query);
 
+    // activate on add
+    activate_on_add = new soar_module::boolean_param("activate-on-add", off, new soar_module::f_predicate<boolean>());
+    add(activate_on_add);
+
     // activation_mode
     activation_mode = new soar_module::constant_param<act_choices>("activation-mode", act_recency, new soar_module::f_predicate<act_choices>());
     activation_mode->add_mapping(act_recency, "recency");
@@ -98,6 +106,27 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     /* Moved from init_agent */
     base_incremental_threshes->set_string("10");
 
+    /* The following are spreading activation settings */
+
+    // spreading baseline - This sets the value at which we consider spread too small.
+    spreading_baseline = new soar_module::decimal_param("spreading-baseline", 0.0001, new  soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_baseline);
+
+    // spreading continue probability - determines the decay over edge distances when edge weights are not present.
+    spreading_continue_probability = new soar_module::decimal_param("spreading-continue-probability", 0.9, new soar_module::gt_predicate<double>(0, false), new soar_module::f_predicate<double>());
+    add(spreading_continue_probability);
+
+    // spreading limit - a limit to how many nodes a single source can impact
+    spreading_limit = new soar_module::integer_param("spreading-limit", 300, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(spreading_limit);
+
+    // spreading depth limit - a limit to how many levels deep a source can spread
+    spreading_depth_limit = new soar_module::integer_param("spreading-depth-limit", 10, new soar_module::predicate<int64_t>(), new smem_db_predicate<int64_t>(thisAgent));
+    add(spreading_depth_limit);
+
+    // spreading loop avoidance - whether or not loopy propagation is avoided
+    spreading_loop_avoidance = new soar_module::boolean_param("spreading-loop-avoidance", off, new soar_module::f_predicate<boolean>());
+    add(spreading_loop_avoidance);
 }
 
 //
@@ -221,6 +250,10 @@ smem_stat_container::smem_stat_container(agent* new_agent): soar_module::stat_co
 
     edges = new soar_module::integer_stat("edges", 0, new smem_db_predicate< int64_t >(thisAgent));
     add(edges);
+
+    // A count of spread trajectories
+    trajectories_total = new soar_module::integer_stat("trajectories_total", 0, new soar_module::f_predicate<int64_t>());
+    add(trajectories_total);
 }
 
 //

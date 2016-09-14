@@ -64,7 +64,9 @@ class SMem_Manager
         bool        CLI_add(const char* str_to_LTMs, std::string** err_msg);
         bool        CLI_query(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
         bool        CLI_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
-
+        void        calc_spread_trajectories();
+        void        invalidate_trajectories(uint64_t lti_parent_id, std::map<uint64_t, int64_t>* delta_children);
+        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set);
 
         /* Methods for creating an instance of a LTM using STIs */
         void        clear_instance_mappings();
@@ -83,6 +85,14 @@ class SMem_Manager
         void        print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history = false);
 
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
+        std::map<uint64_t, uint64_t>* smem_in_wmem;
+        smem_wma_map* smem_wmas;
+        std::unordered_map<uint64_t, int64_t>* smem_spreaded_to;
+        std::unordered_map<uint64_t, int64_t>* smem_recipient;
+        std::unordered_map<uint64_t,std::set<uint64_t>*>* smem_recipients_of_source;
+        std::set<uint64_t>* smem_context_additions;
+        std::set<uint64_t>* smem_context_removals;
+        smem_update_map* smem_edges_to_update;
 
     private:
 
@@ -133,7 +143,7 @@ class SMem_Manager
         uint64_t        add_specific_LTI(uint64_t lti_id);
         void            get_lti_name(uint64_t pLTI_ID, std::string &lti_name) { lti_name.append("@");  lti_name.append(std::to_string(pLTI_ID)); }
         uint64_t        get_max_lti_id();
-        double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX);
+        double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges, double touches, bool increment_timer);
         double          lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0);
         id_set          print_lti(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 
@@ -145,14 +155,16 @@ class SMem_Manager
 
         /* Methods to update/store LTM in smem database */
         void            deallocate_ltm(ltm_object* ltm, bool free_ltm = true);
-        void            disconnect_ltm(uint64_t pLTI_ID);
+        inline void     count_child_connection(std::map<uint64_t, int64_t>* children, uint64_t child_lti_id);
+        inline void     count_child_connection(std::map<uint64_t, uint64_t>* children, uint64_t child_lti_id);
+        void            disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>* old_children);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
         bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
         void            store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
         void            update(Symbol* pSTI, smem_storage_type store_type, tc_number tc = NIL);
         void            STM_to_LTM(Symbol* pSTI, smem_storage_type store_type, bool pCreateNewLTM, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
-        void            LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate);
+        void            LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remove_old_children, bool activate, smem_storage_type store_type = store_level);
 
         /* Methods for creating an instance of a LTM using STIs */
         uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
@@ -162,8 +174,15 @@ class SMem_Manager
         uint64_t                        process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
+        soar_module::sqlite_statement*  setup_cheap_web_crawl(smem_weighted_cue_element* el);
+        soar_module::sqlite_statement*  setup_web_crawl_spread(smem_weighted_cue_element* el);
 
-
+        /* Methods for supporting spreading activation */
+        void child_spread(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t,double>>*>& lti_trajectories, int depth);
+        void trajectory_construction(uint64_t lti_id, std::map<uint64_t, std::list<std::pair<uint64_t, double>>*>& lti_trajectories, int depth, bool initial);
+        //void calc_likelihoods_for_trajectories(uint64_t lti_id);
+        inline soar_module::sqlite_statement* setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id);
+        //void calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL);
 };
 
 #endif

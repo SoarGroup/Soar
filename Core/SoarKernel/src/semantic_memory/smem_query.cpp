@@ -45,6 +45,66 @@ soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_e
     return q;
 }
 
+soar_module::sqlite_statement* SMem_Manager::setup_web_crawl_spread(smem_weighted_cue_element* el)
+{
+    soar_module::sqlite_statement* q = NULL;
+
+    // first, point to correct query and setup
+    // query-specific parameters
+    if (el->element_type == attr_t)
+    {
+        // attribute_s_id=?
+        q = SQL->web_attr_all_spread;
+    }
+    else if (el->element_type == value_const_t)
+    {
+        // attribute_s_id=? AND value_constant_s_id=?
+        q = SQL->web_const_all_spread;
+        q->bind_int(2, el->value_hash);
+    }
+    else if (el->element_type == value_lti_t)
+    {
+        // attribute_s_id=? AND value_lti_id=?
+        q = SQL->web_lti_all_spread;
+        q->bind_int(2, el->value_lti);
+    }
+
+    // all require hash as first parameter
+    q->bind_int(1, el->attr_hash);
+
+    return q;
+}
+
+soar_module::sqlite_statement* SMem_Manager::setup_cheap_web_crawl(smem_weighted_cue_element* el)
+{
+    soar_module::sqlite_statement* q = NULL;
+
+    // first, point to correct query and setup
+    // query-specific parameters
+    if (el->element_type == attr_t)
+    {
+        // attribute_s_id=?
+        q = SQL->web_attr_all_cheap;
+    }
+    else if (el->element_type == value_const_t)
+    {
+        // attribute_s_id=? AND value_constant_s_id=?
+        q = SQL->web_const_all_cheap;
+        q->bind_int(2, el->value_hash);
+    }
+    else if (el->element_type == value_lti_t)
+    {
+        // attribute_s_id=? AND value_lti_id=?
+        q = SQL->web_lti_all_cheap;
+        q->bind_int(2, el->value_lti);
+    }
+
+    // all require hash as first parameter
+    q->bind_int(1, el->attr_hash);
+
+    return q;
+}
+
 bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery)
 {
     bool good_wme = true;
@@ -305,6 +365,19 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
 
 uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type)
 {
+    //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
+    id_set::iterator prohibited_lti_p;
+    for (prohibited_lti_p = prohibit->begin(); prohibited_lti_p != prohibit->end(); ++prohibited_lti_p)
+    {
+        SQL->prohibit_check->bind_int(1, *prohibited_lti_p);
+        if (SQL->prohibit_check->execute() == soar_module::row)
+        {
+            SQL->prohibit_set->bind_int(1, *prohibited_lti_p);
+            SQL->prohibit_set->execute(soar_module::op_reinit);
+        }
+        SQL->prohibit_check->reinitialize();
+    }
+
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
 
@@ -423,6 +496,31 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
             }
         }
 
+        timers->query->stop();
+
+        if (settings->spreading->get_value() == on)
+        {
+            q = setup_cheap_web_crawl(*cand_set);
+            std::set<uint64_t> to_update;
+            int num_answers = 0;
+            while (q->execute() == soar_module::row && num_answers < 400)
+            {//TODO: The 400 there should actually reflect the size of the context's recipients.
+                num_answers++;
+                to_update.insert(q->column_int(0));
+            }
+            q->reinitialize();
+            if (num_answers >= 400)
+            {
+                calc_spread(&to_update, true, &cand_set);
+            }
+            else if (num_answers > 1)
+            {
+                calc_spread(&to_update, false);
+            }
+        }
+
+        timers->query->start();
+
         soar_module::sqlite_statement* q2 = NULL;
         id_set::iterator prohibit_p;
 
@@ -478,6 +576,13 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
 
                 more_rows = (q->execute() == soar_module::row);
             }
+            soar_module::sqlite_statement* spread_q = setup_web_crawl_spread(*cand_set);
+            //uint64_t highest_so_far = 0;
+            while (spread_q->execute() == soar_module::row)
+            {
+                plentiful_parents.push(std::make_pair<double, uint64_t>(spread_q->column_double(1), spread_q->column_int(0)));
+            }
+            spread_q->reinitialize();
             bool first_element = false;
             while (((match_ids->size() < number_to_retrieve) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
             {
