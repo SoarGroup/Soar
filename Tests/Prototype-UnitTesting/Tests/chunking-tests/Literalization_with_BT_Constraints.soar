@@ -1,0 +1,61 @@
+chunk always
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object ^word2 not-object)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word1 <w>
+         ^word2 <w>)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word2 object)
+    -->
+    (<s> ^sub-result2 ungrounded +)
+}
+
+# If we add subresult2 to these conditions, might be good example of where literalization
+# shouldn't be on everything
+
+sp {apply*constraints
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result2 {<> <not-object> <> <object> <ungrounded>})
+    (<o> ^word1 { <> <ungrounded> <object> })
+    (<ss> ^word2 {<> <object> <not-object> }
+          ^word { <> <ungrounded> <object2> })
+    -->
+    (<s> ^sub-result1 ungrounded +)
+}
+
+sp {start-chunking2
+    (state <s> ^superstate <ss>
+               ^operator.word2 <object>
+               ^sub-result1 <r> 
+               ^sub-result2 <r>)
+#    (<ss> ^word2 <not-object>
+#          ^word <object2>)
+    -->
+    (<ss> ^result <object> +
+          ^result2 <r> +)
+}
+
+

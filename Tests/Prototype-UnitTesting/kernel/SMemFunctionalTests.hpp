@@ -106,6 +106,9 @@ public:
 	TEST(testISupportWithLearning, -1)
 	void testISupportWithLearning();
 
+    TEST(testSmemArithmetic,-1)
+    void testSmemArithmetic();
+
 public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationRecency, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationRecency();

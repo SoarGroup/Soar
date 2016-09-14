@@ -1,0 +1,4 @@
+sp {test
+(state <s> ^io.output-link <ol>)
+-->
+(<ol> ^command.foo <f>)}

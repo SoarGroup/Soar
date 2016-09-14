@@ -1,0 +1,48 @@
+# Literalization of NC and NCC
+
+chunk always
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object
+        ^word2 not-object2)
+
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word <w>)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^word object)
+    -->
+    (<s> ^sub-result 1 +)
+}
+
+sp {make-chunk
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result <r>)
+    (<o> ^word <object>)
+    (<ss> -^prefix <object>)
+    - {(<ss> ^suffix <object>)
+       (<ss> ^word { <> <object> <fantasy-object> })}
+    -->
+    (<ss> ^result <object> +)
+}

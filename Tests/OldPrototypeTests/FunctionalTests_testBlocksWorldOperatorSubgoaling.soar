@@ -1,0 +1,212 @@
+multi-attributes ontop 3
+
+multi-attributes clear 3
+
+multi-attributes objects 4
+
+#chunk never
+
+sp {blocks-world*elaborate*state*clear
+   (state <s> ^name blocks-world
+              ^object <block>
+             -^ontop.bottom-block <block>)
+-->
+   (<s> ^clear <block>)
+}
+
+sp {blocks-world*elaborate*state*clear-table
+   (state <s> ^name blocks-world
+              ^object <object>)
+   (<object> ^type table)
+-->
+   (<s> ^clear <object>)
+}
+
+sp {blocks-world*elaborate*state*success
+   (state <s> ^desired <ds>
+              ^ontop <ontopa1>
+                { <> <ontopa1> <ontopa2> }
+                { <> <ontopa1> <> <ontopa2> <ontopa3> })
+   (<ontopa1> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<ontopa2> ^top-block <blockB>
+              ^bottom-block <blockC>)
+   (<ontopa3> ^top-block <blockC>
+              ^bottom-block <table>)
+   (<ds> ^ontop <ontop1>
+                { <> <ontop1> <ontop2> }
+                { <> <ontop1> <> <ontop2> <ontop3> })
+   (<ontop1> ^top-block <blockA>
+             ^bottom-block <blockB>)
+   (<ontop2> ^top-block <blockB>
+             ^bottom-block <blockC>)
+   (<ontop3> ^top-block <blockC>
+             ^bottom-block <table>)
+-->
+   (succeeded)
+   (write (crlf) |Achieved Goal.|)
+   }
+
+sp {blocks-world*monitor*world-state
+   (state <s> ^ontop <ontop>)
+   (<ontop> ^top-block.name <top-name>
+            ^bottom-block.name <bottom-name>)
+-->
+   (write (crlf)
+          |  ontop(| <top-name>
+          |,| <bottom-name> |)|)}
+
+sp {blocks-world*monitor*prefer*clear-block
+   (state <s> ^operator <o> + 
+              ^desired.clear <ub>
+              ^ontop <ot>)
+   (<ot> ^top-block <mb> 
+         ^bottom-block <ub>)
+   (<o> ^moving-block <mb>
+        ^destination { <db> <> <ub> })
+   (<mb> ^name <mb-name>)
+   (<db> ^name <db-name>)
+   (<ub> ^name <ub-name>)
+   -->
+   (write (crlf) |Prefer move | <mb-name> | --> | <db-name> | to clear | <ub-name>)}
+
+sp {blocks-world*monitor*prefer*ontop
+   (state <s> ^operator <o> + 
+              ^desired.ontop <ot>)
+   (<ot> ^top-block <mb> 
+         ^bottom-block <db>)
+   (<o> ^moving-block <mb>
+        ^destination <db>)
+   (<mb> ^name <mb-name>)
+   (<db> ^name <db-name>)
+   -->
+   (write (crlf) |Prefer move | <mb-name> | to | <db-name>)}
+
+sp {blocks-world*monitor*avoid*clobber*clear 
+   (state <s> ^operator <o> + 
+              ^desired.clear <db>)
+   (<o> ^destination <db>
+        ^moving-block <mb>)
+   (<mb> ^name <mb-name>)
+   (<db> ^name <db-name>)
+   -->
+   (write (crlf) |Avoid moving | <mb-name> | to | <db-name> | so don't clobber clear | <db-name> | goal.|)}
+
+sp {blocks-world*prefer*clear-block 
+   (state <s> ^operator <o> + 
+              ^desired.clear <ub>
+              ^ontop <ot>)
+   (<ot> ^top-block <mb> 
+         ^bottom-block <ub>)
+   (<o> ^moving-block <mb>
+        ^destination <> <ub>)
+   -->
+   (<s> ^operator <o> >)}
+
+sp {blocks-world*prefer*ontop 
+   (state <s> ^operator <o> + 
+              ^desired.ontop <ot>)
+   (<ot> ^top-block <mb> 
+         ^bottom-block <db>)
+   (<o> ^moving-block <mb>
+        ^destination <db>)
+   -->
+   (<s> ^operator <o> >)}
+
+sp {blocks-world*avoid*clobbering*clear-block 
+   (state <s> ^operator <o> + 
+              ^desired.clear <ub>)
+   (<o> ^destination <ub>)
+   -->
+   (<s> ^operator <o> <)}
+
+sp {blocks-world*propose*initialize-blocks-world-operator-subgoalin
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name initialize-blocks-world-operator-subgoaling)
+}
+
+sp {blocks-world*apply*initialize-blocks-world-operator-subgoaling
+   (state <s> ^operator.name initialize-blocks-world-operator-subgoaling)
+-->
+   (<s> ^name blocks-world
+        ^ontop <ontop1> <ontop2> <ontop3>
+        ^object <blockA> <blockB> <blockC> <table>
+        ^desired <ds>)
+   (<ontop1> ^top-block <blockA>
+             ^bottom-block <blockB>)
+   (<ontop2> ^top-block <blockB>
+             ^bottom-block <table>)
+   (<ontop3> ^top-block <blockC>
+             ^bottom-block <table>)
+   (<blockA> ^name A ^type block)
+   (<blockB> ^name B ^type block)
+   (<blockC> ^name C ^type block)
+   (<table> ^name table ^type table)
+   (write (crlf) |Simple Blocks World - just move blocks.|)
+   (write (crlf) |Initial state has A on B, B on table, and C on the table.|)
+   (<ds> ^ontop <dontop1> <dontop2> <dontop3>)
+   (<dontop1> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<dontop2> ^top-block <blockB>
+              ^bottom-block <blockC>)
+   (<dontop3> ^top-block <blockC>
+              ^bottom-block <table>)
+   (write (crlf) |The goal is to get A on B on C on the table.|)}
+
+sp {blocks-world*propose*operator
+   (state <s> ^name blocks-world)
+   (<s> ^object <blockA>
+        ^object { <> <blockA> <object> })
+   (<blockA> ^type block)
+  -{(<s> ^ontop <ontop>)
+    (<ontop> ^top-block <blockA>
+             ^bottom-block <object>)}
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-block
+        ^moving-block <blockA>
+        ^destination <object>)}
+
+sp {blocks-world*apply*operator*move-block*change-ontop
+   (state <s> ^operator <o>
+              ^clear <mblock> <tblock>
+              ^ontop <ontop>)
+   (<ontop> ^top-block <mblock>
+            ^bottom-block { <> <tblock> <object> })
+   (<o> ^moving-block <mblock>
+        ^destination <tblock>)
+-->
+   (<ontop> ^bottom-block <tblock>
+            ^bottom-block <object> -)}
+
+sp {move-block*elaborate*operator-subgoal
+   (state <s> ^impasse no-change 
+              ^attribute operator 
+      ^superstate.operator <so>)
+   (<so> ^moving-block <mb>
+         ^destination <des>)
+   -->
+   (<s> ^type operator-subgoal
+        ^name blocks-world
+        ^desired <d>)
+   (<d> ^clear <mb> <des>)}
+
+sp {move-block*elaborate*copy*superstate
+   (state <s> ^type operator-subgoal 
+              ^superstate <ss>)
+   (<ss> ^ { <att> <> choices
+                   <> impasse 
+                   <> clear 
+                   <> name 
+                   <> quiescence
+                   <> superstate 
+                   <> attribute 
+                   <> operator 
+                   <> desired }
+     <value>)
+   -->
+   (<s> ^<att> <value>)}
+

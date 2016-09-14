@@ -1,0 +1,54 @@
+smem --set learning on
+
+# First store something in SMEM
+
+sp {propose*store
+  (state <s> ^superstate nil 
+            -^stored
+             ^smem <smem>)
+  (<smem> -^result.success)
+--> 
+  (<s> ^operator.name store)
+}
+
+sp {apply*store
+  (state <s> ^operator.name store
+             ^smem.command <sc>)
+-->
+  (<s> ^stored true)
+  (<sc> ^store <p>)
+  (<p> ^name Steve
+       ^name Bill
+       ^email |jobs@apple.com|)
+}
+
+# Now query for it to see if it got into SMEM.
+
+sp {propose*query
+  (state <s> ^superstate nil 
+             ^stored true
+             ^smem <smem>)
+  (<smem> -^result.retrieved)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+  (state <s> ^operator.name query
+             ^smem.command <sc>)
+  (<sc> ^store <store>)
+-->
+  (<sc> ^store <store> -)
+  (<sc> ^query.email |jobs@apple.com|)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^name Steve
+         ^name Bill
+         ^email |jobs@apple.com|)
+-->
+  (exec succeeded)
+}
+
+

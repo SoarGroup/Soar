@@ -1,0 +1,10 @@
+sp {simple-conflict-worse*success
+   (state <s> ^superstate <ss>
+              ^impasse conflict
+              ^attribute operator
+              ^item-count 2)
+   (<ss> ^name simple-conflict-worse
+         ^top-state <ts>)
+-->
+   (<ts> ^simple-conflict-worse success)
+}

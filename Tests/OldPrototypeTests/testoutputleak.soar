@@ -1,0 +1,15 @@
+sp {create-output
+(state <s> ^io.output-link <ol>)
+-->
+(<ol> ^command.foo bar)
+}
+
+# Adding this production removes the leak
+#sp {remove-output
+#:o-support
+#(state <s> ^io.output-link <ol>)
+#(<ol> ^command <c>)
+#(<c> ^status complete)
+#-->
+#(<ol> ^command <c> -)
+#}

@@ -1,0 +1,84 @@
+# Possible o_id propagation problem.  
+
+chunk always
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^object1 object ^object2 not-object)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^object1 <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^o-object1 <w>
+         ^o-object2 <w>)
+}
+
+sp {apply*literalization
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^o-object2 object)
+    -->
+    (<s> ^sub-result-lit ungrounded +)
+}
+
+sp {apply*constraints
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result-lit <ungrounded>)
+    (<o> ^o-object1 { <=> <w2> <w> }
+         ^o-object2 <w2>)
+
+    -->
+    (<s> ^sub-result1 ungrounded +)
+}
+
+sp {apply*constraints*no-lit
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<o> ^o-object1 { >= <w2> <w> }
+         ^o-object2 <w2>)
+
+    -->
+    (<s> ^sub-result2 ungrounded +)
+}
+
+sp {start-chunking
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result-lit <r> 
+               ^sub-result1 <r>
+               ^sub-result2)
+    (<ss> ^object2 <not-object>
+          ^object1 <object2>)
+    -->
+    (<ss> ^result1u <r> +
+          ^result1b <not-object> +
+          ^result1c <object2> +)
+}
+
+sp {start-chunking-partial-lit
+    (state <s> ^superstate <ss>
+               ^operator <o>
+#               ^sub-result-lit <r> 
+               ^sub-result2 <r>)
+    (<ss> ^object2 <not-object>
+          ^object1 <object2>)
+    -->
+    (<ss> ^result2a <r> +
+          ^result2b <not-object> +
+          ^result2c <object2> +)
+}
+

@@ -1,0 +1,1057 @@
+srand 1
+
+multi-attributes jug 3
+multi-attributes superstate-set 20
+
+#echo {learning is on}
+
+chunk always
+
+sp {top-goal*halt*success
+   :default
+   (state <s> ^name <name>
+              ^desired <eb>
+              ^superstate nil
+              ^<< required-success success >> <eb>)
+-->
+   (write (crlf)   <name>  | achieved |)
+   (succeeded)}
+
+sp {top-goal*halt*failure
+   :default
+   (state <s> ^superstate nil
+              ^desired <eb>
+              ^name <name>
+              ^ << prohibit-failure failure >> <eb>)
+-->
+   (write (crlf)  <name>  | failed|)
+   (failed)}
+
+sp {selection*elaborate*name*selection
+   :default
+   (state <s> ^choices multiple)
+-->
+   (<s> ^name selection)}
+
+sp {selection*elaborate*evaluation*value
+   :default
+   (state <s> ^evaluation <e>)
+   (<e> ^ << numeric-value symbolic-value >>)
+-->
+   (<e> ^value true)}
+
+sp {selection*elaborate*evaluation*desired
+   :default
+   (state <s> ^superstate.desired <d>
+              ^evaluation <e>)
+-->
+   (<e> ^desired <d>)}
+
+sp {selection*compare*equal-evaluation-indifferent
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x>
+         ^numeric-value <v>
+         ^desired <d>)
+   (<e2> ^superoperator <y>
+         ^numeric-value <v>
+         ^desired <d>)
+  - (<d> ^equal not-indifferent)
+-->
+   (<ss> ^operator <x> = <y>)}
+
+sp {selection*compare*higher-evaluation-better
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>
+              ^evaluation { <> <e1> <e2> })
+   (<ss> ^problem-space <p2>
+         ^desired <d>)
+   (<e1> ^superoperator <o1>
+         ^numeric-value <v>
+         ^desired <d>)
+   (<e2> ^superoperator <o2>
+         ^numeric-value < <v>
+         ^desired <d>)
+   (<d> ^better higher)
+-->
+   (<ss> ^operator <o2> < <o1>)}
+
+sp {selection*compare*prefer-lower-evaluation
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>
+              ^evaluation { <> <e1> <e2> })
+   (<ss> ^problem-space <p2>
+         ^desired <d>)
+   (<e1> ^superoperator <o1>
+         ^numeric-value <v>
+         ^desired <d>)
+   (<e2> ^superoperator <o2>
+         ^numeric-value > <v>
+         ^desired <d>)
+   (<d> ^better lower)
+-->
+   (<ss> ^operator <o2> < <o1>)}
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x>
+         ^symbolic-value <v>
+         ^desired <d>)
+   (<e2> ^superoperator <y>
+         ^symbolic-value <v>
+         ^desired <d>)
+-->
+   (<ss> ^operator <x> = <y>)}
+
+sp {selection*compare*success-evaluation-better-than-partial-success
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1> { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x>
+         ^symbolic-value success
+         ^desired <d>)
+   (<e2> ^superoperator { <> <x> <y> }
+         ^symbolic-value partial-success
+         ^desired <d>)
+-->
+   (<ss> ^operator <x> > <y>)}
+
+sp {selection*compare*partial-failure-evaluation-better-than-failure
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>  { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <x>
+         ^symbolic-value partial-failure
+         ^desired <d>)
+   (<e2> ^superoperator { <> <x> <y> }
+         ^symbolic-value failure
+         ^desired <d>)
+-->
+   (<ss> ^operator <x> > <y>)}
+
+sp {selection*select*required-success-evaluation-becomes-required-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <eb>)
+   (<e1> ^symbolic-value required-success
+         ^desired <eb>
+         ^superoperator <o1>)
+-->
+   (<ss> ^operator <o1> !)}
+
+sp {selection*select*success-evaluation-becomes-best-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <eb>)
+   (<e1> ^symbolic-value << partial-success success >>
+         ^desired <eb>
+         ^superoperator <o1>)
+-->
+   (<ss> ^operator <o1> >)}
+
+sp {selection*select*failure-evaluation-becomes-reject-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <e>)
+   (<e1> ^symbolic-value << lose failure >>
+         ^desired <e>
+         ^superoperator <o1>)
+-->
+   (<ss> ^operator <o1> -)}
+
+sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <e>)
+   (<e1> ^symbolic-value prohibit-failure
+         ^desired <e>
+         ^superoperator <o1>)
+-->
+   (<ss> ^operator <o1> ~)}
+
+sp {selection*select*indifferent-evaluation-becomes-indifferent-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <eb>)
+   (<e1> ^symbolic-value indifferent
+         ^desired <eb> 
+         ^superoperator <o1>)
+   -->
+   (<ss> ^operator <o1> =)}
+
+sp {selection*select*partial-failure-evaluation-becomes-worst-preference
+   :default
+   (state <s> ^name selection
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <e>)
+   (<e1> ^symbolic-value partial-failure
+         ^desired <e>
+         ^superoperator <o1>)
+   -->
+   (<ss> ^operator <o1> <)}
+
+sp {selection*elaborate*state*all-objects-evaluated
+   :default
+   (state <s> ^name selection
+              ^operator <o> +)
+- {(<o> ^name evaluate-operator
+        ^evaluation.value true)}
+   -->
+   (<s> ^not-all-operators-evaluated true)}
+
+sp {selection*elaborate*state*found-value-true
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^ << numeric-value symbolic-value >> <> novalue)
+   -->
+   (<s> ^found-value true)}
+
+sp {selection*compare*novalue-evaluation-always-worse
+   :default
+   (state <s> ^name selection 
+              ^superstate <ss>
+              ^evaluation <e1>
+              ^evaluation { <> <e1> <e2> })
+   (<ss> ^desired <d>)
+   (<e1> ^superoperator <o1>
+         ^numeric-value novalue
+         ^desired <d>)
+   (<e2> ^superoperator <o2>
+         ^numeric-value <> novalue
+         ^desired <d>)
+   -->
+   (<ss> ^operator <o2> > <o1>)}
+
+sp {monitor*operator*evaluation
+   :default
+   (state <s> ^top-state <ts>
+              ^operator <o>)
+   (<o> ^name evaluate-operator
+        ^superoperator <obj>
+        ^evaluation. << numeric-value symbolic-value >> <n>)
+   (<obj> ^name <name>)
+   (<ts> ^superstate nil
+        -^verbose false)
+-->
+   (write (crlf) |  Evaluation of | <obj> | (|
+   <name> |) is | <n>)}
+
+sp {selection*propose*evaluate-operator
+   :default
+   (state <s> ^name selection
+              ^item <i>)
+  -{(state <s> ^evaluation <e>)
+    (<e> ^superoperator <i>
+         ^value true)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name evaluate-operator
+        ^superoperator <i>)}
+
+sp {selection*select*evaluate-operator*indifferent
+   :default
+   (state <s> ^name selection
+             -^operator-selection not-indifferent
+              ^operator <o> +)
+   (<o> ^name evaluate-operator)
+-->
+   (<s> ^operator <o> =)}
+
+sp {selection*apply*state*evaluation
+   :default
+   (state <s> ^name selection
+              ^operator <o>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+-->
+   (<s> ^evaluation <e>)
+   (<e> ^superoperator <ob>)}
+
+sp {selection*elaborate*evaluate-operator*evaluation
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^evaluation <e>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+   (<e> ^superoperator <ob>)
+-->
+   (<o> ^evaluation <e>)}
+
+sp {selection*elaborate*evaluate-operator*superproblem-space
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^superstate.problem-space <p2>)
+   (<o> ^name evaluate-operator)
+-->
+   (<o> ^superproblem-space <p2>)}
+
+sp {selection*elaborate*evaluate-operator*superstate
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^superstate <ss>)
+   (<o> ^name evaluate-operator)
+-->
+   (<o> ^superstate <ss>)}
+
+sp {evaluate-operator*elaborate*state*desired
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+             -^problem-space.no-local-negations <nln>
+              ^superstate.operator <so>)
+   (<so>  -^default-desired-copy yes
+          ^name evaluate-operator
+          ^evaluation.desired <d>)
+-->
+   (<s> ^desired <d>)}
+
+sp {evaluate-operator*elaborate*state*desired*nln
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^problem-space.no-local-negations <nln>
+              ^superstate.operator <so>)
+   (<so>   ^name evaluate-operator # ddc is assumed no with nln
+          ^evaluation.desired <d>)
+-->
+   (<s> ^desired <d>)}
+
+sp {evaluate-operator*elaborate*state*name
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superstate.name {<> evaluate-operator <name> })
+-->
+   (<s> ^name <name>)}
+
+sp {evaluate-operator*elaborate*state*duplicate-of
+   :default
+   (state <s> ^superstate <ss>
+              ^default-state-copy yes)
+   (<ss> ^operator <so>)
+   (<so> ^name evaluate-operator
+         ^superstate <sss>)
+-->
+   (<s> ^duplicate-of <sss>)}
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*copy
+   :default
+   (state <s> ^problem-space.name <n>
+              ^default-operator-copy yes
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superoperator <o>
+         ^superproblem-space.name <n>)
+-->
+   (<s> ^look-ahead-operator <copy-o>)
+   (<s> ^untried-tied-operator <copy-o>) # SBW 5/7/07-- -^tried-tied-operator -> ^untried-tied-operator
+   (<copy-o> ^duplicate-of <o>)}
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*no-copy
+   :default
+   (state <s> ^problem-space.name <p>
+              ^default-operator-copy no
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superoperator <o>
+         ^superproblem-space.name <p>)
+-->
+   (<s> ^look-ahead-operator <o>)
+   (<s> ^untried-tied-operator <o>)}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^ { << required-success success partial-success
+                   indifferent partial-failure failure prohibit-failure
+                   >> <svalue> } <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}
+
+sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
+   :default
+   (state <s> ^superstate <ss>
+              ^ { << required-success success partial-success
+                  indifferent partial-failure failure prohibit-failure
+                  >> <svalue> } <deb>)
+   (<ss> ^operator <so>
+         ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+   (<deb> ^duplicate-of <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}
+
+sp {evaluate-operator*elaborate*numeric-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^desired <eb>
+               ^numeric-value <v>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^numeric-value <v>)}
+
+sp {evaluate-operator*elaborate*default-for-default-state-copy-is-yes
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space <p>)
+  -(<p> ^default-state-copy no)
+-->
+   (<s> ^default-state-copy yes)}
+
+sp {evaluate-operator*elaborate*default-state-copy-from-problem-space
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space.default-state-copy <yes-or-no>)
+-->
+   (<s> ^default-state-copy <yes-or-no>)}
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate.operator.name evaluate-operator
+              ^problem-space <p>)
+   (<p> -^all-attributes-at-level two
+        -^one-level-attributes
+        -^two-level-attributes
+        -^dont-copy
+        -^dont-copy-anything)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one*no-problem-space
+   :default
+   (state <s> ^impasse no-change
+             -^problem-space
+              ^attribute operator
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+        -^superproblem-space <p>)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+sp {evaluate-operator*elaborate*state*copy-all-attributes-at-level-one-from-problem-space
+   :default
+   (state <s> ^problem-space.all-attributes-at-level one
+              ^default-state-copy yes)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^default-state-copy yes
+              ^superstate.operator.name evaluate-operator)
+-->
+   (<s> ^duplicates <d>)}
+
+sp {evaluate-operator*elaborate*state*add-one-level-attributes
+   :default
+   (state <s> ^problem-space.one-level-attributes <att>
+              ^duplicate-of.<att> <val>
+              ^default-state-copy yes)
+-->
+   (<s> ^<att> <val>)}
+
+sp {evaluate-operator*elaborate*state*add-all-attributes-at-level-one
+   :default
+   (state <s> ^problem-space <p>
+                             ^default-state-copy yes
+                             ^all-attributes-at-level one
+                             ^duplicate-of <ss>)
+   (<p> -^dont-copy-anything
+        -^dont-copy <att>)
+   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
+            <> impasse <> attribute <> choices <> quiescence
+            <> operator <> superstate <> type <> name <> look-ahead-operator
+            <att> } <val>)
+-->
+   (<s> ^<att> <val>)}
+
+sp {evaluate-operator*elaborate*state*change-one-level-attribute-to-duplicate
+   :default
+   (state <s> ^problem-space.one-level-attributes <att>
+              ^duplicates.<id> <new-id>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+-->
+   (<s> ^<att> <id> -
+        ^<att> <new-id>)}
+
+sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
+   :default
+   (state <s> -^problem-space.dont-copy <att>
+        ^default-state-copy yes
+        ^all-attributes-at-level one
+        ^duplicates.<id> <new-id>
+        ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
+-->
+   (<s> ^<att> <id> -
+        ^<att> <new-id>)}
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
+   :default
+   (state <s> ^problem-space.two-level-attributes <att>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+-->
+   (<d> ^<id> <new-id>)}
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
+   :default
+   (state <s> ^problem-space <p>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of <ss>)
+   (<p> -^dont-copy-anything
+        -^dont-copy <att>
+              ^all-attributes-at-level two
+             -^one-level-attributes <att>)
+   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
+            <> impasse <> attribute <> choices <> quiescence
+            <> operator <> superstate
+            <att> } <id>)
+-->
+   (<d> ^<id> <new-id>)}
+
+#warnings --off
+
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate
+   :default
+   (state <s> ^duplicates <d>
+             -^problem-space.no-local-negations <nln>
+             -^problem-space.dont-copy <sub-att>
+              ^default-state-copy yes)
+   (<d> ^<id> <new-id>
+             - ^<sub-val>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <sub-val>)}
+
+#warnings --on
+
+#warnings --off
+
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
+   :default
+   (state <s> ^duplicates <d>
+              ^problem-space.no-local-negations <nln>
+              ^default-state-copy yes)
+   (<d> ^<id> <new-id>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <sub-val>)}
+
+#warnings --on
+
+#warnings --off
+
+sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
+   :default
+   (state <s> ^duplicates <d>
+              ^default-state-copy yes)
+   (<d> ^<id> <new-id>
+        ^<sub-val> <new-val>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <new-val>)}
+
+#warnings --on
+
+sp {evaluate-operator*elaborate*state*add-duplicate-to-state
+   :default
+   (state <s> ^problem-space.two-level-attributes <att>
+              ^duplicates.<id> <new-id>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+-->
+   (<s> ^<att> <new-id>)}
+
+sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
+   :default
+   (state <s> ^problem-space <p>
+              ^duplicates.<id> <new-id>
+              ^default-state-copy yes
+              ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
+   (<p> ^all-attributes-at-level two
+     - ^dont-copy-anything
+     - ^dont-copy <att>
+     - ^one-level-attributes <att>)
+-->
+   (<s> ^<att> <new-id>)}
+
+sp {evaluate-operator*elaborate*state*eval*desired
+   :default
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator <so>)
+   (<so> ^name evaluate-operator
+         ^evaluation.desired <d>
+         ^default-desired-copy yes)
+-->
+   (<s> ^desired <d-copy>)
+   (<d-copy> ^duplicate-of <d>)}
+
+sp {duplicate-desired*copy-old-value
+   :default
+   (state <s> ^superstate.operator <so>
+              ^problem-space <p>
+              ^duplicates <d>
+              ^desired <o-copy>)
+   (<so> ^name evaluate-operator
+         ^evaluation.desired <o>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^{ <> duplicate-of <att> } <val>)
+ - (<p> ^dont-copy <att>)
+ - (<d> ^<val>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+sp {duplicate-desired*replace-old-value
+   :default
+   (state <s> ^duplicates.<id> <copy-id>
+              ^problem-space <p> 
+              ^desired <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <id>)
+   (<p> - ^dont-copy <att>)
+-->
+   (<o-copy> ^<att> <copy-id>)}
+
+sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space <ps>)
+   (<ps> -^default-operator-copy no)
+-->
+   (<s> ^default-operator-copy yes)}
+
+sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space.default-operator-copy <yes-or-no>)
+-->
+   (<s> ^default-operator-copy <yes-or-no>)}
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^default-operator-copy yes
+                                    - ^default-state-copy yes)
+-->
+   (<s> ^duplicates <d>)}
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator
+   :default
+   (state <s> ^duplicates <d>
+          ^problem-space <p>
+        ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <val>)
+   (<p> -^dont-copy <att>
+        -^no-local-negations <nln>)
+   (<d> - ^<val>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+   :default
+   (state <s> ^duplicates <d>
+          ^problem-space <p>
+              ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <id>)
+  (<p> -^dont-copy <att>
+       -^no-local-negations <nln>)
+   (<d> ^<id> <copy-id>)
+-->
+   (<o-copy> ^<att> <copy-id>)}
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator*nln
+   :default
+   (state <s> ^problem-space <p>
+              ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <val>)
+   (<p> ^no-local-negations <nln>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+sp {monitor*goal*success
+   :default
+   (state <s> ^top-state <ts>
+              ^name <gname>
+              ^desired <d>
+              ^<< partial-success required-success success >> <d>)
+   (<ts> ^superstate nil
+        -^verbose false)
+-->
+   (write (crlf) |  Goal | <gname> | succeeded. |)}
+
+sp {monitor*goal*failure
+   :default
+   (state <s> ^top-state <ts>
+              ^name <gname>
+              ^desired <d>
+              ^<< partial-failure failure prohibit-failure >> <d>)
+   (<ts> ^superstate nil
+        -^verbose false)
+-->
+   (write (crlf) |  Goal | <gname> | failed. |)}
+
+sp {evaluate-operator*elaborate*evaluation*failure*constraint-failure
+   :default
+ 
+   (state <rej-state-imp> ^superstate <eval-g>
+                          ^attribute operator
+                          ^impasse constraint-failure)
+   (<eval-g> ^superstate <select-g>)
+   (<select-g> ^operator <o2>)
+   (<select-g> ^evaluation <e2>)
+   (<o2> ^name evaluate-operator
+         ^evaluation <e2>)
+-->
+   (<e2> ^symbolic-value failure)}
+
+sp {selection*pass-back-success    
+   :default
+   (state <s> ^superstate.superstate.operator <sso>
+              ^evaluation.symbolic-value << required-success >>) # partial-success success >>)
+   (<sso> ^name evaluate-operator 
+          ^evaluation <e2> 
+          ^superoperator.name)
+   -->
+   (<e2> ^symbolic-value partial-success)}
+
+sp {selection*elaborate*evaluate-operator*all-operators-novalue
+   :default
+   (state <s> ^superstate.superstate <sss>
+              ^operator <o>
+             -^not-all-operators-evaluated
+             -^found-value
+              ^quiescence t
+              ^choices multiple)
+   (<sss> ^name selection
+                ^operator <sso>)
+   (<sso> ^name evaluate-operator
+          ^evaluation <e>)
+   -->
+   (<e> ^numeric-value novalue)}
+
+sp {evaluate-operator*elaborate*evaluation*failure*no-operators
+   :default
+   (state <goal-nc> ^superstate <state-nc>
+                    ^attribute state
+                    ^impasse no-change
+                    ^quiescence t)
+   (<state-nc> ^superstate <eval-g>
+               ^attribute state
+               ^impasse no-change
+               ^quiescence t)
+   (<eval-g> ^superstate <select-g>
+             ^quiescence t)
+   (<select-g> ^operator <o2>
+               ^evaluation <e2>)
+   (<o2> ^name evaluate-operator
+         ^evaluation <e2>)
+-->
+   (<e2> ^symbolic-value failure)}
+
+sp {evaluate-operator*propose*look-ahead
+   :default
+   (state <s> ^look-ahead-operator <o>
+              ^untried-tied-operator <o>)
+   -->
+   (<s> ^operator <o> +)}
+
+sp {evaluate-operator*propose*look-ahead*reject-all-others
+   :default
+   (state <s> ^look-ahead-operator <o>
+              ^untried-tied-operator <o>
+              ^operator { <> <o> <o1> } +)
+   -->
+   (<s> ^operator <o1> -)}
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator
+   :default
+   (state <s> ^operator <o> 
+              ^look-ahead-operator <o>)
+   -->
+   (<s> ^tried-tied-operator <o>)}
+
+sp {evaluate-operator*elaborate*state*remove*untried-tied-operator
+   :default
+   (state <s> ^look-ahead-operator <o> 
+              ^operator <o>
+              ^untried-tied-operator <o>)
+-->
+   (<s> ^untried-tied-operator <o> -)
+}
+
+sp {water-jug*evaluate*state*failure*duplicate
+   (state <s2> ^name water-jug
+               ^superstate-set <s1>
+               ^jug <i1>
+               ^jug <i2>
+               ^tried-tied-operator)
+   (<i1> ^volume 5 ^contents <c1>)
+   (<i2> ^volume 3 ^contents <c2>)
+   (<s1> ^name water-jug
+               ^desired <d>
+               ^jug <j1>
+               ^jug <j2>)
+   (<j1> ^volume 5 ^contents <c1>)
+   (<j2> ^volume 3 ^contents <c2>)
+-->
+   (<s2> ^failure <d>)}
+
+sp {water-jug*elaborate*empty
+   (state <s> ^name water-jug
+              ^jug <j>)
+   (<j> ^contents <c>
+        ^volume <v>)
+-->
+   (<j> ^empty (- <v> <c>))}
+
+sp {water-jug*evaluate*state*success
+   (state <s> ^desired <d>
+              ^name water-jug
+              ^jug <j>)
+   (<d> ^jug <dj>)
+   (<dj> ^volume <v> ^contents <c>)
+   (<j> ^volume <v> ^contents <c>)
+-->
+   (<s> ^success <d>)}
+
+sp {water-jug*monitor*state
+   (state <s> ^name water-jug
+              ^jug <j> <i>)
+   (<j> ^volume 5 ^contents <jcon>)
+   (<i> ^volume 3 ^contents <icon>)
+-->
+   (write (crlf) | 5:| <jcon> | 3:| <icon> )}
+
+sp {water-jug*monitor*operator-application*empty
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name empty
+        ^jug.volume <volume>)
+-->
+   (write (crlf) |  EMPTY(| <volume> |)|)}
+
+sp {water-jug*monitor*operator-application*fill
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name fill
+        ^jug.volume <volume>)
+-->
+   (write (crlf) |  FILL(| <volume> |)|)}
+
+sp {water-jug*monitor*operator-application*pour
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)
+   (<i> ^volume <ivol> ^contents <icon>)
+   (<j> ^volume <jvol> ^contents <jcon>)
+-->
+   (write (crlf) |  POUR(| <ivol> |:| <icon> |,| <jvol> |:| <jcon> |)|)}
+
+sp {water-jug*elaborate*problem-space
+   (state <s> ^name water-jug)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name water-jug
+        ^default-state-copy yes
+        ^two-level-attributes jug
+        ^dont-copy empty)}
+
+sp {water-jug*propose*empty
+   (state <s> ^name water-jug
+              ^jug <j>)
+   (<j> ^contents > 0)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name empty
+        ^jug <j>)}
+
+sp {water-jug*apply*empty
+   (state <s> ^name water-jug
+              ^operator <o>
+              ^jug <j>)
+   (<o> ^name empty
+        ^jug <j>)
+   (<j> ^volume <volume>
+        ^contents <contents>)
+-->
+   (<j> ^contents 0 <contents> - )}
+
+sp {water-jug*propose*fill
+   (state <s> ^name water-jug
+              ^jug <j>)
+   (<j> ^empty > 0)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name fill
+        ^jug <j>)}
+
+sp {water-jug*apply*fill
+   (state <s> ^name water-jug
+              ^operator <o>
+              ^jug <j>)
+   (<o> ^name fill
+        ^jug <j>)
+   (<j> ^volume <volume>
+        ^contents <contents>)
+-->
+   (<j> ^contents <volume>
+                  <contents> -)}
+
+sp {Impasse__Operator_Tie*elaborate*superstate-set
+   (state <s> ^superstate <ss>)
+-->
+   (<s> ^superstate-set <ss>)
+}
+
+sp {Impasse__Operator_Tie*elaborate*superstate-set2
+   (state <s> ^superstate.superstate-set <ss>)
+-->
+   (<s> ^superstate-set <ss>)
+}
+
+sp {water-jug*monitor*tied-operator*empty
+   (state <s> ^impasse tie
+              ^attribute operator
+              ^item <item>)
+   (<item> ^name empty
+           ^jug.volume <volume>)
+-->
+   (write (crlf) |  | <item> |: empty(| <volume> |)|)}
+
+sp {water-jug*monitor*tied-operator*fill
+   (state <s> ^impasse tie
+              ^attribute operator
+              ^item <item>)
+   (<item> ^name fill
+           ^jug.volume <volume>)
+-->
+   (write (crlf) |  | <item> |: fill(| <volume> |)|)}
+
+sp {water-jug*monitor*tied-operator*pour
+   (state <s> ^impasse tie
+              ^attribute operator
+              ^item <item>)
+   (<item> ^name pour
+           ^jug <i> ^into <j>)
+   (<i> ^volume <ivol> ^contents <icon>)
+   (<j> ^volume <jvol> ^contents <jcon>)
+-->
+   (write (crlf) |  | <item> |: pour(| <ivol> |:| <icon> |,| <jvol> |:| <jcon> |)|)}
+
+sp {water-jug*propose*initialize-water-jug-look-ahead
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-water-jug-look-ahead)}
+
+sp {water-jug*apply*initialize-water-jug-look-ahead
+   (state <s> ^operator.name initialize-water-jug-look-ahead)
+-->
+   (<s> ^name water-jug
+        ^jug <i> <j>
+        ^desired.jug <k>)
+   (<i> ^volume 3
+        ^contents 0)
+   (<j> ^volume 5
+        ^contents 0)
+   (<k> ^volume 3
+        ^contents 1)}
+
+sp {water-jug*propose*pour
+   (state <s> ^name water-jug
+              ^jug <i> { <> <i> <j> })
+   (<i> ^contents > 0 )
+   (<j> ^empty > 0)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)}
+
+sp {water-jug*apply*pour*not-empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> <= <jempty> })
+-->
+   (<i> ^contents 0 <icon> -)
+   (<j> ^contents (+ <jcon> <icon>) <jcon> - )}
+
+sp {water-jug*apply*pour*empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^jug <i>
+        ^into <j>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> > <jempty> })
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+-->
+   (<i> ^contents (- <icon> <jempty>) <icon> - )
+   (<j> ^contents <jvol> <jcon> -)}
+

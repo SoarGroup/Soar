@@ -1,0 +1,5 @@
+sp {answer*chunk*make-chunk*snc*t2-1
+    (state <s1> ^superstate nil)
+    -->
+    (<s1> ^test-done true +)
+}

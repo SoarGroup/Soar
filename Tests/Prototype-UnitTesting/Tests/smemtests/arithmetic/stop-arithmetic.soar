@@ -1,0 +1,15 @@
+sp {arithmetic*propose*stop-arithmetic
+   (state <s> ^name arithmetic
+              ^count 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name stop-arithmetic)
+}
+sp {arithmetic*apply*stop-arithmetic
+   (state <s> ^operator <op>)
+   (<op> ^name stop-arithmetic)
+-->
+   (write |Finished|)
+   (halt)
+}
+

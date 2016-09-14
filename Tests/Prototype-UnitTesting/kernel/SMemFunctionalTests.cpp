@@ -554,3 +554,11 @@ void SMemFunctionalTests::testISupportWithLearning()
 
 	runTest("smem-i-support", 6);
 }
+
+void SMemFunctionalTests::testSmemArithmetic()
+{
+    agent->ExecuteCommandLine("watch 0");
+    agent->ExecuteCommandLine("srand 1080");
+
+    runTest("arithmetic", 46436);
+}

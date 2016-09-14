@@ -1,0 +1,13 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source initialize-count-and-die.soar
+source one.soar
+pushd one
+source one_source.soar
+popd
+source two.soar

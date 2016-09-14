@@ -1,0 +1,108 @@
+epmem --set trigger dc
+epmem --set learning on
+epmem --set balance 0
+watch --epmem
+
+### initialize
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^float 1.5
+        ^name double-precision)
+}
+
+### remove float once in memory
+
+sp {propose*remove-float
+   (state <s> ^name double-precision
+              ^float <float>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name remove-float)
+}
+
+sp {apply*remove-float
+   (state <s> ^operator.name remove-float
+              ^float <float>)
+-->
+   (<s> ^float <float> -)
+}
+
+### query when done counting
+sp {propose*query
+   (state <s> ^name double-precision
+             -^float
+             -^epmem.command.query)
+-->
+   (<s> ^operator.name query)
+}
+
+sp {apply*query
+   (state <s> ^operator.name query
+              ^epmem.command <cmd>)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^float 1.5)
+}
+
+### halt when query returns
+sp {propose*check-epmem*success
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.success <q>
+            ^result.retrieved <result>)
+   (<result> ^float 1.5)
+-->
+   (<s> ^operator <check-epmem> + >)
+   (<check-epmem> ^name check-epmem
+                  ^status success)
+}
+
+sp {propose*check-epmem*failure*query-fail
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.failure)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-epmem
+                 ^status failure
+                 ^condition |result.failure|)
+}
+
+sp {propose*check-epmem*failure*query-result-fail
+   (state <s> ^epmem <epmem>)
+   (<epmem> ^command.query <q>
+            ^result.success <q>)
+-->
+   (<s> ^operator <failure-op> +)
+   (<failure-op> ^name check-epmem
+                 ^status failure
+                 ^condition |result.success - unexpected result|)
+}
+
+sp {apply*check-epmem*success
+   (state <s> ^operator <check-epmem>)
+   (<check-epmem> ^name check-epmem
+                  ^status success)
+-->
+   (write |Success!| (crlf))
+   (succeeded)
+}
+
+sp {apply*check-epmem*failure
+   (state <s> ^operator <check-epmem>)
+   (<check-epmem> ^name check-epmem
+                  ^status failure
+                  ^condition <condition>)
+-->
+   (write |Failed because '| <condition> |'!| (crlf))
+   (failed)
+}

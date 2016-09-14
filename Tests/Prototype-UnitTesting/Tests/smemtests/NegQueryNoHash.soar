@@ -1,0 +1,31 @@
+smem --set learning on
+
+smem --add {(<n1> ^a 1)}
+
+sp {propose-query
+	(state <s> ^superstate nil 
+				-^goal)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name first-query)
+}
+
+sp {apply-query
+	(state <s> ^operator <op>
+				^smem.command <cmd>)
+	(<op> ^name first-query)
+-->
+	(<s> ^goal first-query -)
+	(<s> ^goal check-result)
+	(<cmd> ^query.a 1)
+	(<cmd> ^neg-query <nq>)
+	(<nq> ^1 2
+			^c c
+			^.1 .2)
+}
+
+sp {elaborate-success
+	(state <s> ^smem.result.success)
+-->
+	(exec succeeded)
+}

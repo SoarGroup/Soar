@@ -1,0 +1,33 @@
+smem --set learning on
+
+# Add some data
+smem --add {
+  (<x> ^name Bill 
+       ^email |billg@microsoft.com|)
+  (<x> ^something else)
+}
+
+sp {propose*query
+  (state <s> ^superstate nil 
+             ^smem <smem>)
+  (<smem> -^result.retrieved)
+--> 
+  (<s> ^operator.name query)
+}
+
+sp {apply*query
+  (state <s> ^operator.name query
+             ^smem.command <sc>)
+-->
+  (<sc> ^query.name Bill)
+}
+
+sp {success
+  (state <s> ^smem.result.retrieved <lti>)
+  (<lti> ^name Bill
+         ^email |billg@microsoft.com|)
+-->
+  (exec succeeded)
+}
+
+

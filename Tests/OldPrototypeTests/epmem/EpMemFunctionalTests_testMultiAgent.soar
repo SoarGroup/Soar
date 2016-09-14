@@ -1,0 +1,82 @@
+epmem --set learning on
+
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator.name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init)
+-->
+   (<s> ^random-objects <ro>
+        ^storage <ro>
+        ^name multiagent)
+   (<ro> ^random-1 (random-int)
+   	     ^random-2 (random-int)
+         ^random-3 (random-int)
+         ^random-4 (random-int)
+         ^random-5 (random-int)
+         ^random-6 (random-int)
+         ^random-7 (random-int)
+         ^random-8 (random-int)
+         ^random-9 (random-int)
+         ^random-10 (random-int))
+}
+
+sp {propose*done
+   (state <s> ^name multiagent
+              ^random-objects <ro>)
+-->
+   (<s> ^operator.name done)
+}
+
+sp {apply*done
+   (state <s> ^operator.name done
+              ^random-objects <ro>)
+-->
+   (<s> ^random-objects <ro> -)
+}
+
+sp {propose*query
+   (state <s> -^random-objects
+               ^name multiagent)
+-->
+   (<s> ^operator.name query)
+}
+
+sp {apply*query
+   (state <s> ^operator.name query
+              ^epmem.command <c>)
+-->
+   (<c> ^query.random-objects <ro>)
+}
+
+sp {success
+   (state <s> ^epmem.result.success <q>
+              ^epmem.result.retrieved.random-objects <r>
+              ^storage <storage>)
+   (<r> ^random-1 <r1>
+        ^random-2 <r2>
+        ^random-3 <r3>
+        ^random-4 <r4>
+        ^random-5 <r5>
+        ^random-6 <r6>
+        ^random-7 <r7>
+        ^random-8 <r8>
+        ^random-9 <r9>
+        ^random-10 <r10>)
+   (<storage> ^random-1 <r1>
+              ^random-2 <r2>
+              ^random-3 <r3>
+              ^random-4 <r4>
+              ^random-5 <r5>
+              ^random-6 <r6>
+              ^random-7 <r7>
+              ^random-8 <r8>
+              ^random-9 <r9>
+              ^random-10 <r10>)
+-->
+   (succeeded)
+}

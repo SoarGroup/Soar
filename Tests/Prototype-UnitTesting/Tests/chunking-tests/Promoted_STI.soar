@@ -1,0 +1,41 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^foo <bar>)
+}
+
+sp {propose
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name make-chunk)}
+
+sp {apply*promote
+    (state <s> ^superstate <ss>)
+    (<ss> ^foo <bar>)
+-->
+    (<s> ^red <head>)
+    (<bar> ^promoted <head>)
+}
+
+sp {apply*bug
+   (state <s> ^operator <o>
+              ^red <head>)
+-->
+   (<head> ^is problem-child)
+}
+
+sp {apply*test-done
+   (state <s> ^foo.promoted.is problem-child)
+-->
+   (write (crlf) |Chunk created. Result found.  Stopping.| (crlf))
+   (interrupt)
+}
+

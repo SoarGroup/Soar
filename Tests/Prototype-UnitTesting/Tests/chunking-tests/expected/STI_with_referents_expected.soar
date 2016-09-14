@@ -1,0 +1,7 @@
+sp {answer*make-chunk*onc*t2-1
+    (state <s1> ^operator <o2> +)
+    (<o2> ^name winner)
+    (<s1> ^operator { <> <o2> <o1> } +)
+    -->
+    (<s1> ^operator <o2> > <o1>)
+}

@@ -1,0 +1,33 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^structure-type NP)
+}
+
+sp {propose
+   (state <s> ^superstate.superstate <ss>)
+   (<ss> ^superstate nil)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name make-chunk)}
+
+sp {apply
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<ss> -^structure-type << V VP >>)
+   (<o> ^name make-chunk)
+-->
+   (<ss> ^result <value>)}
+
+sp {apply*test-done
+   (state <s> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}
