@@ -29,7 +29,7 @@ void AgentTest::testDefaultStopPhaseIsApply()
 
 void AgentTest::testSetStopPhaseSetsTheStopPhaseProperty()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --decision");
+	agent->ExecuteCommandLine("soar stop-phase decision");
 	assertEquals(std::get<0>(SoarHelper::getStopPhase(agent)), SoarHelper::StopPhase::DECISION);
 }
 

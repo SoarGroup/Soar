@@ -141,8 +141,8 @@ void FullTests_Parent::createSoar()
 	no_agent_assertTrue(m_pKernel->UnregisterForAgentEvent(agentCreationCallback));
 	
 	// a number of tests below depend on running full decision cycles.
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	no_agent_assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	no_agent_assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	no_agent_assertTrue(m_pKernel->GetNumberAgents() == 1);
 	

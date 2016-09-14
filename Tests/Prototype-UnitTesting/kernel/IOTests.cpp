@@ -12,8 +12,8 @@
 
 void IOTests::testInputLeak()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	agent->ExecuteCommandLine("watch 0") ;
 	agent->ExecuteCommandLine("waitsnc --on") ;
@@ -51,8 +51,8 @@ void IOTests::testInputLeak()
 
 void IOTests::testInputLeak2()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	agent->ExecuteCommandLine("watch 0") ;
 	agent->ExecuteCommandLine("waitsnc --on") ;
@@ -99,8 +99,8 @@ void IOTests::testInputLeak2()
 
 void IOTests::testInputLeak3()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	agent->ExecuteCommandLine("watch 0") ;
 	agent->ExecuteCommandLine("waitsnc --on") ;
@@ -144,8 +144,8 @@ void IOTests::testInputLeak3()
 
 void IOTests::testInputLeak4()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	agent->ExecuteCommandLine("watch 0") ;
 	agent->ExecuteCommandLine("waitsnc --on") ;
@@ -201,8 +201,8 @@ void IOTests::testInputLeak4()
 
 void IOTests::testOutputLeak1()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --input") ;
-	assertTrue_msg("set-stop-phase --before --input", agent->GetLastCommandLineResult());
+	agent->ExecuteCommandLine("soar stop-phase input") ;
+	assertTrue_msg("soar stop-phase input", agent->GetLastCommandLineResult());
 	
 	agent->ExecuteCommandLine("watch 0") ;
 	agent->ExecuteCommandLine("waitsnc --on") ;
