@@ -20,6 +20,7 @@
 #include "callback.h"
 #include "consistency.h"
 #include "decide.h"
+#include "decider.h"
 #include "episodic_memory.h"
 #include "ebc.h"
 #include "explanation_memory.h"
@@ -48,23 +49,8 @@
 #include "assert.hpp"
 #include <time.h>
 
-/* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
 extern void determine_highest_active_production_level_in_stack_apply(agent* thisAgent);
-/* REW: end   08.20.97 */
-
-#if (defined(REAL_TIME_BEHAVIOR) || defined(ATTENTION_LAPSE))
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global
-      and allocate memory for it in init_soar() (init agent.c) */
-struct timeval* current_real_time;
-#endif
-
-#ifdef ATTENTION_LAPSE
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global */
-int64_t lapse_duration;
-#endif
 
 /* ===================================================================
 
@@ -199,22 +185,11 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
-    thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM] = 100;
-    thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = 15;
-    thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
-    thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
-
-#ifdef ATTENTION_LAPSE
-    /* RMJ */
-    thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM] = false;
-#endif /* ATTENTION_LAPSE */
 
     thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
-    thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
-    thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }
 
 /* ===================================================================
@@ -522,13 +497,6 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_DECISION_CYCLE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
             }  /* end if e_cycles_this_d_cycle == 0 */
-
-#ifdef REAL_TIME_BEHAVIOR  /* RM Jones */
-            test_for_input_delay(thisAgent);
-#endif
-#ifdef ATTENTION_LAPSE  /* RM Jones */
-            determine_lapsing(thisAgent);
-#endif
 
             if (thisAgent->input_cycle_flag == true)   /* Soar 7 flag, but always true for Soar8 */
             {
@@ -979,7 +947,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
-            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
+            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES]))
             {
                 thisAgent->run_last_output_count = 0 ;
                 thisAgent->run_generated_output_count++ ;
@@ -1015,9 +983,9 @@ void do_one_top_level_phase(agent* thisAgent)
                     thisAgent->max_dc_time_usec = dc_time_usec;
                     thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
                 }
-                if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0)
+                if (thisAgent->Decider->settings[DECIDER_MAX_DC_TIME] > 0)
                 {
-                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT]))
+                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->Decider->settings[DECIDER_MAX_DC_TIME]))
                     {
                         thisAgent->stop_soar = true;
                         thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
@@ -1341,7 +1309,7 @@ void run_for_n_modifications_of_output(agent* thisAgent, int64_t n)
                 count++;
             }
         }
-        if (count >= thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])
+        if (count >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES])
         {
             break;
             //thisAgent->stop_soar = true;

@@ -11,7 +11,9 @@
 
 
 #include "lexer.h"
+
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
 #include "misc.h"
 #include "xml.h"
@@ -168,7 +170,7 @@ bool Lexer::determine_type_of_constituent_string () {
 
     if (possible_sc) {
         current_lexeme.type = STR_CONSTANT_LEXEME;
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
+        if (thisAgent->outputManager->settings[OM_WARNINGS]) {
             if ( (current_lexeme.lex_string[0] == '<') ||
                 (current_lexeme.lex_string[current_lexeme.length()-1] == '>') )
             {

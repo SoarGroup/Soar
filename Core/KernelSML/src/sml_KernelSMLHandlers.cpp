@@ -185,6 +185,24 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 
     /* -- Load user settings for this agent.  Checks current working
      *    directory, dll path and the SOAR_HOME environment variable -- */
+    std::string lFileName("settings.soar");
+    std::string directory = searchForFile(lFileName);
+    if (!directory.empty())
+    {
+        directory.insert(0, "source ");
+        pAgentSML->ExecuteCommandLine(directory.c_str());
+    } else {
+        std::cout << "Warning:  Could not find settings.soar file." << std::endl;
+    }
+
+    // Return true if we got an agent constructed.
+    return true ;
+}
+
+std::string searchForFile(std::string& pFileName)
+{
+    /* -- Load user settings for this agent.  Checks current working
+     *    directory, dll path and the SOAR_HOME environment variable -- */
     std::string directory;
     char buf[1024];
     char* ret;
@@ -198,7 +216,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         {
             directory += '/';
         }
-        directory.append("settings.soar");
+        directory += pFileName;
         normalize_separators(directory);
         if (fileExists(directory.c_str()))
         {
@@ -215,7 +233,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
             {
                 directory += '/';
             }
-            directory.append("settings.soar");
+            directory += pFileName;
             normalize_separators(directory);
             if (fileExists(directory.c_str()))
             {
@@ -231,7 +249,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         {
             directory += '/';
         }
-        directory.append("settings.soar");
+        directory += pFileName;
         normalize_separators(directory);
         if (fileExists(directory.c_str()))
         {
@@ -240,23 +258,11 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         ret = buf;
         strcpy(ret, libPath.c_str());
     }
-    if (found_settings)
+    if (!found_settings)
     {
-        directory = "source ";
-        directory.append(ret);
-        if (directory.find_last_of("/\\") != directory.size() - 1)
-        {
-            directory += '/';
-        }
-        directory.append("settings.soar");
-        normalize_separators(directory);
-        pAgentSML->ExecuteCommandLine(directory.c_str());
-    } else {
-        std::cout << "Warning:  Could not find settings.soar file." << std::endl;
+        directory.erase();
     }
-
-    // Return true if we got an agent constructed.
-    return true ;
+    return directory;
 }
 
 // Handle registering and unregistering for kernel events

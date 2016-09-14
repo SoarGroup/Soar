@@ -12,7 +12,11 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "sml_Names.h"
+#include "sml_AgentSML.h"
+
 #include "agent.h"
+#include "episodic_memory.h"
 #include "lexer.h"
 #include "misc.h"
 #include "semantic_memory.h"

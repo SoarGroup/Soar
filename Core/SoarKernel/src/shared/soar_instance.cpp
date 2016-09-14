@@ -94,7 +94,14 @@ void Soar_Instance::Clean_Up_Libraries()
 
 }
 
-std::string Soar_Instance::Message_Library(const char* pMessage)
+std::string Soar_Instance::Tcl_Message_Library(const char* pMessage)
+{
+    std::string lFullCommand("tcl ");
+    lFullCommand.append(pMessage);
+    return Message_Library(lFullCommand);
+}
+
+std::string Soar_Instance::Message_Library(std::string &pMessage)
 {
     std::string resultString("CLI extension command failed.");
     Soar_Loaded_Library* libraryInfo;

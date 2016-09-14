@@ -21,6 +21,7 @@
 
 #include "agent.h"
 #include "decide.h"
+#include "decider.h"
 #include "io_link.h"
 #include "rhs_functions.h"
 #include "soar_rand.h"
@@ -559,7 +560,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
     {
         // if the agent halted because it is in an infinite loop of no-change impasses
         // interrupt the agents and allow the user to try to recover.
-        if (m_agent->bottom_goal->id->level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+        if (m_agent->bottom_goal->id->level >=  m_agent->Decider->settings[DECIDER_MAX_GOAL_DEPTH])
         {
             // the agent halted because it seems to be in an infinite loop, so throw interrupt
             m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;

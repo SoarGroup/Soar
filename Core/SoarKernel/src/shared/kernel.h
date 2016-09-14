@@ -12,6 +12,8 @@
 #include "enums.h"
 #include "forward.h"
 
+#define SOAR_RELEASE_VERSION
+
 /* Defining SOAR_RELEASE_VERSION will:
  *
  * 1 -  Remove debug trace statements
@@ -28,9 +30,6 @@
  *
  *        (use --dbg for debug build)
  * */
-
-/* =============================== */
-//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -103,13 +102,8 @@
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
 
-
 //#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */
 //#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
-
-/* ---------------- Experimental modes.  Probably don't work any more -------------- */
-//#define REAL_TIME_BEHAVIOR
-//#define ATTENTION_LAPSE
 
 /* ---------------- Macros for safe counters -------------- */
 

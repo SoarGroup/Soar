@@ -7,8 +7,9 @@
 
 #include "semantic_memory.h"
 #include "smem_db.h"
-#include "dprint.h"
 
+#include "dprint.h"
+#include "output_manager.h"
 #include "lexer.h"
 
 #include <algorithm>
@@ -90,7 +91,7 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
     new_lti->level = 0;
     thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
     bfs.push(new_lti);
-        // optionally depth-limited breadth-first-search of children
+    // optionally depth-limited breadth-first-search of children
     while (!bfs.empty())
     {
         parent_lti = bfs.front();
@@ -241,19 +242,19 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
                 }
 
                 soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
-                        strlen(temp_str.c_str()),
-                        &possible_id,
-                        &possible_var,
-                        &possible_sc,
-                        &possible_ic,
-                        &possible_fc,
-                        &is_rereadable);
+                    strlen(temp_str.c_str()),
+                    &possible_id,
+                    &possible_var,
+                    &possible_sc,
+                    &possible_ic,
+                    &possible_fc,
+                    &is_rereadable);
 
                 bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
 
                 if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                        (!is_rereadable) ||
-                        has_angle_bracket)
+                    (!is_rereadable) ||
+                    has_angle_bracket)
                 {
                     /* BUGBUG if in context where id's could occur, should check
                      possible_id flag here also */
@@ -286,7 +287,7 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
             /* The following line prints the children indented.  It seems redundant when printing the
              * smem store, but perhaps it's useful for printing something rooted in an lti? */
-             next.insert(temp_lti_id);
+            next.insert(temp_lti_id);
         }
         else
         {
@@ -304,19 +305,19 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
                     }
 
                     soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
-                            temp_str2.length(),
-                            &possible_id,
-                            &possible_var,
-                            &possible_sc,
-                            &possible_ic,
-                            &possible_fc,
-                            &is_rereadable);
+                        temp_str2.length(),
+                        &possible_id,
+                        &possible_var,
+                        &possible_sc,
+                        &possible_ic,
+                        &possible_fc,
+                        &is_rereadable);
 
                     bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
 
                     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                            (!is_rereadable) ||
-                            has_angle_bracket)
+                        (!is_rereadable) ||
+                        has_angle_bracket)
                     {
                         /* BUGBUG if in context where id's could occur, should check
                          possible_id flag here also */

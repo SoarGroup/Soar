@@ -9,6 +9,7 @@
 #define CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_SETTINGS_H_
 
 #include "kernel.h"
+
 #include "soar_module.h"
 
 class ebc_param_container: public soar_module::param_container

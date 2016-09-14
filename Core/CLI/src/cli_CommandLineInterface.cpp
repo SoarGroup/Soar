@@ -12,6 +12,8 @@
 #include "cli_Commands.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
+#include "cli_soar.h"
+#include "cli_output.h"
 #include "cli_visualize.h"
 
 // SML includes
@@ -58,42 +60,30 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
-    m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
     m_Parser.AddCommand(new cli::CLogCommand(*this));
     m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
-    m_Parser.AddCommand(new cli::DefaultWMEDepthCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));
-    m_Parser.AddCommand(new cli::EchoCommandsCommand(*this));
-    m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExciseCommand(*this));
     m_Parser.AddCommand(new cli::ExplainCommand(*this));
     m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
     m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
-    m_Parser.AddCommand(new cli::GPMaxCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
     m_Parser.AddCommand(new cli::InitSoarCommand(*this));
-    m_Parser.AddCommand(new cli::InternalSymbolsCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
     m_Parser.AddCommand(new cli::MatchesCommand(*this));
-    m_Parser.AddCommand(new cli::MaxDCTimeCommand(*this));
-    m_Parser.AddCommand(new cli::MaxElaborationsCommand(*this));
-    m_Parser.AddCommand(new cli::MaxGoalDepthCommand(*this));
-    m_Parser.AddCommand(new cli::MaxMemoryUsageCommand(*this));
-    m_Parser.AddCommand(new cli::MaxNilOutputCyclesCommand(*this));
     m_Parser.AddCommand(new cli::MemoriesCommand(*this));
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
-    m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
+    m_Parser.AddCommand(new cli::OutputCommand(*this));
     m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
-    m_Parser.AddCommand(new cli::PortCommand(*this));
     m_Parser.AddCommand(new cli::PredictCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
     m_Parser.AddCommand(new cli::PrintCommand(*this));
@@ -108,22 +98,19 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
-    m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
-    m_Parser.AddCommand(new cli::SoarNewsCommand(*this));
+    m_Parser.AddCommand(new cli::SoarCommand(*this));
     m_Parser.AddCommand(new cli::SourceCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
     m_Parser.AddCommand(new cli::SRandCommand(*this));
     m_Parser.AddCommand(new cli::StatsCommand(*this));
     m_Parser.AddCommand(new cli::StopSoarCommand(*this));
+    m_Parser.AddCommand(new cli::TclCommand(*this));
     m_Parser.AddCommand(new cli::TimeCommand(*this));
     m_Parser.AddCommand(new cli::TimersCommand(*this));
     m_Parser.AddCommand(new cli::UnaliasCommand(*this));
-    m_Parser.AddCommand(new cli::VerboseCommand(*this));
     m_Parser.AddCommand(new cli::VersionCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
-    m_Parser.AddCommand(new cli::WaitSNCCommand(*this));
-    m_Parser.AddCommand(new cli::WarningsCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));
     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
     m_Parser.AddCommand(new cli::WMACommand(*this));

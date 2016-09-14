@@ -30,8 +30,16 @@ alias sms               smem -S
 alias wmes              print -depth 0 -internal
 
 # Backward compatibility aliases
-alias max-chunks chunk max-chunks
-alias chunk-name-format chunk naming-style
+alias max-chunks chunk max-chunks 
+alias chunk-name-format chunk naming-style 
+alias set-stop-phase soar stop-phase 
+alias max-elaborations soar max-elaborations 
+alias max-goal-depth soar max-goal-depth 
+alias max-nil-output-cycles soar max-nil-output-cycles 
+alias max-dc-time soar max-dc-time 
+alias max-memory-usage soar max-memory-usage 
+alias gp-max soar gp-max 
+alias o-support-mode soar o-support-mode
 
 #################
 # Soar Settings #

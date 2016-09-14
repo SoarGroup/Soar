@@ -33,6 +33,7 @@
 #include "mem.h"
 #include "misc.h"
 #include "osupport.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -820,7 +821,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 //    {
 //        dprint(DT_DEBUG, "Found.\n");
 //    }
-    if (thisAgent->soar_verbose_flag == true)
+    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         print_with_symbols(thisAgent,
             "\n   In create_instantiation for instance of rule %y",

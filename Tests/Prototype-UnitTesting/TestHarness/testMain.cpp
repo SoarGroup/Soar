@@ -29,7 +29,6 @@
 #include "SMemFunctionalTests.hpp"
 #include "WmaFunctionalTests.hpp"
 #include "AliasTest.hpp"
-#include "CliParserTest.hpp"
 #include "ElementXMLTest.hpp"
 #include "FullTests.hpp"
 #include "FullTestsClientThreadFullyOptimized.hpp"
@@ -77,7 +76,6 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(WmaFunctionalTests);
 	TEST_DECLARATION(AliasTest);
-	TEST_DECLARATION(CliParserTest);
 	TEST_DECLARATION(ElementXMLTest);
 	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
 	TEST_DECLARATION(FullTestsClientThread);

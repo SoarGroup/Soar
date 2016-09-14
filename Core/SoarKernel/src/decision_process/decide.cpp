@@ -17,6 +17,7 @@
 
 
 #include "decide.h"
+#include "decider.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -30,6 +31,7 @@
 #include "io_link.h"
 #include "mem.h"
 #include "misc.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -2856,13 +2858,13 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.quiescence_symbol,
                         thisAgent->symbolManager->soarSymbols.t_symbol, NIL);
         if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) &&
-                (thisAgent->sysparams[MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
+                (thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
         {
             // appear to be SNC'ing deep in goalstack, so interrupt and warn user
             // KJC note: we actually halt, because there is no interrupt function in SoarKernel
             // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
             // then the interrupt is generated and system_halted is set to false so the user can recover.
-            print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->sysparams[MAX_GOAL_DEPTH]);
+            print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
             print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
             xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
@@ -3152,7 +3154,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
         if (goal->id->lower_goal)
         {
-            if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
             {
                 print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
             }
@@ -3190,8 +3192,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
         return false;
     }
 
-    /* --- no impasse already existed, or an impasse of the wrong type
-    already existed --- */
+    /* --- no impasse already existed, or an impasse of the wrong type already existed --- */
     for (temp = candidates; temp; temp = temp->next_candidate)
     {
         preference_add_ref(temp);
@@ -3199,7 +3200,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (goal->id->lower_goal)
     {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
         {
             print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
         }
@@ -3207,14 +3208,8 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
         remove_existing_context_and_descendents(thisAgent, goal->id->lower_goal);
     }
 
-    /* REW: begin 10.24.97 */
-    if (thisAgent->waitsnc && (impasse_type == NO_CHANGE_IMPASSE_TYPE) && (attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol))
+    if (!thisAgent->Decider->settings[DECIDER_WAIT_SNC]|| !(impasse_type == NO_CHANGE_IMPASSE_TYPE) || !(attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol))
     {
-        thisAgent->waitsnc_detect = true;
-    }
-    else
-    {
-        /* REW: end     10.24.97 */
         create_new_context(thisAgent, attribute_of_impasse, impasse_type);
         update_impasse_items(thisAgent, goal->id->lower_goal, candidates);
     }
@@ -3376,7 +3371,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
     o_rejects = NIL;
 
     /* REW: begin 09.15.96 */
-    if (thisAgent->soar_verbose_flag == true)
+    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         printf("\n   in assert_new_preferences:");
         xml_generate_verbose(thisAgent, "in assert_new_preferences:");
@@ -3444,7 +3439,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         }
 
         /* REW: begin 09.15.96 */
-        if (thisAgent->soar_verbose_flag == true)
+        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
             print_with_symbols(thisAgent,
                                "\n      asserting instantiation: %y\n", inst->prod_name);
@@ -3969,7 +3964,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4359,11 +4354,11 @@ void elaborate_gds(agent* thisAgent)
 
 
                                     /* REW: 2004-05-27: Bug fix
-                                       We must check that the value with acceptable pref for the slot
-                                       is the same as the value for the wme in the condition, since
-                                       operators can have acceptable preferences for values other than
-                                       the WME value.  We dont want to backtrack thru acceptable prefs
-                                       for other operators */
+                                   We must check that the value with acceptable pref for the slot
+                                   is the same as the value for the wme in the condition, since
+                                   operators can have acceptable preferences for values other than
+                                   the WME value.  We dont want to backtrack thru acceptable prefs
+                                   for other operators */
 
                                     if (pref->value == wme_matching_this_cond->value)
                                     {
@@ -4378,14 +4373,11 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                             print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
 #endif
-                                            //////////////////////////////////////////////////////
-                                            /* REW: 2003-12-07 */
-                                            /* If the preference comes from a lower level inst, then
-                                            ignore it. */
-                                            /* Preferences from lower levels must come from result
-                                            instantiations;
-                                            we just want to use the justification/chunk
-                                            instantiations at the match goal level*/
+                                            /* If the preference comes from a lower level inst, then  ignore it.
+                                             *   - Preferences from lower levels must come from result  instantiations
+                                             *   - We just want to use the justification/chunk instantiations at the 
+                                             *     match goal level */
+                                             
                                             if (pref->inst->match_goal_level <= inst->match_goal_level)
                                             {
 
@@ -4403,9 +4395,6 @@ void elaborate_gds(agent* thisAgent)
                                                 pref->inst->GDS_evaluated_already = true;
                                             }
 #endif
-                                            /* REW: 2003-12-07 */
-
-                                            //////////////////////////////////////////////////////
                                         }
 #ifdef DEBUG_GDS
                                         else
@@ -4496,7 +4485,7 @@ approaches may be better */
 void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 {
 
-    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4519,7 +4508,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
     /* REW: end   11.25.96 */
 
     /* This call to GDS_PrintCmd will have to be uncommented later. -ajc */
-    //if (thisAgent->soar_verbose_flag) {} //GDS_PrintCmd();
+    //if (thisAgent->outputManager->settings[OM_VERBOSE]) {} //GDS_PrintCmd();
 
     /* REW: BUG.  I have no idea right now if this is a terrible hack or
     * actually what we want to do.  The idea here is that the context of

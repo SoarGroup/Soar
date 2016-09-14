@@ -385,24 +385,24 @@ namespace cli
             CLogCommand& operator=(const CLogCommand&);
     };
 
-    class CliExtensionMessageCommand : public cli::ParserCommand
+    class TclCommand : public cli::ParserCommand
     {
 
         public:
-            CliExtensionMessageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~CliExtensionMessageCommand() {}
+            TclCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~TclCommand() {}
             virtual const char* GetString() const
             {
-                return "cli";
+                return "tcl";
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: cli extension-name command [args]";
+                return "Syntax: tcl [ on | off ]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
-                if (argv.size() < 3)
+                if (argv.size() < 2)
                 {
                     return cli.SetError(GetSyntax());
                 }
@@ -413,13 +413,13 @@ namespace cli
                     concat_message += ' ' ;
                     concat_message += argv[i] ;
                 }
-                return cli.DoCLIMessage(concat_message);
+                return cli.DoTclCommand(concat_message);
             }
 
         private:
             cli::Cli& cli;
 
-            CliExtensionMessageCommand& operator=(const CliExtensionMessageCommand&);
+            TclCommand& operator=(const TclCommand&);
     };
 
     class CommandToFileCommand : public cli::ParserCommand
@@ -533,7 +533,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: debug [command] [arguments]";
+                return "Syntax: debug [internal-symbols | get | set] [arguments*]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -553,49 +553,6 @@ namespace cli
             DebugCommand& operator=(const DebugCommand&);
     };
 
-
-    class DefaultWMEDepthCommand : public cli::ParserCommand
-    {
-        public:
-            DefaultWMEDepthCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~DefaultWMEDepthCommand() {}
-            virtual const char* GetString() const
-            {
-                return "default-wme-depth";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: default-wme-depth [depth]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (query)
-                int n = 0;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Depth argument must be positive.");
-                    }
-                }
-
-                return cli.DoDefaultWMEDepth(n ? &n : 0);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            DefaultWMEDepthCommand& operator=(const DefaultWMEDepthCommand&);
-    };
 
     class DirsCommand : public cli::ParserCommand
     {
@@ -680,102 +637,6 @@ namespace cli
             cli::Cli& cli;
 
             EchoCommand& operator=(const EchoCommand&);
-    };
-
-    class EchoCommandsCommand : public cli::ParserCommand
-    {
-        public:
-            EchoCommandsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~EchoCommandsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "echo-commands";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: echo-commands [-yn]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'y', "yes",        OPTARG_NONE},
-                    {'n', "no",            OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool echoCommands = true ;
-                bool onlyGetValue = true ;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'y':
-                            echoCommands = true ;
-                            onlyGetValue = false ;
-                            break ;
-                        case 'n':
-                            echoCommands = false ;
-                            onlyGetValue = false ;
-                            break ;
-                    }
-                }
-
-                if (opt.GetNonOptionArguments())
-                {
-                    return cli.SetError("Format is 'echo-commands [--yes | --no]") ;
-                }
-
-                return cli.DoEchoCommands(onlyGetValue, echoCommands);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            EchoCommandsCommand& operator=(const EchoCommandsCommand&);
-    };
-
-    class EditProductionCommand : public cli::ParserCommand
-    {
-        public:
-            EditProductionCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~EditProductionCommand() {}
-            virtual const char* GetString() const
-            {
-                return "edit-production";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: edit-production production_name";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                if (argv.size() != 2)
-                {
-                    return cli.SetError("Need to include the name of the production to edit.");
-                }
-
-                return cli.DoEditProduction(argv[1]);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            EditProductionCommand& operator=(const EditProductionCommand&);
     };
 
     class EpMemCommand : public cli::ParserCommand
@@ -1267,49 +1128,6 @@ namespace cli
             GPCommand& operator=(const GPCommand&);
     };
 
-    class GPMaxCommand : public cli::ParserCommand
-    {
-        public:
-            GPMaxCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~GPMaxCommand() {}
-            virtual const char* GetString() const
-            {
-                return "gp-max";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: gp-max [value]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (print current value)
-                int n = -1;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n < 0)
-                    {
-                        return cli.SetError("Value must be non-negative.");
-                    }
-                }
-
-                return cli.DoGPMax(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            GPMaxCommand& operator=(const GPMaxCommand&);
-    };
-
     class HelpCommand : public cli::ParserCommand
     {
         public:
@@ -1532,31 +1350,6 @@ namespace cli
             cli::Cli& cli;
 
             InitSoarCommand& operator=(const InitSoarCommand&);
-    };
-
-    class InternalSymbolsCommand : public cli::ParserCommand
-    {
-        public:
-            InternalSymbolsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~InternalSymbolsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "internal-symbols";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: internal-symbols";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoInternalSymbols();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            InternalSymbolsCommand& operator=(const InternalSymbolsCommand&);
     };
 
     class LearnCommand : public cli::ParserCommand
@@ -1819,272 +1612,6 @@ namespace cli
             MatchesCommand& operator=(const MatchesCommand&);
     };
 
-    class MaxDCTimeCommand : public cli::ParserCommand
-    {
-        public:
-            MaxDCTimeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~MaxDCTimeCommand() {}
-            virtual const char* GetString() const
-            {
-                return "max-dc-time";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: max-dc-time [--seconds] [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'s', "seconds", OPTARG_NONE},
-                    {'d', "disable", OPTARG_NONE},
-                    {'o', "off", OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool seconds = false;
-
-                // n defaults to 0 (print current value)
-                int n = 0;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 's':
-                            seconds = true;
-                            break;
-                        case 'd':
-                        case 'o':
-                            n = -1;
-                            break;
-                    }
-                }
-
-                if (opt.GetNonOptionArguments() > 1)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                if (opt.GetNonOptionArguments() == 1)
-                {
-                    int index = opt.GetArgument() - opt.GetNonOptionArguments();
-
-                    if (seconds)
-                    {
-                        double nsec = 0;
-
-                        if (!from_string(nsec, argv[index]))
-                        {
-                            return cli.SetError(GetSyntax());
-                        }
-
-                        n = static_cast<int>(nsec * 1000000);
-                    }
-                    else
-                    {
-                        from_string(n, argv[index]);
-                    }
-
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Expected positive value.");
-                    }
-                }
-
-                return cli.DoMaxDCTime(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            MaxDCTimeCommand& operator=(const MaxDCTimeCommand&);
-    };
-
-    class MaxElaborationsCommand : public cli::ParserCommand
-    {
-        public:
-            MaxElaborationsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~MaxElaborationsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "max-elaborations";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: max-elaborations [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (print current value)
-                int n = 0;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Expected positive integer.");
-                    }
-                }
-
-                return cli.DoMaxElaborations(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            MaxElaborationsCommand& operator=(const MaxElaborationsCommand&);
-    };
-
-    class MaxGoalDepthCommand : public cli::ParserCommand
-    {
-        public:
-            MaxGoalDepthCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~MaxGoalDepthCommand() {}
-            virtual const char* GetString() const
-            {
-                return "max-goal-depth";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: max-goal-depth [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (print current value)
-                int n = 0;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Expected positive integer.");
-                    }
-                }
-
-                return cli.DoMaxGoalDepth(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            MaxGoalDepthCommand& operator=(const MaxGoalDepthCommand&);
-    };
-
-    class MaxMemoryUsageCommand : public cli::ParserCommand
-    {
-        public:
-            MaxMemoryUsageCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~MaxMemoryUsageCommand() {}
-            virtual const char* GetString() const
-            {
-                return "max-memory-usage";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: max-memory-usage [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (print current value)
-                int n = 0;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Expected positive integer.");
-                    }
-                }
-
-                return cli.DoMaxMemoryUsage(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            MaxMemoryUsageCommand& operator=(const MaxMemoryUsageCommand&);
-    };
-
-    class MaxNilOutputCyclesCommand : public cli::ParserCommand
-    {
-        public:
-            MaxNilOutputCyclesCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~MaxNilOutputCyclesCommand() {}
-            virtual const char* GetString() const
-            {
-                return "max-nil-output-cycles";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: max-nil-output-cycles [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // n defaults to 0 (print current value)
-                int n = 0;
-
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // one argument, figure out if it is a positive integer
-                if (argv.size() == 2)
-                {
-                    from_string(n, argv[1]);
-                    if (n <= 0)
-                    {
-                        return cli.SetError("Expected positive integer.");
-                    }
-                }
-
-                return cli.DoMaxNilOutputCycles(n);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            MaxNilOutputCyclesCommand& operator=(const MaxNilOutputCyclesCommand&);
-    };
-
     class MemoriesCommand : public cli::ParserCommand
     {
         public:
@@ -2307,50 +1834,6 @@ namespace cli
             NumericIndifferentModeCommand& operator=(const NumericIndifferentModeCommand&);
     };
 
-    class OSupportModeCommand : public cli::ParserCommand
-    {
-        public:
-            OSupportModeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~OSupportModeCommand() {}
-            virtual const char* GetString() const
-            {
-                return "o-support-mode";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: o-support-mode [n]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                int mode = -1;
-                if (argv.size() == 2)
-                {
-                    if (!isdigit(argv[1][0]))
-                    {
-                        return cli.SetError("Expected an integer 0, 2, 3, or 4.");
-                    }
-                    from_string(mode, argv[1]);
-                    if (mode < 0 || mode > 4 || mode == 1)
-                    {
-                        return cli.SetError("Expected an integer 0, 2, 3, or 4.");
-                    }
-                }
-
-                return cli.DoOSupportMode(mode);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            OSupportModeCommand& operator=(const OSupportModeCommand&);
-    };
-
     class PbreakCommand : public cli::ParserCommand
     {
         public:
@@ -2471,31 +1954,6 @@ namespace cli
             cli::Cli& cli;
 
             PopDCommand& operator=(const PopDCommand&);
-    };
-
-    class PortCommand : public cli::ParserCommand
-    {
-        public:
-            PortCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~PortCommand() {}
-            virtual const char* GetString() const
-            {
-                return "port";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: port";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoPort();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            PortCommand& operator=(const PortCommand&);
     };
 
     class PredictCommand : public cli::ParserCommand
@@ -3576,96 +3034,6 @@ namespace cli
             SelectCommand& operator=(const SelectCommand&);
     };
 
-    class SetStopPhaseCommand : public cli::ParserCommand
-    {
-        public:
-            SetStopPhaseCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SetStopPhaseCommand() {}
-            virtual const char* GetString() const
-            {
-                return "set-stop-phase";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: set-stop-phase -[ABadiop]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'B', "before",        OPTARG_NONE},    // optional (defaults to before)
-                    {'A', "after",        OPTARG_NONE},    // optional
-                    {'i', "input",        OPTARG_NONE},    // requires one of these
-                    {'p', "proposal",    OPTARG_NONE},
-                    {'d', "decision",    OPTARG_NONE},
-                    {'a', "apply",        OPTARG_NONE},
-                    {'o', "output",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                sml::smlPhase phase = sml::sml_INPUT_PHASE ;
-                int countPhaseArgs = 0 ;
-                bool before = true ;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'B':
-                            before = true ;
-                            break ;
-                        case 'A':
-                            before = false ;
-                            break ;
-                        case 'i':
-                            phase = sml::sml_INPUT_PHASE ;
-                            countPhaseArgs++ ;
-                            break;
-                        case 'p':
-                            phase = sml::sml_PROPOSAL_PHASE ;
-                            countPhaseArgs++ ;
-                            break;
-                        case 'd':
-                            phase = sml::sml_DECISION_PHASE ;
-                            countPhaseArgs++ ;
-                            break;
-                        case 'a':
-                            phase = sml::sml_APPLY_PHASE ;
-                            countPhaseArgs++ ;
-                            break;
-                        case 'o':
-                            phase = sml::sml_OUTPUT_PHASE ;
-                            countPhaseArgs++ ;
-                            break;
-                    }
-                }
-
-                if (opt.GetNonOptionArguments() || countPhaseArgs > 1)
-                {
-                    return cli.SetError("Format is 'set-stop-phase [--Before | --After] <phase>' where <phase> is --input | --proposal | --decision | --apply | --output\ne.g. set-stop-phase --before --input") ;
-                }
-
-                return cli.DoSetStopPhase(countPhaseArgs == 1, before, phase);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            SetStopPhaseCommand& operator=(const SetStopPhaseCommand&);
-    };
-
     class SMemCommand : public cli::ParserCommand
     {
         public:
@@ -3700,7 +3068,6 @@ namespace cli
                     {'S', "stats",      OPTARG_NONE},
                     {'t', "timers",     OPTARG_NONE},
                     {'x', "export",     OPTARG_NONE},
-                    {'v', "viz",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE} // null
                 };
 
@@ -3776,6 +3143,14 @@ namespace cli
                     case 'i':
                     case 'e':
                     case 'd':
+                        // case: init takes no arguments
+                        if (!opt.CheckNumNonOptArgs(0, 0))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        return cli.DoSMem(option);
+
                     case 'x':
                     {
                         // case: export does 1-2 non-option arguments
@@ -3883,31 +3258,6 @@ namespace cli
             cli::Cli& cli;
 
             SMemCommand& operator=(const SMemCommand&);
-    };
-
-    class SoarNewsCommand : public cli::ParserCommand
-    {
-        public:
-            SoarNewsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SoarNewsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "soarnews";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: soarnews";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoSoarNews();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            SoarNewsCommand& operator=(const SoarNewsCommand&);
     };
 
     class SourceCommand : public cli::ParserCommand
@@ -4371,74 +3721,6 @@ namespace cli
             UnaliasCommand& operator=(const UnaliasCommand&);
     };
 
-    class VerboseCommand : public cli::ParserCommand
-    {
-        public:
-            VerboseCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~VerboseCommand() {}
-            virtual const char* GetString() const
-            {
-                return "verbose";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: verbose [-ed]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'d', "disable",    OPTARG_NONE},
-                    {'e', "enable",        OPTARG_NONE},
-                    {'d', "off",        OPTARG_NONE},
-                    {'e', "onn",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool setting = false;
-                bool query = true;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'd':
-                            setting = false;
-                            query = false;
-                            break;
-                        case 'e':
-                            setting = true;
-                            query = false;
-                            break;
-                    }
-                }
-
-                if (opt.GetNonOptionArguments())
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                return cli.DoVerbose(query ? 0 : &setting);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            VerboseCommand& operator=(const VerboseCommand&);
-    };
-
     class VersionCommand : public cli::ParserCommand
     {
         public:
@@ -4462,144 +3744,6 @@ namespace cli
             cli::Cli& cli;
 
             VersionCommand& operator=(const VersionCommand&);
-    };
-
-    class WaitSNCCommand : public cli::ParserCommand
-    {
-        public:
-            WaitSNCCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~WaitSNCCommand() {}
-            virtual const char* GetString() const
-            {
-                return "waitsnc";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: waitsnc -[e|d]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'d', "disable",    OPTARG_NONE},
-                    {'e', "enable",        OPTARG_NONE},
-                    {'d', "off",        OPTARG_NONE},
-                    {'e', "on",            OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool query = true;
-                bool enable = false;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'd':
-                            query = false;
-                            enable = false;
-                            break;
-                        case 'e':
-                            query = false;
-                            enable = true;
-                            break;
-                    }
-                }
-
-                // No additional arguments
-                if (opt.GetNonOptionArguments())
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                return cli.DoWaitSNC(query ? 0 : &enable);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            WaitSNCCommand& operator=(const WaitSNCCommand&);
-    };
-
-    class WarningsCommand : public cli::ParserCommand
-    {
-        public:
-            WarningsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~WarningsCommand() {}
-            virtual const char* GetString() const
-            {
-                return "warnings";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return
-                    "Syntax: warnings [options]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'e', "enable",        OPTARG_NONE},
-                    {'d', "disable",    OPTARG_NONE},
-                    {'e', "on",            OPTARG_NONE},
-                    {'d', "off",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool query = true;
-                bool setting = true;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'e':
-                            setting = true;
-                            query = false;
-                            break;
-                        case 'd':
-                            setting = false;
-                            query = false;
-                            break;
-                    }
-                }
-
-                if (opt.GetNonOptionArguments())
-                {
-                    cli.SetError(GetSyntax());
-                }
-
-                return cli.DoWarnings(query ? 0 : &setting);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            WarningsCommand& operator=(const WarningsCommand&);
     };
 
     class WatchCommand : public cli::ParserCommand

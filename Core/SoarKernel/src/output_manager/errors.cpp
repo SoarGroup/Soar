@@ -19,7 +19,7 @@
 
 void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1, const char* pString2)
 {
-    if (!thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) return;
+    if (!thisAgent->outputManager->settings[OM_WARNINGS]) return;
     switch (pErrorType)
     {
         case ebc_failed_reordering_rhs:
@@ -67,9 +67,9 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
     }
 }
 
-void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageType pMessageType, int64_t pSysParam)
+void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageType pMessageType, bool shouldPrint)
 {
-    if ( (pSysParam > 0) && !thisAgent->sysparams[pSysParam])
+    if ( !shouldPrint)
     {
         return;
     }
@@ -129,7 +129,7 @@ void Output_Manager::display_ambiguous_command_error(agent* thisAgent, const std
 
         if (p == matched_objects_str.end())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, ", or %s?", last_p.c_str());
+            thisAgent->outputManager->printa_sf(thisAgent, ", or %s?\n", last_p.c_str());
         } else {
             thisAgent->outputManager->printa_sf(thisAgent, " %s", last_p.c_str());
         }

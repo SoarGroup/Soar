@@ -6409,7 +6409,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                             /* warn user about mixed actions */
 
-                            if ((thisAgent->o_support_calculation_type == 3) && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+                            if ((thisAgent->o_support_calculation_type == 3) && thisAgent->outputManager->settings[OM_WARNINGS])
                             {
                                 print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
                                                    node->b.p.prod->name);
@@ -6424,7 +6424,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 prod_type = PE_PRODS;
                                 break;
                             }
-                            else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+                            else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->outputManager->settings[OM_WARNINGS])
                             {
                                 print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
                                                    node->b.p.prod->name);
@@ -6469,7 +6469,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
-        if (thisAgent->soar_verbose_flag == true)
+        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
@@ -6489,7 +6489,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
-        if (thisAgent->soar_verbose_flag == true)
+        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
             print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
@@ -6561,7 +6561,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             {
                 node->b.p.prod->interrupt--;
                 thisAgent->stop_soar = false;
-                if (thisAgent->soar_verbose_flag == true)
+                if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
                 {
                     print(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
                 }
@@ -6706,7 +6706,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     }
 
 
-    if (thisAgent->soar_verbose_flag == true)
+    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         print_with_symbols(thisAgent, "\n%y: ", node->b.p.prod->name);
         char buf[256];

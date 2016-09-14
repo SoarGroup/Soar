@@ -174,8 +174,7 @@ namespace sml
     enum smlStringEventId
     {
         smlSTRING_EVENT_BAD = -1,
-        smlEVENT_EDIT_PRODUCTION = smlEVENT_LAST_UPDATE_EVENT + 1,  // Arg is "char const*" -- the name of the production to edit
-        smlEVENT_CLI_EXTENSION_MESSAGE,
+        smlEVENT_TCL_LIBRARY_MESSAGE = smlEVENT_LAST_UPDATE_EVENT + 1,  // Arg is "char const*" -- the name of the production to edit
         smlEVENT_LOAD_LIBRARY,
         smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY
     } ;
@@ -192,7 +191,7 @@ namespace sml
     
     static inline bool IsStringEventID(int id)
     {
-        return (id >= smlEVENT_EDIT_PRODUCTION && id <= smlEVENT_LAST_STRING_EVENT) ;
+        return (id >= smlEVENT_TCL_LIBRARY_MESSAGE && id <= smlEVENT_LAST_STRING_EVENT) ;
     }
     
     static inline bool IsSystemEventID(int id)

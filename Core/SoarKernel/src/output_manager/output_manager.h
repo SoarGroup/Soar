@@ -135,11 +135,16 @@ class Output_Manager
 
     public:
 
+        uint64_t settings[num_output_sysparams];
+
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
 
-        bool is_debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+        bool is_trace_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+
+        /* Methods for the cli output command */
+        void print_output_summary();
 
         void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
@@ -229,18 +234,18 @@ class Output_Manager
 
         void set_dprint_indents(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (is_debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
+            if (is_trace_enabled(mode)) set_print_indents(pPre, pPost);
         }
         void set_dprint_test_format(TraceMode mode, bool pActual, bool p_Identity)
         {
-            if (is_debug_mode_enabled(mode)) set_print_test_format(pActual, p_Identity);
+            if (is_trace_enabled(mode)) set_print_test_format(pActual, p_Identity);
         }
         void clear_dprint_indents(TraceMode mode)
         {
-            if (is_debug_mode_enabled(mode)) clear_print_indents();
+            if (is_trace_enabled(mode)) clear_print_indents();
         }
         void clear_dprint_test_format(TraceMode mode) {
-            if (is_debug_mode_enabled(mode)) clear_print_test_format();
+            if (is_trace_enabled(mode)) clear_print_test_format();
         }
         void set_column_indent(int pColumnIndex, int pColumnNum) {
             if (pColumnIndex >= MAX_COLUMNS) return;
@@ -261,7 +266,7 @@ class Output_Manager
 
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
-        void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, int64_t pSysParam = 0);
+        void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, bool shouldPrint = true);
         void display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
         void display_ambiguous_command_error(agent* thisAgent, std::list< std::string > matched_objects_str);
 
@@ -270,6 +275,16 @@ class Output_Manager
         char* NULL_SYM_STR;
 
 };
+
+inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
+
+inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
+{
+    std::string return_string = left_string;
+    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    return_string += right_string;
+    return return_string;
+}
 
 /* ------------------------------------
  *    Format strings for Soar printing:
