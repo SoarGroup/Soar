@@ -2488,6 +2488,7 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
 #ifdef _WIN32
     // The windows shared library
     newLibraryName = libraryName + ".dll";
+    HMODULE hLibrary;
 #else
     newLibraryName = "lib" + libraryName;
     #if (defined(__APPLE__) && defined(__MACH__))
@@ -2504,7 +2505,7 @@ std::string Kernel::LoadExternalLibrary(const char* pLibraryCommand)
     {
 #ifdef _WIN32
         // Now load the library itself.
-        HMODULE hLibrary = LoadLibrary(directory.c_str()) ;
+        hLibrary = LoadLibrary(directory.c_str()) ;
 
 #else
         hLibrary = dlopen(directory.c_str(), RTLD_LAZY);
