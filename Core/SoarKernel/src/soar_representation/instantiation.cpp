@@ -35,6 +35,7 @@
 #include "osupport.h"
 #include "output_manager.h"
 #include "preference.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "reinforcement_learning.h"
@@ -463,7 +464,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     }
     if (!lId->is_sti())
     {
-        print_with_symbols(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
                            "Error: RHS makes a preference for %y (not an identifier)\n",
                            lId);
         goto abort_execute_action;
@@ -498,7 +499,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             && (a->preference_type != REJECT_PREFERENCE_TYPE))
             && (!(lId->id->isa_goal && (lAttr == thisAgent->symbolManager->soarSymbols.operator_symbol))))
     {
-        print_with_symbols(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
                            "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.",
                            lId, lAttr);
         goto abort_execute_action;
@@ -745,7 +746,7 @@ void init_instantiation(agent*          thisAgent,
             }
             if (difference_found)
             {
-                print_with_symbols(thisAgent,
+                thisAgent->outputManager->printa_sf(thisAgent,
                                    "\n*** O-support difference found in production %y",
                                    inst->prod_name);
             }
@@ -823,7 +824,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 //    }
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        print_with_symbols(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
             "\n   In create_instantiation for instance of rule %y",
             inst->prod_name);
         char buf[256];
@@ -872,8 +873,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
     {
-        start_fresh_line(thisAgent);
-        print(thisAgent,  "Firing ");
+        thisAgent->outputManager->start_fresh_line(thisAgent);
+        thisAgent->outputManager->printa(thisAgent,  "Firing ");
         print_instantiation_with_wmes(thisAgent, inst,
                                       static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                       0);
@@ -896,7 +897,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- phase has changed to output by printing the arrow --- */
     if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
-        print(thisAgent,  " -->\n");
+        thisAgent->outputManager->printa(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
     }
 
@@ -1036,7 +1037,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         for (pref = inst->preferences_generated; pref != NIL;
                 pref = pref->inst_next)
         {
-            print(thisAgent,  " ");
+            thisAgent->outputManager->printa(thisAgent,  " ");
             print_preference(thisAgent, pref);
         }
     }
@@ -1320,20 +1321,20 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
             {
                 if (!retracted_a_preference)
                 {
-                    start_fresh_line(thisAgent);
-                    print(thisAgent,  "Retracting ");
+                    thisAgent->outputManager->start_fresh_line(thisAgent);
+                    thisAgent->outputManager->printa(thisAgent,  "Retracting ");
                     print_instantiation_with_wmes(thisAgent, inst,
                                                   static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                                   1);
                     if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                     {
-                        print(thisAgent,  " -->\n");
+                        thisAgent->outputManager->printa(thisAgent,  " -->\n");
                         xml_object(thisAgent, kTagActionSideMarker);
                     }
                 }
                 if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                 {
-                    print(thisAgent,  " ");
+                    thisAgent->outputManager->printa(thisAgent,  " ");
                     print_preference(thisAgent, pref);
                 }
             }

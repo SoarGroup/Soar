@@ -54,18 +54,18 @@ void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators
         if (print_states)
         {
             print_stack_trace(thisAgent, g, g, FOR_STATES_TF, false);
-            print(thisAgent,  "\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         }
         if (print_operators && g->id->operator_slot->wmes)
         {
             print_stack_trace(thisAgent, g->id->operator_slot->wmes->value, g, FOR_OPERATORS_TF, false);
-            print(thisAgent,  "\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         }
     }
 
     if (stateCount > maxStates)
     {
-        print(thisAgent,  "...Stack goes on for another %d states\n", stateCount - maxStates);
+        thisAgent->outputManager->printa_sf(thisAgent,  "...Stack goes on for another %d states\n", stateCount - maxStates);
     }
 }
 
@@ -75,25 +75,25 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
     {
         if (full_prod)
         {
-            print_string(thisAgent, "# source file: ");
+            thisAgent->outputManager->printa(thisAgent, "# source file: ");
         }
 
         if (prod->filename)
         {
-            print_string(thisAgent, prod->filename);
+            thisAgent->outputManager->printa(thisAgent, prod->filename);
         }
         else
         {
-            print_string(thisAgent, "_unknown_");
+            thisAgent->outputManager->printa(thisAgent, "_unknown_");
         }
 
         if (full_prod)
         {
-            print(thisAgent,  "\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         }
         else
         {
-            print_string(thisAgent, ": ");
+            thisAgent->outputManager->printa(thisAgent, ": ");
         }
     }
 
@@ -103,21 +103,21 @@ void do_print_for_production(agent* thisAgent, production* prod, bool intern, bo
     }
     else
     {
-        print_with_symbols(thisAgent, "%y ", prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%y ", prod->name);
 
         if (prod->rl_rule)
         {
             // Do extra logging if this agent is in delta bar delta mode.
             if (thisAgent->RL->rl_params->decay_mode->get_value() == rl_param_container::delta_bar_delta_decay)
             {
-                print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_beta));
-                print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_h));
+                thisAgent->outputManager->printa_sf(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_beta));
+                thisAgent->outputManager->printa_sf(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_delta_bar_delta_h));
             }
-            print_with_symbols(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_update_count));
-            print_with_symbols(thisAgent, " %y", rhs_value_to_symbol(prod->action_list->referent));
+            thisAgent->outputManager->printa_sf(thisAgent, " %y", thisAgent->symbolManager->make_float_constant(prod->rl_update_count));
+            thisAgent->outputManager->printa_sf(thisAgent, " %y", rhs_value_to_symbol(prod->action_list->referent));
         }
     }
-    print(thisAgent,  "\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n");
 }
 
 void print_productions_of_type(agent* thisAgent, bool intern, bool print_filename, bool full_prod, unsigned int productionType)
@@ -208,12 +208,12 @@ void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentati
         }
     }
 
-    if (get_printer_output_column(thisAgent) + (ch - buf) >= 80)
+    if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - buf) >= 80)
     {
-        start_fresh_line(thisAgent);
+        thisAgent->outputManager->start_fresh_line(thisAgent);
         print_spaces(thisAgent, indentation + 6);
     }
-    print_string(thisAgent, buf);
+    thisAgent->outputManager->printa(thisAgent, buf);
 }
 
 // RPM 4/07: Note, mark_depths_augs_of_id must be called before the root call to print_augs_of_id
@@ -341,7 +341,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
             }
             else
             {
-                print_with_symbols(thisAgent, "(%y", id);
+                thisAgent->outputManager->printa_sf(thisAgent, "(%y", id);
 
                 // XML format of an <id> followed by a series of <wmes> each of which shares the original ID.
                 // <id id="s1"><wme tag="123" attr="foo" attrtype="string" val="123" valtype="string"></wme><wme attr="bar" ...></wme></id>
@@ -356,7 +356,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
 
                 xml_end_tag(thisAgent, soar_TraceNames::kWME_Id);
 
-                print(thisAgent,  ")\n");
+                thisAgent->outputManager->printa_sf(thisAgent,  ")\n");
             }
         }
 
@@ -460,7 +460,7 @@ void do_print_for_production_name(agent* thisAgent, soar::Lexeme* lexeme, const 
     }
     else
     {
-        print(thisAgent,  "No production named %s\n", prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent,  "No production named %s\n", prod_name);
     }
 }
 
@@ -469,7 +469,7 @@ void do_print_for_wme(agent* thisAgent, wme* w, int depth, bool intern, bool tre
     if (intern && (depth == 0))
     {
         print_wme(thisAgent, w);
-        print(thisAgent,  "\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "\n");
     }
     else
     {
@@ -507,7 +507,7 @@ int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol** dest
             }
             return 0;
         default:
-            print(thisAgent,  "Expected identifier or constant in wme pattern\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Expected identifier or constant in wme pattern\n");
             return 0;
     }
 }
@@ -524,7 +524,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
     lexer.get_lexeme();
     if (lexer.current_lexeme.type!=L_PAREN_LEXEME)
     {
-        print(thisAgent,  "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer.current_lexeme.string(), lexer.current_char);
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected '(' to begin wme pattern not string '%s' or char '%c'\n", lexer.current_lexeme.string(), lexer.current_char);
         return NIL;
     }
     parentheses_level = lexer.current_parentheses_level();
@@ -539,7 +539,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
     lexer.get_lexeme();
     if (lexer.current_lexeme.type != UP_ARROW_LEXEME)
     {
-        print(thisAgent,  "Expected ^ in wme pattern\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ^ in wme pattern\n");
         lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
@@ -569,7 +569,7 @@ list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
     }
     if (lexer.current_lexeme.type != R_PAREN_LEXEME)
     {
-        print(thisAgent,  "Expected ')' to end wme pattern\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ')' to end wme pattern\n");
         lexer.skip_ahead_to_balanced_parentheses(parentheses_level - 1);
         return NIL;
     }
@@ -611,7 +611,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                         lLti_id = thisAgent->SMem->lti_exists(lLti_id);
                         if (lLti_id == NIL)
                         {
-                            print(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
+                            thisAgent->outputManager->printa_sf(thisAgent,  "LTI %s not found in semantic memory.", lexeme.string());
                             break;
                         }
                     }
@@ -627,7 +627,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                 {
                     thisAgent->SMem->print_smem_object(lLti_id, depth, &(smem_print_output));
                 }
-                print(thisAgent, smem_print_output.c_str());
+                thisAgent->outputManager->printa(thisAgent, smem_print_output.c_str());
             } else {
                 do_print_for_production_name(thisAgent, &lexeme, arg, intern, print_filename, full_prod);
             }
@@ -644,7 +644,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
             }
             if (!w)
             {
-                print(thisAgent,  "No wme %ld in working memory.", lexeme.int_val);
+                thisAgent->outputManager->printa_sf(thisAgent,  "No wme %u in working memory.", lexeme.int_val);
             }
             break;
 
@@ -681,7 +681,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                     // taken from print_wme_without_timetag
                     if (!intern)
                     {
-                        print_with_symbols(thisAgent, "(%y", iter->first);
+                        thisAgent->outputManager->printa_sf(thisAgent, "(%y", iter->first);
                     }
 
                     while (wmeiter != wmelist.end())
@@ -695,10 +695,10 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
                         else
                         {
                             // taken from print_wme_without_timetag
-                            print_with_symbols(thisAgent, " ^%y %y", w->attr, w->value);
+                            thisAgent->outputManager->printa_sf(thisAgent, " ^%y %y", w->attr, w->value);
                             if (w->acceptable)
                             {
-                                print_string(thisAgent, " +");
+                                thisAgent->outputManager->printa(thisAgent, " +");
                             }
 
                             // this handles xml case for the wme
@@ -709,7 +709,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
                     if (!intern)
                     {
-                        print_string(thisAgent, ")\n");
+                        thisAgent->outputManager->printa(thisAgent, ")\n");
                     }
                     ++iter;
                 }

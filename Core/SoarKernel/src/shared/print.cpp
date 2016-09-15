@@ -13,7 +13,6 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "print.h"
 
 #include "agent.h"
@@ -26,6 +25,7 @@
 #include "rete.h"
 #include "rhs.h"
 #include "rhs_functions.h"
+#include "run_soar.h"
 #include "symbol.h"
 #include "soar_TraceNames.h"
 #include "test.h"
@@ -37,157 +37,6 @@
 #include <stdarg.h>
 
 using namespace soar_TraceNames;
-
-void print_string_old (agent* thisAgent, const char *s) {
-    const char *ch;
-
-    for (ch=s; *ch!=0; ch++) {
-        if (*ch=='\n')
-        {}
-        else
-        {}
-    }
-
-    soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
-}
-
-void print_old (agent* thisAgent, const char *format, ...) {
-  va_list args;
-  char buf[5000];
-
-  va_start (args, format);
-  vsprintf (buf, format, args);
-  va_end (args);
-  print_string_old (thisAgent, buf);
-}
-/* -------------------------------------------------------------------
-   Print_string() and print_spaces() do the obvious things.
-   Print() is exactly like printf() in C, except it prints to both
-   the screen and log file (if there is one).  Print_with_symbols()
-   is sort of like print, but only takes two kinds of escape sequences
-   in the format string:
-       %y  -- print a symbol
-       %%  -- print a "%" sign
-
-   Sometimes we need to know the current output column so we can put
-   a line break in the right place.  Get_printer_output_column() returns
-   the current column number (1 means the start of the line).
-   Tell_printer_that_output_column_has_been_reset () is called from the
-   lexer every time it reads a line from the keyboard--since after the
-   user types a line (and hits return) the output column is reset.
-------------------------------------------------------------------- */
-
-int get_printer_output_column(agent* thisAgent)
-{
-    return Output_Manager::Get_OM().get_printer_output_column(thisAgent);
-}
-
-void start_fresh_line(agent* thisAgent)
-{
-    Output_Manager::Get_OM().start_fresh_line(thisAgent);
-}
-
-void tell_printer_that_output_column_has_been_reset(agent* thisAgent)
-{
-    Output_Manager::Get_OM().set_printer_output_column(thisAgent, 1);
-}
-
-
-/* -----------------------------------------------------------------------
-                             Print_string
-
-   This routine prints the given string, and updates printer_output_column.
-   (This routine is called from the other print(), etc. routines.)
------------------------------------------------------------------------ */
-
-
-
-void print_string(agent* thisAgent, const char* s)
-{
-    Output_Manager::Get_OM().printa(thisAgent, s);
-}
-
-inline void inline_print_string(agent* thisAgent, const char* s)
-{
-    Output_Manager::Get_OM().printa(thisAgent, s);
-}
-/* ---------------------------------------------------------------
-               Print, Print_with_symbols, Print_spaces
-
-   These are the main printing routines.  (The code is ugly because
-   it has to take a variable number of arguments, and there are two
-   ways to do this, depending on whether we're using a fully ANSI
-   compatible compiler or not.)
---------------------------------------------------------------- */
-
-void print(agent* thisAgent, const char* format, ...)
-{
-    va_list args;
-    char buf[PRINT_BUFSIZE];
-
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
-    inline_print_string(thisAgent, buf);
-}
-
-void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args)
-{
-    char* ch;
-
-    ch = dest;
-    while (true)
-    {
-        /* --- copy anything up to the first "%" --- */
-        while ((*format != '%') && (*format != 0))
-        {
-            *(ch++) = *(format++);
-        }
-        if (*format == 0)
-        {
-            break;
-        }
-        /* --- handle the %-thingy --- */
-        if (*(format + 1) == 'y')
-        {
-            /* the size of the remaining buffer (after ch) is
-                the difference between the address of ch and
-                the address of the beginning of the buffer
-                */
-            (va_arg(args, Symbol*))->to_string(true, ch, count - (ch - dest));
-            while (*ch)
-            {
-                ch++;
-            }
-            format += 2;
-        }
-        else
-        {
-            *(ch++) = '%';
-            format++;
-        }
-    }
-    *ch = 0;
-}
-
-void print_with_symbols(agent* thisAgent, const char* format, ...)
-{
-    va_list args;
-    char buf[PRINT_BUFSIZE];
-
-    va_start(args, format);
-    vsnprintf_with_symbols(thisAgent, buf, PRINT_BUFSIZE, format, args);
-    va_end(args);
-    inline_print_string(thisAgent, buf);
-}
-
-void snprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vsnprintf_with_symbols(thisAgent, dest, count, format, args);
-    va_end(args);
-}
 
 void print_spaces(agent* thisAgent, int n)
 {
@@ -201,7 +50,7 @@ void print_spaces(agent* thisAgent, int n)
         n--;
     }
     *ch = 0;
-    inline_print_string(thisAgent, buf);
+    thisAgent->outputManager->printa(thisAgent, buf);
 }
 
 /* ------------------------------------------------------------------------
@@ -421,7 +270,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
-    char c_id_test[PRINT_BUFSIZE];
+    std::string c_id_test;
 
     if (!conds)
     {
@@ -455,7 +304,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
     {
         if (did_one_line_already)
         {
-            print(thisAgent, "\n");
+            thisAgent->outputManager->printa(thisAgent, "\n");
             print_spaces(thisAgent, indent);
         }
         else
@@ -469,11 +318,11 @@ void print_condition_list(agent* thisAgent, condition* conds,
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
-            inline_print_string(thisAgent, "-{");
+            thisAgent->outputManager->printa(thisAgent, "-{");
             xml_begin_tag(thisAgent, kTagConjunctive_Negation_Condition);
             print_condition_list(thisAgent, c->data.ncc.top, indent + 2, internal);
             xml_end_tag(thisAgent, kTagConjunctive_Negation_Condition);
-            inline_print_string(thisAgent, "}");
+            thisAgent->outputManager->printa(thisAgent, "}");
             continue;
         }
 
@@ -498,25 +347,25 @@ void print_condition_list(agent* thisAgent, condition* conds,
         }
 
         /* --- print the collected cond's all together --- */
-        inline_print_string(thisAgent, " (");
+        thisAgent->outputManager->printa(thisAgent, " (");
         xml_begin_tag(thisAgent, kTagCondition);
 
         if (removed_goal_test)
         {
-            inline_print_string(thisAgent, "state ");
+            thisAgent->outputManager->printa(thisAgent, "state ");
             xml_att_val(thisAgent, kConditionTest, kConditionTestState);
 
         }
 
         if (removed_impasse_test)
         {
-            inline_print_string(thisAgent, "impasse ");
+            thisAgent->outputManager->printa(thisAgent, "impasse ");
             xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
         }
 
-        Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
-        inline_print_string(thisAgent, c_id_test);
-        xml_att_val(thisAgent, kConditionId, c_id_test);
+        Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, "%t", id_test);
+        thisAgent->outputManager->printa(thisAgent, c_id_test.c_str());
+        xml_att_val(thisAgent, kConditionId, c_id_test.c_str());
         deallocate_test(thisAgent, thisAgent->id_test_to_match);
         deallocate_test(thisAgent, id_test);
 
@@ -572,18 +421,18 @@ void print_condition_list(agent* thisAgent, condition* conds,
                     }
                 }
                 *ch = 0;
-                if (get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
+                if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
                 {
-                    inline_print_string(thisAgent, "\n");
+                    thisAgent->outputManager->printa(thisAgent, "\n");
                     print_spaces(thisAgent, indent + 6);
                 }
-                inline_print_string(thisAgent, temp);
+                thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);
             }
         }
         xml_att_val(thisAgent, kCondition, text_of_growable_string(gs));
         free_growable_string(thisAgent, gs);
-        inline_print_string(thisAgent, ")");
+        thisAgent->outputManager->printa(thisAgent, ")");
         xml_end_tag(thisAgent, kTagCondition);
     } /* end of while (conds_not_yet_printed) */
 }
@@ -654,7 +503,7 @@ void print_action_list(agent* thisAgent, action* actions,
     {
         if (did_one_line_already)
         {
-            print(thisAgent, "\n");
+            thisAgent->outputManager->printa(thisAgent, "\n");
             print_spaces(thisAgent, indent);
         }
         else
@@ -668,7 +517,7 @@ void print_action_list(agent* thisAgent, action* actions,
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
             xml_begin_tag(thisAgent, kTagAction);
-            inline_print_string(thisAgent, rhs_value_to_string(a->value, NULL, 0));
+            thisAgent->outputManager->printa(thisAgent, rhs_value_to_string(a->value, NULL, 0));
             xml_att_val(thisAgent, kAction, rhs_value_to_string(a->value, NULL, 0));
             xml_end_tag(thisAgent, kTagAction);
             continue;
@@ -690,7 +539,7 @@ void print_action_list(agent* thisAgent, action* actions,
         }
 
         /* --- print the collected actions all together --- */
-        print_with_symbols(thisAgent, "(%y", thisAgent->action_id_to_match);
+        thisAgent->outputManager->printa_sf(thisAgent, "(%y", thisAgent->action_id_to_match);
         xml_begin_tag(thisAgent, kTagAction);
         xml_att_val(thisAgent, kActionId, thisAgent->action_id_to_match);
         growable_string gs = make_blank_growable_string(thisAgent);
@@ -734,19 +583,19 @@ void print_action_list(agent* thisAgent, action* actions,
                     }
                 }
                 *ch = 0;
-                if (get_printer_output_column(thisAgent) + (ch - temp) >=
+                if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - temp) >=
                         COLUMNS_PER_LINE)
                 {
-                    inline_print_string(thisAgent, "\n");
+                    thisAgent->outputManager->printa(thisAgent, "\n");
                     print_spaces(thisAgent, indent + 6);
                 }
-                inline_print_string(thisAgent, temp);
+                thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);
             }
         }
         xml_att_val(thisAgent, kAction, text_of_growable_string(gs));
         free_growable_string(thisAgent, gs);
-        inline_print_string(thisAgent, ")");
+        thisAgent->outputManager->printa(thisAgent, ")");
         xml_end_tag(thisAgent, kTagAction);
     } /* end of while (actions_not_yet_printed) */
 }
@@ -766,7 +615,7 @@ void print_production(agent* thisAgent, production* p, bool internal)
     /*
     --- print "sp" and production name ---
     */
-    print_with_symbols(thisAgent, "sp {%y\n", p->name);
+    thisAgent->outputManager->printa_sf(thisAgent, "sp {%y\n", p->name);
 
     xml_begin_tag(thisAgent, kTagProduction);
     xml_att_val(thisAgent, kProduction_Name, p->name);
@@ -778,7 +627,7 @@ void print_production(agent* thisAgent, production* p, bool internal)
     {
         char temp[output_string_size];
         string_to_escaped_string(p->documentation, '"', temp);
-        print(thisAgent, "    %s\n", temp);
+        thisAgent->outputManager->printa_sf(thisAgent, "    %s\n", temp);
         xml_att_val(thisAgent, kProductionDocumentation, temp);
     }
 
@@ -788,21 +637,21 @@ void print_production(agent* thisAgent, production* p, bool internal)
     switch (p->type)
     {
         case DEFAULT_PRODUCTION_TYPE:
-            inline_print_string(thisAgent, "    :default\n");
+            thisAgent->outputManager->printa(thisAgent, "    :default\n");
             xml_att_val(thisAgent, kProductionType, kProductionTypeDefault);
             break;
         case USER_PRODUCTION_TYPE:
             break;
         case CHUNK_PRODUCTION_TYPE:
-            inline_print_string(thisAgent, "    :chunk\n");
+            thisAgent->outputManager->printa(thisAgent, "    :chunk\n");
             xml_att_val(thisAgent, kProductionType, kProductionTypeChunk);
             break;
         case JUSTIFICATION_PRODUCTION_TYPE:
-            inline_print_string(thisAgent, "    :justification ;# not reloadable\n");
+            thisAgent->outputManager->printa(thisAgent, "    :justification ;# not reloadable\n");
             xml_att_val(thisAgent, kProductionType, kProductionTypeJustification);
             break;
         case TEMPLATE_PRODUCTION_TYPE:
-            inline_print_string(thisAgent, "   :template\n");
+            thisAgent->outputManager->printa(thisAgent, "   :template\n");
             xml_att_val(thisAgent, kProductionType, kProductionTypeTemplate);
             break;
         case NUM_PRODUCTION_TYPES:
@@ -812,19 +661,19 @@ void print_production(agent* thisAgent, production* p, bool internal)
 
     if (p->declared_support == DECLARED_O_SUPPORT)
     {
-        inline_print_string(thisAgent, "    :o-support\n");
+        thisAgent->outputManager->printa(thisAgent, "    :o-support\n");
         xml_att_val(thisAgent, kProductionDeclaredSupport, kProductionDeclaredOSupport);
     }
 
     else if (p->declared_support == DECLARED_I_SUPPORT)
     {
-        inline_print_string(thisAgent, "    :i-support\n");
+        thisAgent->outputManager->printa(thisAgent, "    :i-support\n");
         xml_att_val(thisAgent, kProductionDeclaredSupport, kProductionDeclaredISupport);
     }
 
     if (p->interrupt && !p->interrupt_break)
     {
-        inline_print_string(thisAgent, "    :interrupt\n");
+        thisAgent->outputManager->printa(thisAgent, "    :interrupt\n");
     }
 
     /*
@@ -832,19 +681,19 @@ void print_production(agent* thisAgent, production* p, bool internal)
     */
     p_node_to_conditions_and_rhs(thisAgent, p->p_node, NIL, NIL,
                                  &top, &bottom, &rhs);
-    inline_print_string(thisAgent, "   ");
+    thisAgent->outputManager->printa(thisAgent, "   ");
 
     xml_begin_tag(thisAgent, kTagConditions);
     print_condition_list(thisAgent, top, 3, internal);
     xml_end_tag(thisAgent, kTagConditions);
     deallocate_condition_list(thisAgent, top);
 
-    inline_print_string(thisAgent, "\n    -->\n  ");
-    inline_print_string(thisAgent, "  ");
+    thisAgent->outputManager->printa(thisAgent, "\n    -->\n  ");
+    thisAgent->outputManager->printa(thisAgent, "  ");
     xml_begin_tag(thisAgent, kTagActions);
     print_action_list(thisAgent, rhs, 4, internal);
     xml_end_tag(thisAgent, kTagActions);
-    inline_print_string(thisAgent, "\n}\n");
+    thisAgent->outputManager->printa(thisAgent, "\n}\n");
     xml_end_tag(thisAgent, kTagProduction);
 
     deallocate_action_list(thisAgent, rhs);
@@ -896,17 +745,17 @@ void print_preference(agent* thisAgent, preference* pref)
 {
     char pref_type = preference_to_char(pref->type);
 
-    print_with_symbols(thisAgent, "(%y ^%y %y ", pref->id, pref->attr, pref->value);
-    print(thisAgent, "%c", pref_type);
+    thisAgent->outputManager->printa_sf(thisAgent, "(%y ^%y %y ", pref->id, pref->attr, pref->value);
+    thisAgent->outputManager->printa_sf(thisAgent, "%c", pref_type);
     if (preference_is_binary(pref->type))
     {
-        print_with_symbols(thisAgent, " %y", pref->referent);
+        thisAgent->outputManager->printa_sf(thisAgent, " %y", pref->referent);
     }
     if (pref->o_supported)
     {
-        print(thisAgent, "  :O ");
+        thisAgent->outputManager->printa(thisAgent, "  :O ");
     }
-    inline_print_string(thisAgent, ")\n");
+    thisAgent->outputManager->printa(thisAgent, ")\n");
 
     // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
     xml_begin_tag(thisAgent, kTagPreference);
@@ -937,7 +786,7 @@ filtered_print_wme_add(agent* thisAgent, wme* w)
 {
     if (passes_wme_filtering(thisAgent, w, true))
     {
-        print(thisAgent, "=>WM: ");
+        thisAgent->outputManager->printa(thisAgent, "=>WM: ");
         xml_begin_tag(thisAgent, kTagWMEAdd);
         print_wme(thisAgent, w);
         xml_end_tag(thisAgent, kTagWMEAdd);
@@ -948,7 +797,7 @@ void filtered_print_wme_remove(agent* thisAgent, wme* w)
 {
     if (passes_wme_filtering(thisAgent, w, false))
     {
-        print(thisAgent, "<=WM: ");
+        thisAgent->outputManager->printa(thisAgent, "<=WM: ");
         xml_begin_tag(thisAgent, kTagWMERemove);
         print_wme(thisAgent, w);  /*  print_wme takes care of tagged output itself */
         xml_end_tag(thisAgent, kTagWMERemove);
@@ -957,20 +806,18 @@ void filtered_print_wme_remove(agent* thisAgent, wme* w)
 
 void print_wme(agent* thisAgent, wme* w)
 {
-    print(thisAgent, "(%lu: ", w->timetag);
-    print_with_symbols(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
+    thisAgent->outputManager->printa_sf(thisAgent, "(%u: %y ^%y %y", w->timetag, w->id, w->attr, w->value);
 
     if (wma_enabled(thisAgent))
     {
-        print(thisAgent, " [%0.2g]", wma_get_wme_activation(thisAgent, w, true));
+        thisAgent->outputManager->printa_sf(thisAgent, " [%f]", wma_get_wme_activation(thisAgent, w, true));
     }
 
     if (w->acceptable)
     {
-        inline_print_string(thisAgent, " +");
+        thisAgent->outputManager->printa(thisAgent, " +");
     }
-    inline_print_string(thisAgent, ")");
-    print(thisAgent, "\n");
+    thisAgent->outputManager->printa(thisAgent, ")\n");
 
     // <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
     xml_object(thisAgent, w);
@@ -978,25 +825,15 @@ void print_wme(agent* thisAgent, wme* w)
 
 void print_wme_without_timetag(agent* thisAgent, wme* w)
 {
-    print_with_symbols(thisAgent, "(%y ^%y %y", w->id, w->attr, w->value);
+    thisAgent->outputManager->printa_sf(thisAgent, "(%y ^%y %y", w->id, w->attr, w->value);
     if (w->acceptable)
     {
-        inline_print_string(thisAgent, " +");
+        thisAgent->outputManager->printa(thisAgent, " +");
     }
-    inline_print_string(thisAgent, ")\n");
+    thisAgent->outputManager->printa(thisAgent, ")\n");
 
     // <wme id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
     xml_object(thisAgent, w, XML_WME_NO_TIMETAG);
-}
-
-void print_wme_for_tcl(agent* thisAgent, wme* w)
-{
-    print(thisAgent, "%lu: ", w->timetag);
-    print_with_symbols(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
-    if (w->acceptable)
-    {
-        inline_print_string(thisAgent, " +");
-    }
 }
 
 void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
@@ -1023,10 +860,10 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
         xml_begin_tag(thisAgent, kTagProduction);
     }
 
-    print_with_symbols(thisAgent, "%y", inst->prod_name);
+    thisAgent->outputManager->printa_sf(thisAgent, "%y", inst->prod_name);
     xml_att_val(thisAgent, kProduction_Name, inst->prod_name->to_string(true));
 
-    print(thisAgent, "\n");
+    thisAgent->outputManager->printa(thisAgent, "\n");
 
     if (wtt == NONE_WME_TRACE)
     {
@@ -1053,7 +890,7 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
             switch (wtt)
             {
                 case TIMETAG_WME_TRACE:
-                    print(thisAgent, " %lu", cond->bt.wme_->timetag);
+                    thisAgent->outputManager->printa_sf(thisAgent, " %u", cond->bt.wme_->timetag);
 
                     xml_begin_tag(thisAgent, kTagWME);
                     xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -1063,18 +900,18 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                 case FULL_WME_TRACE:
                     // Not all conds and wme_'s available when retracting, depending on DO_TOP_LEVEL_REF_CTS
 #ifdef DO_TOP_LEVEL_REF_CTS
-                    print(thisAgent,  " ");
+                    thisAgent->outputManager->printa_sf(thisAgent,  " ");
                     print_wme(thisAgent, cond->bt.wme_);
 #else
                     if (action != RETRACTING && cond->bt.level > TOP_GOAL_LEVEL)
                     {
-                        print(thisAgent, " ");
+                        thisAgent->outputManager->printa_sf(thisAgent, " ");
                         print_wme(thisAgent, cond->bt.wme_);
                     }
                     else
                     {
                         // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
-                        print(thisAgent, " %lu", cond->bt.wme_->timetag);
+                        thisAgent->outputManager->printa_sf(thisAgent, " %u", cond->bt.wme_->timetag);
 
                         xml_begin_tag(thisAgent, kTagWME);
                         xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -1110,12 +947,12 @@ void print_list_of_conditions(agent* thisAgent, condition* cond)
 
     while (cond != NULL)
     {
-        if (get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
+        if (thisAgent->outputManager->get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
         {
-            print(thisAgent, "\n      ");
+            thisAgent->outputManager->printa(thisAgent, "\n      ");
         }
         print_condition(thisAgent, cond);
-        print(thisAgent, "\n");
+        thisAgent->outputManager->printa(thisAgent, "\n");
 
         cond = cond->next;
     }
@@ -1125,7 +962,7 @@ void print_phase(agent* thisAgent, const char* s, bool end_of_phase)
 {
     // should be more consistent with creating string, but for now, for
     // consistency with previous versions, we'll let calling code set string.
-    print(thisAgent, s);
+    thisAgent->outputManager->printa(thisAgent, s);
 
     // the rest is all for tagged output events
 
@@ -1209,7 +1046,7 @@ extern "C" bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd)
     for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
     {
         wf = (wme_filter*) c->first;
-        /*     print_with_symbols(thisAgent, "  trying filter: %y ^%y %y\n",wf->id,wf->attr,wf->value); */
+        /*     thisAgent->outputManager->printa_sf(thisAgent, "  trying filter: %y ^%y %y\n",wf->id,wf->attr,wf->value); */
         if (((isAdd && wf->adds) || ((!isAdd) && wf->removes)) &&
                 (!wme_filter_component_match(wf->id, w->id)
                  || !wme_filter_component_match(wf->attr, w->attr)
@@ -1235,14 +1072,13 @@ extern "C" bool passes_wme_filtering(agent* thisAgent, wme* w, bool isAdd)
 extern void print_sysparam_trace(agent* thisAgent, int64_t sysParamIndex, const char* format, ...)
 {
     va_list args;
-    char buf[PRINT_BUFSIZE];
+    std::string buf;
 
-    va_start(args, format);
-    vsprintf(buf, format, args);
-    va_end(args);
     if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->sysparams[ sysParamIndex ])
     {
-        print(thisAgent, buf);
-        xml_generate_warning(thisAgent, buf);
+        va_start(args, format);
+        thisAgent->outputManager->sprinta_sf(thisAgent, buf, format, args);
+        va_end(args);
+        xml_generate_warning(thisAgent, buf.c_str());
     }
 }

@@ -26,6 +26,7 @@
 #include "XMLTrace.h"
 
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "lexer.h"
@@ -821,7 +822,7 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
         id = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
         if (!id)
         {
-            print(thisAgent,  "There is no identifier %c%lu.\n", lexeme->id_letter,
+            thisAgent->outputManager->printa_sf(thisAgent,  "There is no identifier %c%u.\n", lexeme->id_letter,
                   lexeme->id_number);
             // TODO: store location in lexeme and then rewrite comment print statements
             // lexer->print_location_of_most_recent_lexeme();
@@ -834,26 +835,26 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
         get_context_var_info(thisAgent, lexeme->string(), &g, &attr, &value);
         if (!attr)
         {
-            print(thisAgent, "Expected identifier (or context variable)\n");
+            thisAgent->outputManager->printa(thisAgent, "Expected identifier (or context variable)\n");
             // print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (!value)
         {
-            print(thisAgent,  "There is no current %s.\n", lexeme->string());
+            thisAgent->outputManager->printa_sf(thisAgent,  "There is no current %s.\n", lexeme->string());
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
-            print(thisAgent,  "The current %s ", lexeme->string());
-            print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "The current %s ", lexeme->string());
+            thisAgent->outputManager->printa_sf(thisAgent, "(%y) is not an identifier.\n", value);
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         return value;
     }
-    print(thisAgent, "Expected identifier (or context variable)\n");
+    thisAgent->outputManager->printa(thisAgent, "Expected identifier (or context variable)\n");
     // lexer->print_location_of_most_recent_lexeme();
     return NIL;
 }

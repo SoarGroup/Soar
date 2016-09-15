@@ -11,18 +11,20 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
-#include "agent.h"
-#include "decide.h"
-#include "lexer.h"
-#include "mem.h"
-#include "parser.h"
-#include "print.h"
-#include "slot.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
 #include "sml_Utils.h"
 #include "soar_TraceNames.h"
+
+#include "agent.h"
+#include "decide.h"
+#include "lexer.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "parser.h"
+#include "print.h"
+#include "slot.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
@@ -296,8 +298,8 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
         if ((adds && wf->adds) || (removes && wf->removes))
         {
             *prev_cons_rest = c->rest;
-            print_with_symbols(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            thisAgent->outputManager->printa_sf(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
             thisAgent->symbolManager->symbol_remove_ref(&wf->id);
             thisAgent->symbolManager->symbol_remove_ref(&wf->attr);
             thisAgent->symbolManager->symbol_remove_ref(&wf->value);
@@ -319,8 +321,8 @@ void ListWMEFilters(agent* thisAgent, bool adds, bool removes)
 
         if ((adds && wf->adds) || (removes && wf->removes))
         {
-            print_with_symbols(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            thisAgent->outputManager->printa_sf(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
         }
     }
 }

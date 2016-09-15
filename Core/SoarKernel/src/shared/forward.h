@@ -137,6 +137,4 @@ namespace cli
 
 }
 
-extern void print(agent* thisAgent, const char* format, ...);
-
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

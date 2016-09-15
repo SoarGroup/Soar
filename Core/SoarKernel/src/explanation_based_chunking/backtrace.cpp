@@ -20,6 +20,7 @@
 #include "instantiation.h"
 #include "mem.h"
 #include "memory_manager.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -97,9 +98,9 @@ void print_consed_list_of_conditions(agent* thisAgent, list* c, int indent)
 {
     for (; c != NIL; c = c->rest)
     {
-        if (get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
+        if (thisAgent->outputManager->get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
         {
-            print(thisAgent,  "\n      ");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n      ");
         }
 
         /* mvp 5-17-94 */
@@ -113,14 +114,14 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 {
     for (; c != NIL; c = c->rest)
     {
-        if (get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
+        if (thisAgent->outputManager->get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
         {
-            print(thisAgent,  "\n      ");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n      ");
         }
 
         /* mvp 5-17-94 */
         print_spaces(thisAgent, indent);
-        print(thisAgent,  "     ");
+        thisAgent->outputManager->printa_sf(thisAgent,  "     ");
         print_wme(thisAgent, (static_cast<condition*>(c->first))->bt.wme_);
     }
 }
@@ -131,9 +132,9 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
 inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-
+     
     assert(thisID->id->is_sti());
-    assert(thisID->id->level <= cond->bt.level);
+        assert(thisID->id->level <= cond->bt.level);
 
     return  (thisID->id->level <= grounds_level);
 }
@@ -157,14 +158,14 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 //        get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent,  "... BT through instantiation of ");
+        thisAgent->outputManager->printa_sf(thisAgent,  "... BT through instantiation of ");
         if (inst->prod)
         {
-            print_with_symbols(thisAgent, "%y\n", inst->prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%y\n", inst->prod_name);
         }
         else
         {
-            print_string(thisAgent, "[Architectural Fake Instantiation]\n");
+            thisAgent->outputManager->printa(thisAgent, "[Architectural Fake Instantiation]\n");
         }
 
         xml_begin_tag(thisAgent, kTagBacktrace);
@@ -196,7 +197,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         {
 
             /* mvp 5-17-94 */
-            print_string(thisAgent, "(We already backtraced through this instantiation.)\n");
+            thisAgent->outputManager->printa(thisAgent, "(We already backtraced through this instantiation.)\n");
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
@@ -223,22 +224,22 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            cache_constraints_in_cond(c);
+        cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
-            {
+        {
                 if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
-                {
+            {
                     add_to_grounds(c);
                 }
                 else                                        /* Another condition that matches the same wme */
                 {
-                    add_to_grounds(c);
+                add_to_grounds(c);
                     add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);
+                }
             }
-        }
         else
         {
             dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
@@ -265,21 +266,21 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
         /* mvp 5-17-94 */
-        print_string(thisAgent, "  -->Grounds:\n");
+        thisAgent->outputManager->printa(thisAgent, "  -->Grounds:\n");
         xml_begin_tag(thisAgent, kTagGrounds);
         print_consed_list_of_condition_wmes(thisAgent, grounds_to_print, 0);
         xml_end_tag(thisAgent, kTagGrounds);
-        print(thisAgent,  "\n");
-        print_string(thisAgent, "  -->Locals:\n");
+        thisAgent->outputManager->printa(thisAgent,  "\n");
+        thisAgent->outputManager->printa(thisAgent, "  -->Locals:\n");
         xml_begin_tag(thisAgent, kTagLocals);
         print_consed_list_of_condition_wmes(thisAgent, locals_to_print, 0);
         xml_end_tag(thisAgent, kTagLocals);
-        print(thisAgent,  "\n");
-        print_string(thisAgent, "  -->Negated:\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+        thisAgent->outputManager->printa(thisAgent, "  -->Negated:\n");
         xml_begin_tag(thisAgent, kTagNegated);
         print_consed_list_of_conditions(thisAgent, negateds_to_print, 0);
         xml_end_tag(thisAgent, kTagNegated);
-        print(thisAgent,  "\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         /* mvp done */
 
         xml_begin_tag(thisAgent, kTagNots);
@@ -315,7 +316,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
     dprint(DT_BACKTRACE, "Tracing locals...\n");
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print_string(thisAgent, "\n\n*** Tracing Locals ***\n");
+        thisAgent->outputManager->printa(thisAgent, "\n\n*** Tracing Locals ***\n");
         xml_begin_tag(thisAgent, kTagLocals);
     }
 
@@ -328,10 +329,10 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print_string(thisAgent, "\nFor local ");
+            thisAgent->outputManager->printa(thisAgent, "\nFor local ");
             xml_begin_tag(thisAgent, kTagLocal);
             print_wme(thisAgent, cond->bt.wme_);
-            print_string(thisAgent, " ");
+            thisAgent->outputManager->printa(thisAgent, " ");
         }
         dprint(DT_BACKTRACE, "Backtracing through local condition %l...\n", cond);
         bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
@@ -347,7 +348,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
                     p = static_cast<preference_struct*>(CDPS->first);
                     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
                     {
-                        print_string(thisAgent, "     Backtracing through CDPS preference: ");
+                        thisAgent->outputManager->printa(thisAgent, "     Backtracing through CDPS preference: ");
                         xml_begin_tag(thisAgent, kTagCDPSPreference);
                         print_preference(thisAgent, p);
                     }
@@ -370,7 +371,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print_string(thisAgent, "...no trace, can't BT");
+            thisAgent->outputManager->printa(thisAgent, "...no trace, can't BT");
             // add an empty <backtrace> tag to make parsing XML easier
             xml_begin_tag(thisAgent, kTagBacktrace);
             xml_end_tag(thisAgent, kTagBacktrace);
@@ -494,7 +495,7 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
         list* negated_to_print = NIL;
         push(thisAgent, c, negated_to_print);
 
-        print_string(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
+        thisAgent->outputManager->printa(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
         xml_begin_tag(thisAgent, kTagLocalNegation);
         print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
         xml_end_tag(thisAgent, kTagLocalNegation);

@@ -893,26 +893,26 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-            SNPRINTF(msg, 256,
-                "\t%c%llu --> %llu\n",
-                sym->id->name_letter,
-                static_cast<long long unsigned>(sym->id->name_number),
-                static_cast<long long unsigned>(sym->reference_count));
-            print(thisAgent,  msg);
+                SNPRINTF(msg, 256,
+                    "\t%c%llu --> %llu\n",
+                    sym->id->name_letter,
+                    static_cast<long long unsigned>(sym->id->name_number),
+                    static_cast<long long unsigned>(sym->reference_count));
+                thisAgent->outputManager->printa_sf(thisAgent,  msg);
             //                xml_generate_warning(thisAgent, msg);
 
-            if (f)
-            {
-                fprintf(f, "%s", msg) ;
+                if (f)
+                {
+                    fprintf(f, "%s", msg) ;
+                }
             }
         }
-    }
     else
     {
-        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-        return true;
-    }
-    return false;
+            thisAgent->outputManager->printa_sf(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+            return true;
+        }
+        return false;
 }
 
 bool Symbol_Manager::reset_id_counters()
@@ -968,7 +968,7 @@ bool clear_gensym_number(agent* /*thisAgent*/, void* item, void*)
 
 bool print_sym(agent* thisAgent, void* item, void*)
 {
-    print(thisAgent,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
+    thisAgent->outputManager->printa_sf(thisAgent,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
 
@@ -979,15 +979,15 @@ void Symbol_Manager::clear_variable_gensym_numbers()
 
 void Symbol_Manager::print_internal_symbols()
 {
-    print(thisAgent,  "\n--- Symbolic Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Symbolic Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, str_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Integer Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Integer Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, int_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Floating-Point Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Floating-Point Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, float_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Identifiers: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Identifiers: ---\n");
     do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Variables: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Variables: ---\n");
     do_for_all_items_in_hash_table(thisAgent, variable_hash_table, print_sym, 0);
 }
 
