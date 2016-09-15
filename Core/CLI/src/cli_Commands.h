@@ -3062,6 +3062,7 @@ namespace cli
                     {'g', "get",        OPTARG_NONE},
                     {'h', "history",    OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'i', "init",       OPTARG_NONE},
+                    {'P', "precalculate", OPTARG_NONE},
                     {'q', "query",      OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'r', "remove",     OPTARG_NONE},//Testing/unstable - 23-7-2014
                     {'s', "set",        OPTARG_NONE},
@@ -3182,6 +3183,15 @@ namespace cli
 
                         return cli.DoSMem(option, &(argv[2]), &(argv[3]));// This is the case of "depth".
                     }
+
+                    case 'P':
+                        // case: precalculate takes no arguments
+                        if (!opt.CheckNumNonOptArgs(0,0))
+                        {
+                            return cli.SetError(opt.GetError().c_str());
+                        }
+
+                        return cli.DoSMem(option);
 
                     case 'r':
                     {

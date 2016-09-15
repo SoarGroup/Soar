@@ -47,6 +47,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         PrintCLIMessage_Section("Activation", 40);
         PrintCLIMessage_Item("activation-mode:", thisAgent->SMem->settings->activation_mode, 40);
         PrintCLIMessage_Item("activate-on-query:", thisAgent->SMem->settings->activate_on_query, 40);
+        PrintCLIMessage_Item("activate-on-add:", thisAgent->SMem->settings->activate_on_add, 40);
         PrintCLIMessage_Item("base-decay:", thisAgent->SMem->settings->base_decay, 40);
         PrintCLIMessage_Item("base-update-policy:", thisAgent->SMem->settings->base_update, 40);
         PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->SMem->settings->base_incremental_threshes, 40);
@@ -56,6 +57,13 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         PrintCLIMessage_Item("cache-size:", thisAgent->SMem->settings->cache_size, 40);
         PrintCLIMessage_Item("optimization:", thisAgent->SMem->settings->opt, 40);
         PrintCLIMessage_Item("timers:", thisAgent->SMem->settings->timers, 40);
+        PrintCLIMessage_Section("Spreading Activation", 40);
+        PrintCLIMessage_Item("spreading:", thisAgent->SMem->settings->spreading, 40);
+        PrintCLIMessage_Item("spreading-baseline:", thisAgent->SMem->settings->spreading_baseline, 40);
+        PrintCLIMessage_Item("spreading-continue-probability:", thisAgent->SMem->settings->spreading_continue_probability, 40);
+        PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->SMem->settings->spreading_depth_limit, 40);
+        PrintCLIMessage_Item("spreading-limit:", thisAgent->SMem->settings->spreading_limit, 40);
+        PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->SMem->settings->spreading_loop_avoidance, 40);
         PrintCLIMessage("");
 
         return true;
@@ -187,6 +195,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         PrintCLIMessage(&viz);
         return true;
     }
+    else if (pOp == 'P')
+    {
+        thisAgent->SMem->timers->total->start();
+        thisAgent->SMem->calc_spread_trajectories();
+        thisAgent->SMem->timers->total->stop();
+    }
     else if (pOp == 'q')
     {
         std::string* err = new std::string;
@@ -252,6 +266,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
             return SetError("Invalid setting for SMem parameter.");
         }
 
+        if (thisAgent->SMem->settings->spreading->get_value() == on
+                && !(
+                        strcmp(pArg1->c_str(), "spreading-baseline") &&
+                        strcmp(pArg1->c_str(), "spreading-depth-limit") &&
+                        strcmp(pArg1->c_str(), "spreading-limit") &&
+                        strcmp(pArg1->c_str(), "spreading-loop-avoidance") &&
+                        strcmp(pArg1->c_str(), "spreading-continue-probability")))
+        {
+            return SetError("Some spreading activation settings cannot be changed once spreading activation has been turned on.");
+        }
+
         smem_param_container::db_choices last_db_mode = thisAgent->SMem->settings->database->get_value();
         bool result = my_param->set_string(pArg2->c_str());
 
@@ -299,6 +324,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
             PrintCLIMessage_Item("Activation Updates:", thisAgent->SMem->statistics->act_updates, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->SMem->statistics->nodes, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->SMem->statistics->edges, 40);
+            uint64_t number_spread_elements = thisAgent->SMem->spread_size();
+            std::ostringstream s_spread_output_string;
+            s_spread_output_string << number_spread_elements;
+            std::string spread_output_string = s_spread_output_string.str();
+            PrintCLIMessage_Justify("Spread Size:", spread_output_string.c_str(), 40);
         }
         else
         {

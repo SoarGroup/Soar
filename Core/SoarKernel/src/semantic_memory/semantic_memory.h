@@ -69,6 +69,7 @@ class SMem_Manager
         void        calc_spread_trajectories();
         void        invalidate_trajectories(uint64_t lti_parent_id, std::map<uint64_t, int64_t>* delta_children);
         void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set);
+        uint64_t    spread_size();
 
         /* Methods for creating an instance of a LTM using STIs */
         void        clear_instance_mappings();
@@ -84,6 +85,9 @@ class SMem_Manager
         /* Methods for printing/visualizing semantic memory */
         void        print_store(std::string* return_val);
         void        print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history = false);
+
+        /* Where working memory activation needs to give smem information on edgeweights */
+        void        invalidate_from_lti(uint64_t invalid_parent);
 
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
         std::map<uint64_t, uint64_t>* smem_in_wmem;

@@ -1195,3 +1195,12 @@ void SMem_Manager::invalidate_trajectories(uint64_t lti_parent_id, std::map<uint
     }
     delete negative_children;
 }
+
+void SMem_Manager::invalidate_from_lti(uint64_t invalid_parent)
+{
+    for (int i = 1; i < 11; i++)
+    {//A changing edge weight is treated as an invalidation of cases that could have used that edge.
+        SQL->trajectory_invalidate_from_lti->bind_int(i,invalid_parent);
+    }
+    SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+}
