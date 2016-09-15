@@ -496,7 +496,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
        to the grounds --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print_string(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
+        thisAgent->outputManager->printa(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
     }
 
     chunk_cond *cc;
@@ -510,7 +510,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
             /* --- negated cond is in the TC, so add it to the grounds --- */
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
-                print_string(thisAgent, "\n-->Moving to grounds: ");
+                thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
@@ -803,10 +803,10 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print_string(thisAgent, "\nFor result preference ");
+            thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
             xml_begin_tag(thisAgent, kTagBacktraceResult);
             print_preference(thisAgent, pref);
-            print_string(thisAgent, " ");
+            thisAgent->outputManager->printa(thisAgent, " ");
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
@@ -895,12 +895,12 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
 
     if (m_should_print_name)
     {
-        start_fresh_line(thisAgent);
+        thisAgent->outputManager->start_fresh_line(thisAgent);
         if (pForChunk)
         {
-            print_with_symbols(thisAgent, "Learning chunk %y\n", m_prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent, "Learning chunk %y\n", m_prod_name);
         } else {
-            print_with_symbols(thisAgent, "Learning justification %y\n", m_prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent, "Learning justification %y\n", m_prod_name);
         }
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
@@ -919,7 +919,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 
     if (m_should_print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
-        print(thisAgent, "\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\n");
         xml_begin_tag(thisAgent, kTagLearning);
         print_production(thisAgent, m_prod, false);
         xml_end_tag(thisAgent, kTagLearning);

@@ -22,6 +22,7 @@
 #include "condition.h"
 #include "decide.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -368,7 +369,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     {
                         /* -- Not sure rhs id can even be a symbol at this point.  Temporary test here.  If this case does exist,
                          *    assert will be ignored in optimized build, so behavior should not be affected by this case. -- */
-                        print(thisAgent, "ERROR!  Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
+                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol in calculate_support_for_instantiation_preferences(). Please report"
                               " to Soar Umich group.\n");
                         //assert(false);
                     }
@@ -499,7 +500,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             if (thisAgent->o_support_calculation_type == 3)
             {
 
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod_name);
+                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod_name);
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
@@ -511,7 +512,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             }
             else if (thisAgent->o_support_calculation_type == 4)
             {
-                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod_name);
+                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod_name);
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");

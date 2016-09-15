@@ -479,7 +479,7 @@ test parse_relational_test(agent* thisAgent, Lexer* lexer)
             return t;
 
         default:
-            print(thisAgent,  "Expected variable or constant for test\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Expected variable or constant for test\n");
             lexer->print_location_of_most_recent_lexeme();
             return NIL;
     }
@@ -498,7 +498,7 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
 
     if (lexer->current_lexeme.type != LESS_LESS_LEXEME)
     {
-        print(thisAgent,  "Expected << to begin disjunction test\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected << to begin disjunction test\n");
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -517,13 +517,13 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
                 push(thisAgent, make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false), t->data.disjunction_list);
                 if (!lexer->get_lexeme())
                 {
-                    print(thisAgent,  "Expected constant or >> while reading disjunction test\n");
+                    thisAgent->outputManager->printa_sf(thisAgent,  "Expected constant or >> while reading disjunction test\n");
                     deallocate_test(thisAgent, t);
                     return NULL;
                 }
                 break;
             default:
-                print(thisAgent,  "Expected constant or >> while reading disjunction test\n");
+                thisAgent->outputManager->printa_sf(thisAgent,  "Expected constant or >> while reading disjunction test\n");
                 lexer->print_location_of_most_recent_lexeme();
                 deallocate_test(thisAgent, t);
                 return NIL;
@@ -884,7 +884,7 @@ condition* parse_attr_value_tests(agent* thisAgent, Lexer* lexer)
     /* --- read up arrow --- */
     if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
     {
-        print(thisAgent,  "Expected ^ followed by attribute\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ^ followed by attribute\n");
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -1002,7 +1002,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
 
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
-        print(thisAgent,  "Expected ( to begin condition element\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ( to begin condition element\n");
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -1067,8 +1067,8 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
             // Otherwise, it isn't possible to have an IDENTIFIER_SYMBOL_TYPE here.
             if ((sym->symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->symbol_type != IDENTIFIER_SYMBOL_TYPE))
             {
-                print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
-                print(thisAgent,  "         This will never match.\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "Warning: Constant %y in id field test.\n", sym);
+                thisAgent->outputManager->printa_sf(thisAgent,  "         This will never match.\n");
 
                 growable_string gs = make_blank_growable_string(thisAgent);
                 add_to_growable_string(thisAgent, &gs, "Warning: Constant ");
@@ -1251,7 +1251,7 @@ condition* parse_cond(agent* thisAgent, Lexer* lexer)
         }
         if (lexer->current_lexeme.type != R_BRACE_LEXEME)
         {
-            print(thisAgent,  "Expected } to end conjunctive condition\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Expected } to end conjunctive condition\n");
             lexer->print_location_of_most_recent_lexeme();
             deallocate_condition_list(thisAgent, c);
             return NIL;
@@ -1451,13 +1451,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 
 	if (!fun_name && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
-		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
 		fun_name = thisAgent->symbolManager->find_str_constant("halt");
 	}
 
     if (!fun_name)
     {
-        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
+        thisAgent->outputManager->printa_sf(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -1465,13 +1465,13 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 
 	if (!rf && (std::string(lexer->current_lexeme.string()) == "succeeded" || std::string(lexer->current_lexeme.string()) == "failed"))
 	{
-		print(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
+		thisAgent->outputManager->printa_sf(thisAgent, "WARNING: Replacing function named %s with halt since this is a unit test but running in a non-unit testing environment.\n", lexer->current_lexeme.string());
 		rf = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
 	}
 
     if (!rf)
     {
-        print(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
+        thisAgent->outputManager->printa_sf(thisAgent,  "No RHS function named %s\n", lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -1479,14 +1479,14 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     /* --- make sure stand-alone/rhs_value is appropriate --- */
     if (is_stand_alone_action && (! rf->can_be_stand_alone_action))
     {
-        print(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Function %s cannot be used as a stand-alone action\n",
               lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
     if ((! is_stand_alone_action) && (! rf->can_be_rhs_value))
     {
-        print(thisAgent,  "Function %s can only be used as a stand-alone action\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Function %s can only be used as a stand-alone action\n",
               lexer->current_lexeme.string());
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
@@ -1519,7 +1519,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
     /* --- check number of arguments --- */
     if ((rf->num_args_expected != -1) && (rf->num_args_expected != num_args))
     {
-        print(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Wrong number of arguments to function %s (expected %d)\n",
               rf->name->sc->name, rf->num_args_expected);
         lexer->print_location_of_most_recent_lexeme();
         deallocate_rhs_value(thisAgent, funcall_list_to_rhs_value(fl));
@@ -1567,7 +1567,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
         if (!lexer->get_lexeme()) return NULL;
         return rv;
     }
-    print(thisAgent,  "Illegal value for RHS value\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "Illegal value for RHS value\n");
     lexer->print_location_of_most_recent_lexeme();
     return NULL;
 }
@@ -1898,14 +1898,14 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
         /* --- read referent --- */
         if (preference_is_binary(preference_type))
         {
-            print(thisAgent,  "\nERROR: Binary preference illegal for non-operator.");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nERROR: Binary preference illegal for non-operator.");
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                      correctly before we print */
             rhs_value_to_string(attr, szPrintAttr, 256);
             rhs_value_to_string(value, szPrintValue, 256);
             id->to_string(true, szPrintId, 256);
-            print(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
+            thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
             deallocate_action_list(thisAgent, prev_a);
             return NIL;
@@ -1919,7 +1919,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
         if ((preference_type != ACCEPTABLE_PREFERENCE_TYPE) &&
                 (preference_type != REJECT_PREFERENCE_TYPE))
         {
-            print(thisAgent,  "\nWARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
             xml_generate_warning(thisAgent, "WARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.");
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
@@ -1927,7 +1927,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
             rhs_value_to_string(attr, szPrintAttr, 256);
             rhs_value_to_string(value, szPrintValue, 256);
             id->to_string(true, szPrintId, 256);
-            print(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
+            thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
             lexer->print_location_of_most_recent_lexeme();
         }
@@ -1997,7 +1997,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
     if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
     {
-        print(thisAgent,  "Expected ^ in RHS make action\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ^ in RHS make action\n");
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -2117,7 +2117,7 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
 
     if (lexer->current_lexeme.type != L_PAREN_LEXEME)
     {
-        print(thisAgent,  "Expected ( to begin RHS action\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected ( to begin RHS action\n");
         lexer->print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -2279,7 +2279,7 @@ void abort_parse_production(agent* thisAgent, Symbol*& name, char** documentatio
 {
     if (name)
     {
-        print_with_symbols(thisAgent, "(Ignoring production %y)\n\n", name);
+        thisAgent->outputManager->printa_sf(thisAgent, "(Ignoring production %y)\n\n", name);
         thisAgent->symbolManager->symbol_remove_ref(&name);
         name = NULL;
     }
@@ -2330,7 +2330,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- read production name --- */
     if (!lexSuccess || lexer.current_lexeme.type != STR_CONSTANT_LEXEME)
     {
-        print(thisAgent,  "Expected symbol for production name\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected symbol for production name\n");
         lexer.print_location_of_most_recent_lexeme();
         return NIL;
     }
@@ -2458,7 +2458,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- read the "-->" --- */
     if (lexer.current_lexeme.type != RIGHT_ARROW_LEXEME)
     {
-        print(thisAgent,  "Expected --> in production\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Expected --> in production\n");
         lexer.print_location_of_most_recent_lexeme();
         abort_parse_production(thisAgent, name, &documentation, &lhs);
         return NIL;
@@ -2502,7 +2502,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     {
         if (!rl_valid_template(p))
         {
-            print_with_symbols(thisAgent, "Invalid Soar-RL template (%y)\n\n", name);
+            thisAgent->outputManager->printa_sf(thisAgent, "Invalid Soar-RL template (%y)\n\n", name);
             excise_production(thisAgent, p, false);
             return NIL;
         }

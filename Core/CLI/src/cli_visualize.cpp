@@ -36,7 +36,7 @@ bool check_boolean_option(agent* thisAgent, size_t pWhichBit, Cli::VisualizeBits
     {
         if (pCurrentSetting == pNewSettings.test(pWhichBit))
         {
-            print(thisAgent, "Visualization setting is already %s.\n", pCurrentSetting ? "enabled" : "disabled");
+            thisAgent->outputManager->printa_sf(thisAgent, "Visualization setting is already %s.\n", pCurrentSetting ? "enabled" : "disabled");
             return false;
         }
         return true;
@@ -54,56 +54,56 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
     if (check_boolean_option(thisAgent, VISUALIZE_GENERATE_IMAGE, options, pSettings, thisAgent->visualizationManager->is_generate_img_enabled()))
     {
         thisAgent->visualizationManager->set_generate_img_enabled(pSettings.test(VISUALIZE_GENERATE_IMAGE));
-        print(thisAgent, "Visualizer will%sgenerate an image of visualization and save it to disk.\n", thisAgent->visualizationManager->is_generate_img_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will%sgenerate an image of visualization and save it to disk.\n", thisAgent->visualizationManager->is_generate_img_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_USE_SAME_FILE, options, pSettings, thisAgent->visualizationManager->is_use_same_file_enabled()))
     {
         thisAgent->visualizationManager->set_use_same_file_enabled(pSettings.test(VISUALIZE_USE_SAME_FILE));
-        print(thisAgent, "Visualizer will%soverwrite the same file for each visualization.\n", thisAgent->visualizationManager->is_use_same_file_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will%soverwrite the same file for each visualization.\n", thisAgent->visualizationManager->is_use_same_file_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_LAUNCH_VIEWER, options, pSettings, thisAgent->visualizationManager->is_viz_launch_img_enabled()))
     {
         thisAgent->visualizationManager->set_viz_launch_img_enabled(pSettings.test(VISUALIZE_LAUNCH_VIEWER));
-        print(thisAgent, "Visualizer will%sopen image in viewer.\n", thisAgent->visualizationManager->is_viz_launch_img_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will%sopen image in viewer.\n", thisAgent->visualizationManager->is_viz_launch_img_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_LAUNCH_EDITOR, options, pSettings, thisAgent->visualizationManager->is_viz_launch_gv_enabled()))
     {
         thisAgent->visualizationManager->set_viz_launch_gv_enabled(pSettings.test(VISUALIZE_LAUNCH_EDITOR));
-        print(thisAgent, "Visualizer will%sopen GraphViz file in editor.\n", thisAgent->visualizationManager->is_viz_launch_gv_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will%sopen GraphViz file in editor.\n", thisAgent->visualizationManager->is_viz_launch_gv_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_PRINT_TO_SCREEN, options, pSettings, thisAgent->visualizationManager->is_viz_print_enabled()))
     {
         thisAgent->visualizationManager->set_viz_print_enabled(pSettings.test(VISUALIZE_PRINT_TO_SCREEN));
-        print(thisAgent, "Graphviz visualization output will%sbe printed to the screen.\n", thisAgent->visualizationManager->is_viz_print_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Graphviz visualization output will%sbe printed to the screen.\n", thisAgent->visualizationManager->is_viz_print_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_ARCH_SHOW, options, pSettings, thisAgent->visualizationManager->is_include_arch_enabled()))
     {
         thisAgent->visualizationManager->set_include_arch_enabled(pSettings.test(VISUALIZE_ARCH_SHOW));
-        print(thisAgent, "Graphviz visualizations will%sinclude architectural links.\n", thisAgent->visualizationManager->is_include_arch_enabled() ? " " : " not ");
+        thisAgent->outputManager->printa_sf(thisAgent, "Graphviz visualizations will%sinclude architectural links.\n", thisAgent->visualizationManager->is_include_arch_enabled() ? " " : " not ");
     }
     if (check_boolean_option(thisAgent, VISUALIZE_ONLY_RULE_NAME, options, pSettings, thisAgent->visualizationManager->is_simple_inst_enabled()))
     {
         thisAgent->visualizationManager->set_simple_inst_enabled(pSettings.test(VISUALIZE_ONLY_RULE_NAME));
         if (thisAgent->visualizationManager->is_simple_inst_enabled())
         {
-            print(thisAgent, "Visualizer will only print the name of rules.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will only print the name of rules.\n");
         } else {
-            print(thisAgent, "Visualizer will print rule condition, actions and any relevant meta information.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will print rule condition, actions and any relevant meta information.\n");
         }
     }
     if (options.test(VISUALIZE_STYLE_LINE))
     {
-        print(thisAgent, "Visualizer will connect lines using GraphViz style '%s'.\n", pLineStyle.c_str());
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will connect lines using GraphViz style '%s'.\n", pLineStyle.c_str());
         thisAgent->visualizationManager->set_line_style(pLineStyle);
     }
     if (options.test(VISUALIZE_FILENAME))
     {
-        print(thisAgent, "Visualizer wil name Graphviz files using prefix %s.\n", pFileName.c_str());
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer wil name Graphviz files using prefix %s.\n", pFileName.c_str());
         thisAgent->visualizationManager->set_filename(pFileName);
     }
     if (options.test(VISUALIZE_IMAGE_TYPE))
     {
-        print(thisAgent, "Visualizer will use DOT to generate images of type %s.\n", pFileName.c_str());
+        thisAgent->outputManager->printa_sf(thisAgent, "Visualizer will use DOT to generate images of type %s.\n", pFileName.c_str());
         thisAgent->visualizationManager->set_image_type(pImageType);
     }
 

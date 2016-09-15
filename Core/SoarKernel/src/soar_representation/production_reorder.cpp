@@ -657,9 +657,9 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     {
         if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "\nWarning:  in production %s,\n",
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
-            print(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "      ignoring test(s) whose referent is unbound:\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
             // TODO: XML tagged output -- how to create this string?
@@ -1222,9 +1222,9 @@ void reorder_simplified_conditions(agent* thisAgent,
         if ((min_cost == MAX_COST) &&
                 thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
         {
-            print(thisAgent,  "Warning:  in production %s,\n",
+            thisAgent->outputManager->printa_sf(thisAgent,  "Warning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
-            print(thisAgent,  "     The LHS conditions are not all connected.\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "     The LHS conditions are not all connected.\n");
             /* BUGBUG I'm not sure whether this can ever happen. */
 
             // XML geneneration
@@ -1476,7 +1476,7 @@ bool check_unbound_negative_relational_test_referents(agent* thisAgent, test t, 
             {
                 if (t->data.referent->tc_num != tc)
                 {
-                    print(thisAgent,
+                    thisAgent->outputManager->printa_sf(thisAgent,
                           "Error: production %s has an unbound referent in negated relational test %t.\n",
                           thisAgent->name_of_production_being_reordered, t);
                     return false;

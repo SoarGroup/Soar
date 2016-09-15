@@ -17,7 +17,7 @@
 #include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
-#include "print.h"
+#include "output_manager.h"
 #include "production_reorder.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
@@ -417,7 +417,7 @@ production* make_production(agent*          thisAgent,
             }
         if (a)
         {
-            print_with_symbols(thisAgent, "\nCan't classify %y\n", name);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nCan't classify %y\n", name);
         }
 #endif
 #else
@@ -443,9 +443,8 @@ production* make_production(agent*          thisAgent,
 
     if (name->sc->production)
     {
-        print(thisAgent,  "Internal error: make_production called with name %s\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: make_production called with name %s\nfor which a production already exists.\n",
               thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "for which a production already exists\n");
     }
     name->sc->production = p;
     p->documentation = NIL;
@@ -553,7 +552,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     thisAgent->num_productions_of_type[prod->type]--;
     if (print_sharp_sign)
     {
-        print(thisAgent,  "#");
+        thisAgent->outputManager->printa(thisAgent,  "#");
     }
     if (prod->p_node)
     {

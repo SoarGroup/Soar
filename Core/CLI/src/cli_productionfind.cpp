@@ -48,7 +48,7 @@ void print_binding_list(agent* thisAgent, list* bindings)
 
     for (c = bindings ; c != NIL ; c = c->rest)
     {
-        print_with_symbols(thisAgent, "   (%y -> %y)\n", static_cast<Binding*>(c->first)->from, static_cast<Binding*>(c->first)->to);
+        thisAgent->outputManager->printa_sf(thisAgent, "   (%y -> %y)\n", static_cast<Binding*>(c->first)->from, static_cast<Binding*>(c->first)->to);
     }
 }
 
@@ -402,7 +402,7 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
     clist = parse_lhs(thisAgent, &lexer);
     if (!clist)
     {
-        print(thisAgent,  "Error: not a valid condition list.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: not a valid condition list.\n");
         current_pf_list = NIL;
         return;
     }
@@ -471,12 +471,12 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
                     push(thisAgent, prod, (*current_pf_list));
                     if (show_bindings)
                     {
-                        print_with_symbols(thisAgent, "%y, with bindings:\n", prod->name);
+                        thisAgent->outputManager->printa_sf(thisAgent, "%y, with bindings:\n", prod->name);
                         print_binding_list(thisAgent, bindings);
                     }
                     else
                     {
-                        print_with_symbols(thisAgent, "%y\n", prod->name);
+                        thisAgent->outputManager->printa_sf(thisAgent, "%y\n", prod->name);
                     }
                 }
             }
@@ -511,7 +511,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
     parsed_ok = (parse_rhs(thisAgent, &lexer, &alist) == true);
     if (!parsed_ok)
     {
-        print(thisAgent,  "Error: not a valid rhs.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: not a valid rhs.\n");
         current_pf_list = NIL;
         return;
     }
@@ -567,12 +567,12 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
                     push(thisAgent, prod, (*current_pf_list));
                     if (show_bindings)
                     {
-                        print_with_symbols(thisAgent, "%y, with bindings:\n", prod->name);
+                        thisAgent->outputManager->printa_sf(thisAgent, "%y, with bindings:\n", prod->name);
                         print_binding_list(thisAgent, bindings);
                     }
                     else
                     {
-                        print_with_symbols(thisAgent, "%y\n", prod->name);
+                        thisAgent->outputManager->printa_sf(thisAgent, "%y\n", prod->name);
                     }
                 }
             }
@@ -612,7 +612,7 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
     }
     if (current_pf_list == NIL)
     {
-        print(thisAgent,  "No matches.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "No matches.\n");
     }
 
     free_list(thisAgent, current_pf_list);

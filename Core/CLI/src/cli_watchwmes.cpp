@@ -296,8 +296,8 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
         if ((adds && wf->adds) || (removes && wf->removes))
         {
             *prev_cons_rest = c->rest;
-            print_with_symbols(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            thisAgent->outputManager->printa_sf(thisAgent, "Removed: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
             thisAgent->symbolManager->symbol_remove_ref(&wf->id);
             thisAgent->symbolManager->symbol_remove_ref(&wf->attr);
             thisAgent->symbolManager->symbol_remove_ref(&wf->value);
@@ -319,8 +319,8 @@ void ListWMEFilters(agent* thisAgent, bool adds, bool removes)
 
         if ((adds && wf->adds) || (removes && wf->removes))
         {
-            print_with_symbols(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
-            print(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
+            thisAgent->outputManager->printa_sf(thisAgent, "wme filter: (%y ^%y %y) ", wf->id, wf->attr, wf->value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "%s %s\n", (wf->adds ? "adds" : ""), (wf->removes ? "removes" : ""));
         }
     }
 }

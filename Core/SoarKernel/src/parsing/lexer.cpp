@@ -12,6 +12,7 @@
 
 #include "lexer.h"
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
 #include "misc.h"
 #include "xml.h"
@@ -135,7 +136,7 @@ bool Lexer::determine_type_of_constituent_string () {
         current_lexeme.type = INT_CONSTANT_LEXEME;
         current_lexeme.int_val = strtol (current_lexeme.string(),NULL,10);
         if (errno) {
-            print (thisAgent, "Error: bad integer (probably too large)\n");
+            thisAgent->outputManager->printa(thisAgent, "Error: bad integer (probably too large)\n");
             print_location_of_most_recent_lexeme();
             current_lexeme.int_val = 0;
         }
@@ -147,7 +148,7 @@ bool Lexer::determine_type_of_constituent_string () {
         current_lexeme.type = FLOAT_CONSTANT_LEXEME;
         current_lexeme.float_val = strtod (current_lexeme.string(),NULL);
         if (errno) {
-            print (thisAgent, "Error: bad floating point number\n");
+            thisAgent->outputManager->printa(thisAgent, "Error: bad floating point number\n");
             print_location_of_most_recent_lexeme();
             current_lexeme.float_val = 0.0;
         }
@@ -166,7 +167,7 @@ bool Lexer::determine_type_of_constituent_string () {
             errno = 0;
             current_lexeme.type = IDENTIFIER_LEXEME;
             if (!from_c_string(current_lexeme.id_number, &(current_lexeme.lex_string[lti_index]))) {
-                print (thisAgent, "Error: bad number for identifier (probably too large)\n");
+                thisAgent->outputManager->printa(thisAgent, "Error: bad number for identifier (probably too large)\n");
                 print_location_of_most_recent_lexeme();
                 current_lexeme.id_number = 0;
                 errno = 1;
@@ -185,7 +186,7 @@ bool Lexer::determine_type_of_constituent_string () {
             if ( (current_lexeme.lex_string[0] == '<') ||
                  (current_lexeme.lex_string[current_lexeme.length()-1] == '>') )
             {
-                print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string());
+                thisAgent->outputManager->printa_sf(thisAgent, "Warning: Suspicious string constant \"%s\"\n", current_lexeme.string());
                 print_location_of_most_recent_lexeme();
                 xml_generate_warning(thisAgent, "Warning: Suspicious string constant");
             }
@@ -410,7 +411,7 @@ void Lexer::lex_vbar () {
   get_next_char();
   do {
     if (current_char==EOF) {
-      print (thisAgent, "Error:  opening '|' without closing '|'\n");
+      thisAgent->outputManager->printa(thisAgent, "Error:  opening '|' without closing '|'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
       current_lexeme.type = EOF_LEXEME;
@@ -434,7 +435,7 @@ void Lexer::lex_quote () {
   get_next_char();
   do {
     if (current_char==EOF) {
-      print (thisAgent, "Error:  opening '\"' without closing '\"'\n");
+      thisAgent->outputManager->printa(thisAgent, "Error:  opening '\"' without closing '\"'\n");
       print_location_of_most_recent_lexeme();
       /* BUGBUG if reading from top level, don't want to signal EOF */
       current_lexeme.type = EOF_LEXEME;
@@ -475,7 +476,7 @@ bool Lexer::get_lexeme () {
     lex_eof();
   if (lex_error)
   {
-      print(thisAgent,  "Parsing error.\n");
+      thisAgent->outputManager->printa(thisAgent,  "Parsing error.\n");
       // Doesn't do anything any more it seems
       // lexer->print_location_of_most_recent_lexeme();
       return false;

@@ -15,7 +15,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 #include "production.h"
 #include "slot.h"
 #include "symbol_manager.h"
@@ -1296,9 +1296,8 @@ void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool
         {
             char buf[256];
 
-            snprintf_with_symbols(thisAgent, buf, 256, "<=SMEM: (%y ^* *)\n", print_id);
-
-            print(thisAgent, buf);
+            thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "<=SMEM: (%y ^* *)\n", print_id);
+            thisAgent->outputManager->printa(thisAgent, buf);
             xml_generate_warning(thisAgent, buf);
         }
     }
@@ -1370,9 +1369,8 @@ void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool
                     {
                         char buf[256];
 
-                        snprintf_with_symbols(thisAgent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_const.val_value);
-
-                        print(thisAgent, buf);
+                        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_const.val_value);
+                        thisAgent->outputManager->printa(thisAgent, buf);
                         xml_generate_warning(thisAgent, buf);
                     }
                 }
@@ -1415,9 +1413,8 @@ void SMem_Manager::store_chunk(smem_lti_id lti_id, smem_slot_map* children, bool
                     {
                         char buf[256];
 
-                        snprintf_with_symbols(thisAgent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_lti.val_value->soar_id);
-
-                        print(thisAgent, buf);
+                        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_lti.val_value->soar_id);
+                        thisAgent->outputManager->printa(thisAgent, buf);
                         xml_generate_warning(thisAgent, buf);
                     }
                 }

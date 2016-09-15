@@ -132,7 +132,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
-            print(thisAgent,  message.str().c_str());
+            thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
 //            chunk_history += "Did not attempt to learn a chunk for match of ";
 //            chunk_history += inst->prod_name->to_string();
@@ -151,7 +151,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";
-            print(thisAgent,  message.str().c_str());
+            thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
 //            chunk_history += "Did not attempt to learn a chunk for match of ";
 //            chunk_history += inst->prod_name->to_string();
@@ -171,7 +171,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     {
         std::ostringstream message;
         message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " is not the bottom state";
-        print(thisAgent,  message.str().c_str());
+        thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
         xml_generate_verbose(thisAgent, message.str().c_str());
 //        chunk_history += "Did not attempt to learn a chunk for match of ";
 //        chunk_history += inst->prod_name->to_string();
@@ -314,7 +314,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         uint64_t collision_count = 1;
         std::stringstream newLName;
 
-        print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {

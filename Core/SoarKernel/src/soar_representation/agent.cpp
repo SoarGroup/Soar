@@ -238,7 +238,7 @@ agent* create_soar_agent(char* agent_name)                                      
     if (!getcwd(cur_path, MAXPATHLEN))
     {
 		char* error = strerror(errno);
-        print(thisAgent, "Unable to set current directory while initializing agent: %s\n", error);
+        thisAgent->outputManager->printa_sf(thisAgent, "Unable to set current directory while initializing agent: %s\n", error);
     }
 
     for (int productionTypeCounter = 0; productionTypeCounter < NUM_PRODUCTION_TYPES; productionTypeCounter++)

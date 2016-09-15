@@ -173,7 +173,7 @@ void set_sysparam(agent* thisAgent, int param_number, int64_t new_value)
 {
     if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER))
     {
-        print(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
         return;
     }
     thisAgent->sysparams[param_number] = new_value;
@@ -486,7 +486,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
     if (thisAgent->system_halted)
     {
-        print(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
               "\nSystem halted.  Use (init-soar) before running Soar again.");
         xml_generate_error(thisAgent, "System halted.  Use (init-soar) before running Soar again.");
         thisAgent->stop_soar = true;
@@ -1127,7 +1127,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
             if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
             {
-                print_string(thisAgent, "\n");
+                thisAgent->outputManager->printa(thisAgent, "\n");
                 print_lowest_slot_in_context_stack(thisAgent);
             }
 
@@ -1200,7 +1200,7 @@ void do_one_top_level_phase(agent* thisAgent)
     {
         if (thisAgent->reason_for_stopping)
         {
-            print(thisAgent,  "\n%s\n", thisAgent->reason_for_stopping);
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n%s\n", thisAgent->reason_for_stopping);
         }
     }
 }
@@ -1532,7 +1532,7 @@ void init_agent_memory(agent* thisAgent)
     create_top_goal(thisAgent);
     if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
     {
-        print_string(thisAgent, "\n");
+        thisAgent->outputManager->printa(thisAgent, "\n");
         print_lowest_slot_in_context_stack(thisAgent);
     }
     thisAgent->current_phase = INPUT_PHASE;
