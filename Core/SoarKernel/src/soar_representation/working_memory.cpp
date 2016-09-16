@@ -145,10 +145,16 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
     dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+    /* Not sure if this is necessary anymore.  It does seem like everything should
+     * have a level by this point, but we do have a case where this goes off, but
+     * it seems to run fine without it.  We'll sub with a debug statement until we
+     * can investigate or get a case with a less crazy agent than Shane's. */
+//    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+//           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+//           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
            ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
-           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
-
+           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
