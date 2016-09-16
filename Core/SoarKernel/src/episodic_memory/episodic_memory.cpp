@@ -2570,8 +2570,8 @@ inline void _epmem_store_level(agent* thisAgent,
             if ((*w_p)->value->id->LTI_ID && ((*w_p)->value->id->LTI_epmem_valid != thisAgent->EpMem->epmem_validation))
             {
                 // Update the node database with the new lti_id
-                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(1, (*w_p)->value->id->epmem_id);
-                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->LTI_ID);
+                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(1, (*w_p)->value->id->LTI_ID);
+                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->epmem_id);
                 thisAgent->EpMem->epmem_stmts_graph->update_node->execute(soar_module::op_reinit);
                 (*w_p)->value->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
             }
