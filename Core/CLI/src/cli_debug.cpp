@@ -40,6 +40,9 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     {
         Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
         PrintCLIMessage_Header("Debug", 40);
+        PrintCLIMessage_Section("Commands", 40);
+        PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 40);
+        PrintCLIMessage_Justify("port", "Prints listening port", 40);
         PrintCLIMessage_Section("Debug Database Storage", 40);
         PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 40);
         PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 40);
@@ -201,6 +204,21 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
         {
             thisAgent->symbolManager->print_internal_symbols();
             return true;
+        }
+        else if (sub_command[0] == 'p')
+        {
+
+            int port = m_pKernelSML->GetListenerPort();
+
+            if (m_RawOutput)
+            {
+                m_Result << port;
+            }
+            else
+            {
+                std::string temp;
+                AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
+            }            return true;
         }
         else
         {

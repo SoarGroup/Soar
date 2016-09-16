@@ -63,7 +63,7 @@ namespace cli
                 t.evaluate("default-wme-depth output print-depth");
                 t.evaluate("echo-commands output echo-commands");
                 t.evaluate("gp-max soar max-gp");
-                t.evaluate("internal-symbols debug symbols");
+                t.evaluate("internal-symbols debug internal-symbols");
                 t.evaluate("max-chunks chunk max-chunks");
                 t.evaluate("max-dc-time soar max-dc-time");
                 t.evaluate("max-elaborations soar max-elaborations");

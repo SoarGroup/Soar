@@ -968,7 +968,7 @@ bool clear_gensym_number(agent* /*thisAgent*/, void* item, void*)
 
 bool print_sym(agent* thisAgent, void* item, void*)
 {
-    thisAgent->outputManager->printa_sf(thisAgent,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
+    thisAgent->outputManager->printa_sf(thisAgent,  "%s (%u)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
 
