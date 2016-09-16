@@ -55,6 +55,12 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     dprint(DT_REPAIR, "...goal %y found for level %d.\n", g, pNonOperationalSym->id->level);
 
     lNewPath = new Path_to_Goal_State(g);
+//    if (g == pNonOperationalSym)
+//    {
+////        return (new wme_list());
+//        return NULL;
+//    }
+
     ids_to_walk.push_back(lNewPath);
     g->tc_num = ground_lti_tc;
 
@@ -156,8 +162,8 @@ void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
         m_repair_WMEs.insert(lWME);
         dprint(DT_REPAIR, "......adding to repair wme set: (%y ^%y %y)\n", lWME->id, lWME->attr, lWME->value);
     }
-
 }
+
 Repair_Manager::Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID)
 {
     thisAgent = myAgent;
@@ -391,7 +397,12 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
-        add_path_to_goal_WMEs(lDanglingSymInfo);
+        /* If dangling symbol is a state, then we will have picked it up when we
+         * added the state links above */
+        if (!lDanglingSymInfo->matched_sym->is_state())
+        {
+            add_path_to_goal_WMEs(lDanglingSymInfo);
+        }
     }
 
     /* Create conditions based on set of wme's compiled */
