@@ -108,8 +108,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(allow_opaque_knowledge);
     allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
     add(allow_probabilistic_operators);
-    allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
-    add(allow_multiple_prefs);
+    allow_conflated_reasoning = new soar_module::boolean_param("allow-conflated-reasoning", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
+    add(allow_conflated_reasoning);
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
@@ -229,7 +229,7 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
     }
-    else if (pChangedParam == allow_multiple_prefs)
+    else if (pChangedParam == allow_conflated_reasoning)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
     }
@@ -272,5 +272,5 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);
     allow_opaque_knowledge->set_value(pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] ? on : off);
     allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
-    allow_multiple_prefs->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
+    allow_conflated_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
 }
