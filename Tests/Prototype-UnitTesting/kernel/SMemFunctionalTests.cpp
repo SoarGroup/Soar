@@ -427,7 +427,6 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 
 	agent->ExecuteCommandLine("smem --backup backup.sqlite");
 	agent->ExecuteCommandLine("smem --init");
-	agent->ExecuteCommandLine("ex --all");
 
 	std::string resultOfP = agent->ExecuteCommandLine("p");
 

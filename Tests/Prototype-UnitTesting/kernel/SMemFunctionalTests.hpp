@@ -123,10 +123,10 @@ public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental();
 	
-//	TEST(testDbBackupAndLoadTests, -1)
+	TEST(testDbBackupAndLoadTests, -1)
 	void testDbBackupAndLoadTests();
 	
-//	TEST(testReadCSoarDB, -1)
+	TEST(testReadCSoarDB, -1)
 	void testReadCSoarDB();
 	
 	// CSoar doesn't use Garbage Collection
