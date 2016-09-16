@@ -95,9 +95,9 @@ int main(int argc, char** argv)
 	for (TestCategory* category : tests)
 	{
 		std::cout << std::endl << "================================================" << std::endl << "Running " << category->getCategoryName() << std::endl << "================================================" << std::endl;
-		
+
 		for (TestCategory::TestCategory_test test : category->getTests())
-		{
+        {
 			std::cout << std::get<2>(test) << ": ";
 			std::cout.flush();
 			
