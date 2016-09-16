@@ -24,6 +24,7 @@
 #include "XMLTrace.h"
 
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "lexer.h"

@@ -6,6 +6,7 @@
 #include "soar_module.h"
 #include "symbol.h"
 #include "working_memory.h"
+#include "output_manager.h"
 #include "print.h"
 #include "soar_interface.h"
 #include "decide.h"

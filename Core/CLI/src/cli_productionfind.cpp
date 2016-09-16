@@ -18,6 +18,7 @@
 #include "sml_AgentSML.h"
 #include "agent.h"
 #include "lexer.h"
+#include "output_manager.h"
 #include "print.h"
 #include "mem.h"
 #include "parser.h"

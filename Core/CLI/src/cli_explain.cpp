@@ -21,6 +21,7 @@
 #include "explanation_memory.h"
 #include "misc.h"
 #include "print.h"
+#include "output_manager.h"
 
 #include <string>
 

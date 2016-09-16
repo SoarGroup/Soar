@@ -22,6 +22,7 @@
 #include "sml_KernelSML.h"
 #include "sml_Names.h"
 #include "sml_Utils.h"
+#include "output_manager.h"
 #include "print.h"
 #include "visualize.h"
 

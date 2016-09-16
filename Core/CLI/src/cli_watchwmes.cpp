@@ -16,6 +16,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "parser.h"
+#include "output_manager.h"
 #include "print.h"
 #include "slot.h"
 #include "sml_AgentSML.h"
