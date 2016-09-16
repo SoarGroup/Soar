@@ -18,6 +18,7 @@
 #include "semantic_memory.h"
 #include "slot.h"
 #include "symbol.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "working_memory.h"
@@ -2934,7 +2935,7 @@ void epmem_new_episode(agent* thisAgent)
     epmem_time_id time_counter = thisAgent->EpMem->epmem_stats->time->get_value();
 
     // provide trace output
-    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %ld.\n", static_cast<long int>(time_counter));
+    print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM,  "New episodic memory recorded for time %u.\n", static_cast<long int>(time_counter));
 
     // perform storage
     {
@@ -4806,7 +4807,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
                 }
 
-                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
+                print_sysparam_trace(thisAgent, TRACE_EPMEM_SYSPARAM, "Considering episode (time, cardinality, score) (%u, %u, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
 
                 // if
                 // * the current time is still before any new intervals
@@ -4862,7 +4863,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                     {
                         char buf[256];
                         SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
-                        print(thisAgent, buf);
+                        thisAgent->outputManager->printa_sf(thisAgent, buf);
                         xml_generate_warning(thisAgent, buf);
                     }
                 }

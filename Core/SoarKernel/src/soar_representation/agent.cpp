@@ -232,7 +232,7 @@ agent* create_soar_agent(char* agent_name)                                      
     if (!getcwd(cur_path, MAXPATHLEN))
     {
 		char* error = strerror(errno);
-        print(thisAgent, "Unable to set current directory while initializing agent: %s\n", error);
+        thisAgent->outputManager->printa_sf(thisAgent, "Unable to set current directory while initializing agent: %s\n", error);
     }
 
     for (int productionTypeCounter = 0; productionTypeCounter < NUM_PRODUCTION_TYPES; productionTypeCounter++)
@@ -324,9 +324,7 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->Decider->clean_up_for_agent_deletion();
 
     delete delete_agent->debug_params;
-    delete delete_agent->output_settings;
     delete_agent->debug_params = NULL;
-    delete_agent->output_settings = NULL;
     stats_close(delete_agent);
     delete delete_agent->stats_db;
     delete_agent->stats_db = NULL;
@@ -365,6 +363,9 @@ void destroy_soar_agent(agent* delete_agent)
     remove_trace_format(delete_agent, true, FOR_OPERATORS_TF, NIL);
 
     dprint_identifiers(DT_ID_LEAKING);
+
+    delete delete_agent->output_settings;
+    delete_agent->output_settings = NULL;
 
     /* Releasing hashtables allocated in init_tracing */
     for (int i = 0; i < 3; i++)

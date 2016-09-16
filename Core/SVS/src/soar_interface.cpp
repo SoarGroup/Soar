@@ -6,7 +6,7 @@
 #include "soar_module.h"
 #include "symbol.h"
 #include "working_memory.h"
-#include "print.h"
+#include "output_manager.h"
 #include "soar_interface.h"
 #include "decide.h"
 #include "slot.h"
@@ -193,5 +193,5 @@ wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
 
 void soar_interface::print(const string& msg)
 {
-    print_string(thisAgent, msg.c_str());
+    thisAgent->outputManager->printa(thisAgent, msg.c_str());
 }

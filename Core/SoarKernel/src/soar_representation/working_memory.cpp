@@ -5,6 +5,7 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "print.h"
 #include "rete.h"
 #include "slot.h"
@@ -89,9 +90,9 @@ void reset_wme_timetags(agent* thisAgent)
 {
     if (thisAgent->num_existing_wmes != 0)
     {
-        print(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
-        print(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
-        print(thisAgent,  "(Leaving timetag numbers alone.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
+        thisAgent->outputManager->printa(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;
     }
@@ -307,7 +308,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 {
                     dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
-                    print(thisAgent,  const_cast< char* >(kWarningMessage));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
                     xml_att_val(thisAgent, kTypeString, kWarningMessage);
                     print_wme(thisAgent, w);
