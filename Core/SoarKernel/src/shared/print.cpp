@@ -362,7 +362,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
             thisAgent->outputManager->printa(thisAgent, "impasse ");
             xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
         }
-
+        c_id_test.clear();
         Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, "%t", id_test);
         thisAgent->outputManager->printa(thisAgent, c_id_test.c_str());
         xml_att_val(thisAgent, kConditionId, c_id_test.c_str());
