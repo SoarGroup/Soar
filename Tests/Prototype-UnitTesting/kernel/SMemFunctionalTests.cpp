@@ -110,24 +110,6 @@ void SMemFunctionalTests::testLessNoSolution()
 	runTest("testLessNoSolution", 1);
 }
 
-void SMemFunctionalTests::testMirroring()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMirroring", 4);
-}
-
-void SMemFunctionalTests::testMergeAdd()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeAdd", 4);
-}
-
-void SMemFunctionalTests::testMergeNone()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeNone", 4);
-}
-
 void SMemFunctionalTests::testSimpleStoreMultivaluedAttribute()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
@@ -428,7 +410,7 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 {
 	runTestSetup("testFactorization");
 
-	agent->RunSelf(1178);
+    agent->RunSelf(1223, sml::sml_DECISION);
 
 	std::string resultOfPS1 = agent->ExecuteCommandLine("p s1");
 
@@ -445,8 +427,7 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 
 	agent->ExecuteCommandLine("smem --backup backup.sqlite");
 	agent->ExecuteCommandLine("smem --init");
-
-	agent->ExecuteCommandLine("smem --print");
+	agent->ExecuteCommandLine("ex --all");
 
 	std::string resultOfP = agent->ExecuteCommandLine("p");
 
