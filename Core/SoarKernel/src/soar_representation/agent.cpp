@@ -241,7 +241,6 @@ agent* create_soar_agent(char* agent_name)                                      
         thisAgent->num_productions_of_type[productionTypeCounter] = 0;
     }
 
-    thisAgent->o_support_calculation_type = 4;
     thisAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_SUM;
 
     thisAgent->rhs_functions = NIL;

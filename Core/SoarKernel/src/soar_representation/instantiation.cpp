@@ -693,74 +693,9 @@ void init_instantiation(agent*          thisAgent,
     }
     inst->backtrace_number = 0;
 
-    if ((thisAgent->o_support_calculation_type == 0)
-            || (thisAgent->o_support_calculation_type == 3)
-            || (thisAgent->o_support_calculation_type == 4))
+    if (need_to_do_support_calculations)
     {
-        /* --- do calc's the normal Soar 6 way --- */
-        if (need_to_do_support_calculations)
-        {
-            calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
-        }
-    }
-    else if (thisAgent->o_support_calculation_type == 1)
-    {
-        if (need_to_do_support_calculations)
-        {
-            calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
-        }
-        /* --- do calc's both ways, warn on differences --- */
-        if ((inst->prod->declared_support != DECLARED_O_SUPPORT)
-                && (inst->prod->declared_support != DECLARED_I_SUPPORT))
-        {
-            /* --- At this point, we've done them the normal way.  To look for
-             differences, save o-support flags on a list, then do Doug's
-             calculations, then compare and restore saved flags. --- */
-            list* saved_flags;
-            preference* pref;
-            bool difference_found;
-            saved_flags = NIL;
-            for (pref = inst->preferences_generated; pref != NIL;
-                    pref = pref->inst_next)
-            {
-                push(thisAgent, (pref->o_supported ? pref : NIL), saved_flags);
-            }
-            saved_flags = destructively_reverse_list(saved_flags);
-            dougs_calculate_support_for_instantiation_preferences(thisAgent,
-                    inst);
-            difference_found = false;
-            for (pref = inst->preferences_generated; pref != NIL;
-                    pref = pref->inst_next)
-            {
-                cons* c;
-                bool b;
-                c = saved_flags;
-                saved_flags = c->rest;
-                b = (c->first ? true : false);
-                free_cons(thisAgent, c);
-                if (pref->o_supported != b)
-                {
-                    difference_found = true;
-                }
-                pref->o_supported = b;
-            }
-            if (difference_found)
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                                   "\n*** O-support difference found in production %y",
-                                   inst->prod_name);
-            }
-        }
-    }
-    else
-    {
-        /* --- do calc's Doug's way --- */
-        if ((inst->prod->declared_support != DECLARED_O_SUPPORT)
-                && (inst->prod->declared_support != DECLARED_I_SUPPORT))
-        {
-            dougs_calculate_support_for_instantiation_preferences(thisAgent,
-                    inst);
-        }
+        calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
     }
 }
 
@@ -770,7 +705,232 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
             && (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
                                      + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
+/* -----------------------------------------------------------------------
+                    Run-Time O-Support Calculation
 
+   This routine calculates o-support for each preference for the given
+   instantiation, filling in pref->o_supported (true or false) on each one.
+
+   The following predicates are used for support calculations.  In the
+   following, "lhs has some elt. ..." means the lhs has some id or value
+   at any nesting level.
+
+     lhs_oa_support:
+       (1) does lhs test (match_goal ^operator match_operator NO) ?
+       (2) mark TC (match_operator) using TM;
+           does lhs has some elt. in TC but != match_operator ?
+       (3) mark TC (match_state) using TM;
+           does lhs has some elt. in TC ?
+     lhs_oc_support:
+       (1) mark TC (match_state) using TM;
+           does lhs has some elt. in TC but != match_state ?
+     lhs_om_support:
+       (1) does lhs tests (match_goal ^operator) ?
+       (2) mark TC (match_state) using TM;
+           does lhs has some elt. in TC but != match_state ?
+
+     rhs_oa_support:
+       mark TC (match_state) using TM+RHS;
+       if pref.id is in TC, give support
+     rhs_oc_support:
+       mark TC (inst.rhsoperators) using TM+RHS;
+       if pref.id is in TC, give support
+     rhs_om_support:
+       mark TC (inst.lhsoperators) using TM+RHS;
+       if pref.id is in TC, give support
+
+   BUGBUG the code does a check of whether the lhs tests the match state via
+          looking just at id and value fields of top-level positive cond's.
+          It doesn't look at the attr field, or at any negative or NCC's.
+          I'm not sure whether this is right or not.  (It's a pretty
+          obscure case, though.)
+----------------------------------------------------------------------- */
+void calculate_support_for_instantiation_preferences(agent* thisAgent, instantiation* inst, instantiation* original_inst)
+{
+    preference* pref;
+    wme* w;
+    condition* c;
+    action*    act;
+    bool      o_support, op_elab;
+    bool      operator_proposal;
+    char      action_attr[50];
+    int       pass;
+    wme*       lowest_goal_wme;
+
+    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+    {
+        printf("\n      in calculate_support_for_instantiation_preferences:");
+        xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
+    }
+    o_support = false;
+    op_elab = false;
+
+    if (inst->prod->declared_support == DECLARED_O_SUPPORT)
+    {
+        o_support = true;
+    }
+    else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
+    {
+        o_support = false;
+    }
+    else if (inst->prod->declared_support == UNDECLARED_SUPPORT)
+    {
+
+        /*
+        check if the instantiation is proposing an operator.  if it
+        is, then this instantiation is i-supported.
+         */
+
+        operator_proposal = false;
+        instantiation* non_variabilized_inst = original_inst ? original_inst : inst;
+
+        if (non_variabilized_inst->rete_wme)
+        {
+            for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next)
+            {
+                if ((act->type == MAKE_ACTION)  &&
+                        (rhs_value_is_symbol(act->attr)) &&
+                        (strcmp(rhs_value_to_string(act->attr, action_attr, 50), "operator") == NIL) &&
+                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
+                {
+                    if (rhs_value_is_reteloc(act->id) &&
+                        get_symbol_from_rete_loc(
+                            rhs_value_to_reteloc_levels_up(act->id),
+                            rhs_value_to_reteloc_field_num(act->id),
+                            non_variabilized_inst->rete_token,
+                            non_variabilized_inst->rete_wme)->is_state())
+                    {
+                        operator_proposal = true;
+                        o_support = false;
+                        break;
+                    }
+                    else if (rhs_value_is_symbol(act->id))
+                    {
+                        Symbol* lSym = rhs_value_to_symbol(act->id);
+                        /* -- Not sure rhs id can even be a symbol at this point.  Temporary warning here. -- */
+                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences(). Please report"
+                              " to Soar Umich group.\n", lSym);
+                        if (lSym->is_state())
+                        {
+                            operator_proposal = true;
+                            o_support = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (operator_proposal == false)
+        {
+            /* An operator wasn't being proposed, so now we need to test if
+            the operator is being tested on the LHS.
+
+            i'll need to make two passes over the wmes that pertain to
+            this instantiation.  the first pass looks for the lowest goal
+            identifier.  the second pass looks for a wme of the form:
+
+            (<lowest-goal-id> ^operator ...)
+
+            if such a wme is found, then this o-support = true; false otherwise.
+
+            this code is essentially identical to that in
+            p_node_left_addition() in rete.c. */
+
+            lowest_goal_wme = NIL;
+
+            for (pass = 0; pass != 2; pass++)
+            {
+
+                for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
+                {
+                    if (c->type == POSITIVE_CONDITION)
+                    {
+                        w = c->bt.wme_;
+
+                        if (pass == 0)
+                        {
+
+                            if (w->id->id->isa_goal == true)
+                            {
+
+                                if (lowest_goal_wme == NIL)
+                                {
+                                    lowest_goal_wme = w;
+                                }
+
+                                else
+                                {
+                                    if (w->id->id->level > lowest_goal_wme->id->id->level)
+                                    {
+                                        lowest_goal_wme = w;
+                                    }
+                                }
+                            }
+
+                        }
+
+                        else
+                        {
+                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                                (w->acceptable == false) &&
+                                (w->id == lowest_goal_wme->id))
+                            {
+                                /* iff RHS has only operator elaborations
+                                    then it's IE_PROD, otherwise PE_PROD, so
+                                    look for non-op-elabs in the actions  KJC 1/00 */
+                                for (act = inst->prod->action_list;
+                                    act != NIL ; act = act->next)
+                                {
+                                    if (act->type == MAKE_ACTION)
+                                    {
+                                        if ((rhs_value_is_symbol(act->id)) &&
+                                            (rhs_value_to_symbol(act->id) == w->value))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else if (rhs_value_is_reteloc(act->id) &&
+                                            w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), inst->rete_token, w))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else
+                                        {
+                                            /* this is not an operator elaboration */
+                                            o_support = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (o_support == true)
+    {
+
+        if (op_elab == true)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y", inst->prod_name);
+
+            growable_string gs = make_blank_growable_string(thisAgent);
+            add_to_growable_string(thisAgent, &gs, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod ");
+            add_to_growable_string(thisAgent, &gs, inst->prod_name->to_string(true));
+            xml_generate_warning(thisAgent, text_of_growable_string(gs));
+            free_growable_string(thisAgent, gs);
+
+            o_support = false;
+        }
+    }
+
+    for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
+    {
+        pref->o_supported = o_support;
+    }
+}
 /* -----------------------------------------------------------------------
  Create Instantiation
 

@@ -27,11 +27,6 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     pDecider_settings[DECIDER_MAX_NIL_OUTPUT_CYCLES] = 15;
     pDecider_settings[DECIDER_WAIT_SNC] = 0;
 
-    o_support_mode = new soar_module::constant_param<OSupportModes>("o-support-mode", OMode4, new soar_module::f_predicate<OSupportModes>());
-    o_support_mode->add_mapping(OMode4, "4");
-    o_support_mode->add_mapping(OMode3, "3");
-    add(o_support_mode);
-
     stop_phase = new soar_module::constant_param<top_level_phase>("stop-phase", APPLY_PHASE, new soar_module::f_predicate<top_level_phase>());
     stop_phase->add_mapping(APPLY_PHASE, "apply");
     stop_phase->add_mapping(DECISION_PHASE, "decide");
@@ -100,18 +95,7 @@ void decider_param_container::update_int_setting(agent* thisAgent, soar_module::
 }
 void decider_param_container::update_enum_setting(agent* thisAgent, soar_module::param* pChangedParam, sml::KernelSML* pKernelSML)
 {
-    if (pChangedParam == o_support_mode)
-    {
-        if (o_support_mode->get_value() == OMode4)
-        {
-            thisAgent->Decider->settings[DECIDER_O_SUPPORT_MODE] = 4;
-        }
-        else if (o_support_mode->get_value() == OMode3)
-        {
-            thisAgent->Decider->settings[DECIDER_O_SUPPORT_MODE] = 3;
-        }
-    }
-    else if (pChangedParam == stop_phase)
+    if (pChangedParam == stop_phase)
     {
         thisAgent->Decider->settings[DECIDER_STOP_PHASE] = stop_phase->get_value();
 
@@ -155,7 +139,6 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-gp", max_gp->get_string(), 50).c_str(), "Maximum rules gp can generate");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 50).c_str(), "Phase before which Soar will stop");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 50).c_str(), "Wait after state-no-change");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("o-support-mode", o_support_mode->get_string(), 50).c_str(), "O-Support Mode");
     outputManager->printa(thisAgent, "---------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- soar <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help soar\n");

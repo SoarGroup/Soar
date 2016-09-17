@@ -393,25 +393,10 @@ production* make_production(agent*          thisAgent,
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-#ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
-        calculate_compile_time_o_support(*lhs_top, *rhs_top);
-#ifdef DEBUG_CT_OSUPPORT
-        for (a = *rhs_top; a != NIL; a = a->next)
-            if ((a->type == MAKE_ACTION) && (a->support == UNKNOWN_SUPPORT))
-            {
-                break;
-            }
-        if (a)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "\nCan't classify %y\n", name);
-        }
-#endif
-#else
         for (a = *rhs_top; a != NIL; a = a->next)
         {
             a->support = UNKNOWN_SUPPORT;
         }
-#endif
     }
     else
     {

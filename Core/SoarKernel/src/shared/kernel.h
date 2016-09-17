@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 /* Defining SOAR_RELEASE_VERSION will:
  *
@@ -62,11 +62,10 @@
     //#define DEBUG_TRACE_REFCOUNT_INVENTORY
 
     //#define DEBUG_EPMEM_WME_ADD
-    //#define DEBUG_MEMORY  /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
+    //#define DEBUG_MEMORY        /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
     //#define DEBUG_PREFS         /* -- Preference printouts -- */
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
-    //#define DEBUG_CT_OSUPPORT /* Print names of productions that can't be fully compile-time o-support evaluated */
 
     /* -- Low level GDS debug information -- */
     //#define DEBUG_GDS
@@ -102,9 +101,6 @@
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
 //#define SHARING_FACTORS           /* gather statistics on beta node sharing */
 //#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
-
-//#define DO_COMPILE_TIME_O_SUPPORT_CALCS      /* comment out the following line to suppress compile-time o-support calculations */
-//#define LIST_COMPILE_TIME_O_SUPPORT_FAILURES   /* get printouts of names of productions that can't be fully compile-time o-support evaluated*/
 
 /* ---------------- Macros for safe counters -------------- */
 

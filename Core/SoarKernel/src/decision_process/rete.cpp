@@ -6348,51 +6348,42 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         {
                             if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
                             {
-                                if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4))
-                                {
-                                    /* iff RHS has only operator elaborations
+                                /* iff RHS has only operator elaborations
                                     then it's IE_PROD, otherwise PE_PROD, so
                                     look for non-op-elabs in the actions  KJC 1/00 */
 
 
-                                    /* We also need to check reteloc's to see if they
+                                /* We also need to check reteloc's to see if they
                                     are referring to operator augmentations before determining
                                     if this is an operator elaboration
-                                    */
+                                 */
 
-                                    for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
+                                for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
+                                {
+                                    if (act->type == MAKE_ACTION)
                                     {
-                                        if (act->type == MAKE_ACTION)
-                                        {
-                                            if ((rhs_value_is_symbol(act->id)) &&
+                                        if ((rhs_value_is_symbol(act->id)) &&
 
-                                                    /** shouldn't this be either
+                                            /** shouldn't this be either
                                                     symbol_to_rhs_value (act->id) ==  or
                                                     act->id == rhs_value_to_symbol(temp..)**/
-                                                    (rhs_value_to_symbol(act->id) ==
-                                                     temp_tok->w->value))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else if ((thisAgent->o_support_calculation_type == 4)
-                                                     && (rhs_value_is_reteloc(act->id))
-                                                     && (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else
-                                            {
-                                                /* this is not an operator elaboration */
-                                                prod_type = PE_PRODS;
-                                            }
-                                        } // act->type == MAKE_ACTION
-                                    } // for
-                                }
-                                else
-                                {
-                                    prod_type = PE_PRODS;
-                                    break;
-                                }
+                                            (rhs_value_to_symbol(act->id) ==
+                                                temp_tok->w->value))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else if (rhs_value_is_reteloc(act->id) &&
+                                            (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else
+                                        {
+                                            /* this is not an operator elaboration */
+                                            prod_type = PE_PRODS;
+                                        }
+                                    } // act->type == MAKE_ACTION
+                                } // for
                             }
                         } /* end if (pass == 0) ... */
                         temp_tok = temp_tok->parent;
@@ -6400,38 +6391,19 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                     if (prod_type == PE_PRODS)
                     {
-                        if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4))
-                        {
-                            break;
-                        }
-                        else if (op_elab == true)
+                        if (op_elab == true)
                         {
 
                             /* warn user about mixed actions */
 
-                            if ((thisAgent->o_support_calculation_type == 3) && thisAgent->outputManager->settings[OM_WARNINGS])
+                            if (thisAgent->outputManager->settings[OM_WARNINGS])
                             {
-                                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+                                thisAgent->outputManager->printa_sf(thisAgent, "\Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
                                                    node->b.p.prod->name);
 
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
-                                xml_generate_warning(thisAgent, text_of_growable_string(gs));
-                                free_growable_string(thisAgent, gs);
-
-                                prod_type = PE_PRODS;
-                                break;
-                            }
-                            else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->outputManager->settings[OM_WARNINGS])
-                            {
-                                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-                                                   node->b.p.prod->name);
-
-                                // XML generation
-                                growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+                                add_to_growable_string(thisAgent, &gs, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod ");
                                 add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);

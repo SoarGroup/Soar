@@ -16,7 +16,6 @@ class decider_param_container: public soar_module::param_container
 {
     public:
 
-        soar_module::constant_param<OSupportModes>* o_support_mode;
         soar_module::constant_param<top_level_phase>* stop_phase;
 
         soar_module::integer_param* max_gp;

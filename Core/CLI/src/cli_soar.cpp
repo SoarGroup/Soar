@@ -85,7 +85,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage(&tempStringStream);
         }
         const char* lCmdName = pAttr->c_str();
-        if (!strcmp(lCmdName, "o-support-mode") || !strcmp(lCmdName, "stop-phase"))
+        if (!strcmp(lCmdName, "stop-phase"))
         {
             thisAgent->Decider->params->update_enum_setting(thisAgent, my_param, m_pKernelSML);
         } else if (
