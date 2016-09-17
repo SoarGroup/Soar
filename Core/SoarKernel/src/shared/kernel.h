@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 /* Defining SOAR_RELEASE_VERSION will:
  *
@@ -20,16 +20,16 @@
  * 2 -  Soar will not re-direct all printing output from callbacks to cout
  *         (useful for debugging, keeps things in the right order)
  * 3 -  Use a union for type-specific Symbol pointers (artifact of refactoring)
- * 4 -  Soar will exit if init-soar fails due to identifiers that were not deallocated
- * 5 -  Chunking debug information that maps identities to variables will NOT be cached
- * 6 -  Memory pools and memory pool allocators will be turned on (if disabled below)
- * 7 -  Debugging #defines below will be disabled
+ * 4 -  Chunking debug information that maps identities to variables will NOT be cached
+ * 5 -  Memory pools and memory pool allocators will be turned on (if disabled below)
+ * 6 -  Debugging flags below will be disabled
  *
  * Note:  The default build is optimized, so NDEBUG will be true.  When we see
  *        this, we define SOAR_RELEASE_VERSION to true.
  *
  *        (use --dbg for debug build)
  * */
+/* -- Note tracing #defines that enable SQL processing and errors can be found in soar_db.cpp -- */
 
 
 #ifdef NDEBUG
@@ -91,11 +91,9 @@
 /* ----------------- Compiles directives that alter Soar behavior ---------------------- */
 
 //#define DO_TOP_LEVEL_REF_CTS
-#define O_REJECTS_FIRST
 #define BUG_139_WORKAROUND
 #define DISCARD_CHUNK_VARNAMES false
 
-/* -- Tracing functions that print SQL processing and errors can be found in soar_db.cpp! -- */
 
 /* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
 //#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */

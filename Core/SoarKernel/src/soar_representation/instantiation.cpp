@@ -32,7 +32,6 @@
 #include "instantiation.h"
 #include "mem.h"
 #include "misc.h"
-#include "osupport.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "output_manager.h"
@@ -590,122 +589,6 @@ abort_execute_action: /* control comes here when some error occurred */
 }
 
 /* -----------------------------------------------------------------------
- Fill In New Instantiation Stuff
-
- This routine fills in a newly created instantiation structure with
- various information.   At input, the instantiation should have:
- - preferences_generated filled in;
- - instantiated conditions filled in;
- - top-level positive conditions should have bt.wme_, bt.level, and
- bt.trace filled in, but bt.wme_ and bt.trace shouldn't have their
- reference counts incremented yet.
-
- This routine does the following:
- - increments reference count on production;
- - fills in match_goal and match_goal_level;
- - for each top-level positive cond:
- replaces bt.trace with the preference for the correct level,
- updates reference counts on bt.pref and bt.wmetraces and wmes
- - for each preference_generated, adds that pref to the list of all
- pref's for the match goal
- - fills in backtrace_number;
- - if "need_to_do_support_calculations" is true, calculates o-support
- for preferences_generated;
- ----------------------------------------------------------------------- */
-
-void init_instantiation(agent*          thisAgent,
-                        instantiation*  inst,
-                        bool            need_to_do_support_calculations,
-                        instantiation*  original_inst)
-{
-    condition* cond;
-    preference* p;
-    goal_stack_level level;
-
-    production_add_ref(inst->prod);
-
-    find_match_goal(inst);
-
-    level = inst->match_goal_level;
-
-    /* Note: since we'll never backtrace through instantiations at the top
-     level, it might make sense to not increment the reference counts
-     on the wmes and preferences here if the instantiation is at the top
-     level.  As it stands now, we could gradually accumulate garbage at
-     the top level if we have a never-ending sequence of production
-     firings at the top level that chain on each other's results.  (E.g.,
-     incrementing a counter on every decision cycle.)  I'm leaving it this
-     way for now, because if we go to S-Support, we'll (I think) need to
-     save these around (maybe). */
-
-    /* KJC 6/00:  maintaining all the top level ref cts does have a big
-     impact on memory pool usage and also performance (due to malloc).
-     (See tests done by Scott Wallace Fall 99.)  Therefore added
-     preprocessor macro so that by unsetting macro the top level ref cts are not
-     incremented.  It's possible that in some systems, these ref cts may
-     be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
-     */
-
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
-    {
-        if (cond->type == POSITIVE_CONDITION)
-        {
-#ifdef DO_TOP_LEVEL_REF_CTS
-            wme_add_ref(cond->bt.wme_);
-#else
-            if (level > TOP_GOAL_LEVEL)
-            {
-                wme_add_ref(cond->bt.wme_);
-            }
-#endif
-            /* --- if trace is for a lower level, find one for this level --- */
-            if (cond->bt.trace)
-            {
-                if (cond->bt.trace->inst->match_goal_level > level)
-                {
-                    cond->bt.trace = find_clone_for_level(cond->bt.trace,
-                                                          level);
-                }
-#ifdef DO_TOP_LEVEL_REF_CTS
-                if (cond->bt.trace)
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-#else
-                if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-#endif
-            }
-        }
-        cond->inst = inst;
-    }
-
-    if (inst->match_goal)
-    {
-        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
-        {
-            insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p,
-                                  all_of_goal_next, all_of_goal_prev);
-            p->on_goal_list = true;
-        }
-    }
-    inst->backtrace_number = 0;
-
-    if (need_to_do_support_calculations)
-    {
-        calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
-    }
-}
-
-inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
-{
-    return ((inst)->prod
-            && (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
-                                     + (inst)->prod->type] || ((inst)->prod->trace_firings)));
-}
-/* -----------------------------------------------------------------------
                     Run-Time O-Support Calculation
 
    This routine calculates o-support for each preference for the given
@@ -930,6 +813,123 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     {
         pref->o_supported = o_support;
     }
+}
+
+/* -----------------------------------------------------------------------
+ Fill In New Instantiation Stuff
+
+ This routine fills in a newly created instantiation structure with
+ various information.   At input, the instantiation should have:
+ - preferences_generated filled in;
+ - instantiated conditions filled in;
+ - top-level positive conditions should have bt.wme_, bt.level, and
+ bt.trace filled in, but bt.wme_ and bt.trace shouldn't have their
+ reference counts incremented yet.
+
+ This routine does the following:
+ - increments reference count on production;
+ - fills in match_goal and match_goal_level;
+ - for each top-level positive cond:
+ replaces bt.trace with the preference for the correct level,
+ updates reference counts on bt.pref and bt.wmetraces and wmes
+ - for each preference_generated, adds that pref to the list of all
+ pref's for the match goal
+ - fills in backtrace_number;
+ - if "need_to_do_support_calculations" is true, calculates o-support
+ for preferences_generated;
+ ----------------------------------------------------------------------- */
+
+void init_instantiation(agent*          thisAgent,
+                        instantiation*  inst,
+                        bool            need_to_do_support_calculations,
+                        instantiation*  original_inst)
+{
+    condition* cond;
+    preference* p;
+    goal_stack_level level;
+
+    production_add_ref(inst->prod);
+
+    find_match_goal(inst);
+
+    level = inst->match_goal_level;
+
+    /* Note: since we'll never backtrace through instantiations at the top
+     level, it might make sense to not increment the reference counts
+     on the wmes and preferences here if the instantiation is at the top
+     level.  As it stands now, we could gradually accumulate garbage at
+     the top level if we have a never-ending sequence of production
+     firings at the top level that chain on each other's results.  (E.g.,
+     incrementing a counter on every decision cycle.)  I'm leaving it this
+     way for now, because if we go to S-Support, we'll (I think) need to
+     save these around (maybe). */
+
+    /* KJC 6/00:  maintaining all the top level ref cts does have a big
+     impact on memory pool usage and also performance (due to malloc).
+     (See tests done by Scott Wallace Fall 99.)  Therefore added
+     preprocessor macro so that by unsetting macro the top level ref cts are not
+     incremented.  It's possible that in some systems, these ref cts may
+     be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
+     */
+
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+    {
+        if (cond->type == POSITIVE_CONDITION)
+        {
+#ifdef DO_TOP_LEVEL_REF_CTS
+            wme_add_ref(cond->bt.wme_);
+#else
+            if (level > TOP_GOAL_LEVEL)
+            {
+                wme_add_ref(cond->bt.wme_);
+            }
+#endif
+            /* --- if trace is for a lower level, find one for this level --- */
+            if (cond->bt.trace)
+            {
+                if (cond->bt.trace->inst->match_goal_level > level)
+                {
+                    cond->bt.trace = find_clone_for_level(cond->bt.trace,
+                                                          level);
+                }
+#ifdef DO_TOP_LEVEL_REF_CTS
+                if (cond->bt.trace)
+                {
+                    preference_add_ref(cond->bt.trace);
+                }
+#else
+                if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
+                {
+                    preference_add_ref(cond->bt.trace);
+                }
+#endif
+            }
+        }
+        cond->inst = inst;
+    }
+
+    if (inst->match_goal)
+    {
+        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        {
+            insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p,
+                                  all_of_goal_next, all_of_goal_prev);
+            p->on_goal_list = true;
+        }
+    }
+    inst->backtrace_number = 0;
+
+    if (need_to_do_support_calculations)
+    {
+        calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
+    }
+}
+
+inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
+{
+    return ((inst)->prod
+            && (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
+                                     + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
 /* -----------------------------------------------------------------------
  Create Instantiation

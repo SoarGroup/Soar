@@ -5,7 +5,6 @@
 #include "src/decision_process/decider.cpp"
 #include "src/decision_process/decider_settings.cpp"
 #include "src/decision_process/decision_manipulation.cpp"
-#include "src/decision_process/osupport.cpp"
 #include "src/decision_process/rete.cpp"
 #include "src/decision_process/run_soar.cpp"
 #include "src/episodic_memory/episodic_memory.cpp"
