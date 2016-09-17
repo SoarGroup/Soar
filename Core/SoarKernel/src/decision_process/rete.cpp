@@ -6398,7 +6398,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                             if (thisAgent->outputManager->settings[OM_WARNINGS])
                             {
-                                thisAgent->outputManager->printa_sf(thisAgent, "\Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
+                                thisAgent->outputManager->printa_sf(thisAgent, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
                                                    node->b.p.prod->name);
 
                                 // XML generation

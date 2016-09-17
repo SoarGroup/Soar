@@ -91,26 +91,6 @@ const std::string string_to_escaped_string(char* s, char first_and_last_char)
     return returnStr;
 }
 
-
-char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
-{
-    switch (sym->symbol_type)
-    {
-        case VARIABLE_SYMBOL_TYPE:
-            return kTypeVariable ;
-        case IDENTIFIER_SYMBOL_TYPE:
-            return kTypeID ;
-        case INT_CONSTANT_SYMBOL_TYPE:
-            return kTypeInt ;
-        case FLOAT_CONSTANT_SYMBOL_TYPE:
-            return kTypeDouble ;
-        case STR_CONSTANT_SYMBOL_TYPE:
-            return kTypeString ;
-        default:
-            return 0 ;
-    }
-}
-
 char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
 {
     cons* c;
