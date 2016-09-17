@@ -100,14 +100,6 @@ class Output_Manager
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
-        /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
-         *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
-         *    function calls that use that buffer within one print statements.  There are
-         *    probably better approaches, but this avoided revising a lot of other code and
-         *    does the job.  -- */
-        char        printed_output_strings[output_string_size][num_output_strings];
-        int64_t     next_output_string;
-
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
@@ -173,15 +165,6 @@ class Output_Manager
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
-
-        char* get_printed_output_string()
-        {
-            if (++next_output_string == num_output_strings)
-            {
-                next_output_string = 0;
-            }
-            return printed_output_strings[next_output_string];
-        }
 
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);

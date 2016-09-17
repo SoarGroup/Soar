@@ -116,7 +116,7 @@ char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
     cons* c;
     list* fl;
     rhs_function* rf;
-    char* ch;
+    std::string lStr;
 
     if (rhs_value_is_reteloc(rv))
     {
@@ -134,56 +134,31 @@ char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
 
-    if (!dest)
-    {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-
-    strncpy(ch, "(", dest_size);
-    ch[dest_size - 1] = 0;
-    while (*ch)
-    {
-        ch++;
-    }
-
+    lStr.push_back('(');
     if (!strcmp(rf->name->sc->name, "+"))
     {
-        strncpy(ch, "+", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
+        lStr.push_back('+');
     }
     else if (!strcmp(rf->name->sc->name, "-"))
     {
-        strncpy(ch, "-", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
+        lStr.push_back('-');
     }
     else
     {
-        rf->name->to_string(true, ch, dest_size - (ch - dest));
+        lStr.append(rf->name->to_string(true));
     }
 
-    while (*ch)
-    {
-        ch++;
-    }
     for (c = fl->rest; c != NIL; c = c->rest)
     {
-        strncpy(ch, " ", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
-        while (*ch)
-        {
-            ch++;
-        }
-        rhs_value_to_string(static_cast<char*>(c->first), ch, dest_size - (ch - dest));
-        while (*ch)
-        {
-            ch++;
-        }
+        lStr.push_back(' ');
+        lStr.append(rhs_value_to_string(static_cast<char*>(c->first)));
     }
-    strncpy(ch, ")", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0;
-    return dest;
+    lStr.push_back(')');
+
+    if (rf->cached_print_str) free_memory_block_for_string(rf->thisAgent, rf->cached_print_str);
+    rf->cached_print_str = make_memory_block_for_string(rf->thisAgent, lStr.c_str());
+
+    return rf->cached_print_str;
 }
 
 /* UITODO| Make this preference type to string.  Maybe move to preference struct? */
