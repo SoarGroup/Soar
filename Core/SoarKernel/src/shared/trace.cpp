@@ -657,15 +657,19 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
         {
             case STRING_TFT:
             {
-                char* s;
-                size_t i, len;
+                std::string temp;
+                temp = string_to_escaped_string(tf->data.string, '"');
+                thisAgent->outputManager->printa_sf(thisAgent,  "%s", temp.c_str());
 
-                s = string_to_escaped_string(tf->data.string, '"', NULL);
-                len = strlen(s);
-                for (i = 1; i < len - 1; i++)
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent,  "%c", *(s + i));
-                }
+//                char* s;
+//                size_t i, len;
+//
+//                s = string_to_escaped_string(tf->data.string, '"', NULL);
+//                len = strlen(s);
+//                for (i = 1; i < len - 1; i++)
+//                {
+//                    thisAgent->outputManager->printa_sf(thisAgent,  "%c", *(s + i));
+//                }
             }
             break;
             case PERCENT_TFT:

@@ -45,6 +45,7 @@
 #include "kernel.h"
 
 #include <stdio.h>  // Needed for FILE token below
+#include <string>
 
 typedef struct wme_filter_struct
 {
@@ -95,7 +96,7 @@ void filtered_print_wme_add(agent* thisAgent, wme* w);
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-char* string_to_escaped_string(char* s, char first_and_last_char, char* dest);
+const std::string string_to_escaped_string(char* s, char first_and_last_char);
 char* rhs_value_to_string(rhs_value rv, char* dest = NULL, size_t dest_size = 0);
 
 inline char bool_to_char(bool b)

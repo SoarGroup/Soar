@@ -75,27 +75,20 @@ void print_spaces(agent* thisAgent, int n)
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-char* string_to_escaped_string(char* s, char first_and_last_char, char* dest)
+const std::string string_to_escaped_string(char* s, char first_and_last_char)
 {
-    char* ch;
-
-    if (!dest)
-    {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
-    }
-    ch = dest;
-    *ch++ = first_and_last_char;
+    std::string returnStr;
+    returnStr.push_back(first_and_last_char);
     while (*s)
     {
         if ((*s == first_and_last_char) || (*s == '\\'))
         {
-            *ch++ = '\\';
+            returnStr.push_back('\\');
         }
-        *ch++ = *s++;
+        returnStr.push_back(*s++);
     }
-    *ch++ = first_and_last_char;
-    *ch = 0;
-    return dest;
+    returnStr.push_back(first_and_last_char);
+    return returnStr;
 }
 
 
@@ -625,10 +618,10 @@ void print_production(agent* thisAgent, production* p, bool internal)
     */
     if (p->documentation)
     {
-        char temp[output_string_size];
-        string_to_escaped_string(p->documentation, '"', temp);
-        thisAgent->outputManager->printa_sf(thisAgent, "    %s\n", temp);
-        xml_att_val(thisAgent, kProductionDocumentation, temp);
+        std::string temp;
+        temp = string_to_escaped_string(p->documentation, '"');
+        thisAgent->outputManager->printa_sf(thisAgent, "    %s\n", temp.c_str());
+        xml_att_val(thisAgent, kProductionDocumentation, temp.c_str());
     }
 
     /*
