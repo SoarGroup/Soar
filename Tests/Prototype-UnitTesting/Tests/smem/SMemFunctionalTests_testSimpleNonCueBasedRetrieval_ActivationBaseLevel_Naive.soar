@@ -1,4 +1,3 @@
-smem --set learning on
 smem --set activation-mode base-level
 smem --set activate-on-query on
 
@@ -9,10 +8,12 @@ smem --add {
   (<x> ^name foo
   	   ^location <loc>)
   (<loc> ^x 1 ^y 2 ^z 3) 
-  (<x2> ^name foo
+  (<x2> ^name bar
         ^location <loc2>)
   (<loc2> ^x 2 ^y 3 ^z 1)
 }
+
+smem --set learning on
 
 sp {propose*first-query
   (state <s> ^superstate nil 
@@ -49,7 +50,7 @@ sp {apply*second-query
 
 sp {success
   (state <s> ^smem.result.retrieved <lti>)
-  (<lti> ^x 2 ^y 3 ^z 1)
+  (<lti> ^x 1 ^y 2 ^z 3)
 -->
   (write |Success!|)
   (halt)

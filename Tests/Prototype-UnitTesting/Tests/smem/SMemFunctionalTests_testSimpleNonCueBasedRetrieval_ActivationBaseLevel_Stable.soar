@@ -1,15 +1,14 @@
-smem --set learning on
 smem --set activation-mode base-level
 smem --set activate-on-query on
 
 smem --set base-update-policy stable
-
+smem --set learning on
 # Add some data with multiple levels
 smem --add {
   (<x> ^name foo
   	   ^location <loc>)
   (<loc> ^x 1 ^y 2 ^z 3) 
-  (<x2> ^name foo
+  (<x2> ^name bar
         ^location <loc2>)
   (<loc2> ^x 2 ^y 3 ^z 1)
 }
@@ -40,19 +39,19 @@ sp {propose*second-query
 sp {apply*second-query
   (state <s> ^operator.name second-query
              ^smem.command <sc>
-             ^smem.result.retrieved.location <loc>)
   (<sc> ^query <first-query>)
 -->
   (<sc> ^query <first-query> -)
-  (<sc> ^retrieve <loc>)
+  (<sc> ^query foo)
 }
 
 sp {success
   (state <s> ^smem.result.retrieved <lti>)
-  (<lti> ^x 2 ^y 3 ^z 1)
+  (<lti> ^name foo)
 -->
   (write |Success!|)
   (halt)
+  (cmd smem -b test)
 }
 
 
