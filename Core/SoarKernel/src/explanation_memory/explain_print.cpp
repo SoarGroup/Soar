@@ -274,38 +274,38 @@ void Explanation_Memory::print_chunk_explanation()
 
 void Explanation_Memory::print_explain_summary()
 {
-    outputManager->set_column_indent(0, 4);
-    outputManager->set_column_indent(1, 50);
-    outputManager->set_column_indent(2, 49);
-    outputManager->printa_sf(thisAgent, "%fExplainer Settings:\n");
-    outputManager->printa_sf(thisAgent, "%-Watch all chunk formations        %-%s\n", (enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "%-Number of specific rules watched  %-%d\n", num_rules_watched);
+    outputManager->set_column_indent(0, 55);
+    outputManager->set_column_indent(1, 54);
+    outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
+    outputManager->printa(thisAgent,    "                       Explainer Status\n");
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!enabled)
     {
         /* Print last 10 rules watched*/
-        outputManager->printa_sf(thisAgent, "%-Rules watched:");
+        outputManager->printa_sf(thisAgent, "Rules watched:");
         print_rules_watched(10);
-        /* When we add time interval option, print it here */
     }
 
     outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "%-Chunks available for discussion:");
+    outputManager->printa_sf(thisAgent, "Chunks available for discussion:");
     print_chunk_list(10);
 
     outputManager->printa(thisAgent, "\n");
 
     /* Print current chunk and last 10 chunks formed */
-    outputManager->printa_sf(thisAgent, "%-Current chunk being discussed: %-%s",
+    outputManager->printa_sf(thisAgent, "Current chunk being discussed: %-%s",
         (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
     if (current_discussed_chunk)
     {
-        outputManager->printa_sf(thisAgent, "(c%u)\n\n", current_discussed_chunk->chunkID);
+        outputManager->printa_sf(thisAgent, "(c %u)\n\n", current_discussed_chunk->chunkID);
     } else {
         outputManager->printa(thisAgent, "\n\n");
     }
-    outputManager->printa(thisAgent, "Type 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
+    outputManager->printa(thisAgent, "Use 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
 }
 
 void Explanation_Memory::print_all_watched_rules()
