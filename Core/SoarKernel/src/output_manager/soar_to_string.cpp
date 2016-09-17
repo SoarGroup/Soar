@@ -27,6 +27,8 @@
 #include "test.h"
 #include "working_memory.h"
 
+#include "soar_TraceNames.h"
+
 #include <vector>
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
@@ -55,6 +57,37 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
         }
     }
     return;
+}
+
+const char* Output_Manager::phase_to_string(top_level_phase pPhase)
+{
+    switch (pPhase)
+    {
+        case INPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Input;
+            break;
+        case PREFERENCE_PHASE:
+            return soar_TraceNames::kPhaseName_Pref;
+            break;
+        case WM_PHASE:
+            return soar_TraceNames::kPhaseName_WM;
+            break;
+        case DECISION_PHASE:
+            return soar_TraceNames::kPhaseName_Decision;
+            break;
+        case OUTPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Output;
+            break;
+        case PROPOSE_PHASE:
+            return soar_TraceNames::kPhaseName_Propose;
+            break;
+        case APPLY_PHASE:
+            return soar_TraceNames::kPhaseName_Apply;
+            break;
+        default:
+            return soar_TraceNames::kPhaseName_Unknown;
+            break;
+    }
 }
 
 const char* Output_Manager::test_type_to_string(byte test_type)

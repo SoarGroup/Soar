@@ -23,7 +23,6 @@
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
-#define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
 
 typedef struct trace_mode_info_struct
@@ -141,7 +140,6 @@ class Output_Manager
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
 
-
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
@@ -166,32 +164,27 @@ class Output_Manager
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
 
+        const char* phase_to_string(top_level_phase pPhase);
+
+        /* Methods to make printing prettier */
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
 
         void set_print_indents(const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (pPre)
-            {
+            if (pPre) {
                 if (m_pre_string) free(m_pre_string);
-                if (strlen(pPre) > 0)
-                {
+                if (strlen(pPre) > 0) {
                     m_pre_string = strdup(pPre);
-                }
-                else
-                {
+                } else {
                     m_pre_string = NULL;
                 }
             }
-            if (pPost)
-            {
+            if (pPost) {
                 if (m_post_string) free(m_post_string);
-                if (strlen(pPost) > 0)
-                {
+                if (strlen(pPost) > 0) {
                     m_post_string = strdup(pPost);
-                }
-                else
-                {
+                } else {
                     m_post_string = NULL;
                 }
             }

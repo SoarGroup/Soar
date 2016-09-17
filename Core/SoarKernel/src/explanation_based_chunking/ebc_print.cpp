@@ -222,7 +222,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
     outputManager->set_column_indent(0, 55);
 
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa(thisAgent,    "                     Chunking Summary\n");
+    outputManager->printa(thisAgent,    "           Explanation-Based Chunking Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55).c_str());
@@ -263,7 +263,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
             }
         }
     }
-    outputManager->printa_sf(thisAgent, "\nFor a full list of EBC's sub-commands and settings:  chunk ?");
+    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings: chunk ?");
 }
 
 

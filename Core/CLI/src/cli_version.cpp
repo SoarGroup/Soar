@@ -8,22 +8,22 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
+
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
-
-#include "soarversion.h"
+#include "sml_Utils.h"
 
 #include "agent.h"
+#include "soarversion.h"
+#include "build_time_date.h"
 
 using namespace cli;
 using namespace sml;
-
-const char* kTimestamp = __TIME__;
-const char* kDatestamp = __DATE__;
+//
+//const char* kTimestamp = __TIME__;
+//const char* kDatestamp = __DATE__;
 
 bool CommandLineInterface::DoVersion()
 {
