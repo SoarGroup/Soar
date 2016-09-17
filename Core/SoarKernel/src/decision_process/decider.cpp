@@ -42,7 +42,7 @@ void SoarDecider::get_enabled_module_strings(std::string &enabledStr, std::strin
     bool epmemEnabled = epmem_enabled(thisAgent);
     bool svsEnabled = false;
     #ifndef NO_SVS
-        bool svsEnabled = thisAgent->svs->is_enabled();
+        svsEnabled = thisAgent->svs->is_enabled();
     #endif
     bool rlEnabled = rl_enabled(thisAgent);
     bool wmaEnabled = wma_enabled(thisAgent);
