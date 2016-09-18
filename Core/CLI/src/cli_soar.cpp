@@ -50,7 +50,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
 
         /* Process dummy parameters that are stand-in for commands */
-        if ((my_param == thisAgent->Decider->params->init_cmd))
+        if (my_param == thisAgent->Decider->params->init_cmd)
         {
             // Save the current result
             std::string oldResult = m_Result.str();
