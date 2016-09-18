@@ -32,9 +32,9 @@ namespace cli
                 t.evaluate("gds_print gds-print");
                 t.evaluate("h help");
                 t.evaluate("inds indifferent-selection");
-                t.evaluate("init init-soar");
+                t.evaluate("init soar init");
                 t.evaluate("interrupt stop-soar");
-                t.evaluate("is init-soar");
+                t.evaluate("is soar init");
                 t.evaluate("man help");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
@@ -59,6 +59,7 @@ namespace cli
                 t.evaluate("wmes print -i");
 
                 // Backward compatibility aliases
+                t.evaluate("init-soar soar init");
                 t.evaluate("chunk-name-format chunk naming-style");
                 t.evaluate("default-wme-depth output print-depth");
                 t.evaluate("echo-commands output echo-commands");

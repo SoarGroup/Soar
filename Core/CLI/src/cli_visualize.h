@@ -28,7 +28,8 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Try visualize ? to learn more about sub-commands and settings";
+                return "Try 'visualize ?' to learn more about visualize's sub-commands and settings.\n"
+                    "(For a detailed article about visualize, use 'help visualize'.)";
             }
 
             bool validate_yes_no(const std::string& pString, size_t pWhichBit, Cli::VisualizeBitset& enabledBitset, Cli::VisualizeBitset& settingsBitset)

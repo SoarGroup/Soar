@@ -212,11 +212,6 @@ namespace cli
              */
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0) = 0;
 
-            /**
-             * @brief init-soar command
-             */
-            virtual bool DoInitSoar() = 0;
-
             enum eLearnOptions
             {
                 LEARN_ALL_LEVELS,

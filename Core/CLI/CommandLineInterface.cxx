@@ -16,7 +16,6 @@
 #include "src/cli_gp.cpp"
 #include "src/cli_help.cpp"
 #include "src/cli_indifferentselection.cpp"
-#include "src/cli_initsoar.cpp"
 #include "src/cli_loadLibrary.cpp"
 #include "src/cli_matches.cpp"
 #include "src/cli_memories.cpp"

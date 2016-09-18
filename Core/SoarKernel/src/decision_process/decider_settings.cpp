@@ -50,6 +50,8 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     wait_snc = new soar_module::boolean_param("wait-snc", pDecider_settings[DECIDER_WAIT_SNC] ? on : off, new soar_module::f_predicate<boolean>());
     add(wait_snc);
 
+    init_cmd = new soar_module::boolean_param("init", on, new soar_module::f_predicate<boolean>());
+    add(init_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -130,7 +132,10 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     outputManager->reset_column_indents();
 //    outputManager->set_column_indent(0, 40);
     outputManager->set_column_indent(1, 55);
-    outputManager->printa(thisAgent, "=========== Soar General Settings ===========\n");
+    outputManager->printa(thisAgent, "====== Soar General Commands and Settings =====\n");
+    outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
+    outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes Soar");
+    outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 50).c_str(), "Maximum elaboration in a phase");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 50).c_str(), "Maximum goal stack depth");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 50).c_str(), "Used with run --out");

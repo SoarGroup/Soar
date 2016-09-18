@@ -263,7 +263,8 @@ void Explanation_Based_Chunker::print_chunking_summary()
             }
         }
     }
-    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings: chunk ?");
+    outputManager->printa_sf(thisAgent, "\nTry 'chunk ?' to learn more about chunking's sub-commands and settings.\n"
+                    "(For a detailed article about chunk, use 'help chunk'.)");
 }
 
 
@@ -314,5 +315,7 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "allow-opaque                %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
     outputManager->printa_sf(thisAgent, "allow-uncertain-operators   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
     outputManager->printa_sf(thisAgent, "allow-conflated-reasoning   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Tests a WME that has multiple reasons it exists");
+    outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- chunk <setting> [<value>]\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help chunk\n");
 
 }

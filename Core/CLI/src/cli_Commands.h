@@ -1327,31 +1327,6 @@ namespace cli
             IndifferentSelectionCommand& operator=(const IndifferentSelectionCommand&);
     };
 
-    class InitSoarCommand : public cli::ParserCommand
-    {
-        public:
-            InitSoarCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~InitSoarCommand() {}
-            virtual const char* GetString() const
-            {
-                return "init-soar";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: init-soar";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoInitSoar();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            InitSoarCommand& operator=(const InitSoarCommand&);
-    };
-
     class LearnCommand : public cli::ParserCommand
     {
         public:

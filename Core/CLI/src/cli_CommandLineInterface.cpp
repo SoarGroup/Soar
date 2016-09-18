@@ -70,7 +70,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::GPCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
-    m_Parser.AddCommand(new cli::InitSoarCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
