@@ -217,14 +217,6 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 }
             }
 
-//            if (lti_id == NIL)
-//            {
-//                thisAgent->SMem->visualize_store(&thisAgent->visualizationManager->graphviz_output);
-//            }
-//            else
-//            {
-//                thisAgent->SMem->visualize_lti(lti_id, pDepth, &thisAgent->visualizationManager->graphviz_output);
-//            }
             thisAgent->visualizationManager->visualize_smem(lti_id, pDepth);
             lValidVisualizationGenerated = true;
         }
@@ -296,21 +288,38 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
         }
     } else if (!options.any())
     {
-        PrintCLIMessage_Header("Visualization Settings", 50);
-        PrintCLIMessage_Section("Actions", 50);
-        PrintCLIMessage_Justify("Print to screen (-p):", (thisAgent->visualizationManager->is_viz_print_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Launch viewer (-v):", (thisAgent->visualizationManager->is_viz_launch_img_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Launch editor (-e):", (thisAgent->visualizationManager->is_viz_launch_gv_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Section("File", 50);
-        PrintCLIMessage_Justify("Generate image file (-g):", (thisAgent->visualizationManager->is_generate_img_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Image type (-i):", thisAgent->visualizationManager->get_image_type(), 50);
-        PrintCLIMessage_Justify("Use same file each time (-u):", (thisAgent->visualizationManager->is_use_same_file_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Filename prefix (-f):", thisAgent->visualizationManager->get_filename(), 50);
-        PrintCLIMessage_Section("Presentation", 50);
-        PrintCLIMessage_Justify("Only print rule name of instantiation (-o):", (thisAgent->visualizationManager->is_simple_inst_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage_Justify("Line style (-l):", thisAgent->visualizationManager->get_line_style(), 50);
-        PrintCLIMessage_Justify("Include architectural links (-a):", (thisAgent->visualizationManager->is_include_arch_enabled() ? "Yes" : "No"), 50);
-        PrintCLIMessage("");
+        std::string tempString;
+        Output_Manager* outputManager = &Output_Manager::Get_OM();
+        outputManager->reset_column_indents();
+        outputManager->set_column_indent(0, 40);
+        outputManager->set_column_indent(1, 55);
+        outputManager->printa_sf(thisAgent, "======= Visualization Commands and Settings =======\n");
+        outputManager->printa_sf(thisAgent, "visualize ? %-%-%s\n", "Print this help listing");
+        outputManager->printa_sf(thisAgent, "visualize [wm | smem | epmem] [id] %-%-%s\n", "Visualize from memory system");
+        outputManager->printa_sf(thisAgent, "visualize [ last | instantiations | contributors] %-%-%s\n", "Visualize explainer analysis");
+        outputManager->printa_sf(thisAgent, "------------------ Presentation -------------------\n");
+        outputManager->printa_sf(thisAgent, "--only-show-rule-name         %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_simple_inst_enabled()), "Only print rule name of instantiation");
+        outputManager->printa_sf(thisAgent, "--architectural-links         %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_include_arch_enabled()), "Include architectural links");
+        outputManager->printa_sf(thisAgent, "--line-style                  %-%s%-%s\n",
+            thisAgent->visualizationManager->get_line_style(), "Graphviz line style that will be used");
+        outputManager->printa_sf(thisAgent, "------------------ File Handling ------------------\n");
+        outputManager->printa_sf(thisAgent, "--generate-image              %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_generate_img_enabled()), "Whether an image should be created");
+        outputManager->printa_sf(thisAgent, "--image-type                  %-%s%-%s\n",
+            thisAgent->visualizationManager->get_image_type(), "Image type that will be generated");
+        outputManager->printa_sf(thisAgent, "--use-same-file               %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_use_same_file_enabled()), "Use same file each time");
+        outputManager->printa_sf(thisAgent, "--filename                    %-%s\n",
+            thisAgent->visualizationManager->get_filename());
+        outputManager->printa_sf(thisAgent, "------------------ Post Actions -------------------\n");
+        outputManager->printa_sf(thisAgent, "--print                       %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_viz_print_enabled()), "Print data file to screen");
+        outputManager->printa_sf(thisAgent, "--viewer-launch               %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_viz_launch_img_enabled()), "Launch image in viewer");
+        outputManager->printa_sf(thisAgent, "--editor-launch               %-%s%-%s\n",
+            capitalizYesNo(thisAgent->visualizationManager->is_viz_launch_gv_enabled()), "Open data file in editor");
     }
     return true;
 }

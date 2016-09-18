@@ -28,19 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: visualize [ last | instantiations | contributors]  (from explain command analysis)\n"
-                       "        visualize [ wm | smem | epmem] [id]       (from current state of memory)\n\n"
-                       "                  options:  --architectural-links [yes | no]    (default off)\n"
-                       "                            --depth <number>                    (default 0 = all)\n"
-                       "                            --editor-launch [yes | no]          (default off)\n"
-                       "                            --filename <path>                   (default \"soar_visualization\")\n"
-                       "                            --generate-image [yes | no]         (default off)\n"
-                       "                            --image-type <type>                 (default svg)\n"
-                       "                            --line-style <style>                (default polyline)\n"
-                       "                            --only-show-rule-name [yes | no]    (default yes)\n"
-                       "                            --print [yes | no]                  (default off)\n"
-                       "                            --use-same-file [yes | no]          (default on)\n"
-                       "                            --viewer-launch [yes | no]          (default on)\n";
+                return "Try visualize ? to learn more about sub-commands and settings";
             }
 
             bool validate_yes_no(const std::string& pString, size_t pWhichBit, Cli::VisualizeBitset& enabledBitset, Cli::VisualizeBitset& settingsBitset)
@@ -171,6 +159,22 @@ namespace cli
                 if (num_args > 1)
                 {
                     arg2 = argv[start_arg_position+1];
+                } else {
+                    if (arg == "?")
+                    {
+                        options.reset();
+                        boolSettings.reset();
+                        std::string dummy1;
+                        if (!cli.DoVisualize(options, boolSettings, dummy1, arg2, lfileName, lLineStyle, lImageType, lDepth))
+                        {
+                            return cli.AppendError(GetSyntax());
+                        }
+                        return true;
+                    }
+                }
+                if (!num_args && options.none() && boolSettings.none())
+                {
+                    return cli.AppendError(GetSyntax());
                 }
                 if (!cli.DoVisualize(options, boolSettings, arg, arg2, lfileName, lLineStyle, lImageType, lDepth))
                 {
