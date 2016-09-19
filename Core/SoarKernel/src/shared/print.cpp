@@ -138,7 +138,14 @@ char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
     if (rf->cached_print_str) free_memory_block_for_string(rf->thisAgent, rf->cached_print_str);
     rf->cached_print_str = make_memory_block_for_string(rf->thisAgent, lStr.c_str());
 
-    return rf->cached_print_str;
+    if (!dest)
+    {
+        return rf->cached_print_str;
+    } else {
+        strcpy(dest, rf->cached_print_str);
+        dest[dest_size - 1] = 0; /* ensure null termination */
+        return dest;
+    }
 }
 
 /* UITODO| Make this preference type to string.  Maybe move to preference struct? */
