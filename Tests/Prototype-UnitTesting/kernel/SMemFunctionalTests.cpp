@@ -173,11 +173,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
 
-	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values\nString did not match:\n" "(@1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values\nString did not match:\n" "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery()
@@ -188,11 +188,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
 
-	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values\nString did not match:\n(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values\nString did not match:\n(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
@@ -203,7 +203,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
 
-	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
@@ -287,7 +287,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable");
 
-	agent->RunSelf(3);
+	agent->RunSelf(6);
     std::string test_smem = agent->ExecuteCommandLine("smem");
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
@@ -295,17 +295,19 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(0.0);
-	highEndExpectations.push_back(0.0);
-
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(0.534);
+	highEndExpectations.push_back(0.535);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(0.534);
+	highEndExpectations.push_back(0.535);
+
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
+
+ //agent->ExecuteCommandLine("print @");
 
 	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
@@ -329,24 +331,24 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive");
 
-	agent->RunSelf(3);
+	agent->RunSelf(6);
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive functional test did not halt", halted);
 
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
+
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(-0.347);
+	highEndExpectations.push_back(-0.346);
 
-	lowEndExpectations.push_back(-0.694);
-	highEndExpectations.push_back(-0.693);
-
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
 	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
@@ -377,17 +379,17 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(-0.347);
-	highEndExpectations.push_back(-0.346);
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
 
-	lowEndExpectations.push_back(0.405);
-	highEndExpectations.push_back(0.406);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.109);
-	highEndExpectations.push_back(0.110);
+	lowEndExpectations.push_back(-0.550);
+	highEndExpectations.push_back(-0.549);
 
-	lowEndExpectations.push_back(0.143);
-	highEndExpectations.push_back(0.144);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
 	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
