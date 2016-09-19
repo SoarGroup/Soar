@@ -56,6 +56,9 @@ class Explanation_Memory
         void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
         bool                    isRecordingChunk() { return (enabled || current_recording_chunk); }
 
+        bool                    isRecordingJustifications() { return m_justifications_enabled; };
+        void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
+
         void                    re_init();
         void                    clear_explanations();
 
@@ -129,6 +132,7 @@ class Explanation_Memory
         Output_Manager*         outputManager;
 
         bool                    enabled;
+        bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;
 

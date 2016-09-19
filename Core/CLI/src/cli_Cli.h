@@ -138,6 +138,7 @@ namespace cli
                 EXPLAIN_IDENTITY_SETS,
                 EXPLAIN_LIST_ALL,
                 EXPLAIN_ONLY_SPECIFIC,
+                EXPLAIN_JUSTIFICATIONS,
                 EXPLAIN_RECORD,
                 EXPLAIN_STATS,
                 EXPLAIN_WME_TRACE,

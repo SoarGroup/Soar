@@ -93,6 +93,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
     condition* cond;
     preference* pref, *new_pref;
     cons* CDPS;
+//    ::list* last_cdps = NULL;
 
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
@@ -104,6 +105,21 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
             {
                 if (cond->bt.trace->slot->CDPS)
                 {
+//                    if ((last_cdps) && (last_cdps != cond->bt.trace->slot->CDPS))
+//                    {
+//                        dprint(DT_DEBUG, "Last CDPS:\n");
+//                        for (CDPS = last_cdps; CDPS != NIL; CDPS = CDPS->rest)
+//                        {
+//                            dprint_noprefix(DT_DEBUG, "%l\n", static_cast<preference*>(CDPS->first));
+//                        }
+//                        dprint(DT_DEBUG, "Current CDPS:\n");
+//                        for (CDPS = cond->bt.trace->slot->CDPS; CDPS != NIL; CDPS = CDPS->rest)
+//                        {
+//                            dprint_noprefix(DT_DEBUG, "%l\n", static_cast<preference*>(CDPS->first));
+//                        }
+//                        assert(false);
+//                    }
+//                    last_cdps = cond->bt.trace->slot->CDPS;
                     for (CDPS = cond->bt.trace->slot->CDPS; CDPS != NIL; CDPS = CDPS->rest)
                     {
                         new_pref = NIL;

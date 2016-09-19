@@ -1102,6 +1102,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         }
 
     }
+    if (!variablize && !thisAgent->explanationMemory->isRecordingJustifications())
+    {
+        thisAgent->explanationMemory->cancel_chunk_record();
+    }
     set_up_rule_name(variablize);
 
     dprint(DT_MILESTONES, "Backtracing done.  Building chunk %y\n", m_prod_name);

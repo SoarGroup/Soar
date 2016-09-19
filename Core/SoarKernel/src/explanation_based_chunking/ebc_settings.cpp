@@ -49,7 +49,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     chunk_in_states->add_mapping(ebc_only, "only");
     chunk_in_states->add_mapping(ebc_only, "flagged");
     chunk_in_states->add_mapping(ebc_except, "except");
-    chunk_in_states->add_mapping(ebc_except, "all-except");
+    chunk_in_states->add_mapping(ebc_except, "unflagged");
     add(chunk_in_states);
 
     naming_style = new soar_module::constant_param<chunkNameFormats>("naming-style", ruleFormat, new soar_module::f_predicate<chunkNameFormats>());

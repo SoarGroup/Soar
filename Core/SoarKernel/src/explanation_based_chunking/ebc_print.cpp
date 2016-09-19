@@ -283,7 +283,7 @@ void Explanation_Based_Chunker::print_chunking_settings()
         ebc_params->chunk_in_states->get_value() == ebc_always  ? "ALWAYS" : "always",
             ebc_params->chunk_in_states->get_value() == ebc_never ? "NEVER" : "never",
                 ebc_params->chunk_in_states->get_value() == ebc_only ? "FLAGGED" : "flagged",
-                    ebc_params->chunk_in_states->get_value() == ebc_except ? "ALL-EXCEPT" : "all-except",
+                    ebc_params->chunk_in_states->get_value() == ebc_except ? "UNFLAGGED" : "unflagged",
         "When Soar will learn new rules");
     outputManager->printa_sf(thisAgent, "bottom-only                %-%s%-%s\n", capitalizeOnOff(ebc_params->bottom_level_only->get_value()), "Learn only from bottom sub-state");
     tempString = "[ ";
