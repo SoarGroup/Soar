@@ -4659,9 +4659,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case STR_CONSTANT_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case STR_CONSTANT_SYMBOL_TYPE:
                     return strcmp(s1->sc->name, s2->sc->name);
                 default:
@@ -4670,10 +4667,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case IDENTIFIER_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                case STR_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case IDENTIFIER_SYMBOL_TYPE:
                     if (s1->id->name_letter == s2->id->name_letter)
                     {

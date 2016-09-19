@@ -596,7 +596,7 @@ void ChunkTest::RHS_Math_Mixed()
 }
 void ChunkTest::RHS_Math_Abs()
 {
-    build_and_check_chunk("RHS_Math_Abs.soar", 8, 3);
+    build_and_check_chunk("RHS_Math_Abs.soar", 8, 2);
 }
 void ChunkTest::Reorderer_Bad_Conjunction()
 {
