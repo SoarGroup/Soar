@@ -63,7 +63,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Simple_Literalization);
         CPPUNIT_TEST(Smem_Chunk_Direct);
         /* Fails but only when run from unit test and not always */
-        // CPPUNIT_TEST(SMem_Chunked_Query);
+        CPPUNIT_TEST(SMem_Chunked_Query);
         CPPUNIT_TEST(STI_Variablization_Same_Type);
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_with_referents);

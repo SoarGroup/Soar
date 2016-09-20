@@ -6,11 +6,11 @@ chunk always
 smem --set learning on
 
 smem --add {
-    (<goal> ^handle goal ^procedural <proc> ^predicate <pred>)
-    (<proc> ^arg1 <parg>)
-    (<pred> ^1 <pred-arg1>)
-    (<pred-arg1> ^default <def>)
-    (<def> ^name pantry)
+    (@1 ^handle goal ^procedural @2 ^predicate @5)
+    (@2 ^arg1 @6)
+    (@5 ^1 @3)
+    (@3 ^default @4)
+    (@4 ^name pantry)
 }
 
 sp {anystate*elaborate*name*superoperator
