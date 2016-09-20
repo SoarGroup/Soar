@@ -1,22 +1,25 @@
-smem --set learning on
 smem --set activation-mode base-level
 smem --set activate-on-query on
 
 smem --set base-update-policy naive
-
+smem --set learning on
 # Add some data with multiple levels
 smem --add {
-  (<x> ^name foo
-  	   ^location <loc>)
-  (<loc> ^x 1 ^y 2 ^z 3) 
-  (<x2> ^name foo
-        ^location <loc2>)
-  (<loc2> ^x 2 ^y 3 ^z 1)
+  (@1 ^name foo
+  	   ^location @2)
+  (@2 ^x 1 ^y 2 ^z 3) 
+  (@3 ^name bar
+        ^location @4)
+  (@4 ^x 2 ^y 3 ^z 1)
 }
 
 sp {propose*first-query
   (state <s> ^superstate nil 
-  		    -^first)
+  		    -^first
+            -^second
+            -^third
+            -^fourth
+            -^fifth)
 --> 
   (<s> ^operator.name first-query)
 }
@@ -39,20 +42,80 @@ sp {propose*second-query
 
 sp {apply*second-query
   (state <s> ^operator.name second-query
-             ^smem.command <sc>
-             ^smem.result.retrieved.location <loc>)
+             ^smem.command <sc>)
   (<sc> ^query <first-query>)
 -->
   (<sc> ^query <first-query> -)
-  (<sc> ^retrieve <loc>)
+  (<sc> ^query <second-query>)
+  (<second-query> ^name bar)
+  (<s> ^second done)
+  (<s> ^first done -)
+}
+
+sp {propose*third-query
+  (state <s> ^superstate nil 
+  			 ^second done
+  			-^third)
+--> 
+  (<s> ^operator.name third-query)
+}
+
+sp {apply*third-query
+  (state <s> ^operator.name third-query
+             ^smem.command <sc>)
+  (<sc> ^query <first-query>)
+-->
+  (<sc> ^query <first-query> -)
+  (<sc> ^query <second-query>)
+  (<second-query> ^name foo)
+  (<s> ^third done)
+  (<s> ^second done -)
+}
+
+sp {propose*fourth-query
+  (state <s> ^superstate nil 
+  			 ^third done
+  			-^fourth)
+--> 
+  (<s> ^operator.name fourth-query)
+}
+
+sp {apply*fourth-query
+  (state <s> ^operator.name fourth-query
+             ^smem.command <sc>)
+  (<sc> ^query <first-query>)
+-->
+  (<sc> ^query <first-query> -)
+  (<sc> ^query <second-query>)
+  (<second-query> ^name <d>)
+  (<s> ^fourth done)
+  (<s> ^third done -)
+}
+
+sp {propose*fifth-step
+  (state <s> ^superstate nil
+             ^fourth done
+            -^third)
+-->
+  (<s> ^operator.name fifth-step)
+}
+
+sp {apply*fifth-step
+  (state <s> ^operator.name fifth-step
+             ^fourth done
+             ^smem.result.retrieved <result>)
+-->
+  (<s> ^fourth <result>)
+  (<s> ^fourth done -)
 }
 
 sp {success
-  (state <s> ^smem.result.retrieved <lti>)
-  (<lti> ^x 2 ^y 3 ^z 1)
+  (state <s> ^smem.result.retrieved <lti>
+             ^fourth <result>)
+  (<result> ^name foo)
 -->
   (write |Success!|)
   (halt)
+  #(cmd smem -b test)
 }
-
 

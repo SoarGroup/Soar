@@ -173,11 +173,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
 
-	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+6.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+5.000])\n\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
 
-	result = agent->ExecuteCommandLine("smem --print");
+	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values\nString did not match:\n" "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery()
@@ -188,11 +188,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
 
-	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+5.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+3.000])\n\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
 
-	result = agent->ExecuteCommandLine("smem --print");
+	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values\nString did not match:\n(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
@@ -203,11 +203,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
 
-	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+2.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+2.000])\n\n";
+	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
 
-	result = agent->ExecuteCommandLine("smem --print");
+	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values\n String did not match:\n(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
 }
 
 bool SMemFunctionalTests::checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations, const char* file, const int line)
@@ -287,26 +287,29 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable");
 
-	agent->RunSelf(3);
+	agent->RunSelf(6);
+    std::string test_smem = agent->ExecuteCommandLine("smem");
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
 
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(0.0);
-	highEndExpectations.push_back(0.0);
-
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(0.534);
+	highEndExpectations.push_back(0.535);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(0.534);
+	highEndExpectations.push_back(0.535);
 
-	// This is the expected output from smem --print modified from CSoar to look like JSoar outputs it (reverse string attributes)
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
+
+ //agent->ExecuteCommandLine("print @");
+
+	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
 //
 //========================================
@@ -319,7 +322,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 //
 //)raw";
 
-	std::string result = agent->ExecuteCommandLine("smem --print");
+	std::string result = agent->ExecuteCommandLine("print @");
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
@@ -328,26 +331,26 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive");
 
-	agent->RunSelf(3);
+	agent->RunSelf(6);
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive functional test did not halt", halted);
 
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
+
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(-0.347);
+	highEndExpectations.push_back(-0.346);
 
-	lowEndExpectations.push_back(-0.694);
-	highEndExpectations.push_back(-0.693);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
-
-	// This is the expected output from smem --print modified from CSoar to look like JSoar outputs it (reverse string attributes)
+	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
 //
 //========================================
@@ -360,7 +363,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 //
 //)raw";
 
-	std::string result = agent->ExecuteCommandLine("smem --print");
+	std::string result = agent->ExecuteCommandLine("print @");
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
@@ -369,26 +372,26 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental");
 
-	agent->RunSelf(4);
+	agent->RunSelf(6);
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
 
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(-0.347);
-	highEndExpectations.push_back(-0.346);
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
 
-	lowEndExpectations.push_back(0.405);
-	highEndExpectations.push_back(0.406);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.109);
-	highEndExpectations.push_back(0.110);
+	lowEndExpectations.push_back(-0.550);
+	highEndExpectations.push_back(-0.549);
 
-	lowEndExpectations.push_back(0.143);
-	highEndExpectations.push_back(0.144);
+	lowEndExpectations.push_back(0.0);
+	highEndExpectations.push_back(0.0);
 
-	// This is the expected output from smem --print modified from CSoar to look like JSoar outputs it (reverse string attributes)
+	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
 //
 //========================================
@@ -401,7 +404,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 //
 //)raw";
 
-	std::string result = agent->ExecuteCommandLine("smem --print");
+	std::string result = agent->ExecuteCommandLine("print @");
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental: Invalid Activation Values", checkActivationValues(result, lowEndExpectations, highEndExpectations, __FILE__, __LINE__));
 }
@@ -470,7 +473,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	agent->ExecuteCommandLine("smem --set append-database on");
 	agent->ExecuteCommandLine("smem --init");
 
-	std::string actualResult = agent->ExecuteCommandLine("smem --print");
+	std::string actualResult = agent->ExecuteCommandLine("print @");
 
 	std::string expectedResult = "========================================\n            Semantic Memory             \n========================================\n(@F1 ^complete true ^factor @F2 ^number 2 [+5.000])\n(@F2 ^multiplicity 1 ^value 2 [+6.000])\n(@F3 ^complete true ^factor @F4 ^number 3 [+3.000])\n(@F4 ^multiplicity 1 ^value 3 [+4.000])\n(@F5 ^complete true ^factor @F6 ^number 4 [+7.000])\n(@F6 ^multiplicity 2 ^value 2 [+8.000])\n\n";
 
