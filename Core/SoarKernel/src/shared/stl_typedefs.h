@@ -161,6 +161,7 @@ typedef std::unordered_map< uint64_t, sym_to_id_map >           inst_to_id_map;
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
 typedef std::set<ltm_object*>                   ltm_set;
+typedef std::list<ltm_object*>                  ltm_list;
 typedef std::list<ltm_value*>                   ltm_slot;
 typedef std::map<Symbol*, ltm_slot*>            ltm_slot_map;
 typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;

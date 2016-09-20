@@ -148,7 +148,7 @@ class SMem_Manager
         void            deallocate_ltm(ltm_object* ltm, bool free_ltm = true);
         void            disconnect_ltm(uint64_t pLTI_ID);
         ltm_slot*       make_ltm_slot(ltm_slot_map* slots, Symbol* attr);
-        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_set* newbies);
+        bool            parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* ltms, ltm_list* newbies);
         Symbol*         parse_constant_attr(soar::Lexeme* lexeme);
         void            store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc = NIL);
         void            update(Symbol* pSTI, smem_storage_type store_type, tc_number tc = NIL);
