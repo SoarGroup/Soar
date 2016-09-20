@@ -4,12 +4,12 @@ smem --set activate-on-query on
 
 # Add some data with multiple levels
 smem --add {
-  (<x> ^name foo
-  	   ^location <loc>)
-  (<loc> ^x 1 ^y 2 ^z 3) 
-  (<x2> ^name bar
-        ^location <loc2>)
-  (<loc2> ^x 2 ^y 3 ^z 1)
+  (@1 ^name foo
+  	   ^location @2)
+  (@2 ^x 1 ^y 2 ^z 3) 
+  (@3 ^name bar
+        ^location @4)
+  (@4 ^x 2 ^y 3 ^z 1)
 }
 
 sp {propose*first-query
