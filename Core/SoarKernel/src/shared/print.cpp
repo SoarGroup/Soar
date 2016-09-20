@@ -38,21 +38,6 @@
 
 using namespace soar_TraceNames;
 
-void print_spaces(agent* thisAgent, int n)
-{
-    char* ch;
-    char buf[PRINT_BUFSIZE];
-
-    ch = buf;
-    while (n)
-    {
-        *(ch++) = ' ';
-        n--;
-    }
-    *ch = 0;
-    thisAgent->outputManager->printa(thisAgent, buf);
-}
-
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion
            {Symbol, Test, RHS Value} to String Conversion
@@ -90,64 +75,6 @@ const std::string string_to_escaped_string(char* s, char first_and_last_char)
     returnStr.push_back(first_and_last_char);
     return returnStr;
 }
-
-char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
-{
-    cons* c;
-    list* fl;
-    rhs_function* rf;
-    std::string lStr;
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "Internal error: rhs_value_to_string called on reteloc.\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error_noagent(msg);
-    }
-
-    if (rhs_value_is_symbol(rv))
-    {
-        return rhs_value_to_symbol(rv)->to_string(true, dest, dest_size);
-    }
-
-    fl = rhs_value_to_funcall_list(rv);
-    rf = static_cast<rhs_function_struct*>(fl->first);
-
-    lStr.push_back('(');
-    if (!strcmp(rf->name->sc->name, "+"))
-    {
-        lStr.push_back('+');
-    }
-    else if (!strcmp(rf->name->sc->name, "-"))
-    {
-        lStr.push_back('-');
-    }
-    else
-    {
-        lStr.append(rf->name->to_string(true));
-    }
-
-    for (c = fl->rest; c != NIL; c = c->rest)
-    {
-        lStr.push_back(' ');
-        lStr.append(rhs_value_to_string(static_cast<char*>(c->first)));
-    }
-    lStr.push_back(')');
-
-    if (rf->cached_print_str) free_memory_block_for_string(rf->thisAgent, rf->cached_print_str);
-    rf->cached_print_str = make_memory_block_for_string(rf->thisAgent, lStr.c_str());
-
-    if (!dest)
-    {
-        return rf->cached_print_str;
-    } else {
-        strcpy(dest, rf->cached_print_str);
-        dest[dest_size - 1] = 0; /* ensure null termination */
-        return dest;
-    }
-}
-
 /* UITODO| Make this preference type to string.  Maybe move to preference struct? */
 char preference_to_char(byte type)
 {
@@ -260,7 +187,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
         if (did_one_line_already)
         {
             thisAgent->outputManager->printa(thisAgent, "\n");
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
         }
         else
         {
@@ -379,7 +306,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
                 {
                     thisAgent->outputManager->printa(thisAgent, "\n");
-                    print_spaces(thisAgent, indent + 6);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent + 6);
                 }
                 thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);
@@ -453,13 +380,14 @@ void print_action_list(agent* thisAgent, action* actions,
     }
     tail_of_actions_not_yet_printed->next = NIL;
 
+    std::string lStr;
     /* --- main loop: find all actions for first id, print them together --- */
     while (actions_not_yet_printed)
     {
         if (did_one_line_already)
         {
             thisAgent->outputManager->printa(thisAgent, "\n");
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
         }
         else
         {
@@ -471,9 +399,10 @@ void print_action_list(agent* thisAgent, action* actions,
         if (a->type == FUNCALL_ACTION)
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->outputManager->rhs_value_to_string(a->value, lStr);
             xml_begin_tag(thisAgent, kTagAction);
-            thisAgent->outputManager->printa(thisAgent, rhs_value_to_string(a->value, NULL, 0));
-            xml_att_val(thisAgent, kAction, rhs_value_to_string(a->value, NULL, 0));
+            thisAgent->outputManager->printa(thisAgent, lStr.c_str());
+            xml_att_val(thisAgent, kAction, lStr.c_str());
             xml_end_tag(thisAgent, kTagAction);
             continue;
         }
@@ -515,13 +444,13 @@ void print_action_list(agent* thisAgent, action* actions,
                 {
                     ch++;
                 }
-                rhs_value_to_string(a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                thisAgent->outputManager->rhs_value_to_cstring(a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                 while (*ch)
                 {
                     ch++;
                 }
                 *(ch++) = ' ';
-                rhs_value_to_string(a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                thisAgent->outputManager->rhs_value_to_cstring(a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                 while (*ch)
                 {
                     ch++;
@@ -531,7 +460,7 @@ void print_action_list(agent* thisAgent, action* actions,
                 if (preference_is_binary(a->preference_type))
                 {
                     *(ch++) = ' ';
-                    rhs_value_to_string(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                    thisAgent->outputManager->rhs_value_to_cstring(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                     while (*ch)
                     {
                         ch++;
@@ -542,7 +471,7 @@ void print_action_list(agent* thisAgent, action* actions,
                         COLUMNS_PER_LINE)
                 {
                     thisAgent->outputManager->printa(thisAgent, "\n");
-                    print_spaces(thisAgent, indent + 6);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent + 6);
                 }
                 thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);

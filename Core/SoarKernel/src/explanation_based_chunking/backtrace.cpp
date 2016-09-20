@@ -104,7 +104,7 @@ void print_consed_list_of_conditions(agent* thisAgent, list* c, int indent)
         }
 
         /* mvp 5-17-94 */
-        print_spaces(thisAgent, indent);
+        thisAgent->outputManager->print_spaces(thisAgent, indent);
         print_condition(thisAgent, static_cast<condition_struct*>(c->first));
     }
 }
@@ -120,7 +120,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
         }
 
         /* mvp 5-17-94 */
-        print_spaces(thisAgent, indent);
+        thisAgent->outputManager->print_spaces(thisAgent, indent);
         thisAgent->outputManager->printa_sf(thisAgent,  "     ");
         print_wme(thisAgent, (static_cast<condition*>(c->first))->bt.wme_);
     }

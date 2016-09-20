@@ -221,7 +221,7 @@ void action_record::print_action(action* pAction, int lActionCount)
     if (pAction->type == FUNCALL_ACTION)
     {
         tempString = "";
-        outputManager->rhs_value_to_string(thisAgent, pAction->value, tempString, NULL, NULL, true);
+        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);

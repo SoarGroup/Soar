@@ -149,6 +149,20 @@ void Output_Manager::sprint_sf(std::string &destString, const char* format, ...)
     }
 }
 
+size_t Output_Manager::sprint_sf_cstr(char* dest, size_t dest_size, const char* format, ...)
+{
+    if (!dest_size) return 0;
+    std::string buf;
+
+    if (m_defaultAgent)
+    {
+        va_list args;
+        va_start(args, format);
+        vsnprint_sf(m_defaultAgent, buf, format, args);
+        va_end(args);
+    }
+    return om_strncpy(dest, buf.c_str(), dest_size, buf.length());
+}
 void Output_Manager::debug_print(TraceMode mode, const char* msg)
 {
     if (!is_trace_enabled(mode)) return;
@@ -469,7 +483,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         list* la = va_arg(args, list *);
                         if (la)
                         {
-                            this->rhs_value_to_string(thisAgent, funcall_list_to_rhs_value(la), destString);
+                            this->rhs_value_to_string(funcall_list_to_rhs_value(la), destString);
 
                         } else {
                             destString += '#';
@@ -482,7 +496,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         char* la = va_arg(args, char *);
                         if (la)
                         {
-                            this->rhs_value_to_string(thisAgent, la, destString, NULL );
+                            this->rhs_value_to_string(la, destString, NULL );
 
                         } else {
                             destString += '#';

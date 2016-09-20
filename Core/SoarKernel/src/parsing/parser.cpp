@@ -1880,8 +1880,8 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                      correctly before we print */
-            rhs_value_to_string(attr, szPrintAttr, 256);
-            rhs_value_to_string(value, szPrintValue, 256);
+            thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
+            thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
             id->to_string(true, szPrintId, 256);
             thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
@@ -1902,8 +1902,8 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
 
             /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
                      correctly before we print */
-            rhs_value_to_string(attr, szPrintAttr, 256);
-            rhs_value_to_string(value, szPrintValue, 256);
+            thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
+            thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
             id->to_string(true, szPrintId, 256);
             thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
@@ -1990,7 +1990,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     }
 
     /* JC Added, we will need the attribute as a string, so we get it here */
-    rhs_value_to_string(attr, szAttribute, 256);
+    thisAgent->outputManager->rhs_value_to_cstring(attr, szAttribute, 256);
 
     all_actions = NIL;
 
@@ -2038,7 +2038,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         }
 
         /* JC Added. We need to get the new attribute's name */
-        rhs_value_to_string(attr, szAttribute, 256);
+        thisAgent->outputManager->rhs_value_to_cstring(attr, szAttribute, 256);
     }
     /* end of while (lexer->current_lexeme.type == PERIOD_LEXEME */
     /* end KJC 10/15/98 */

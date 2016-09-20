@@ -652,7 +652,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     action*    act;
     bool      o_support, op_elab;
     bool      operator_proposal;
-    char      action_attr[50];
     int       pass;
     wme*       lowest_goal_wme;
 
@@ -689,7 +688,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
             {
                 if ((act->type == MAKE_ACTION)  &&
                         (rhs_value_is_symbol(act->attr)) &&
-                        (strcmp(rhs_value_to_string(act->attr, action_attr, 50), "operator") == NIL) &&
+                        (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                         (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
                     if (rhs_value_is_reteloc(act->id) &&

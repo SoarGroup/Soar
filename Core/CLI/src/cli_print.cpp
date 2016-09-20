@@ -211,7 +211,7 @@ void neatly_print_wme_augmentation_of_id(agent* thisAgent, wme* w, int indentati
     if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - buf) >= 80)
     {
         thisAgent->outputManager->start_fresh_line(thisAgent);
-        print_spaces(thisAgent, indentation + 6);
+        thisAgent->outputManager->print_spaces(thisAgent, indentation + 6);
     }
     thisAgent->outputManager->printa(thisAgent, buf);
 }
@@ -307,7 +307,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
         for (attr = 0; attr < num_attr; attr++)
         {
             w = list[attr];
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
             if (intern)
             {
                 print_wme(thisAgent, w);
@@ -333,7 +333,7 @@ void print_augs_of_id(agent* thisAgent, Symbol* id, int depth, int maxdepth, boo
         for (attr = 0; attr < num_attr; attr++)
         {
             w = list[attr];
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
 
             if (intern)
             {

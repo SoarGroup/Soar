@@ -54,7 +54,6 @@ void filtered_print_wme_add(agent* thisAgent, wme* w);
 ----------------------------------------------------------------------- */
 
 const std::string string_to_escaped_string(char* s, char first_and_last_char);
-char* rhs_value_to_string(rhs_value rv, char* dest = NULL, size_t dest_size = 0);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production

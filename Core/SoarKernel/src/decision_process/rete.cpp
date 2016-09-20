@@ -6075,7 +6075,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     action*    act;
     bool      operator_proposal, op_elab;
-    char      action_attr[50];
 
     int pass;
     wme* lowest_goal_wme;
@@ -6242,8 +6241,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             if ((act->type == MAKE_ACTION) &&
                     (rhs_value_is_symbol(act->attr)))
             {
-                if ((strcmp(rhs_value_to_string(act->attr, action_attr, 50),
-                            "operator") == NIL) &&
+                if (
+                    (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                         (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
                         (get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
                                                   rhs_value_to_reteloc_field_num(act->id),
@@ -8632,7 +8631,7 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
     }
 
     /* --- print extra indentation spaces --- */
-    print_spaces(thisAgent, indent);
+    thisAgent->outputManager->print_spaces(thisAgent, indent);
 
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -8643,7 +8642,7 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
                  cond->data.ncc.bottom,
                  wtt,
                  indent + 5);
-        print_spaces(thisAgent, indent);
+        thisAgent->outputManager->print_spaces(thisAgent, indent);
         thisAgent->outputManager->printa_sf(thisAgent, "%s }\n", match_count_string);
     }
     else
@@ -8657,19 +8656,19 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
         {
             if (wtt != NONE_WME_TRACE)
             {
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 thisAgent->outputManager->printa_sf(thisAgent, "*** Matches For Left ***\n");
                 parent_tokens = get_all_left_tokens_emerging_from_node(thisAgent, parent);
                 for (t = parent_tokens; t != NIL; t = t->next_of_node)
                 {
-                    print_spaces(thisAgent, indent);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent);
                     print_whole_token(thisAgent, t, wtt);
                     thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 deallocate_token_list(thisAgent, parent_tokens);
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 thisAgent->outputManager->printa_sf(thisAgent, "*** Matches for Right ***\n");
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 for (rm = node->b.posneg.alpha_mem_->right_mems; rm != NIL;
                         rm = rm->next_in_am)
                 {

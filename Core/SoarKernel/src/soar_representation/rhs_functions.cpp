@@ -102,8 +102,8 @@ void add_rhs_function(agent* thisAgent,
     rf->can_be_rhs_value = can_be_rhs_value;
     rf->can_be_stand_alone_action = can_be_stand_alone_action;
     rf->user_data = user_data;
-    rf->cached_print_str = NULL;
-    rf->thisAgent = thisAgent;
+//    rf->cached_print_str = NULL;
+//    rf->thisAgent = thisAgent;
 }
 
 rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
@@ -156,7 +156,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
         {
             prev->next = rf->next;
         }
-        if (rf->cached_print_str) free_memory_block_for_string(thisAgent, rf->cached_print_str);
+//        if (rf->cached_print_str) free_memory_block_for_string(thisAgent, rf->cached_print_str);
         thisAgent->memoryManager->free_memory(rf, MISCELLANEOUS_MEM_USAGE);
     }
 

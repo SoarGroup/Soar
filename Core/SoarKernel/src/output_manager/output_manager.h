@@ -115,7 +115,6 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
@@ -153,6 +152,8 @@ class Output_Manager
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
         void sprint_sf(std::string &destString, const char* format, ...);
+        size_t sprint_sf_cstr(char* dest, size_t dest_size, const char* format, ...);
+
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
         void store_refcount(Symbol* sym, const char* callers, bool isAdd);
@@ -165,10 +166,18 @@ class Output_Manager
         void debug_start_fresh_line(TraceMode mode);
 
         const char* phase_to_string(top_level_phase pPhase);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pWithIdentity = false, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
         /* Methods to make printing prettier */
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
+
+        void print_spaces(agent* thisAgent, int n)
+        {
+            std::string lStr = std::string(n, ' ');
+            printa(thisAgent, lStr.c_str());
+        }
 
         void set_print_indents(const char* pPre = NULL, const char* pPost = NULL)
         {
