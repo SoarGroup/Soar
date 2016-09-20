@@ -173,11 +173,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
 
-	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
+	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values\nString did not match:\n" "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values\nString did not match:\n" "(@1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery()
@@ -188,11 +188,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
 
-	std::string expected = "(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
+	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values\nString did not match:\n(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n\n", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values\nString did not match:\n(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
@@ -203,11 +203,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
 
-	std::string expected = "(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
+	std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n";
 
 	result = agent->ExecuteCommandLine("print @");
 
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values\n String did not match:\n(@1 ^location @2 ^name foo [+1.000])\n(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n(@3 ^location @4 ^name bar [+0.000])\n(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n", result == expected);
+	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values\n String did not match:\n(@1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@2 ^location @1 ^name foo [+1.000])\n(@3 ^x 2 ^y 3 ^z 1 [+0.000])\n(@4 ^location @3 ^name bar [+0.000])\n", result == expected);
 }
 
 bool SMemFunctionalTests::checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations, const char* file, const int line)
@@ -295,11 +295,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(0.534);
-	highEndExpectations.push_back(0.535);
-
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
+
+	lowEndExpectations.push_back(0.534);
+	highEndExpectations.push_back(0.535);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
@@ -338,11 +338,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(0.791);
-	highEndExpectations.push_back(0.792);
-
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
+
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
@@ -379,11 +379,11 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	std::vector<double> lowEndExpectations;
 	std::vector<double> highEndExpectations;
 
-	lowEndExpectations.push_back(0.791);
-	highEndExpectations.push_back(0.792);
-
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
+
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
