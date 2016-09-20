@@ -24,7 +24,7 @@ class action_record
         uint64_t                get_actionID()   { return actionID; };
         id_set*                 get_identities();
 
-        void                    print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, bool printActual);
+        void                    print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual);
         void                    print_action(action* pAction, int lActionCount);
         void                    viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID);
         void                    viz_action(action* pAction);

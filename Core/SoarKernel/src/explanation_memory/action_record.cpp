@@ -111,26 +111,36 @@ id_set* action_record::get_identities()
 }
 
 
-void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, bool printActual)
+void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
 {
     std::string tempString;
     bool identity_printed = false;
 
     if (!printActual)
     {
-        if (pRHS_variablized_value)
+        if (!pRHS_variablized_value)
         {
             if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
             {
                 tempString = "";
                 thisAgent->outputManager->set_print_test_format(false, true);
-                thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true);
+                thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true, true);
                 thisAgent->outputManager->set_print_test_format(true, false);
                 if (!tempString.empty())
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
                     identity_printed = true;
                 }
+            }
+        } else if (pPref_func) {
+            tempString = "";
+            thisAgent->outputManager->set_print_test_format(false, true);
+            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true, true);
+            thisAgent->outputManager->set_print_test_format(true, false);
+            if (!tempString.empty())
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
+                identity_printed = true;
             }
         }
         if (!identity_printed && pID)
@@ -163,7 +173,7 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
         {
             tempString = "";
             thisAgent->outputManager->set_print_test_format(false, true);
-            thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true);
+            thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true, true);
             thisAgent->outputManager->set_print_test_format(true, false);
             if (!tempString.empty())
             {

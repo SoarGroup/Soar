@@ -25,7 +25,6 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "repair.h"
 #include "rete.h"
 #include "rhs.h"
 #include "run_soar.h"
@@ -40,6 +39,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <ebc_repair.h>
 
 using namespace soar_TraceNames;
 
@@ -796,7 +796,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     /* --- backtrace through the instantiation that produced each result --- */
     outputManager->set_print_test_format(true, false);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst, NULL, m_results);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst->prod_name, NULL, m_results);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
@@ -1132,7 +1132,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying and variablizing results... \n%6", m_vrblz_top, m_results);
     m_rhs = variablize_results_into_actions(m_results, variablize);
-
+    /* m_rhs has identities here for rhs functions*/
     add_goal_or_impasse_tests();
 
     dprint(DT_VARIABLIZATION_MANAGER, "EBC created variablized rule: \n%1-->\n%2", m_vrblz_top, m_rhs);

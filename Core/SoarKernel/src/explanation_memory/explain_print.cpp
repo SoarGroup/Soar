@@ -221,30 +221,30 @@ void action_record::print_action(action* pAction, int lActionCount)
     if (pAction->type == FUNCALL_ACTION)
     {
         tempString = "";
-        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
+        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true, true);
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, true);
+        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), NULL, instantiated_pref->o_ids.id, true);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, true);
+        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), NULL, instantiated_pref->o_ids.attr, true);
         outputManager->printa(thisAgent, " ");
-        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, true);
+        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), NULL, instantiated_pref->o_ids.value, true);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, true);
+            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), NULL, instantiated_pref->o_ids.referent, true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, false);
+        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->rhs_funcs.id, instantiated_pref->o_ids.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, false);
+        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->rhs_funcs.attr, instantiated_pref->o_ids.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, false);
+        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->o_ids.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, false);
+            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), NULL, instantiated_pref->o_ids.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }

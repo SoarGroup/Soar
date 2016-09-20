@@ -60,6 +60,9 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
         }
     }
 }
+/* A way to do variadic printing with std::strings that might be worth using,
+ * though we might just want to something less likely to cause crashes because
+ * of accidental type mismatches */
 //std::string out( std::string format, ... )
 //{
 //    va_list args, args_copy ;

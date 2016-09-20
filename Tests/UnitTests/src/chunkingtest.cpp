@@ -30,7 +30,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(Faux_Operator);
         /* Fails but only when run from on certain Jenkins machines*/
-        // CPPUNIT_TEST(Faux_Smem_Operator_RHS);
+        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
         CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_BT_Constraints);

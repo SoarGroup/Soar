@@ -44,6 +44,10 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     {
         original_production->save_for_justification_explanation = true;
     }
+//    if (pInst->i_id == 5)
+//    {
+//        original_production->save_for_justification_explanation = true;
+//    }
 
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)

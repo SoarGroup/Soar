@@ -472,6 +472,9 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     lAttr = NIL;
     lValue = NIL;
     lReferent = NIL;
+    uint64_t oid_id = 0, oid_attr = 0, oid_value = 0, oid_referent = 0;
+    rhs_value f_id = 0, f_attr = 0, f_value = 0;
+
     lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
     if (!lId)
     {
@@ -520,15 +523,12 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         goto abort_execute_action;
     }
     /* Populate identity and rhs_function stuff */
-    uint64_t oid_id, oid_attr, oid_value, oid_referent;
-    rhs_value f_id, f_attr, f_value;
     if (rule_action)
     {
         if (rule_action->id)
         {
             if (rhs_value_is_funcall(rule_action->id))
             {
-                oid_id = 0;
                 f_id = rule_action->id;
                 /* rule_action will get deallocated in create_instantiation, but we want it
                  * in the preference for learning, so we just steal this copy and set
@@ -536,48 +536,32 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                 rule_action->id = NULL;
             } else {
                 oid_id = rhs_value_to_o_id(rule_action->id);
-                f_id = 0;
             }
-        } else {
-            oid_id = 0;
-            f_id = 0;
         }
         if (rule_action->attr)
         {
             if (rhs_value_is_funcall(rule_action->attr))
             {
-                oid_attr = 0;
                 f_attr = rule_action->attr;
                 rule_action->attr = NULL;
             } else {
                 oid_attr = rhs_value_to_o_id(rule_action->attr);
-                f_attr = 0;
             }
-        } else {
-            oid_attr = 0;
-            f_attr = 0;
         }
         if (rule_action->value)
         {
             if (rhs_value_is_funcall(rule_action->value))
             {
-                oid_value = 0;
                 f_value = rule_action->value;
                 rule_action->value = NULL;
             } else {
                 oid_value = rhs_value_to_o_id(rule_action->value);
-                f_value = 0;
             }
-        } else {
-            oid_value = 0;
-            f_value = 0;
         }
         if (rule_action->referent)
         {
             assert(!rhs_value_is_funcall(rule_action->referent));
             oid_referent = rhs_value_to_o_id(rule_action->referent);
-        } else {
-            oid_referent = 0;
         }
     }
     return make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent,
