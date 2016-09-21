@@ -27,7 +27,7 @@
 #define TEST_CATEGORY(X) typedef X test_type;
 
 #define TEST_DECLARATION(X) tests.push_back(new X ());
-#define TEST(X, Y) Test test_##X = Test(#X, std::bind(&test_type::X, this), Y, m_TestCategory_tests);
+#define TEST(X, Y) Test test_##X = Test(#X, [this](){ this->X(); }/*std::bind(&test_type::X, this)*/, Y, m_TestCategory_tests);
 
 bool isfile(const char* path);
 void setCWDToEnv();
