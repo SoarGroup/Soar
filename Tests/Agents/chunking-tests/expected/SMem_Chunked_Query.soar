@@ -1,3 +1,6 @@
+# Works on my mac.  Unviersally fails on Jenkins (all platforms including Mac)  
+# Can get to work on Linux manually using different condition ordering
+# but it still fails when run from the unit test.  (Linux 32 VM)
 sp {answer*retrieve-goal*copy-goal*snc*t5-12
     (state <s1> ^cue2 goal)
     (<s1> -^goal <g*1>)
@@ -11,6 +14,25 @@ sp {answer*retrieve-goal*copy-goal*snc*t5-12
     (<l2> ^arg1 <l3> +)
     (<l1> ^predicate <l6> +)
     (<l6> ^1 <l5> +)
-    (<l5> ^default <l4> +)
     (<l4> ^name pantry +)
+    (<l5> ^default <l4> +)
 }
+
+# Works on my Linux 32 Ubuntu, but fails when run from UnitTests executable in VM
+#sp {answer*retrieve-goal*copy-goal*snc*t5-12
+#    (state <s1> ^cue2 goal)
+#    (<s1> -^goal <g*1>)
+#    (<s1> -^deleted <d*1>)
+#    (<s1> ^cue1 handle)
+#    (<s1> ^superstate nil)
+#    -->
+#    (<s1> ^goal <l4> +)
+#    (<l4> ^predicate <l3> +)
+#    (<l3> ^1 <l2> +)
+#    (<l2> ^default <l1> +)
+#    (<l1> ^name pantry +)
+#    (<l4> ^procedural <l5> +)
+#    (<l5> ^arg1 <l6> +)
+#    (<l4> ^handle goal +)
+#}
+

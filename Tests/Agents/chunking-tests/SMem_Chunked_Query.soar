@@ -139,3 +139,11 @@ sp {retrieve-goal*copy-goal
 -->
     (<ss> ^goal <goal>)
 }
+
+sp {success
+    (state <s> ^superstate nil ^goal <goal>)
+-->
+    (write (crlf) |Test finished.|)
+    (exec succeeded)
+    (halt)
+}
