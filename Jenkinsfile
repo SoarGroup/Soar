@@ -11,9 +11,12 @@ for (int i=0; i<names.size(); ++i)
       if (nodeName != "master")
       {
         stage 'Checkout'
+        {
           checkout scm
+        }
 
         stage 'Build'
+        {
           if (isUnix())
           {
             sh('scons all --no-scu')
@@ -33,8 +36,10 @@ for (int i=0; i<names.size(); ++i)
               sh('call build.bat all --no-scu --tcl=C:/Tcl-x86-64')
             }
           }
+        }
         
         stage 'Testing'
+        {
           if (isUnix())
           {
             sh('./Prototype-UnitTesting -c SMemFunctionalTests -f SMemFunctionalTests::testReadCSoarDB -f SMemFunctionalTests::testDbBackupAndLoadTests')
@@ -43,8 +48,10 @@ for (int i=0; i<names.size(); ++i)
           {
             sh('Prototype-UnitTesting -c SMemFunctionalTests -f SMemFunctionalTests::testReadCSoarDB -f SMemFunctionalTests::testDbBackupAndLoadTests')
           }
+        }
 
         stage 'Archive'
+        {
           archive 'out/**'
 
           if (isUnix())
@@ -60,6 +67,7 @@ for (int i=0; i<names.size(); ++i)
 
           archive '*.7zip'
         }
+      }
     }
   }
 }
