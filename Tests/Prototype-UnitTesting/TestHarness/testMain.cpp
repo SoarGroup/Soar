@@ -259,7 +259,7 @@ int main(int argc, char** argv)
                 ++expectedFailureCount;
 
                 xml << " >" << std::endl
-                << "\t\t" << "<failure type=\"" << runner->failureMessage << "\">" << runner->output.str() << "</failure>" << std::endl
+                << "\t\t" << "<failure type=\"Test Failure\">" << runner->failureMessage << "</failure>" << std::endl
                 << "\t</testcase>" << std::endl;
             }
 			else if (runner->failed)
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
                 unexpectedFailure = true;
 
                 xml << " >" << std::endl
-                << "\t\t" << "<failure type=\"" << runner->failureMessage << "\">" << runner->output.str() << "</failure>" << std::endl
+                << "\t\t" << "<failure type=\"Test Failure\">" << runner->failureMessage << "</failure>" << std::endl
                 << "\t</testcase>" << std::endl;
 			}
 			
