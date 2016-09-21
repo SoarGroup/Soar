@@ -328,7 +328,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         {
             thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             std::string lStr;
-            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "%c%d", lexeme->id_letter, lexeme->id_number);
+            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
             newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
 
             return newSymbol;
@@ -486,6 +486,8 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
             case STR_CONSTANT_LEXEME:
             case INT_CONSTANT_LEXEME:
             case FLOAT_CONSTANT_LEXEME:
+            case IDENTIFIER_LEXEME:
+                /* make_symbol_for_lexeme will convert an identifier lexeme into a string symbol */
                 push(thisAgent, make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false), t->data.disjunction_list);
                 if (!lexer->get_lexeme())
                 {
