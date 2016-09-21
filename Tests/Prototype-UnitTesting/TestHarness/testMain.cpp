@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <iostream>
+#include <fstream>
 
 #include <signal.h>
 
@@ -54,6 +55,7 @@ void usage(std::string arg0)
     std::cout << "\t" << "-F --expected-failure-category"   << "\t\t" << "Ignore failures in this category." << std::endl;
     std::cout << "\t" << "-f --expected-failure-test"       << "\t\t" << "Ignore this test failing." << std::endl;
     std::cout << "\t" << "-h --help"                        << "\t\t\t\t" << "This help message." << std::endl;
+    std::cout << "\t" << "-s --silent"                        << "\t\t\t\t" << "Always return 0.  Read Test.xml for results." << std::endl;
     std::cout << std::endl;
 }
 
@@ -65,6 +67,7 @@ int main(int argc, char** argv)
     std::vector<std::string> excludeTests;
     std::vector<std::string> expectedFailureCategories;
     std::vector<std::string> expectedFailureTests;
+    bool silent = false;
 
 	for (int index = 1; index < argc; ++index)
 	{
@@ -115,6 +118,10 @@ int main(int argc, char** argv)
             usage(argv[0]);
             exit(0);
         }
+        else if ((argument == "--silent" || argument == "-s"))
+        {
+            silent = true;
+        }
 		else
 		{
 			std::cerr << "Unknown argument '" << argument << "'." << std::endl;
@@ -156,9 +163,17 @@ int main(int argc, char** argv)
     size_t expectedFailureCount = 0;
 	size_t testCount = 0;
     size_t skipCount = 0;
-	
-	std::vector<std::string> failedTests;
+
+    struct failure {
+        std::string name;
+        std::string output;
+    };
+
+	std::vector<failure> failedTests;
     std::vector<std::string> ignoredFailureTests;
+
+    std::ofstream xml("TestResults.xml");
+    xml << "<testsuite tests=\"" << tests.size() << "\">" << std::endl;
 	
 	for (TestCategory* category : tests)
 	{
@@ -195,7 +210,8 @@ int main(int argc, char** argv)
 			uint64_t timeout = std::get<1>(test) - 1000;
 
 			TestRunner* runner = new TestRunner(category, function, &variable);
-			
+            xml << "\t<testcase classname=\"" << category->getCategoryName() << "\" name=\"" << std::get<2>(test) << "\"";
+
 			std::thread (&TestRunner::run, runner).detach();
 			
 			uint64_t timeElapsed = 0;
@@ -223,18 +239,28 @@ int main(int argc, char** argv)
 				
 				runner->kill.store(true);
 				
-				failedTests.push_back(category->getCategoryName() + ": " + std::get<2>(test));
+                failedTests.push_back({category->getCategoryName() + "::" + std::get<2>(test), "Test timed out."});
+
+                xml << " >" << std::endl
+                << "\t\t" << "<failure type=\"Timeout\">" << runner->output.str() << "</failure>" << std::endl
+                << "\t</testcase>" << std::endl;
 			}
 			else if (!runner->failed)
 			{
 				std::cout << "Done" << std::endl;
 				std::cout.flush();
+
+                xml << " />" << std::endl;
 			}
             else if (runner->failed && (std::find(expectedFailureCategories.begin(), expectedFailureCategories.end(), category->getCategoryName()) != expectedFailureCategories.end() || std::find(expectedFailureTests.begin(), expectedFailureTests.end(), category->getCategoryName() + "::" + std::get<2>(test)) != expectedFailureTests.end()))
             {
                 std::cout << "Failed. Ignoring." << std::endl;
                 std::cout.flush();
                 ++expectedFailureCount;
+
+                xml << " >" << std::endl
+                << "\t\t" << "<failure type=\"" << runner->failureMessage << "\">" << runner->output.str() << "</failure>" << std::endl
+                << "\t</testcase>" << std::endl;
             }
 			else if (runner->failed)
 			{
@@ -242,8 +268,12 @@ int main(int argc, char** argv)
 				std::cout << runner->failureMessage << std::endl << std::endl;
 				std::cout.flush();
 				
-				failedTests.push_back(category->getCategoryName() + "::" + std::get<2>(test));
+                failedTests.push_back({category->getCategoryName() + "::" + std::get<2>(test), runner->failureMessage + "\n\n" + runner->output.str()});
                 unexpectedFailure = true;
+
+                xml << " >" << std::endl
+                << "\t\t" << "<failure type=\"" << runner->failureMessage << "\">" << runner->output.str() << "</failure>" << std::endl
+                << "\t</testcase>" << std::endl;
 			}
 			
 			std::mutex mutex;
@@ -256,7 +286,7 @@ int main(int argc, char** argv)
 				std::cout.flush();
 			}
 			
-			if (ShowTestOutput || unexpectedFailure)
+			if (ShowTestOutput)
 			{
 				std::cout << std::get<2>(test) << " Output:" << std::endl;
 				std::cout << runner->output.str() << "================================================" << std::endl << std::endl;
@@ -273,20 +303,23 @@ int main(int argc, char** argv)
 			delete runner;
 		}
 	}
+
+    xml << "</testsuite>" << std::endl;
+    xml.close();
 	
     std::cout << "Completed " << successCount << "/" << testCount << " successfully." << std::endl;
     std::cout << testCount - successCount - expectedFailureCount << " failed unexpectedly. " << expectedFailureCount << " failed as expected." << std::endl;
     std::cout << skipCount << " tests skipped." << std::endl;
     
 	std::cout.flush();
-	
+
 	if (failedTests.size() > 0)
 	{
 		std::cout << "Failed Tests: " << std::endl;
 		
-		for (std::string test : failedTests)
+		for (auto test : failedTests)
 		{
-			std::cout << test << std::endl;
+			std::cout << test.name << std::endl;
 		}
 	}
 
@@ -298,7 +331,7 @@ int main(int argc, char** argv)
 	}
 #endif
 	
-	if (failedTests.size() > 0)
+	if (failedTests.size() > 0 && !silent)
 		return 1;
 	else
 		return 0;

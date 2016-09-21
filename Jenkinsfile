@@ -1,70 +1,34 @@
-def branches = [:]
-def names = nodeNames()
+stage('Build') {
+  node('unix') {
+    checkout scm
+    sh 'scons all --no-scu'
+    sh './Prototype-UnitTesting -s -c SMemFunctionalTests'
 
-for (int i=0; i<names.size(); ++i)
-{
-  def nodeName = names[i];
-  // Into each branch we put the pipeline code we want to execute
-  branches["node_" + nodeName] = {
+    archive 'out/**'
 
-    stage name: 'Checkout'
-    node(nodeName){
-      if (nodeName != "master"){
-        checkout scm
-      }
-    }
+    version=sh('cat soarversion')
+    sh "7za a " + version + "-" + nodeName + ".7zip out/"
 
-    stage name: 'Build'
-    node(nodeName){
-      if (nodeName != "master"){
-        if (isUnix()){
-          sh('scons all --no-scu')
-        } else {
-          def folder = new File('C:/Tcl')
-
-          sh('%VS_2015%')
-
-          if (folder.exists()){
-            sh('call build.bat all --no-scu --tcl=C:/Tcl')
-          } else {
-            sh('call build.bat all --no-scu --tcl=C:/Tcl-x86-64')
-          }
-        }
-      }
-    }
-
-    stage name: 'Testing'
-    node(nodeName){
-      if (isUnix()){
-        sh('./Prototype-UnitTesting -c SMemFunctionalTests -f SMemFunctionalTests::testReadCSoarDB -f SMemFunctionalTests::testDbBackupAndLoadTests')
-      } else {
-        sh('Prototype-UnitTesting -c SMemFunctionalTests -f SMemFunctionalTests::testReadCSoarDB -f SMemFunctionalTests::testDbBackupAndLoadTests')
-      }
-    }
-
-    stage name: 'Archive'
-    node(nodeName) {
-      archive 'out/**'
-      
-      if (isUnix()){
-        sh('export VERSION=$(<soarversion)')
-        sh("7za a ${VERSION}-${BUILD_ID}-" + nodeName + ".7zip out/")
-      } else {
-        sh('set /p VERSION=<soarversion')
-        sh('"C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + nodeName + '-VS2015.7zip out/')
-      }
-
-      archive '*.7zip'
-    }
-
+    archive '*.7zip'
   }
-}
+  node('windows') {
+    checkout scm
 
-// Now we trigger all branches
-parallel branches
+    def folder = new File('C:/Tcl')
 
-// This method collects a list of Node names from the current Jenkins instance
-@NonCPS
-def nodeNames() {
-  return jenkins.model.Jenkins.instance.nodes.collect { node -> node.name }
+    if (folder.exists()) {
+      sh 'call build.bat all --no-scu --tcl=C:/Tcl'
+    } else {
+      sh 'call build.bat all --no-scu --tcl=C:/Tcl-x86-64'
+    }
+
+    sh 'Prototype-UnitTesting -s -c SMemFunctionalTests'
+
+    archive 'out/**'
+
+    sh 'set /p VERSION=<soarversion'
+    sh '"C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + nodeName + '-VS2015.7zip out/'
+
+    archive '*.7zip'
+  }
 }
