@@ -731,8 +731,8 @@ TEST_DEFINITION(testAgent)
 
     // Register for a String event
     bool stringEventHandlerReceived(false);
-    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("tcl on", NULL));
+    int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_LOAD_LIBRARY, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+    CPPUNIT_ASSERT(m_pKernel->ExecuteCommandLine("load-library TestExternalLibraryLib", NULL));
     CPPUNIT_ASSERT_MESSAGE("puts hello world", m_pAgent->GetLastCommandLineResult());
     CPPUNIT_ASSERT(stringEventHandlerReceived);
     stringEventHandlerReceived = false;

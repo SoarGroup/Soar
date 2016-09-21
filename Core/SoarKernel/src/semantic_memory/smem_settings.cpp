@@ -10,7 +10,7 @@
 #include "smem_settings.h"
 #include "smem_stats.h"
 
-#include "print.h"
+#include "output_manager.h"
 
 smem_param_container::smem_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
@@ -134,7 +134,7 @@ void smem_path_param::set_value(const char* new_value)
 
     if (thisAgent->SMem->DB->get_status() == soar_module::problem)
     {
-        print_sysparam_trace(thisAgent, 0, "Semantic memory database Error: %s\n", thisAgent->SMem->DB->get_errmsg());
+        thisAgent->outputManager->printa_sf(thisAgent, "Semantic memory database error: %s\n", thisAgent->SMem->DB->get_errmsg());
     }
     else
     {
@@ -161,7 +161,7 @@ void smem_path_param::set_value(const char* new_value)
                         {
                             if (thisAgent->SMem->is_version_one_db())
                             {
-                                print(thisAgent, "...You have selected a database with an old version.\n"
+                                thisAgent->outputManager->printa(thisAgent, "...You have selected a database with an old version.\n"
                                       "...If you proceed, the database will be converted to a\n"
                                       "...new version when the database is initialized.\n"
                                       "...Conversion can take a large amount of time with large databases.\n");

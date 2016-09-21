@@ -20,7 +20,7 @@
 #include "condition.h"
 #include "explanation_memory.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 
 #include <string>
 
@@ -42,13 +42,13 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     if (options.test(EXPLAIN_ALL))
     {
         thisAgent->explanationMemory->set_enabled(true);
-        print(thisAgent, "Will monitor all chunks created.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Will monitor all chunks created.\n");
         return true;
     }
     if (options.test(EXPLAIN_ONLY_SPECIFIC))
     {
         thisAgent->explanationMemory->set_enabled(false);
-        print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Will only monitor specific chunks or time intervals.\n");
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */

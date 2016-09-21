@@ -71,8 +71,8 @@ void print_candidates(agent* thisAgent, preference* candidates)
     for (cand = candidates; cand != NIL; cand = cand->next_candidate)
     {
         max_count++;
-        print(thisAgent, "\n Candidate %d", cand);
-        print_with_symbols(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n Candidate %d", cand);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n    %y %y %y", cand->id, cand->attr, cand->value);
         if (max_count > 10)
         {
             break;
@@ -1032,7 +1032,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
 
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent, "--> Adding preference to CDPS: ");
+        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
         print_preference(thisAgent, pref);
     }
 
@@ -1087,7 +1087,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     }
     else if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
     }
 
 }
@@ -1290,23 +1290,23 @@ byte run_preference_semantics(agent* thisAgent,
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
     {
 
-        print(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
               "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
-        print(thisAgent, "All Preferences for slot:");
+        thisAgent->outputManager->printa_sf(thisAgent, "All Preferences for slot:");
 
         for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
         {
             if (s->preferences[i])
             {
-                print(thisAgent, "\n   %ss:\n", preference_name(i));
+                thisAgent->outputManager->printa_sf(thisAgent, "\n   %ss:\n", preference_name(i));
                 for (p = s->preferences[i]; p; p = p->next)
                 {
-                    print(thisAgent, "   ");
+                    thisAgent->outputManager->printa_sf(thisAgent, "   ");
                     print_preference(thisAgent, p);
                 }
             }
         }
-        print(thisAgent, "-------------------------------\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "-------------------------------\n");
     }
 
     /* === Requires === */
@@ -1360,7 +1360,7 @@ byte run_preference_semantics(agent* thisAgent,
 
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print(thisAgent, "--> Adding preference to CDPS: ");
+            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
             print_preference(thisAgent, candidates);
         }
 
@@ -2476,30 +2476,30 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         for (pref = w->preference; pref != NIL; pref = pref->next)
                         {
 #ifdef DEBUG_GDS_HIGH
-                            print(thisAgent, "\n\n   ");
+                            thisAgent->outputManager->printa_sf(thisAgent, "\n\n   ");
                             print_preference(pref);
-                            print(thisAgent, "   Goal level of preference: %d\n",
+                            thisAgent->outputManager->printa_sf(thisAgent, "   Goal level of preference: %d\n",
                                   pref->id->id->level);
 #endif
 
                             if (pref->inst->GDS_evaluated_already == false)
                             {
 #ifdef DEBUG_GDS_HIGH
-                                print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
+                                thisAgent->outputManager->printa_sf(thisAgent, "   Match goal lev of instantiation %y ",
                                                    pref->inst->prod_name);
-                                print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+                                thisAgent->outputManager->printa_sf(thisAgent, "is %d\n", pref->inst->match_goal_level);
 #endif
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
 #ifdef DEBUG_GDS_HIGH
-                                    print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod_name);
+                                    thisAgent->outputManager->printa_sf(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod_name);
 #endif
 
                                 }
                                 else
                                 {
 #ifdef DEBUG_GDS_HIGH
-                                    print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod_name);
+                                    thisAgent->outputManager->printa_sf(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod_name);
 #endif
                                     uniquely_add_to_head_of_dll(thisAgent, pref->inst);
                                     pref->inst->GDS_evaluated_already = true;
@@ -2508,14 +2508,14 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 #ifdef DEBUG_GDS_HIGH
                             else
                             {
-                                print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod_name);
+                                thisAgent->outputManager->printa_sf(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod_name);
                             }
 #endif
 
                         }  /* end of forloop over preferences for this wme */
 
 #ifdef DEBUG_GDS_HIGH
-                        print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "\n    CALLING ELABORATE GDS....\n");
 #endif
                         elaborate_gds(thisAgent);
 
@@ -2523,7 +2523,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                         free_parent_list(thisAgent);
 #ifdef DEBUG_GDS_HIGH
-                        print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
                     } /* end if not halted */
                 }  /* end if w->preference->o_supported == true ... */
@@ -2864,8 +2864,8 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
             // KJC note: we actually halt, because there is no interrupt function in SoarKernel
             // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
             // then the interrupt is generated and system_halted is set to false so the user can recover.
-            print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
-            print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
+            thisAgent->outputManager->printa_sf(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
             xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             thisAgent->stop_soar = true;
@@ -3156,7 +3156,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
         {
             if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
             {
-                print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
+                thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
             }
 
             remove_existing_context_and_descendents(thisAgent, goal->id->lower_goal);
@@ -3202,7 +3202,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
     {
         if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
+            thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
         }
 
         remove_existing_context_and_descendents(thisAgent, goal->id->lower_goal);
@@ -3441,7 +3441,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         /* REW: begin 09.15.96 */
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            print_with_symbols(thisAgent,
+            thisAgent->outputManager->printa_sf(thisAgent,
                                "\n      asserting instantiation: %y\n", inst->prod_name);
             char buf[256];
             SNPRINTF(buf, 254, "asserting instantiation: %s",
@@ -3580,9 +3580,9 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
-                print_with_symbols(thisAgent,
+                thisAgent->outputManager->printa_sf(thisAgent,
                                    "*** Waterfall: aborting firing because (%y * *)", sym);
-                print(thisAgent,
+                thisAgent->outputManager->printa_sf(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
                       sym->id->level, thisAgent->change_level);
             }
@@ -3611,13 +3611,13 @@ void do_preference_phase(agent* thisAgent)
             switch (thisAgent->FIRING_TYPE)
             {
                 case PE_PRODS:
-                    print(thisAgent,
+                    thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (PE) For State At Depth %d ---\n",
                           thisAgent->active_level); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
                     break;
                 case IE_PRODS:
-                    print(thisAgent,
+                    thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (IE) For State At Depth %d ---\n",
                           thisAgent->active_level); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
@@ -3654,13 +3654,13 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
         {
-            print(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
                   thisAgent->active_level);
             if (thisAgent->active_goal)
             {
-                print_with_symbols(thisAgent, " (%y)", thisAgent->active_goal);
+                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
             }
-            print(thisAgent,  " ---\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
         }
 
         thisAgent->newly_created_instantiations = NIL;
@@ -3720,7 +3720,7 @@ void do_preference_phase(agent* thisAgent)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
-                print(thisAgent,
+                thisAgent->outputManager->printa_sf(thisAgent,
                       " inner elaboration loop doesn't have active goal.\n");
             }
             break;
@@ -3730,7 +3730,7 @@ void do_preference_phase(agent* thisAgent)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
-                print(thisAgent,  " inner elaboration loop at bottom goal.\n");
+                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
             }
             break;
         }
@@ -3755,7 +3755,7 @@ void do_preference_phase(agent* thisAgent)
         {
             if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
             {
-                print(thisAgent,
+                thisAgent->outputManager->printa_sf(thisAgent,
                       " inner elaboration loop finished but not at quiescence.\n");
             }
             break;
@@ -3813,11 +3813,11 @@ void do_working_memory_phase(agent* thisAgent)
             switch (thisAgent->FIRING_TYPE)
             {
                 case PE_PRODS:
-                    print(thisAgent, "\t--- Change Working Memory (PE) ---\n", 0);
+                    thisAgent->outputManager->printa_sf(thisAgent, "\t--- Change Working Memory (PE) ---\n", 0);
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
                     break;
                 case IE_PRODS:
-                    print(thisAgent, "\t--- Change Working Memory (IE) ---\n", 0);
+                    thisAgent->outputManager->printa_sf(thisAgent, "\t--- Change Working Memory (IE) ---\n", 0);
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
                     break;
             }
@@ -3928,12 +3928,12 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
         if (curr_pi->inst == inst)
         {
 #ifdef DEBUG_GDS
-            print_with_symbols(thisAgent, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
 #endif
             return;
         }
 #ifdef DEBUG_GDS
-        print_with_symbols(thisAgent, "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
 #endif
     } /* end for loop */
 
@@ -3951,7 +3951,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
 
     thisAgent->parent_list_head = new_pi;
 #ifdef DEBUG_GDS
-    print_with_symbols(thisAgent, "UNIQUE DLL:         added: %y\n", inst->prod_name);
+    thisAgent->outputManager->printa_sf(thisAgent, "UNIQUE DLL:         added: %y\n", inst->prod_name);
 #endif
 }
 
@@ -3969,8 +3969,8 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
-        print_string(thisAgent,  msgbuf);
+        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
+        thisAgent->outputManager->printa(thisAgent,  msgbuf);
 
         xml_begin_tag(thisAgent, kTagVerbose);
         xml_att_val(thisAgent, kTypeString, msgbuf);
@@ -4001,8 +4001,8 @@ void elaborate_gds(agent* thisAgent)
         inst = curr_pi->inst;
 
 #ifdef DEBUG_GDS
-        print_with_symbols(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod_name);
-        print(thisAgent, "      ");
+        thisAgent->outputManager->printa_sf(thisAgent, "\n      EXPLORING INSTANTIATION: %y\n", curr_pi->inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "      ");
         print_instantiation_with_wmes(thisAgent, curr_pi->inst , TIMETAG_WME_TRACE, -1);
 #endif
         /* This next check avoids a crash that happens when Soar tries to elaborate the GDS
@@ -4028,13 +4028,13 @@ void elaborate_gds(agent* thisAgent)
                 pref_for_this_wme      = wme_matching_this_cond->preference;
 
 #ifdef DEBUG_GDS
-                print(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
+                thisAgent->outputManager->printa_sf(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
                     wme_goal_level);
                 print_wme(thisAgent, wme_matching_this_cond);
 
                 if (pref_for_this_wme)
                 {
-                    print(thisAgent, "       pref_for_this_wme                        : ");
+                    thisAgent->outputManager->printa_sf(thisAgent, "       pref_for_this_wme                        : ");
                     print_preference(thisAgent, pref_for_this_wme);
                 }
 #endif
@@ -4051,13 +4051,13 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                     if (pref_for_this_wme == NIL)
                     {
-                        print(thisAgent, "         this wme has no preferences (it's an arch-created wme)\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "         this wme has no preferences (it's an arch-created wme)\n");
                     }
                     else if (wme_goal_level < inst->match_goal_level)
                     {
-                        print(thisAgent, "         this wme is in the supergoal\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "         this wme is in the supergoal\n");
                     }
-                    print_with_symbols(thisAgent, "inst->match_goal [%y]\n" , inst->match_goal);
+                    thisAgent->outputManager->printa_sf(thisAgent, "inst->match_goal [%y]\n" , inst->match_goal);
 #endif
 
                     if (wme_matching_this_cond->gds != NIL)
@@ -4084,7 +4084,7 @@ void elaborate_gds(agent* thisAgent)
                                 thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
 
 #ifdef DEBUG_GDS
-                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                thisAgent->outputManager->printa_sf(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
                             }
 
@@ -4096,7 +4096,7 @@ void elaborate_gds(agent* thisAgent)
                             //                     wme_matching_this_cond, gds_next,
                             //                     gds_prev);
 #ifdef DEBUG_GDS
-                            print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+                            thisAgent->outputManager->printa_sf(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
 #endif
 
                         }
@@ -4113,7 +4113,7 @@ void elaborate_gds(agent* thisAgent)
                              */
                             if (inst->match_goal_level == 1)
                             {
-                                print(thisAgent, "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                                thisAgent->outputManager->printa_sf(thisAgent, "\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
                             }
 
                             fast_remove_from_dll(wme_matching_this_cond->gds->wmes_in_gds, \
@@ -4128,7 +4128,7 @@ void elaborate_gds(agent* thisAgent)
                                 thisAgent->memoryManager->free_with_pool(MP_gds, wme_matching_this_cond->gds);
 
 #ifdef DEBUG_GDS
-                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                thisAgent->outputManager->printa_sf(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
                             }
                             /* JC ADDED: Separate adding wme to GDS as a function */
@@ -4139,7 +4139,7 @@ void elaborate_gds(agent* thisAgent)
                             //                     wme_matching_this_cond, gds_next,
                             //                     gds_prev);
 #ifdef DEBUG_GDS
-                            print(thisAgent, "\n       ....switching from old to new GDS list....\n");
+                            thisAgent->outputManager->printa_sf(thisAgent, "\n       ....switching from old to new GDS list....\n");
 #endif
                             wme_matching_this_cond->gds = inst->match_goal->id->gds;
                         }
@@ -4159,18 +4159,18 @@ void elaborate_gds(agent* thisAgent)
 
                         if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
                         {
-                            print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                            thisAgent->outputManager->printa_sf(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                         }
 #ifdef DEBUG_GDS
-                        print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
+                        thisAgent->outputManager->printa_sf(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", wme_matching_this_cond->gds->goal);
 #endif
                     } /* end else clause for "if wme_matching_this_cond->gds != NIL" */
 
 
 #ifdef DEBUG_GDS
-                    print(thisAgent, "            Added WME to GDS for goal = %d",
+                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d",
                         wme_matching_this_cond->gds->goal->id->level);
-                    print_with_symbols(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
+                    thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
 #endif
                 } /* end "wme in supergoal or arch-supported" */
                 else
@@ -4182,7 +4182,7 @@ void elaborate_gds(agent* thisAgent)
                     if (pref_for_this_wme->o_supported == true)
                     {
 #ifdef DEBUG_GDS
-                        print(thisAgent, "         this wme is local and o-supported\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "         this wme is local and o-supported\n");
 #endif
                         continue;
                     }
@@ -4196,11 +4196,11 @@ void elaborate_gds(agent* thisAgent)
                         if (inst->match_goal_level == 1)
                         {
 #ifdef DEBUG_GDS
-                            print(thisAgent, "         don't back up through top state\n");
+                            thisAgent->outputManager->printa_sf(thisAgent, "         don't back up through top state\n");
                             if (inst->prod)
                                 if (inst->prod_name)
                                 {
-                                    print_with_symbols(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod_name);
+                                    thisAgent->outputManager->printa_sf(thisAgent, "         don't back up through top state for instantiation %y\n", inst->prod_name);
                                 }
 #endif
                             continue;
@@ -4209,7 +4209,7 @@ void elaborate_gds(agent* thisAgent)
                         else   /* (inst->match_goal_level != 1) */
                         {
 #ifdef DEBUG_GDS
-                            print(thisAgent, "         this wme is local and i-supported\n");
+                            thisAgent->outputManager->printa_sf(thisAgent, "         this wme is local and i-supported\n");
 #endif
                             s = find_slot(pref_for_this_wme->id, pref_for_this_wme->attr);
                             if (s == NIL)
@@ -4217,7 +4217,7 @@ void elaborate_gds(agent* thisAgent)
                                 /* this must be an arch-wme from a fake instantiation */
 
 #ifdef DEBUG_GDS
-                                print(thisAgent, "here's the wme with no slot:\t");
+                                thisAgent->outputManager->printa_sf(thisAgent, "here's the wme with no slot:\t");
                                 print_wme(thisAgent, pref_for_this_wme->inst->top_of_instantiated_conditions->bt.wme_);
 #endif
 
@@ -4253,7 +4253,7 @@ void elaborate_gds(agent* thisAgent)
                                                 thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
 
 #ifdef DEBUG_GDS
-                                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                                thisAgent->outputManager->printa_sf(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
                                             }
 
@@ -4264,7 +4264,7 @@ void elaborate_gds(agent* thisAgent)
                                             //                                 insert_at_head_of_dll(fake_inst_wme_cond->gds->wmes_in_gds,
                                             //                                                       fake_inst_wme_cond, gds_next, gds_prev);
 #ifdef DEBUG_GDS
-                                            print(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
+                                            thisAgent->outputManager->printa_sf(thisAgent, "\n       .....GDS' goal is NIL so switching from old to new GDS list....\n");
 #endif
                                         }
                                         else if (fake_inst_wme_cond->gds->goal->id->level > inst->match_goal_level)
@@ -4279,7 +4279,7 @@ void elaborate_gds(agent* thisAgent)
                                              */
                                             if (inst->match_goal_level == 1)
                                             {
-                                                print(thisAgent, "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
+                                                thisAgent->outputManager->printa_sf(thisAgent, "\n\n\n\n\n HELLO! HELLO! The inst->match_goal_level is 1");
                                             }
 
                                             fast_remove_from_dll(fake_inst_wme_cond->gds->wmes_in_gds, \
@@ -4294,7 +4294,7 @@ void elaborate_gds(agent* thisAgent)
                                                 thisAgent->memoryManager->free_with_pool(MP_gds, fake_inst_wme_cond->gds);
 
 #ifdef DEBUG_GDS
-                                                print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
+                                                thisAgent->outputManager->printa_sf(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
                                             }
 
@@ -4306,7 +4306,7 @@ void elaborate_gds(agent* thisAgent)
                                             //                                    fake_inst_wme_cond, gds_next,
                                             //                                    gds_prev);
 #ifdef DEBUG_GDS
-                                            print(thisAgent, "\n       .....switching from old to new GDS list....\n");
+                                            thisAgent->outputManager->printa_sf(thisAgent, "\n       .....switching from old to new GDS list....\n");
 #endif
                                             fake_inst_wme_cond->gds = inst->match_goal->id->gds;
                                         }
@@ -4327,15 +4327,15 @@ void elaborate_gds(agent* thisAgent)
 
                                         if (fake_inst_wme_cond->gds->wmes_in_gds->gds_prev)
                                         {
-                                            print(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
+                                            thisAgent->outputManager->printa_sf(thisAgent, "\nDEBUG DEBUG : The new header should never have a prev value.\n");
                                         }
 #ifdef DEBUG_GDS
-                                        print_with_symbols(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
+                                        thisAgent->outputManager->printa_sf(thisAgent, "\n       ......WME did not have defined GDS.  Now adding to goal [%y].\n", fake_inst_wme_cond->gds->goal);
 #endif
                                     }
 #ifdef DEBUG_GDS
-                                    print(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
-                                    print_with_symbols(thisAgent, " [%y]\n",
+                                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
+                                    thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n",
                                         fake_inst_wme_cond->gds->goal);
 #endif
                                 }  /* matches { wme *fake_inst_wme_cond  */
@@ -4348,17 +4348,17 @@ void elaborate_gds(agent* thisAgent)
                                 {
 
 #ifdef DEBUG_GDS
-                                    print(thisAgent, "           looking at pref for the wme: ");
+                                    thisAgent->outputManager->printa_sf(thisAgent, "           looking at pref for the wme: ");
                                     print_preference(thisAgent, pref);
 #endif
 
 
                                     /* REW: 2004-05-27: Bug fix
-                                   We must check that the value with acceptable pref for the slot
-                                   is the same as the value for the wme in the condition, since
-                                   operators can have acceptable preferences for values other than
-                                   the WME value.  We dont want to backtrack thru acceptable prefs
-                                   for other operators */
+                                       We must check that the value with acceptable pref for the slot
+                                       is the same as the value for the wme in the condition, since
+                                       operators can have acceptable preferences for values other than
+                                       the WME value.  We dont want to backtrack thru acceptable prefs
+                                       for other operators */
 
                                     if (pref->value == wme_matching_this_cond->value)
                                     {
@@ -4371,7 +4371,7 @@ void elaborate_gds(agent* thisAgent)
                                         {
 
 #ifdef DEBUG_GDS
-                                            print_with_symbols(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
+                                            thisAgent->outputManager->printa_sf(thisAgent, "\n           adding inst that produced the pref to GDS: %y\n", pref->inst->prod_name);
 #endif
                                             /* If the preference comes from a lower level inst, then  ignore it.
                                              *   - Preferences from lower levels must come from result  instantiations
@@ -4391,7 +4391,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                             else
                                             {
-                                                print_with_symbols(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
+                                                thisAgent->outputManager->printa_sf(thisAgent, "\n           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
                                                 pref->inst->GDS_evaluated_already = true;
                                             }
 #endif
@@ -4399,7 +4399,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                         else
                                         {
-                                            print(thisAgent, "           the inst producing this pref was already explored; skipping it\n");
+                                            thisAgent->outputManager->printa_sf(thisAgent, "           the inst producing this pref was already explored; skipping it\n");
                                         }
 #endif
 
@@ -4407,7 +4407,7 @@ void elaborate_gds(agent* thisAgent)
 #ifdef DEBUG_GDS
                                     else
                                     {
-                                        print(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
+                                        thisAgent->outputManager->printa_sf(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
                                     }
 #endif
                                 }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
@@ -4421,7 +4421,7 @@ void elaborate_gds(agent* thisAgent)
         /* remove just used instantiation from list */
 
 #ifdef DEBUG_GDS
-        print_with_symbols(thisAgent, "\n      removing instantiation: %y\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "\n      removing instantiation: %y\n",
                            curr_pi->inst->prod_name);
 #endif
 
@@ -4450,12 +4450,12 @@ void elaborate_gds(agent* thisAgent)
     {
 
 #ifdef DEBUG_GDS
-        print(thisAgent, "\n    RECURSING using these parents:\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\n    RECURSING using these parents:\n");
         for (curr_pi = thisAgent->parent_list_head;
                 curr_pi;
                 curr_pi = curr_pi->next)
         {
-            print_with_symbols(thisAgent, "      %y\n", curr_pi->inst->prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent, "      %y\n", curr_pi->inst->prod_name);
         }
 #endif
 
@@ -4490,8 +4490,8 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
         memset(msgbuf, 0, 256);
-        snprintf_with_symbols(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal);
-        print_string(thisAgent, msgbuf);
+        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal);
+        thisAgent->outputManager->printa(thisAgent, msgbuf);
 
         xml_begin_tag(thisAgent, soar_TraceNames::kTagVerbose);
         xml_att_val(thisAgent, soar_TraceNames::kTypeString, msgbuf);
@@ -4553,7 +4553,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 
     if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
     {
-        print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
         print_wme(thisAgent, w);
     }
 
@@ -4601,6 +4601,6 @@ void create_gds_for_goal(agent* thisAgent, Symbol* goal)
     gds->wmes_in_gds = NIL;
     goal->id->gds = gds;
 #ifdef DEBUG_GDS
-    print_with_symbols(thisAgent, "\nCreated GDS for goal [%y].\n", gds->goal);
+    thisAgent->outputManager->printa_sf(thisAgent, "\nCreated GDS for goal [%y].\n", gds->goal);
 #endif
 }

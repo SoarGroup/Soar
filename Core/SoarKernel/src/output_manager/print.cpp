@@ -60,7 +60,34 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
         }
     }
 }
-
+//std::string out( std::string format, ... )
+//{
+//    va_list args, args_copy ;
+//    va_start( args, format ) ;
+//    va_copy( args_copy, args ) ;
+//
+//    const auto sz = std::vsnprintf( nullptr, 0, format.c_str(), args ) + 1 ;
+//
+//    try
+//    {
+//        std::string result( sz, ' ' ) ;
+//        std::vsnprintf( &result.front(), sz, format.c_str(), args_copy ) ;
+//
+//        va_end(args_copy) ;
+//        va_end(args) ;
+//
+//        // do whatever else with result
+//
+//        return result ;
+//    }
+//
+//    catch( const std::bad_alloc& )
+//    {
+//        va_end(args_copy) ;
+//        va_end(args) ;
+//        throw ;
+//    }
+//}
 void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
 {
 //    soar_module::sqlite_statement*   target_statement = NIL;
@@ -254,10 +281,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 	size_t m;
     std::string sf = format;
 
-    /* Apparently nested variadic calls need to have their argument list copied here.
-     * If windows has issues with va_copy, might be able to just comment out that line
-     * or use args = pargs.  Supposedly, way VC++ handles va_list doesn't need for it
-     * to be copied. */
     va_list args;
     va_copy(args, pargs);
 
@@ -265,30 +288,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
     while (i<m)
     {
         ch = sf.at(i);
-        //    /* --- copy anything up to the first "%" --- */
-        //    if ((*format != '%') && (*format != 0))
-        //    {
-        //        char* first_p = strchr(format, '%');
-        //        size_t first_len = 0;
-        //        if (first_p)
-        //        {
-        //            first_len = (first_p - format);
-        //        }
-        //        if (first_len > 0)
-        //        {
-        //            char* new_format = const_cast<char*>(format);
-        //            om_strncpy(&ch, &new_format, buffer_left, first_len);
-        //            format = new_format;
-        //        } else {
-        //            size_t buffer_left_old = buffer_left;
-        //            om_strcpy(&ch, format, buffer_left);
-        //            format += (buffer_left_old - buffer_left - 1);
-        //        }
-        //    }
-        //    if (*format == 0)
-        //    {
-        //        break;
-        //    }
+
         if (ch == '%')
         {
             i++;
@@ -391,59 +391,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-//                    case 'h':
-//                    {
-//                        t = va_arg(args, test);
-//                        int isSTI = va_arg(args, int);
-//                        if (isSTI)
-//                        {
-//                            destString += "[STI]";
-//                        }
-//                        ct = NULL;
-//                        if (t)
-//                        {
-//                            if (t->type != CONJUNCTIVE_TEST)
-//                            {
-//                                if (t->identity)
-//                                {
-//                                    if (t->type != EQUALITY_TEST)
-//                                    {
-//                                        destString += test_type_to_string_brief(t->type);
-//                                    }
-//                                    destString += "[";
-//                                    destString += std::to_string(t->identity);
-//                                    destString += "]";
-//                                } else {
-//                                    test_to_string(t, destString);
-//                                }
-//                            } else {
-//                                destString += "{ ";
-//                                for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
-//                                {
-//                                    ct = static_cast<test>(c->first);
-//                                    assert(ct);
-//                                    if (ct->identity)
-//                                    {
-//                                        if (ct->type != EQUALITY_TEST)
-//                                        {
-//                                            destString += test_type_to_string_brief(ct->type);
-//                                        }
-//                                        destString += "[";
-//                                        destString += std::to_string(ct->identity);
-//                                        destString += "]";
-//                                    } else {
-//                                        test_to_string(ct, destString);
-//                                    }
-//                                    destString += ' ';
-//                                }
-//                                destString += '}';
-//                            }
-//                        } else {
-//                            destString += '#';
-//                        }
-//                    }
-//                    break;
-
                     case 'o':
                     {
                         t = va_arg(args, test);
@@ -491,6 +438,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         }
                     }
                     break;
+
                     case 'l':
                     {
                         condition* lc = va_arg(args, condition*);
@@ -569,7 +517,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'd':
                     {
-                        int argument = va_arg(args, int);
+                        long argument = va_arg(args, long);
                         destString += std::to_string(argument);
                     }
                     break;

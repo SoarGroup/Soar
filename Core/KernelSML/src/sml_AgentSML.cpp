@@ -23,6 +23,7 @@
 #include "decide.h"
 #include "decider.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "rhs_functions.h"
 #include "soar_rand.h"
 #include "soar_instance.h"
@@ -1554,7 +1555,7 @@ void AgentSML::ReplayInputWMEs()
     /* These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
     if (m_CapturedActions.empty())
     {
-        print(m_agent, "\n\nWarning: end of replay has been reached.\n");
+        m_agent->outputManager->printa(m_agent, "\n\nWarning: end of replay has been reached.\n");
         return;
     }
 
@@ -1578,7 +1579,7 @@ void AgentSML::ReplayInputWMEs()
 
             if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
             {
-                print(m_agent, "\n\nWarning: replay add-wme failed.\n");
+                m_agent->outputManager->printa(m_agent, "\n\nWarning: replay add-wme failed.\n");
             }
         }
         else
@@ -1586,7 +1587,7 @@ void AgentSML::ReplayInputWMEs()
             // remove-wme
             if (!RemoveInputWME(ca.clientTimeTag))
             {
-                print(m_agent, "\n\nWarning: replay remove-wme failed.\n");
+                m_agent->outputManager->printa(m_agent, "\n\nWarning: replay remove-wme failed.\n");
             }
         }
     }
