@@ -3,6 +3,7 @@ stage('Build') {
     checkout scm
     sh 'scons all --no-scu'
     sh './Prototype-UnitTesting -s -c SMemFunctionalTests'
+    junit 'out/TestResults.xml'
 
     archive 'out/**'
 
@@ -23,6 +24,7 @@ stage('Build') {
     }
 
     sh 'Prototype-UnitTesting -s -c SMemFunctionalTests'
+    junit 'out/TestResults.xml'
 
     archive 'out/**'
 
