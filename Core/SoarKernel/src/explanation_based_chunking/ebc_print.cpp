@@ -222,7 +222,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
     outputManager->set_column_indent(0, 55);
 
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa(thisAgent,    "                     Chunking Summary\n");
+    outputManager->printa(thisAgent,    "           Explanation-Based Chunking Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55).c_str());
@@ -263,7 +263,8 @@ void Explanation_Based_Chunker::print_chunking_summary()
             }
         }
     }
-    outputManager->printa_sf(thisAgent, "\nFor a full list of EBC's sub-commands and settings:  chunk ?");
+    outputManager->printa_sf(thisAgent, "\nTry 'chunk ?' to learn more about chunking's sub-commands and settings.\n"
+                    "(For a detailed article about chunk, use 'help chunk'.)");
 }
 
 
@@ -282,7 +283,7 @@ void Explanation_Based_Chunker::print_chunking_settings()
         ebc_params->chunk_in_states->get_value() == ebc_always  ? "ALWAYS" : "always",
             ebc_params->chunk_in_states->get_value() == ebc_never ? "NEVER" : "never",
                 ebc_params->chunk_in_states->get_value() == ebc_only ? "FLAGGED" : "flagged",
-                    ebc_params->chunk_in_states->get_value() == ebc_except ? "ALL-EXCEPT" : "all-except",
+                    ebc_params->chunk_in_states->get_value() == ebc_except ? "UNFLAGGED" : "unflagged",
         "When Soar will learn new rules");
     outputManager->printa_sf(thisAgent, "bottom-only                %-%s%-%s\n", capitalizeOnOff(ebc_params->bottom_level_only->get_value()), "Learn only from bottom sub-state");
     tempString = "[ ";
@@ -313,6 +314,8 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "allow-missing-osk           %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_OSK->get_value()), "Used operator selection rules to choose operator");
     outputManager->printa_sf(thisAgent, "allow-opaque                %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
     outputManager->printa_sf(thisAgent, "allow-uncertain-operators   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
-    outputManager->printa_sf(thisAgent, "allow-multiple-prefs        %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_multiple_prefs->get_value()), "Tests a WME that has multiple reasons it exists");
+    outputManager->printa_sf(thisAgent, "allow-conflated-reasoning   %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Tests a WME that has multiple reasons it exists");
+    outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- chunk <setting> [<value>]\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help chunk\n");
 
 }

@@ -11,6 +11,8 @@
 #include "kernel.h"
 #include "decider_settings.h"
 
+#include <string>
+
 class SoarDecider
 {
         friend cli::CommandLineInterface;
@@ -36,6 +38,8 @@ class SoarDecider
         agent*                      thisAgent;
         Output_Manager*             outputManager;
 
+        void get_enabled_module_strings(std::string &enabledStr, std::string &disabledStr);
+        int get_state_stack_string(std::string &stateStackStr);
 };
 
 #endif /* CORE_SOARKERNEL_SRC_DECISION_PROCESS_DECIDER_H_ */

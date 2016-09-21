@@ -10,7 +10,7 @@
 
 namespace ANSI_Color_Constants
 {
-#if !defined(_WIN32) && !defined(NO_COLORS)
+
     // Reset
     static const char* Off = "\e[0m";               // Text Reset
     
@@ -83,79 +83,77 @@ namespace ANSI_Color_Constants
     static const char* On_IPurple = "\e[0;105m";          // Purple
     static const char* On_ICyan = "\e[0;106m";            // Cyan
     static const char* On_IWhite = "\e[0;107m";           // White
-#else
     
-    static const char* Off = "";
-    
-    // Regular Colors
-    static const char* Black = "";
-    static const char* Red = "";
-    static const char* Green = "";
-    static const char* Yellow = "";
-    static const char* Blue = "";
-    static const char* Purple = "";
-    static const char* Cyan = "";
-    static const char* White = "";
-    
-    // Bold
-    static const char* BBlack = "";
-    static const char* BRed = "";
-    static const char* BGreen = "";
-    static const char* BYellow = "";
-    static const char* BBlue = "";
-    static const char* BPurple = "";
-    static const char* BCyan = "";
-    static const char* BWhite = "";
-    
-    // Underline
-    static const char* UBlack = "";
-    static const char* URed = "";
-    static const char* UGreen = "";
-    static const char* UYellow = "";
-    static const char* UBlue = "";
-    static const char* UPurple = "";
-    static const char* UCyan = "";
-    static const char* UWhite = "";
-    
-    // Background
-    static const char* On_Black = "";
-    static const char* On_Red = "";
-    static const char* On_Green = "";
-    static const char* On_Yellow = "";
-    static const char* On_Blue = "";
-    static const char* On_Purple = "";
-    static const char* On_Cyan = "";
-    static const char* On_White = "";
-    
-    // High Intensity
-    static const char* IBlack = "";
-    static const char* IRed = "";
-    static const char* IGreen = "";
-    static const char* IYellow = "";
-    static const char* IBlue = "";
-    static const char* IPurple = "";
-    static const char* ICyan = "";
-    static const char* IWhite = "";
-    
-    // Bold High Intensity
-    static const char* BIBlack = "";
-    static const char* BIRed = "";
-    static const char* BIGreen = "";
-    static const char* BIYellow = "";
-    static const char* BIBlue = "";
-    static const char* BIPurple = "";
-    static const char* BICyan = "";
-    static const char* BIWhite = "";
-    
-    // High Intensity backgrounds
-    static const char* On_IBlack = "";
-    static const char* On_IRed = "";
-    static const char* On_IGreen = "";
-    static const char* On_IYellow = "";
-    static const char* On_IBlue = "";
-    static const char* On_IPurple = "";
-    static const char* On_ICyan = "";
-    static const char* On_IWhite = "";
-#endif
+//    static const char* Off = "";
+//
+//    // Regular Colors
+//    static const char* Black = "";
+//    static const char* Red = "";
+//    static const char* Green = "";
+//    static const char* Yellow = "";
+//    static const char* Blue = "";
+//    static const char* Purple = "";
+//    static const char* Cyan = "";
+//    static const char* White = "";
+//
+//    // Bold
+//    static const char* BBlack = "";
+//    static const char* BRed = "";
+//    static const char* BGreen = "";
+//    static const char* BYellow = "";
+//    static const char* BBlue = "";
+//    static const char* BPurple = "";
+//    static const char* BCyan = "";
+//    static const char* BWhite = "";
+//
+//    // Underline
+//    static const char* UBlack = "";
+//    static const char* URed = "";
+//    static const char* UGreen = "";
+//    static const char* UYellow = "";
+//    static const char* UBlue = "";
+//    static const char* UPurple = "";
+//    static const char* UCyan = "";
+//    static const char* UWhite = "";
+//
+//    // Background
+//    static const char* On_Black = "";
+//    static const char* On_Red = "";
+//    static const char* On_Green = "";
+//    static const char* On_Yellow = "";
+//    static const char* On_Blue = "";
+//    static const char* On_Purple = "";
+//    static const char* On_Cyan = "";
+//    static const char* On_White = "";
+//
+//    // High Intensity
+//    static const char* IBlack = "";
+//    static const char* IRed = "";
+//    static const char* IGreen = "";
+//    static const char* IYellow = "";
+//    static const char* IBlue = "";
+//    static const char* IPurple = "";
+//    static const char* ICyan = "";
+//    static const char* IWhite = "";
+//
+//    // Bold High Intensity
+//    static const char* BIBlack = "";
+//    static const char* BIRed = "";
+//    static const char* BIGreen = "";
+//    static const char* BIYellow = "";
+//    static const char* BIBlue = "";
+//    static const char* BIPurple = "";
+//    static const char* BICyan = "";
+//    static const char* BIWhite = "";
+//
+//    // High Intensity backgrounds
+//    static const char* On_IBlack = "";
+//    static const char* On_IRed = "";
+//    static const char* On_IGreen = "";
+//    static const char* On_IYellow = "";
+//    static const char* On_IBlue = "";
+//    static const char* On_IPurple = "";
+//    static const char* On_ICyan = "";
+//    static const char* On_IWhite = "";
 }
 #endif /* ANSI_COLORS_H_ */

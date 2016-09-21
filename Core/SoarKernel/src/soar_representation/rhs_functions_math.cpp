@@ -13,7 +13,7 @@
 #include "decide.h"
 #include "lexer.h"
 #include "mem.h"
-#include "print.h"
+#include "output_manager.h"
 #include "rhs_functions.h"
 #include "soar_rand.h"
 #include "slot.h"
@@ -46,7 +46,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to + function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to + function\n",
                                arg);
             return NIL;
         }
@@ -110,7 +110,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to * function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to * function\n",
                                arg);
             return NIL;
         }
@@ -172,7 +172,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     if (!args)
     {
-        print(thisAgent, "Error: '-' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: '-' function called with no arguments\n");
         return NIL;
     }
 
@@ -182,7 +182,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - function\n",
                                arg);
             return NIL;
         }
@@ -263,7 +263,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     if (!args)
     {
-        print(thisAgent, "Error: '/' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: '/' function called with no arguments\n");
         return NIL;
     }
 
@@ -273,7 +273,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to / function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to / function\n",
                                arg);
             return NIL;
         }
@@ -295,7 +295,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         {
             return thisAgent->symbolManager->make_float_constant(1.0 / f);
         }
-        print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: attempt to divide ('/') by zero.\n");
         return NIL;
     }
 
@@ -320,7 +320,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             }
             else
             {
-                print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
+                thisAgent->outputManager->printa(thisAgent, "Error: attempt to divide ('/') by zero.\n");
                 return NIL;
             }
         }
@@ -332,7 +332,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
             }
             else
             {
-                print(thisAgent, "Error: attempt to divide ('/') by zero.\n");
+                thisAgent->outputManager->printa(thisAgent, "Error: attempt to divide ('/') by zero.\n");
                 return NIL;
             }
         }
@@ -355,20 +355,20 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-integer (%y) passed to div function\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-integer (%y) passed to div function\n",
                            arg1);
         return NIL;
     }
     if (arg2->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-integer (%y) passed to div function\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-integer (%y) passed to div function\n",
                            arg2);
         return NIL;
     }
 
     if (arg2->ic->value == 0)
     {
-        print(thisAgent, "Error: attempt to divide ('div') by zero.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: attempt to divide ('div') by zero.\n");
         return NIL;
     }
 
@@ -387,7 +387,7 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
         return NIL;
     }
     int count = 0;
@@ -411,7 +411,7 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
 	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
         return NIL;
     }
 	int sum = 0;
@@ -442,20 +442,20 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (arg1->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-integer (%y) passed to mod function\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-integer (%y) passed to mod function\n",
                            arg1);
         return NIL;
     }
     if (arg2->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-integer (%y) passed to mod function\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-integer (%y) passed to mod function\n",
                            arg2);
         return NIL;
     }
 
     if (arg2->ic->value == 0)
     {
-        print(thisAgent, "Error: attempt to divide ('mod') by zero.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: attempt to divide ('mod') by zero.\n");
         return NIL;
     }
 
@@ -487,7 +487,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to min function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to min function\n",
                                arg);
             return NIL;
         }
@@ -565,7 +565,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to max function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to max function\n",
                                arg);
             return NIL;
         }
@@ -633,7 +633,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (!args)
     {
-        print(thisAgent, "Error: 'sin' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'sin' function called with no arguments\n");
         return NIL;
     }
 
@@ -648,7 +648,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     }
     else
     {
-        print_with_symbols(thisAgent, "Error: 'sin' function called with non-numeric argument %y\n", arg);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: 'sin' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
 
@@ -668,7 +668,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (!args)
     {
-        print(thisAgent, "Error: 'cos' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'cos' function called with no arguments\n");
         return NIL;
     }
 
@@ -683,7 +683,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     }
     else
     {
-        print_with_symbols(thisAgent, "Error: 'cos' function called with non-numeric argument %y\n", arg);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: 'cos' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
     return thisAgent->symbolManager->make_float_constant(cos(arg_value));
@@ -702,7 +702,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (!args)
     {
-        print(thisAgent, "Error: 'sqrt' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'sqrt' function called with no arguments\n");
         return NIL;
     }
 
@@ -717,7 +717,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
     else
     {
-        print_with_symbols(thisAgent, "Error: 'sqrt' function called with non-numeric argument %y\n", arg);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: 'sqrt' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
     return thisAgent->symbolManager->make_float_constant(sqrt(arg_value));
@@ -739,7 +739,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     if (!args)
     {
-        print(thisAgent, "Error: 'atan2' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'atan2' function called with no arguments\n");
         return NIL;
     }
 
@@ -749,7 +749,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to atan2\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to atan2\n",
                                arg);
             return NIL;
         }
@@ -757,7 +757,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     if (!args->rest)
     {
-        print(thisAgent, "Error: 'atan2' function called with only one argument\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'atan2' function called with only one argument\n");
         return NIL;
     }
 
@@ -774,7 +774,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
     c = args->rest;
     if (c->rest)
     {
-        print(thisAgent, "Error: 'atan2' function called with more than two arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'atan2' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<symbol_struct*>(c->first);
@@ -803,7 +803,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (!args)
     {
-        print(thisAgent, "Error: 'abs' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'abs' function called with no arguments\n");
         return NIL;
     }
 
@@ -818,7 +818,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
     }
     else
     {
-        print_with_symbols(thisAgent, "Error: 'abs' function called with non-numeric argument %y\n", arg);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: 'abs' function called with non-numeric argument %y\n", arg);
         return NIL;
     }
     return return_value;
@@ -839,26 +839,26 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (!args)
     {
-        print(thisAgent, "Error: 'int' function called with no arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'int' function called with no arguments.\n");
         return NIL;
     }
 
     if (args->rest)
     {
-        print(thisAgent, "Error: 'int' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'int' takes exactly 1 argument.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: variable (%y) passed to 'int' RHS function.\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: variable (%y) passed to 'int' RHS function.\n",
                            sym);
         return NIL;
     }
     else if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: identifier (%y) passed to 'int' RHS function.\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier (%y) passed to 'int' RHS function.\n",
                            sym);
         return NIL;
     }
@@ -870,7 +870,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         int_val = strtol(sym->to_string(false, NIL, 0), NULL, 10);
         if (errno)
         {
-            print(thisAgent, "Error: bad integer (%y) given to 'int' RHS function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: bad integer (%y) given to 'int' RHS function\n",
                   sym);
             return NIL;
         }
@@ -888,7 +888,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
         return thisAgent->symbolManager->make_int_constant(static_cast<int64_t>(int_part));
     }
 
-    print(thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
           sym);
     return NIL;
 }
@@ -908,26 +908,26 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
 
     if (!args)
     {
-        print(thisAgent, "Error: 'float' function called with no arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'float' function called with no arguments.\n");
         return NIL;
     }
 
     if (args->rest)
     {
-        print(thisAgent, "Error: 'float' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'float' takes exactly 1 argument.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: variable (%y) passed to 'float' RHS function.\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: variable (%y) passed to 'float' RHS function.\n",
                            sym);
         return NIL;
     }
     else if (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: identifier (%y) passed to 'float' RHS function.\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier (%y) passed to 'float' RHS function.\n",
                            sym);
         return NIL;
     }
@@ -939,7 +939,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         float_val = strtod(sym->to_string(false, NULL, 0), NULL);
         if (errno)
         {
-            print(thisAgent, "Error: bad float (%y) given to 'float' RHS function\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: bad float (%y) given to 'float' RHS function\n",
                   sym);
             return NIL;
         }
@@ -955,7 +955,7 @@ Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
         return thisAgent->symbolManager->make_float_constant(static_cast<double>(sym->ic->value));
     }
 
-    print(thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
           sym);
     return NIL;
 }
@@ -1065,14 +1065,14 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
 
     if (!args)
     {
-        print(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with no arguments\n");
         return NIL;
     }
 
     if (!args->rest)
     {
         /* --- only one argument --- */
-        print(thisAgent, "Error: 'round_off_heading' function called with only one argument.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with only one argument.\n");
         return NIL;
     }
 
@@ -1091,7 +1091,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
     if (c->rest)
     {
         /* --- more than two arguments --- */
-        print(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<Symbol*>(c->first);
@@ -1134,14 +1134,14 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
 
     if (!args)
     {
-        print(thisAgent, "Error: 'round_off' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off' function called with no arguments\n");
         return NIL;
     }
 
     if (!args->rest)
     {
         /* --- only one argument --- */
-        print(thisAgent, "Error: 'round_off' function called with only one argument.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off' function called with only one argument.\n");
         return NIL;
     }
 
@@ -1160,7 +1160,7 @@ Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*us
     if (c->rest)
     {
         /* --- more than two arguments --- */
-        print(thisAgent, "Error: 'round_off' function called with more than two arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'round_off' function called with more than two arguments.\n");
         return NIL;
     }
     arg = static_cast<Symbol*>(c->first);
@@ -1319,7 +1319,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
 
     if (!args)
     {
-        print(thisAgent, "Error: 'compute-heading' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-heading' function called with no arguments\n");
         return NIL;
     }
 
@@ -1329,7 +1329,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - compute-heading\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - compute-heading\n", arg);
             return NIL;
         }
     }
@@ -1342,7 +1342,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
             return NIL;
         }
         else
@@ -1353,7 +1353,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
 
     if (count != 4)
     {
-        print(thisAgent, "Error: 'compute-heading' takes exactly 4 arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-heading' takes exactly 4 arguments.\n");
         return NIL;
     }
 
@@ -1388,7 +1388,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
 
     if (!args)
     {
-        print(thisAgent, "Error: 'compute-range' function called with no arguments\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-range' function called with no arguments\n");
         return NIL;
     }
 
@@ -1398,7 +1398,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - compute-range\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - compute-range\n", arg);
             return NIL;
         }
     }
@@ -1411,7 +1411,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
         if ((arg->symbol_type != INT_CONSTANT_SYMBOL_TYPE)
                 && (arg->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed to compute-range function.\n", arg);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to compute-range function.\n", arg);
             return NIL;
         }
         else
@@ -1422,7 +1422,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
 
     if (count != 4)
     {
-        print(thisAgent, "Error: 'compute-range' takes exactly 4 arguments.\n");
+        thisAgent->outputManager->printa(thisAgent, "Error: 'compute-range' takes exactly 4 arguments.\n");
         return NIL;
     }
 
@@ -1470,7 +1470,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
             }
             else
             {
-                print_with_symbols(thisAgent, "Error: non-number (%y) passed to - rand-float\n", arg);
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - rand-float\n", arg);
                 return NIL;
             }
         }
@@ -1514,7 +1514,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
             }
             else
             {
-                print_with_symbols(thisAgent, "Error: non-number (%y) passed to - rand-int\n", arg);
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed to - rand-int\n", arg);
                 return NIL;
             }
         }
@@ -1646,7 +1646,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed as 'dice' to - compute-dice-probability\n", temp_sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed as 'dice' to - compute-dice-probability\n", temp_sym);
             return NIL;
         }
         dice = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
@@ -1656,7 +1656,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed as 'sides' to - compute-dice-probability\n", temp_sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed as 'sides' to - compute-dice-probability\n", temp_sym);
             return NIL;
         }
         sides = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
@@ -1666,7 +1666,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         if ((temp_sym->symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
                 (temp_sym->symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE))
         {
-            print_with_symbols(thisAgent, "Error: non-number (%y) passed as 'count' to - compute-dice-probability\n", temp_sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-number (%y) passed as 'count' to - compute-dice-probability\n", temp_sym);
             return NIL;
         }
         count = ((temp_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (temp_sym->ic->value) : (static_cast< int64_t >(temp_sym->fc->value)));
@@ -1675,7 +1675,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         temp_sym = static_cast< Symbol* >(args->rest->rest->rest->first);
         if (temp_sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
         {
-            print_with_symbols(thisAgent, "Error: non-string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: non-string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym);
             return NIL;
         }
         if (strcmp(temp_sym->sc->name, "eq") == 0)
@@ -1704,7 +1704,7 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
         }
         if (pred == bad)
         {
-            print_with_symbols(thisAgent, "Error: invalid string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: invalid string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym);
             return NIL;
         }
     }

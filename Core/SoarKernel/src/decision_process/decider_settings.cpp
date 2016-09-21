@@ -27,11 +27,6 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     pDecider_settings[DECIDER_MAX_NIL_OUTPUT_CYCLES] = 15;
     pDecider_settings[DECIDER_WAIT_SNC] = 0;
 
-    o_support_mode = new soar_module::constant_param<OSupportModes>("o-support-mode", OMode4, new soar_module::f_predicate<OSupportModes>());
-    o_support_mode->add_mapping(OMode4, "4");
-    o_support_mode->add_mapping(OMode3, "3");
-    add(o_support_mode);
-
     stop_phase = new soar_module::constant_param<top_level_phase>("stop-phase", APPLY_PHASE, new soar_module::f_predicate<top_level_phase>());
     stop_phase->add_mapping(APPLY_PHASE, "apply");
     stop_phase->add_mapping(DECISION_PHASE, "decide");
@@ -55,6 +50,8 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     wait_snc = new soar_module::boolean_param("wait-snc", pDecider_settings[DECIDER_WAIT_SNC] ? on : off, new soar_module::f_predicate<boolean>());
     add(wait_snc);
 
+    init_cmd = new soar_module::boolean_param("init", on, new soar_module::f_predicate<boolean>());
+    add(init_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -100,18 +97,7 @@ void decider_param_container::update_int_setting(agent* thisAgent, soar_module::
 }
 void decider_param_container::update_enum_setting(agent* thisAgent, soar_module::param* pChangedParam, sml::KernelSML* pKernelSML)
 {
-    if (pChangedParam == o_support_mode)
-    {
-        if (o_support_mode->get_value() == OMode4)
-        {
-            thisAgent->Decider->settings[DECIDER_O_SUPPORT_MODE] = 4;
-        }
-        else if (o_support_mode->get_value() == OMode3)
-        {
-            thisAgent->Decider->settings[DECIDER_O_SUPPORT_MODE] = 3;
-        }
-    }
-    else if (pChangedParam == stop_phase)
+    if (pChangedParam == stop_phase)
     {
         thisAgent->Decider->settings[DECIDER_STOP_PHASE] = stop_phase->get_value();
 
@@ -144,18 +130,20 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     Output_Manager* outputManager = &Output_Manager::Get_OM();
 
     outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 40);
-    outputManager->set_column_indent(1, 50);
-    outputManager->printa(thisAgent, "=========== Soar General Settings ===========\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 45).c_str(), "Phase before which Soar will stop");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 45).c_str(), "Wait after state-no-change");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 45).c_str(), "Maximum elaboration in a phase");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 45).c_str(), "Maximum goal stack depth");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 45).c_str(), "Used with run --out");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dc-time", max_dc_time->get_string(), 45).c_str(), "Maximum time per decision");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-memory-usage", max_memory_usage->get_string(), 45).c_str(), "Maximum memory usage");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-gp", max_gp->get_string(), 45).c_str(), "Maximum rules gp can generate");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("o-support-mode", o_support_mode->get_string(), 45).c_str(), "O-Support Mode");
+//    outputManager->set_column_indent(0, 40);
+    outputManager->set_column_indent(1, 55);
+    outputManager->printa(thisAgent, "====== Soar General Commands and Settings =====\n");
+    outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
+    outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes Soar");
+    outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 50).c_str(), "Maximum elaboration in a phase");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 50).c_str(), "Maximum goal stack depth");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 50).c_str(), "Used with run --out");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dc-time", max_dc_time->get_string(), 50).c_str(), "Maximum time per decision");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-memory-usage", max_memory_usage->get_string(), 50).c_str(), "Maximum memory usage");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-gp", max_gp->get_string(), 50).c_str(), "Maximum rules gp can generate");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 50).c_str(), "Phase before which Soar will stop");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 50).c_str(), "Wait after state-no-change");
     outputManager->printa(thisAgent, "---------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- soar <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help soar\n");

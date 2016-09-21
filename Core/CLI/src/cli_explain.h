@@ -30,6 +30,7 @@ namespace cli
             {
                 return "Syntax: explain [ --all | --only-specific ]\n"
                        "        explain --record <rule-name>\n"
+                       "        explain --justifications [ yes | no ]\n"
                        "        explain [instantiation | condition | chunk] <id number>\n"
                        "        explain <chunk name>\n"
                        "        explain [ explanation-trace | wme-trace ]\n"
@@ -47,6 +48,7 @@ namespace cli
                     {'e', "explanation-trace",      OPTARG_NONE},
                     {'g', "global-stats",           OPTARG_NONE},
                     {'i', "identity",               OPTARG_NONE},
+                    {'j', "justifications",         OPTARG_OPTIONAL},
                     {'l', "list",                   OPTARG_NONE},
                     {'o', "only-specific",          OPTARG_NONE},
                     {'r', "record",                 OPTARG_OPTIONAL},
@@ -93,6 +95,11 @@ namespace cli
 
                         case 'i':
                             options.set(Cli::EXPLAIN_IDENTITY_SETS);
+                            break;
+
+                        case 'j':
+                            options.set(Cli::EXPLAIN_JUSTIFICATIONS);
+                            lWatchArgument = opt.GetOptionArgument();
                             break;
 
                         case 'l':
@@ -159,6 +166,15 @@ namespace cli
                     {
                         cli.SetError("Please specify only a rule name, for example 'explain -r myRule'.");
                     	return cli.AppendError(GetSyntax());
+                    }
+                    return cli.DoExplain(options, &lWatchArgument, &arg2);
+                }
+                if (options.test(Cli::EXPLAIN_JUSTIFICATIONS))
+                {
+                    if ((options.count() != 1))
+                    {
+                        cli.SetError("Please specify only a setting, for example 'explain -j yes'.");
+                        return cli.AppendError(GetSyntax());
                     }
                     return cli.DoExplain(options, &lWatchArgument, &arg2);
                 }

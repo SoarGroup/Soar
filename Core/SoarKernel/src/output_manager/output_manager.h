@@ -23,7 +23,6 @@
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
-#define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
 
 typedef struct trace_mode_info_struct
@@ -100,14 +99,6 @@ class Output_Manager
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
-        /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
-         *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
-         *    function calls that use that buffer within one print statements.  There are
-         *    probably better approaches, but this avoided revising a lot of other code and
-         *    does the job.  -- */
-        char        printed_output_strings[output_string_size][num_output_strings];
-        int64_t     next_output_string;
-
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
@@ -124,7 +115,6 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
@@ -149,7 +139,6 @@ class Output_Manager
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
 
-
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
         void printa_sf(agent* pSoarAgent, const char* format, ...);
@@ -163,6 +152,8 @@ class Output_Manager
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
         void sprint_sf(std::string &destString, const char* format, ...);
+        size_t sprint_sf_cstr(char* dest, size_t dest_size, const char* format, ...);
+
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
         void store_refcount(Symbol* sym, const char* callers, bool isAdd);
@@ -174,41 +165,35 @@ class Output_Manager
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
 
-        char* get_printed_output_string()
-        {
-            if (++next_output_string == num_output_strings)
-            {
-                next_output_string = 0;
-            }
-            return printed_output_strings[next_output_string];
-        }
+        const char* phase_to_string(top_level_phase pPhase);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
+        /* Methods to make printing prettier */
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
 
+        void print_spaces(agent* thisAgent, int n)
+        {
+            std::string lStr = std::string(n, ' ');
+            printa(thisAgent, lStr.c_str());
+        }
+
         void set_print_indents(const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (pPre)
-            {
+            if (pPre) {
                 if (m_pre_string) free(m_pre_string);
-                if (strlen(pPre) > 0)
-                {
+                if (strlen(pPre) > 0) {
                     m_pre_string = strdup(pPre);
-                }
-                else
-                {
+                } else {
                     m_pre_string = NULL;
                 }
             }
-            if (pPost)
-            {
+            if (pPost) {
                 if (m_post_string) free(m_post_string);
-                if (strlen(pPost) > 0)
-                {
+                if (strlen(pPost) > 0) {
                     m_post_string = strdup(pPost);
-                }
-                else
-                {
+                } else {
                     m_post_string = NULL;
                 }
             }
@@ -276,6 +261,7 @@ class Output_Manager
 };
 
 inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
+inline const char* capitalizYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
 
 inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {

@@ -15,7 +15,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 #include "production.h"
 #include "slot.h"
 #include "symbol_manager.h"
@@ -72,8 +72,8 @@ void SMem_Manager::deallocate_ltm(ltm_object* pLTM, bool free_ltm )
         {
             delete pLTM;
             pLTM = NULL;
-        }
-    }
+            }
+            }
 }
 
 /*
@@ -208,9 +208,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         {
             char buf[256];
 
-            snprintf_with_symbols(thisAgent, buf, 256, "<=SMEM: (@%lld ^* *)\n", pLTI_ID);
-
-            print(thisAgent, buf);
+            thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "<=SMEM: (@%u ^* *)\n", pLTI_ID);
+            thisAgent->outputManager->printa(thisAgent, buf);
             xml_generate_warning(thisAgent, buf);
         }
     }
@@ -293,9 +292,9 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         char buf[256];
 
-                        snprintf_with_symbols(thisAgent, buf, 256, "=>SMEM: (@%lld ^%y %y)\n", pLTI_ID, s->first, (*v)->val_const.val_value);
+                        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "=>SMEM: (@%u ^%y %y)\n", pLTI_ID, s->first, (*v)->val_const.val_value);
 
-                        print(thisAgent, buf);
+                        thisAgent->outputManager->printa(thisAgent, buf);
                         xml_generate_warning(thisAgent, buf);
                     }
                 }
@@ -334,9 +333,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         char buf[256];
 
-                        snprintf_with_symbols(thisAgent, buf, 256, "=>SMEM: (@%lld ^%y @%lld)\n", pLTI_ID, s->first, (*v)->val_lti.val_value->lti_id);
-
-                        print(thisAgent, buf);
+                        thisAgent->outputManager->sprinta_sf_cstr(thisAgent, buf, 256, "=>SMEM: (%u ^%y %u)\n", pLTI_ID, s->first, (*v)->val_lti.val_value->lti_id);
+                        thisAgent->outputManager->printa(thisAgent, buf);
                         xml_generate_warning(thisAgent, buf);
                     }
                 }

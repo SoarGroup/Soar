@@ -24,6 +24,7 @@
 #include "explanation_memory.h"
 #include "output_manager.h"
 #include "print.h"
+#include "xml.h"
 
 using namespace cli;
 using namespace sml;
@@ -49,7 +50,37 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
 
         /* Process dummy parameters that are stand-in for commands */
-        if ((my_param == thisAgent->Decider->params->help_cmd) || (my_param == thisAgent->Decider->params->qhelp_cmd))
+        if (my_param == thisAgent->Decider->params->init_cmd)
+        {
+            // Save the current result
+            std::string oldResult = m_Result.str();
+
+            SetTrapPrintCallbacks(false);
+
+            bool ok = m_pAgentSML->Reinitialize() ;
+
+            // S1 gets created during Reinitialize, clear its output from the trace buffers
+            xml_invoke_callback(m_pAgentSML->GetSoarAgent());
+            m_pAgentSML->FlushPrintOutput();
+
+            SetTrapPrintCallbacks(true);
+
+            // restore the old result, ignoring output from init-soar
+            m_Result.str(oldResult);
+
+            if (!ok)
+            {
+                return SetError("Agent failed to reinitialize.");
+            }
+
+            if (m_RawOutput)
+            {
+                m_Result << "\nAgent reinitialized.\n";
+            }
+
+            return ok;
+        }
+        else if ((my_param == thisAgent->Decider->params->help_cmd) || (my_param == thisAgent->Decider->params->qhelp_cmd))
         {
             thisAgent->Decider->params->print_soar_settings(thisAgent);
         }
@@ -85,7 +116,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
             PrintCLIMessage(&tempStringStream);
         }
         const char* lCmdName = pAttr->c_str();
-        if (!strcmp(lCmdName, "o-support-mode") || !strcmp(lCmdName, "stop-phase"))
+        if (!strcmp(lCmdName, "stop-phase"))
         {
             thisAgent->Decider->params->update_enum_setting(thisAgent, my_param, m_pKernelSML);
         } else if (

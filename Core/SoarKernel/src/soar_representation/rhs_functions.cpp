@@ -45,6 +45,7 @@
 #include "mem.h"
 #include "print.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "production.h"
 #include "run_soar.h"
 #include "slot.h"
@@ -75,7 +76,7 @@ void add_rhs_function(agent* thisAgent,
 
     if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
     {
-        print(thisAgent,  "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
         return;
     }
 
@@ -83,7 +84,7 @@ void add_rhs_function(agent* thisAgent,
     {
         if (rf->name == name)
         {
-            print_with_symbols(thisAgent, "Internal error: attempt to add_rhs_function that already exists: %y\n", name);
+            thisAgent->outputManager->printa_sf(thisAgent, "Internal error: attempt to add_rhs_function that already exists: %y\n", name);
             return;
         }
     }
@@ -101,6 +102,8 @@ void add_rhs_function(agent* thisAgent,
     rf->can_be_rhs_value = can_be_rhs_value;
     rf->can_be_stand_alone_action = can_be_stand_alone_action;
     rf->user_data = user_data;
+//    rf->cached_print_str = NULL;
+//    rf->thisAgent = thisAgent;
 }
 
 rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
@@ -137,7 +140,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
     if (rf == NIL)
     {
         fprintf(stderr, "Internal error: attempt to remove_rhs_function that does not exist.\n");
-        print_with_symbols(thisAgent, "Internal error: attempt to remove_rhs_function that does not exist: %y\n", name);
+        thisAgent->outputManager->printa_sf(thisAgent, "Internal error: attempt to remove_rhs_function that does not exist: %y\n", name);
     }
 
     /* Else, remove it */
@@ -153,7 +156,7 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
         {
             prev->next = rf->next;
         }
-
+//        if (rf->cached_print_str) free_memory_block_for_string(thisAgent, rf->cached_print_str);
         thisAgent->memoryManager->free_memory(rf, MISCELLANEOUS_MEM_USAGE);
     }
 
@@ -186,7 +189,7 @@ Symbol* write_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
            version of it --- */
         string = arg->to_string();
         add_to_growable_string(thisAgent, &gs, string); // for XML generation
-        print_string(thisAgent, string);
+        thisAgent->outputManager->printa(thisAgent, string);
     }
 
     xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
@@ -338,20 +341,20 @@ lti_id_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 
     if (!args)
     {
-        print(thisAgent,  "Error: '@' function called with no arguments.\n");
+        thisAgent->outputManager->printa(thisAgent,  "Error: '@' function called with no arguments.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (!sym->is_lti())
     {
-        print_with_symbols(thisAgent, "Error: %y is not linked to a semantic identifier.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: %y is not linked to a semantic identifier.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        print(thisAgent,  "Error: '@' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa(thisAgent,  "Error: '@' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -371,20 +374,20 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
 
     if (!args)
     {
-        print(thisAgent,  "Error: 'capitalize-symbol' function called with no arguments.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'capitalize-symbol' function called with no arguments.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -469,7 +472,7 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (!args)
     {
-        print(thisAgent,  "Error: 'ifeq' function called with no arguments\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'ifeq' function called with no arguments\n");
         return NIL;
     }
 
@@ -502,7 +505,7 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (!args)
     {
-        print(thisAgent,  "Error: 'trim' function called with no arguments.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'trim' function called with no arguments.\n");
         return NIL;
     }
 
@@ -510,13 +513,13 @@ Symbol* trim_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
 
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'trim' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'trim' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -572,31 +575,31 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 
     if (!args)
     {
-        print(thisAgent,  "Error: 'dont-learn' function called with no arg.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'dont-learn' function called with no arg.\n");
         return NIL;
     }
 
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
         return NIL;
     }
     else if (! state->id->isa_goal)
     {
-        print_with_symbols(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n", state);
     }
 
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'dont-learn' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'dont-learn' takes exactly 1 argument.\n");
         return NIL;
     }
 
     if (! member_of_list(state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces))
     {
         push(thisAgent, state, thisAgent->explanationBasedChunker->chunk_free_problem_spaces);
-        /* print_with_symbols("State  %y  added to chunk_free_list.\n",state); */
+        /* thisAgent->outputManager->printa_sf("State  %y  added to chunk_free_list.\n",state); */
     }
     return NIL;
 
@@ -615,32 +618,32 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, list* args, void* /*user
 
     if (!args)
     {
-        print(thisAgent,  "Error: 'force-learn' function called with no arg.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'force-learn' function called with no arg.\n");
         return NIL;
     }
 
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        print_with_symbols(thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
         return NIL;
     }
     else if (! state->id->isa_goal)
     {
-        print_with_symbols(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n", state);
     }
 
 
     if (args->rest)
     {
-        print(thisAgent,  "Error: 'force-learn' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'force-learn' takes exactly 1 argument.\n");
         return NIL;
     }
 
     if (! member_of_list(state, thisAgent->explanationBasedChunker->chunky_problem_spaces))
     {
         push(thisAgent, state, thisAgent->explanationBasedChunker->chunky_problem_spaces);
-        /* print_with_symbols("State  %y  added to chunky_list.\n",state); */
+        /* thisAgent->outputManager->printa_sf("State  %y  added to chunky_list.\n",state); */
     }
     return NIL;
 

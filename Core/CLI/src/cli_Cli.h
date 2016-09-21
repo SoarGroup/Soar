@@ -138,6 +138,7 @@ namespace cli
                 EXPLAIN_IDENTITY_SETS,
                 EXPLAIN_LIST_ALL,
                 EXPLAIN_ONLY_SPECIFIC,
+                EXPLAIN_JUSTIFICATIONS,
                 EXPLAIN_RECORD,
                 EXPLAIN_STATS,
                 EXPLAIN_WME_TRACE,
@@ -211,11 +212,6 @@ namespace cli
              * @param p3 Third parameter, pass 0 (null) if unnecessary
              */
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0) = 0;
-
-            /**
-             * @brief init-soar command
-             */
-            virtual bool DoInitSoar() = 0;
 
             enum eLearnOptions
             {

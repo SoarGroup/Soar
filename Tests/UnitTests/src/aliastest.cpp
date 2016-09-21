@@ -128,8 +128,9 @@ void AliasTest::testDefaults()
     std::vector< std::string > init;
     init.push_back("init");
     CPPUNIT_ASSERT(aliases->Expand(init));
-    CPPUNIT_ASSERT(init.size() == 1);
-    CPPUNIT_ASSERT(init.front() == "init-soar");
+    CPPUNIT_ASSERT(init.size() == 2);
+    CPPUNIT_ASSERT(init[0] == "soar");
+    CPPUNIT_ASSERT(init[1] == "init");
     
     std::vector< std::string > varprint;
     varprint.push_back("varprint");

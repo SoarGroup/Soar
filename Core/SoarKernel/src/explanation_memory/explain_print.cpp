@@ -35,31 +35,15 @@ void Explanation_Memory::switch_to_explanation_trace(bool pEnableExplanationTrac
 void Explanation_Memory::print_formation_explanation()
 {
     assert(current_discussed_chunk);
-
-    outputManager->printa_sf(thisAgent, "The formation of '%y' (c%u):\n\n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
-
-    outputManager->printa_sf(thisAgent, "   (1) At time %u, rule '%y' matched (i %u) \n"
-        "       and created results in a superstate.\n\n",
-        current_discussed_chunk->time_formed,
-        current_discussed_chunk->baseInstantiation->production_name,
-        current_discussed_chunk->baseInstantiation->instantiationID);
-
-    outputManager->printa(thisAgent, "   (2) Conditions of base instantiations and any relevant operator selection knowledge\n"
-        "       are backtraced through to determine what superstate knowledge was tested and\n"
-        "       should appear in the chunk.\n\n");
-    outputManager->printa(thisAgent,    "   (3) EBC analyzes the how variables are used in the explanation trace to determine \n"
-        "       sets of elements that share the same semantics.  (explain -i)\n\n");
-    outputManager->printa(thisAgent,    "   (4) EBC constraint analysis is performed to determine all constraints on the \n"
-        "       values of variables in (3) that were required by problem-solving (explain -c).\n\n");
-    outputManager->printa(thisAgent,    "   (5) The mappings determined by the identity set analysis are used to variablize\n"
-        "       conditions collected in (2) and constraints collected in (4).  (explain -i)\n\n");
-    outputManager->printa(thisAgent,    "   (6) Generalized constraints from (5) are added and final chunk conditions are\n"
-        "       polished by pruning unnecessary tests and merging appropriate conditions.\n"
-        "       Statistics on polishing are available.  (explain -c) (explain -s)\n\n");
+    outputManager->printa_sf(thisAgent, "------------------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "The formation of chunk '%y' (c %u) \n", current_discussed_chunk->name, current_discussed_chunk->chunkID);
     outputManager->printa_sf(thisAgent, "------------------------------------------------------------------------------------\n\n");
 
-    outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results in Step (2)\n\n",
+    if (current_discussed_chunk->result_inst_records->size() > 0)
+    {
+        outputManager->printa_sf(thisAgent, "The following %d instantiations fired to produce results...\n\n------\n\n",
         current_discussed_chunk->result_inst_records->size() + 1);
+    }
 
     outputManager->printa_sf(thisAgent, "Initial base instantiation i %u that fired when %y matched at time %u:\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID,
@@ -76,6 +60,7 @@ void Explanation_Memory::print_formation_explanation()
             print_instantiation_explanation((*it), false);
         }
     }
+    outputManager->printa(thisAgent, "------\n");
     print_involved_instantiations();
     print_footer(true);
 }
@@ -135,9 +120,9 @@ void Explanation_Memory::print_path_to_base(const inst_record_list* pPathToBase,
     outputManager->printa(thisAgent, "\n");
 }
 
-
-void Explanation_Memory::print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
+void Explanation_Memory::print_chunk_actions(action_record_list* pActionRecords, production* pOriginalRule, production_record* pExcisedRule)
 {
+
     if (pActionRecords->empty())
     {
         outputManager->printa(thisAgent, "No actions on right-hand-side\n");
@@ -146,31 +131,26 @@ void Explanation_Memory::print_action_list(action_record_list* pActionRecords, p
     {
         action_record* lAction;
         condition* top = NULL, *bottom = NULL;
-        action* rhs;
+        action* rhs, *pRhs = NULL;
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);
         if (print_explanation_trace)
         {
             /* We use pRhs to deallocate actions at end, and rhs to iterate through actions */
-            if (pRhs)
+            if (!pOriginalRule || !pOriginalRule->p_node)
             {
-                rhs = pRhs;
-            } else {
-                if (!pOriginalRule || !pOriginalRule->p_node)
+                if (pExcisedRule)
                 {
-                    if (pExcisedRule)
-                    {
-                        rhs = pExcisedRule->get_rhs();
-                        assert(rhs);
-                    } else {
-                        outputManager->printa_sf(thisAgent, "No rule for this instantiation found in RETE\n");
-                        return;
-                    }
+                    rhs = pExcisedRule->get_rhs();
+                    assert(rhs);
                 } else {
-                    p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
-                    pRhs = rhs;
+                    outputManager->printa_sf(thisAgent, "No rule for this instantiation found in RETE\n");
+                    return;
                 }
+            } else {
+                p_node_to_conditions_and_rhs(thisAgent, pOriginalRule->p_node, NIL, NIL, &top, &bottom, &rhs);
+                pRhs = rhs;
             }
         }
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
@@ -181,26 +161,7 @@ void Explanation_Memory::print_action_list(action_record_list* pActionRecords, p
             {
                 outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
             } else {
-                lAction->print_action(rhs, lActionCount);
-//                thisAgent->outputManager->set_print_test_format(true, false);
-//                outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//                thisAgent->outputManager->set_print_test_format(false, true);
-//                rhs_value rt = rhs->value;
-//
-//                if (lAction->variablized_action)
-//                {
-//                    outputManager->printa_sf(thisAgent, "%-%a\n", lAction->variablized_action);
-//                } else {
-//                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-//                }
-//                //                if (print_explanation_trace)
-//                //                {
-//                //                    thisAgent->outputManager->set_print_test_format(false, true);
-//                //                    outputManager->printa_sf(thisAgent, "%-%p\n", lAction->instantiated_pref);
-//                //                    outputManager->printa_sf(thisAgent, "%d:%-%a", lActionCount,  rhs);
-//                //                } else {
-//                //                    outputManager->printa(thisAgent, "\n");
-//                //                }
+                lAction->print_chunk_action(rhs, lActionCount);
                 rhs = rhs->next;
             }
         }
@@ -212,8 +173,49 @@ void Explanation_Memory::print_action_list(action_record_list* pActionRecords, p
         }
         thisAgent->outputManager->clear_print_test_format();
     }
+
 }
-void action_record::print_action(action* pAction, int lActionCount)
+void Explanation_Memory::print_instantiation_actions(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs)
+{
+
+    if (pActionRecords->empty())
+    {
+        outputManager->printa(thisAgent, "No actions on right-hand-side\n");
+    }
+    else
+    {
+        action_record* lAction;
+        action* rhs;
+        int lActionCount = 0;
+        thisAgent->outputManager->set_print_indents("");
+        thisAgent->outputManager->set_print_test_format(true, false);
+        if (print_explanation_trace)
+        {
+            /* We use pRhs to deallocate actions at end, and rhs to iterate through actions */
+            rhs = pRhs;
+        }
+        for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
+        {
+            lAction = (*it);
+            ++lActionCount;
+            if (!print_explanation_trace)
+            {
+                outputManager->printa_sf(thisAgent, "%d:%-%p\n", lActionCount, lAction->instantiated_pref);
+            } else {
+                lAction->print_instantiation_action(rhs, lActionCount);
+                rhs = rhs->next;
+            }
+        }
+        if (print_explanation_trace)
+        {
+            deallocate_action_list(thisAgent, pRhs);
+        }
+        thisAgent->outputManager->clear_print_test_format();
+    }
+
+}
+
+void action_record::print_chunk_action(action* pAction, int lActionCount)
 {
     std::string tempString;
     Output_Manager* outputManager = thisAgent->outputManager;
@@ -221,35 +223,84 @@ void action_record::print_action(action* pAction, int lActionCount)
     if (pAction->type == FUNCALL_ACTION)
     {
         tempString = "";
-        outputManager->rhs_value_to_string(thisAgent, pAction->value, tempString, NULL, NULL, true);
+        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, true);
+        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), true);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, true);
+        print_rhs_chunk_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), true);
         outputManager->printa(thisAgent, " ");
-        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, true);
+        print_rhs_chunk_value(pAction->value, (variablized_action ? variablized_action->value : NULL), true);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, true);
+            print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id, false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->o_ids.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr, false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->o_ids.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value, false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->o_ids.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent, false);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, false);
+        }
+//        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
+//        outputManager->printa(thisAgent, " ^");
+//        print_rhs_chunk_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), false);
+//        outputManager->printa(thisAgent, " ");
+//        print_rhs_chunk_value(pAction->value, (variablized_action ? variablized_action->value : NULL), false);
+//        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
+//        if (pAction->referent)
+//        {
+//            print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), false);
+//        }
+        outputManager->printa(thisAgent, ")\n");
+    }
+    tempString.clear();
+}
+
+void action_record::print_instantiation_action(action* pAction, int lActionCount)
+{
+    std::string tempString;
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    if (pAction->type == FUNCALL_ACTION)
+    {
+        tempString = "";
+        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
+        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
+    } else {
+        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
+        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->o_ids.id, true);
+        outputManager->printa(thisAgent, " ^");
+        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->o_ids.attr, true);
+        outputManager->printa(thisAgent, " ");
+        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->o_ids.value, true);
+        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
+        if (pAction->referent)
+        {
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, true);
+        }
+        outputManager->printa_sf(thisAgent, ")%-(");
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->o_ids.id, false);
+        outputManager->printa(thisAgent, " ^");
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->o_ids.attr, false);
+        outputManager->printa(thisAgent, " ");
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->o_ids.value, false);
+        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
+        if (pAction->referent)
+        {
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }
     tempString.clear();
 }
+
 void Explanation_Memory::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {
     if (print_explanation_trace)
@@ -274,38 +325,39 @@ void Explanation_Memory::print_chunk_explanation()
 
 void Explanation_Memory::print_explain_summary()
 {
-    outputManager->set_column_indent(0, 4);
-    outputManager->set_column_indent(1, 50);
-    outputManager->set_column_indent(2, 49);
-    outputManager->printa_sf(thisAgent, "%fExplainer Settings:\n");
-    outputManager->printa_sf(thisAgent, "%-Watch all chunk formations        %-%s\n", (enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "%-Number of specific rules watched  %-%d\n", num_rules_watched);
+    outputManager->set_column_indent(0, 55);
+    outputManager->set_column_indent(1, 54);
+    outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
+    outputManager->printa(thisAgent,    "                       Explainer Status\n");
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!enabled)
     {
         /* Print last 10 rules watched*/
-        outputManager->printa_sf(thisAgent, "%-Rules watched:");
+        outputManager->printa_sf(thisAgent, "Rules watched:");
         print_rules_watched(10);
-        /* When we add time interval option, print it here */
     }
 
     outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "%-Chunks available for discussion:");
+    outputManager->printa_sf(thisAgent, "Chunks available for discussion:");
     print_chunk_list(10);
 
     outputManager->printa(thisAgent, "\n");
 
     /* Print current chunk and last 10 chunks formed */
-    outputManager->printa_sf(thisAgent, "%-Current chunk being discussed: %-%s",
+    outputManager->printa_sf(thisAgent, "Current chunk being discussed: %-%s",
         (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
     if (current_discussed_chunk)
     {
-        outputManager->printa_sf(thisAgent, "(c%u)\n\n", current_discussed_chunk->chunkID);
+        outputManager->printa_sf(thisAgent, "(c %u)\n\n", current_discussed_chunk->chunkID);
     } else {
         outputManager->printa(thisAgent, "\n\n");
     }
-    outputManager->printa(thisAgent, "Type 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
+    outputManager->printa(thisAgent, "Use 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
 }
 
 void Explanation_Memory::print_all_watched_rules()
@@ -521,7 +573,7 @@ void Explanation_Memory::print_involved_instantiations()
     //    std::copy(std::begin(instantiations_for_current_chunk), std::end(instantiations_for_current_chunk), std::inserter(sorted_set));
     assert(current_discussed_chunk);
 
-    outputManager->printa_sf(thisAgent, "All %d rule firings involved in problem solving:\n\n", current_discussed_chunk->backtraced_inst_records->size());
+    outputManager->printa_sf(thisAgent, "This chunk summarizes the problem-solving involved in the following %d rule firings:\n\n", current_discussed_chunk->backtraced_inst_records->size());
 
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end();++it)
     {

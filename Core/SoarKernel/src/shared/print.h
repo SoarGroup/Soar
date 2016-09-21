@@ -7,37 +7,6 @@
 
                                 print.h
 
-    Printing with an Optional Log File and with Redirection to a File
-
-   We want to print stuff not only to the screen but also to a log
-   file (if one is currently being used).  The print_string(), print(),
-   print_with_symbols(), and print_spaces() routines do this.
-
-   Start_log_file() and stop_log_file() open and close the current log
-   file.  Print_string_to_log_file_only() is called by the lexer to
-   echo keyboard input to the log file (it's already on the screen, so
-   we don't want to print it there too).
-
-   Print_string() and print_spaces() do the obvious things.
-   Print() is exactly like printf() in C, except it prints to both
-   the screen and log file (if there is one).  Print_with_symbols()
-   is sort of like print, but only takes two kinds of escape sequences
-   in the format string:
-       %y  -- print a symbol
-       %%  -- print a "%" sign
-
-   Sometimes we need to know the current output column so we can put
-   a line break in the right place.  Get_printer_output_column() returns
-   the current column number (1 means the start of the line).
-   Tell_printer_that_output_column_has_been_reset () is called from the
-   lexer every time it reads a line from the keyboard--since after the
-   user types a line (and hits return) the output column is reset.
-
-   We also support temporarily redirecting all printing output to
-   another file.  This is done by calling start_redirection_to_file()
-   and stop_redirection_to_file().  In between these calls, all screen
-   and log file output is turned off, and printing is done only to the
-   redirection file.
 ====================================================================== */
 
 #ifndef PRINT_H
@@ -45,6 +14,7 @@
 #include "kernel.h"
 
 #include <stdio.h>  // Needed for FILE token below
+#include <string>
 
 typedef struct wme_filter_struct
 {
@@ -55,30 +25,11 @@ typedef struct wme_filter_struct
     bool removes;
 } wme_filter;
 
-void start_log_file(agent* thisAgent, char* filename, bool append);
-void stop_log_file(agent* thisAgent);
-void print_string_to_log_file_only(agent* thisAgent, char* string);
-
-void start_fresh_line(agent* thisAgent);
-int  get_printer_output_column(agent* thisAgent);
-void tell_printer_that_output_column_has_been_reset(agent* thisAgent);
-
-void start_redirection_to_file(agent* thisAgent, FILE* already_opened_file);
-void stop_redirection_to_file(agent* thisAgent);
-
-void print_string(agent* thisAgent, const char* s);
 void print_phase(agent* thisAgent, const char* s, bool end_phase);
-
-void print(agent* thisAgent, const char* format, ...);
-void print_with_symbols(agent* thisAgent, const char* format, ...);
 void print_spaces(agent* thisAgent, int n);
-void snprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, ...);
-void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char* format, va_list args);
 
 void filtered_print_wme_remove(agent* thisAgent, wme* w);
 void filtered_print_wme_add(agent* thisAgent, wme* w);
-
-void print_old (agent* thisAgent, const char *format, ...);
 
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion
@@ -98,32 +49,11 @@ void print_old (agent* thisAgent, const char *format, ...);
    '"ab\"c"'.  This is used for printing quoted strings and for printing
    symbols using |vbar| notation.
 
-   Symbol_to_string() converts a symbol to a string.  The "rereadable"
-   parameter indicates whether a rereadable representation is desired.
-   Normally symbols are printed rereadably, but for (write) and Text I/O,
-   we don't want this.
-
    Rhs_value_to_string() takes an rhs_value and produces a string
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-char* string_to_escaped_string(char* s, char first_and_last_char, char* dest);
-char* rhs_value_to_string(rhs_value rv, char* dest = NULL, size_t dest_size = 0);
-
-inline char bool_to_char(bool b)
-{
-    if (b)
-    {
-        return 'T';
-    }
-    else
-    {
-        return 'F';
-    }
-}
-
-char* symbol_to_string(agent* thisAgent, Symbol* sym, bool rereadable, char* dest, size_t dest_size);
-char const* symbol_to_typeString(agent* thisAgent, Symbol* sym);
+const std::string string_to_escaped_string(char* s, char first_and_last_char);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -174,7 +104,6 @@ char preference_to_char(byte type);
 void print_preference(agent* thisAgent, preference* pref);
 void print_wme(agent* thisAgent, wme* w);
 void print_wme_without_timetag(agent* thisAgent, wme* w);
-void print_wme_for_tcl(wme* w);
 void print_instantiation_with_wmes(agent* thisAgent,
         instantiation* inst,
         wme_trace_type wtt,

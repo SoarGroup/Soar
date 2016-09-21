@@ -103,7 +103,6 @@ Output_Manager::Output_Manager()
     m_pre_string = strdup("          ");
     m_post_string = NULL;
 
-    next_output_string = 0;
     reset_column_indents();
 
     initialize_debug_trace(mode_info);

@@ -34,6 +34,10 @@ int main(int argc, char** argv)
             {
                 cmd.set_listen(true);
             }
+            else if (a == "-n")
+            {
+                cmd.set_color_enabled(false);
+            }
             else if (a == "-p")
             {
                 if (i + 1 >= argc || !(stringstream(argv[++i]) >> port))
@@ -65,7 +69,7 @@ int main(int argc, char** argv)
         }
         if (parse_error)
         {
-            cout << acc::Red << "Usage: " << acc::IYellow << argv[0] << " [-p <port>] [-s <source>] <commands> ..." << acc::Off << endl;
+            cout << cmd.getcol(acc::Red) << "Usage: " << cmd.getcol(acc::IYellow) << argv[0] << " [-p <port>] [-l] [-n] [-s <source>] <commands> ..." << cmd.getcol(acc::Off) << endl;
             return 1;
         }
 
@@ -105,7 +109,7 @@ int main(int argc, char** argv)
 /**
  * Handler for "raw" print events, the default.
  */
-void PrintColoredMessage(char const* message)
+void SoarCLI::PrintColoredMessage(char const* message)
 {
     char ch;
     int i = 0;
@@ -114,16 +118,16 @@ void PrintColoredMessage(char const* message)
     {
         if ((ch == '<') || (ch == '['))
         {
-            cout << acc::Yellow << ch;
+            cout << getcol(acc::Yellow) << ch;
         } else if ((ch == '>') || (ch == ']'))
         {
-            cout << acc::Yellow << ch << acc::Off;
+            cout << getcol(acc::Yellow) << ch << getcol(acc::Off);
         } else if ((ch == '{') || (ch =='}') || (ch == '(') || (ch ==')') || (ch =='@'))
         {
-            cout << acc::Red << ch << acc::Off;
+            cout << getcol(acc::Red) << ch << getcol(acc::Off);
         } else if ((ch == '^') || (ch =='=') || (ch == '*') || (ch == ':') || (ch == '+') || (ch == '!') || (ch == '~') || (ch == '-'))
         {
-            cout << acc::BYellow << ch << acc::Off;
+            cout << getcol(acc::BYellow) << ch << getcol(acc::Off);
         } else {
             cout << ch;
         }
@@ -135,7 +139,7 @@ void PrintCallbackHandler(sml::smlPrintEventId, void* userdata, sml::Agent*, cha
     SoarCLI* cmd = reinterpret_cast<SoarCLI*>(userdata);
     cmd->newline(message[strlen(message) - 1] == '\n');
 
-    PrintColoredMessage(message);
+    cmd->PrintColoredMessage(message);
 
     //    std::cout << message;   // simply display whatever comes back through the event
 }
@@ -186,28 +190,28 @@ SoarCLI::~SoarCLI()
 
 bool SoarCLI::initialize()
 {
+    cout << getcol(acc::Red) << "Soar Command Line Interface 1.1" << endl << getcol(acc::Off);
+    cout << getcol(acc::Red) << "Launching the Soar Cognitive Architecture..." << endl << getcol(acc::Off);
     if (m_listen)
     {
-        cout << acc::Red << "Launching the Soar Cognitive Architecture..." << endl << acc::Off;
-        cout << acc::Purple << "...created Soar kernel (v" << VERSION_STRING() << ") in new thread " << acc::Off;
+        cout << getcol(acc::Purple) << "...created Soar kernel (v" << VERSION_STRING() << ") in new thread " << getcol(acc::Off);
         m_kernel = Kernel::CreateKernelInNewThread(m_port);
         if (m_port == sml::Kernel::kUseAnyPort)
         {
-            cout << acc::Purple << "using random port " << m_kernel->GetListenerPort() << endl;
+            cout << getcol(acc::Purple) << "using random port " << m_kernel->GetListenerPort() << endl;
         } else {
-            cout << acc::Purple << "using port " << m_port << endl;
+            cout << getcol(acc::Purple) << "using port " << m_port << endl;
         }
     }
     else
     {
-        cout << acc::Red << "Launching the Soar Cognitive Architecture..." << endl << acc::Off;
-        cout << acc::Purple << "...created Soar kernel (v" << VERSION_STRING() << ") in current thread " << acc::Off;
+        cout << getcol(acc::Purple) << "...created Soar kernel (v" << VERSION_STRING() << ") in current thread " << getcol(acc::Off);
         m_kernel = Kernel::CreateKernelInCurrentThread(true, m_port);
         if (m_port == sml::Kernel::kUseAnyPort)
         {
-            cout << acc::Purple << "using random port " << m_kernel->GetListenerPort() << acc::Off << endl;
+            cout << getcol(acc::Purple) << "using random port " << m_kernel->GetListenerPort() << getcol(acc::Off) << endl;
         } else {
-            cout << acc::Purple << "using port " << m_port << acc::Off << endl;
+            cout << getcol(acc::Purple) << "using port " << m_port << getcol(acc::Off) << endl;
         }
     }
 
@@ -285,13 +289,13 @@ void SoarCLI::update()
     }
 }
 
-void SoarCLI::prompt() const
+void SoarCLI::prompt()
 {
     if (!m_seen_newline)
     {
         std::cout << "\n";
     }
-    cout << endl << acc::BIYellow << m_currentAgent->GetAgentName() << acc::BBlue << " % " << acc::Off;
+    std::cout << std::endl << getcol(acc::BIYellow) << m_currentAgent->GetAgentName() << getcol(acc::BBlue) << " % " << getcol(acc::Off);
     std::cout.flush();
 }
 
@@ -347,12 +351,12 @@ void SoarCLI::updateMultiAgent()
 {
     m_isMultiAgent = (agents.size() > 1);
     if (m_isMultiAgent)
-        cout << acc::Red << "Soar CLI in multiple agent mode.  Use " << acc::IYellow <<
-             "list or [switch|create|delete] " << acc::Purple << "<agent-name>" << acc::Red <<
-             " to manage agents." << acc::Off << endl;
+        cout << getcol(acc::Red) << "Soar CLI in multiple agent mode.  Use " << getcol(acc::IYellow) <<
+             "list or [switch|create|delete] " << getcol(acc::Purple) << "<agent-name>" << getcol(acc::Red) <<
+             " to manage agents." << getcol(acc::Off) << endl;
     else
-        cout << acc::Red << "Soar CLI in single agent mode.  Use " << acc::IYellow <<
-             "create " << acc::Purple << "<agent-name>" << acc::Red << " to create another agent." << acc::Off << endl;
+        cout << getcol(acc::Red) << "Soar CLI in single agent mode.  Use " << getcol(acc::IYellow) <<
+             "create " << getcol(acc::Purple) << "<agent-name>" << getcol(acc::Red) << " to create another agent." << getcol(acc::Off) << endl;
 
     m_longestAgentName = 0;
     vector<Agent*>::iterator iter;
@@ -380,7 +384,7 @@ bool SoarCLI::createagent(const char* agentname)
     m_currentAgent->SetOutputLinkChangeTracking(false);
 
     agents.push_back(m_currentAgent);
-    cout << acc::Purple << "...created agent #" << agents.size() << " named '" << acc::Red << agentname << acc::Purple << "'" << acc::Off << endl;
+    cout << getcol(acc::Purple) << "...created agent #" << agents.size() << " named '" << getcol(acc::Red) << agentname << getcol(acc::Purple) << "'" << getcol(acc::Off) << endl;
 //    agent_init_source(agentname);
     updateMultiAgent();
     return true;
@@ -390,17 +394,17 @@ void SoarCLI::printagents()
 {
     if (agents.size() == 0)
     {
-        cout << acc::Red << "No agents currently exist." << acc::Off << endl;
+        cout << getcol(acc::Red) << "No agents currently exist." << getcol(acc::Off) << endl;
     }
 
     vector<Agent*>::iterator iter;
     int x = 1;
-    cout << acc::Red << "===============" << acc::Off << endl;
-    cout << acc::IYellow << "Soar Agent List" << acc::Off << endl;
-    cout << acc::Red << "===============" << acc::Off << endl;
+    cout << getcol(acc::Red) << "===============" << getcol(acc::Off) << endl;
+    cout << getcol(acc::IYellow) << "Soar Agent List" << getcol(acc::Off) << endl;
+    cout << getcol(acc::Red) << "===============" << getcol(acc::Off) << endl;
     for (iter = agents.begin(); iter != agents.end(); ++iter, ++x)
     {
-        cout << acc::BBlue << "Agent " << x << ": " << acc::Purple << (*iter)->GetAgentName() << "" << acc::Off << endl;
+        cout << getcol(acc::BBlue) << "Agent " << x << ": " << getcol(acc::Purple) << (*iter)->GetAgentName() << "" << getcol(acc::Off) << endl;
     }
 }
 
@@ -413,11 +417,11 @@ void SoarCLI::switchagent(const char* agentname)
         if (!strcmp((*iter)->GetAgentName(), agentname))
         {
             m_currentAgent = (*iter);
-            cout << acc::Purple << "Switched to agent " << x << " named '" << acc::Red  << (*iter)->GetAgentName() << acc::Purple << "'" << acc::Off << endl;
+            cout << getcol(acc::Purple) << "Switched to agent " << x << " named '" << getcol(acc::Red)  << (*iter)->GetAgentName() << getcol(acc::Purple) << "'" << getcol(acc::Off) << endl;
             return;
         }
     }
-    cout << acc::Red << "Could not find agent named " << acc::Purple << agentname << acc::Red <<  "." << acc::Off << endl;
+    cout << getcol(acc::Red) << "Could not find agent named " << getcol(acc::Purple) << agentname << getcol(acc::Red) <<  "." << getcol(acc::Off) << endl;
 }
 
 void SoarCLI::deleteagent(const char* agentname)
@@ -432,20 +436,20 @@ void SoarCLI::deleteagent(const char* agentname)
             {
                 m_currentAgent = NULL;
             }
-            cout << acc::Red << "Destroying agent " << x << " named "  << acc::Purple << (*iter)->GetAgentName() << acc::Red << "." << acc::Off << endl;
+            cout << getcol(acc::Red) << "Destroying agent " << x << " named "  << getcol(acc::Purple) << (*iter)->GetAgentName() << getcol(acc::Red) << "." << getcol(acc::Off) << endl;
             m_kernel->DestroyAgent(*iter);
             agents.erase(iter);
             printagents();
             if (!m_currentAgent && agents.size())
             {
                 m_currentAgent = agents.front();
-                cout << acc::Purple << "Switched to agent 1 named " << acc::Red  << m_currentAgent->GetAgentName() << acc::Purple << "." << acc::Off << endl;
+                cout << getcol(acc::Purple) << "Switched to agent 1 named " << getcol(acc::Red)  << m_currentAgent->GetAgentName() << getcol(acc::Purple) << "." << getcol(acc::Off) << endl;
             }
             updateMultiAgent();
             return;
         }
     }
-    cout << acc::Red << "Could not find agent named " << agentname << "." << acc::Off << endl;
+    cout << getcol(acc::Red) << "Could not find agent named " << agentname << "." << getcol(acc::Off) << endl;
 }
 
 void SoarCLI::sendAllAgentsCommand(const char* cmd)

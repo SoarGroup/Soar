@@ -458,9 +458,6 @@ typedef struct EXPORT agent_struct
 
     Symbol*             prev_top_state;
 
-    /* ------------------- Experimental features ---------------------- */
-    int                 o_support_calculation_type;
-
     /* ------------------- Info about the agent itself ---------------------- */
 
     char*               name;  /* name of this Soar agent */

@@ -29,8 +29,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Conflated_Constants);
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(Faux_Operator);
-        /* Fails but only when run from on certain Jenkins machines*/
-        // CPPUNIT_TEST(Faux_Smem_Operator_RHS);
+        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
         CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_BT_Constraints);
@@ -62,8 +61,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Simple_Constraint_Prop);
         CPPUNIT_TEST(Simple_Literalization);
         CPPUNIT_TEST(Smem_Chunk_Direct);
-        /* Fails but only when run from unit test and not always */
-        // CPPUNIT_TEST(SMem_Chunked_Query);
+        /* Works on my mac.  Unviersally fails on Jenkins (all platforms including Mac)
+           - Can get to work on Linux manually using different condition ordering
+             but it still fails when run from the unit test.  (Linux 32 VM) */
+//        CPPUNIT_TEST(SMem_Chunked_Query);
         CPPUNIT_TEST(STI_Variablization_Same_Type);
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_with_referents);
@@ -226,7 +227,7 @@ void ChunkTest::tearDown()
 void ChunkTest::testLearn()
 {
     source("testLearn.soar");
-    pAgent->ExecuteCommandLine("chunk all-except");
+    pAgent->ExecuteCommandLine("chunk unflagged");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;
@@ -247,7 +248,7 @@ void ChunkTest::testLearn()
 
     // turn learn except on
     pAgent->ExecuteCommandLine("init");
-    pAgent->ExecuteCommandLine("chunk all-except");
+    pAgent->ExecuteCommandLine("chunk unflagged");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;
@@ -596,7 +597,7 @@ void ChunkTest::RHS_Math_Mixed()
 }
 void ChunkTest::RHS_Math_Abs()
 {
-    build_and_check_chunk("RHS_Math_Abs.soar", 8, 3);
+    build_and_check_chunk("RHS_Math_Abs.soar", 8, 2);
 }
 void ChunkTest::Reorderer_Bad_Conjunction()
 {

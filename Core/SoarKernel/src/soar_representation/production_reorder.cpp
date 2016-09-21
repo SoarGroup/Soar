@@ -20,12 +20,12 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_repair.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "repair.h"
 #include "rhs.h"
 #include "run_soar.h"
 #include "soar_TraceNames.h"
@@ -659,7 +659,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
     {
         if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
-            print(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
             dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
@@ -1226,9 +1226,9 @@ void reorder_simplified_conditions(agent* thisAgent,
         if ((min_cost == MAX_COST) &&
                 thisAgent->outputManager->settings[OM_WARNINGS])
         {
-            print(thisAgent,  "Warning:  in production %s,\n",
+            thisAgent->outputManager->printa_sf(thisAgent,  "Warning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
-            print(thisAgent,  "     The LHS conditions are not all connected.\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "     The LHS conditions are not all connected.\n");
             /* BUGBUG I'm not sure whether this can ever happen. */
 
             // XML geneneration

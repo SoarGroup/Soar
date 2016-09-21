@@ -625,7 +625,7 @@ void null_activation_stats_for_left_activation(rete_node* node)
 
 void print_null_activation_stats()
 {
-    print("\nActivations: %lu right (%lu null), %lu left (%lu null)\n",
+    Output_Manager::Get_OM().print_sf("\nActivations: %u right (%u null), %u left (%u null)\n",
           thisAgent->num_right_activations,
           thisAgent->num_null_right_activations,
           thisAgent->num_left_activations,
@@ -833,7 +833,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     token* tok;
 
 #ifdef DEBUG_WATERFALL
-    print_with_symbols(thisAgent, "\nMatch goal for assertion: %y", msc->p_node->b.p.prod->name);
+    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal for assertion: %y", msc->p_node->b.p.prod->name);
 #endif
 
 
@@ -877,13 +877,13 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     if (lowest_goal_wme)
     {
 #ifdef DEBUG_WATERFALL
-        print_with_symbols(thisAgent, " is [%y]", lowest_goal_wme->id);
+        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", lowest_goal_wme->id);
 #endif
         return lowest_goal_wme->id;
     }
     {
         char msg[BUFFER_MSG_SIZE];
-        print_with_symbols(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
                  msc->p_node->b.p.prod->name->to_string(true));
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -896,14 +896,14 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
 #ifdef DEBUG_WATERFALL
-    print_with_symbols(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod_name);
+    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod_name);
 #endif
 
     if (msc->inst->match_goal)
     {
         /* If there is a goal, just return the goal */
 #ifdef DEBUG_WATERFALL
-        print_with_symbols(thisAgent, " is [%y]", msc->inst->match_goal);
+        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", msc->inst->match_goal);
 #endif
         return  msc->inst->match_goal;
 
@@ -912,7 +912,7 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
     {
 
 #ifdef DEBUG_WATERFALL
-        print(" is NIL (nil goal retraction)");
+        combozulator(" is NIL (nil goal retraction)");
 #endif
         return NIL;
 
@@ -924,11 +924,11 @@ void print_assertion(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        print_with_symbols(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        print(thisAgent, "\nAssertion exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion exists but has no p_node");
     }
 }
 
@@ -937,11 +937,11 @@ void print_retraction(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        print_with_symbols(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        print(thisAgent, "\nRetraction exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction exists but has no p_node");
     }
 }
 
@@ -3012,51 +3012,51 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         case EQUALITY_TEST:
             referent = t->data.referent;
 
-            /* --- if constant test and alpha=NIL, install alpha test --- */
-            if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
+        /* --- if constant test and alpha=NIL, install alpha test --- */
+        if ((referent->symbol_type != VARIABLE_SYMBOL_TYPE) &&
                 (*alpha_constant == NIL))
-            {
-                *alpha_constant = referent;
-                return;
-            }
+        {
+            *alpha_constant = referent;
+            return;
+        }
 
-            /* --- if constant, make = constant test --- */
-            if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-            {
+        /* --- if constant, make = constant test --- */
+        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
+        {
                 thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
-                new_rt->right_field_num = field_num;
-                new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-                new_rt->data.constant_referent = referent;
-                thisAgent->symbolManager->symbol_add_ref(referent);
-                new_rt->next = *rt;
-                *rt = new_rt;
-                return;
-            }
-
-            /* --- variable: if binding is for current field, do nothing --- */
-            if (! find_var_location(referent, current_depth, &where))
-            {
-                char msg[BUFFER_MSG_SIZE];
-                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                    referent);
-                SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                    referent->to_string(true));
-                msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-                abort_with_fatal_error(thisAgent, msg);
-            }
-            if ((where.levels_up == 0) && (where.field_num == field_num))
-            {
-                return;
-            }
-
-            /* --- else make variable equality test --- */
-            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
-            new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
-            new_rt->data.variable_referent = where;
+            new_rt->type = CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+            new_rt->data.constant_referent = referent;
+            thisAgent->symbolManager->symbol_add_ref(referent);
             new_rt->next = *rt;
             *rt = new_rt;
             return;
+        }
+
+        /* --- variable: if binding is for current field, do nothing --- */
+        if (! find_var_location(referent, current_depth, &where))
+        {
+            char msg[BUFFER_MSG_SIZE];
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+                               referent);
+            SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
+                         referent->to_string(true));
+            msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+            abort_with_fatal_error(thisAgent, msg);
+        }
+        if ((where.levels_up == 0) && (where.field_num == field_num))
+        {
+            return;
+        }
+
+        /* --- else make variable equality test --- */
+            thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
+        new_rt->right_field_num = field_num;
+        new_rt->type = VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_EQUAL_RETE_TEST;
+        new_rt->data.variable_referent = where;
+        new_rt->next = *rt;
+        *rt = new_rt;
+        return;
             break;
         case SMEM_LINK_TEST:
         case SMEM_LINK_NOT_TEST:
@@ -3072,7 +3072,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
                 thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
                 new_rt->right_field_num = field_num;
                 new_rt->type = CONSTANT_RELATIONAL_RETE_TEST +
-                    test_type_to_relational_test_type(t->type);
+                               test_type_to_relational_test_type(t->type);
                 new_rt->data.constant_referent = t->data.referent;
                 thisAgent->symbolManager->symbol_add_ref(t->data.referent);
                 new_rt->next = *rt;
@@ -3083,17 +3083,17 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             if (! find_var_location(t->data.referent, current_depth, &where))
             {
                 char msg[BUFFER_MSG_SIZE];
-                print_with_symbols(thisAgent, "Error: Rete build found test of unbound var: %y\n",
-                    t->data.referent);
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: Rete build found test of unbound var: %y\n",
+                                   t->data.referent);
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: Rete build found test of unbound var: %s\n",
-                    t->data.referent->to_string(true));
+                         t->data.referent->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
             }
             thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &new_rt);
             new_rt->right_field_num = field_num;
             new_rt->type = VARIABLE_RELATIONAL_RETE_TEST +
-                test_type_to_relational_test_type(t->type);
+                           test_type_to_relational_test_type(t->type);
             new_rt->data.variable_referent = where;
             new_rt->next = *rt;
             *rt = new_rt;
@@ -3113,7 +3113,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
             {
                 add_rete_tests_for_test(thisAgent, static_cast<test>(c->first),
-                    current_depth, field_num, rt, alpha_constant);
+                                        current_depth, field_num, rt, alpha_constant);
             }
             return;
 
@@ -3153,7 +3153,7 @@ void add_rete_tests_for_test(agent* thisAgent, test t,
         {
             char msg[BUFFER_MSG_SIZE];
             SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: found bad test type %d while building rete\n",
-                t->type);
+                     t->type);
             msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
             abort_with_fatal_error(thisAgent, msg);
             break;
@@ -3948,7 +3948,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                    << " ";
             xml_generate_warning(thisAgent, output.str().c_str());
 
-            print_with_symbols(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
+            thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %y because it is a duplicate of %y\n",
                                p->name, p_node->b.p.prod->name);
         }
         thisAgent->symbolManager->deallocate_symbol_list_removing_references(rhs_unbound_vars_for_new_prod);
@@ -4015,7 +4015,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
 #ifdef DEBUG_WATERFALL
-        print_with_symbols(thisAgent, "\n %y is a refracted instantiation",
+        thisAgent->outputManager->printa_sf(thisAgent, "\n %y is a refracted instantiation",
                            refracted_inst->prod_name);
 #endif
 
@@ -4659,9 +4659,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case STR_CONSTANT_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case STR_CONSTANT_SYMBOL_TYPE:
                     return strcmp(s1->sc->name, s2->sc->name);
                 default:
@@ -4670,10 +4667,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case IDENTIFIER_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                case STR_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case IDENTIFIER_SYMBOL_TYPE:
                     if (s1->id->name_letter == s2->id->name_letter)
                     {
@@ -6082,7 +6075,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     action*    act;
     bool      operator_proposal, op_elab;
-    char      action_attr[50];
 
     int pass;
     wme* lowest_goal_wme;
@@ -6174,7 +6166,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
-        print_with_symbols(thisAgent, "\nRemoving tentative retraction: %y",
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative retraction: %y",
                            node->b.p.prod->name);
 #endif
         activation_exit_sanity_check();
@@ -6183,7 +6175,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* --- no match found, so add new assertion --- */
 #ifdef DEBUG_RETE_PNODES
-    print_with_symbols(thisAgent, "\nAdding tentative assertion: %y",
+    thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative assertion: %y",
                        node->b.p.prod->name);
 #endif
 
@@ -6219,7 +6211,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
-    print("\n    Level of goal is  %d", msc->level);
+    combozulator("\n    Level of goal is  %d", msc->level);
 #endif
 
     prod_type = IE_PRODS;
@@ -6249,8 +6241,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             if ((act->type == MAKE_ACTION) &&
                     (rhs_value_is_symbol(act->attr)))
             {
-                if ((strcmp(rhs_value_to_string(act->attr, action_attr, 50),
-                            "operator") == NIL) &&
+                if (
+                    (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                         (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
                         (get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
                                                   rhs_value_to_reteloc_field_num(act->id),
@@ -6348,51 +6340,42 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         {
                             if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
                             {
-                                if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4))
-                                {
-                                    /* iff RHS has only operator elaborations
+                                /* iff RHS has only operator elaborations
                                     then it's IE_PROD, otherwise PE_PROD, so
                                     look for non-op-elabs in the actions  KJC 1/00 */
 
 
-                                    /* We also need to check reteloc's to see if they
+                                /* We also need to check reteloc's to see if they
                                     are referring to operator augmentations before determining
                                     if this is an operator elaboration
-                                    */
+                                 */
 
-                                    for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
+                                for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
+                                {
+                                    if (act->type == MAKE_ACTION)
                                     {
-                                        if (act->type == MAKE_ACTION)
-                                        {
-                                            if ((rhs_value_is_symbol(act->id)) &&
+                                        if ((rhs_value_is_symbol(act->id)) &&
 
-                                                    /** shouldn't this be either
+                                            /** shouldn't this be either
                                                     symbol_to_rhs_value (act->id) ==  or
                                                     act->id == rhs_value_to_symbol(temp..)**/
-                                                    (rhs_value_to_symbol(act->id) ==
-                                                     temp_tok->w->value))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else if ((thisAgent->o_support_calculation_type == 4)
-                                                     && (rhs_value_is_reteloc(act->id))
-                                                     && (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else
-                                            {
-                                                /* this is not an operator elaboration */
-                                                prod_type = PE_PRODS;
-                                            }
-                                        } // act->type == MAKE_ACTION
-                                    } // for
-                                }
-                                else
-                                {
-                                    prod_type = PE_PRODS;
-                                    break;
-                                }
+                                            (rhs_value_to_symbol(act->id) ==
+                                                temp_tok->w->value))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else if (rhs_value_is_reteloc(act->id) &&
+                                            (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else
+                                        {
+                                            /* this is not an operator elaboration */
+                                            prod_type = PE_PRODS;
+                                        }
+                                    } // act->type == MAKE_ACTION
+                                } // for
                             }
                         } /* end if (pass == 0) ... */
                         temp_tok = temp_tok->parent;
@@ -6400,38 +6383,19 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                     if (prod_type == PE_PRODS)
                     {
-                        if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4))
-                        {
-                            break;
-                        }
-                        else if (op_elab == true)
+                        if (op_elab == true)
                         {
 
                             /* warn user about mixed actions */
 
-                            if ((thisAgent->o_support_calculation_type == 3) && thisAgent->outputManager->settings[OM_WARNINGS])
+                            if (thisAgent->outputManager->settings[OM_WARNINGS])
                             {
-                                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+                                thisAgent->outputManager->printa_sf(thisAgent, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
                                                    node->b.p.prod->name);
 
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
-                                xml_generate_warning(thisAgent, text_of_growable_string(gs));
-                                free_growable_string(thisAgent, gs);
-
-                                prod_type = PE_PRODS;
-                                break;
-                            }
-                            else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->outputManager->settings[OM_WARNINGS])
-                            {
-                                print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-                                                   node->b.p.prod->name);
-
-                                // XML generation
-                                growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+                                add_to_growable_string(thisAgent, &gs, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod ");
                                 add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
@@ -6471,7 +6435,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
@@ -6491,7 +6455,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            print_with_symbols(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
@@ -6511,8 +6475,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         // elaboration cycle, while the first matching production remains
         // on the assertion list, Soar will still halt, but the production
         // named will be inaccurate.
-        print_with_symbols(thisAgent, "\n*** Production match-time interrupt (:interrupt), probably from %y\n", node->b.p.prod->name);
-        print(thisAgent, "    [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", thisAgent->current_phase, node->b.p.prod->interrupt, thisAgent->stop_soar);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n*** Production match-time interrupt (:interrupt), probably from %y\n", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "    [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", thisAgent->current_phase, node->b.p.prod->interrupt, thisAgent->stop_soar);
 
         thisAgent->reason_for_stopping = ":interrupt";
     }
@@ -6563,7 +6527,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 thisAgent->stop_soar = false;
                 if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
                 {
-                    print(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
+                    thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
                 }
             }
 
@@ -6584,7 +6548,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
-            print_with_symbols(thisAgent, "\nRemoving tentative assertion: %y",
+            thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative assertion: %y",
                                node->b.p.prod->name);
 #endif
             activation_exit_sanity_check();
@@ -6603,7 +6567,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         /* --- add that instantiation to tentative_retractions --- */
 #ifdef DEBUG_RETE_PNODES
-        print_with_symbols(thisAgent, "\nAdding tentative retraction: %y",
+        thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative retraction: %y",
                            node->b.p.prod->name);
 #endif
 
@@ -6612,10 +6576,10 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
         msc->inst = inst;
         msc->p_node = node;
-        msc->tok = NIL;                 /* just for safety */
-        msc->w = NIL;                   /* just for safety */
+        msc->tok = NIL;     /* just for safety */
+        msc->w = NIL;       /* just for safety */
         msc->level = NO_WME_LEVEL;      /* just for safety */
-        msc->goal = NIL;                /* just for safety */
+        msc->goal = NIL;    /* just for safety */
         insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
                               next_of_node, prev_of_node);
 
@@ -6625,7 +6589,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->level = msc->goal->id->level;
 
 #ifdef DEBUG_WATERFALL
-        print("\n    Level of retraction is: %d", msc->level);
+        combozulator("\n    Level of retraction is: %d", msc->level);
 #endif
 
         if (msc->goal->id->link_count == 0)
@@ -6666,35 +6630,35 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
 
 #ifdef DEBUG_WATERFALL
-        print_with_symbols(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
-        print(" is active at level %d\n", msc->level);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
+        combozulator(" is active at level %d\n", msc->level);
 
         {
             ms_change* assertion;
-            print("\n Retractions list:\n");
+            combozulator("\n Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;
                     assertion;
                     assertion = assertion->next)
             {
-                print_with_symbols(thisAgent, "     Retraction: %y ",
+                thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                    assertion->p_node->b.p.prod->name);
-                print(" at level %d\n", assertion->level);
+                combozulator(" at level %d\n", assertion->level);
             }
 
             if (thisAgent->nil_goal_retractions)
             {
-                print("\nCurrent NIL Goal list:\n");
+                combozulator("\nCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions;
                         assertion;
                         assertion = assertion->next_in_level)
                 {
-                    print_with_symbols(thisAgent, "     Retraction: %y ",
+                    thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                        assertion->p_node->b.p.prod->name);
-                    print(" at level %d\n", assertion->level);
+                    combozulator(" at level %d\n", assertion->level);
                     if (assertion->goal)
                     {
-                        print("This assertion has non-NIL goal pointer.\n");
+                        combozulator("This assertion has non-NIL goal pointer.\n");
                     }
                 }
             }
@@ -6708,7 +6672,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        print_with_symbols(thisAgent, "\n%y: ", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n%y: ", node->b.p.prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -6718,7 +6682,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
 #ifdef BUG_139_WORKAROUND_WARNING
-        print(thisAgent, "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n");
         xml_generate_warning(thisAgent, "Warning: can't find an existing inst to retract (BUG 139 WORKAROUND)");
 #endif
         return;
@@ -7534,7 +7498,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
             if (!rf)
             {
                 char msg[BUFFER_MSG_SIZE];
-                print_with_symbols(thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
                 SNPRINTF(msg, BUFFER_MSG_SIZE, "Error: can't load this file because it uses an undefined RHS function %s\n", sym->to_string(true));
                 msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
                 abort_with_fatal_error(thisAgent, msg);
@@ -8188,7 +8152,7 @@ bool save_rete_net(agent* thisAgent, FILE* dest_file, bool use_rete_net_64)
     /* --- make sure there are no justifications present --- */
     if (thisAgent->all_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE])
     {
-        print(thisAgent, "Internal error: save_rete_net() with justifications present.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Internal error: save_rete_net() with justifications present.\n");
         return false;
     }
 
@@ -8219,13 +8183,13 @@ bool load_rete_net(agent* thisAgent, FILE* source_file)
     /* --- check for empty system --- */
     if (thisAgent->all_wmes_in_rete)
     {
-        print(thisAgent, "Internal error: load_rete_net() called with nonempty WM.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Internal error: load_rete_net() called with nonempty WM.\n");
         return false;
     }
     for (i = 0; i < NUM_PRODUCTION_TYPES; i++)
         if (thisAgent->num_productions_of_type[i])
         {
-            print(thisAgent, "Internal error: load_rete_net() called with nonempty PM.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "Internal error: load_rete_net() called with nonempty PM.\n");
             return false;
         }
 
@@ -8236,7 +8200,7 @@ bool load_rete_net(agent* thisAgent, FILE* source_file)
     reteload_string(source_file);
     if (strcmp(reteload_string_buf, "SoarCompactReteNet\n"))
     {
-        print(thisAgent, "This file isn't a Soar fastsave file.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "This file isn't a Soar fastsave file.\n");
         return false;
     }
     format_version_num = reteload_one_byte(source_file);
@@ -8251,7 +8215,7 @@ bool load_rete_net(agent* thisAgent, FILE* source_file)
             rete_net_64 = true; // used by reteload_eight_bytes
             break;
         default:
-            print(thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
+            thisAgent->outputManager->printa_sf(thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
             return false;
     }
 
@@ -8578,7 +8542,7 @@ void print_whole_token(agent* thisAgent, token* t, wme_trace_type wtt)
     {
         if (wtt == TIMETAG_WME_TRACE)
         {
-            print(thisAgent, "%lu", t->w->timetag);
+            thisAgent->outputManager->printa_sf(thisAgent, "%u", t->w->timetag);
         }
         else if (wtt == FULL_WME_TRACE)
         {
@@ -8586,7 +8550,7 @@ void print_whole_token(agent* thisAgent, token* t, wme_trace_type wtt)
         }
         if (wtt != NONE_WME_TRACE)
         {
-            print(thisAgent, " ");
+            thisAgent->outputManager->printa_sf(thisAgent, " ");
         }
     }
 }
@@ -8667,58 +8631,58 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
     }
 
     /* --- print extra indentation spaces --- */
-    print_spaces(thisAgent, indent);
+    thisAgent->outputManager->print_spaces(thisAgent, indent);
 
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
         /* --- recursively print match counts for the NCC subconditions --- */
-        print(thisAgent, "    -{\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "    -{\n");
         ppmi_aux(thisAgent, real_parent_node(node->b.cn.partner),
                  parent,
                  cond->data.ncc.bottom,
                  wtt,
                  indent + 5);
-        print_spaces(thisAgent, indent);
-        print(thisAgent, "%s }\n", match_count_string);
+        thisAgent->outputManager->print_spaces(thisAgent, indent);
+        thisAgent->outputManager->printa_sf(thisAgent, "%s }\n", match_count_string);
     }
     else
     {
-        print(thisAgent, "%s", match_count_string);
+        thisAgent->outputManager->printa_sf(thisAgent, "%s", match_count_string);
         print_condition(thisAgent, cond);
-        print(thisAgent, "\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\n");
         /* --- if this is the first match-failure (0 matches), print info on
            matches for left and right --- */
         if (matches_one_level_up && (!matches_at_this_level))
         {
             if (wtt != NONE_WME_TRACE)
             {
-                print_spaces(thisAgent, indent);
-                print(thisAgent, "*** Matches For Left ***\n");
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
+                thisAgent->outputManager->printa_sf(thisAgent, "*** Matches For Left ***\n");
                 parent_tokens = get_all_left_tokens_emerging_from_node(thisAgent, parent);
                 for (t = parent_tokens; t != NIL; t = t->next_of_node)
                 {
-                    print_spaces(thisAgent, indent);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent);
                     print_whole_token(thisAgent, t, wtt);
-                    print(thisAgent, "\n");
+                    thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 deallocate_token_list(thisAgent, parent_tokens);
-                print_spaces(thisAgent, indent);
-                print(thisAgent, "*** Matches for Right ***\n");
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
+                thisAgent->outputManager->printa_sf(thisAgent, "*** Matches for Right ***\n");
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 for (rm = node->b.posneg.alpha_mem_->right_mems; rm != NIL;
                         rm = rm->next_in_am)
                 {
                     if (wtt == TIMETAG_WME_TRACE)
                     {
-                        print(thisAgent, "%lu", rm->w->timetag);
+                        thisAgent->outputManager->printa_sf(thisAgent, "%u", rm->w->timetag);
                     }
                     else if (wtt == FULL_WME_TRACE)
                     {
                         print_wme(thisAgent, rm->w);
                     }
-                    print(thisAgent, " ");
+                    thisAgent->outputManager->printa_sf(thisAgent, " ");
                 }
-                print(thisAgent, "\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
             }
         } /* end of if (matches_one_level_up ...) */
     }
@@ -8737,15 +8701,15 @@ void print_partial_match_information(agent* thisAgent, rete_node* p_node,
                                  NIL);
     n = ppmi_aux(thisAgent, p_node->parent, thisAgent->dummy_top_node, bottom_cond,
                  wtt, 0);
-    print(thisAgent, "\n%d complete matches.\n", n);
+    thisAgent->outputManager->printa_sf(thisAgent, "\n%d complete matches.\n", n);
     if (n && (wtt != NONE_WME_TRACE))
     {
-        print(thisAgent, "*** Complete Matches ***\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "*** Complete Matches ***\n");
         tokens = get_all_left_tokens_emerging_from_node(thisAgent, p_node->parent);
         for (t = tokens; t != NIL; t = t->next_of_node)
         {
             print_whole_token(thisAgent, t, wtt);
-            print(thisAgent, "\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "\n");
         }
         deallocate_token_list(thisAgent, tokens);
     }
@@ -8802,19 +8766,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
-        print(thisAgent, "O Assertions:\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "O Assertions:\n");
         for (msc = thisAgent->ms_o_assertions; msc != NIL; msc = msc->next)
         {
 
             if (wtt != NONE_WME_TRACE)
             {
-                print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+                thisAgent->outputManager->printa_sf(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
                 /* Add match goal to the print of the matching production */
-                print_with_symbols(thisAgent, " [%y] ", msc->goal);
+                thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", msc->goal);
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
-                print(thisAgent, "\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
             }
             else
             {
@@ -8842,19 +8806,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 tmp = ms_trace;
                 ms_trace = tmp->next;
-                print_with_symbols(thisAgent, "  %y ", tmp->sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "  %y ", tmp->sym);
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
-                print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 if (tmp->count > 1)
                 {
-                    print(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
                 }
                 else
                 {
-                    print(thisAgent, "\n");
+                    thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
@@ -8863,19 +8827,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
 
     if (mst == MS_ASSERT_RETRACT || mst == MS_ASSERT)
     {
-        print(thisAgent, "I Assertions:\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "I Assertions:\n");
         for (msc = thisAgent->ms_i_assertions; msc != NIL; msc = msc->next)
         {
 
             if (wtt != NONE_WME_TRACE)
             {
-                print_with_symbols(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
+                thisAgent->outputManager->printa_sf(thisAgent, "  %y ", msc->p_node->b.p.prod->name);
                 /* Add match goal to the print of the matching production */
-                print_with_symbols(thisAgent, " [%y] ", msc->goal);
+                thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", msc->goal);
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
                 print_whole_token(thisAgent, &temp_token, wtt);
-                print(thisAgent, "\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
             }
             else
             {
@@ -8904,19 +8868,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 tmp = ms_trace;
                 ms_trace = tmp->next;
-                print_with_symbols(thisAgent, "  %y ", tmp->sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "  %y ", tmp->sym);
                 /*  BUG: for now this will print the goal of the first
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
-                print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 if (tmp->count > 1)
                 {
-                    print(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
                 }
                 else
                 {
-                    print(thisAgent, "\n");
+                    thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
@@ -8926,14 +8890,14 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
     /* --- Print retractions --- */
     if (mst == MS_ASSERT_RETRACT || mst == MS_RETRACT)
     {
-        print(thisAgent, "Retractions:\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Retractions:\n");
         for (msc = thisAgent->ms_retractions; msc != NIL; msc = msc->next)
         {
             if (wtt != NONE_WME_TRACE)
             {
-                print(thisAgent, "  ");
+                thisAgent->outputManager->printa_sf(thisAgent, "  ");
                 print_instantiation_with_wmes(thisAgent, msc->inst, wtt, -1);
-                print(thisAgent, "\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
             }
             else
             {
@@ -8964,7 +8928,7 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 tmp = ms_trace;
                 ms_trace = tmp->next;
-                print_with_symbols(thisAgent, "  %y ", tmp->sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "  %y ", tmp->sym);
                 /*  BUG: for now this will print the goal of the first assertion
                 inspected, even though there can be multiple assertions at
 
@@ -8972,19 +8936,19 @@ void print_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 if (tmp->goal)
                 {
-                    print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                    thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 }
                 else
                 {
-                    print(thisAgent, " [NIL] ");
+                    thisAgent->outputManager->printa_sf(thisAgent, " [NIL] ");
                 }
                 if (tmp->count > 1)
                 {
-                    print(thisAgent, "(%d)\n", tmp->count);
+                    thisAgent->outputManager->printa_sf(thisAgent, "(%d)\n", tmp->count);
                 }
                 else
                 {
-                    print(thisAgent, "\n");
+                    thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 thisAgent->memoryManager->free_memory(tmp, MISCELLANEOUS_MEM_USAGE);
             }
@@ -9142,7 +9106,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
             }
 
             Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
-            //print_string(thisAgent, c_id_test);
+            //thisAgent->outputManager->printa(thisAgent, c_id_test);
             //xml_test(thisAgent, kConditionId, id_test) ;
             xml_att_val(thisAgent, kConditionId, c_id_test);
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
@@ -9200,7 +9164,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                     }
                 }
                 *ch = 0;
-                if (get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
+                if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
                 {
                     //print_string (thisAgent, "\n");
                     //print_spaces (thisAgent, indent+6);
@@ -9292,7 +9256,7 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
             switch (wtt)
             {
                 case TIMETAG_WME_TRACE:
-                    //print (thisAgent, " %lu", cond->bt.wme_->timetag);
+                    //print (thisAgent, " %u", cond->bt.wme_->timetag);
 
                     xml_begin_tag(thisAgent, kTagWME);
                     xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -9314,7 +9278,7 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
 #else
 
                         // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
-                        //print (thisAgent, " %lu", cond->bt.wme_->timetag);
+                        //print (thisAgent, " %u", cond->bt.wme_->timetag);
 
                         xml_begin_tag(thisAgent, kTagWME);
                         xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
@@ -9372,7 +9336,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
                 /* Add match goal to the print of the matching production */
-                //print_with_symbols(thisAgent, " [%y] ", msc->goal);
+                //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", msc->goal);
 
                 temp_token.parent = msc->tok;
                 temp_token.w = msc->w;
@@ -9418,7 +9382,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
-                //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
@@ -9441,7 +9405,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
             {
                 //print_with_symbols (thisAgent, "  %y ", msc->p_node->b.p.prod->name);
                 /* Add match goal to the print of the matching production */
-                //print_with_symbols(thisAgent, " [%y] ", msc->goal);
+                //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", msc->goal);
                 xml_begin_tag(thisAgent, kTagProduction) ;
                 xml_att_val(thisAgent, kName, msc->p_node->b.p.prod->name) ;
                 xml_att_val(thisAgent, kGoal, msc->goal) ;
@@ -9491,7 +9455,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 assertion inspected, even though there can be multiple
                 assertions at different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
-                //print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                //thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 //if (tmp->count > 1)
                 //  print(thisAgent, "(%d)\n", tmp->count);
                 //else
@@ -9566,7 +9530,7 @@ void xml_match_set(agent* thisAgent, wme_trace_type wtt, ms_trace_type mst)
                 different levels.
                 See 2.110 in the OPERAND-CHANGE-LOG. */
                 //if (tmp->goal)
-                //  print_with_symbols(thisAgent, " [%y] ", tmp->goal);
+                //  thisAgent->outputManager->printa_sf(thisAgent, " [%y] ", tmp->goal);
                 //else
                 //  print(thisAgent, " [NIL] ");
                 //if(tmp->count > 1)
@@ -9738,7 +9702,7 @@ void xml_partial_match_information(agent* thisAgent, rete_node* p_node, wme_trac
     //print (thisAgent, "\n%d complete matches.\n", n);
     if (n && (wtt != NONE_WME_TRACE))
     {
-        print(thisAgent, "*** Complete Matches ***\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "*** Complete Matches ***\n");
         tokens = get_all_left_tokens_emerging_from_node(thisAgent, p_node->parent);
         for (t = tokens; t != NIL; t = t->next_of_node)
         {

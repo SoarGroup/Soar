@@ -938,16 +938,25 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                             }
                             else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
                             {
-                                good_at = true;
-
+                                bool mistakenLTI = false;
                                 if (lexer->current_lexeme.type == AT_LEXEME)
                                 {
                                     lexer->get_lexeme();
-
-                                    good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+                                    if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
+                                    {
+                                        std::string fixedString("|@");
+                                        fixedString.append(lexer->current_lexeme.string());
+                                        fixedString.push_back('|');
+                                        l_ltm_value = new ltm_value;
+                                        l_ltm_value->val_const.val_type = value_const_t;
+                                        l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(fixedString.c_str());
+                                        mistakenLTI = true;
+                                    } else {
+                                        good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+                                    }
                                 }
 
-                                if (good_at)
+                                if (good_at && !mistakenLTI)
                                 {
                                     // create new value
                                     l_ltm_value = new ltm_value;

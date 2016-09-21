@@ -29,6 +29,7 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
     initialize_counters();
     enabled = false;
+    m_justifications_enabled = false;
     num_rules_watched = 0;
 
     print_explanation_trace = true;

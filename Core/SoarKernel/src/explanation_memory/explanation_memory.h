@@ -56,6 +56,9 @@ class Explanation_Memory
         void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
         bool                    isRecordingChunk() { return (enabled || current_recording_chunk); }
 
+        bool                    isRecordingJustifications() { return m_justifications_enabled; };
+        void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
+
         void                    re_init();
         void                    clear_explanations();
 
@@ -129,6 +132,7 @@ class Explanation_Memory
         Output_Manager*         outputManager;
 
         bool                    enabled;
+        bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;
 
@@ -152,6 +156,8 @@ class Explanation_Memory
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL, production_record* pExcisedRule = NULL);
+        void                    print_chunk_actions(action_record_list* pActionRecords, production* pOriginalRule, production_record* pExcisedRule);
+        void                    print_instantiation_actions(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs);
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_chunk_explanation();
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);

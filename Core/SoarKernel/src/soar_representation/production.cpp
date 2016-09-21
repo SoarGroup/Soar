@@ -18,7 +18,7 @@
 #include "instantiation.h"
 #include "mem.h"
 #include "preference.h"
-#include "print.h"
+#include "output_manager.h"
 #include "production_reorder.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
@@ -369,10 +369,12 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
         }
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
     {
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
 
@@ -393,25 +395,10 @@ production* make_production(agent*          thisAgent,
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-#ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
-        calculate_compile_time_o_support(*lhs_top, *rhs_top);
-#ifdef DEBUG_CT_OSUPPORT
-        for (a = *rhs_top; a != NIL; a = a->next)
-            if ((a->type == MAKE_ACTION) && (a->support == UNKNOWN_SUPPORT))
-            {
-                break;
-            }
-        if (a)
-        {
-            print_with_symbols(thisAgent, "\nCan't classify %y\n", name);
-        }
-#endif
-#else
         for (a = *rhs_top; a != NIL; a = a->next)
         {
             a->support = UNKNOWN_SUPPORT;
         }
-#endif
     }
     else
     {
@@ -429,9 +416,8 @@ production* make_production(agent*          thisAgent,
 
     if (name->sc->production)
     {
-        print(thisAgent,  "Internal error: make_production called with name %s\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: make_production called with name %s\nfor which a production already exists.\n",
               thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "for which a production already exists\n");
     }
     name->sc->production = p;
     p->documentation = NIL;
@@ -539,7 +525,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     thisAgent->num_productions_of_type[prod->type]--;
     if (print_sharp_sign)
     {
-        print(thisAgent,  "#");
+        thisAgent->outputManager->printa(thisAgent,  "#");
     }
     if (prod->p_node)
     {

@@ -27,6 +27,8 @@
 #include "test.h"
 #include "working_memory.h"
 
+#include "soar_TraceNames.h"
+
 #include <vector>
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
@@ -55,6 +57,37 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
         }
     }
     return;
+}
+
+const char* Output_Manager::phase_to_string(top_level_phase pPhase)
+{
+    switch (pPhase)
+    {
+        case INPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Input;
+            break;
+        case PREFERENCE_PHASE:
+            return soar_TraceNames::kPhaseName_Pref;
+            break;
+        case WM_PHASE:
+            return soar_TraceNames::kPhaseName_WM;
+            break;
+        case DECISION_PHASE:
+            return soar_TraceNames::kPhaseName_Decision;
+            break;
+        case OUTPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Output;
+            break;
+        case PROPOSE_PHASE:
+            return soar_TraceNames::kPhaseName_Propose;
+            break;
+        case APPLY_PHASE:
+            return soar_TraceNames::kPhaseName_Apply;
+            break;
+        default:
+            return soar_TraceNames::kPhaseName_Unknown;
+            break;
+    }
 }
 
 const char* Output_Manager::test_type_to_string(byte test_type)
@@ -223,7 +256,20 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
-void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
+void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size)
+{
+    std::string lStr;
+    Output_Manager* output_manager = &Output_Manager::Get_OM();
+
+    output_manager->rhs_value_to_string(rv, lStr);
+    if (!lStr.empty())
+    {
+        strcpy(dest, lStr.c_str());
+        dest[dest_size - 1] = 0; /* ensure null termination */
+    }
+}
+
+void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -255,7 +301,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             }
         }
         if (m_print_identity_effective && rsym->o_id) {
-            sprinta_sf(thisAgent, destString, " (%u)", rsym->o_id);
+            sprint_sf(destString, " [%u]", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -270,12 +316,12 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             {
                 destString += sym->to_string(false);
             } else {
-                destString += "[STI-RETE]";
+                destString += "[RETE-loc]";
             }
         }
         else
         {
-            destString += "[STI]";
+            destString += "[RETE-loc]";
         }
     }
     else
@@ -288,14 +334,25 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         destString += '(';
         if (rf->name)
         {
-            destString += rf->name->to_string(false);
+            if (!strcmp(rf->name->sc->name, "+"))
+            {
+                destString.push_back('+');
+            }
+            else if (!strcmp(rf->name->sc->name, "-"))
+            {
+                destString.push_back('-');
+            }
+            else
+            {
+                destString.append(rf->name->to_string(true));
+            }
         } else {
-            destString += '#';
+            destString += "UNKNOWN_FUNCTION";
         }
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w, false);
+            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, pEmptyStringForNullIdentity);
         }
         destString += ')';
     }
@@ -308,22 +365,22 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     {
         if (m_pre_string) destString += m_pre_string;
         destString += "(rhs_function ";
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';
-        rhs_value_to_string(thisAgent, a->id, destString);
+        rhs_value_to_string(a->id, destString);
         destString += " ^";
-        rhs_value_to_string(thisAgent, a->attr, destString);
+        rhs_value_to_string(a->attr, destString);
         destString += ' ';
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += " ";
         destString += preference_to_char(a->preference_type);
         if (a->referent)
         {
             destString += " ";
-            rhs_value_to_string(thisAgent, a->referent, destString);
+            rhs_value_to_string(a->referent, destString);
         }
         destString += ')';
     }

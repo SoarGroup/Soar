@@ -13,10 +13,11 @@ import fnmatch
 from SCons.Node.Alias import default_ans
 import SCons.Script
 import shutil
+import time
 
 join = os.path.join
 
-SOAR_VERSION = "9.5.1"
+SOAR_VERSION = "9.6.0"
 
 soarversionFile = open('soarversion', 'w')
 print >> soarversionFile, SOAR_VERSION
@@ -165,6 +166,13 @@ env = Environment(
     SOAR_VERSION=SOAR_VERSION,
     VISHIDDEN=False,  # needed by swig
 )
+
+if not GetOption('dbg'):
+    cli_version_dep = open('Core/shared/build_time_date.h', 'w')
+    print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
+    print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
+    print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"
+    cli_version_dep.close()
 
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))

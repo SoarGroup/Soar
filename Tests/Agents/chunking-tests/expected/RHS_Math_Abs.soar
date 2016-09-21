@@ -1,13 +1,3 @@
-sp {answer*make-chunk*snc*t2-3
-    (state <s1> ^x 2)
-    (<s1> ^superstate nil)
-    (<s1> ^n <c2>)
-    (<s1> ^x <c1>)
-    -->
-    (<s1> ^result (* 4 <c1>) +)
-    (<s1> ^result2 (abs 4) +)
-}
-
 sp {answer*make-chunk-abs*snc*t2-2
     (state <s1> ^x 2)
     (<s1> ^superstate nil)

@@ -20,7 +20,7 @@
 #include "condition.h"
 #include "explanation_memory.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 
 #include <string>
 
@@ -42,13 +42,31 @@ bool CommandLineInterface::DoExplain(ExplainBitset options, const std::string* p
     if (options.test(EXPLAIN_ALL))
     {
         thisAgent->explanationMemory->set_enabled(true);
-        print(thisAgent, "Will monitor all chunks created.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Will monitor all chunks created.\n");
         return true;
     }
     if (options.test(EXPLAIN_ONLY_SPECIFIC))
     {
         thisAgent->explanationMemory->set_enabled(false);
-        print(thisAgent, "Will only monitor specific chunks or time intervals.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Will only monitor specific chunks.\n");
+        return true;
+    }
+    if (options.test(EXPLAIN_JUSTIFICATIONS))
+    {
+        if (pStringParameter->empty())
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Soar is%scurrently recording justifications.\n", thisAgent->explanationMemory->isRecordingJustifications() ? " " : " not ");
+        } else {
+            if (pStringParameter->at(0) == 'y')
+            {
+                thisAgent->explanationMemory->set_justifications_enabled(true);
+            } else if (pStringParameter->at(0) == 'n')
+            {
+                thisAgent->explanationMemory->set_justifications_enabled(true);
+            } else {
+                thisAgent->outputManager->printa_sf(thisAgent, "Invalid argument '%s' to explain --justifications.\n", pStringParameter->c_str());
+            }
+        }
         return true;
     }
     /* Handle options that required a currently discussed chunk/justification */

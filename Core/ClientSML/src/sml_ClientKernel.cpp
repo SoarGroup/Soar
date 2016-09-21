@@ -1243,7 +1243,8 @@ char const* Kernel::ExecuteCommandLine(char const* pCommandLine, char const* pAg
     else
     {
         // Get the error message
-        m_CommandLineResult = "Error: ";
+//        m_CommandLineResult = "Error: ";
+        m_CommandLineResult = "";
         if (response.GetErrorTag())
         {
             m_CommandLineResult += response.GetErrorTag()->GetCharacterData();

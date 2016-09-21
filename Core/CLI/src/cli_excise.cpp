@@ -10,6 +10,7 @@
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
+#include "cli_soar.h"
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
@@ -26,6 +27,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 {
     int64_t exciseCount = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    std::string lCmd("init");
 
     // Process the general options
     if (options.test(EXCISE_ALL))
@@ -36,8 +38,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
         excise_all_productions(thisAgent, false);
-
-        this->DoInitSoar();    // from the manual, init when --all or --task are executed
+        this->DoSoar('G', &lCmd, NULL);    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_CHUNKS))
     {
@@ -106,7 +107,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
         excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false);
 
-        this->DoInitSoar();    // from the manual, init when --all or --task are executed
+        this->DoSoar('G', &lCmd, NULL);    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_TEMPLATE))
     {

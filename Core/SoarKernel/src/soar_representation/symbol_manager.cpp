@@ -365,11 +365,11 @@ Symbol* Symbol_Manager::make_variable(const char* name)
     sym->tc_num = 0;
     sym->name = make_memory_block_for_string(thisAgent, name);
     sym->gensym_number = 0;
-    sym->rete_binding_locations = NIL;
-    sym->fc = NIL;
-    sym->ic = NIL;
-    sym->sc = NIL;
-    sym->id = NIL;
+    sym->rete_binding_locations = NULL;
+    sym->fc = NULL;
+    sym->ic = NULL;
+    sym->sc = NULL;
+    sym->id = NULL;
     sym->var = sym;
     symbol_add_ref(sym);
     add_to_hash_table(thisAgent, variable_hash_table, sym);
@@ -398,6 +398,8 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->reference_count = 0;
     sym->hash_id = get_next_symbol_hash_id(thisAgent);
     sym->tc_num = 0;
+    sym->thisAgent = thisAgent;
+    sym->cached_print_str = NULL;
     sym->name_letter = name_letter;
 
     if (name_number == NIL)
@@ -416,28 +418,28 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
 
     sym->level = level;
     sym->promotion_level = level;
-    sym->slots = NIL;
+    sym->slots = NULL;
     sym->isa_goal = false;
     sym->isa_impasse = false;
     sym->isa_operator = 0;
     sym->link_count = 0;
     sym->unknown_level = NIL;
     sym->could_be_a_link_from_below = false;
-    sym->impasse_wmes = NIL;
-    sym->higher_goal = NIL;
-    sym->gds = NIL;
+    sym->impasse_wmes = NULL;
+    sym->higher_goal = NULL;
+    sym->gds = NULL;
     sym->saved_firing_type = NO_SAVED_PRODS;
-    sym->ms_o_assertions = NIL;
-    sym->ms_i_assertions = NIL;
-    sym->ms_retractions = NIL;
-    sym->lower_goal = NIL;
-    sym->operator_slot = NIL;
-    sym->preferences_from_goal = NIL;
-    sym->associated_output_links = NIL;
-    sym->input_wmes = NIL;
+    sym->ms_o_assertions = NULL;
+    sym->ms_i_assertions = NULL;
+    sym->ms_retractions = NULL;
+    sym->lower_goal = NULL;
+    sym->operator_slot = NULL;
+    sym->preferences_from_goal = NULL;
+    sym->associated_output_links = NULL;
+    sym->input_wmes = NULL;
 
-    sym->rl_info = NIL;
-    sym->reward_header = NIL;
+    sym->rl_info = NULL;
+    sym->reward_header = NULL;
 
     sym->epmem_info = NULL;
     sym->epmem_id = EPMEM_NODEID_BAD;
@@ -448,12 +450,12 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->LTI_epmem_valid = NIL;
     sym->smem_valid = NIL;
 
-    sym->rl_trace = NIL;
+    sym->rl_trace = NULL;
 
-    sym->fc = NIL;
-    sym->ic = NIL;
-    sym->sc = NIL;
-    sym->var = NIL;
+    sym->fc = NULL;
+    sym->ic = NULL;
+    sym->sc = NULL;
+    sym->var = NULL;
     sym->id = sym;
     symbol_add_ref(sym);
     add_to_hash_table(thisAgent, identifier_hash_table, sym);
@@ -482,11 +484,13 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
         sym->smem_hash = 0;
         sym->smem_valid = 0;
         sym->name = make_memory_block_for_string(thisAgent, name);
-        sym->production = NIL;
-        sym->fc = NIL;
-        sym->ic = NIL;
-        sym->id = NIL;
-        sym->var = NIL;
+        sym->thisAgent = thisAgent;
+        sym->cached_print_str = NULL;
+        sym->production = NULL;
+        sym->fc = NULL;
+        sym->ic = NULL;
+        sym->id = NULL;
+        sym->var = NULL;
         sym->sc = sym;
         symbol_add_ref(sym);
         add_to_hash_table(thisAgent, str_constant_hash_table, sym);
@@ -515,10 +519,12 @@ Symbol* Symbol_Manager::make_int_constant(int64_t value)
         sym->smem_hash = 0;
         sym->smem_valid = 0;
         sym->value = value;
-        sym->fc = NIL;
-        sym->sc = NIL;
-        sym->id = NIL;
-        sym->var = NIL;
+        sym->thisAgent = thisAgent;
+        sym->cached_print_str = NULL;
+        sym->fc = NULL;
+        sym->sc = NULL;
+        sym->id = NULL;
+        sym->var = NULL;
         sym->ic = sym;
         symbol_add_ref(sym);
         add_to_hash_table(thisAgent, int_constant_hash_table, sym);
@@ -547,10 +553,12 @@ Symbol* Symbol_Manager::make_float_constant(double value)
         sym->smem_hash = 0;
         sym->smem_valid = 0;
         sym->value = value;
-        sym->ic = NIL;
-        sym->sc = NIL;
-        sym->id = NIL;
-        sym->var = NIL;
+        sym->thisAgent = thisAgent;
+        sym->cached_print_str = NULL;
+        sym->ic = NULL;
+        sym->sc = NULL;
+        sym->id = NULL;
+        sym->var = NULL;
         sym->fc = sym;
         symbol_add_ref(sym);
         add_to_hash_table(thisAgent, float_constant_hash_table, sym);
@@ -828,19 +836,23 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
             thisAgent->memoryManager->free_with_pool(MP_variable, sym);
             break;
         case IDENTIFIER_SYMBOL_TYPE:
+            if (sym->id->cached_print_str) free_memory_block_for_string(thisAgent, sym->id->cached_print_str);
             remove_from_hash_table(thisAgent, identifier_hash_table, sym);
             thisAgent->memoryManager->free_with_pool(MP_identifier, sym);
             break;
         case STR_CONSTANT_SYMBOL_TYPE:
+            if (sym->sc->cached_print_str) free_memory_block_for_string(thisAgent, sym->sc->cached_print_str);
             remove_from_hash_table(thisAgent, str_constant_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->sc->name);
             thisAgent->memoryManager->free_with_pool(MP_str_constant, sym);
             break;
         case INT_CONSTANT_SYMBOL_TYPE:
+            if (sym->ic->cached_print_str) free_memory_block_for_string(thisAgent, sym->ic->cached_print_str);
             remove_from_hash_table(thisAgent, int_constant_hash_table, sym);
             thisAgent->memoryManager->free_with_pool(MP_int_constant, sym);
             break;
         case FLOAT_CONSTANT_SYMBOL_TYPE:
+            if (sym->fc->cached_print_str) free_memory_block_for_string(thisAgent, sym->fc->cached_print_str);
             remove_from_hash_table(thisAgent, float_constant_hash_table, sym);
             thisAgent->memoryManager->free_with_pool(MP_float_constant, sym);
             break;
@@ -893,26 +905,26 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
     {
         if (sym->reference_count > 0)
         {
-            SNPRINTF(msg, 256,
-                "\t%c%llu --> %llu\n",
-                sym->id->name_letter,
-                static_cast<long long unsigned>(sym->id->name_number),
-                static_cast<long long unsigned>(sym->reference_count));
-            print(thisAgent,  msg);
+                SNPRINTF(msg, 256,
+                    "\t%c%llu --> %llu\n",
+                    sym->id->name_letter,
+                    static_cast<long long unsigned>(sym->id->name_number),
+                    static_cast<long long unsigned>(sym->reference_count));
+                thisAgent->outputManager->printa_sf(thisAgent,  msg);
             //                xml_generate_warning(thisAgent, msg);
 
-            if (f)
-            {
-                fprintf(f, "%s", msg) ;
+                if (f)
+                {
+                    fprintf(f, "%s", msg) ;
+                }
             }
         }
-    }
     else
     {
-        print(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-        return true;
-    }
-    return false;
+            thisAgent->outputManager->printa_sf(thisAgent,  "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+            return true;
+        }
+        return false;
 }
 
 bool Symbol_Manager::reset_id_counters()
@@ -968,7 +980,7 @@ bool clear_gensym_number(agent* /*thisAgent*/, void* item, void*)
 
 bool print_sym(agent* thisAgent, void* item, void*)
 {
-    print(thisAgent,  "%s (%lld)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
+    thisAgent->outputManager->printa_sf(thisAgent,  "%s (%u)\n", static_cast<symbol_struct*>(item)->to_string(), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
 
@@ -979,15 +991,15 @@ void Symbol_Manager::clear_variable_gensym_numbers()
 
 void Symbol_Manager::print_internal_symbols()
 {
-    print(thisAgent,  "\n--- Symbolic Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Symbolic Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, str_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Integer Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Integer Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, int_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Floating-Point Constants: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Floating-Point Constants: ---\n");
     do_for_all_items_in_hash_table(thisAgent, float_constant_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Identifiers: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Identifiers: ---\n");
     do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
-    print(thisAgent,  "\n--- Variables: ---\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Variables: ---\n");
     do_for_all_items_in_hash_table(thisAgent, variable_hash_table, print_sym, 0);
 }
 

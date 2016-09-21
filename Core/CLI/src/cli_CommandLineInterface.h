@@ -131,7 +131,6 @@ namespace cli
             virtual bool DoGP(const std::string& productionString);
             virtual bool DoHelp(const std::vector<std::string>& argv);
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0);
-            virtual bool DoInitSoar();
             virtual bool DoLearn(const LearnBitset& options);
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();

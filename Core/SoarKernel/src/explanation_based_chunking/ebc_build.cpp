@@ -25,7 +25,6 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "repair.h"
 #include "rete.h"
 #include "rhs.h"
 #include "run_soar.h"
@@ -40,6 +39,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <ebc_repair.h>
 
 using namespace soar_TraceNames;
 
@@ -496,7 +496,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
        to the grounds --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
     {
-        print_string(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
+        thisAgent->outputManager->printa(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
     }
 
     chunk_cond *cc;
@@ -510,7 +510,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
             /* --- negated cond is in the TC, so add it to the grounds --- */
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
-                print_string(thisAgent, "\n-->Moving to grounds: ");
+                thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
@@ -687,6 +687,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 unconnected_syms = new symbol_with_match_list();
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
@@ -796,16 +797,16 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     /* --- backtrace through the instantiation that produced each result --- */
     outputManager->set_print_test_format(true, false);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst, NULL, m_results);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst->prod_name, NULL, m_results);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
         {
-            print_string(thisAgent, "\nFor result preference ");
+            thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
             xml_begin_tag(thisAgent, kTagBacktraceResult);
             print_preference(thisAgent, pref);
-            print_string(thisAgent, " ");
+            thisAgent->outputManager->printa(thisAgent, " ");
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
@@ -898,13 +899,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
 
     if (m_should_print_name)
     {
-        start_fresh_line(thisAgent);
-        if (pForChunk)
-        {
-            print_with_symbols(thisAgent, "Learning chunk %y\n", m_prod_name);
-        } else {
-            print_with_symbols(thisAgent, "Learning justification %y\n", m_prod_name);
-        }
+        thisAgent->outputManager->start_fresh_line(thisAgent);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
         xml_att_val(thisAgent, kProduction_Name, m_prod_name);
@@ -922,7 +918,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 
     if (m_should_print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
-        print(thisAgent, "\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\n");
         xml_begin_tag(thisAgent, kTagLearning);
         print_production(thisAgent, m_prod, false);
         xml_end_tag(thisAgent, kTagLearning);
@@ -1077,6 +1073,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!m_inst_top)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
+        print_current_built_rule("Invalid rule with no grounds: ");
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
@@ -1101,6 +1098,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
         }
 
+    }
+    if (!variablize && !thisAgent->explanationMemory->isRecordingJustifications())
+    {
+        thisAgent->explanationMemory->cancel_chunk_record();
     }
     set_up_rule_name(variablize);
 
@@ -1128,7 +1129,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     dprint(DT_VARIABLIZATION_MANAGER, "Unifying and variablizing results... \n%6", m_vrblz_top, m_results);
     m_rhs = variablize_results_into_actions(m_results, variablize);
-
+    /* m_rhs has identities here for rhs functions*/
     add_goal_or_impasse_tests();
 
     dprint(DT_VARIABLIZATION_MANAGER, "EBC created variablized rule: \n%1-->\n%2", m_vrblz_top, m_rhs);

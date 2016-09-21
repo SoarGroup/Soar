@@ -15,6 +15,7 @@
 #include "ebc.h"
 #include "exploration.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -774,7 +775,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
             char buf[256];
             SNPRINTF(buf, 254, "gap started (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
 
-            print(thisAgent,  buf);
+            thisAgent->outputManager->printa(thisAgent,  buf);
             xml_generate_warning(thisAgent, buf);
         }
 
@@ -832,7 +833,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 char buf[256];
                 SNPRINTF(buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
 
-                print(thisAgent,  buf);
+                thisAgent->outputManager->printa(thisAgent,  buf);
                 xml_generate_warning(thisAgent, buf);
             }
 
@@ -980,7 +981,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                            << new_ecr << " " << new_efr << " " << new_combined ;
 
                         std::string temp_str(ss.str());
-                        print(thisAgent,  "%s\n", temp_str.c_str());
+                        thisAgent->outputManager->printa_sf(thisAgent,  "%s\n", temp_str.c_str());
                         xml_generate_message(thisAgent, temp_str.c_str());
 
                         // Log update to file if the log file has been set

@@ -134,15 +134,21 @@ typedef struct EXPORT symbol_struct
 struct floatSymbol : public Symbol
 {
     double value;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct intSymbol   : public Symbol
 {
     int64_t value;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct strSymbol   : public Symbol
 {
     char* name;
     struct production_struct* production;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct varSymbol   : public Symbol
 {
@@ -156,6 +162,9 @@ struct idSymbol    : public Symbol
 {
     uint64_t name_number;
     char name_letter;
+
+    agent* thisAgent;
+    char* cached_print_str;
 
     bool isa_goal;
     bool isa_impasse;

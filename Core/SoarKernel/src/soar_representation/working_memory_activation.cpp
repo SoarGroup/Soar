@@ -21,7 +21,7 @@
 #include "misc.h"
 #include "rete.h"
 #include "preference.h"
-#include "print.h"
+#include "output_manager.h"
 #include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
@@ -573,7 +573,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
                 msg.append(temp);
                 msg.append("\n");
 
-                print(thisAgent,  msg.c_str());
+                thisAgent->outputManager->printa(thisAgent,  msg.c_str());
                 xml_generate_warning(thisAgent, msg.c_str());
             }
         }
@@ -742,7 +742,7 @@ void wma_remove_decay_element(agent* thisAgent, wme* w)
 
             msg.append("\n");
 
-            print(thisAgent,  msg.c_str());
+            thisAgent->outputManager->printa(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
 
@@ -1209,7 +1209,7 @@ inline void wma_update_decay_histories(agent* thisAgent)
 
             msg.append("\n");
 
-            print(thisAgent,  msg.c_str());
+            thisAgent->outputManager->printa(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
 
@@ -1391,7 +1391,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                 {
                     const char* msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
 
-                    print(thisAgent,  const_cast<char*>(msg));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
 
@@ -1410,7 +1410,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                 {
                     const char* msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
 
-                    print(thisAgent,  const_cast<char*>(msg));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
             }

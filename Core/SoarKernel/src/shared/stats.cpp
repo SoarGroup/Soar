@@ -2,7 +2,7 @@
 
 #include "agent.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
@@ -26,7 +26,7 @@ void stats_init_db(agent* thisAgent)
         char buf[256];
         SNPRINTF(buf, 254, "DB ERROR: %s", thisAgent->stats_db->get_errmsg());
 
-        print(thisAgent,  buf);
+        thisAgent->outputManager->printa_sf(thisAgent,  buf);
         xml_generate_warning(thisAgent, buf);
     }
     else

@@ -35,7 +35,8 @@ bool CommandLineInterface::DoOutput(const char pOp, const std::string* pAttr, co
 
     if (!pOp)
     {
-        thisAgent->outputManager->m_params->print_output_settings(thisAgent);
+        PrintCLIMessage("Try 'output ?' to learn more about output's sub-commands and settings.\n"
+            "(For a detailed article about output, use 'help output'.)");
         return true;
     }
     else if (pOp == 'G')

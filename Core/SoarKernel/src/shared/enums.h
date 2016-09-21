@@ -69,7 +69,6 @@ enum TraceMode
     num_trace_modes
 };
 
-enum OSupportModes { OMode3, OMode4 };
 enum Decider_settings {
     DECIDER_MAX_GP,
     DECIDER_MAX_DC_TIME,
@@ -77,7 +76,6 @@ enum Decider_settings {
     DECIDER_MAX_GOAL_DEPTH,
     DECIDER_MAX_MEMORY_USAGE,
     DECIDER_MAX_NIL_OUTPUT_CYCLES,
-    DECIDER_O_SUPPORT_MODE,
     DECIDER_STOP_PHASE,
     DECIDER_WAIT_SNC,
     num_decider_settings
@@ -158,6 +156,7 @@ enum SoarCannedMessageType {
     ebc_error_no_conditions,
     ebc_progress_repairing,
     ebc_progress_repaired,
+    ebc_progress_validating
 };
 
 enum EBCTraceType {

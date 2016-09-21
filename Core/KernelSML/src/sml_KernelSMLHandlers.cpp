@@ -188,9 +188,10 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
     if (!directory.empty())
     {
         directory.insert(0, "source ");
-        pAgentSML->ExecuteCommandLine(directory.c_str());
+        std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
     } else {
-        std::cout << "Warning:  Could not find settings.soar file." << std::endl;
+        pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
+        return false;
     }
 
     // Return true if we got an agent constructed.

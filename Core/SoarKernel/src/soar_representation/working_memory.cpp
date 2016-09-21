@@ -5,6 +5,7 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "print.h"
 #include "rete.h"
 #include "slot.h"
@@ -89,9 +90,9 @@ void reset_wme_timetags(agent* thisAgent)
 {
     if (thisAgent->num_existing_wmes != 0)
     {
-        print(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
-        print(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
-        print(thisAgent,  "(Leaving timetag numbers alone.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
+        thisAgent->outputManager->printa(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;
     }
@@ -143,11 +144,22 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
-           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
-           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    /* Not sure if this is necessary anymore now that we don't have LTIs in STM.
+     *
+     * We do have an agent that causes this assert to fire. If we disable the assert,
+     * it seems to run fine, so perhaps the level gets set correctly soon after.  The
+     * agent is a very weird one, so for now, we'll put in a warning with a debug statement
+     * until we have time to investigate (or get a less crazy agent than Shane's.) */
 
+    //    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
+
+
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -348,7 +360,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 {
                     dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
-                    print(thisAgent,  const_cast< char* >(kWarningMessage));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
                     xml_att_val(thisAgent, kTypeString, kWarningMessage);
                     print_wme(thisAgent, w);

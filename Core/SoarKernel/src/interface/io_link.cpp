@@ -30,6 +30,7 @@
 #include "callback.h"
 #include "decide.h"
 #include "lexer.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "slot.h"
@@ -80,7 +81,7 @@ void add_output_function(agent* thisAgent,
     if (soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, output_link_name)
             != NULL)
     {
-        print(thisAgent,  "Error: tried to add_output_function with duplicate name %s\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: tried to add_output_function with duplicate name %s\n",
               output_link_name);
         /* Replaced deprecated control_c_handler with an appropriate assertion */
         //control_c_handler(0);
@@ -194,7 +195,7 @@ wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
     /* --- a little bit of error checking --- */
     if (!(id && attr && value))
     {
-        print(thisAgent,  "Error: an input routine gave a NULL argument to add_input_wme.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine gave a NULL argument to add_input_wme.\n");
         return NIL;
     }
 
@@ -253,7 +254,7 @@ bool remove_input_wme(agent* thisAgent, wme* w)
     /* --- a little bit of error checking --- */
     if (!w)
     {
-        print(thisAgent,  "Error: an input routine called remove_input_wme on a NULL wme.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine called remove_input_wme on a NULL wme.\n");
         return false;
     }
     for (temp = w->id->id->input_wmes; temp != NIL; temp = temp->next)
@@ -263,8 +264,8 @@ bool remove_input_wme(agent* thisAgent, wme* w)
         }
     if (!temp)
     {
-        print(thisAgent,  "Error: an input routine called remove_input_wme on a wme that\n");
-        print(thisAgent,  "isn't one of the input wmes currently in working memory.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine called remove_input_wme on a wme that\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "isn't one of the input wmes currently in working memory.\n");
         return false;
     }
     /* Note: for efficiency, it might be better to use a hash table for the
@@ -545,7 +546,7 @@ void inform_output_module_of_wm_changes(agent* thisAgent,
             w->id->to_string(false, id, 100);
             if (!strcmp(id, "I3"))
             {
-                print(thisAgent,  "--> Added to I3, but doesn't register as an OL change!");
+                thisAgent->outputManager->printa_sf(thisAgent,  "--> Added to I3, but doesn't register as an OL change!");
             }
         }
 #endif
@@ -942,7 +943,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
         int_val = strtol(input_string, NULL, 10);
         if (errno)
         {
-            print(thisAgent,  "Text Input Error: bad integer (probably too large)\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Text Input Error: bad integer (probably too large)\n");
             return NIL;
         }
         return get_io_int_constant(thisAgent, int_val);
@@ -955,7 +956,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
         float_val = strtod(input_string, NULL);
         if (errno)
         {
-            print(thisAgent,  "Text Input Error: bad floating point number\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Text Input Error: bad floating point number\n");
             return NIL;
         }
         return get_io_float_constant(thisAgent, float_val);
