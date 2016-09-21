@@ -131,7 +131,7 @@ void Explanation_Memory::print_chunk_actions(action_record_list* pActionRecords,
     {
         action_record* lAction;
         condition* top = NULL, *bottom = NULL;
-        action* rhs, *pRhs;
+        action* rhs, *pRhs = NULL;
         int lActionCount = 0;
         thisAgent->outputManager->set_print_indents("");
         thisAgent->outputManager->set_print_test_format(true, false);

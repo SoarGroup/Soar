@@ -369,10 +369,12 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
         }
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
     {
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
 

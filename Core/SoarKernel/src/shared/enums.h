@@ -156,6 +156,7 @@ enum SoarCannedMessageType {
     ebc_error_no_conditions,
     ebc_progress_repairing,
     ebc_progress_repaired,
+    ebc_progress_validating
 };
 
 enum EBCTraceType {

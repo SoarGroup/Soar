@@ -687,6 +687,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 unconnected_syms = new symbol_with_match_list();
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
@@ -899,12 +900,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     if (m_should_print_name)
     {
         thisAgent->outputManager->start_fresh_line(thisAgent);
-        if (pForChunk)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "Learning chunk %y\n", m_prod_name);
-        } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "Learning justification %y\n", m_prod_name);
-        }
+        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
         xml_att_val(thisAgent, kProduction_Name, m_prod_name);
@@ -1077,6 +1073,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!m_inst_top)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
+        print_current_built_rule("Invalid rule with no grounds: ");
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();

@@ -24,24 +24,23 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
     {
         case ebc_failed_reordering_rhs:
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
+//            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,  "   Reason:  The following RHS actions contain variables that are not tested\n"
+            printa_sf(thisAgent,  "   Warning: The following RHS actions contain variables that are not tested\n"
                                   "            in a positive condition on the LHS: \n"
                                   "   %s\n\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
+//            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,"   Reason: Conditions on the LHS test the following identifiers that are not connected \n"
-                                "           to a goal: %s\n\n", pString2);
-            printa(thisAgent,   "   This is likely caused by a condition that tested either\n"
-                                "      (a) a semantic memory retrieved in the sub-state that already \n"
-                                "          exists in a super-state \n"
-                                "      (b) a working memory element that was created in the sub-state \n"
-                                "          and then connected to the super-state during problem-solving.\n\n");
+            printa_sf(thisAgent,"   Warning: Conditions on the LHS contain tests that are not connected \n"
+                                "            to a goal: %s\n\n", pString2);
+            printa(thisAgent,   "   This is likely caused by a condition that tested a working memory element \n"
+                                "   that was created in the sub-state but later became connected to the \n"
+                                "   super-state because it was a child of an identifier that was an element\n"
+                                "   of a previous result in that same sub-state.\n\n");
             break;
         }
         case ebc_failed_no_roots:
@@ -88,7 +87,7 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_invalid_chunk:
         {
-            printa(thisAgent, "...repair failed...\n");
+            printa(thisAgent, "...repair failed.\n");
             break;
         }
         case ebc_error_invalid_justification:
@@ -96,14 +95,19 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
             printa(thisAgent, "Warning:  Chunking produced an invalid justification.  Ignoring.\n");
             break;
         }
+        case ebc_progress_validating:
+        {
+            printa(thisAgent, "Validating repaired rule.\n\n");
+            break;
+        }
         case ebc_progress_repairing:
         {
-            printa(thisAgent, "...attempting to repair rule.\n");
+            printa(thisAgent, "Attempting to repair rule.\n\n");
             break;
         }
         case ebc_progress_repaired:
         {
-            printa(thisAgent, "...repair succeeded.\n");
+            printa(thisAgent, "...repair succeeded.\n\n");
             break;
         }
         case ebc_error_no_conditions:
