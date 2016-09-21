@@ -14,17 +14,25 @@ for (int i=0; i<names.size(); ++i) {
         sh 'scons all --no-scu'
         sh 'pushd out; ./Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       } else {
-        def folder = new File('C:/Tcl')
+        def tcl = new File('C:/Tcl')
+        def python = new File('C:/Python27')
 
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env.bat'
 
-        bat 'echo set PYTHON_HOME=%PYTHON_HOME%>> user-env.bat & echo set JAVA_HOME=%JAVA_HOME%>> user-env.bat & echo set SWIG_HOME=%SWIG_HOME%>> user-env.bat'
-
-        if (folder.exists()) {
-          bat '%VS_2015% & call build.bat all --no-scu --tcl=C:/Tcl'
+        if (python.exists()) {
+          bat 'echo set PYTHON_HOME=C:\\Python27>> user-env.bat'
         } else {
-          bat '%VS_2015% & call build.bat all --no-scu --tcl=C:/Tcl-x86-64'
+          bat 'echo set PYTHON_HOME=C:\\Python27-64>> user-env.bat'
+        }
+
+        bat 'echo set JAVA_HOME=C:\\Program Files\\Java\\jdk1.7.0_79>> user-env.bat'
+        bat 'echo set SWIG_HOME=C:\\swigwin>> user-env.bat'
+
+        if (tcl.exists()) {
+          bat '%VS_2015% & call build.bat all --no-scu --tcl=C:\\Tcl'
+        } else {
+          bat '%VS_2015% & call build.bat all --no-scu --tcl=C:\\Tcl-x86-64'
         }
 
         bat 'pushd out & Prototype-UnitTesting -s -c SMemFunctionalTests & popd'
