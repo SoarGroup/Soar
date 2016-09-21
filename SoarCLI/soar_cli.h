@@ -184,8 +184,14 @@ class SoarCLI
     public:
 
         SoarCLI()
-            : m_kernel(0), m_currentAgent(0), m_quit(false), m_isMultiAgent(false), m_longestAgentName(0),
-              m_seen_newline(true), m_listen(false), m_port(sml::Kernel::kUseAnyPort) {}
+            : m_kernel(0), m_currentAgent(0), m_quit(false), m_isMultiAgent(false),
+              m_longestAgentName(0), m_seen_newline(true),
+              #if defined(_WIN32) || defined(NO_COLORS)
+                  m_color(false),
+              #else
+                  m_color(true),
+              #endif
+              m_listen(false), m_port(sml::Kernel::kUseAnyPort) {}
 
         ~SoarCLI();
 
@@ -194,9 +200,13 @@ class SoarCLI
         void process_line(const std::string& line);
         void loop();
         void update();
-        void newline(bool seen)         { m_seen_newline    = seen; }
-        void set_port(int pPort)        { m_port            = pPort; };
-        void set_listen(bool pListen)   { m_listen          = pListen; };
+        void newline(bool seen)                         { m_seen_newline    = seen; }
+        void set_port(int pPort)                        { m_port            = pPort; };
+        void set_listen(bool pListen)                   { m_listen          = pListen; };
+        void set_color_enabled(bool pColor)             { m_color           = pColor; };
+        inline const char* getcol(const char* pColor)   { if (m_color) return pColor; else return ""; }
+        void PrintColoredMessage(char const* message);
+
 //      void SignalCallbackHandler(int sig);
 
     private:
@@ -206,6 +216,7 @@ class SoarCLI
         sml::Agent*     m_currentAgent;
         int             m_port;
         bool            m_listen;
+        bool            m_color;
         bool            m_quit;
         bool            m_seen_newline;      ///< True if last character printed is a newline.
         bool            m_isMultiAgent;
@@ -213,7 +224,7 @@ class SoarCLI
 
         std::vector<sml::Agent*> agents;
 
-        void prompt() const;
+        void prompt();
         bool createagent(const char* agentname);
         void printagents();
         void switchagent(const char* agentname);
@@ -221,6 +232,7 @@ class SoarCLI
         void deleteagent(const char* agentname);
         void sendAllAgentsCommand(const char* cmd);
         void agent_init_source(const char* agentname);
+
 };
 
 #endif // SOAR_CLI_H
