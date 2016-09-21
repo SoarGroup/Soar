@@ -261,7 +261,7 @@ void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_
     std::string lStr;
     Output_Manager* output_manager = &Output_Manager::Get_OM();
 
-    output_manager->rhs_value_to_string(rv, lStr, NULL, NULL, false);
+    output_manager->rhs_value_to_string(rv, lStr);
     if (!lStr.empty())
     {
         strcpy(dest, lStr.c_str());
@@ -269,7 +269,7 @@ void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_
     }
 }
 
-void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pWithIdentity, bool pEmptyStringForNullIdentity)
+void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -352,7 +352,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, false);
+            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, pEmptyStringForNullIdentity);
         }
         destString += ')';
     }

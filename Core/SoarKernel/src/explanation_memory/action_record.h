@@ -24,8 +24,8 @@ class action_record
         uint64_t                get_actionID()   { return actionID; };
         id_set*                 get_identities();
 
-        void                    print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual);
-        void                    print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual);
+        void                    print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual);
+        void                    print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, bool printActual);
 //        void                    print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual);
         void                    print_chunk_action(action* pAction, int lActionCount);
         void                    print_instantiation_action(action* pAction, int lActionCount);

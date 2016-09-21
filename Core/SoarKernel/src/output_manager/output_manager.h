@@ -166,7 +166,7 @@ class Output_Manager
         void debug_start_fresh_line(TraceMode mode);
 
         const char* phase_to_string(top_level_phase pPhase);
-        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pWithIdentity = false, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
         /* Methods to make printing prettier */

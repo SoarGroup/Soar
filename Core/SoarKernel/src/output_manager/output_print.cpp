@@ -374,7 +374,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string(t->type);
                                     }
-                                    destString += " [";
+                                    destString += "[";
                                     destString += std::to_string(t->identity);
                                     destString += "]";
                                 } else {
@@ -382,6 +382,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 }
                             } else {
                                 destString += "{ ";
+                                bool isFirst = true;
                                 for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                                 {
                                     ct = static_cast<test>(c->first);
@@ -392,7 +393,8 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         {
                                             destString += test_type_to_string(ct->type);
                                         }
-                                        destString += " [";
+                                        if (!isFirst) destString += ' '; else isFirst = false;
+                                        destString += "[";
                                         destString += std::to_string(ct->identity);
                                         destString += "]";
                                     } else {
