@@ -2,7 +2,9 @@
 def names = nodeNames()
 def builders = [:]
 
-for name in names {
+for (int i=0; i<names.size(); ++i) {
+  def name = names[i]
+
   builders["node_" + name] = {
     node(name + " && unix") {
         checkout scm
