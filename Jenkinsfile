@@ -12,8 +12,7 @@ for (int i=0; i<names.size(); ++i) {
       sh 'pushd out; ./Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       junit 'out/TestResults.xml'
 
-      version=sh('cat soarversion')
-      sh "7za a " + version + "-" + nodeName + ".7zip out/"
+      sh "export VERISON=$(<soarversion'); 7za a ${VERSION}-" + nodeName + ".7zip out/"
 
       archive '*.7zip'
     }
@@ -31,8 +30,7 @@ for (int i=0; i<names.size(); ++i) {
       sh 'pushd out; Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       junit 'out/TestResults.xml'
 
-      sh 'set /p VERSION=<soarversion'
-      sh '"C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + nodeName + '-VS2015.7zip out/'
+      sh 'set /p VERSION=<soarversion; "C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + nodeName + '-VS2015.7zip out/'
 
       archive '*.7zip'
     }
