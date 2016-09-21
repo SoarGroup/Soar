@@ -167,13 +167,18 @@ env = Environment(
     VISHIDDEN=False,  # needed by swig
 )
 
-if not GetOption('dbg'):
+# This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
+# that the build date will be correct in every build.  (Turned off for debug, b/c it was adding
+# extra compilation time.  (for some reason, this will build it the first two times you compile after
+# it exists.)
+
+if ((GetOption('dbg') == None) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
     cli_version_dep = open('Core/shared/build_time_date.h', 'w')
     print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
     print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
     print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"
     cli_version_dep.close()
-
+    
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))
 elif sys.platform == 'darwin':
