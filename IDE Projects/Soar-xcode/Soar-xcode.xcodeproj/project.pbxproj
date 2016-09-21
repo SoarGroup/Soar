@@ -751,6 +751,7 @@
 		4D7433EC1D884DEF00072482 /* unittest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = unittest.h; path = ../../../Tests/UnitTests/src/unittest.h; sourceTree = "<group>"; };
 		4D7734BA1B3EFC33006FC37C /* handlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handlers.cpp; sourceTree = "<group>"; };
 		4D7734BB1B3EFC33006FC37C /* handlers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handlers.hpp; sourceTree = "<group>"; };
+		4D7A66341D92D2AB00F54998 /* unistd_windows.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unistd_windows.h; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1383,6 +1384,7 @@
 				4D9868021B308B8100B13711 /* TestRunner.hpp */,
 				4D9868041B30941F00B13711 /* TestHelpers.cpp */,
 				4D9868051B30941F00B13711 /* TestHelpers.hpp */,
+				4D7A66341D92D2AB00F54998 /* unistd_windows.h */,
 			);
 			path = TestHarness;
 			sourceTree = "<group>";

@@ -24,6 +24,7 @@
 
 #ifdef _WIN32
 #   include <io.h>
+#   include "unistd_windows.h"
 #else
 #   include <unistd.h>
 #endif
