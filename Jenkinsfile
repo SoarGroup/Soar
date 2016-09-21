@@ -12,7 +12,7 @@ for (int i=0; i<names.size(); ++i) {
       sh 'pushd out; ./Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       junit 'out/TestResults.xml'
 
-      sh "export VERISON=\$(<soarversion'); 7za a \${VERSION}-" + name + ".7zip out/"
+      sh "export VERISON=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
 
       archive '*.7zip'
     }
