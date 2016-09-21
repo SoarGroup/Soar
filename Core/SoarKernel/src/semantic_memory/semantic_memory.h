@@ -68,7 +68,7 @@ class SMem_Manager
         bool        CLI_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
         void        calc_spread_trajectories();
         void        invalidate_trajectories(uint64_t lti_parent_id, std::map<uint64_t, int64_t>* delta_children);
-        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set);
+        void        calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL);
         uint64_t    spread_size();
 
         /* Methods for creating an instance of a LTM using STIs */
@@ -148,7 +148,7 @@ class SMem_Manager
         uint64_t        add_specific_LTI(uint64_t lti_id);
         void            get_lti_name(uint64_t pLTI_ID, std::string &lti_name) { lti_name.append("@");  lti_name.append(std::to_string(pLTI_ID)); }
         uint64_t        get_max_lti_id();
-        double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges, double touches, bool increment_timer);
+        double          lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, double touches = 1, bool increment_timer = true);
         double          lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n = 0, uint64_t activations_first = 0);
         id_set          print_LTM(uint64_t pLTI_ID, double lti_act, std::string* return_val, std::list<uint64_t>* history = NIL);
 

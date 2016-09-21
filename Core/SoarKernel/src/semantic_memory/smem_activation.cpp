@@ -11,6 +11,8 @@
 #include "smem_db.h"
 #include "smem_stats.h"
 #include "smem_timers.h"
+#include "working_memory_activation.h"
+#include "working_memory.h"
 
 double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n, uint64_t activations_first)
 {
@@ -75,7 +77,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
 //       just when storing a new chunk (default is a
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges = SMEM_ACT_MAX, double touches = 1, bool increment_timer = true)
+double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t num_edges, double touches, bool increment_timer)
 {
     ////////////////////////////////////////////////////////////////////////////
     timers->act->start();
@@ -409,7 +411,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
             std::map<uint64_t,double>::iterator updates_it;
             double update_sum = 0;
-            sqlite_statement*update_edge = SQL->web_update_child_edge;
+            soar_module::sqlite_statement* update_edge = SQL->web_update_child_edge;
             for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
             {// args are edge weight, parent lti it, child lti id.
                 update_edge->bind_double(1, updates_it->second);
@@ -661,7 +663,7 @@ inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_
     return q;
 }
 
-void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set=NULL)
+void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set)
 {
 
     /*
