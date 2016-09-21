@@ -16,12 +16,12 @@ for (int i=0; i<names.size(); ++i) {
         def folder = new File('C:/Tcl')
 
         if (folder.exists()) {
-          sh 'call build.bat all --no-scu --tcl=C:/Tcl'
+          bat 'call build.bat all --no-scu --tcl=C:/Tcl'
         } else {
-          sh 'call build.bat all --no-scu --tcl=C:/Tcl-x86-64'
+          bat 'call build.bat all --no-scu --tcl=C:/Tcl-x86-64'
         }
 
-        sh 'pushd out; Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
+        bat 'pushd out; Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       }
 
       junit 'out/TestResults.xml'
@@ -29,7 +29,7 @@ for (int i=0; i<names.size(); ++i) {
       if (isUnix()) {
         sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
       } else {
-        sh 'set /p VERSION=<soarversion; "C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + name + '-VS2015.7zip out/'
+        bat 'set /p VERSION=<soarversion; "C:/Program Files/7-Zip/7z.exe" a %VERSION%-%BUILD_ID%-' + name + '-VS2015.7zip out/'
       }
 
       archive '*.7zip'
