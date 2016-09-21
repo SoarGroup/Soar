@@ -263,7 +263,7 @@ void deallocate_test(agent* thisAgent, test t)
    need not be a conjunctive test nor even exist.
 ---------------------------------------------------------------- */
 
-void add_test(agent* thisAgent, test* dest_test_address, test new_test)
+bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
 {
 
 	test destination = 0;//, original = 0;
@@ -271,16 +271,18 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
 
     if (!new_test)
     {
-        return;
+        return false;
     }
 
     if (!(*dest_test_address))
     {
         *dest_test_address = new_test;
-        return;
+        return true;
     }
 
     destination = *dest_test_address;
+    assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
+
     if (destination->type != CONJUNCTIVE_TEST)
     {
         destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
@@ -291,11 +293,10 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
         c->rest = NIL;
         *dest_test_address = destination;
     }
+
     if (!destination->eq_test)
     {
         destination->eq_test = new_test->eq_test;
-    } else {
-        assert(new_test->type != EQUALITY_TEST);
     }
 
     /* --- now add add_test to the conjunct list --- */
@@ -304,6 +305,7 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
 
+    return true;
 }
 
 

@@ -69,7 +69,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = f
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 test copy_test_without_relationals(agent* thisAgent, test t);
 
-void add_test(agent* thisAgent, test* dest_address, test new_test);
+bool add_test(agent* thisAgent, test* dest_address, test new_test);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
 
 ::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem);

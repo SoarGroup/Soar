@@ -328,7 +328,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         {
             thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             std::string lStr;
-            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "%c%d", lexeme->id_letter, lexeme->id_number);
+            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
             newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
 
             return newSymbol;
@@ -486,6 +486,8 @@ test parse_disjunction_test(agent* thisAgent, Lexer* lexer)
             case STR_CONSTANT_LEXEME:
             case INT_CONSTANT_LEXEME:
             case FLOAT_CONSTANT_LEXEME:
+            case IDENTIFIER_LEXEME:
+                /* make_symbol_for_lexeme will convert an identifier lexeme into a string symbol */
                 push(thisAgent, make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false), t->data.disjunction_list);
                 if (!lexer->get_lexeme())
                 {
@@ -563,7 +565,27 @@ test parse_test(agent* thisAgent, Lexer* lexer)
             }
             return NIL;
         }
-        add_test(thisAgent, &t, temp);
+        if (t && t->eq_test && temp->eq_test)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Soar does not support having two equality tests in one conjunctive test!\n");
+            if (t->type == EQUALITY_TEST && temp->type == EQUALITY_TEST)
+            {
+                if (!t->data.referent->is_constant() && temp->data.referent->is_constant())
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of constant %t.  Rule semantics may have changed!\n", t, temp);
+                    deallocate_test(thisAgent, t);
+                    t = temp;
+                } else {
+                    thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", temp, t->eq_test);
+                    deallocate_test(thisAgent, temp);
+                }
+            } else {
+                thisAgent->outputManager->printa_sf(thisAgent, "Ignoring %t in favor of existing %t.  Rule semantics may have changed!\n", temp, t->eq_test);
+                deallocate_test(thisAgent, temp);
+            }
+        } else {
+            add_test(thisAgent, &t, temp);
+        }
     }
     while (lexer->current_lexeme.type != R_BRACE_LEXEME);
     if (!lexer->get_lexeme()) 
@@ -1036,8 +1058,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         }
         if (!id_test->eq_test)
         {
-            add_test
-            (thisAgent, &id_test, make_placeholder_test(thisAgent, first_letter_if_no_id_given));
+            add_test(thisAgent, &id_test, make_placeholder_test(thisAgent, first_letter_if_no_id_given));
         }
         else
         {
