@@ -110,8 +110,7 @@ id_set* action_record::get_identities()
     return identities_used;
 }
 
-
-void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
+void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
 {
     std::string tempString;
     bool identity_printed = false;
@@ -132,7 +131,29 @@ void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value 
                     identity_printed = true;
                 }
             }
-        } else if (pPref_func) {
+        }
+        if (!identity_printed && pID)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
+            identity_printed = true;
+        }
+    }
+    if (printActual || !identity_printed)
+    {
+        tempString = "";
+        thisAgent->outputManager->set_print_test_format(true, false);
+        thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString, NULL, NULL);
+        thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+    }
+}
+void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
+{
+    std::string tempString;
+    bool identity_printed = false;
+
+    if (!printActual)
+    {
+        if (pPref_func) {
             tempString = "";
             thisAgent->outputManager->set_print_test_format(false, true);
             thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true, true);
@@ -157,7 +178,6 @@ void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value 
         thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
     }
 }
-
 
 void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID)
 {

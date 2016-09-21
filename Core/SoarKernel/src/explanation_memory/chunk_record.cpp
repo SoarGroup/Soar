@@ -302,7 +302,7 @@ void chunk_record::print_for_explanation_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_action_list(actions, original_production, NULL, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
     outputManager->printa(thisAgent, "}\n");
     thisAgent->explanationMemory->print_footer(true);
 }
@@ -385,7 +385,7 @@ void chunk_record::print_for_wme_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_action_list(actions, original_production, NULL, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
     outputManager->printa(thisAgent, "}\n");
     thisAgent->explanationMemory->print_footer(true);
 }

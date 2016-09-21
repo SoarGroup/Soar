@@ -310,7 +310,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
             outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
@@ -450,7 +450,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
             outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
