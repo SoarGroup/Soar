@@ -39,7 +39,8 @@ for (int i=0; i<names.size(); ++i) {
       if (isUnix()) {
         sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
       } else {
-        bat 'set /p VERSION=<soarversion & "C:/Program Files/7-Zip/7z.exe" a %VERSION%-' + name + '-VS2015.7zip out/'
+        bat 'set /p VERSION=<soarversion'
+        bat '"C:/Program Files/7-Zip/7z.exe" a %VERSION%-' + name + '-VS2015.7zip out/'
       }
 
       archive '*.7zip'
