@@ -420,11 +420,11 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	// NOTE: This is because of an ordering difference between Windows & Linux/OS X.  Functionally,
 	// it doesn't matter so this is a #def because effort was considered to be better spent elsewhere
 	// than finding out why.
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
 	std::string expectedResultOfPS1 = "(S1 ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385\n       ^operator O1385 + ^reward-link R1 ^smem S2 ^superstate nil ^svs S3\n       ^type state ^using-smem true)\n";
-#else
+/*#else
 	std::string expectedResultOfPS1 = "(S1\n       ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385 +\n       ^operator O1385 ^reward-link R1 ^smem S2 ^superstate nil ^svs S3\n       ^type state ^using-smem true)\n";
-#endif
+#endif*/
 
 	assertTrue_msg("Didn't stop where expected!", resultOfPS1 == expectedResultOfPS1);
 
