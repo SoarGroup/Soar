@@ -15,6 +15,7 @@ for (int i=0; i<names.size(); ++i) {
         sh 'rm -rf out/'
         sh 'scons all --no-scu'
         sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
+        junit 'out/TestResults.xml'
       } else {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env.bat'
@@ -38,9 +39,10 @@ for (int i=0; i<names.size(); ++i) {
 
         bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
         bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
-      }
 
-      junit 'out/TestResults.xml'
+        junit 'VS2013\\TestResults.xml'
+        junit 'VS2015\\TestResults.xml'
+      }
 
       withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '099da30c-b551-4c0c-847d-28fa1c22c5cb',
                             usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
