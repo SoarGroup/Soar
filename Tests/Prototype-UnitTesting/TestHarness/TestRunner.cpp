@@ -9,6 +9,9 @@
 #include "TestRunner.hpp"
 #include "TestCategory.hpp"
 
+#include <exception>
+#include <stdexcept>
+
 TestRunner::TestRunner(TestCategory* c, std::function<void ()> f, std::condition_variable_any* v)
 : category(c), function(f), variable(v), kill(false), ready(false), done(false), failed(false)
 {
@@ -29,16 +32,25 @@ void TestRunner::run()
 		function();
 		category->after(false);
 	}
-	catch (std::exception& e)
-	{
-		failed = true;
-		failureMessage = e.what();
-		
-		try
-		{
-			category->after(true);
-		} catch (std::exception&) {}
-	}
+    catch (...)
+    {
+        std::exception_ptr e = std::current_exception();
+
+        failed = true;
+
+        try {
+            if (e) {
+                std::rethrow_exception(e);
+            }
+        } catch(const std::exception& e) {
+            failureMessage = e.what();
+        }
+
+        try
+        {
+            category->after(true);
+        } catch (...) {}
+    }
 	
 	done.store(true);
 	variable->notify_all();

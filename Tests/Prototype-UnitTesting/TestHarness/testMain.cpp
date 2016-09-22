@@ -43,6 +43,30 @@
 
 #include "SimpleListener.hpp"
 
+#if defined(_WIN32) || defined(WIN32)
+
+#   if (_MSC_VER == 1900)
+std::string OS = "Windows VS2015";
+#   elif (_MSC_VER == 1800)
+std::string OS = "Windows VS2013";
+#   elif (_MSC_VER == 1700)
+std::string OS = "Windows VS2012";
+#   elif (_MSC_VER == 1600)
+std::string OS = "Windows VS2010";
+#   else
+std::string OS = "Windows Prior to VS2010";
+#endif
+
+#elif defined(__APPLE__)
+std::string OS = "OS X";
+#elif defined(__linux__)
+std::string OS = "Linux";
+#elif defined(__unix__)
+std::string OS = "Unknown Unix";
+#else
+std::string OS = "Unknown OS";
+#endif
+
 void usage(std::string arg0)
 {
     std::cout << "OVERVIEW: " << arg0 << ": Soar Unit Testing Framwork " << std::endl << std::endl;
@@ -210,7 +234,7 @@ int main(int argc, char** argv)
 			uint64_t timeout = std::get<1>(test) - 1000;
 
 			TestRunner* runner = new TestRunner(category, function, &variable);
-            xml << "\t<testcase classname=\"" << category->getCategoryName() << "\" name=\"" << std::get<2>(test) << "\"";
+            xml << "\t<testcase classname=\"" << category->getCategoryName() << " - " << OS << "\" name=\"" << std::get<2>(test) << "\"";
 
 			std::thread (&TestRunner::run, runner).detach();
 			
