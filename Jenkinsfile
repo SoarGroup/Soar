@@ -34,8 +34,8 @@ for (int i=0; i<names.size(); ++i) {
         bat 'echo set JAVA_HOME=C:\\Program Files\\Java\\jdk1.7.0_79>> user-env.bat'
         bat 'echo set SWIG_HOME=C:\\swigwin\\>> user-env.bat'
 
-        bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=VS2013 --out=VS2013"
-        bat "%VS_2015% & call build.bat all --no-scu --tcl=" + tcl + " --build=VS2015 --out=VS2015"
+        bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
+        bat "%VS_2015% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
 
         bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
         bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
