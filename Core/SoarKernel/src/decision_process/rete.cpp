@@ -6211,7 +6211,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
-    combozulator("\n    Level of goal is  %d", msc->level);
+    print("\n    Level of goal is  %d", static_cast<int64_t>(msc->level));
 #endif
 
     prod_type = IE_PRODS;

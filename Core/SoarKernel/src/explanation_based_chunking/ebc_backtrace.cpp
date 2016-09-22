@@ -151,7 +151,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     condition* c;
     list* grounds_to_print, *locals_to_print, *negateds_to_print;
 
-    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, grounds_level);
+    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
 //    dprint(DT_BACKTRACE, "           RHS identities: (%y [o%u] ^%y [o%u] %y [o%u]),\n           Matched cond: %l\n",
 //        get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
 //        get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,

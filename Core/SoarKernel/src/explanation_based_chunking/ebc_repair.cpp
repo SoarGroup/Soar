@@ -43,7 +43,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
 
-    dprint(DT_REPAIR, "Finding path to connect %y (level %d) to a goal state.\n", pNonOperationalSym, pNonOperationalSym->id->level);
+    dprint(DT_REPAIR, "Finding path to connect %y (level %d) to a goal state.\n", pNonOperationalSym, static_cast<int64_t>(pNonOperationalSym->id->level));
 
     ground_lti_tc = get_new_tc_number(thisAgent);
 
@@ -52,7 +52,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     {
         g = g->id->lower_goal;
     }
-    dprint(DT_REPAIR, "...goal %y found for level %d.\n", g, pNonOperationalSym->id->level);
+    dprint(DT_REPAIR, "...goal %y found for level %d.\n", g, static_cast<int64_t>(pNonOperationalSym->id->level));
 
     lNewPath = new Path_to_Goal_State(g);
 //    if (g == pNonOperationalSym)
@@ -144,7 +144,7 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
                 }
             }
         } else {
-            dprint(DT_REPAIR, "State %y not marked (%u != %u) or level is below match goal (%d < %d).\n", g, g->tc_num, pSeenTC, g->id->level, m_match_goal_level);
+            dprint(DT_REPAIR, "State %y not marked (%u != %u) or level is below match goal (%d < %d).\n", g, g->tc_num, pSeenTC, static_cast<int64_t>(g->id->level), static_cast<int64_t>(m_match_goal_level));
         }
         last_goal = g;
         g = g->id->higher_goal;
@@ -373,12 +373,14 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
-        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %d...\n", lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, lDanglingSymInfo->matched_sym->id->level);
+        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %i...\n", lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym,
+            lDanglingSymInfo->identity, static_cast<int64_t>(lDanglingSymInfo->matched_sym->id->level));
         if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->matched_sym->id->level;
         } else {
-            dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n", lDanglingSymInfo->matched_sym->id->level, targetLevel);
+            dprint(DT_REPAIR, "...symbol is at Lower level %i than current target level of %i...\n",
+                static_cast<int64_t>(lDanglingSymInfo->matched_sym->id->level), static_cast<int64_t>(targetLevel));
         }
         add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
     }

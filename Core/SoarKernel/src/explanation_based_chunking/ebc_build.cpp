@@ -201,7 +201,7 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
         {
             add_pref_to_results(pref, 0);
         } else {
-            dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, m_results_match_goal_level);
+            dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, static_cast<int64_t>(pref->id->id->level), static_cast<int64_t>(m_results_match_goal_level));
         }
     }
 }
@@ -797,7 +797,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     /* --- backtrace through the instantiation that produced each result --- */
     outputManager->set_print_test_format(true, false);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst->prod_name, NULL, m_results);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {

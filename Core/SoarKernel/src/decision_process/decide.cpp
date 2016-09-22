@@ -2338,13 +2338,13 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    solution seems to work well, but it's possible that there are subtle aspects
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
                     dprint(DT_GDS, "%fWME from duplicate rule.  Skipping gds processing for newly made o-supported wme %p (id level = %d, mg level = %d)\n",
-                           cand, cand->id->id->level, cand->inst->match_goal_level);
+                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
                     continue;
                 }
                 else
                 {
                     dprint(DT_GDS, "%fWME not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
-                           cand, cand->id->id->level, cand->inst->match_goal_level);
+                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
                 }
                 dprint(DT_WME_CHANGES, "Adding non-context wme for preference %p.\n", cand);
@@ -2399,7 +2399,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 {
                     dprint(DT_GDS, "Checking GDS necessary for wme %w: %s (level = %d)\n", w,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
-                           w->preference->id->id->level);
+                           static_cast<int64_t>(w->preference->id->id->level));
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
                     dprint(DT_GDS, "%7", w->preference->inst);
 
@@ -2479,7 +2479,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                             thisAgent->outputManager->printa_sf(thisAgent, "\n\n   ");
                             print_preference(pref);
                             thisAgent->outputManager->printa_sf(thisAgent, "   Goal level of preference: %d\n",
-                                  pref->id->id->level);
+                                static_cast<int64_t>(pref->id->id->level));
 #endif
 
                             if (pref->inst->GDS_evaluated_already == false)
@@ -2487,7 +2487,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 #ifdef DEBUG_GDS_HIGH
                                 thisAgent->outputManager->printa_sf(thisAgent, "   Match goal lev of instantiation %y ",
                                                    pref->inst->prod_name);
-                                thisAgent->outputManager->printa_sf(thisAgent, "is %d\n", pref->inst->match_goal_level);
+                                thisAgent->outputManager->printa_sf(thisAgent, "is %d\n", static_cast<int64_t>(pref->inst->match_goal_level));
 #endif
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
@@ -2864,7 +2864,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
             // KJC note: we actually halt, because there is no interrupt function in SoarKernel
             // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
             // then the interrupt is generated and system_halted is set to false so the user can recover.
-            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %u on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
             thisAgent->outputManager->printa_sf(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
             xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
@@ -3537,7 +3537,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
                                    "*** Waterfall: aborting firing because (%y * *)", sym);
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
-                      sym->id->level, thisAgent->change_level);
+                      static_cast<int64_t>(sym->id->level), static_cast<int64_t>(thisAgent->change_level));
             }
             return false;
         }
@@ -3566,13 +3566,13 @@ void do_preference_phase(agent* thisAgent)
                 case PE_PRODS:
                     thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (PE) For State At Depth %d ---\n",
-                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                          static_cast<int64_t>(thisAgent->active_level)); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
                     break;
                 case IE_PRODS:
                     thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (IE) For State At Depth %d ---\n",
-                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                          static_cast<int64_t>(thisAgent->active_level)); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
                     break;
             }
@@ -3608,7 +3608,7 @@ void do_preference_phase(agent* thisAgent)
         if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
-                  thisAgent->active_level);
+                static_cast<int64_t>(thisAgent->active_level));
             if (thisAgent->active_goal)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
@@ -3982,7 +3982,7 @@ void elaborate_gds(agent* thisAgent)
 
 #ifdef DEBUG_GDS
                 thisAgent->outputManager->printa_sf(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
-                    wme_goal_level);
+                    static_cast<int64_t>(wme_goal_level));
                 print_wme(thisAgent, wme_matching_this_cond);
 
                 if (pref_for_this_wme)
@@ -4122,7 +4122,7 @@ void elaborate_gds(agent* thisAgent)
 
 #ifdef DEBUG_GDS
                     thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d",
-                        wme_matching_this_cond->gds->goal->id->level);
+                        static_cast<int64_t>(wme_matching_this_cond->gds->goal->id->level));
                     thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
 #endif
                 } /* end "wme in supergoal or arch-supported" */
@@ -4287,7 +4287,7 @@ void elaborate_gds(agent* thisAgent)
 #endif
                                     }
 #ifdef DEBUG_GDS
-                                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
+                                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d", static_cast<int64_t>(fake_inst_wme_cond->gds->goal->id->level));
                                     thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n",
                                         fake_inst_wme_cond->gds->goal);
 #endif

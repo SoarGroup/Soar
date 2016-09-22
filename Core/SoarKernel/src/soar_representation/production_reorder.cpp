@@ -169,7 +169,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                     lNewUngroundedSym->matched_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
-                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/? [%u]\n",  lNewUngroundedSym->sym,  lNewUngroundedSym->identity);
+                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->sym, lNewUngroundedSym->matched_sym, lNewUngroundedSym->identity);
                 ungrounded_syms->push_back(lNewUngroundedSym);
             }
         }

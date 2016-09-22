@@ -387,7 +387,7 @@ void debug_test(int type)
             Symbol *sym = thisAgent->symbolManager->find_identifier('G', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", static_cast<int64_t>(sym->id->level), static_cast<int64_t>(sym->id->promotion_level));
             } else {
                 dprint(DT_DEBUG, "Could not find G1.\n");
             }

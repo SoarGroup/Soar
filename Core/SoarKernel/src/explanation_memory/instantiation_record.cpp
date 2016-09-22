@@ -206,12 +206,12 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
             lParentInst->create_identity_paths(path_to_base);
             //            } else {
             //                dprint(DT_EXPLAIN_PATHS, "...not recursing because match level is 0 or condition level < match level\n");
-            //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", match_level, (*it)->get_level());
+            //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", static_cast<int64_t>(match_level), static_cast<int64_t>((*it)->get_level()));
             //            }
             //            path_to_base->pop_back();
         } else {
             dprint(DT_EXPLAIN_PATHS, "...not recursing because no parent or parent != match level\n");
-            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? lParentInst->get_match_level() : 0), match_level);
+            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), static_cast<int64_t>(match_level));
         }
     }
 }
@@ -313,7 +313,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
+            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", static_cast<int64_t>(match_level));
             thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
         outputManager->printa(thisAgent, "\n");
@@ -453,7 +453,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
+            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", static_cast<int64_t>(match_level));
             thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
         outputManager->printa(thisAgent, "\n");
