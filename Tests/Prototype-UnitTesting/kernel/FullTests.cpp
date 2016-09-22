@@ -1350,16 +1350,6 @@ void FullTests_Parent::testTemplateVariableNameBug()
 	
 }
 
-void FullTests_Parent::testNegatedConjunctiveChunkLoopBug510()
-{
-	loadProductions(SoarHelper::GetResource("testNegatedConjunctiveChunkLoopBug510.soar"));
-	agent->ExecuteCommandLine("run");
-	sml::ClientAnalyzedXML response;
-	agent->ExecuteCommandLineXML("stats", &response);
-	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
-}
-
 void FullTests_Parent::testGDSBug1144()
 {
 	loadProductions(SoarHelper::GetResource("testGDSBug1144.soar"));

@@ -78,7 +78,6 @@ public:
 	void testEchoEquals();
 	void testFindAttrPipes();
 	void testTemplateVariableNameBug();
-	void testNegatedConjunctiveChunkLoopBug510();
 	void testGDSBug1144();
 	void testGDSBug1011();
 	void testLearn();
@@ -194,10 +193,7 @@ public:
 	
 	TEST(testTemplateVariableNameBug, -1);
 	void testTemplateVariableNameBug() { this->FullTests_Parent::testTemplateVariableNameBug(); }
-	
-	TEST(testNegatedConjunctiveChunkLoopBug510, -1);
-	void testNegatedConjunctiveChunkLoopBug510() { this->FullTests_Parent::testNegatedConjunctiveChunkLoopBug510(); }
-	
+		
 	TEST(testGDSBug1144, -1);
 	void testGDSBug1144() { this->FullTests_Parent::testGDSBug1144(); }
 	
