@@ -41,14 +41,17 @@ for (int i=0; i<names.size(); ++i) {
 
       junit 'out/TestResults.xml'
 
-      if (isUnix()) {
-        sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
-        sh "export VERSION=\$(<soarversion); sshpass -p \${SSHPASS} scp \${VERSION}-" + name + ".7zip \${SSHUSER}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
-      } else {
-        bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
-        bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
-        bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %SSHPASS% %%x-' + name + '-VS2013.7zip %SSHUSER%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
-        bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %SSHPASS% %%x-' + name + '-VS2015.7zip %SSHUSER%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '099da30c-b551-4c0c-847d-28fa1c22c5cb',
+                            usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+        if (isUnix()) {
+          sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
+          sh "export VERSION=\$(<soarversion); sshpass -p $PASSWORD scp \${VERSION}-" + name + ".7zip $USERNAME@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
+        } else {
+          bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
+          bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
+          bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw $PASSWORD %%x-' + name + '-VS2013.7zip $USERNAME@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+          bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw $PASSWORD %%x-' + name + '-VS2015.7zip $USERNAME@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+        }
       }
 
       archive '*.7zip'
