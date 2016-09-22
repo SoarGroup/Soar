@@ -43,7 +43,7 @@ for (int i=0; i<names.size(); ++i) {
 
       if (isUnix()) {
         sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
-        sh "sshpass -p \${SSHPASS} scp ${VERSION}-" + name + ".7zip \${SSHUSER}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
+        sh "export VERSION=\$(<soarversion); sshpass -p \${SSHPASS} scp \${VERSION}-" + name + ".7zip \${SSHUSER}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
       } else {
         bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
         bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
