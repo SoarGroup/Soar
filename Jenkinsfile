@@ -11,11 +11,13 @@ for (int i=0; i<names.size(); ++i) {
 
       if (isUnix()) {
         sh 'rm -f *.7zip'
+        sh 'rm -rf out/'
         sh 'scons all --no-scu'
         sh 'pushd out; ./Prototype-UnitTesting -s -c SMemFunctionalTests; popd'
       } else {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env.bat'
+        bat 'del /q /f out\\'
 
         def tcl="C:\\Tcl"
         if (name == "Windows32") {
