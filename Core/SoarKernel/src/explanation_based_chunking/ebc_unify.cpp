@@ -91,6 +91,14 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
             dprint(DT_UNIFICATION, "Old identity propagation map:\n");
             dprint_o_id_substitution_map(DT_UNIFICATION);
         }
+        else if (iter->second == pOld_o_id)
+        {
+            /* Circular reference */
+            dprint(DT_UNIFICATION, "o_id unification (%y[o%u] -> %y[o%u]) already exists.  Transitive mapping %y[o%u] -> %y[o%u] would be self referential.  Not adding.\n",
+                get_ovar_for_o_id(pNew_o_id), pNew_o_id, get_ovar_for_o_id(iter->second), iter->second,
+                get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
+            return;
+        }
         else
         {
             /* Map all cases of what this identity is already remapped to with its parent identity */
