@@ -72,7 +72,7 @@ namespace cli
                 t.evaluate("max-memory-usage soar max-memory-usage");
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
                 t.evaluate("port debug port");
-                t.evaluate("set-stop-phase echo \"set-stop-phase replaced by 'soar stop-phase <phase>'\"");
+                t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
                 t.evaluate("verbose output verbose");
                 t.evaluate("waitsnc soar wait-snc");
