@@ -14,6 +14,7 @@
 #include "lexer.h"
 #include "mem.h"
 #include "misc.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "slot.h"

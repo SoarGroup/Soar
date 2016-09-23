@@ -224,28 +224,27 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-        cache_constraints_in_cond(c);
+            cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
-        {
-                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
             {
+                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
+                {
                     add_to_grounds(c);
                 }
                 else                                        /* Another condition that matches the same wme */
                 {
-                add_to_grounds(c);
+                    add_to_grounds(c);
                     add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);
-                }
             }
+        }
         else
         {
             dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
             /* --- negative or nc cond's are either grounds or potentials --- */
-            add_to_chunk_cond_set(&negated_set,
-                                  make_chunk_cond_for_negated_condition(c));
+            add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
                 push(thisAgent, c, negateds_to_print);
@@ -257,10 +256,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     grounds_to_print = NIL;
     locals_to_print = NIL;
     negateds_to_print = NIL;
-
-//    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-//    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
-//    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -334,7 +329,9 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             print_wme(thisAgent, cond->bt.wme_);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
+        thisAgent->outputManager->set_print_test_format(true, true);
         dprint(DT_BACKTRACE, "Backtracing through local condition %l...\n", cond);
+        thisAgent->outputManager->clear_print_test_format();
         bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 
         if (bt_pref)
