@@ -135,8 +135,8 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     m_results = pref;
     if (pref->o_ids.id && linked_id)
     {
-        add_identity_unification(pref->o_ids.id, linked_id);
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->o_ids.id, linked_id);
+        add_identity_unification(pref->o_ids.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */
     add_results_if_needed(pref->value, pref->o_ids.value);

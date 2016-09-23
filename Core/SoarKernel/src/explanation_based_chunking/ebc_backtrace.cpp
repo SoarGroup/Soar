@@ -432,17 +432,17 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
                 dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
                 if (pCond->data.tests.id_test->eq_test->identity || local_singleton_superstate_identity->id)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
                     add_identity_unification(pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
                 }
                 if (pCond->data.tests.attr_test->eq_test->identity || local_singleton_superstate_identity->attr)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
                     add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
                 }
                 if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity->value)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                     add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                 }
             }
@@ -467,17 +467,17 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
             dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
             if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
             }
             if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
             }
             if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             }
         }
