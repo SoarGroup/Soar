@@ -241,6 +241,10 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             dprint(DT_IDENTITY_PROP, "Found a shared identity to replace for value element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
                 get_ovar_for_o_id(lValue->identity), lValue->identity);
+            if ((o_ids_to_replace.value == 14) && (lValue->identity == 23))
+            {
+                dprint(DT_IDENTITY_PROP, "Found.\n");
+            }
         } else {
             dprint(DT_IDENTITY_PROP, "Found an identity to literalize for value element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
         }

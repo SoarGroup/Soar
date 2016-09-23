@@ -134,8 +134,12 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
      
     assert(thisID->id->is_sti());
-        assert(thisID->id->level <= cond->bt.level);
-
+    assert(thisID->id->level <= cond->bt.level);
+    /* MToDo | Remove */
+    if (thisID->id->level < cond->bt.level)
+    {
+        dprint(DT_BACKTRACE, "Condition found that would not have been added in 9.5: %l", cond);
+    }
     return  (thisID->id->level <= grounds_level);
 }
 
