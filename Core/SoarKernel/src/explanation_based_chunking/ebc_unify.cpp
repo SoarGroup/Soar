@@ -14,6 +14,7 @@
 #include "preference.h"
 #include "print.h"
 #include "rhs.h"
+#include "rhs_functions.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
@@ -195,20 +196,24 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
     list* fl = rhs_value_to_funcall_list(rv);
+    rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
     cons* c;
 
-    for (c = fl->rest; c != NIL; c = c->rest)
+    if (rf->can_be_rhs_value)
     {
-        dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-        if (rhs_value_is_funcall(static_cast<char*>(c->first)))
+        for (c = fl->rest; c != NIL; c = c->rest)
         {
-            literalize_RHS_function_args(static_cast<char*>(c->first));
-        } else {
-            assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
-            rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-            if (rs->o_id && !rs->referent->is_sti())
+            dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
+            if (rhs_value_is_funcall(static_cast<char*>(c->first)))
             {
-                add_identity_unification(rs->o_id, 0);
+                literalize_RHS_function_args(static_cast<char*>(c->first));
+            } else {
+                assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
+                rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+                if (rs->o_id && !rs->referent->is_sti())
+                {
+                    add_identity_unification(rs->o_id, 0);
+                }
             }
         }
     }
