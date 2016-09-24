@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "decide.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "print.h"
@@ -27,7 +28,8 @@
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr,
                             Symbol* value, Symbol* referent,
                             const identity_triple o_ids,
-                            const rhs_triple rhs_funcs)
+                            const rhs_triple rhs_funcs,
+                            bool pUnify_identities )
 {
     preference* p;
 
@@ -60,14 +62,25 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
     p->next_candidate = NIL;
     p->next_result = NIL;
 
-    p->o_ids.id = o_ids.id;
-    p->o_ids.attr = o_ids.attr;
-    p->o_ids.value = o_ids.value;
-    p->o_ids.referent = o_ids.referent;
+    if (pUnify_identities)
+    {
+        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
+        if (o_ids.attr) p->o_ids.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->o_ids.attr = 0;
+        if (o_ids.value) p->o_ids.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->o_ids.value = 0;
+        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
 
-    p->rhs_funcs.id = rhs_funcs.id;
-    p->rhs_funcs.attr = rhs_funcs.attr;
-    p->rhs_funcs.value = rhs_funcs.value;
+    }
+    else
+    {
+        p->o_ids.id = o_ids.id;
+        p->o_ids.attr = o_ids.attr;
+        p->o_ids.value = o_ids.value;
+        p->o_ids.referent = o_ids.referent;
+    }
+
+    p->rhs_funcs.id = copy_rhs_value(thisAgent, rhs_funcs.id, pUnify_identities);
+    p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);
+    p->rhs_funcs.value = copy_rhs_value(thisAgent, rhs_funcs.value, pUnify_identities);
 
 #ifdef DEBUG_PREFS
     print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
@@ -176,6 +189,10 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     {
         wma_remove_pref_o_set(thisAgent, pref);
     }
+
+    if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
+    if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);
+    if (pref->rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
 
     /* --- free the memory --- */
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);

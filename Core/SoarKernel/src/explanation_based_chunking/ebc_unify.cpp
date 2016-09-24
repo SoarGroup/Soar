@@ -34,19 +34,48 @@ bool Explanation_Based_Chunker::in_null_identity_set(test t)
     return (t->identity == NULL_IDENTITY_SET);
 }
 
-void Explanation_Based_Chunker::unify_identity(test t)
+uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
 {
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
+    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end())
     {
         dprint(DT_UNIFICATION, "...found variablization unification %u -> %u\n",
-            t->identity, iter->second);
+            pID, iter->second);
 
-        t->identity = iter->second;
+       return iter->second;
     }
+    return pID;
 }
 
+void Explanation_Based_Chunker::unify_identity(test t)
+{
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    t->identity = get_identity(t->identity);
+}
+
+void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
+{
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+
+    rhs_value lRHS;
+    if (lPref->o_ids.id) lPref->o_ids.id = get_identity(lPref->o_ids.id);
+    if (lPref->o_ids.attr) lPref->o_ids.attr = get_identity(lPref->o_ids.attr);
+    if (lPref->o_ids.value) lPref->o_ids.value = get_identity(lPref->o_ids.value);
+    if (lPref->o_ids.referent) lPref->o_ids.referent = get_identity(lPref->o_ids.referent);
+    if (lPref->rhs_funcs.id)
+    {
+        lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
+        deallocate_rhs_value(thisAgent, lPref->rhs_funcs.id);
+        lPref->rhs_funcs.id = lRHS;
+        lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
+        deallocate_rhs_value(thisAgent, lPref->rhs_funcs.attr);
+        lPref->rhs_funcs.attr = lRHS;
+        lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
+        deallocate_rhs_value(thisAgent, lPref->rhs_funcs.value);
+        lPref->rhs_funcs.value = lRHS;
+    }
+
+}
 void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;

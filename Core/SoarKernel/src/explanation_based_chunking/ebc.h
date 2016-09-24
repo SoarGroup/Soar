@@ -60,6 +60,8 @@ class Explanation_Based_Chunker
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
         void unify_identity(test t);
+        void unify_preference_identities(preference* lPref);
+        uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 

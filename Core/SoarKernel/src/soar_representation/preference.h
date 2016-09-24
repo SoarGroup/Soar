@@ -156,7 +156,7 @@ typedef struct preference_struct
 
 extern preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
                                    const identity_triple o_ids = identity_triple(0, 0, 0, 0),
-                                   const rhs_triple rhs_funcs = rhs_triple(NULL, NULL, NULL));
+                                   const rhs_triple rhs_funcs = rhs_triple(NULL, NULL, NULL), bool pUnify_identities = false);
 extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
 inline void preference_add_ref(preference* p) { (p)->reference_count++;}
