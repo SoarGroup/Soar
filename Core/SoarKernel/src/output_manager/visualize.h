@@ -84,8 +84,8 @@ class GraphViz_Visualizer
         /* Utility graphviz printing functions */
         void viz_graph_start(bool pLeftRight = true);
         void viz_graph_end();
-        void viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType);
-        void viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType);
+        void viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique = NULL);
+        void viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique = NULL);
         void viz_object_end(visualizationObjectType objectType);
         void viz_table_start();
         void viz_table_end();
@@ -115,6 +115,7 @@ class GraphViz_Visualizer
         bool                m_generate_img, m_include_arch, m_use_same_file;
         std::string         m_line_style, m_filename_prefix, m_image_type;
         uint64_t            m_file_count;
+        uint64_t            m_unique_counter;
 };
 
 #endif /* CORE_SOARKERNEL_SRC_OUTPUT_MANAGER_VISUALIZE_H_ */
