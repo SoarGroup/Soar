@@ -277,7 +277,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     list* fl;
     rhs_function* rf;
 
-    if (!rv)
+    if (!rhs_value_true_null(rv))
     {
         destString += '#';
     }

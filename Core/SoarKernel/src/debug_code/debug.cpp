@@ -20,6 +20,7 @@
 #include "episodic_memory.h"
 #include "lexer.h"
 #include "print.h"
+#include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
 #include "test.h"
@@ -374,7 +375,31 @@ void debug_test(int type)
             break;
         }
         case 2:
-            dprint(DT_DEBUG, "%8");
+//            rhs_value rv;
+//            rv = reteloc_to_rhs_value(0,0);
+//            dprint(DT_DEBUG, "NULL reteloc: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = reteloc_to_rhs_value(1,0);
+//            dprint(DT_DEBUG, "Non-NULL reteloc: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = funcall_list_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL funcall: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            cons* ls;
+//            allocate_cons(thisAgent, &ls);
+//            rv = funcall_list_to_rhs_value(ls);
+//            dprint(DT_DEBUG, "Non-NULL funcall: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            free_cons(thisAgent, ls);
+//            rv = unboundvar_to_rhs_value(0);
+//            dprint(DT_DEBUG, "NULL unbound: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = unboundvar_to_rhs_value(1);
+//            dprint(DT_DEBUG, "Non-NULL unbound: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = rhs_symbol_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rhs_symbol rs;
+//            rs->referent = NULL;
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Semi-NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rs->referent = thisAgent->symbolManager->find_identifier('S', 1);
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Non-NULL symbol: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
             break;
         case 3:
         {

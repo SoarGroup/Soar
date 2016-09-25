@@ -51,6 +51,7 @@ void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pID
     cons* c;
     Symbol* sym;
 
+    rv = rhs_value_true_null(rv);
     if (rhs_value_is_symbol(rv))
     {
         /* --- ordinary values (i.e., symbols) --- */
@@ -243,6 +244,30 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
                 }
             }
         }
+//        if (thisAgent->explanationMemory->print_explanation_trace)
+//        {
+//            int lNumRecords = rhs ? 1 : 0;
+//            action* tempRHS = rhs;
+//            while (tempRHS->next)
+//            {
+//                ++lNumRecords;
+//                tempRHS = tempRHS->next;
+//            }
+//            while (rhs->next)
+//            {
+//                if (++lActionCount <= lNumRecords) thisAgent->visualizationManager->viz_endl();
+//                lAction->viz_action(rhs);
+//                rhs = rhs->next;
+//            }
+//        } else {
+//            size_t lNumRecords = pActionRecords->size();
+//            for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
+//            {
+//                lAction = (*it);
+//                if (++lActionCount <= lNumRecords) thisAgent->visualizationManager->viz_endl();
+//                lAction->viz_preference();
+//            }
+//        }
         size_t lNumRecords = pActionRecords->size();
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
         {
@@ -340,3 +365,8 @@ void action_record::viz_action(action* pAction)
     }
     tempString.clear();
 }
+//viz_rhs_value(pAction->id, (variablized_action ? rhs_value_true_null(variablized_action->id) : NULL), instantiated_pref->o_ids.id);
+//viz_rhs_value(pAction->attr, (variablized_action ? rhs_value_true_null(variablized_action->attr) : NULL), instantiated_pref->o_ids.attr);
+//viz_rhs_value(pAction->value, (variablized_action ? rhs_value_true_null(variablized_action->value) : NULL), instantiated_pref->o_ids.value);
+//viz_rhs_value(pAction->referent, (variablized_action ? rhs_value_true_null(variablized_action->referent) : NULL), instantiated_pref->o_ids.referent);
+//viz_rhs_value(pAction->value, (variablized_action ? rhs_value_true_null(variablized_action->value) : NULL), instantiated_pref->o_ids.value);
