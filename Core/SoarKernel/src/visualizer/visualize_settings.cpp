@@ -38,8 +38,8 @@ Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(n
     file_name = new soar_module::string_param("file-name", "soar_viz", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
     use_same_file = new soar_module::boolean_param("use-same-file", off, new soar_module::f_predicate<boolean>());
     line_style = new soar_module::string_param("line-style", "polyline", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    include_io_links = new soar_module::boolean_param("include-io-links", off, new soar_module::f_predicate<boolean>());
-    connect_states = new soar_module::boolean_param("connect-states", off, new soar_module::f_predicate<boolean>());
+    architectural_wmes = new soar_module::boolean_param("architectural-wmes", off, new soar_module::f_predicate<boolean>());
+    separate_states = new soar_module::boolean_param("separate_states", on, new soar_module::f_predicate<boolean>());
 
 
     viz_wm = new soar_module::boolean_param("wm", on, new soar_module::f_predicate<boolean>());
@@ -62,8 +62,8 @@ Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(n
     add(file_name);
     add(use_same_file);
     add(line_style);
-    add(include_io_links);
-    add(connect_states);
+    add(architectural_wmes);
+    add(separate_states);
     add(viz_wm);
     add(viz_smem);
     add(viz_epmem);
@@ -105,8 +105,8 @@ void Viz_Parameters::print_visualization_settings(agent* thisAgent)
         concatJustified("memory-format", tempString, 51).c_str(),"Print memories as records or just simple nodes");
 
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("line-style", line_style->get_value(), 51).c_str(), "GraphViz line style that will be used");
-    outputManager->printa_sf(thisAgent, "connect-states                   %-%s%-%s\n", capitalizeOnOff(connect_states->get_value()), "Whether to keep goal states separate");
-    outputManager->printa_sf(thisAgent, "include-io-links                 %-%s%-%s\n", capitalizeOnOff(include_io_links->get_value()), "Whether to include I/O links, like SMem");
+    outputManager->printa_sf(thisAgent, "separate-states                   %-%s%-%s\n", capitalizeOnOff(separate_states->get_value()), "Whether to create links between goal states");
+    outputManager->printa_sf(thisAgent, "architectural-wmes                %-%s%-%s\n", capitalizeOnOff(architectural_wmes->get_value()), "Whether to include WMEs created by the Soar architecture");
     outputManager->printa_sf(thisAgent, "------------------ File Handling ------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("file-name", file_name->get_value(), 51).c_str(), "");
     outputManager->printa_sf(thisAgent, "use-same-file                   %-%s%-%s\n", capitalizeOnOff(use_same_file->get_value()), "Whether to create new files each time");

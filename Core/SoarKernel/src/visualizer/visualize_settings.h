@@ -21,8 +21,8 @@ class Viz_Parameters: public soar_module::param_container
         soar_module::constant_param<visMemoryFormat>* memory_format;
         soar_module::constant_param<visRuleFormat>* rule_format;
         soar_module::string_param* line_style;
-        soar_module::boolean_param* connect_states;
-        soar_module::boolean_param* include_io_links;
+        soar_module::boolean_param* separate_states;
+        soar_module::boolean_param* architectural_wmes;
 
         soar_module::string_param* file_name;
         soar_module::boolean_param* use_same_file;

@@ -48,7 +48,7 @@ void WM_Visualization_Map::add_current_wm()
     wme* w;
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!thisAgent->visualizationManager->settings->include_io_links->get_value() &&
+        if (!thisAgent->visualizationManager->settings->architectural_wmes->get_value() &&
             (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
             {
             continue;
@@ -87,7 +87,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
         {
             lAug = (*it2);
             if (lAug->value->is_sti() && ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) ||
-                thisAgent->visualizationManager->settings->connect_states->get_value()))
+                !thisAgent->visualizationManager->settings->separate_states->get_value()))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
@@ -116,7 +116,7 @@ void WM_Visualization_Map::visualize_wm_as_graph()
 
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!thisAgent->visualizationManager->settings->include_io_links->get_value() &&
+        if (!thisAgent->visualizationManager->settings->architectural_wmes->get_value() &&
             (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
             continue;
         if (w->id->tc_num != tc)
@@ -127,7 +127,7 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             w->id->tc_num = tc;
         }
         if ((w->value->is_sti() && (w->value->id->isa_goal || w->value->id->isa_impasse)) &&
-            !thisAgent->visualizationManager->settings->connect_states->get_value())
+            thisAgent->visualizationManager->settings->separate_states->get_value())
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         } else {
@@ -147,7 +147,7 @@ void WM_Visualization_Map::visualize_wm_as_graph()
                 nodeName = w->value->to_string();
             }
             if (!w->value->is_sti() || ((!w->value->id->isa_goal && !w->value->id->isa_impasse) ||
-                thisAgent->visualizationManager->settings->connect_states->get_value()))
+                !thisAgent->visualizationManager->settings->separate_states->get_value()))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
             }
