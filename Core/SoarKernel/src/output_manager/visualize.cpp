@@ -40,6 +40,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     m_line_style = "polyline";
     m_filename_prefix = "soar_visualization";
     m_image_type = "svg";
+    m_file_count = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
