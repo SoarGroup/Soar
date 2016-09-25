@@ -126,6 +126,8 @@
 		4D7433FB1D884DEF00072482 /* tokenizertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7433EB1D884DEF00072482 /* tokenizertest.cpp */; };
 		4D7734BC1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
 		4D7734BD1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
+		4D97E30F1D9822CB00A9B56B /* smem_job_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */; };
+		4D97E3101D9822CB00A9B56B /* smem_job_queue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */; };
 		4D9868001B30894500B13711 /* testMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867F11B30891B00B13711 /* testMain.cpp */; };
 		4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
 		4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
@@ -752,6 +754,8 @@
 		4D7734BA1B3EFC33006FC37C /* handlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handlers.cpp; sourceTree = "<group>"; };
 		4D7734BB1B3EFC33006FC37C /* handlers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handlers.hpp; sourceTree = "<group>"; };
 		4D7A66341D92D2AB00F54998 /* unistd_windows.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unistd_windows.h; sourceTree = "<group>"; };
+		4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_job_queue.cpp; sourceTree = "<group>"; };
+		4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smem_job_queue.hpp; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1916,6 +1920,8 @@
 				4DD80D6E1D85B01F00E85AA0 /* smem_structs.h */,
 				4DD80D6F1D85B01F00E85AA0 /* smem_timers.cpp */,
 				4DD80D701D85B01F00E85AA0 /* smem_timers.h */,
+				4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */,
+				4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */,
 			);
 			path = semantic_memory;
 			sourceTree = "<group>";
@@ -2256,6 +2262,7 @@
 				4DD80DAF1D85B02A00E85AA0 /* soar_module.h in Headers */,
 				4DD80DA61D85B02A00E85AA0 /* memory_manager.h in Headers */,
 				4DD80D081D85AFEC00E85AA0 /* osupport.h in Headers */,
+				4D97E3101D9822CB00A9B56B /* smem_job_queue.hpp in Headers */,
 				4DD688C31D7F07C600C06358 /* sml_KernelSML.h in Headers */,
 				4DD6885E1D7F07AE00C06358 /* sock_Socket.h in Headers */,
 				4DD687D01D7F079600C06358 /* sml_ClientTraceXML.h in Headers */,
@@ -2784,6 +2791,7 @@
 				4DD68A981D7F082500C06358 /* distance.cpp in Sources */,
 				4DD68A7D1D7F082500C06358 /* command_table.cpp in Sources */,
 				4DD80DE21D85B03500E85AA0 /* production.cpp in Sources */,
+				4D97E30F1D9822CB00A9B56B /* smem_job_queue.cpp in Sources */,
 				4DD68A9C1D7F082500C06358 /* occlusion.cpp in Sources */,
 				4DD80D091D85AFEC00E85AA0 /* rete.cpp in Sources */,
 				4DD689001D7F07ED00C06358 /* sqlite3.c in Sources */,

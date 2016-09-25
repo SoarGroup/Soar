@@ -19,7 +19,11 @@
 #include "smem_structs.h"
 #include "smem_settings.h"
 #include "smem_stats.h"
+#include "smem_job_queue.hpp"
 
+#include <atomic>
+#include <thread>
+#include <mutex>
 #include <string>
 
 //#define SMEM_EXPERIMENT  // hijack the main SMem function for tight-loop experimentation/timing
@@ -86,6 +90,15 @@ class SMem_Manager
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
 
     private:
+        class Job
+        {
+            std::function<void()> execution;
+
+            std::atomic<bool> completed;
+        };
+
+        // Multi-Threading
+        SMem_JobQueue jobQueue;
 
         agent*                          thisAgent;
 
