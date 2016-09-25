@@ -113,16 +113,24 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->visualizationManager->viz_endl();
             w->id->tc_num = tc;
         }
-        if (w->value->tc_num != tc)
-        {
-            thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme);
-            thisAgent->visualizationManager->viz_object_end(viz_wme);
-            thisAgent->visualizationManager->viz_endl();
-            w->value->tc_num = tc;
-        }
         if (w->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol)
         {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            std::string nodeName;
+            if (!w->value->is_sti())
+            {
+                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme, &nodeName);
+                thisAgent->visualizationManager->viz_object_end(viz_wme);
+                thisAgent->visualizationManager->viz_endl();
+            } else if (w->value->tc_num != tc) {
+                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme);
+                thisAgent->visualizationManager->viz_object_end(viz_wme);
+                thisAgent->visualizationManager->viz_endl();
+                w->value->tc_num = tc;
+                nodeName = w->value->to_string();
+            } else {
+                nodeName = w->value->to_string();
+            }
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
         }

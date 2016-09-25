@@ -38,9 +38,10 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     m_use_same_file = true;
     m_generate_img = true;
     m_line_style = "polyline";
-    m_filename_prefix = "soar_visualization";
+    m_filename_prefix = "soar_viz";
     m_image_type = "svg";
     m_file_count = 0;
+    m_unique_counter = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
@@ -155,14 +156,20 @@ void GraphViz_Visualizer::viz_graph_end()
     escape_graphviz_chars();
 }
 
-void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique)
 {
+
     std::string pNameString = pName->to_string();
-    viz_object_start_string(pNameString, node_id, objectType);
+    viz_object_start_string(pNameString, node_id, objectType, pMakeUnique);
 }
 
-void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique)
 {
+    std::string nodeName(pName);
+    if (pMakeUnique)
+    {
+        nodeName += std::to_string(++m_unique_counter);
+    }
     switch (objectType)
     {
         case viz_inst_record:
@@ -188,7 +195,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
                 "      penwidth = \"0\"\n"
-                "      label = \xF3", pName.c_str());
+                "      label = \xF3", nodeName.c_str());
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%s\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str());
@@ -203,21 +210,24 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
                 "      shape = \"box\" style = \"rounded\"\n"
-                "      label = \"%s", pName.c_str(), pName.c_str());
+                "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
                 "      shape = \"circle\" style = \"rounded\"\n"
-                "      label = \"%s", pName.c_str(), pName.c_str());
+                "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
         default:
             assert(false);
             break;
     }
-
+    if (pMakeUnique)
+    {
+        (*pMakeUnique) = nodeName;
+    }
 }
 
 void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
