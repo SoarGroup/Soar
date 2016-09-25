@@ -28,7 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "Try 'soar ?' or 'help soar' to learn more about the soar command.";
+                return  "Use 'soar ?' and 'help soar' to learn more about the soar command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)

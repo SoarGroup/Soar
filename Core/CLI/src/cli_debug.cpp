@@ -75,7 +75,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 goto print_syntax;
             }
             tempString.str("");
-            tempString << "Debug| " << parameter_name << " = " << my_param->get_string();
+            tempString << "Debug| " << my_param->get_name() << " = " << my_param->get_string();
             PrintCLIMessage(&tempString);
             return true;
         }
@@ -163,7 +163,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             }
             else
             {
-                tempString << "Debug| " << parameter_name.c_str() << " = " << parameter_value.c_str();
+                tempString << "Debug| " << my_param->get_name() << " = " << parameter_value.c_str();
                 PrintCLIMessage(&tempString);
                 return true;
             }

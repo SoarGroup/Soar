@@ -8,7 +8,9 @@
 #include "visualize_wm.h"
 
 #include "agent.h"
+#include "instantiation.h"
 #include "output_manager.h"
+#include "preference.h"
 #include "production.h"
 #include "symbol.h"
 #include "symbol_manager.h"
@@ -46,6 +48,12 @@ void WM_Visualization_Map::add_current_wm()
     wme* w;
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
+        if (!thisAgent->visualizationManager->settings->include_io_links->get_value() &&
+            (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
+            {
+            continue;
+            }
+
         add_triple(w->id, w->attr, w->value);
     }
 }
@@ -78,7 +86,8 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
             lAug = (*it2);
-            if (lAug->value->is_sti() && (lAug->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol))
+            if (lAug->value->is_sti() && ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) ||
+                thisAgent->visualizationManager->settings->connect_states->get_value()))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
@@ -107,7 +116,9 @@ void WM_Visualization_Map::visualize_wm_as_graph()
 
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!thisAgent->visualizationManager->is_include_arch_enabled() && !w->preference) continue;
+        if (!thisAgent->visualizationManager->settings->include_io_links->get_value() &&
+            (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
+            continue;
         if (w->id->tc_num != tc)
         {
             thisAgent->visualizationManager->viz_object_start(w->id, 0, viz_wme);
@@ -115,13 +126,16 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             thisAgent->visualizationManager->viz_endl();
             w->id->tc_num = tc;
         }
-        if (w->attr != thisAgent->symbolManager->soarSymbols.superstate_symbol)
+        if ((w->value->is_sti() && (w->value->id->isa_goal || w->value->id->isa_impasse)) &&
+            !thisAgent->visualizationManager->settings->connect_states->get_value())
         {
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+        } else {
             std::string nodeName;
             if (!w->value->is_sti())
             {
-                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme, &nodeName);
-                thisAgent->visualizationManager->viz_object_end(viz_wme);
+                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme_terminal, &nodeName);
+                thisAgent->visualizationManager->viz_object_end(viz_wme_terminal);
                 thisAgent->visualizationManager->viz_endl();
             } else if (w->value->tc_num != tc) {
                 thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme);
@@ -132,9 +146,11 @@ void WM_Visualization_Map::visualize_wm_as_graph()
             } else {
                 nodeName = w->value->to_string();
             }
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
-        } else {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
+            if (!w->value->is_sti() || ((!w->value->id->isa_goal && !w->value->id->isa_impasse) ||
+                thisAgent->visualizationManager->settings->connect_states->get_value()))
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
+            }
         }
     }
 }

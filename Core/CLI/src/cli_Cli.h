@@ -571,41 +571,9 @@ namespace cli
             virtual bool DoVersion() = 0;
 
             /**
-             * @brief waitsnc command
-             * @param pSetting The waitsnc setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
+             * @brief visualize command
              */
-            enum eVisualizeOptions
-            {
-                VISUALIZE_EXPLAIN_LAST,
-                VISUALIZE_EXPLAIN_IG,
-                VISUALIZE_EXPLAIN_CONTRIBUTORS,
-                VISUALIZE_WM,
-                VISUALIZE_EPMEM,
-                VISUALIZE_SMEM,
-                VISUALIZE_ARCH_SHOW,
-                VISUALIZE_DEPTH,
-                VISUALIZE_LAUNCH_EDITOR,
-                VISUALIZE_FILENAME,
-                VISUALIZE_GENERATE_IMAGE,
-                VISUALIZE_IMAGE_TYPE,
-                VISUALIZE_STYLE_LINE,
-                VISUALIZE_ONLY_RULE_NAME,
-                VISUALIZE_PRINT_TO_SCREEN,
-                VISUALIZE_USE_SAME_FILE,
-                VISUALIZE_LAUNCH_VIEWER,
-                VISUALIZE_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<VISUALIZE_NUM_OPTIONS> VisualizeBitset;
-            /**
-             * @brief explain command
-             * @param pProduction Pointer to involved production. Pass 0 (null) for
-             *        query
-             * @param condition A number representing the condition number to explain,
-             *        0 for production name, -1 for full,
-             *        this argument ignored if pProduction is 0 (null)
-             */
-            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth) = 0;
+            virtual bool DoVisualize(const char pOp = 0, const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
             enum eWatchOptions
             {

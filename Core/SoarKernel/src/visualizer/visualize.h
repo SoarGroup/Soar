@@ -9,7 +9,9 @@
 #define CORE_SOARKERNEL_SRC_VISUALIZER_VISUALIZE_H_
 
 #include "kernel.h"
-//#include "stl_typedefs.h"
+
+#include "visualize_settings.h"
+
 #include <string>
 
 class GraphViz_Visualizer
@@ -21,41 +23,22 @@ class GraphViz_Visualizer
 
         /* A string buffer for the visualization command */
         std::string         graphviz_output;
+        Viz_Parameters*     settings;
 
         void visualize_wm();
         void visualize_smem(uint64_t lti_id = 0, int depth = 1);
 
-        bool is_viz_print_enabled() { return m_viz_print; }
-        bool is_viz_launch_img_enabled() { return m_viz_launch_image; }
-        bool is_viz_launch_gv_enabled() { return m_viz_launch_gv; }
-        bool is_simple_inst_enabled() { return m_simple_inst; }
-        bool is_include_arch_enabled() { return m_include_arch; }
-        bool is_use_same_file_enabled() { return m_use_same_file; }
-        bool is_generate_img_enabled() { return m_generate_img; }
-        const char* get_filename() { return m_filename_prefix.c_str(); }
-        const char* get_line_style() { return m_line_style.c_str(); }
-        const char* get_image_type() { return m_image_type.c_str(); }
         const std::string get_next_filename() {
-            if (!m_use_same_file)
+            if (!thisAgent->visualizationManager->settings->use_same_file->get_value())
             {
-                std::string lFileName = m_filename_prefix;
+                std::string lFileName = thisAgent->visualizationManager->settings->file_name->get_value();
                 ++m_file_count;
                 lFileName.append(std::to_string(m_file_count));
+                /* MToDO | Check if another file exists and keep trying new names */
                 return lFileName;
             }
-            return m_filename_prefix;
+            return thisAgent->visualizationManager->settings->file_name->get_value();
         }
-
-        void set_viz_print_enabled(bool pOn) { m_viz_print = pOn; }
-        void set_viz_launch_img_enabled(bool pOn) { m_viz_launch_image = pOn; }
-        void set_viz_launch_gv_enabled(bool pOn) {m_viz_launch_gv = pOn; }
-        void set_simple_inst_enabled(bool pOn) { m_simple_inst = pOn; }
-        void set_generate_img_enabled(bool pOn) {  m_generate_img = pOn; }
-        void set_include_arch_enabled(bool pOn) {  m_include_arch = pOn; }
-        void set_use_same_file_enabled(bool pOn) { m_use_same_file = pOn; }
-        void set_filename(const std::string& pString) { m_filename_prefix = pString; }
-        void set_line_style(const std::string& pString) { m_line_style = pString; }
-        void set_image_type(const std::string& pString) { m_image_type = pString; }
 
         /* Utility graphviz printing functions */
         void viz_graph_start(bool pLeftRight = true);
@@ -87,11 +70,6 @@ class GraphViz_Visualizer
         agent*              thisAgent;
         Output_Manager*     outputManager;
 
-        Viz_Parameters*     settings;
-
-        bool                m_viz_print, m_viz_launch_image, m_viz_launch_gv, m_simple_inst;
-        bool                m_generate_img, m_include_arch, m_use_same_file;
-        std::string         m_line_style, m_filename_prefix, m_image_type;
         uint64_t            m_file_count;
         uint64_t            m_unique_counter;
 };

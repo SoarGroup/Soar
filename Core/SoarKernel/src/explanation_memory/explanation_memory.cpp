@@ -660,7 +660,7 @@ void Explanation_Memory::visualize_instantiation_graph()
 
 void Explanation_Memory::visualize_contributors()
 {
-    bool old_Simple_Setting = thisAgent->visualizationManager->is_simple_inst_enabled();
+    bool old_Simple_Setting = (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name);
     thisAgent->visualizationManager->viz_graph_start();
     current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)

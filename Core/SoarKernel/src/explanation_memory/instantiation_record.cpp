@@ -650,7 +650,7 @@ void instantiation_record::viz_et_instantiation()
 
 void instantiation_record::visualize()
 {
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         viz_simple_instantiation();
     } else {

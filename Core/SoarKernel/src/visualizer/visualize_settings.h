@@ -20,15 +20,18 @@ class Viz_Parameters: public soar_module::param_container
 
         soar_module::constant_param<visMemoryFormat>* memory_format;
         soar_module::constant_param<visRuleFormat>* rule_format;
+        soar_module::string_param* line_style;
+        soar_module::boolean_param* connect_states;
+        soar_module::boolean_param* include_io_links;
+
+        soar_module::string_param* file_name;
+        soar_module::boolean_param* use_same_file;
+        soar_module::boolean_param* gen_image;
+        soar_module::string_param* image_type;
+
         soar_module::boolean_param* launch_viewer;
         soar_module::boolean_param* launch_editor;
         soar_module::boolean_param* print_gv;
-        soar_module::boolean_param* gen_image;
-
-        soar_module::string_param* image_type;
-        soar_module::string_param* file_name;
-        soar_module::string_param* line_style;
-        soar_module::boolean_param* include_io_links;
 
         soar_module::boolean_param* viz_wm;
         soar_module::boolean_param* viz_smem;

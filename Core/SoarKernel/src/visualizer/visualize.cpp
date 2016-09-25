@@ -34,17 +34,6 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     outputManager = thisAgent->outputManager;
 
     settings = new Viz_Parameters(thisAgent);
-
-    m_viz_print = false;
-    m_viz_launch_image = true;
-    m_viz_launch_gv = false;
-    m_simple_inst = false;
-    m_include_arch = false;
-    m_use_same_file = true;
-    m_generate_img = true;
-    m_line_style = "polyline";
-    m_filename_prefix = "soar_viz";
-    m_image_type = "svg";
     m_file_count = 0;
 }
 
@@ -58,7 +47,7 @@ void GraphViz_Visualizer::visualize_wm()
 
     WM_Visualization_Map* wme_map = new WM_Visualization_Map(thisAgent);
     viz_graph_start(false);
-    if (m_simple_inst)
+    if (thisAgent->visualizationManager->settings->memory_format->get_value() == viz_node)
     {
         wme_map->visualize_wm_as_graph();
     } else {
@@ -149,7 +138,7 @@ void GraphViz_Visualizer::viz_graph_start(bool pLeftRight)
         graphviz_output +=  "   graph [ rankdir = \"TD\" ";
     }
     graphviz_output +=  "splines = \"";
-    graphviz_output += m_line_style;
+    graphviz_output += thisAgent->visualizationManager->settings->line_style->get_value();
     graphviz_output +=  "\"];\n";
 }
 
@@ -213,14 +202,14 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
-                "      shape = \"box\" style = \"rounded\"\n"
+                "      shape = \"circle\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
-                "      shape = \"circle\" style = \"rounded\"\n"
+                "      shape = \"box\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
@@ -247,6 +236,7 @@ void GraphViz_Visualizer::viz_object_end(visObjectType objectType)
 
         case viz_simple_inst:
         case viz_wme:
+        case viz_wme_terminal:
             graphviz_output += "\"\n   ];\n\n";
             break;
 
@@ -383,7 +373,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         graphviz_output += ":e";
     } else {
@@ -393,7 +383,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
     }
     graphviz_output += "-\xF2 rule";
     graphviz_output += std::to_string(pTargetRuleID);
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         graphviz_output += ":w\n";
     } else {

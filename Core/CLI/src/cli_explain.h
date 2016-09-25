@@ -28,6 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
+                return  "Use 'explain ?' or 'help explain' to learn more about the explain command.";
                 return "Syntax: explain [ --all | --only-specific ]\n"
                        "        explain --record <rule-name>\n"
                        "        explain --justifications [ yes | no ]\n"

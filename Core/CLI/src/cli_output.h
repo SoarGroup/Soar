@@ -28,7 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "Try 'output ?' or 'help output' to learn more about the output command.";
+                return  "Use 'output ?' and 'help output' to learn more about the output command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
