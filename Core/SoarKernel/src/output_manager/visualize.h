@@ -59,6 +59,16 @@ class GraphViz_Visualizer
         const char* get_filename() { return m_filename_prefix.c_str(); }
         const char* get_line_style() { return m_line_style.c_str(); }
         const char* get_image_type() { return m_image_type.c_str(); }
+        const std::string get_next_filename() {
+            if (!m_use_same_file)
+            {
+                std::string lFileName = m_filename_prefix;
+                ++m_file_count;
+                lFileName.append(std::to_string(m_file_count));
+                return lFileName;
+            }
+            return m_filename_prefix;
+        }
 
         void set_viz_print_enabled(bool pOn) { m_viz_print = pOn; }
         void set_viz_launch_img_enabled(bool pOn) { m_viz_launch_image = pOn; }
@@ -104,6 +114,7 @@ class GraphViz_Visualizer
         bool                m_viz_print, m_viz_launch_image, m_viz_launch_gv, m_simple_inst;
         bool                m_generate_img, m_include_arch, m_use_same_file;
         std::string         m_line_style, m_filename_prefix, m_image_type;
+        uint64_t            m_file_count;
 };
 
 #endif /* CORE_SOARKERNEL_SRC_OUTPUT_MANAGER_VISUALIZE_H_ */

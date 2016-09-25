@@ -233,7 +233,8 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 return SetError("Visualization produced nothing.");
             }
             PrintCLIMessage_Header("Opening visualization...", 40);
-            std::string filename(thisAgent->visualizationManager->get_filename());
+            std::string lFileName(thisAgent->visualizationManager->get_next_filename());
+            std::string filename(lFileName);
             filename += ".gv";
 
             if (!DoCLog(LOG_NEW, &filename, 0, true))
@@ -258,9 +259,9 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
                 lSystemCommand = "dot -T";
                 lSystemCommand += thisAgent->visualizationManager->get_image_type();
                 lSystemCommand += ' ';
-                lSystemCommand += thisAgent->visualizationManager->get_filename();
+                lSystemCommand += lFileName;
                 lSystemCommand += ".gv -o ";
-                lSystemCommand += thisAgent->visualizationManager->get_filename();
+                lSystemCommand += lFileName;
                 lSystemCommand += '.';
                 lSystemCommand += thisAgent->visualizationManager->get_image_type();
                 system(lSystemCommand.c_str());
@@ -268,7 +269,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
             if (thisAgent->visualizationManager->is_viz_launch_img_enabled())
             {
                 lSystemCommand = "open ";
-                lSystemCommand += thisAgent->visualizationManager->get_filename();
+                lSystemCommand += lFileName;
                 lSystemCommand += '.';
                 lSystemCommand += thisAgent->visualizationManager->get_image_type();
                 system(lSystemCommand.c_str());
@@ -276,7 +277,7 @@ bool CommandLineInterface::DoVisualize(VisualizeBitset options, VisualizeBitset 
             if (thisAgent->visualizationManager->is_viz_launch_gv_enabled())
             {
                 lSystemCommand = "open ";
-                lSystemCommand += thisAgent->visualizationManager->get_filename();
+                lSystemCommand += lFileName;
                 lSystemCommand += ".gv";
                 system(lSystemCommand.c_str());
             }
