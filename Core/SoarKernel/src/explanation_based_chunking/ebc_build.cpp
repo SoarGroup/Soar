@@ -1183,6 +1183,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
+    m_chunk_inst->preferences_cached = NULL;
     reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;

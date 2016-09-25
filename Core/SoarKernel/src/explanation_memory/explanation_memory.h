@@ -52,9 +52,9 @@ class Explanation_Memory
         friend class cli::CommandLineInterface;
 
     public:
-        bool                    get_enabled() { return enabled; }
-        void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
-        bool                    isRecordingChunk() { return (enabled || current_recording_chunk); }
+        bool                    enabled() { return m_enabled; }
+        void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
+        bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
 
         bool                    isRecordingJustifications() { return m_justifications_enabled; };
         void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
@@ -131,7 +131,7 @@ class Explanation_Memory
         agent*                  thisAgent;
         Output_Manager*         outputManager;
 
-        bool                    enabled;
+        bool                    m_enabled;
         bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;

@@ -31,9 +31,9 @@ void condition_record::connect_to_action()
 //    cached_pref = NULL;
 }
 
-void condition_record::viz_connect_to_action()
+void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
 {
-    if (parent_instantiation)
+    if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
     {
         assert(parent_action);
         assert(my_instantiation);

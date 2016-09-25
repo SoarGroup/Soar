@@ -3,6 +3,7 @@
 #include "agent.h"
 #include "decide.h"
 #include "ebc.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "print.h"
@@ -61,6 +62,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
     p->all_of_goal_prev = NIL;
     p->next_candidate = NIL;
     p->next_result = NIL;
+    p->parent_action = NULL;
 
     if (pUnify_identities)
     {
@@ -175,6 +177,44 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         /* --- remove it from the list of pref's from that instantiation --- */
         remove_from_dll(pref->inst->preferences_generated, pref,
             inst_next, inst_prev);
+        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) &&thisAgent->explanationMemory->enabled())
+        {
+            /* We erase some stuff and stash this preference elsewhare in the instantiation
+             * This is needed in case preferences are retracted for an instantiation that is
+             * part of an explanation */
+            insert_at_head_of_dll(pref->inst->preferences_cached, pref, inst_next, inst_prev);
+            if (pref->wma_o_set)
+            {
+                wma_remove_pref_o_set(thisAgent, pref);
+            }
+            pref->wma_o_set = NULL;
+            /* Don't want this information or have the other things cleaned up.  This will
+             * also force the preference to be cleaned up when the instantiation gets 
+             * deallocated.  (b/c pref->inst is null, so it won't go into this part) */
+            pref->inst = NULL;
+            pref->in_tm = false;
+            pref->on_goal_list = false;
+            pref->reference_count = 0;
+            pref->slot = NULL;
+            pref->total_preferences_for_candidate = 1;
+            pref->rl_contribution = false;
+            pref->rl_rho = 0;
+
+            /* Don't want to copy links to other preferences */
+            pref->next_clone = NULL;
+            pref->prev_clone = NULL;
+            pref->next = NULL;
+            pref->prev = NULL;
+            pref->inst_next = NULL;
+            pref->inst_prev = NULL;
+            pref->all_of_slot_next = NULL;
+            pref->all_of_slot_prev = NULL;
+            pref->all_of_goal_next = NULL;
+            pref->all_of_goal_prev = NULL;
+            pref->next_candidate = NULL;
+            pref->next_result = NULL;
+            return;
+        }
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* --- dereference component symbols --- */

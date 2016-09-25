@@ -458,6 +458,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 {
     Symbol* lId, *lAttr, *lValue, *lReferent;
     char first_letter;
+    preference* newPref;
 
     if (a->type == FUNCALL_ACTION)
     {
@@ -564,9 +565,11 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             oid_referent = rhs_value_to_o_id(rule_action->referent);
         }
     }
-    return make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent,
-                           identity_triple(oid_id, oid_attr, oid_value, oid_referent),
-                           rhs_triple(f_id, f_attr, f_value));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent,
+                            identity_triple(oid_id, oid_attr, oid_value, oid_referent),
+                            rhs_triple(f_id, f_attr, f_value));
+    newPref->parent_action = a;
+    return newPref;
 
 abort_execute_action: /* control comes here when some error occurred */
     if (lId)
@@ -977,10 +980,10 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-//    if ((inst->i_id == 3) || (inst->i_id == 9))
-//    {
-//        dprint(DT_DEBUG, "Found.\n");
-//    }
+    if ((inst->i_id == 4) || (inst->i_id == 4))
+    {
+        dprint(DT_DEBUG, "Found.\n");
+    }
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         thisAgent->outputManager->printa_sf(thisAgent,
@@ -1061,7 +1064,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
 
     /* --- execute the RHS actions, collect the results --- */
-    inst->preferences_generated = NIL;
+    inst->preferences_generated = NULL;
+    inst->preferences_cached = NULL;
     need_to_do_support_calculations = false;
     a2 = rhs_vars;
     goal_stack_level glbDeepCopyWMELevel = 0;
@@ -1094,7 +1098,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         {
             glbDeepCopyWMELevel = pref->id->id->level;
         }
-        /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
+        /* This while loop was added for deep copy.  Normally only executed once.  SoarTech changed */
         while (pref)
         {
             /* The parser assumes that any rhs preference of the form
@@ -1262,16 +1266,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(inst);
         ++next_iter;
 
-        dprint(DT_DEALLOCATES, "Deallocating instantiation of %y\n", inst->prod_name);
+        dprint(DT_DEALLOCATES, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 
         level = inst->match_goal_level;
 
-        /* The following cleans up some structures used by explanation-based learning.  Note that
-         * clean up of  the inst/ovar to identity map moved to end of instantiation and chunk
-         * creation functions.  I don't think they're needed after that and could build up when
-         * we have a long sequence of persistent instantiations firing. The following function
-         * cleans up the identity->rule variable mapping that are only used for debugging in a
-         * non-release build. */
+        /* The following cleans up some temporary structures used by
+         * explanation-based learning, most notably the identity->rule variable
+         * mapping that are only used for debugging in a non-release build. */
         thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
 
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
@@ -1403,6 +1404,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         } // for
     } // while
 
+    preference* next_pref;
+    while (inst->preferences_cached)
+    {
+        next_pref = inst->preferences_cached->inst_next;
+        inst->preferences_cached->inst_next = NULL;
+        inst->preferences_cached->inst_prev = NULL;
+        deallocate_preference(thisAgent, inst->preferences_cached);
+        inst->preferences_cached = next_pref;
+    }
     // free condition symbols and pref
     while (!cond_stack.empty())
     {
@@ -1635,6 +1645,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
     inst->bottom_of_instantiated_conditions = NULL;
+    inst->preferences_cached = NULL;
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
@@ -1642,6 +1653,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     thisAgent->SMem->clear_instance_mappings();
+
     // create preferences
     inst->preferences_generated = NULL;
     {
@@ -1761,6 +1773,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* -- Fill in the fake instantiation info -- */
     inst->preferences_generated = pref;
+    inst->preferences_cached = NULL;
     inst->prod = NIL;
     inst->next = inst->prev = NIL;
     inst->rete_token = NIL;

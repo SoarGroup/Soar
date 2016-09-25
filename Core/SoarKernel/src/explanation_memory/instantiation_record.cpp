@@ -44,13 +44,18 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     {
         original_production->save_for_justification_explanation = true;
     }
-//    if (pInst->i_id == 5)
-//    {
-//        original_production->save_for_justification_explanation = true;
-//    }
+    if (pInst->i_id == 4)
+    {
+        dprint(DT_DEBUG, "Found.\n");
+    }
 
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
+    {
+        new_action_record = thisAgent->explanationMemory->add_result(pref);
+        actions->push_front(new_action_record);
+    }
+    for (preference* pref = pInst->preferences_cached; pref != NIL; pref = pref->inst_next)
     {
         new_action_record = thisAgent->explanationMemory->add_result(pref);
         actions->push_front(new_action_record);
@@ -105,7 +110,7 @@ void instantiation_record::viz_connect_conditions()
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
         lCondRecord = (*it);
-        lCondRecord->viz_connect_to_action();
+        lCondRecord->viz_connect_to_action(this->match_level);
     }
 }
 
@@ -627,7 +632,14 @@ void instantiation_record::viz_et_instantiation()
             thisAgent->visualizationManager->viz_endl();
         }
         thisAgent->visualizationManager->viz_seperator();
+
+        if (instantiationID == 4)
+        {
+            dprint(DT_DEBUG, "Found.\n");
+        }
+
         action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
+
         if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
