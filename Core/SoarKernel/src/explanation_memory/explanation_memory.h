@@ -52,7 +52,7 @@ class Explanation_Memory
         friend class cli::CommandLineInterface;
 
     public:
-        bool                    enabled() { return m_enabled; }
+        bool                    enabled() { return (m_enabled || (num_rules_watched > 0)); }
         void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
         bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
 
