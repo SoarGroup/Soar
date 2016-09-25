@@ -5,16 +5,6 @@
  *      Author: mazzin
  */
 
-
-
-
-/*
- * decider_settings.cpp
- *
- *  Created on: Sep 11, 2016
- *      Author: mazzin
- */
-
 #include "output_settings.h"
 
 #include "agent.h"

@@ -5,36 +5,11 @@
  *      Author: mazzin
  */
 
-#ifndef CORE_SOARKERNEL_SRC_OUTPUT_MANAGER_VISUALIZE_H_
-#define CORE_SOARKERNEL_SRC_OUTPUT_MANAGER_VISUALIZE_H_
+#ifndef CORE_SOARKERNEL_SRC_VISUALIZER_VISUALIZE_H_
+#define CORE_SOARKERNEL_SRC_VISUALIZER_VISUALIZE_H_
 
 #include "kernel.h"
-#include "stl_typedefs.h"
-
-typedef struct aug_struct
-{
-        Symbol* attr;
-        Symbol* value;
-} augmentation;
-
-class WM_Visualization_Map
-{
-    public:
-
-        WM_Visualization_Map(agent* myAgent);
-        ~WM_Visualization_Map();
-
-        void reset();
-        void add_triple(Symbol* id, Symbol* attr, Symbol* value);
-        void add_current_wm();
-        void visualize_wm_as_linked_records();
-        void visualize_wm_as_graph();
-
-    private:
-
-        agent*             thisAgent;
-        sym_to_aug_map*    id_augmentations;
-};
+//#include "stl_typedefs.h"
 
 class GraphViz_Visualizer
 {
@@ -84,9 +59,9 @@ class GraphViz_Visualizer
         /* Utility graphviz printing functions */
         void viz_graph_start(bool pLeftRight = true);
         void viz_graph_end();
-        void viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique = NULL);
-        void viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique = NULL);
-        void viz_object_end(visualizationObjectType objectType);
+        void viz_object_start(Symbol* pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique = NULL);
+        void viz_object_start_string(std::string &pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique = NULL);
+        void viz_object_end(visObjectType objectType);
         void viz_table_start();
         void viz_table_end();
         void viz_NCC_start();
@@ -118,4 +93,4 @@ class GraphViz_Visualizer
         uint64_t            m_unique_counter;
 };
 
-#endif /* CORE_SOARKERNEL_SRC_OUTPUT_MANAGER_VISUALIZE_H_ */
+#endif /* CORE_SOARKERNEL_SRC_VISUALIZER_VISUALIZE_H_ */

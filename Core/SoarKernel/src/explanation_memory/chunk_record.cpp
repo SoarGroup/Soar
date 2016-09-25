@@ -16,8 +16,8 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
 {

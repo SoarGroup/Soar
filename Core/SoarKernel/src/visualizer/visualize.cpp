@@ -25,6 +25,7 @@
 #include "instantiation_record.h"
 #include "semantic_memory.h"
 #include "production_record.h"
+#include "visualize_wm.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
@@ -155,14 +156,14 @@ void GraphViz_Visualizer::viz_graph_end()
     escape_graphviz_chars();
 }
 
-void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique)
+void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique)
 {
 
     std::string pNameString = pName->to_string();
     viz_object_start_string(pNameString, node_id, objectType, pMakeUnique);
 }
 
-void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType, std::string* pMakeUnique)
+void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique)
 {
     std::string nodeName(pName);
     if (pMakeUnique)
@@ -229,7 +230,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
     }
 }
 
-void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_end(visObjectType objectType)
 {
     switch (objectType)
     {

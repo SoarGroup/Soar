@@ -125,7 +125,17 @@ enum BTSourceType {
     BT_Normal
 };
 
-enum visualizationObjectType {
+enum visMemoryFormat {
+    viz_node,
+    viz_record
+};
+
+enum visRuleFormat {
+    viz_name,
+    viz_full
+};
+
+enum visObjectType {
     viz_inst_record,
     viz_chunk_record,
     viz_simple_inst,

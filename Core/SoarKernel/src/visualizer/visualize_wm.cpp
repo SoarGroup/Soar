@@ -4,7 +4,8 @@
  *  Created on: Apr 29, 2016
  *      Author: mazzin
  */
-#include "visualize.h"
+
+#include "visualize_wm.h"
 
 #include "agent.h"
 #include "output_manager.h"
@@ -12,6 +13,7 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 WM_Visualization_Map::WM_Visualization_Map(agent* myAgent)
 {

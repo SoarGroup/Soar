@@ -14,8 +14,8 @@
 #include "symbol_manager.h"
 #include "symbol.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 void condition_record::connect_to_action()
 {

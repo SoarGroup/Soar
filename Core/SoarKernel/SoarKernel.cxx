@@ -72,8 +72,9 @@
 #include <test.cpp>
 #include <trace.cpp>
 #include <variablize.cpp>
-#include <visualize_wm.cpp>
 #include <visualize.cpp>
+#include <visualize_wm.cpp>
 #include <working_memory_activation.cpp>
 #include <working_memory.cpp>
 #include <xml.cpp>
+

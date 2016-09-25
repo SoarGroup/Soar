@@ -16,8 +16,8 @@
 #include "symbol_manager.h"
 #include "symbol.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
