@@ -11,11 +11,11 @@
 #include "kernel.h"
 #include "soar_module.h"
 
-class Visualization_Parameters: public soar_module::param_container
+class Viz_Parameters: public soar_module::param_container
 {
     public:
 
-        Visualization_Parameters(agent* new_agent);
+        Viz_Parameters(agent* new_agent);
 
 
         soar_module::constant_param<visMemoryFormat>* memory_format;

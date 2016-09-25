@@ -64,6 +64,7 @@ typedef struct wme_struct wme;
 
 class Output_Manager;
 class GraphViz_Visualizer;
+class Viz_Parameters;
 class OM_Parameters;
 class OM_DB;
 class AgentOutput_Info;

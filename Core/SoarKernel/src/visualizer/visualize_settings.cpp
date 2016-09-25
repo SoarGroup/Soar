@@ -20,7 +20,7 @@
 //#include "agent.h"
 //#include "output_manager.h"
 
-Visualization_Parameters::Visualization_Parameters(agent* new_agent): soar_module::param_container(new_agent)
+Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(new_agent)
 {
     memory_format = new soar_module::constant_param<visMemoryFormat>("memory-format", viz_record, new soar_module::f_predicate<visMemoryFormat>());
     memory_format->add_mapping(viz_node, "node");
@@ -73,6 +73,6 @@ Visualization_Parameters::Visualization_Parameters(agent* new_agent): soar_modul
 
 //std::string concatJustified(const char* left_string, std::string right_string, int pWidth);
 
-void Visualization_Parameters::print_visualization_settings(agent* thisAgent)
+void Viz_Parameters::print_visualization_settings(agent* thisAgent)
 {
 }

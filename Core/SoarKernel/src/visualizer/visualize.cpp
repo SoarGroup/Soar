@@ -26,11 +26,15 @@
 #include "semantic_memory.h"
 #include "production_record.h"
 #include "visualize_wm.h"
+#include "visualize_settings.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
     outputManager = thisAgent->outputManager;
+
+    settings = new Viz_Parameters(thisAgent);
+
     m_viz_print = false;
     m_viz_launch_image = true;
     m_viz_launch_gv = false;

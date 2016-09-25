@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 //#include "stl_typedefs.h"
+#include <string>
 
 class GraphViz_Visualizer
 {
@@ -85,6 +86,8 @@ class GraphViz_Visualizer
 
         agent*              thisAgent;
         Output_Manager*     outputManager;
+
+        Viz_Parameters*     settings;
 
         bool                m_viz_print, m_viz_launch_image, m_viz_launch_gv, m_simple_inst;
         bool                m_generate_img, m_include_arch, m_use_same_file;
