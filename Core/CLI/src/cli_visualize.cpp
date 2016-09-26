@@ -30,7 +30,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1, const std::string* pArg2, const std::string* pArg3)
+bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3)
 {
 
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
@@ -40,13 +40,13 @@ bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1,
     std::string lSystemCommand;
     bool lReturn_Value = false;
 
-    if (!pOp)
+    if (!pArg1)
     {
         PrintCLIMessage("Visualize creates graphical representations of Soar's memory systems and past learning events.\n\n"
             "Use 'visualize ?' and 'help visualize' to learn more about the visualize command.");
         return true;
     }
-    else if (pOp == 'G')
+    else
     {
         /* Single command argument */
         soar_module::param* my_param = thisAgent->visualizationManager->settings->get(pArg1->c_str());
@@ -56,7 +56,37 @@ bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1,
         }
         else if (my_param == thisAgent->visualizationManager->settings->viz_wm)
         {
-            thisAgent->visualizationManager->visualize_wm();
+            if (pArg2)
+            {
+
+                soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pArg2->c_str());
+                if (lexeme.type == IDENTIFIER_LEXEME)
+                {
+                    Symbol* pSym = thisAgent->symbolManager->find_identifier(lexeme.id_letter, lexeme.id_number);
+                    if (pSym)
+                    {
+                        if (pArg3)
+                        {
+                            int lDepth;
+                            if (!from_string(lDepth, pArg3->c_str()) || (lDepth < 1))
+                            {
+                                return SetError("Invalid depth specified to visualize");
+                            } else {
+                                thisAgent->visualizationManager->visualize_wm(pSym, lDepth);
+                            }
+
+                        } else {
+                            thisAgent->visualizationManager->visualize_wm(pSym);
+                        }
+                    } else {
+                        return SetError("Invalid identifier specified to visualize");
+                    }
+                } else {
+                    return SetError("Invalid identifier specified to visualize");
+                }
+            } else {
+                thisAgent->visualizationManager->visualize_wm();
+            }
             lValidVisualizationGenerated = true;
         }
         else if (my_param == thisAgent->visualizationManager->settings->viz_smem)
@@ -68,12 +98,19 @@ bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1,
 
             if (pArg2)
             {
-                soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, pArg2->c_str());
-                if (lexeme.type == IDENTIFIER_LEXEME)
+
+                const char* pAttr_c_str = pArg2->c_str();
+                soar::Lexer lexer(thisAgent, pAttr_c_str);
+                if (!lexer.get_lexeme()) return SetError("Value not found.");
+                if (lexer.current_lexeme.type == AT_LEXEME)
+                {
+                    if (!lexer.get_lexeme()) return SetError("Nothing found after @");
+                }
+                if (lexer.current_lexeme.type == INT_CONSTANT_LEXEME)
                 {
                     if (thisAgent->SMem->connected())
                     {
-                        lti_id = thisAgent->SMem->lti_exists(lexeme.id_number);
+                        lti_id = thisAgent->SMem->lti_exists(lexer.current_lexeme.int_val);
                     }
                 }
 
@@ -149,10 +186,31 @@ bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1,
             return true;
         }
         else {
-            /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << my_param->get_name() << " =" ;
+            /* Done with dummy command parameters.  Remaining parameters are all settings*/
+            if (!pArg2)
+            {
+                tempStringStream << my_param->get_name() << " =" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
             return true;
+            } else {
+                if (!my_param->validate_string(pArg2->c_str()))
+                {
+                    return SetError("Invalid argument for visualize command. Use 'visualize ?' to see a list of valid sub-commands.");
+                }
+
+                bool result = my_param->set_string(pArg2->c_str());
+
+                if (!result)
+                {
+                    return SetError("The visualize parameter could not be changed.");
+                }
+                else
+                {
+                    tempStringStream << my_param->get_name() << " = " << pArg2->c_str();
+                    PrintCLIMessage(&tempStringStream);
+                }
+                return result;
+            }
         }
 
         if (lValidVisualizationGenerated)
@@ -219,32 +277,6 @@ bool CommandLineInterface::DoVisualize(const char pOp, const std::string* pArg1,
         }
 
         return true;
-    }
-    else if (pOp == 'S')
-    {
-        soar_module::param* my_param = thisAgent->visualizationManager->settings->get(pArg1->c_str());
-        if (!my_param)
-        {
-            return SetError("Invalid visualize command.  Use 'visualize ?' to see a list of valid sub-commands.");
-        }
-
-        if (!my_param->validate_string(pArg2->c_str()))
-        {
-            return SetError("Invalid argument for visualize command. Use 'visualize ?' to see a list of valid sub-commands.");
-        }
-
-        bool result = my_param->set_string(pArg2->c_str());
-
-        if (!result)
-        {
-            return SetError("The visualize parameter could not be changed.");
-        }
-        else
-        {
-            tempStringStream << my_param->get_name() << " = " << pArg2->c_str();
-            PrintCLIMessage(&tempStringStream);
-        }
-        return result;
     }
 
     return true;

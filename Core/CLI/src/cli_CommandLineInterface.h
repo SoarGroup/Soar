@@ -168,7 +168,7 @@ namespace cli
             virtual bool DoTimers(bool* pSetting = 0);
             virtual bool DoUnalias(std::vector<std::string>& argv);
             virtual bool DoVersion();
-            virtual bool DoVisualize(const char pOp = 0, const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
+            virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);

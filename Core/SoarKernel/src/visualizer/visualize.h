@@ -25,8 +25,8 @@ class GraphViz_Visualizer
         std::string         graphviz_output;
         Viz_Parameters*     settings;
 
-        void visualize_wm();
-        void visualize_smem(uint64_t lti_id = 0, int depth = 1);
+        void visualize_wm(Symbol* pSym = NULL, int pDepth = 1);
+        void visualize_smem(uint64_t lti_id = 0, int pDepth = 1);
 
         const std::string get_next_filename() {
             if (!thisAgent->visualizationManager->settings->use_same_file->get_value())

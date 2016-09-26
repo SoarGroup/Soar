@@ -573,7 +573,7 @@ namespace cli
             /**
              * @brief visualize command
              */
-            virtual bool DoVisualize(const char pOp = 0, const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
+            virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
             enum eWatchOptions
             {

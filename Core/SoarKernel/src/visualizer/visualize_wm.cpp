@@ -12,6 +12,7 @@
 #include "output_manager.h"
 #include "preference.h"
 #include "production.h"
+#include "slot.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
@@ -46,9 +47,10 @@ void WM_Visualization_Map::add_triple(Symbol* id, Symbol* attr, Symbol* value)
 void WM_Visualization_Map::add_current_wm()
 {
     wme* w;
+    bool getArchWMEs = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
     for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
-        if (!thisAgent->visualizationManager->settings->architectural_wmes->get_value() &&
+        if (!getArchWMEs &&
             (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
             {
             continue;
@@ -67,7 +69,7 @@ void WM_Visualization_Map::reset()
     id_augmentations->clear();
 }
 
-void WM_Visualization_Map::visualize_wm_as_linked_records()
+void WM_Visualization_Map::visualize_wm_as_linked_records(Symbol* pSym, int pDepth)
 {
     augmentation_set* lAugSet;
     Symbol* lIDSym;
@@ -76,7 +78,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
     std::string graphviz_connections;
 
     reset();
-    add_current_wm();
+    get_wmes_for_symbol(pSym, pDepth);
 
     for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
     {
@@ -108,7 +110,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records()
     thisAgent->visualizationManager->graphviz_output += graphviz_connections;
 }
 
-void WM_Visualization_Map::visualize_wm_as_graph()
+void WM_Visualization_Map::visualize_wm_as_graph(Symbol* pSym, int pDepth)
 {
     reset();
     wme* w;
@@ -152,5 +154,168 @@ void WM_Visualization_Map::visualize_wm_as_graph()
                 thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
             }
         }
+    }
+}
+
+int compare_attr2(const void* e1, const void* e2)
+{
+    wme** p1, **p2;
+
+    char s1[output_string_size + 10], s2[output_string_size + 10];
+
+    p1 = (wme**) e1;
+    p2 = (wme**) e2;
+
+    // passing null thisAgent is OK as long as dest is guaranteed != 0
+    (*p1)->attr->to_string(true, s1, output_string_size + 10);
+    (*p2)->attr->to_string(true, s2, output_string_size + 10);
+
+    return strcmp(s1, s2);
+}
+
+/* The following was repurposed from print.h */
+void WM_Visualization_Map::add_wmes_of_id(Symbol* id, int depth, int maxdepth, tc_number tc)
+{
+    slot* s;
+    wme* w;
+
+    wme** list;    /* array of WME pointers, AGR 652 */
+    int num_attr;  /* number of attributes, AGR 652 */
+    int attr;      /* attribute index, AGR 652 */
+
+    if (!id->is_sti()) return;
+    if (id->tc_num == tc) return;
+    if (id->id->depth > depth) return;
+
+    depth = id->id->depth;
+    id->tc_num = tc;
+
+    /* --- first, count all direct augmentations of this id --- */
+    num_attr = 0;
+    for (w = id->id->impasse_wmes; w != NIL; w = w->next)
+    {
+        num_attr++;
+    }
+    for (w = id->id->input_wmes; w != NIL; w = w->next)
+    {
+        num_attr++;
+    }
+    for (s = id->id->slots; s != NIL; s = s->next)
+    {
+        for (w = s->wmes; w != NIL; w = w->next)
+        {
+            num_attr++;
+        }
+        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+        {
+            num_attr++;
+        }
+    }
+
+    /* --- next, construct the array of wme pointers and sort them --- */
+    list = (wme**)thisAgent->memoryManager->allocate_memory(num_attr * sizeof(wme*), MISCELLANEOUS_MEM_USAGE);
+    attr = 0;
+    for (w = id->id->impasse_wmes; w != NIL; w = w->next)
+    {
+        list[attr++] = w;
+    }
+    for (w = id->id->input_wmes; w != NIL; w = w->next)
+    {
+        list[attr++] = w;
+    }
+    for (s = id->id->slots; s != NIL; s = s->next)
+    {
+        for (w = s->wmes; w != NIL; w = w->next)
+        {
+            list[attr++] = w;
+        }
+        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+        {
+            list[attr++] = w;
+        }
+    }
+    qsort(list, num_attr, sizeof(wme*), compare_attr2);
+
+
+    for (attr = 0; attr < num_attr; attr++)
+    {
+        w = list[attr];
+        add_triple(w->id, w->attr, w->value);
+    }
+
+    if (depth > 1)
+    {
+        for (attr = 0; attr < num_attr; attr++)
+        {
+            w = list[attr];
+            add_wmes_of_id(w->attr, depth - 1, maxdepth, tc);
+            add_wmes_of_id(w->value, depth - 1, maxdepth, tc);
+        }
+    }
+    thisAgent->memoryManager->free_memory(list, MISCELLANEOUS_MEM_USAGE);
+}
+
+void WM_Visualization_Map::mark_depths_augs_of_id(Symbol* id, int depth, tc_number tc)
+{
+    slot* s;
+    wme* w;
+
+    if (!id->is_sti()) return;
+    if (id->tc_num == tc && id->id->depth >= depth) return;
+    id->id->depth = depth;
+    id->tc_num = tc;
+    if (depth <= 1) return;
+
+    /* --- call this routine recursively for children --- */
+    for (w = id->id->input_wmes; w != NIL; w = w->next)
+    {
+        mark_depths_augs_of_id(w->attr, depth - 1, tc);
+        mark_depths_augs_of_id(w->value, depth - 1, tc);
+    }
+    for (w = id->id->impasse_wmes; w != NIL; w = w->next)
+    {
+        mark_depths_augs_of_id(w->attr, depth - 1, tc);
+        mark_depths_augs_of_id(w->value, depth - 1, tc);
+    }
+    for (s = id->id->slots; s != NIL; s = s->next)
+    {
+        for (w = s->wmes; w != NIL; w = w->next)
+        {
+            mark_depths_augs_of_id(w->attr, depth - 1, tc);
+            mark_depths_augs_of_id(w->value, depth - 1, tc);
+        }
+        for (w = s->acceptable_preference_wmes; w != NIL; w = w->next)
+        {
+            mark_depths_augs_of_id(w->attr, depth - 1, tc);
+            mark_depths_augs_of_id(w->value, depth - 1, tc);
+        }
+    }
+}
+void WM_Visualization_Map::get_wmes_for_symbol(Symbol* pSym, int pDepth)
+{
+    symbol_list             ids_to_walk;
+    wme_list*               final_subgraph = NULL;
+    tc_number               seen_TC = get_new_tc_number(thisAgent);
+    Symbol*                 lSym;
+    bool                    getArchWMEs = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
+
+    /* Add all goal states if no symbol is passed in */
+    if (!pSym)
+    {
+        add_current_wm();
+        return;
+//        Symbol* g = thisAgent->top_goal;
+//        while (g->id->lower_goal)
+//        {
+//            g = g->id->lower_goal;
+//            ids_to_walk.push_back(g);
+//            g->tc_num = seen_TC;
+//        }
+    } else {
+        mark_depths_augs_of_id(pSym, pDepth, seen_TC);
+        seen_TC = get_new_tc_number(thisAgent);
+        mark_depths_augs_of_id(pSym, pDepth, seen_TC);
+        seen_TC = get_new_tc_number(thisAgent);
+        add_wmes_of_id(pSym, pDepth, pDepth, seen_TC);
     }
 }

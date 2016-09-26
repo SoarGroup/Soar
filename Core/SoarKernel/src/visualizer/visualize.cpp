@@ -41,7 +41,7 @@ GraphViz_Visualizer::~GraphViz_Visualizer()
 {
 }
 
-void GraphViz_Visualizer::visualize_wm()
+void GraphViz_Visualizer::visualize_wm(Symbol* pSym, int pDepth)
 {
     graphviz_output.clear();
 
@@ -49,15 +49,15 @@ void GraphViz_Visualizer::visualize_wm()
     viz_graph_start(false);
     if (thisAgent->visualizationManager->settings->memory_format->get_value() == viz_node)
     {
-        wme_map->visualize_wm_as_graph();
+        wme_map->visualize_wm_as_graph(pSym, pDepth);
     } else {
-        wme_map->visualize_wm_as_linked_records();
+        wme_map->visualize_wm_as_linked_records(pSym, pDepth);
     }
     viz_graph_end();
     delete wme_map;
 }
 
-void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int depth)
+void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int pDepth)
 {
     ltm_set store_set;
     std::string graphviz_connections, idStr;
@@ -67,7 +67,7 @@ void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int depth)
     {
         thisAgent->SMem->create_full_store_set(&store_set);
     } else {
-        thisAgent->SMem->create_store_set(&store_set, lti_id, depth);
+        thisAgent->SMem->create_store_set(&store_set, lti_id, pDepth);
     }
 
     graphviz_output.clear();

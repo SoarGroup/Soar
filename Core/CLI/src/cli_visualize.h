@@ -75,15 +75,15 @@ namespace cli
 
                 if (num_args == 1)
                 {
-                    return cli.DoVisualize('G', &arg);
+                    return cli.DoVisualize(&arg);
                 }
                 if (num_args == 2)
                 {
-                    return cli.DoVisualize('S', &arg, &arg2);
+                    return cli.DoVisualize(&arg, &arg2);
                 }
                 if (num_args == 3)
                 {
-                    return cli.DoVisualize('S', &arg, &arg2, &arg3);
+                    return cli.DoVisualize(&arg, &arg2, &arg3);
                 }
 
                 // case: nothing = full configuration information
