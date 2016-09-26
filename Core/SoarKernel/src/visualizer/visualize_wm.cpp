@@ -46,18 +46,6 @@ void WM_Visualization_Map::add_triple(Symbol* id, Symbol* attr, Symbol* value)
 
 void WM_Visualization_Map::add_current_wm()
 {
-    wme* w;
-    bool getArchWMEs = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
-    for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
-    {
-        if (!getArchWMEs &&
-            (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
-            {
-            continue;
-            }
-
-        add_triple(w->id, w->attr, w->value);
-    }
 }
 
 void WM_Visualization_Map::reset()
@@ -74,7 +62,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records(Symbol* pSym, int pDep
     augmentation_set* lAugSet;
     Symbol* lIDSym;
     augmentation* lAug;
-
+    bool lSeparateStates = thisAgent->visualizationManager->settings->separate_states->get_value();
     std::string graphviz_connections;
 
     reset();
@@ -82,14 +70,13 @@ void WM_Visualization_Map::visualize_wm_as_linked_records(Symbol* pSym, int pDep
 
     for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
     {
-        thisAgent->visualizationManager->viz_object_start(it->first, 0, viz_id_and_augs);
         lIDSym = it->first;
         lAugSet = it->second;
+        thisAgent->visualizationManager->viz_object_start(lIDSym, 0, viz_id_and_augs);
         for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
             lAug = (*it2);
-            if (lAug->value->is_sti() && ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) ||
-                !thisAgent->visualizationManager->settings->separate_states->get_value()))
+            if (lAug->value->is_sti() && ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) || !lSeparateStates))
             {
                 thisAgent->outputManager->sprinta_sf(thisAgent, graphviz_connections, "\"%y\":s -\xF2 \"%y\":n [label = \"%y\"]\n", lIDSym, lAug->value, lAug->attr);
             } else {
@@ -112,49 +99,44 @@ void WM_Visualization_Map::visualize_wm_as_linked_records(Symbol* pSym, int pDep
 
 void WM_Visualization_Map::visualize_wm_as_graph(Symbol* pSym, int pDepth)
 {
-    reset();
-    wme* w;
-    tc_number tc = get_new_tc_number(thisAgent);
+    augmentation_set* lAugSet;
+    Symbol* lIDSym;
+    augmentation* lAug;
+    bool lSeparateStates = thisAgent->visualizationManager->settings->separate_states->get_value();
 
-    for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
+    reset();
+    get_wmes_for_symbol(pSym, pDepth);
+
+    for (auto it = id_augmentations->begin(); it != id_augmentations->end(); it++)
     {
-        if (!thisAgent->visualizationManager->settings->architectural_wmes->get_value() &&
-            (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
-            continue;
-        if (w->id->tc_num != tc)
+        lIDSym = it->first;
+        lAugSet = it->second;
+        thisAgent->visualizationManager->viz_object_start(lIDSym, 0, viz_wme);
+        thisAgent->visualizationManager->viz_object_end(viz_wme);
+        thisAgent->visualizationManager->viz_endl();
+        for (auto it2 = lAugSet->begin(); it2 != lAugSet->end(); ++it2)
         {
-            thisAgent->visualizationManager->viz_object_start(w->id, 0, viz_wme);
-            thisAgent->visualizationManager->viz_object_end(viz_wme);
-            thisAgent->visualizationManager->viz_endl();
-            w->id->tc_num = tc;
-        }
-        if ((w->value->is_sti() && (w->value->id->isa_goal || w->value->id->isa_impasse)) &&
-            thisAgent->visualizationManager->settings->separate_states->get_value())
-        {
-            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"State_%y\":n [label = \"%y\"]\n\n", w->id, w->value, w->attr);
-        } else {
+            lAug = (*it2);
+            //            if (lAug->value->is_sti() && ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) || !lSeparateStates))
+            //            {
+            //                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
+            //            } else {
             std::string nodeName;
-            if (!w->value->is_sti())
+            if (!lAug->value->is_sti())
             {
-                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme_terminal, &nodeName);
+                thisAgent->visualizationManager->viz_object_start(lAug->value, 0, viz_wme_terminal, &nodeName);
                 thisAgent->visualizationManager->viz_object_end(viz_wme_terminal);
                 thisAgent->visualizationManager->viz_endl();
-            } else if (w->value->tc_num != tc) {
-                thisAgent->visualizationManager->viz_object_start(w->value, 0, viz_wme);
-                thisAgent->visualizationManager->viz_object_end(viz_wme);
-                thisAgent->visualizationManager->viz_endl();
-                w->value->tc_num = tc;
-                nodeName = w->value->to_string();
             } else {
-                nodeName = w->value->to_string();
+                nodeName = lAug->value->to_string();
             }
-            if (!w->value->is_sti() || ((!w->value->id->isa_goal && !w->value->id->isa_impasse) ||
-                !thisAgent->visualizationManager->settings->separate_states->get_value()))
+            if (!lAug->value->is_sti() || ((!lAug->value->id->isa_goal && !lAug->value->id->isa_impasse) || !lSeparateStates))
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", w->id, nodeName.c_str(), w->attr);
+                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "\"%y\":s -\xF2 \"%s\":n [label = \"%y\"]\n\n", lIDSym, nodeName.c_str(), lAug->attr);
             }
         }
     }
+
 }
 
 int compare_attr2(const void* e1, const void* e2)
@@ -236,10 +218,14 @@ void WM_Visualization_Map::add_wmes_of_id(Symbol* id, int depth, int maxdepth, t
     }
     qsort(list, num_attr, sizeof(wme*), compare_attr2);
 
-
+    bool addArch = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
     for (attr = 0; attr < num_attr; attr++)
     {
         w = list[attr];
+
+        if (!addArch && (!w->preference || !w->preference->inst || !w->preference->inst->prod_name))
+            continue;
+
         add_triple(w->id, w->attr, w->value);
     }
 
@@ -293,25 +279,19 @@ void WM_Visualization_Map::mark_depths_augs_of_id(Symbol* id, int depth, tc_numb
 }
 void WM_Visualization_Map::get_wmes_for_symbol(Symbol* pSym, int pDepth)
 {
-    symbol_list             ids_to_walk;
-    wme_list*               final_subgraph = NULL;
-    tc_number               seen_TC = get_new_tc_number(thisAgent);
-    Symbol*                 lSym;
-    bool                    getArchWMEs = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
-
     /* Add all goal states if no symbol is passed in */
     if (!pSym)
     {
-        add_current_wm();
-        return;
-//        Symbol* g = thisAgent->top_goal;
-//        while (g->id->lower_goal)
-//        {
-//            g = g->id->lower_goal;
-//            ids_to_walk.push_back(g);
-//            g->tc_num = seen_TC;
-//        }
+        wme* w;
+        bool getArchWMEs = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
+
+        for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
+        {
+            if (!getArchWMEs && (!w->preference || !w->preference->inst || !w->preference->inst->prod_name)) continue;
+            add_triple(w->id, w->attr, w->value);
+        }
     } else {
+        tc_number seen_TC = get_new_tc_number(thisAgent);
         mark_depths_augs_of_id(pSym, pDepth, seen_TC);
         seen_TC = get_new_tc_number(thisAgent);
         mark_depths_augs_of_id(pSym, pDepth, seen_TC);
