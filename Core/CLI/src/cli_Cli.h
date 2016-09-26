@@ -128,32 +128,10 @@ namespace cli
              */
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
 
-            enum eExplainOptions
-            {
-                EXPLAIN_ALL,
-                EXPLAIN_CONSTRAINTS,
-                EXPLAIN_FORMATION,
-                EXPLAIN_EXPLANATION_TRACE,
-                EXPLAIN_GLOBAL_STATS,
-                EXPLAIN_IDENTITY_SETS,
-                EXPLAIN_LIST_ALL,
-                EXPLAIN_ONLY_SPECIFIC,
-                EXPLAIN_JUSTIFICATIONS,
-                EXPLAIN_RECORD,
-                EXPLAIN_STATS,
-                EXPLAIN_WME_TRACE,
-                EXPLAIN_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
             /**
              * @brief explain command
-             * @param pProduction Pointer to involved production. Pass 0 (null) for
-             *        query
-             * @param condition A number representing the condition number to explain,
-             *        0 for production name, -1 for full,
-             *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2) = 0;
+            virtual bool DoExplain(const std::string* pArg = 0, const std::string* pArg2 = 0) = 0;
 
             /* These enums moved here because we re-used for fc options*/
             enum ePrintOptions

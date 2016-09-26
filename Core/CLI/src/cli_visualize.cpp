@@ -38,7 +38,6 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
     bool lValidVisualizationGenerated = false;
 
     std::string lSystemCommand;
-    bool lReturn_Value = false;
 
     if (!pArg1)
     {
@@ -184,8 +183,7 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
         {
             thisAgent->visualizationManager->settings->print_visualization_settings(thisAgent);
             return true;
-        }
-        else {
+        } else {
             /* Done with dummy command parameters.  Remaining parameters are all settings*/
             if (!pArg2)
             {

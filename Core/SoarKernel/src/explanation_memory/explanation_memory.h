@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 
+#include "explanation_settings.h"
 #include "chunk_record.h"
 #include "stl_typedefs.h"
 
@@ -52,6 +53,9 @@ class Explanation_Memory
         friend class cli::CommandLineInterface;
 
     public:
+
+        Explainer_Parameters*   settings;
+
         bool                    enabled() { return (m_enabled || (num_rules_watched > 0)); }
         void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
         bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
@@ -106,9 +110,9 @@ class Explanation_Memory
         bool toggle_production_watch(production* pProduction);
 
         bool explain_chunk(const std::string* pStringParameter);
-        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
+        bool explain_instantiation(const std::string* pStringParameter);
+//        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
-        void print_explainer_stats();
         void print_global_stats();
         void print_chunk_stats();
         void print_all_watched_rules();

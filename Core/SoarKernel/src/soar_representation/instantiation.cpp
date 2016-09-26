@@ -980,10 +980,10 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-    if ((inst->i_id == 4) || (inst->i_id == 4))
-    {
-        dprint(DT_DEBUG, "Found.\n");
-    }
+//    if ((inst->i_id == 4) || (inst->i_id == 4))
+//    {
+//        dprint(DT_DEBUG, "Found.\n");
+//    }
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         thisAgent->outputManager->printa_sf(thisAgent,

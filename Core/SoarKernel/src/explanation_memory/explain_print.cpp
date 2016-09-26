@@ -74,12 +74,12 @@ void Explanation_Memory::print_footer(bool pPrintDiscussedChunkCommands)
     outputManager->set_column_indent(3, 83);
     if (print_explanation_trace)
     {
-        outputManager->printa_sf(thisAgent, "- explain -f %-Explain initial formation of chunk %-explain -w %-Switch to working memory trace    -\n");
+        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain -w %-Switch to working memory trace    -\n");
     } else {
-        outputManager->printa_sf(thisAgent, "- explain -f %-Explain initial formation of chunk %-explain -e %-Switch to explanation trace       -\n");
+        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain -e %-Switch to explanation trace       -\n");
     }
-    outputManager->printa_sf(thisAgent, "- explain -c %-Explain constraints required by problem-solving %-explain -i %-Explain element identity analysis -\n");
-    outputManager->printa_sf(thisAgent, "- explain -s %-Print chunk statistics %-explain -s %-Print EBC statistics              -\n");
+    outputManager->printa_sf(thisAgent, "- explain c %-Explain constraints required by problem-solving %-explain i %-Explain identity analysis -\n");
+    outputManager->printa_sf(thisAgent, "- explain s %-Print chunk statistics %-chunk stats %-Print overall chunk statistics              -\n");
     outputManager->printa(thisAgent, "---------------------------------------------------------------------------------------------------------------------\n");
 
 }
@@ -328,7 +328,7 @@ void Explanation_Memory::print_explain_summary()
     outputManager->set_column_indent(0, 55);
     outputManager->set_column_indent(1, 54);
     outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
-    outputManager->printa(thisAgent,    "                       Explainer Status\n");
+    outputManager->printa(thisAgent,    "                       Explainer Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
@@ -357,7 +357,7 @@ void Explanation_Memory::print_explain_summary()
     } else {
         outputManager->printa(thisAgent, "\n\n");
     }
-    outputManager->printa(thisAgent, "Use 'explain [chunk-name]' or 'explain c [chunk id]' to discuss the formation of that chunk.\n");
+    outputManager->printa(thisAgent, "Use 'explain chunk [chunk-name | id]' to discuss the formation of that chunk.\n");
 }
 
 void Explanation_Memory::print_all_watched_rules()
@@ -422,17 +422,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
 }
 
-void Explanation_Memory::print_explainer_stats()
-{
-    outputManager->set_column_indent(0, 50);
-    outputManager->printa_sf(thisAgent, "------------------------\n");
-    outputManager->printa_sf(thisAgent, "EBC Explainer Statistics\n");
-    outputManager->printa_sf(thisAgent, "------------------------\n");
-    outputManager->printa_sf(thisAgent, "Chunks records                             %-%d\n", chunks->size());
-    outputManager->printa_sf(thisAgent, "Actions records                            %-%d\n", all_actions->size());
-    outputManager->printa_sf(thisAgent, "Condition records                          %-%d\n", all_conditions->size());
-    outputManager->printa_sf(thisAgent, "Instantiation records                      %-%d\n", instantiations->size());
-}
 
 void Explanation_Memory::print_chunk_stats() {
 

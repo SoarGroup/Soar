@@ -28,7 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Try 'visualize ?' or 'help soar' to learn more about the visualize command.";
+                return "Use 'visualize ?' or 'help soar' to learn more about the visualize command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -70,7 +70,7 @@ namespace cli
                 }
                 if (num_args > 3)
                 {
-                    return cli.SetError("Too many arguments for the 'chunk' command.");
+                    return cli.SetError("Too many arguments for the 'visualize' command.");
                 }
 
                 if (num_args == 1)

@@ -5,19 +5,8 @@
  *      Author: mazzin
  */
 
-
-
-
-/*
- * decider_settings.cpp
- *
- *  Created on: Sep 11, 2016
- *      Author: mazzin
- */
-
 #include "visualize_settings.h"
 
-//#include "agent.h"
 #include "output_manager.h"
 
 Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(new_agent)
@@ -74,8 +63,6 @@ Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(n
     add(qhelp_cmd);
 
 }
-
-//std::string concatJustified(const char* left_string, std::string right_string, int pWidth);
 
 void Viz_Parameters::print_visualization_settings(agent* thisAgent)
 {

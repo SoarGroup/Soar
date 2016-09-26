@@ -24,6 +24,7 @@
 #include <episodic_memory.cpp>
 #include <explain_print.cpp>
 #include <explanation_memory.cpp>
+#include <explanation_settings.cpp>
 #include <explanation_trace.cpp>
 #include <exploration.cpp>
 #include <identity_record.cpp>

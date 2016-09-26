@@ -125,7 +125,7 @@ namespace cli
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0);
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
-            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2);
+            virtual bool DoExplain(const std::string* pArg = 0, const std::string* pArg2 = 0);
             virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0);
             virtual bool DoGDSPrint();
             virtual bool DoGP(const std::string& productionString);

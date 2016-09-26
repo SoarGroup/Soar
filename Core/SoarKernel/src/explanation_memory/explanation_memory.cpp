@@ -27,6 +27,8 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
+    settings = new Explainer_Parameters(thisAgent);
+
     initialize_counters();
     m_enabled = false;
     m_justifications_enabled = false;
@@ -406,23 +408,31 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
 
-    sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
-    if (sym && sym->sc->production)
+    bool lSuccess = false;
+    uint64_t lObjectID = 0;
+
+    if (from_string(lObjectID, pStringParameter->c_str()))
     {
-        /* Print chunk record if we can find it */
-        chunk_record* lFoundChunk = get_chunk_record(sym);
-        if (lFoundChunk)
+        lSuccess = print_chunk_explanation_for_id(lObjectID);
+    } else {
+
+        sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
+        if (sym && sym->sc->production)
         {
-                    discuss_chunk(lFoundChunk);
-                    return true;
+            /* Print chunk record if we can find it */
+            chunk_record* lFoundChunk = get_chunk_record(sym);
+            if (lFoundChunk)
+            {
+                discuss_chunk(lFoundChunk);
+                return true;
+            }
+
+            outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+            return false;
         }
-
-        outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
-        return false;
     }
-
     /* String has never been seen by Soar or is not a rule name */
-    outputManager->printa_sf(thisAgent, "Could not find a chunk named %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+    outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
     return false;
 
 }
@@ -539,42 +549,56 @@ bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionI
     return true;
 }
 
-bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDString)
 {
-    /* First argument must be an object type.  Current valid types are 'chunk',
-     * and 'instantiation' */
     bool lSuccess = false;
     uint64_t lObjectID = 0;
-    char lFirstChar = pObjectTypeString->at(0);
-    if (lFirstChar == 'c')
+    if (!from_string(lObjectID, pObjectIDString->c_str()))
     {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
-        }
-            lSuccess = print_chunk_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'i')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
-        }
-            lSuccess = print_instantiation_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'l')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
-        }
-        lSuccess = print_condition_explanation_for_id(lObjectID);
-    } else
-    {
-        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
-        return false;
+        outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
     }
-
+    lSuccess = print_instantiation_explanation_for_id(lObjectID);
     return lSuccess;
 }
+
+//bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+//{
+//    /* First argument must be an object type.  Current valid types are 'chunk',
+//     * and 'instantiation' */
+//    bool lSuccess = false;
+//    uint64_t lObjectID = 0;
+//    char lFirstChar = pObjectTypeString->at(0);
+//    if (lFirstChar == 'c')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
+//        }
+//            lSuccess = print_chunk_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'i')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
+//        }
+//            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'l')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
+//        }
+//        lSuccess = print_condition_explanation_for_id(lObjectID);
+//    } else
+//    {
+//        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
+//        return false;
+//    }
+//
+//    return lSuccess;
+//}
 
 
 bool Explanation_Memory::current_discussed_chunk_exists()
