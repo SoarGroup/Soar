@@ -62,7 +62,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
                 {
                     return SetError("Invalid argument for explain command. Use 'explain ?' to see a list of valid sub-commands and settings.");
                 }
-                if (thisAgent->explanationMemory->settings->all)
+                if (thisAgent->explanationMemory->settings->all->get_value())
                 {
                     thisAgent->explanationMemory->set_enabled(true);
                     thisAgent->outputManager->printa_sf(thisAgent, "Will monitor all chunks created.\n");
@@ -84,7 +84,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
                 {
                     return SetError("Invalid argument for explain command. Use 'explain ?' to see a list of valid sub-commands and settings.");
                 }
-                if (thisAgent->explanationMemory->settings->include_justifications)
+                if (thisAgent->explanationMemory->settings->include_justifications->get_value())
                 {
                     thisAgent->explanationMemory->set_justifications_enabled(true);
                     thisAgent->outputManager->printa_sf(thisAgent, "Will record justifications created.\n");

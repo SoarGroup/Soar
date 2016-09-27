@@ -934,8 +934,13 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule via chunking.";
+                thisAgent->reason_for_stopping = "Soar learned new rule.";
 
+            }
+            if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && m_prod->explain_its_chunks && thisAgent->explanationMemory->isRecordingChunk())
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Soar learned new rule from a watched production.";
             }
             //            chunk_history += "Successfully created chunk\n";
             //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
