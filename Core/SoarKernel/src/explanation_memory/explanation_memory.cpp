@@ -58,7 +58,7 @@ void Explanation_Memory::initialize_counters()
     id_set_counter = 0;
 
     stats.duplicates = 0;
-    stats.unorderable = 0;
+    stats.could_not_repair = 0;
     stats.justification_did_not_match = 0;
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;

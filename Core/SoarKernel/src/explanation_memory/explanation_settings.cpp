@@ -73,6 +73,6 @@ void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "stats                      %-%-%s\n", "Display statistics about currently discussed chunk");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- explain <setting> [<value>]\n");
-        outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help explain\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help explain\n");
 
 }

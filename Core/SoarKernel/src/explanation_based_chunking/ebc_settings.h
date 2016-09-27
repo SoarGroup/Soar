@@ -39,7 +39,6 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_OSK;
         soar_module::boolean_param* mechanism_repair_rhs;
         soar_module::boolean_param* mechanism_repair_lhs;
-        soar_module::boolean_param* mechanism_promotion_tracking;
         soar_module::boolean_param* mechanism_merge;
         soar_module::boolean_param* mechanism_user_singletons;
 

@@ -23,7 +23,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_OSK] = false;
     pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
     pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] = true;
     pEBC_settings[SETTING_EBC_MERGE] = true;
     pEBC_settings[SETTING_EBC_USER_SINGLETONS] = false;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
@@ -95,8 +94,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(mechanism_repair_rhs);
     mechanism_repair_lhs = new soar_module::boolean_param("repair-lhs", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_lhs);
-    mechanism_promotion_tracking = new soar_module::boolean_param("repair-rhs-promotion", setting_on(SETTING_EBC_REPAIR_PROMOTION), new soar_module::f_predicate<boolean>());
-    add(mechanism_promotion_tracking);
     mechanism_merge = new soar_module::boolean_param("merge", setting_on(SETTING_EBC_MERGE), new soar_module::f_predicate<boolean>());
     add(mechanism_merge);
     mechanism_user_singletons = new soar_module::boolean_param("user-singletons", setting_on(SETTING_EBC_USER_SINGLETONS), new soar_module::f_predicate<boolean>());
@@ -207,10 +204,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_promotion_tracking)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_PROMOTION] = pChangedParam->get_value();
-    }
     else if (pChangedParam == mechanism_merge)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
@@ -270,7 +263,6 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_OSK->set_value(pEBC_settings[SETTING_EBC_OSK] ? on : off);
     mechanism_repair_rhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_RHS] ? on : off);
     mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
-    mechanism_promotion_tracking->set_value(pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] ? on : off);
     mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
     mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
 

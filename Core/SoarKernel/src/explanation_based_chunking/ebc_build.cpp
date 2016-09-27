@@ -880,9 +880,6 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_type = CHUNK_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
-        #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_chunks_attempted();
-        #endif
     }
     else
     {
@@ -1071,6 +1068,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID --- */
     m_chunk_new_i_id = get_new_inst_id();
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->increment_stat_chunks_attempted();
+    #endif
 
     /* --- Collect the grounds into the chunk condition lists --- */
     create_initial_chunk_condition_lists();
@@ -1149,7 +1149,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!lChunkValidated)
     {
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_unorderable();
+        thisAgent->explanationMemory->increment_stat_could_not_repair();
         #endif
         if (variablize)
         {

@@ -23,7 +23,7 @@
 
 typedef struct chunking_stats_struct {
         uint64_t            duplicates;
-        uint64_t            unorderable;
+        uint64_t            could_not_repair;
         uint64_t            justification_did_not_match;
         uint64_t            chunk_did_not_match;
         uint64_t            no_grounds;
@@ -84,7 +84,7 @@ class Explanation_Memory
         void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_grounded(int pNumConds);
         void increment_stat_reverted();
-        void increment_stat_unorderable() { stats.unorderable++; };
+        void increment_stat_could_not_repair() { stats.could_not_repair++; };
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
