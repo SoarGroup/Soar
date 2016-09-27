@@ -45,9 +45,10 @@ void Explanation_Memory::print_formation_explanation()
         current_discussed_chunk->result_inst_records->size() + 1);
     }
 
-    outputManager->printa_sf(thisAgent, "Initial base instantiation i %u that fired when %y matched at time %u:\n\n",
+    outputManager->printa_sf(thisAgent, "Initial base instantiation (i %u) that fired when %y matched at level %d at time %u:\n\n",
         current_discussed_chunk->baseInstantiation->instantiationID,
         current_discussed_chunk->baseInstantiation->production_name,
+        current_discussed_chunk->baseInstantiation->match_level,
         current_discussed_chunk->time_formed);
 
     print_instantiation_explanation(current_discussed_chunk->baseInstantiation, false);
@@ -74,12 +75,12 @@ void Explanation_Memory::print_footer(bool pPrintDiscussedChunkCommands)
     outputManager->set_column_indent(3, 83);
     if (print_explanation_trace)
     {
-        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain -w %-Switch to working memory trace    -\n");
+        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain w %-Switch to working memory trace    -\n");
     } else {
-        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain -e %-Switch to explanation trace       -\n");
+        outputManager->printa_sf(thisAgent, "- explain f %-Explain initial formation of chunk %-explain e %-Switch to explanation trace       -\n");
     }
-    outputManager->printa_sf(thisAgent, "- explain c %-Explain constraints required by problem-solving %-explain i %-Explain identity analysis -\n");
-    outputManager->printa_sf(thisAgent, "- explain s %-Print chunk statistics %-chunk stats %-Print overall chunk statistics              -\n");
+    outputManager->printa_sf(thisAgent, "- explain c %-Explain constraints required by problem-solving %-explain i %-Explain identity analysis         -\n");
+    outputManager->printa_sf(thisAgent, "- explain s %-Print chunk statistics %-chunk stats %-Print overall chunk statistics    -\n");
     outputManager->printa(thisAgent, "---------------------------------------------------------------------------------------------------------------------\n");
 
 }

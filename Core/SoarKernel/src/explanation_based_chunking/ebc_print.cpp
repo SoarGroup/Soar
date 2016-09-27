@@ -265,7 +265,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
         }
     }
     outputManager->printa_sf(thisAgent, "\nTry 'chunk ?' to learn more about chunking's sub-commands and settings.\n"
-                    "(For a detailed article about chunk, use 'help chunk'.)");
+                    "For a detailed article about the chunk command, use 'help chunk'.\n");
 }
 
 
@@ -297,8 +297,8 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string(), 45).c_str(), "Maximum chunks that can be learned (per phase)");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string(), 45).c_str(), "Maximum duplicate chunks (per rule, per phase)");
     outputManager->printa_sf(thisAgent, "------------------- Debugging ---------------------\n");
-    outputManager->printa_sf(thisAgent, "interrupt                   %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from a watched rule");
-    outputManager->printa_sf(thisAgent, "interrupt-on-watched        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning failure");
+    outputManager->printa_sf(thisAgent, "interrupt                   %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from any rule");
+    outputManager->printa_sf(thisAgent, "interrupt-on-watched        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning from watched production");
     outputManager->printa_sf(thisAgent, "interrupt-on-failure        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_failure->get_value()), "Stop Soar after learning failure");
     outputManager->printa_sf(thisAgent, "record-utility              %-%s%-%s\n", capitalizeOnOff(ebc_params->utility_mode->get_value()), "Record utility instead of firing");
     outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");

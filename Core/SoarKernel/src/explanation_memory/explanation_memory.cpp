@@ -407,13 +407,14 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
-
-    bool lSuccess = false;
     uint64_t lObjectID = 0;
 
     if (from_string(lObjectID, pStringParameter->c_str()))
     {
-        lSuccess = print_chunk_explanation_for_id(lObjectID);
+        if (!print_chunk_explanation_for_id(lObjectID))
+        {
+            outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+        }
     } else {
 
         sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
@@ -431,17 +432,16 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
             return false;
         }
     }
-    /* String has never been seen by Soar or is not a rule name */
-    outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
     return false;
-
 }
 
 void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.\n  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
+        outputManager->printa_sf(thisAgent, "Now explaining %y.\n"
+            "- Note that future explain commands are now relative\n"
+            "  to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();

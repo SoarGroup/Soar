@@ -263,9 +263,8 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         outputManager->set_column_indent(1, 57);
         outputManager->set_column_indent(2, 72);
         /* Print header */
-        outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y)\n\n",
-            instantiationID, production_name);
-        outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n\n");
+        outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y at level %d)\n",
+            instantiationID, production_name, static_cast<int64_t>(match_level));
         outputManager->set_print_test_format(false, true);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -318,13 +317,8 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", static_cast<int64_t>(match_level));
-            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
-        outputManager->printa(thisAgent, "\n");
-
     }
-
 }
 
 void instantiation_record::print_for_explanation_trace(bool printFooter)
@@ -358,8 +352,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                 assert(top);
                 assert(rhs);
             } else {
-                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n",
-                    instantiationID, production_name);
+                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
+                    instantiationID, production_name, match_level);
                 outputManager->printa_sf(thisAgent,
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
@@ -384,8 +378,9 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         outputManager->set_column_indent(2, 100);
         outputManager->set_column_indent(3, 115);
         thisAgent->outputManager->set_print_test_format(true, false);
-        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n\n",
-            instantiationID, production_name);
+        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
+            instantiationID, production_name, match_level);
+        thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
         outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -458,10 +453,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", static_cast<int64_t>(match_level));
-            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
-        outputManager->printa(thisAgent, "\n");
 
         if (original_production && original_production->p_node)
         {
