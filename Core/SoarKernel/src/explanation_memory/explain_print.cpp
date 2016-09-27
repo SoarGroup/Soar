@@ -403,17 +403,18 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", stats.constraints_attached);
     outputManager->printa_sf(thisAgent, "Conditions added during repair             %-%u\n", stats.grounding_conditions_added);
 
-    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "             Potential Generality Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Rule repaired by adding conditions         %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "LHS that required repair                   %-%u\n", stats.lhs_repair);
+    outputManager->printa_sf(thisAgent, "RHS that required repair                   %-%u\n", stats.rhs_repair);
 
-    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Used negated reasoning about substate      %-%u\n", stats.tested_local_negation);
 
-    outputManager->printa_sf(thisAgent, "\n=============================================================\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Duplicate of existing rule                 %-%u\n", stats.duplicates);
@@ -449,7 +450,8 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "===========================================================\n");
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Required repair                            %-%s\n", (current_discussed_chunk->stats.num_grounding_conditions_added > 0 ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "LHS required repair                        %-%s\n", (current_discussed_chunk->stats.lhs_repair ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "RHS required repair                        %-%s\n", (current_discussed_chunk->stats.rhs_repair ? "Yes" : "No"));
     if (current_discussed_chunk->stats.num_grounding_conditions_added > 0)
     {
         outputManager->printa_sf(thisAgent, "Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);

@@ -22,6 +22,8 @@
 #include <string>
 
 typedef struct chunking_stats_struct {
+        uint64_t            lhs_repair;
+        uint64_t            rhs_repair;
         uint64_t            duplicates;
         uint64_t            could_not_repair;
         uint64_t            justification_did_not_match;
@@ -95,6 +97,8 @@ class Explanation_Memory
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
+        void increment_stat_lhs_repaired() { stats.lhs_repair++; if (current_recording_chunk) current_recording_chunk->stats.lhs_repair = true; };
+        void increment_stat_rhs_repaired() { stats.rhs_repair++; if (current_recording_chunk) current_recording_chunk->stats.rhs_repair = true; };
         void increment_stat_justifications() { stats.justifications_succeeded++; };
         void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
         void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
