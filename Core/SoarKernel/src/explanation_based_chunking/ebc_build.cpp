@@ -1073,6 +1073,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!m_inst_top)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
         print_current_built_rule("Invalid rule with no grounds: ");
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
@@ -1092,6 +1093,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize && !m_reliable)
     {
         variablize = false;
+        /* MToDo | We should only stop if the setting for that is on! */
         if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
         {
             thisAgent->stop_soar = true;

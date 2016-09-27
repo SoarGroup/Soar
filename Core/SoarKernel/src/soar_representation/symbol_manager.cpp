@@ -939,7 +939,7 @@ bool Symbol_Manager::reset_id_counters()
         thisAgent->memoryManager->free_memory_pool(MP_identifier);
         identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
         thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
-        assert(false);
+//        assert(false);
     }
     for (i = 0; i < 26; i++)
     {
