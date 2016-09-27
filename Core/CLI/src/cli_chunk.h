@@ -59,21 +59,23 @@ namespace cli
                 if (num_args > 0)
                 {
                     arg = argv[start_arg_position];
-                } else if (num_args > 1)
+                }
+                if (num_args > 1)
                 {
                     arg2 = argv[start_arg_position+1];
-                } else if (num_args > 2)
+                }
+                if (num_args > 2)
                 {
                     return cli.SetError("Too many arguments for the 'chunk' command.");
                 }
 
                 if (num_args == 1)
                 {
-                    return cli.DoChunk('G', &arg);
+                    return cli.DoChunk(&arg);
                 }
                 if (num_args == 2)
                 {
-                    return cli.DoChunk('S', &arg, &arg2);
+                    return cli.DoChunk(&arg, &arg2);
                 }
 
                 // case: nothing = full configuration information

@@ -54,7 +54,7 @@ namespace cli
              * @brief chunk command
              * @param options The various options set on the command line
              */
-            virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             /**
              * @brief cd command
