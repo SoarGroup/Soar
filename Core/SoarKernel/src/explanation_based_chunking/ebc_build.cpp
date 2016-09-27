@@ -1044,6 +1044,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->outputManager->settings[OM_WARNINGS]);
+        thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
         #endif
@@ -1079,7 +1080,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
         thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
-        print_current_built_rule("Invalid rule with no grounds: ");
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();

@@ -77,12 +77,12 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
     {
         case ebc_error_max_chunks:
         {
-            printa(thisAgent, "%fWarning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%fWarning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_max_dupes:
         {
-            printa(thisAgent, "%fWarning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%fWarning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_invalid_chunk:
@@ -92,7 +92,7 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_invalid_justification:
         {
-            printa(thisAgent, "%fWarning:  Chunking produced an invalid justification.  Ignoring.\n");
+            printa_sf(thisAgent, "%fWarning:  Chunking produced an invalid justification.  Ignoring.\n");
             break;
         }
         case ebc_progress_validating:
