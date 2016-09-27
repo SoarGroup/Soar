@@ -2823,7 +2823,6 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
-    thisAgent->symbolManager->symbol_remove_ref(&goal);
 
     if (goal->id->level <= thisAgent->substate_break_level)
     {
@@ -2831,6 +2830,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
         thisAgent->substate_break_level = 0;
         thisAgent->reason_for_stopping = "Stopped due to substate (goal) retraction.";
     }
+
+    thisAgent->symbolManager->symbol_remove_ref(&goal);
 }
 
 /* ------------------------------------------------------------------
