@@ -891,8 +891,7 @@ void init_instantiation(agent*          thisAgent,
             {
                 if (cond->bt.trace->inst->match_goal_level > level)
                 {
-                    cond->bt.trace = find_clone_for_level(cond->bt.trace,
-                                                          level);
+                    cond->bt.trace =  find_clone_for_level(cond->bt.trace, level);
                 }
 #ifdef DO_TOP_LEVEL_REF_CTS
                 if (cond->bt.trace)
@@ -1009,18 +1008,10 @@ void create_instantiation(agent* thisAgent, production* prod,
         additional_test_mode = DONT_EXPLAIN;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
-//    if (additional_test_mode != DONT_EXPLAIN)
-//    {
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
             &(inst->top_of_instantiated_conditions),
             &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
             inst->i_id, additional_test_mode);
-//    } else {
-//        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-//            &(inst->top_of_instantiated_conditions),
-//            &(inst->bottom_of_instantiated_conditions), NULL,
-//            inst->i_id, additional_test_mode);
-//    }
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
@@ -1405,11 +1396,11 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     } // while
 
     preference* next_pref;
+    static int pcd = 0;
     while (inst->preferences_cached)
     {
+        dprint(DT_DEBUG, "%p Deallocating cached preference %d", inst->preferences_cached, ++pcd);
         next_pref = inst->preferences_cached->inst_next;
-        inst->preferences_cached->inst_next = NULL;
-        inst->preferences_cached->inst_prev = NULL;
         deallocate_preference(thisAgent, inst->preferences_cached);
         inst->preferences_cached = next_pref;
     }

@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 /* Defining SOAR_RELEASE_VERSION will:
  *
@@ -57,7 +57,7 @@
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
      *    but not tested. Does not work on Windows. -- */
-//    #define DEBUG_MAC_STACKTRACE
+    #define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
      *    the debug database -- */
