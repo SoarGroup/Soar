@@ -6238,19 +6238,23 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
         {
-            if ((act->type == MAKE_ACTION) &&
-                    (rhs_value_is_symbol(act->attr)))
+            if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr)))
             {
-                if (
-                    (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
-                        (get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
-                                                  rhs_value_to_reteloc_field_num(act->id),
-                                                  tok, w)->id->isa_goal))
+                if ((rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
-                    operator_proposal = true;
-                    prod_type = !PE_PRODS;
-                    break;
+                    Symbol* lSym = NULL;
+                    if (tok && w)
+                    {
+                        lSym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                                                       rhs_value_to_reteloc_field_num(act->id), tok, w);
+                    }
+                    if (lSym && lSym->id->isa_goal)
+                    {
+                        operator_proposal = true;
+                        prod_type = !PE_PRODS;
+                        break;
+                    }
                 }
             }
         }
