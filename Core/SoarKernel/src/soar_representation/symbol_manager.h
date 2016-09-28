@@ -164,6 +164,8 @@ class Symbol_Manager {
         bool remove_if_sti(agent* thisAgent, void* item, void* userdata);
         bool reset_id_counters();
         void reset_id_and_variable_tc_numbers();
+        void reset_hash_table(MemoryPoolType lHashTable);
+
         uint64_t* get_id_counter(uint64_t name_letter ) { return &id_counter[name_letter]; }
 
         /* --------------------------------------------------------------------
