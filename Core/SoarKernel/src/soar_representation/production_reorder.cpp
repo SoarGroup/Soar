@@ -21,6 +21,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "ebc_repair.h"
+#include "explanation_memory.h"
 #include "mem.h"
 #include "output_manager.h"
 #include "preference.h"
@@ -181,7 +182,9 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational actions.";
         }
-
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_rhs_repaired();
+        #endif
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -1581,6 +1584,10 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational conditions.";
         }
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_lhs_repaired();
+        #endif
+
         return false;
     }
 

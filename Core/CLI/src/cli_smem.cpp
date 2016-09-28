@@ -131,7 +131,9 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
             return SetError("Invalid semantic memory parameter.  Use 'help smem' to see list of valid settings.");
         }
 
-        PrintCLIMessage_Item("", my_param, 0);
+        std::string tempString(my_param->get_name());
+        tempString.append(" =");
+        PrintCLIMessage_Item(tempString.c_str(), my_param, 0);
         return true;
     }
     else if (pOp == 'i')
@@ -261,7 +263,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
         else
         {
-            tempString << pArg1->c_str() << " = " << pArg2->c_str();
+            tempString << my_param->get_name() << " = " << pArg2->c_str();
             PrintCLIMessage(&tempString);
             if (thisAgent->SMem->connected())
             {

@@ -24,6 +24,7 @@
 #include <episodic_memory.cpp>
 #include <explain_print.cpp>
 #include <explanation_memory.cpp>
+#include <explanation_settings.cpp>
 #include <explanation_trace.cpp>
 #include <exploration.cpp>
 #include <identity_record.cpp>
@@ -72,8 +73,10 @@
 #include <test.cpp>
 #include <trace.cpp>
 #include <variablize.cpp>
-#include <visualize_wm.cpp>
 #include <visualize.cpp>
+#include <visualize_wm.cpp>
+#include <visualize_settings.cpp>
 #include <working_memory_activation.cpp>
 #include <working_memory.cpp>
 #include <xml.cpp>
+

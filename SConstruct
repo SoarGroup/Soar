@@ -274,6 +274,7 @@ env.Replace(
         '#Core/SoarKernel/src/semantic_memory',
         '#Core/SoarKernel/src/shared',
         '#Core/SoarKernel/src/soar_representation',
+        '#Core/SoarKernel/src/visualizer',
         '#Core/ElementXML/src',
         '#Core/KernelSML/src',
         '#Core/ConnectionSML/src',

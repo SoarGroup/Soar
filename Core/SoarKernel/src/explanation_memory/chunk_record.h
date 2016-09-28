@@ -20,6 +20,8 @@ typedef struct chunk_stats_struct {
         uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                reverted;
+        bool                lhs_repair;
+        bool                rhs_repair;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;
@@ -42,9 +44,9 @@ class chunk_record
 
         void                    excise_chunk_record();
 
-        void					print_for_explanation_trace();
-        void					print_for_wme_trace();
-        void					visualize();
+        void                    print_for_explanation_trace();
+        void                    print_for_wme_trace();
+        void                    visualize();
 
     private:
         agent*                  thisAgent;

@@ -135,11 +135,7 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
      
     assert(thisID->id->is_sti());
     assert(thisID->id->level <= cond->bt.level);
-    /* MToDo | Remove */
-    if (thisID->id->level < cond->bt.level)
-    {
-        dprint(DT_BACKTRACE, "Condition found that would not have been added in 9.5: %l", cond);
-    }
+
     return  (thisID->id->level <= grounds_level);
 }
 
@@ -459,7 +455,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
-    /* MToDo:  Do we need to check if not a proposal?  This seems to already not unify proposals. */
+    /* Thought we might need to check if this is a proposal, but this seems to already skip unifying proposals. */
     if (pCond->bt.wme_->id->id->isa_goal)
     {
         if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) ||

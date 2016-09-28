@@ -54,7 +54,7 @@ namespace cli
              * @brief chunk command
              * @param options The various options set on the command line
              */
-            virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
 
             /**
              * @brief cd command
@@ -128,32 +128,10 @@ namespace cli
              */
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
 
-            enum eExplainOptions
-            {
-                EXPLAIN_ALL,
-                EXPLAIN_CONSTRAINTS,
-                EXPLAIN_FORMATION,
-                EXPLAIN_EXPLANATION_TRACE,
-                EXPLAIN_GLOBAL_STATS,
-                EXPLAIN_IDENTITY_SETS,
-                EXPLAIN_LIST_ALL,
-                EXPLAIN_ONLY_SPECIFIC,
-                EXPLAIN_JUSTIFICATIONS,
-                EXPLAIN_RECORD,
-                EXPLAIN_STATS,
-                EXPLAIN_WME_TRACE,
-                EXPLAIN_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<EXPLAIN_NUM_OPTIONS> ExplainBitset;
             /**
              * @brief explain command
-             * @param pProduction Pointer to involved production. Pass 0 (null) for
-             *        query
-             * @param condition A number representing the condition number to explain,
-             *        0 for production name, -1 for full,
-             *        this argument ignored if pProduction is 0 (null)
              */
-            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2) = 0;
+            virtual bool DoExplain(const std::string* pArg = 0, const std::string* pArg2 = 0) = 0;
 
             /* These enums moved here because we re-used for fc options*/
             enum ePrintOptions
@@ -571,41 +549,9 @@ namespace cli
             virtual bool DoVersion() = 0;
 
             /**
-             * @brief waitsnc command
-             * @param pSetting The waitsnc setting, true to turn on, false to turn off,
-             *        pass 0 (null) to query
+             * @brief visualize command
              */
-            enum eVisualizeOptions
-            {
-                VISUALIZE_EXPLAIN_LAST,
-                VISUALIZE_EXPLAIN_IG,
-                VISUALIZE_EXPLAIN_CONTRIBUTORS,
-                VISUALIZE_WM,
-                VISUALIZE_EPMEM,
-                VISUALIZE_SMEM,
-                VISUALIZE_ARCH_SHOW,
-                VISUALIZE_DEPTH,
-                VISUALIZE_LAUNCH_EDITOR,
-                VISUALIZE_FILENAME,
-                VISUALIZE_GENERATE_IMAGE,
-                VISUALIZE_IMAGE_TYPE,
-                VISUALIZE_STYLE_LINE,
-                VISUALIZE_ONLY_RULE_NAME,
-                VISUALIZE_PRINT_TO_SCREEN,
-                VISUALIZE_USE_SAME_FILE,
-                VISUALIZE_LAUNCH_VIEWER,
-                VISUALIZE_NUM_OPTIONS, // must be last
-            };
-            typedef std::bitset<VISUALIZE_NUM_OPTIONS> VisualizeBitset;
-            /**
-             * @brief explain command
-             * @param pProduction Pointer to involved production. Pass 0 (null) for
-             *        query
-             * @param condition A number representing the condition number to explain,
-             *        0 for production name, -1 for full,
-             *        this argument ignored if pProduction is 0 (null)
-             */
-            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth) = 0;
+            virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
             enum eWatchOptions
             {

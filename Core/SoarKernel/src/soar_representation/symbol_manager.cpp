@@ -927,48 +927,6 @@ bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata)
         return false;
 }
 
-bool Symbol_Manager::reset_id_counters()
-{
-    int i;
-
-    if (identifier_hash_table->count != 0)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "Soar internal error.  %d unallocated short-term identifiers.  Likely a memory leak.  Forcing deletion.\n", identifier_hash_table->count);
-        /* MToDo | We should be able to just release the hash table and reset the Symbol_Manager now that LTIs are gone */
-        free_hash_table(thisAgent, identifier_hash_table);
-        thisAgent->memoryManager->free_memory_pool(MP_identifier);
-        identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
-        thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
-        assert(false);
-    }
-    for (i = 0; i < 26; i++)
-    {
-        id_counter[i] = 1;
-    }
-
-    if (thisAgent->SMem->connected())
-    {
-        thisAgent->SMem->reset_id_counters();
-    }
-
-    return true ;
-}
-
-bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
-{
-    Symbol* sym;
-
-    sym = static_cast<symbol_struct*>(item);
-    sym->tc_num = 0;
-    return false;
-}
-
-void Symbol_Manager::reset_id_and_variable_tc_numbers()
-{
-    do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, reset_tc_num, 0);
-    do_for_all_items_in_hash_table(thisAgent, variable_hash_table, reset_tc_num, 0);
-}
-
 bool clear_gensym_number(agent* /*thisAgent*/, void* item, void*)
 {
     Symbol* sym;
@@ -1002,6 +960,106 @@ void Symbol_Manager::print_internal_symbols()
     thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Variables: ---\n");
     do_for_all_items_in_hash_table(thisAgent, variable_hash_table, print_sym, 0);
 }
+
+void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
+{
+    if (lHashTable == MP_identifier)
+    {
+        if (identifier_hash_table->count != 0)
+        {
+            dprint(DT_DEBUG, "%d short-term identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            free_hash_table(thisAgent, identifier_hash_table);
+            thisAgent->memoryManager->free_memory_pool(MP_identifier);
+            identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
+            thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
+//            assert(false);
+        }
+    }
+    else if (lHashTable == MP_float_constant)
+    {
+        if (float_constant_hash_table->count != 0)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%d floating numbers identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            //print_internal_symbols();
+            free_hash_table(thisAgent, float_constant_hash_table);
+            thisAgent->memoryManager->free_memory_pool(MP_float_constant);
+            float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
+            thisAgent->memoryManager->init_memory_pool(MP_float_constant, sizeof(floatSymbol), "float constant");
+        }
+    }
+    else if (lHashTable == MP_int_constant)
+    {
+        if (int_constant_hash_table->count != 0)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%d integer identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            //print_internal_symbols();
+            free_hash_table(thisAgent, int_constant_hash_table);
+            thisAgent->memoryManager->free_memory_pool(MP_int_constant);
+            int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
+            thisAgent->memoryManager->init_memory_pool(MP_int_constant, sizeof(intSymbol), "int constant");
+        }
+    }
+    else if (lHashTable == MP_str_constant)
+    {
+        if (str_constant_hash_table->count != 0)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%d string identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            //print_internal_symbols();
+            free_hash_table(thisAgent, str_constant_hash_table);
+            thisAgent->memoryManager->free_memory_pool(MP_str_constant);
+            str_constant_hash_table = make_hash_table(thisAgent, 0, hash_str_constant);
+            thisAgent->memoryManager->init_memory_pool(MP_str_constant, sizeof(strSymbol), "str constant");
+        }
+    }
+    else if (lHashTable == MP_variable)
+    {
+        if (variable_hash_table->count != 0)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%d variable identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            //print_internal_symbols();
+            free_hash_table(thisAgent, variable_hash_table);
+            thisAgent->memoryManager->free_memory_pool(MP_variable);
+            variable_hash_table = make_hash_table(thisAgent, 0, hash_variable);
+            thisAgent->memoryManager->init_memory_pool(MP_variable, sizeof(varSymbol), "variable");
+            /* Add predefined symbols? */
+        }
+    }
+}
+
+bool Symbol_Manager::reset_id_counters()
+{
+    int i;
+
+    for (i = 0; i < 26; i++)
+    {
+        id_counter[i] = 1;
+    }
+
+    if (thisAgent->SMem->connected())
+    {
+        thisAgent->SMem->reset_id_counters();
+    }
+
+    return true ;
+}
+
+bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
+{
+    Symbol* sym;
+
+    sym = static_cast<symbol_struct*>(item);
+    sym->tc_num = 0;
+    return false;
+}
+
+void Symbol_Manager::reset_id_and_variable_tc_numbers()
+{
+    do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, reset_tc_num, 0);
+    do_for_all_items_in_hash_table(thisAgent, variable_hash_table, reset_tc_num, 0);
+}
+
+
 
 Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* counter)
 {

@@ -278,7 +278,7 @@ std::string get_stacktrace(const char* prefix)
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
     // the stack summarized in the string returned
-    void* addrlist[7];
+    void* addrlist[12];
 
     // retrieve current stack addresses
     int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));

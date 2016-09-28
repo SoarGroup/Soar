@@ -77,12 +77,12 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
     {
         case ebc_error_max_chunks:
         {
-            printa(thisAgent, "Warning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%fWarning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_max_dupes:
         {
-            printa(thisAgent, "Warning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%fWarning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_invalid_chunk:
@@ -92,7 +92,7 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_invalid_justification:
         {
-            printa(thisAgent, "Warning:  Chunking produced an invalid justification.  Ignoring.\n");
+            printa_sf(thisAgent, "%fWarning:  Chunking produced an invalid justification.  Ignoring.\n");
             break;
         }
         case ebc_progress_validating:
@@ -112,9 +112,10 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_no_conditions:
         {
-            printa(thisAgent, "Warning: Chunking has produced a rule with no conditions.  Ignoring.\n");
-            printa(thisAgent, "         To avoid this issue, the problem-solving in the substate must\n");
-            printa(thisAgent, "         positively test at least one item in the superstate.\n");
+            printa(thisAgent, "\nWarning: Chunking has produced a rule with no conditions.  Ignoring.\n\n"
+                                "         Any results created will lose support when the sub-state disappears.\n"
+                                "         To avoid this issue, the problem-solving in the sub-state must\n"
+                                "         positively test at least one item in the super-state.\n");
             break;
         }
         default:
