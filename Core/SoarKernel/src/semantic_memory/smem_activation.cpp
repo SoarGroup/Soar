@@ -581,7 +581,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     {
         SQL->likelihood_cond_count_insert->bind_int(1,lti_id);
         SQL->likelihood_cond_count_insert->bind_int(2,spread_map_it->first);
-        SQL->likelihood_cond_count_insert->bind_int(3,spread_map_it->second);
+        SQL->likelihood_cond_count_insert->bind_double(3,spread_map_it->second);
         SQL->likelihood_cond_count_insert->execute(soar_module::op_reinit);
     }
     //In the special case where we don't ever add anything, we need to insert all zeros as the traversal.
@@ -1015,7 +1015,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 //For now, I'm not going to deal with the Petrov approximation and leave this value incorrectly
                 //truncated so that old activations are just completely ignored.
                 //In theory, BLA corresponds to log-odds, so I guess we're dealing with odds for the above value.
-                double wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);
+                double wma_multiplicative_factor = 1;//pre_logd_wma/(1.0+pre_logd_wma);
                 {
                     raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
                 }

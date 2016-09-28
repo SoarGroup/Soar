@@ -666,6 +666,15 @@ SMem_Manager::SMem_Manager(agent* myAgent)
 
     smem_validation = 0;
 
+    smem_in_wmem = new std::map<uint64_t, uint64_t>();
+    smem_wmas = new smem_wma_map();
+    smem_spreaded_to = new std::unordered_map<uint64_t, int64_t>();
+    smem_recipient = new std::unordered_map<uint64_t, int64_t>();
+    smem_recipients_of_source = new std::unordered_map<uint64_t,std::set<uint64_t>*>();
+    smem_context_additions = new std::set<uint64_t>();
+    smem_context_removals = new std::set<uint64_t>();
+    smem_edges_to_update = new smem_update_map();
+
 };
 
 void SMem_Manager::clean_up_for_agent_deletion()
@@ -679,4 +688,13 @@ void SMem_Manager::clean_up_for_agent_deletion()
     delete statistics;
     delete timers;
     delete DB;
+    delete smem_in_wmem;
+    delete smem_wmas;
+    delete smem_spreaded_to;
+    delete smem_recipient;
+    delete smem_recipients_of_source;
+    delete smem_context_additions;
+    delete smem_context_additions;
+    delete smem_context_removals;
+    delete smem_edges_to_update;
 }
