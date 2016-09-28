@@ -418,6 +418,9 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     else if (ref_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         initial_value = ref_sym->fc->value;
+    } else {
+        deallocate_action_list(thisAgent, rhs);
+        return NULL;
     }
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
