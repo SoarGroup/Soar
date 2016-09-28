@@ -1025,7 +1025,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_inst_top = m_inst_bottom = m_vrblz_top = NULL;
 
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
-    if (chunks_this_d_cycle > max_chunks)
+    if (chunks_this_d_cycle >= max_chunks)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->outputManager->settings[OM_WARNINGS]);
         max_chunks_reached = true;
