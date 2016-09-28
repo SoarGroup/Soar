@@ -420,11 +420,11 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	// NOTE: This is because of an ordering difference between Windows & Linux/OS X.  Functionally,
 	// it doesn't matter so this is a #def because effort was considered to be better spent elsewhere
 	// than finding out why.
-//#ifndef _MSC_VER
+#ifndef _MSC_VER
 	std::string expectedResultOfPS1 = "(S1 ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385\n       ^operator O1385 + ^reward-link R1 ^smem S2 ^superstate nil ^svs S3\n       ^type state ^using-smem true)\n";
-/*#else
-	std::string expectedResultOfPS1 = "(S1\n       ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385 +\n       ^operator O1385 ^reward-link R1 ^smem S2 ^superstate nil ^svs S3\n       ^type state ^using-smem true)\n";
-#endif*/
+#else
+	std::string expectedResultOfPS1 = "(S1 ^counter 50 ^epmem E1 ^io I1 ^name Factorization ^operator O1385 +\n       ^operator O1385 ^reward-link R1 ^smem S2 ^superstate nil ^svs S3\n       ^type state ^using-smem true)\n";
+#endif
 
 	assertTrue_msg("Didn't stop where expected!", resultOfPS1 == expectedResultOfPS1);
 
@@ -453,9 +453,11 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	assertTrue_msg("testFactorization: Test did not halt.", halted);
 
 	std::string resultOfPD2F197 = agent->ExecuteCommandLine("p @197 -d 2");
-
-	std::string expectedResultOfPD2F197 = "(@197 ^complete true ^factor @48 @198 ^number 100 [+447.000])\n  (@198 ^multiplicity 2 ^value 2 [+448.000])\n  (@48 ^multiplicity 2 ^value 5 [+449.000])\n";
-
+#ifndef _MSC_VER
+    std::string expectedResultOfPD2F197 = "(@197 ^complete true ^factor @48 @198 ^number 100 [+447.000])\n  (@198 ^multiplicity 2 ^value 2 [+448.000])\n  (@48 ^multiplicity 2 ^value 5 [+449.000])\n";
+#else
+    std::string expectedResultOfPD2F197 = "(@197 ^complete true ^factor @48 @198 ^number 100 [+447.000])\n  (@48 ^multiplicity 2 ^value 5 [+449.000])\n  (@198 ^multiplicity 2 ^value 2 [+448.000])\n";
+#endif
 	assertTrue_msg("testFactorization: Test did not get the correct result!", expectedResultOfPD2F197 == resultOfPD2F197);
 	
 	std::string pwd = agent->ExecuteCommandLine("pwd");

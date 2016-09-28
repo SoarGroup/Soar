@@ -48,12 +48,12 @@ for (int i=0; i<names.size(); ++i) {
                             usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
         if (isUnix()) {
           sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
-          sh "export VERSION=\$(<soarversion); sshpass -p \${PASSWORD} scp \${VERSION}-" + name + ".7zip \${USERNAME}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
+          sh "# export VERSION=\$(<soarversion); sshpass -p \${PASSWORD} scp \${VERSION}-" + name + ".7zip \${USERNAME}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
         } else {
           bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
           bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
-          bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2013.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
-          bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2015.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+          bat 'REM for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2013.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+          bat 'REM for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2015.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
         }
       }
 
