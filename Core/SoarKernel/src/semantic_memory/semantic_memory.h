@@ -25,6 +25,8 @@
 #include <thread>
 #include <mutex>
 #include <string>
+#include <vector>
+#include <tuple>
 
 //#define SMEM_EXPERIMENT  // hijack the main SMem function for tight-loop experimentation/timing
 
@@ -98,7 +100,19 @@ class SMem_Manager
         };
 
         // Multi-Threading
-        SMem_JobQueue jobQueue;
+        static SMem_JobQueue JobQueue;
+
+        std::mutex agent_jobqueue_boundary_mutex;
+        struct query_result
+        {
+            uint64_t king_id;
+            uint64_t depth;
+            Symbol* state;
+            Symbol* query;
+            Symbol* negquery;
+        };
+
+        std::vector<query_result> query_results;
 
         agent*                          thisAgent;
 
@@ -172,8 +186,9 @@ class SMem_Manager
         uint64_t        get_current_LTI_for_iSTI(Symbol* pSTI, bool useLookupTable, bool pOverwriteOldLinkToLTM);
 
         /* Methods for queries */
+        void                            process_query_SQL(smem_weighted_cue_list weighted_cue, bool needFullSearch, const id_set& prohibit, Symbol* state, Symbol* query, Symbol* negquery, std::list<uint64_t>* match_ids, uint64_t number_to_retrieve, uint64_t depth);
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
-        uint64_t                        process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, uint64_t number_to_retrieve = 1, std::list<uint64_t>* match_ids = NIL, uint64_t depth = 1, smem_install_type install_type = wm_install);
+        void                            process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, const id_set& prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, std::list<uint64_t> *match_ids = nullptr, uint64_t number_to_retrieve = 1, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
         soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
 

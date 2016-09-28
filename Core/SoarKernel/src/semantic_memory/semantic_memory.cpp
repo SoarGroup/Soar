@@ -51,6 +51,8 @@
 
 #include "smem_math_query.h"
 
+SMem_JobQueue SMem_Manager::JobQueue;
+
 wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 {
     slot* s;
@@ -120,7 +122,6 @@ void SMem_Manager::go(bool store_only)
 
 void SMem_Manager::respond_to_cmd(bool store_only)
 {
-
     attach();
 
     // start at the bottom and work our way up
@@ -250,7 +251,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
         // a command is issued if the cue is new
         // and there is something on the cue
-        if (new_cue && wme_count)
+        if ((new_cue && wme_count))
         {
             cue_wmes.clear();
             meta_wmes.clear();
@@ -458,7 +459,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+                    process_query(state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, nullptr, depth, wm_install);
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
@@ -543,7 +544,6 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
             if (!meta_wmes.empty() || !retrieval_wmes.empty())
             {
-
                 dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
                 install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
@@ -591,6 +591,83 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         delete cmds;
 
         state = state->id->higher_goal;
+    }
+
+    auto lockCheckQueryResults = [=]() -> bool {
+        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+        return query_results.size() > 0;
+    };
+
+    if (lockCheckQueryResults())
+    {
+        meta_wmes.clear();
+
+        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+
+        while (query_results.size() > 0)
+        {
+            auto result = query_results.back();
+            query_results.pop_back();
+
+            uint64_t king_id = result.king_id;
+            uint64_t depth = result.depth;
+            Symbol* state = result.state;
+            Symbol* query = result.query;
+            Symbol* negquery = result.negquery;
+
+            // produce results
+            if (king_id != NIL)
+            {
+                // success!
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
+                if (negquery)
+                {
+                    add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
+                }
+
+                ////////////////////////////////////////////////////////////////////////////
+                timers->query->stop();
+                ////////////////////////////////////////////////////////////////////////////
+                install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, smem_install_type::wm_install, depth);
+            }
+            else
+            {
+                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
+                if (negquery)
+                {
+                    add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
+                }
+
+                ////////////////////////////////////////////////////////////////////////////
+                timers->query->stop();
+                ////////////////////////////////////////////////////////////////////////////
+            }
+
+            if (!meta_wmes.empty())
+            {
+                dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
+                // process preference assertion en masse
+                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
+
+                // clear cache
+                {
+                    symbol_triple_list::iterator mw_it;
+
+                    for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
+                    {
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                        thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+
+                        delete(*mw_it);
+                    }
+                    meta_wmes.clear();
+                }
+                
+                // process wm changes on this state
+                do_wm_phase = true;
+            }
+        }
     }
 
     if (do_wm_phase)

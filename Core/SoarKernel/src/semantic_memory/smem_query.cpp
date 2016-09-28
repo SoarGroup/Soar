@@ -15,6 +15,8 @@
 #include "symbol.h"
 #include "working_memory.h"
 
+#include <thread>
+
 soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
 {
     soar_module::sqlite_statement* q = NULL;
@@ -303,7 +305,242 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
     return result;
 }
 
-uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, id_set* prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, uint64_t number_to_retrieve , std::list<uint64_t>* match_ids, uint64_t depth, smem_install_type install_type)
+void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool needFullSearch, const id_set& prohibit_lti, Symbol* state, Symbol* query, Symbol* negquery, std::list<uint64_t>* match_ids, uint64_t number_to_retrieve, uint64_t depth)
+{
+    id_set prohibit;
+    prohibit.insert(prohibit_lti.begin(), prohibit_lti.end());
+
+    uint64_t king_id = NIL;
+    soar_module::sqlite_statement* q = NULL;
+
+    std::list<uint64_t> temp;
+    if (match_ids == nullptr)
+        match_ids = &temp;
+
+    // by definition, the first positive-cue element dictates the candidate set
+    smem_weighted_cue_list::iterator cand_set;
+    smem_weighted_cue_list::iterator next_element;
+    for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
+    {
+        if ((*next_element)->pos_element)
+        {
+            cand_set = next_element;
+            break;
+        }
+    }
+
+    soar_module::sqlite_statement* q2 = NULL;
+    id_set::iterator prohibit_p;
+
+    uint64_t cand;
+    bool good_cand;
+
+    if (settings->activation_mode->get_value() == smem_param_container::act_base)
+    {
+        // naive base-level updates means update activation of
+        // every candidate in the minimal list before the
+        // confirmation walk
+        if (settings->base_update->get_value() == smem_param_container::bupt_naive)
+        {
+            q = setup_web_crawl((*cand_set));
+
+            // queue up distinct lti's to update
+            // - set because queries could contain wilds
+            // - not in loop because the effects of activation may actually
+            //   alter the resultset of the query (isolation???)
+            std::set< uint64_t > to_update;
+            while (q->execute() == soar_module::row)
+            {
+                to_update.insert(q->column_int(0));
+            }
+
+            for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
+            {
+                lti_activate((*it), false);
+            }
+
+            q->reinitialize();
+        }
+    }
+
+    // setup first query, which is sorted on activation already
+    q = setup_web_crawl((*cand_set));
+    thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
+
+    // this becomes the minimal set to walk (till match or fail)
+    if (q->execute() == soar_module::row)
+    {
+        smem_prioritized_activated_lti_queue plentiful_parents;
+        bool more_rows = true;
+        bool use_db = false;
+        bool has_feature = false;
+
+        while (more_rows && (q->column_double(1) == static_cast<double>(SMEM_ACT_MAX)))
+        {
+            SQL->act_lti_get->bind_int(1, q->column_int(0));
+            SQL->act_lti_get->execute();
+            plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(0), q->column_int(0)));
+            SQL->act_lti_get->reinitialize();
+
+            more_rows = (q->execute() == soar_module::row);
+        }
+        bool first_element = false;
+        while ((match_ids->size() < number_to_retrieve || needFullSearch) && ((more_rows) || (!plentiful_parents.empty())))
+        {
+            // choose next candidate (db vs. priority queue)
+            {
+                use_db = false;
+
+                if (!more_rows)
+                {
+                    use_db = false;
+                }
+                else if (plentiful_parents.empty())
+                {
+                    use_db = true;
+                }
+                else
+                {
+                    use_db = (q->column_double(1) >  plentiful_parents.top().first);
+                }
+
+                if (use_db)
+                {
+                    cand = q->column_int(0);
+                    more_rows = (q->execute() == soar_module::row);
+                }
+                else
+                {
+                    cand = plentiful_parents.top().second;
+                    plentiful_parents.pop();
+                }
+            }
+
+            // if not prohibited, submit to the remaining cue elements
+            prohibit_p = prohibit.find(cand);
+            if (prohibit_p == prohibit.end())
+            {
+                good_cand = true;
+
+                for (next_element = weighted_cue.begin(); next_element != weighted_cue.end() && good_cand; next_element++)
+                {
+                    // don't need to check the generating list
+                    //If the cand_set is a math query, we care about more than its existence
+                    if ((*next_element) == (*cand_set) && (*next_element)->mathElement == NIL)
+                    {
+                        continue;
+                    }
+
+                    if ((*next_element)->element_type == attr_t)
+                    {
+                        // parent=? AND attribute_s_id=?
+                        q2 = SQL->web_attr_child;
+                    }
+                    else if ((*next_element)->element_type == value_const_t)
+                    {
+                        // parent=? AND attribute_s_id=? AND value_constant_s_id=?
+                        q2 = SQL->web_const_child;
+                        q2->bind_int(3, (*next_element)->value_hash);
+                    }
+                    else if ((*next_element)->element_type == value_lti_t)
+                    {
+                        // parent=? AND attribute_s_id=? AND value_lti_id=?
+                        q2 = SQL->web_lti_child;
+                        q2->bind_int(3, (*next_element)->value_lti);
+                    }
+
+                    // all require own id, attribute
+                    q2->bind_int(1, cand);
+                    q2->bind_int(2, (*next_element)->attr_hash);
+
+                    has_feature = (q2->execute() == soar_module::row);
+                    bool mathQueryMet = false;
+                    if ((*next_element)->mathElement != NIL && has_feature)
+                    {
+                        do
+                        {
+                            smem_hash_id valueHash = q2->column_int(2 - 1);
+                            SQL->hash_rev_type->bind_int(1, valueHash);
+
+                            if (SQL->hash_rev_type->execute() != soar_module::row)
+                            {
+                                good_cand = false;
+                            }
+                            else
+                            {
+                                switch (SQL->hash_rev_type->column_int(1 - 1))
+                                {
+                                    case FLOAT_CONSTANT_SYMBOL_TYPE:
+                                        mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
+                                        break;
+                                    case INT_CONSTANT_SYMBOL_TYPE:
+                                        mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__int(valueHash));
+                                        break;
+                                }
+                            }
+                            SQL->hash_rev_type->reinitialize();
+                        }
+                        while (q2->execute() == soar_module::row);
+                        good_cand = mathQueryMet;
+                    }
+                    else
+                    {
+                        good_cand = (((*next_element)->pos_element) ? (has_feature) : (!has_feature));
+                    }
+                    //In CSoar this needs to happen before the break, or the query might not be ready next time
+                    q2->reinitialize();
+                    if (!good_cand)
+                    {
+                        break;
+                    }
+                }
+
+                if (good_cand)
+                {
+                    king_id = cand;
+                    first_element = true;
+                    prohibit.insert(cand);
+                }
+                if (good_cand && first_element)
+                {
+                    for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
+                    {
+                        if ((*wce)->mathElement != NIL)
+                        {
+                            (*wce)->mathElement->commit();
+                        }
+                    }
+                }
+                else if (first_element)
+                {
+                    for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
+                    {
+                        if ((*wce)->mathElement != NIL)
+                        {
+                            (*wce)->mathElement->rollback();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    q->reinitialize();
+
+    // clean weighted cue
+    for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
+    {
+        if ((*next_element)->mathElement != NIL)
+        {
+            delete(*next_element)->mathElement;
+        }
+        delete(*next_element);
+    }
+
+    std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+    query_results.push_back({king_id, depth, state, query, negquery});
+}
+
+void SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, const id_set& prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level, std::list<uint64_t> *match_ids, uint64_t number_to_retrieve, uint64_t depth, smem_install_type install_type, bool synchronous)
 {
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
@@ -311,16 +548,6 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
     dprint(DT_SMEM_INSTANCE, "process_query called with %y %y %y %y\n", state, query, negquery, mathQuery);
     //This is used when doing math queries that need to look at more that just the first valid element
     bool needFullSearch = false;
-
-    soar_module::sqlite_statement* q = NULL;
-
-    std::list<uint64_t> temp_list;
-    if (query_level == qry_full)
-    {
-        match_ids = &(temp_list);
-    }
-
-    uint64_t king_id = NIL;
 
     ////////////////////////////////////////////////////////////////////////////
     timers->query->start();
@@ -411,270 +638,20 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
-        // by definition, the first positive-cue element dictates the candidate set
-        smem_weighted_cue_list::iterator cand_set;
-        smem_weighted_cue_list::iterator next_element;
-        for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
+        auto job = SMem_Manager::JobQueue.add([=]() {
+            process_query_SQL(weighted_cue, needFullSearch, prohibit, state, query, negquery, match_ids, number_to_retrieve, depth);
+        });
+
+        if (synchronous)
         {
-            if ((*next_element)->pos_element)
-            {
-                cand_set = next_element;
-                break;
-            }
-        }
-
-        soar_module::sqlite_statement* q2 = NULL;
-        id_set::iterator prohibit_p;
-
-        uint64_t cand;
-        bool good_cand;
-
-        if (settings->activation_mode->get_value() == smem_param_container::act_base)
-        {
-            // naive base-level updates means update activation of
-            // every candidate in the minimal list before the
-            // confirmation walk
-            if (settings->base_update->get_value() == smem_param_container::bupt_naive)
-            {
-                q =setup_web_crawl((*cand_set));
-
-                // queue up distinct lti's to update
-                // - set because queries could contain wilds
-                // - not in loop because the effects of activation may actually
-                //   alter the resultset of the query (isolation???)
-                std::set< uint64_t > to_update;
-                while (q->execute() == soar_module::row)
-                {
-                    to_update.insert(q->column_int(0));
-                }
-
-                for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
-                {
-                    lti_activate((*it), false);
-                }
-
-                q->reinitialize();
-            }
-        }
-
-        // setup first query, which is sorted on activation already
-        q =setup_web_crawl((*cand_set));
-        thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
-
-        // this becomes the minimal set to walk (till match or fail)
-        if (q->execute() == soar_module::row)
-        {
-            smem_prioritized_activated_lti_queue plentiful_parents;
-            bool more_rows = true;
-            bool use_db = false;
-            bool has_feature = false;
-
-            while (more_rows && (q->column_double(1) == static_cast<double>(SMEM_ACT_MAX)))
-            {
-                SQL->act_lti_get->bind_int(1, q->column_int(0));
-                SQL->act_lti_get->execute();
-                plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(0), q->column_int(0)));
-                SQL->act_lti_get->reinitialize();
-
-                more_rows = (q->execute() == soar_module::row);
-            }
-            bool first_element = false;
-            while (((match_ids->size() < number_to_retrieve) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
-            {
-                // choose next candidate (db vs. priority queue)
-                {
-                    use_db = false;
-
-                    if (!more_rows)
-                    {
-                        use_db = false;
-                    }
-                    else if (plentiful_parents.empty())
-                    {
-                        use_db = true;
-                    }
-                    else
-                    {
-                        use_db = (q->column_double(1) >  plentiful_parents.top().first);
-                    }
-
-                    if (use_db)
-                    {
-                        cand = q->column_int(0);
-                        more_rows = (q->execute() == soar_module::row);
-                    }
-                    else
-                    {
-                        cand = plentiful_parents.top().second;
-                        plentiful_parents.pop();
-                    }
-                }
-
-                // if not prohibited, submit to the remaining cue elements
-                prohibit_p = prohibit->find(cand);
-                if (prohibit_p == prohibit->end())
-                {
-                    good_cand = true;
-
-                    for (next_element = weighted_cue.begin(); next_element != weighted_cue.end() && good_cand; next_element++)
-                    {
-                        // don't need to check the generating list
-                        //If the cand_set is a math query, we care about more than its existence
-                        if ((*next_element) == (*cand_set) && (*next_element)->mathElement == NIL)
-                        {
-                            continue;
-                        }
-
-                        if ((*next_element)->element_type == attr_t)
-                        {
-                            // parent=? AND attribute_s_id=?
-                            q2 = SQL->web_attr_child;
-                        }
-                        else if ((*next_element)->element_type == value_const_t)
-                        {
-                            // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                            q2 = SQL->web_const_child;
-                            q2->bind_int(3, (*next_element)->value_hash);
-                        }
-                        else if ((*next_element)->element_type == value_lti_t)
-                        {
-                            // parent=? AND attribute_s_id=? AND value_lti_id=?
-                            q2 = SQL->web_lti_child;
-                            q2->bind_int(3, (*next_element)->value_lti);
-                        }
-
-                        // all require own id, attribute
-                        q2->bind_int(1, cand);
-                        q2->bind_int(2, (*next_element)->attr_hash);
-
-                        has_feature = (q2->execute() == soar_module::row);
-                        bool mathQueryMet = false;
-                        if ((*next_element)->mathElement != NIL && has_feature)
-                        {
-                            do
-                            {
-                                smem_hash_id valueHash = q2->column_int(2 - 1);
-                                SQL->hash_rev_type->bind_int(1, valueHash);
-
-                                if (SQL->hash_rev_type->execute() != soar_module::row)
-                                {
-                                    good_cand = false;
-                                }
-                                else
-                                {
-                                    switch (SQL->hash_rev_type->column_int(1 - 1))
-                                    {
-                                        case FLOAT_CONSTANT_SYMBOL_TYPE:
-                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
-                                            break;
-                                        case INT_CONSTANT_SYMBOL_TYPE:
-                                            mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__int(valueHash));
-                                            break;
-                                    }
-                                }
-                                SQL->hash_rev_type->reinitialize();
-                            }
-                            while (q2->execute() == soar_module::row);
-                            good_cand = mathQueryMet;
-                        }
-                        else
-                        {
-                            good_cand = (((*next_element)->pos_element) ? (has_feature) : (!has_feature));
-                        }
-                        //In CSoar this needs to happen before the break, or the query might not be ready next time
-                        q2->reinitialize();
-                        if (!good_cand)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (good_cand)
-                    {
-                        king_id = cand;
-                        first_element = true;
-                        match_ids->push_back(cand);
-                        prohibit->insert(cand);
-                    }
-                    if (good_cand && first_element)
-                    {
-                        for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
-                        {
-                            if ((*wce)->mathElement != NIL)
-                            {
-                                (*wce)->mathElement->commit();
-                            }
-                        }
-                    }
-                    else if (first_element)
-                    {
-                        for (smem_weighted_cue_list::iterator wce = weighted_cue.begin(); wce != weighted_cue.end(); wce++)
-                        {
-                            if ((*wce)->mathElement != NIL)
-                            {
-                                (*wce)->mathElement->rollback();
-                            }
-                        }
-                    }
-                }
-            }
-//            if (!match_ids->empty())
-//            {
-//                king_id = match_ids->front();
-//            }
-        }
-        q->reinitialize();
-
-        // clean weighted cue
-        for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
-        {
-            if ((*next_element)->mathElement != NIL)
-            {
-                delete(*next_element)->mathElement;
-            }
-            delete(*next_element);
+            while (!job->complete)
+                std::this_thread::yield();
         }
     }
 
-    // reconstruction depends upon level
-    if (query_level == qry_full)
-    {
-        // produce results
-        if (king_id != NIL)
-        {
-            // success!
-            add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
-            if (negquery)
-            {
-                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, negquery);
-            }
-
-            ////////////////////////////////////////////////////////////////////////////
-            timers->query->stop();
-            ////////////////////////////////////////////////////////////////////////////
-            install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
-        }
-        else
-        {
-            add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, query);
-            if (negquery)
-            {
-                add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_failure, negquery);
-            }
-
-            ////////////////////////////////////////////////////////////////////////////
-            timers->query->stop();
-            ////////////////////////////////////////////////////////////////////////////
-        }
-    }
-    else
-    {
-        ////////////////////////////////////////////////////////////////////////////
-        timers->query->stop();
-        ////////////////////////////////////////////////////////////////////////////
-    }
-
-    return king_id;
+    ////////////////////////////////////////////////////////////////////////////
+    timers->query->stop();
+    ////////////////////////////////////////////////////////////////////////////
 }
 
 

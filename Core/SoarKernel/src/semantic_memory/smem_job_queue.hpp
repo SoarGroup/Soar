@@ -87,13 +87,20 @@ public:
                     }
                 } catch(...) {}
 
+                if (job == nullptr)
+                {
+                    std::this_thread::yield();
+                    continue;
+                }
+
                 job->execution(job->argument);
                 job->complete = true;
                 job->completionCallback();
             }
         };
 
-        threads.push_back(new std::thread(jobProcessor));
+        for (unsigned i = 0;i < concurentThreadsSupported;++i)
+            threads.push_back(new std::thread(jobProcessor));
     }
 
     ~SMem_JobQueue()

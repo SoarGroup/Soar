@@ -16,7 +16,7 @@
 void SMemFunctionalTests::testSimpleCueBasedRetrieval()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testSimpleCueBasedRetrieval", 1);
+	runTest("testSimpleCueBasedRetrieval", -1);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval()
