@@ -979,7 +979,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint_header(DT_MILESTONES, PrintBefore,
         "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-//    if ((inst->i_id == 4) || (inst->i_id == 4))
+//    if (inst->i_id == 4)
 //    {
 //        dprint(DT_DEBUG, "Found.\n");
 //    }
@@ -1258,6 +1258,10 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         ++next_iter;
 
         dprint(DT_DEALLOCATES, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+//        if (inst->i_id == 23)
+//        {
+//            dprint(DT_DEBUG, "Found.\n");
+//        }
 
         level = inst->match_goal_level;
 
@@ -1369,18 +1373,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             /* --- remove it from the list of bt.trace's for its match goal --- */
                             if (cond->bt.trace->on_goal_list)
                             {
-                                remove_from_dll(
-                                    cond->bt.trace->inst->match_goal->id->preferences_from_goal,
-                                    cond->bt.trace, all_of_goal_next,
-                                    all_of_goal_prev);
+                                remove_from_dll(cond->bt.trace->inst->match_goal->id->preferences_from_goal,
+                                                cond->bt.trace, all_of_goal_next, all_of_goal_prev);
                             }
 
                             /* --- remove it from the list of bt.trace's from that instantiation --- */
-                            remove_from_dll(
-                                cond->bt.trace->inst->preferences_generated,
-                                cond->bt.trace, inst_next, inst_prev);
-                            if ((!cond->bt.trace->inst->preferences_generated)
-                                    && (!cond->bt.trace->inst->in_ms))
+                            remove_from_dll(cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev);
+                            if ((!cond->bt.trace->inst->preferences_generated) && (!cond->bt.trace->inst->in_ms))
                             {
                                 next_iter = inst_list.insert(next_iter,
                                                              cond->bt.trace->inst);
@@ -1393,17 +1392,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 /* voigtjr, nlderbin end */
             } // if
         } // for
+        preference* next_pref;
+        while (inst->preferences_cached)
+        {
+            next_pref = inst->preferences_cached->inst_next;
+            deallocate_preference(thisAgent, inst->preferences_cached);
+            inst->preferences_cached = next_pref;
+        }
     } // while
 
-    preference* next_pref;
-    static int pcd = 0;
-    while (inst->preferences_cached)
-    {
-        dprint(DT_DEBUG, "%p Deallocating cached preference %d", inst->preferences_cached, ++pcd);
-        next_pref = inst->preferences_cached->inst_next;
-        deallocate_preference(thisAgent, inst->preferences_cached);
-        inst->preferences_cached = next_pref;
-    }
     // free condition symbols and pref
     while (!cond_stack.empty())
     {

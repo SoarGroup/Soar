@@ -121,7 +121,6 @@ typedef struct preference_struct
     identity_triple                 o_ids;              /* identities for symbol*/
     rhs_triple                      rhs_funcs;          /* identities of syms in rhs functions*/
     action*                         parent_action;      /* Action that created pref.  Used by the explainer */
-    bool                            was_cached;
 
     struct slot_struct*             slot;
     struct preference_struct*       next, *prev;                            /* dll of pref's of same type in same slot */
