@@ -285,7 +285,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         }
     }
 
-    /* MToDo | Not sure if this is still needed */
+    /* Not sure if this is still needed with this new implementation of smem*/
     if (sti_created_here)
     {
         // if the identifier was created above we need to

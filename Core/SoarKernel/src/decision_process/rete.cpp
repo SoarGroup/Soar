@@ -3919,11 +3919,11 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
-        /* MToDo | This is a hack to get around an RL template bug that surfaced
+        /* Note:   This is a hack to get around an RL template bug that surfaced
          *         after we added identity-based STI variablization. For some
-         *         reason, the original template that created the instantiation
-         *         can now qualify as a duplicate of the instance, if that instance
-         *         had no conditions specialized by the match that created it.
+         *         reason, the RETE will now say that the original template that
+         *         created the instantiation is a duplicate of the instance, if that
+         *         instance had no conditions specialized by the match that created it.
          *         Previously, bottom_node->first_child was null, indicating that
          *         it was not a duplicate.  Not sure why, but this seems to work
          *         for now, though it hasn't been well-tested.  (very limited RL

@@ -34,7 +34,7 @@ class GraphViz_Visualizer
                 std::string lFileName = thisAgent->visualizationManager->settings->file_name->get_value();
                 ++m_file_count;
                 lFileName.append(std::to_string(m_file_count));
-                /* MToDO | Check if another file exists and keep trying new names */
+                /* Should check if another file exists and keep trying new names */
                 return lFileName;
             }
             return thisAgent->visualizationManager->settings->file_name->get_value();

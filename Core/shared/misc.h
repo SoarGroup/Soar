@@ -39,7 +39,7 @@ inline void normalize_separators(std::string& path)
     }
 }
 
-/* MToDo | Should probably rename to avoid conflicts */
+/* Should probably rename to avoid conflicts */
 // Conversion of value to string
 template<class T> std::string& to_string(const T& x, std::string& dest, int precision = 16, bool floatfixed = false)
 {

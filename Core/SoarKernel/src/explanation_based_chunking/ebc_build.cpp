@@ -762,8 +762,6 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
     }
 
     /* --- if no preference is above the match goal level, exit --- */
-    /* MToDo | This seems redundant given what get_results_for_instantiation does.  Is it faster
-     *         and worth it because most calls won't have results, little less extra results? */
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         if (pref->id->id->level < m_inst->match_goal_level)
@@ -1098,8 +1096,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize && !m_reliable)
     {
         variablize = false;
-        /* MToDo | We should only stop if the setting for that is on! */
-        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";

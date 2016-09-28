@@ -813,12 +813,6 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                 l_ltm->lti_id = lexer->current_lexeme.int_val;
             }
         }
-        else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
-        {
-            /* MToDo | May want to keep this case in case we want to support smem --add using existing STIs and their underlying LTI IDs.
-             * For now, we'll just set to a bad parse. In the future, we find identifier with letter/number and use LTI_ID */
-            good_at = false;
-        }
 
         if (good_at)
         {
@@ -1074,8 +1068,6 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
     if (return_val)
     {
         // search for an existing ltm (occurs if value comes before id)
-        /* MToDo | Isn't this just indexing by the pointer to the string?  Which means that they're all unique and have
-         *        don't really need the string to be unique? */
         ltm_object** p = & (*str_to_LTMs)[l_ltm_name];
 
         if (!(*p))
