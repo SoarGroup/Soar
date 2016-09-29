@@ -1225,7 +1225,7 @@ char const* Agent::RunSelf(int numberSteps, smlRunStepSize stepSize)
     if (GetConnection()->IsDirectConnection())
     {
         EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
-        ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, numberSteps) ;
+        ec->DirectRun(this->GetAgentName(), false, stepSize, stepSize, numberSteps) ;
         return "DirectRun completed" ;
     }
 #endif
