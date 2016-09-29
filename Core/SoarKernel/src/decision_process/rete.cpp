@@ -7825,23 +7825,25 @@ void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
 
 void retesave_children_of_node(agent* thisAgent, rete_node* node, FILE* f)
 {
-    uint64_t i;
     rete_node* child;
+    std::stack<rete_node*> nodeStack;
 
     /* --- Count number of non-CN-node children. --- */
-    for (i = 0, child = node->first_child; child; child = child->next_sibling)
+    for (child = node->first_child; child; child = child->next_sibling)
+    {
         if (child->node_type != CN_BNODE)
         {
-            i++;
+            nodeStack.push(child);
         }
-    retesave_eight_bytes(i, f);
+    }
+    retesave_eight_bytes(nodeStack.size(), f);
 
     /* --- Write out records for all the node's children except CN's. --- */
-    for (child = node->first_child; child; child = child->next_sibling)
-        if (child->node_type != CN_BNODE)
-        {
-            retesave_rete_node_and_children(thisAgent, child, f);
-        }
+    while (!nodeStack.empty())
+    {
+        retesave_rete_node_and_children(thisAgent, nodeStack.top(), f);
+        nodeStack.pop();
+    }
 }
 
 void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
