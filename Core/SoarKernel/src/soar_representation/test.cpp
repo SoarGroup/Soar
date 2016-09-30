@@ -899,21 +899,21 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                    there to test against --- */
                 if (rt->data.variable_referent.field_num == 0)
                 {
-                    if (!cond->data.tests.id_test->eq_test)
+                    if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                     }
                 }
                 else if (rt->data.variable_referent.field_num == 1)
                 {
-                    if (!cond->data.tests.attr_test->eq_test)
+                    if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                     }
                 }
                 else
                 {
-                    if (!cond->data.tests.value_test->eq_test)
+                    if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
                     }

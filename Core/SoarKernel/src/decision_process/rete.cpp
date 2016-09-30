@@ -4472,15 +4472,15 @@ void rete_node_to_conditions(agent* thisAgent,
                equality test in each of the three fields --- */
             if (! nvn)
             {
-                if (!cond->data.tests.id_test->eq_test)
+                if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                 }
-                if (!cond->data.tests.attr_test->eq_test)
+                if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                 }
-                if (!cond->data.tests.value_test->eq_test)
+                if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
