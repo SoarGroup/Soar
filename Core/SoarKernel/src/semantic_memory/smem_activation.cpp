@@ -357,14 +357,14 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             for (edge_it = edge_begin_it; edge_it != edge_updates->end(); ++edge_it)
             {
                 time = (*edge_it)->update_time;
-                if (time != previous_time)
+                if (time != previous_time && !first_time)
                 {//We need to compile the edge weight changes for the previous timestep before moving on to the next timestep.
                     assert(!first_time);
                     std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
                     std::map<uint64_t,double>::iterator updates_it;
                     for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
                     {//We are looping through the update map and inserting those updates into the old edge weight map.
-                        if (edge_weight_update_map_for_children.find(updates_it->first) != edge_weight_update_map_for_children.end())
+                        if (edge_weight_update_map_for_children.find(updates_it->first) == edge_weight_update_map_for_children.end())
                         {//If we don't have an update for that edge, we just decrease it.
                             old_edge_weight_map_for_children[updates_it->first] = 0.9*old_edge_weight_map_for_children[updates_it->first];
                         }
@@ -405,6 +405,20 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 }
                 previous_time = time;
             }
+            std::map<uint64_t,double>::iterator final_updates_begin = old_edge_weight_map_for_children.begin();
+            std::map<uint64_t,double>::iterator final_updates_it;
+            for (final_updates_it = final_updates_begin; final_updates_it != old_edge_weight_map_for_children.end(); ++final_updates_it)
+            {//We are looping through the update map and inserting those updates into the old edge weight map.
+                if (edge_weight_update_map_for_children.find(final_updates_it->first) == edge_weight_update_map_for_children.end())
+                {//If we don't have an update for that edge, we just decrease it.
+                    old_edge_weight_map_for_children[final_updates_it->first] = 0.9*old_edge_weight_map_for_children[final_updates_it->first];
+                }
+                else
+                {//If we do have an update, we adjust.
+                    old_edge_weight_map_for_children[final_updates_it->first] = old_edge_weight_map_for_children[final_updates_it->first] + edge_weight_update_map_for_children[final_updates_it->first];
+                }
+            }
+            edge_weight_update_map_for_children.clear();
             //This is the poit at which the final timestamp's updates should be applied and then we should write those to the db and then we should clear out the malloc'd (new) updates.
             //We use a new sqlite command that updates an existing edge with a new value for the edge weight. We loop over all edges in the old edge weight map for children for the vals.
             //After the loop of commits to the table, we then loop over thge original updates map attached to the agent to do the deletions (frees).
@@ -463,7 +477,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
      * path, so I have a queue of lists. */
     bool ever_added = false;
     uint64_t current_lti;
-    uint64_t depth_limit = settings->spreading_depth_limit->get_value();
+    uint64_t depth_limit = 1;//settings->spreading_depth_limit->get_value();
     uint64_t limit = settings->spreading_limit->get_value();
     uint64_t count = 0;
     std::list<std::pair<uint64_t, double>>* current_lti_list = new std::list<std::pair<uint64_t, double>>();
@@ -550,11 +564,11 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             new_list_iterator_begin = new_list->begin();
             new_list_iterator_end = new_list->end();
             depth = 0;
-            for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end; ++new_list_iterator)
+            for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end && depth < (depth_limit + 2); ++new_list_iterator)
             {
                 SQL->trajectory_add->bind_int(++depth, new_list_iterator->first);
             }//We add the amount of traversal we have.
-            while (depth < 11 && depth < (depth_limit + 2))
+            while (depth < 11)
             {//And we pad unused columns with 0. This helps the indexing ignore these columns later. I could maybe do the same with NULL.
                 //It depends on the specifics of partial indexing in sqlite... Point is - I know this works for that efficiency gain.
                 SQL->trajectory_add->bind_int(++depth, 0);

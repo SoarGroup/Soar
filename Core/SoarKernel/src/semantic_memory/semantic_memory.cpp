@@ -694,7 +694,6 @@ void SMem_Manager::clean_up_for_agent_deletion()
     delete smem_recipient;
     delete smem_recipients_of_source;
     delete smem_context_additions;
-    delete smem_context_additions;
     delete smem_context_removals;
     delete smem_edges_to_update;
 }

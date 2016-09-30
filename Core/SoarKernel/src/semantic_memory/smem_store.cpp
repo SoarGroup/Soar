@@ -501,7 +501,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
                     SQL->web_add->bind_int(4, p->second);
                     SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->bind_double(6, 1.0/(lti_new.size()));
+                    SQL->web_add->bind_double(6, 1.0/((double)new_lti_edges));
                     SQL->web_add->execute(soar_module::op_reinit);
                 }
 
