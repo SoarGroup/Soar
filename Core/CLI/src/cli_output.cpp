@@ -31,12 +31,11 @@ bool CommandLineInterface::DoOutput(const char pOp, const std::string* pAttr, co
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
-    std::string tempString;
 
     if (!pOp)
     {
-        PrintCLIMessage("Try 'output ?' to learn more about output's sub-commands and settings.\n"
-            "(For a detailed article about output, use 'help output'.)");
+        PrintCLIMessage("Output contains settings and sub-commands to control what Soar prints and where it prints it.\n"
+            "Use 'output ?' and 'help output' to learn more about the output command.");
         return true;
     }
     else if (pOp == 'G')
@@ -45,7 +44,7 @@ bool CommandLineInterface::DoOutput(const char pOp, const std::string* pAttr, co
         soar_module::param* my_param = thisAgent->outputManager->m_params->get(pAttr->c_str());
         if (!my_param)
         {
-            return SetError("Invalid output sub-command.  Use 'soar ?' to see a list of valid sub-commands and settings.");
+            return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
         }
 
         else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
@@ -54,7 +53,7 @@ bool CommandLineInterface::DoOutput(const char pOp, const std::string* pAttr, co
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << pAttr->c_str() << " =" ;
+            tempStringStream << my_param->get_name() << " =" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         }
         return true;
@@ -80,7 +79,7 @@ bool CommandLineInterface::DoOutput(const char pOp, const std::string* pAttr, co
         }
         else
         {
-            tempStringStream << pAttr->c_str() << " = " << pVal->c_str();
+            tempStringStream << my_param->get_name() << " = " << pVal->c_str();
             PrintCLIMessage(&tempStringStream);
         }
         /* The following code assumes that all parameters except learn are boolean */

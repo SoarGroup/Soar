@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 /* Defining SOAR_RELEASE_VERSION will:
  *
@@ -24,10 +24,12 @@
  * 5 -  Memory pools and memory pool allocators will be turned on (if disabled below)
  * 6 -  Debugging flags below will be disabled
  *
- * Note:  The default build is optimized, so NDEBUG will be true.  When we see
- *        this, we define SOAR_RELEASE_VERSION to true.
+ * Note:  The default build is optimized, so NDEBUG will be true, which will automatically
+ *        make SOAR_RELEASE_VERSION also true.
  *
  *        (use --dbg for debug build)
+ *
+ * Note:  Debug printing will prevent Soar from sending output to the SoarJavaDebugger.
  * */
 /* -- Note tracing #defines that enable SQL processing and errors can be found in soar_db.cpp -- */
 
@@ -55,7 +57,7 @@
     /* -- Enables the printing of the call trace within debug messages.  Tested
      *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
      *    but not tested. Does not work on Windows. -- */
-//    #define DEBUG_MAC_STACKTRACE
+    //#define DEBUG_MAC_STACKTRACE
 
     /* -- Enables extensive refcount and deallocation data tracking into
      *    the debug database -- */

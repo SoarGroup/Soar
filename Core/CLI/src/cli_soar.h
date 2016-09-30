@@ -28,18 +28,30 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "Try 'soar ?' or 'help soar' to learn more about the soar command.";
+                return  "Use 'soar ?' and 'help soar' to learn more about the soar command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
+                std::string subCommandArg;
+                bool backwardCompatibleReplacement = false;
+
                 OptionsData optionsData[] =
                 {
+                    {'e', "enable",             OPTARG_NONE},
+//                    {'d', "disable",          OPTARG_NONE},
+                    {'e', "on",                 OPTARG_NONE},
+                    {'d', "off",                OPTARG_NONE},
+                    {'A', "AfterPhaseIgnored",  OPTARG_NONE},
+                    {'B', "BeforePhaseIgnored", OPTARG_NONE},
+                    {'a', "apply",              OPTARG_NONE},
+                    {'d', "decide",             OPTARG_NONE},
+                    {'i', "input",              OPTARG_NONE},
+                    {'o', "output",             OPTARG_NONE},
+                    {'p', "propose",           OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
-
-                char option = 0;
 
                 for (;;)
                 {
@@ -48,42 +60,67 @@ namespace cli
                         cli.SetError(opt.GetError().c_str());
                         return cli.AppendError(GetSyntax());
                     }
-
+                    if (opt.CheckNumNonOptArgs(2, 2))
+                    {
+                        subCommandArg = argv[2];
+                    }
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
-
-                    if (option != 0)
+                    /* To maintain backwards compatibility with set-stop-phase/waitsnc */
+                    switch (opt.GetOption())
                     {
-                        cli.SetError("The 'soar' command takes only one option at a time.");
-                        return cli.AppendError(GetSyntax());
+                        case 'A':
+                        case 'B':
+                            // Ignored options
+                            break;
+                        case 'e':
+                            subCommandArg = "on";
+                            backwardCompatibleReplacement = true;
+                            break;
+                        case 'a':
+                            subCommandArg = "apply";
+                            backwardCompatibleReplacement = true;
+                            break;
+                        case 'd':
+                            subCommandArg = "decide";
+                            backwardCompatibleReplacement = true;
+                            break;
+                        case 'i':
+                            subCommandArg = "input";
+                            backwardCompatibleReplacement = true;
+                            break;
+                        case 'o':
+                            subCommandArg = "output";
+                            backwardCompatibleReplacement = true;
+                            break;
+                        case 'p':
+                            subCommandArg = "propose";
+                            backwardCompatibleReplacement = true;
+                            break;
                     }
-
-                    option = static_cast<char>(opt.GetOption());
                 }
-
-                switch (option)
+                std::string arg;
+                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
+                size_t num_args = argv.size() - start_arg_position;
+                if (num_args > 0)
                 {
-                    case 0:
-                    default:
-                        // no options
-                        if (opt.CheckNumNonOptArgs(1, 1))
-                        {
-                            return cli.DoSoar('G', &(argv[1]));
-                        }
-                        if (opt.CheckNumNonOptArgs(2, 2))
-                        {
-                            return cli.DoSoar('S', &(argv[1]), &(argv[2]));
-                        }
-                        break;
-                }
-
-                // bad: no option, but more than two argument
-                if (argv.size() > 3)
+                    arg = argv[start_arg_position];
+                } else if (num_args > 2)
                 {
                     return cli.SetError("Too many arguments for the 'soar' command.");
                 }
+
+                if ((num_args == 1) && !backwardCompatibleReplacement)
+                {
+                    return cli.DoSoar('G', &arg);
+                }
+                if (backwardCompatibleReplacement || (num_args == 2))
+                {
+                    return cli.DoSoar('S', &arg, &subCommandArg);
+                }
+
 
                 // case: nothing = full configuration information
                 return cli.DoSoar();

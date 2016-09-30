@@ -644,7 +644,7 @@ bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
 #endif
 
 #ifdef DEBUG_CONSISTENCY_CHECK
-    thisAgent->outputManager->printa_sf(thisAgent,  "\nStart: CONSISTENCY CHECK at level %d\n", goal->id->level);
+    thisAgent->outputManager->printa_sf(thisAgent,  "\nStart: CONSISTENCY CHECK at level %d\n", static_cast<int64_t>(goal->id->level));
 
     /* Just a bunch of debug stuff for now */
     if (thisAgent->highest_goal_whose_context_changed)

@@ -99,6 +99,7 @@ enum ChunkingSettings {
     SETTING_EBC_BOTTOM_ONLY,
     SETTING_EBC_INTERRUPT,
     SETTING_EBC_INTERRUPT_FAILURE,
+    SETTING_EBC_INTERRUPT_WATCHED,
     SETTING_EBC_UTILITY_MODE,
     SETTING_EBC_IDENTITY_VRBLZ,
     SETTING_EBC_CONSTRAINTS,
@@ -106,7 +107,6 @@ enum ChunkingSettings {
     SETTING_EBC_OSK,
     SETTING_EBC_REPAIR_LHS,
     SETTING_EBC_REPAIR_RHS,
-    SETTING_EBC_REPAIR_PROMOTION,
     SETTING_EBC_MERGE,
     SETTING_EBC_USER_SINGLETONS,
     SETTING_EBC_ALLOW_LOCAL_NEGATIONS,
@@ -125,7 +125,17 @@ enum BTSourceType {
     BT_Normal
 };
 
-enum visualizationObjectType {
+enum visMemoryFormat {
+    viz_node,
+    viz_record
+};
+
+enum visRuleFormat {
+    viz_name,
+    viz_full
+};
+
+enum visObjectType {
     viz_inst_record,
     viz_chunk_record,
     viz_simple_inst,

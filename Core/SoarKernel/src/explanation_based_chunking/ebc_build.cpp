@@ -135,8 +135,8 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     m_results = pref;
     if (pref->o_ids.id && linked_id)
     {
-        add_identity_unification(pref->o_ids.id, linked_id);
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->o_ids.id, linked_id);
+        add_identity_unification(pref->o_ids.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */
     add_results_if_needed(pref->value, pref->o_ids.value);
@@ -201,7 +201,7 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
         {
             add_pref_to_results(pref, 0);
         } else {
-            dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, pref->id->id->level, m_results_match_goal_level);
+            dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, static_cast<int64_t>(pref->id->id->level), static_cast<int64_t>(m_results_match_goal_level));
         }
     }
 }
@@ -728,7 +728,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->o_ids, result_p->rhs_funcs);
+                            result_p->o_ids, result_p->rhs_funcs, true);
         thisAgent->symbolManager->symbol_add_ref(p->id);
         thisAgent->symbolManager->symbol_add_ref(p->attr);
         thisAgent->symbolManager->symbol_add_ref(p->value);
@@ -762,8 +762,6 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
     }
 
     /* --- if no preference is above the match goal level, exit --- */
-    /* MToDo | This seems redundant given what get_results_for_instantiation does.  Is it faster
-     *         and worth it because most calls won't have results, little less extra results? */
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         if (pref->id->id->level < m_inst->match_goal_level)
@@ -797,7 +795,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     /* --- backtrace through the instantiation that produced each result --- */
     outputManager->set_print_test_format(true, false);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n\n%7\nthat produced result preferences:\n\n%6\n", m_inst->prod_name, NULL, m_results);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
@@ -880,9 +878,6 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_type = CHUNK_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
-        #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_chunks_attempted();
-        #endif
     }
     else
     {
@@ -934,8 +929,13 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule via chunking.";
+                thisAgent->reason_for_stopping = "Soar learned new rule.";
 
+            }
+            if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && m_prod->explain_its_chunks && thisAgent->explanationMemory->isRecordingChunk())
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Soar learned new rule from a watched production.";
             }
             //            chunk_history += "Successfully created chunk\n";
             //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
@@ -1025,7 +1025,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_inst_top = m_inst_bottom = m_vrblz_top = NULL;
 
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
-    if (chunks_this_d_cycle > max_chunks)
+    if (chunks_this_d_cycle >= max_chunks)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->outputManager->settings[OM_WARNINGS]);
         max_chunks_reached = true;
@@ -1039,6 +1039,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->outputManager->settings[OM_WARNINGS]);
+        thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
         #endif
@@ -1065,6 +1066,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID --- */
     m_chunk_new_i_id = get_new_inst_id();
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->increment_stat_chunks_attempted();
+    #endif
 
     /* --- Collect the grounds into the chunk condition lists --- */
     create_initial_chunk_condition_lists();
@@ -1073,7 +1077,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!m_inst_top)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
-        print_current_built_rule("Invalid rule with no grounds: ");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
@@ -1092,7 +1096,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize && !m_reliable)
     {
         variablize = false;
-        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
@@ -1142,7 +1146,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (!lChunkValidated)
     {
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_unorderable();
+        thisAgent->explanationMemory->increment_stat_could_not_repair();
         #endif
         if (variablize)
         {
@@ -1183,6 +1187,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
+    m_chunk_inst->preferences_cached = NULL;
     reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;

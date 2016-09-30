@@ -277,7 +277,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     list* fl;
     rhs_function* rf;
 
-    if (!rv)
+    if (!rhs_value_true_null(rv))
     {
         destString += '#';
     }
@@ -406,24 +406,24 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c", pref->id, pref->attr, pref->value, preference_to_char(pref->type));
         if (preference_is_binary(pref->type))
         {
-            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+            sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }
     }
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue;
         if (pref->o_ids.id) {
-            lID = "<" + std::to_string(pref->o_ids.id) + ">";
+            lID = "[" + std::to_string(pref->o_ids.id) + "]";
         } else {
             lID = pref->id->to_string(false);
         }
         if (pref->o_ids.attr) {
-            lAttr = "<" + std::to_string(pref->o_ids.attr) + ">";
+            lAttr = "[" + std::to_string(pref->o_ids.attr) + "]";
         } else {
             lAttr = pref->attr->to_string(false);
         }
         if (pref->o_ids.value) {
-            lValue = "<" + std::to_string(pref->o_ids.value) + ">";
+            lValue = "[" + std::to_string(pref->o_ids.value) + "]";
         } else {
             lValue = pref->value->to_string(false);
         }

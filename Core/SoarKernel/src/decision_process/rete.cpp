@@ -912,7 +912,7 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
     {
 
 #ifdef DEBUG_WATERFALL
-        combozulator(" is NIL (nil goal retraction)");
+        thisAgent->outputManager->printa_sf(" is NIL (nil goal retraction)");
 #endif
         return NIL;
 
@@ -3919,11 +3919,11 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
-        /* MToDo | This is a hack to get around an RL template bug that surfaced
+        /* Note:   This is a hack to get around an RL template bug that surfaced
          *         after we added identity-based STI variablization. For some
-         *         reason, the original template that created the instantiation
-         *         can now qualify as a duplicate of the instance, if that instance
-         *         had no conditions specialized by the match that created it.
+         *         reason, the RETE will now say that the original template that
+         *         created the instantiation is a duplicate of the instance, if that
+         *         instance had no conditions specialized by the match that created it.
          *         Previously, bottom_node->first_child was null, indicating that
          *         it was not a duplicate.  Not sure why, but this seems to work
          *         for now, though it hasn't been well-tested.  (very limited RL
@@ -6166,8 +6166,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative retraction: %y",
-                           node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative retraction: %y", node->b.p.prod->name);
 #endif
         activation_exit_sanity_check();
         return;
@@ -6175,8 +6174,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* --- no match found, so add new assertion --- */
 #ifdef DEBUG_RETE_PNODES
-    thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative assertion: %y",
-                       node->b.p.prod->name);
+    thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative assertion: %y", node->b.p.prod->name);
 #endif
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
@@ -6211,7 +6209,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
-    combozulator("\n    Level of goal is  %d", msc->level);
+    print("\n    Level of goal is  %d", static_cast<int64_t>(msc->level));
 #endif
 
     prod_type = IE_PRODS;
@@ -6238,19 +6236,23 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
         {
-            if ((act->type == MAKE_ACTION) &&
-                    (rhs_value_is_symbol(act->attr)))
+            if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr)))
             {
-                if (
-                    (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
-                        (get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
-                                                  rhs_value_to_reteloc_field_num(act->id),
-                                                  tok, w)->id->isa_goal))
+                if ((rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
-                    operator_proposal = true;
-                    prod_type = !PE_PRODS;
-                    break;
+                    Symbol* lSym = NULL;
+                    if (tok && w)
+                    {
+                        lSym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                                                       rhs_value_to_reteloc_field_num(act->id), tok, w);
+                    }
+                    if (lSym && lSym->id->isa_goal)
+                    {
+                        operator_proposal = true;
+                        prod_type = !PE_PRODS;
+                        break;
+                    }
                 }
             }
         }
@@ -6338,7 +6340,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         }
                         else
                         {
-                            if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
+                            if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                                (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
                             {
                                 /* iff RHS has only operator elaborations
                                     then it's IE_PROD, otherwise PE_PROD, so
@@ -6354,18 +6357,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                 {
                                     if (act->type == MAKE_ACTION)
                                     {
-                                        if ((rhs_value_is_symbol(act->id)) &&
-
-                                            /** shouldn't this be either
-                                                    symbol_to_rhs_value (act->id) ==  or
-                                                    act->id == rhs_value_to_symbol(temp..)**/
-                                            (rhs_value_to_symbol(act->id) ==
-                                                temp_tok->w->value))
+                                        if ((rhs_value_is_symbol(act->id)) && (rhs_value_to_symbol(act->id) == temp_tok->w->value))
                                         {
                                             op_elab = true;
                                         }
                                         else if (rhs_value_is_reteloc(act->id) &&
-                                            (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
+                                            (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                                                                                            rhs_value_to_reteloc_field_num(act->id), tok, w)))
                                         {
                                             op_elab = true;
                                         }
@@ -6548,8 +6546,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
 #ifdef DEBUG_RETE_PNODES
-            thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative assertion: %y",
-                               node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative assertion: %y", node->b.p.prod->name);
 #endif
             activation_exit_sanity_check();
             return;
@@ -6567,10 +6564,16 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         /* --- add that instantiation to tentative_retractions --- */
 #ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative retraction: %y",
-                           node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative retraction: %y", node->b.p.prod->name);
 #endif
-
+        /* MToDo | Tried commenting out the following two lines in an effort to
+         *         fix a problem where Soar can't find an instantiation to
+         *         retract.  It was matching based on the rete_token and rete_wme,
+         *         and they were all null. Unfortunately, that didn't solve the
+         *         problem.  The item it was looking for wasnt' there.  It's
+         *         possible that it was trying to retract the instantiations a
+         *         second time while it was still in tentative limbo.
+         */
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
@@ -6589,7 +6592,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->level = msc->goal->id->level;
 
 #ifdef DEBUG_WATERFALL
-        combozulator("\n    Level of retraction is: %d", msc->level);
+        thisAgent->outputManager->printa_sf("\n    Level of retraction is: %d", msc->level);
 #endif
 
         if (msc->goal->id->link_count == 0)
@@ -6631,23 +6634,23 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
 #ifdef DEBUG_WATERFALL
         thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
-        combozulator(" is active at level %d\n", msc->level);
+        thisAgent->outputManager->printa_sf(" is active at level %d\n", msc->level);
 
         {
             ms_change* assertion;
-            combozulator("\n Retractions list:\n");
+            thisAgent->outputManager->printa_sf("\n Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;
                     assertion;
                     assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                    assertion->p_node->b.p.prod->name);
-                combozulator(" at level %d\n", assertion->level);
+                thisAgent->outputManager->printa_sf(" at level %d\n", assertion->level);
             }
 
             if (thisAgent->nil_goal_retractions)
             {
-                combozulator("\nCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf("\nCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions;
                         assertion;
@@ -6655,10 +6658,10 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                        assertion->p_node->b.p.prod->name);
-                    combozulator(" at level %d\n", assertion->level);
+                    thisAgent->outputManager->printa_sf(" at level %d\n", assertion->level);
                     if (assertion->goal)
                     {
-                        combozulator("This assertion has non-NIL goal pointer.\n");
+                        thisAgent->outputManager->printa_sf("This assertion has non-NIL goal pointer.\n");
                     }
                 }
             }
@@ -7822,23 +7825,25 @@ void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
 
 void retesave_children_of_node(agent* thisAgent, rete_node* node, FILE* f)
 {
-    uint64_t i;
     rete_node* child;
+    std::stack<rete_node*> nodeStack;
 
     /* --- Count number of non-CN-node children. --- */
-    for (i = 0, child = node->first_child; child; child = child->next_sibling)
+    for (child = node->first_child; child; child = child->next_sibling)
+    {
         if (child->node_type != CN_BNODE)
         {
-            i++;
+            nodeStack.push(child);
         }
-    retesave_eight_bytes(i, f);
+    }
+    retesave_eight_bytes(nodeStack.size(), f);
 
     /* --- Write out records for all the node's children except CN's. --- */
-    for (child = node->first_child; child; child = child->next_sibling)
-        if (child->node_type != CN_BNODE)
-        {
-            retesave_rete_node_and_children(thisAgent, child, f);
-        }
+    while (!nodeStack.empty())
+    {
+        retesave_rete_node_and_children(thisAgent, nodeStack.top(), f);
+        nodeStack.pop();
+    }
 }
 
 void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)

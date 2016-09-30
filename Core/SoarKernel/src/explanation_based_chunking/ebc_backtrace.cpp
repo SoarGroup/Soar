@@ -134,7 +134,7 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
      
     assert(thisID->id->is_sti());
-        assert(thisID->id->level <= cond->bt.level);
+    assert(thisID->id->level <= cond->bt.level);
 
     return  (thisID->id->level <= grounds_level);
 }
@@ -151,7 +151,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     condition* c;
     list* grounds_to_print, *locals_to_print, *negateds_to_print;
 
-    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, grounds_level);
+    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
 //    dprint(DT_BACKTRACE, "           RHS identities: (%y [o%u] ^%y [o%u] %y [o%u]),\n           Matched cond: %l\n",
 //        get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
 //        get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
@@ -224,28 +224,27 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-        cache_constraints_in_cond(c);
+            cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
-        {
-                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
             {
+                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
+                {
                     add_to_grounds(c);
                 }
                 else                                        /* Another condition that matches the same wme */
                 {
-                add_to_grounds(c);
+                    add_to_grounds(c);
                     add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);
-                }
             }
+        }
         else
         {
             dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
             /* --- negative or nc cond's are either grounds or potentials --- */
-            add_to_chunk_cond_set(&negated_set,
-                                  make_chunk_cond_for_negated_condition(c));
+            add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
             {
                 push(thisAgent, c, negateds_to_print);
@@ -257,10 +256,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     grounds_to_print = NIL;
     locals_to_print = NIL;
     negateds_to_print = NIL;
-
-//    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-//    dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
-//    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
@@ -334,7 +329,9 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             print_wme(thisAgent, cond->bt.wme_);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
+        thisAgent->outputManager->set_print_test_format(true, true);
         dprint(DT_BACKTRACE, "Backtracing through local condition %l...\n", cond);
+        thisAgent->outputManager->clear_print_test_format();
         bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 
         if (bt_pref)
@@ -435,17 +432,17 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
                 dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
                 if (pCond->data.tests.id_test->eq_test->identity || local_singleton_superstate_identity->id)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
                     add_identity_unification(pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
                 }
                 if (pCond->data.tests.attr_test->eq_test->identity || local_singleton_superstate_identity->attr)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
                     add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
                 }
                 if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity->value)
                 {
-                    dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
+                    dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                     add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                 }
             }
@@ -458,7 +455,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
-    /* MToDo:  Do we need to check if not a proposal?  This seems to already not unify proposals. */
+    /* Thought we might need to check if this is a proposal, but this seems to already skip unifying proposals. */
     if (pCond->bt.wme_->id->id->isa_goal)
     {
         if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
@@ -470,17 +467,17 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
             dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
             if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
             }
             if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
             }
             if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
                 add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             }
         }

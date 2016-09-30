@@ -87,8 +87,7 @@ typedef struct binding_structure
     Symbol* from, *to;
 } Binding;
 
-extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv);
-extern rhs_value copy_rhs_value_no_refcount(agent* thisAgent, rhs_value rv);
+extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities = false);
 
 extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
 extern void deallocate_action_list(agent* thisAgent, action* actions);
@@ -194,6 +193,16 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
     }
     else
         return (rv1 == rv2);
+}
+
+inline rhs_value rhs_value_true_null(rhs_value rv)
+{
+    if (rv == NULL) return NULL;
+    if (rhs_value_is_reteloc(rv)) { if ((rhs_value_to_reteloc_field_num(rv) == 0) && rhs_value_to_reteloc_levels_up(rv) == 0) { return NULL; } else { return rv; } };
+    if (rhs_value_is_unboundvar(rv)) { if (rhs_value_to_unboundvar(rv) == 0) { return NULL; } else { return rv; } };
+    if (rhs_value_is_funcall(rv)) { if (rhs_value_to_funcall_list(rv) == 0) { return NULL; } else { return rv; } };
+    if ((rhs_value_to_rhs_symbol(rv) == 0) || (rhs_value_to_rhs_symbol(rv)->referent == NULL)) { return NULL; } else { return rv; };
+    return rv;
 }
 
 /* -- Functions to create RHS -- */

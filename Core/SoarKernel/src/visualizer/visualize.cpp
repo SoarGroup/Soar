@@ -25,44 +25,39 @@
 #include "instantiation_record.h"
 #include "semantic_memory.h"
 #include "production_record.h"
+#include "visualize_wm.h"
+#include "visualize_settings.h"
 
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
     outputManager = thisAgent->outputManager;
-    m_viz_print = false;
-    m_viz_launch_image = true;
-    m_viz_launch_gv = false;
-    m_simple_inst = false;
-    m_include_arch = false;
-    m_use_same_file = true;
-    m_generate_img = true;
-    m_line_style = "polyline";
-    m_filename_prefix = "soar_visualization";
-    m_image_type = "svg";
+
+    settings = new Viz_Parameters(thisAgent);
+    m_file_count = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
 {
 }
 
-void GraphViz_Visualizer::visualize_wm()
+void GraphViz_Visualizer::visualize_wm(Symbol* pSym, int pDepth)
 {
     graphviz_output.clear();
 
     WM_Visualization_Map* wme_map = new WM_Visualization_Map(thisAgent);
     viz_graph_start(false);
-    if (m_simple_inst)
+    if (thisAgent->visualizationManager->settings->memory_format->get_value() == viz_node)
     {
-        wme_map->visualize_wm_as_graph();
+        wme_map->visualize_wm_as_graph(pSym, pDepth);
     } else {
-        wme_map->visualize_wm_as_linked_records();
+        wme_map->visualize_wm_as_linked_records(pSym, pDepth);
     }
     viz_graph_end();
     delete wme_map;
 }
 
-void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int depth)
+void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int pDepth)
 {
     ltm_set store_set;
     std::string graphviz_connections, idStr;
@@ -72,7 +67,7 @@ void GraphViz_Visualizer::visualize_smem(uint64_t lti_id, int depth)
     {
         thisAgent->SMem->create_full_store_set(&store_set);
     } else {
-        thisAgent->SMem->create_store_set(&store_set, lti_id, depth);
+        thisAgent->SMem->create_store_set(&store_set, lti_id, pDepth);
     }
 
     graphviz_output.clear();
@@ -143,7 +138,7 @@ void GraphViz_Visualizer::viz_graph_start(bool pLeftRight)
         graphviz_output +=  "   graph [ rankdir = \"TD\" ";
     }
     graphviz_output +=  "splines = \"";
-    graphviz_output += m_line_style;
+    graphviz_output += thisAgent->visualizationManager->settings->line_style->get_value();
     graphviz_output +=  "\"];\n";
 }
 
@@ -154,14 +149,20 @@ void GraphViz_Visualizer::viz_graph_end()
     escape_graphviz_chars();
 }
 
-void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start(Symbol* pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique)
 {
+
     std::string pNameString = pName->to_string();
-    viz_object_start_string(pNameString, node_id, objectType);
+    viz_object_start_string(pNameString, node_id, objectType, pMakeUnique);
 }
 
-void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t node_id, visObjectType objectType, std::string* pMakeUnique)
 {
+    std::string nodeName(pName);
+    if (pMakeUnique)
+    {
+        nodeName += std::to_string(++m_unique_counter);
+    }
     switch (objectType)
     {
         case viz_inst_record:
@@ -187,7 +188,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
                 "      penwidth = \"0\"\n"
-                "      label = \xF3", pName.c_str());
+                "      label = \xF3", nodeName.c_str());
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%s\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str());
@@ -201,25 +202,28 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
-                "      shape = \"box\" style = \"rounded\"\n"
-                "      label = \"%s", pName.c_str(), pName.c_str());
+                "      shape = \"circle\"\n"
+                "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
-                "      shape = \"circle\" style = \"rounded\"\n"
-                "      label = \"%s", pName.c_str(), pName.c_str());
+                "      shape = \"box\"\n"
+                "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
 
         default:
             assert(false);
             break;
     }
-
+    if (pMakeUnique)
+    {
+        (*pMakeUnique) = nodeName;
+    }
 }
 
-void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
+void GraphViz_Visualizer::viz_object_end(visObjectType objectType)
 {
     switch (objectType)
     {
@@ -232,6 +236,7 @@ void GraphViz_Visualizer::viz_object_end(visualizationObjectType objectType)
 
         case viz_simple_inst:
         case viz_wme:
+        case viz_wme_terminal:
             graphviz_output += "\"\n   ];\n\n";
             break;
 
@@ -368,7 +373,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         graphviz_output += ":e";
     } else {
@@ -378,7 +383,7 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
     }
     graphviz_output += "-\xF2 rule";
     graphviz_output += std::to_string(pTargetRuleID);
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         graphviz_output += ":w\n";
     } else {

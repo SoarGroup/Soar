@@ -20,6 +20,7 @@
 #include "episodic_memory.h"
 #include "lexer.h"
 #include "print.h"
+#include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
 #include "test.h"
@@ -277,7 +278,7 @@ std::string get_stacktrace(const char* prefix)
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
     // the stack summarized in the string returned
-    void* addrlist[7];
+    void* addrlist[12];
 
     // retrieve current stack addresses
     int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
@@ -374,7 +375,31 @@ void debug_test(int type)
             break;
         }
         case 2:
-            dprint(DT_DEBUG, "%8");
+//            rhs_value rv;
+//            rv = reteloc_to_rhs_value(0,0);
+//            dprint(DT_DEBUG, "NULL reteloc: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = reteloc_to_rhs_value(1,0);
+//            dprint(DT_DEBUG, "Non-NULL reteloc: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = funcall_list_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL funcall: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            cons* ls;
+//            allocate_cons(thisAgent, &ls);
+//            rv = funcall_list_to_rhs_value(ls);
+//            dprint(DT_DEBUG, "Non-NULL funcall: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            free_cons(thisAgent, ls);
+//            rv = unboundvar_to_rhs_value(0);
+//            dprint(DT_DEBUG, "NULL unbound: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = unboundvar_to_rhs_value(1);
+//            dprint(DT_DEBUG, "Non-NULL unbound: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = rhs_symbol_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rhs_symbol rs;
+//            rs->referent = NULL;
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Semi-NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rs->referent = thisAgent->symbolManager->find_identifier('S', 1);
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Non-NULL symbol: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
             break;
         case 3:
         {
@@ -387,7 +412,7 @@ void debug_test(int type)
             Symbol *sym = thisAgent->symbolManager->find_identifier('G', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", static_cast<int64_t>(sym->id->level), static_cast<int64_t>(sym->id->promotion_level));
             } else {
                 dprint(DT_DEBUG, "Could not find G1.\n");
             }

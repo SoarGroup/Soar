@@ -418,6 +418,9 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     else if (ref_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         initial_value = ref_sym->fc->value;
+    } else {
+        deallocate_action_list(thisAgent, rhs);
+        return NULL;
     }
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
@@ -458,7 +461,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id);
     } else {
-        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
     }
     if (!result->rhs_funcs.attr)
     {
@@ -471,7 +474,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id);
     } else {
-        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
     }
     if (!result->rhs_funcs.value)
     {
@@ -484,7 +487,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id);
     } else {
-        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
+        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
     }
     if (preference_is_binary(result->type))
     {
@@ -498,11 +501,12 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
     }
 
+    dprint_set_indents(DT_RHS_VARIABLIZATION, "");
+    dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
+    dprint_clear_indents(DT_RHS_VARIABLIZATION);
+
     if (variablize)
     {
-        dprint_set_indents(DT_RHS_VARIABLIZATION, "");
-        dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
-        dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
         variablize_rhs_symbol(a->id, true);
         variablize_rhs_symbol(a->attr);
@@ -511,8 +515,9 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         {
             variablize_rhs_symbol(a->referent);
         }
-        dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
+
+    dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
 
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;

@@ -28,7 +28,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return  "Try 'chunk ?' or 'help chunk' to learn more about the chunking command.";
+                return  "Use 'chunk ?' or 'help chunk' to learn more about the chunking command.";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -38,8 +38,6 @@ namespace cli
                 {
                     {0, 0, OPTARG_NONE}
                 };
-
-                char option = 0;
 
                 for (;;)
                 {
@@ -53,36 +51,31 @@ namespace cli
                     {
                         break;
                     }
-
-                    if (option != 0)
-                    {
-                        cli.SetError("chunk takes only one option at a time.");
-                        return cli.AppendError(GetSyntax());
-                    }
-
-                    option = static_cast<char>(opt.GetOption());
                 }
 
-                switch (option)
+                std::string arg, arg2;
+                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
+                size_t num_args = argv.size() - start_arg_position;
+                if (num_args > 0)
                 {
-                    case 0:
-                    default:
-                        // no options
-                        if (opt.CheckNumNonOptArgs(1, 1))
-                        {
-                            return cli.DoChunk('G', &(argv[1]));
-                        }
-                        if (opt.CheckNumNonOptArgs(2, 2))
-                        {
-                            return cli.DoChunk('S', &(argv[1]), &(argv[2]));
-                        }
-                        break;
+                    arg = argv[start_arg_position];
+                }
+                if (num_args > 1)
+                {
+                    arg2 = argv[start_arg_position+1];
+                }
+                if (num_args > 2)
+                {
+                    return cli.SetError("Too many arguments for the 'chunk' command.");
                 }
 
-                // bad: no option, but more than two argument
-                if (argv.size() > 3)
+                if (num_args == 1)
                 {
-                    return cli.SetError("Too many arguments.");
+                    return cli.DoChunk(&arg);
+                }
+                if (num_args == 2)
+                {
+                    return cli.DoChunk(&arg, &arg2);
                 }
 
                 // case: nothing = full configuration information

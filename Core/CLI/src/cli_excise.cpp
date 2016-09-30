@@ -38,7 +38,6 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
         excise_all_productions(thisAgent, false);
-        this->DoSoar('G', &lCmd, NULL);    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_CHUNKS))
     {
@@ -106,8 +105,6 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 
         excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
         excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false);
-
-        this->DoSoar('G', &lCmd, NULL);    // from the manual, init when --all or --task are executed
     }
     if (options.test(EXCISE_TEMPLATE))
     {

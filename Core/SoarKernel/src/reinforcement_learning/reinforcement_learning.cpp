@@ -608,7 +608,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-        if (reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
+        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
         {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
@@ -630,6 +630,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         else
         {
+            thisAgent->name_of_production_being_reordered = NULL;
             dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
             thisAgent->symbolManager->symbol_remove_ref(&new_name_symbol);

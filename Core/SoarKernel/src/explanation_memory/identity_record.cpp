@@ -51,10 +51,9 @@ void identity_record::generate_identity_sets(condition* lhs)
 
     /* Generate identity sets and add mappings for all conditions in chunk */
     add_identities_in_condition_list(thisAgent, lhs, identities_in_chunk, id_to_id_set_mappings);
-    /* MToDo | Will need to do for all base instantiations */
-//    print_identities_in_chunk();
-//    print_identity_mappings();
-//    print_original_ebc_mappings();
+    //    print_identities_in_chunk();
+    //    print_identity_mappings();
+    //    print_original_ebc_mappings();
 
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     id_to_id_map::iterator iter;
