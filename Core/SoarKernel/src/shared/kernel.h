@@ -129,15 +129,8 @@
  *    top-level-ref-cts turned off. Soar will be much more efficient.
  *    See comments in recmem.cpp
  *
- *  - BUG_139_WORKAROUND: Enable workaround for bug 139
  *  - BUG_139_WORKAROUND_WARNING: Print a warning whenever we are ignoring a
  *    situation when there's no instance to retract for a justification
- *
- *  - O_REJECTS_FIRST: Enable Soar to deal with certain productions in a more
- *    intuitive manner.  In particular, productions that modify a wme value by
- *    reject its current value and asserting its new value need to ensure that
- *    the current and new values differ.  This option may add a small run time
- *    cost, since two loops are made through the preferences list.
  *
  *  - DISCARD_CHUNK_VARNAMES: Set to false to preserve variable names in chunks
  *    within the rete.  This takes extra memory.

@@ -769,6 +769,15 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
             break;
         }
     }
+
+    /* Note that in Soar 9.3.4, chunking would not create a chunk for a
+     * a result if another result was also being returned to an even higher
+     * superstate.  In this part of the code, it would set learning off
+     * so that an intermediate justification is created instead.  We disabled that
+     * aspect in 2/2013 to fix issues that Shiwali was having with her research
+     * agents. Documenting here in case this ever needs to changed back or made
+     * an option. */
+
     if (!pref)
     {
         return false;
