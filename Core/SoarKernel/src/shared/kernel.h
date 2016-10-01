@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 /* Defining SOAR_RELEASE_VERSION will:
  *
@@ -31,8 +31,33 @@
  *
  * Note:  Debug printing will prevent Soar from sending output to the SoarJavaDebugger.
  * */
-/* -- Note tracing #defines that enable SQL processing and errors can be found in soar_db.cpp -- */
 
+/* --------------- Compiler directives that alter Soar behavior --------------------*/
+
+//#define DO_TOP_LEVEL_REF_CTS          /* Maintains refcounts on wme/pref at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
+#define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
+#define BUG_139_WORKAROUND
+#define DISCARD_CHUNK_VARNAMES true     /* Do not save variable names in RETE when learning chunks.  Saves memory. */
+
+/* -------- Compiler directives for potentially expensive statistics ---------------*/
+//#define NO_TIMING_STUFF             /* Eliminates all timing statistics. */
+#ifndef NO_TIMING_STUFF               /* Tracks additional statistics on how much time is spent in various parts of the system. */
+    //#define DETAILED_TIMING_STATS
+#endif
+
+/*  rete stat tracking (may be broken right now though bug might be superficial) */
+//#define TOKEN_SHARING_STATS           /* get statistics on token counts with and without sharing */
+//#define SHARING_FACTORS               /* gather statistics on beta node sharing */
+//#define NULL_ACTIVATION_STATS         /* gather statistics on null activation */
+
+/* -------------- Macros for safe counters ------------*/
+
+#define increment_counter(counter) counter++; if (counter == 0) counter = 1;
+#define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;
+
+/* --------------- Compiler directives for debugging ---------------------- *
+ *   Note: #defines that enable trace messages pf SQL processing and errors   *
+ *   can be found in soar_db.cpp                                              */
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -41,109 +66,34 @@
 
 #ifndef SOAR_RELEASE_VERSION
 
-    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
-//    #define MEM_POOLS_ENABLED 1
+    //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
+    //#define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
-        #define USE_MEM_POOL_ALLOCATORS 1
+        #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
-    /* Experimental setting that forces Soar to consider the attribute element
-     * of a wme/pref when incrementing/decrementing link counts, which are use
-     * for garbage collection. */
-    //    #define DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
-
-    /* -- Enables the printing of the call trace within debug messages.  Tested
-     *    on OSX (Mountain Lion).  Compiles and might also work on Linux,
-     *    but not tested. Does not work on Windows. -- */
-    //#define DEBUG_MAC_STACKTRACE
-
-    /* -- Enables extensive refcount and deallocation data tracking into
-     *    the debug database -- */
-    //#define DEBUG_TRACE_REFCOUNT_INVENTORY
+    //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
+    //#define DEBUG_MAC_STACKTRACE  /* Enables the printing of the call stack within debug messages.
+                                    /* Tested on OSX (Mountain Lion).  Does not work on Windows. */
+    //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */
 
     //#define DEBUG_EPMEM_WME_ADD
-    //#define DEBUG_MEMORY        /* -- Zeroes out memory on init and fills with garbage on dealloc -- */
-    //#define DEBUG_PREFS         /* -- Preference printouts -- */
+    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
+    //#define DEBUG_PREFS
     //#define DEBUG_RETE_PNODES
     //#define DEBUG_WATERFALL
-
-    /* -- Low level GDS debug information -- */
-    //#define DEBUG_GDS
-
-    /* -- High-level information on the instantiations that created an
-     * o-supported element and lead to the elaboration of the GDS */
-    //#define DEBUG_GDS_HIGH
-
+    //#define DEBUG_GDS             /* Low level GDS debug information */
+    //#define DEBUG_GDS_HIGH        /* Include instantiations that created an o-supported element and
+                                    /* lead to the elaboration of the GDS */
 #else
-    //#define MEMORY_POOL_STATS   /* -- Collects memory pool stats for stats command -- */
+    //#define MEMORY_POOL_STATS
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
     #endif
 #endif
-
-//#define NO_TIMING_STUFF
-#ifndef NO_TIMING_STUFF
-//#define DETAILED_TIMING_STATS
-#endif
-
-
-/* ----------------- Compiles directives that alter Soar behavior ---------------------- */
-
-//#define DO_TOP_LEVEL_REF_CTS
-#define BUG_139_WORKAROUND
-#define DISCARD_CHUNK_VARNAMES false
-
-
-/* -- These enable rete stat tracking code that is broken right now (may be superficial) -- */
-//#define TOKEN_SHARING_STATS       /* get statistics on token counts with and without sharing */
-//#define SHARING_FACTORS           /* gather statistics on beta node sharing */
-//#define NULL_ACTIVATION_STATS     /* gather statistics on null activation */
-
-/* ---------------- Macros for safe counters -------------- */
-
-#define increment_counter(counter) counter++; if (counter == 0) counter = 1;
-#define add_to_counter(counter, amt) uint64_t lastcnt = counter; counter += amt; if (counter < lastcnt) counter = amt;
-
-/* --------------- Explanation of directives that alter Soar behavior ----------------
- *
- *  - MEMORY_POOL_STATS: Keep statistics on memory pool usage
- *
- *  - NO_TIMING_STUFF: Eliminates all timing statistics. The "stats" command
- *                     will have much shorter output.
- *
- *  - DETAILED_TIMING_STATS: Keep statistics on how much time is spent in
- *                           various parts of the system.
- *      Note: If you have DETAILED_TIMING_STATS defined, you must NOT define
- *            NO_TIMING_STUFF
- *
- *  - DO_TOP_LEVEL_REF_CTS: Maintain refcounts on wmes/prefs at the top level.
- *    Note: This can result in larger memory growth due to top-level objects
- *    that never get deallocated because the ref counts never drop to 0.
- *    The default for Soar v6 - v8.6.1 was to maintain the ref cts.  It's
- *    possible that in your particular application, weird things could happen
- *    if you don't do these ref cts, but if you are trying to improve performance
- *    and reduce memory, it's worth testing your system with the
- *    top-level-ref-cts turned off. Soar will be much more efficient.
- *    See comments in recmem.cpp
- *
- *  - BUG_139_WORKAROUND_WARNING: Print a warning whenever we are ignoring a
- *    situation when there's no instance to retract for a justification
- *
- *  - DISCARD_CHUNK_VARNAMES: Set to false to preserve variable names in chunks
- *    within the rete.  This takes extra memory.
- *
- *  - TOKEN_SHARING_STATS: Get statistics on token counts in rete with and
- *    without sharing.
- *
- *  - TOKEN_SHARING_STATS: Gather statistics on null activations in the rete.
- *
- *  - SHARING_FACTORS:Gather statistics on beta node sharing in the rete.
- *
- * ----------------------------------------------------------------------------- */
-
 
 #endif
 

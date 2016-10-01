@@ -241,7 +241,7 @@ void deallocate_test(agent* thisAgent, test t)
             }
             break;
         default: /* relational tests other than equality */
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #else
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);

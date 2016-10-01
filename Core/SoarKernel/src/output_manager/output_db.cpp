@@ -28,7 +28,7 @@ OM_DB::OM_DB(soar_module::sqlite_database* pDebugDB)
 
 OM_DB::~OM_DB()
 {
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
     compile_refcount_summary();
 #endif
 }
@@ -65,7 +65,7 @@ void OM_DB::create_tables()
     add_structure("CREATE TABLE IF NOT EXISTS debug (id INTEGER PRIMARY KEY, module TEXT, message TEXT)");
 
     /* -- Tables that store reference count messages, final tallies and a problem report -- */
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
     add_structure("CREATE TABLE IF NOT EXISTS refcounts (id INTEGER PRIMARY KEY, symbol TEXT, "
                   "callers TEXT, old_ref INTEGER, new_ref INTEGER)");
     //  add_structure( "CREATE TABLE IF NOT EXISTS problems (id INTEGER PRIMARY KEY, symbol TEXT, "
@@ -85,7 +85,7 @@ void OM_DB::create_indices()
     add_structure("CREATE INDEX IF NOT EXISTS debug_message ON debug (message)");
     add_structure("CREATE INDEX IF NOT EXISTS debug_module ON debug (module)");
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
     add_structure("CREATE INDEX IF NOT EXISTS refcounts_symbol ON refcounts (symbol)");
     add_structure("CREATE INDEX IF NOT EXISTS refcounts_caller ON refcounts (callers)");
     add_structure("CREATE INDEX IF NOT EXISTS refcounts_old_ref ON refcounts (old_ref)");
@@ -125,7 +125,7 @@ void OM_DB::init_tables()
     m_Debug_DB->sql_execute("DELETE FROM sqlite_sequence WHERE name='trace'");
     m_Debug_DB->sql_execute("DELETE FROM sqlite_sequence WHERE name='debug'");
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
     m_Debug_DB->sql_execute("DELETE FROM refcounts");
     m_Debug_DB->sql_execute("DELETE FROM refcount_summary");
     m_Debug_DB->sql_execute("DELETE FROM symbols");
@@ -154,7 +154,7 @@ void OM_DB::create_statements()
             "INSERT INTO trace (id, module, message) VALUES (?,?,?)");
     add(add_trace_message);
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
     add_refcnt_message = new soar_module::sqlite_statement(m_Debug_DB,
             "INSERT INTO refcounts (id, symbol, callers, old_ref, new_ref) "
             "VALUES (?,?,?,?,?)");

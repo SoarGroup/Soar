@@ -6685,8 +6685,8 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
 #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n");
-        xml_generate_warning(thisAgent, "Warning: can't find an existing inst to retract (BUG 139 WORKAROUND)");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find an existing justification to retract (BUG 139 WORKAROUND)\n");
+        xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
 #endif
         return;
     }
