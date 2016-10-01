@@ -70,6 +70,13 @@ class OM_DB;
 class AgentOutput_Info;
 class debug_param_container;
 
+class cli_command_params;
+class memory_param_container;
+class decide_params;
+class load_save_params;
+class production_params;
+class wm_params;
+
 class Explanation_Based_Chunker;
 class Explanation_Memory;
 class action_record;

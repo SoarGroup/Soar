@@ -12,6 +12,7 @@
 #include "cli_Commands.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
+#include "cli_memory.h"
 #include "cli_soar.h"
 #include "cli_output.h"
 #include "cli_visualize.h"
@@ -53,7 +54,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     // parser takes ownership and deletes commands in its destructor
     m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
-    m_Parser.AddCommand(new cli::AllocateCommand(*this));
     m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
@@ -74,7 +74,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
     m_Parser.AddCommand(new cli::MatchesCommand(*this));
-    m_Parser.AddCommand(new cli::MemoriesCommand(*this));
+    m_Parser.AddCommand(new cli::MemoryCommand(*this));
     m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
     m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
     m_Parser.AddCommand(new cli::OutputCommand(*this));

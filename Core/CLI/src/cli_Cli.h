@@ -260,6 +260,8 @@ namespace cli
             };
             typedef std::bitset<MEMORIES_NUM_OPTIONS> MemoriesBitset;
 
+            virtual bool DoMemory(std::vector<std::string>& argv, const std::string& pCmd) = 0;
+
             /**
              * @brief memories command
              * @param options Options for the memories flag

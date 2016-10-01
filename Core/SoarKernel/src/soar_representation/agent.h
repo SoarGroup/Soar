@@ -162,6 +162,15 @@ typedef struct EXPORT agent_struct
     Explanation_Memory*         explanationMemory;
     GraphViz_Visualizer*        visualizationManager;
 
+    /* This contains parameters that are used to interface to certain CLI
+     * commands that were combined in Soar 9.6 */
+    cli_command_params*         command_params;
+
+    // MToDo | Move these two
+    debug_param_container*      debug_params;
+    AgentOutput_Info*           output_settings;
+
+
     /* ----------------------- Top-level stuff -------------------------- */
 
     /* --- headers of dll's of all productions of each type --- */
@@ -522,14 +531,6 @@ typedef struct EXPORT agent_struct
     uint32_t     predict_seed;
     std::string* prediction;
 
-    // debug parameters
-    debug_param_container* debug_params;
-
-    // parser symbol clean-up list
-    ::list*             parser_syms;
-
-    AgentOutput_Info* output_settings;
-
     // BasicWeightedCue from JSoar for unit testing
 	class BasicWeightedCue
 	{
@@ -587,6 +588,21 @@ inline void push(agent* thisAgent, P item, T*& list_header)
     push_cons_xy298->rest = (list_header);
     (list_header) = push_cons_xy298;
 }
+
+class cli_command_params
+{
+    public:
+
+        cli_command_params(agent* thisAgent);
+        ~cli_command_params();
+
+//        decide_param_container*         decide_params;
+//        load_save_param_container*      load_save_params;
+        memory_param_container*         memory_params;
+//        production_param_container*     production_params;
+//        wm_param_container*             wm_params;
+
+};
 
 void    init_soar_agent(agent* thisAgent);
 agent*  create_soar_agent(char* name);

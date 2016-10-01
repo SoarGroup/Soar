@@ -36,6 +36,8 @@ namespace cli
                 t.evaluate("interrupt stop-soar");
                 t.evaluate("is soar init");
                 t.evaluate("man help");
+                t.evaluate("allocate memory allocate");
+                t.evaluate("memories memory usage");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
                 t.evaluate("pr preferences");
