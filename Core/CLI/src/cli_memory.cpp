@@ -17,7 +17,6 @@
 #include "sml_Utils.h"
 
 #include "agent.h"
-#include "cmd_memory_settings.h"
 #include "output_manager.h"
 #include "print.h"
 #include "production.h"
@@ -26,6 +25,7 @@
 #include "rete.h"
 
 #include <algorithm>
+#include "../../SoarKernel/src/settings/cmd_settings.h"
 
 using namespace cli;
 using namespace sml;

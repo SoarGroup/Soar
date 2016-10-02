@@ -71,11 +71,12 @@ class AgentOutput_Info;
 class debug_param_container;
 
 class cli_command_params;
+class decide_param_container;
+class load_param_container;
+class save_param_container;
 class memory_param_container;
-class decide_params;
-class load_save_params;
-class production_params;
-class wm_params;
+class production_param_container;
+class wm_param_container;
 
 class Explanation_Based_Chunker;
 class Explanation_Memory;

@@ -21,7 +21,6 @@
 #include "agent.h"
 
 #include "callback.h"
-#include "cmd_memory_settings.h"
 #include "debug.h"
 #include "decide.h"
 #include "decider.h"
@@ -59,6 +58,7 @@
 #include "working_memory.h"
 #include "xml.h"
 #include "visualize.h"
+#include "../settings/cmd_settings.h"
 
 #ifndef NO_SVS
 #include "svs_interface.h"
@@ -451,18 +451,20 @@ bool reinitialize_agent(agent* thisAgent)
 
 cli_command_params::cli_command_params(agent* thisAgent)
 {
+    decide_params = new decide_param_container(thisAgent);
+    load_params = new load_param_container(thisAgent);
     memory_params = new memory_param_container(thisAgent);
-//            decide_params = new memory_param_container(thisAgent);
-//            load_save_params = new memory_param_container(thisAgent);
-//            production_params = new memory_param_container(thisAgent);
-//            wm_params = new memory_param_container(thisAgent);
+    production_params = new production_param_container(thisAgent);
+    save_params = new save_param_container(thisAgent);
+    wm_params = new wm_param_container(thisAgent);
 }
 
 cli_command_params::~cli_command_params()
 {
+    delete decide_params;
+    delete load_params;
     delete memory_params;
-//            delete decide_params;
-//            delete load_save_params;
-//            delete production_params;
-//            delete wm_params;
+    delete production_params;
+    delete save_params;
+    delete wm_params;
 }

@@ -89,6 +89,7 @@ namespace cli
              */
             virtual bool DoDebug(std::vector< std::string >* argv = 0) = 0;
 
+            virtual bool DoDecide(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             /**
              * @brief dirs command
              */
@@ -214,6 +215,7 @@ namespace cli
              */
             virtual bool DoLearn(const LearnBitset& options) = 0;
 
+            virtual bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             /**
              * @brief load-library command
              * @param libraryCommand The name of the library to load
@@ -345,6 +347,7 @@ namespace cli
             };
             typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
 
+            virtual bool DoProduction(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             /**
              * @brief production-find command
              * @param options The options to the command
@@ -460,6 +463,7 @@ namespace cli
              */
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
 
+            virtual bool DoSave(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             /**
              * @brief soar command
              * @param options The various options set on the command line
@@ -611,6 +615,7 @@ namespace cli
              */
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0) = 0;
 
+            virtual bool DoWM(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             /**
              * @brief wma command
              * @param pOp the wma switch to implement, pass 0 (null) for full parameter configuration

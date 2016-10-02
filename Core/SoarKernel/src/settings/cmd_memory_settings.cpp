@@ -1,7 +1,6 @@
-#include "cmd_memory_settings.h"
-
 #include "agent.h"
 #include "output_manager.h"
+#include "cmd_settings.h"
 
 //#include "sml_KernelSML.h"
 //#include "sml_Events.h"

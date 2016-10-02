@@ -10,12 +10,16 @@
 #include <cctype>
 
 #include "cli_Commands.h"
+#include "cli_decide.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
+#include "cli_load_save.h"
 #include "cli_memory.h"
-#include "cli_soar.h"
 #include "cli_output.h"
+#include "cli_production.h"
+#include "cli_soar.h"
 #include "cli_visualize.h"
+#include "cli_wm.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -60,6 +64,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::CLogCommand(*this));
     m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
+    m_Parser.AddCommand(new cli::DecideCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
@@ -71,6 +76,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
+    m_Parser.AddCommand(new cli::LoadCommand(*this));
     m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
     m_Parser.AddCommand(new cli::MatchesCommand(*this));
@@ -83,6 +89,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::PredictCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
     m_Parser.AddCommand(new cli::PrintCommand(*this));
+    m_Parser.AddCommand(new cli::ProductionCommand(*this));
     m_Parser.AddCommand(new cli::ProductionFindCommand(*this));
     m_Parser.AddCommand(new cli::PushDCommand(*this));
     m_Parser.AddCommand(new cli::PWatchCommand(*this));
@@ -93,6 +100,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::ReteNetCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
+    m_Parser.AddCommand(new cli::SaveCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
     m_Parser.AddCommand(new cli::SoarCommand(*this));
@@ -109,6 +117,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));
     m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
+    m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::WMACommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
