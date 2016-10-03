@@ -37,20 +37,21 @@ namespace cli
                 OptionsData optionsData[] =
                 {
                     // Dummy parameters.  Real parsing in cli_decide.cpp
-                    {'b', "boltzmann",          OPTARG_NONE},
-                    {'g', "epsilon-greedy",     OPTARG_NONE},
-                    {'f', "first",              OPTARG_NONE},
-                    {'l', "last",               OPTARG_NONE},
-                    {'x', "softmax",            OPTARG_NONE},
-                    {'e', "epsilon",            OPTARG_NONE},
-                    {'t', "temperature",        OPTARG_NONE},
                     {'a', "auto-reduce",        OPTARG_NONE},
+                    {'b', "boltzmann",          OPTARG_NONE},
+                    {'e', "epsilon",            OPTARG_NONE},
+                    {'f', "first",              OPTARG_NONE},
+                    {'g', "epsilon-greedy",     OPTARG_NONE},
+                    {'l', "last",               OPTARG_NONE},
                     {'p', "reduction-policy",   OPTARG_NONE},
-                    {'r', "reduction-rate",     OPTARG_NONE},
-                    {'y', "stats",              OPTARG_NONE},
                     {'q', "average",            OPTARG_NONE},
+                    {'r', "reduction-rate",     OPTARG_NONE},
+                    {'s', "stats",              OPTARG_NONE},
+                    {'t', "temperature",        OPTARG_NONE},
                     {'v', "avg",                OPTARG_NONE},
+                    {'x', "softmax",            OPTARG_NONE},
                     {'z', "sum",                OPTARG_NONE},
+
                     {0, 0, OPTARG_NONE}
                 };
 

@@ -21,6 +21,7 @@ class decide_param_container: public soar_module::param_container
         soar_module::boolean_param* predict_cmd;
         soar_module::boolean_param* select_cmd;
         soar_module::boolean_param* srand_cmd;
+        soar_module::boolean_param* srand_bc_cmd;
 
         soar_module::boolean_param* help_cmd;
         soar_module::boolean_param* qhelp_cmd;

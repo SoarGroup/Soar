@@ -17,6 +17,8 @@ decide_param_container::decide_param_container(agent* new_agent): soar_module::p
     add(select_cmd);
     srand_cmd = new soar_module::boolean_param("set-random-seed", on, new soar_module::f_predicate<boolean>());
     add(srand_cmd);
+    srand_bc_cmd = new soar_module::boolean_param("srand", on, new soar_module::f_predicate<boolean>());
+    add(srand_bc_cmd);
 
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);

@@ -35,11 +35,15 @@ namespace cli
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
-                    {'c', "chunks",            OPTARG_NONE},
-                    {'d', "default",        OPTARG_NONE},
-                    {'j', "justifications",    OPTARG_NONE},
-                    {'T', "template",        OPTARG_NONE},
-                    {'u', "user",            OPTARG_NONE},
+                    {'c', "close", OPTARG_NONE},
+                    {'f', "flush", OPTARG_NONE},
+                    {'o', "open", OPTARG_REQUIRED},
+                    {'l', "load",        OPTARG_REQUIRED},
+                    {'r', "restore",    OPTARG_REQUIRED},
+                    {'s', "save",        OPTARG_REQUIRED},
+                    {'a', "all",            OPTARG_NONE},
+                    {'d', "disable",        OPTARG_NONE},
+                    {'v', "verbose",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
