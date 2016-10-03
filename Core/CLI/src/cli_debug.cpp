@@ -12,6 +12,7 @@
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
+#include "cli_Cli_enums.h"
 
 #include "agent.h"
 #include "debug.h"
@@ -270,7 +271,7 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 //        {0, 0, cli::OPTARG_NONE}
 //    };
 
-    cli::Cli::RunBitset options(0);
-    DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
+    cli::RunBitset options(0);
+    DoRun(options, run_count, cli::RUN_INTERLEAVE_DEFAULT);
 
 }

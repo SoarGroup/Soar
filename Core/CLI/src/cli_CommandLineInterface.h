@@ -167,7 +167,6 @@ namespace cli
             virtual bool DoSP(const std::string& production);
             virtual bool DoSRand(uint32_t* pSeed = 0);
             virtual bool DoStats(const StatsBitset& options, int sort = 0);
-            virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0);
             virtual bool DoSVS(const std::vector<std::string>& args);
             virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoTime(std::vector<std::string>& argv);

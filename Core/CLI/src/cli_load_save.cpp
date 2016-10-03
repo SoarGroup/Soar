@@ -115,7 +115,7 @@ bool CommandLineInterface::ParseReplayInput(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::eReplayInputMode mode = Cli::REPLAY_INPUT_QUERY;
+    cli::eReplayInputMode mode = cli::REPLAY_INPUT_QUERY;
     std::string pathname;
 
     for (;;)
@@ -133,19 +133,19 @@ bool CommandLineInterface::ParseReplayInput(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'c':
-                mode = Cli::REPLAY_INPUT_CLOSE;
+                mode = cli::REPLAY_INPUT_CLOSE;
                 break;
             case 'o':
-                mode = Cli::REPLAY_INPUT_OPEN;
+                mode = cli::REPLAY_INPUT_OPEN;
                 pathname = opt.GetOptionArgument();
                 break;
             case 'q':
-                mode = Cli::REPLAY_INPUT_QUERY;
+                mode = cli::REPLAY_INPUT_QUERY;
                 break;
         }
     }
 
-    return DoReplayInput(mode, mode == Cli::REPLAY_INPUT_OPEN ? &pathname : 0);
+    return DoReplayInput(mode, mode == cli::REPLAY_INPUT_OPEN ? &pathname : 0);
 }
 bool CommandLineInterface::ParseSource(std::vector< std::string >& argv)
 {
@@ -158,7 +158,7 @@ bool CommandLineInterface::ParseSource(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::SourceBitset options(0);
+    cli::SourceBitset options(0);
 
     for (;;)
     {
@@ -175,13 +175,13 @@ bool CommandLineInterface::ParseSource(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'd':
-                options.set(Cli::SOURCE_DISABLE);
+                options.set(cli::SOURCE_DISABLE);
                 break;
             case 'a':
-                options.set(Cli::SOURCE_ALL);
+                options.set(cli::SOURCE_ALL);
                 break;
             case 'v':
-                options.set(Cli::SOURCE_VERBOSE);
+                options.set(cli::SOURCE_VERBOSE);
                 break;
         }
     }
@@ -282,7 +282,7 @@ bool CommandLineInterface::ParseCaptureInput(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::eCaptureInputMode mode = Cli::CAPTURE_INPUT_QUERY;
+    cli::eCaptureInputMode mode = cli::CAPTURE_INPUT_QUERY;
     std::string pathname;
 
     bool autoflush = false;
@@ -301,22 +301,22 @@ bool CommandLineInterface::ParseCaptureInput(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'c':
-                mode = Cli::CAPTURE_INPUT_CLOSE;
+                mode = cli::CAPTURE_INPUT_CLOSE;
                 break;
             case 'f':
                 autoflush = true;
                 break;
             case 'o':
-                mode = Cli::CAPTURE_INPUT_OPEN;
+                mode = cli::CAPTURE_INPUT_OPEN;
                 pathname = opt.GetOptionArgument();
                 break;
             case 'q':
-                mode = Cli::CAPTURE_INPUT_QUERY;
+                mode = cli::CAPTURE_INPUT_QUERY;
                 break;
         }
     }
 
-    return DoCaptureInput(mode, autoflush, mode == Cli::CAPTURE_INPUT_OPEN ? &pathname : 0);
+    return DoCaptureInput(mode, autoflush, mode == cli::CAPTURE_INPUT_OPEN ? &pathname : 0);
 }
 bool CommandLineInterface::ParseReteSave(std::vector< std::string >& argv)
 {

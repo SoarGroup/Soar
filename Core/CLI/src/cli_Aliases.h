@@ -90,6 +90,7 @@ namespace cli
                 t.evaluate("port debug port");
 
                 t.evaluate("init-soar soar init");
+                t.evaluate("stop-soar soar stop");
                 t.evaluate("gp-max soar max-gp");
                 t.evaluate("max-dc-time soar max-dc-time");
                 t.evaluate("max-elaborations soar max-elaborations");

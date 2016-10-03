@@ -143,8 +143,8 @@ bool CommandLineInterface::ParseWMEWatch(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::eWatchWMEsMode mode = Cli::WATCH_WMES_LIST;
-    Cli::WatchWMEsTypeBitset type(0);
+    cli::eWatchWMEsMode mode = cli::WATCH_WMES_LIST;
+    cli::WatchWMEsTypeBitset type(0);
 
     for (;;)
     {
@@ -161,32 +161,32 @@ bool CommandLineInterface::ParseWMEWatch(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'a':
-                mode = Cli::WATCH_WMES_ADD;
+                mode = cli::WATCH_WMES_ADD;
                 break;
             case 'r':
-                mode = Cli::WATCH_WMES_REMOVE;
+                mode = cli::WATCH_WMES_REMOVE;
                 break;
             case 'l':
-                mode = Cli::WATCH_WMES_LIST;
+                mode = cli::WATCH_WMES_LIST;
                 break;
             case 'R':
-                mode = Cli::WATCH_WMES_RESET;
+                mode = cli::WATCH_WMES_RESET;
                 break;
             case 't':
             {
                 std::string typeString = opt.GetOptionArgument();
                 if (typeString == "adds")
                 {
-                    type.set(Cli::WATCH_WMES_TYPE_ADDS);
+                    type.set(cli::WATCH_WMES_TYPE_ADDS);
                 }
                 else if (typeString == "removes")
                 {
-                    type.set(Cli::WATCH_WMES_TYPE_REMOVES);
+                    type.set(cli::WATCH_WMES_TYPE_REMOVES);
                 }
                 else if (typeString == "both")
                 {
-                    type.set(Cli::WATCH_WMES_TYPE_ADDS);
-                    type.set(Cli::WATCH_WMES_TYPE_REMOVES);
+                    type.set(cli::WATCH_WMES_TYPE_ADDS);
+                    type.set(cli::WATCH_WMES_TYPE_REMOVES);
                 }
                 else
                 {
@@ -200,7 +200,7 @@ bool CommandLineInterface::ParseWMEWatch(std::vector< std::string >& argv)
         }
     }
 
-    if (mode == Cli::WATCH_WMES_ADD || mode == Cli::WATCH_WMES_REMOVE)
+    if (mode == cli::WATCH_WMES_ADD || mode == cli::WATCH_WMES_REMOVE)
     {
         // type required
         if (type.none())

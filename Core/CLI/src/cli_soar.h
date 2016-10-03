@@ -49,7 +49,8 @@ namespace cli
                     {'d', "decide",             OPTARG_NONE},
                     {'i', "input",              OPTARG_NONE},
                     {'o', "output",             OPTARG_NONE},
-                    {'p', "propose",           OPTARG_NONE},
+                    {'p', "propose",            OPTARG_NONE},
+                    {'s', "self",               OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -99,11 +100,17 @@ namespace cli
                             subCommandArg = "propose";
                             backwardCompatibleReplacement = true;
                             break;
+                        case 's':
+                            std::string sarg("stop"), sarg2("self");
+                            return cli.DoSoar('G', &sarg, &sarg2);
+                            break;
                     }
                 }
                 std::string arg;
+                std::string reasonForStopping;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
+
                 if (num_args > 0)
                 {
                     arg = argv[start_arg_position];
@@ -120,7 +127,6 @@ namespace cli
                 {
                     return cli.DoSoar('S', &arg, &subCommandArg);
                 }
-
 
                 // case: nothing = full configuration information
                 return cli.DoSoar();

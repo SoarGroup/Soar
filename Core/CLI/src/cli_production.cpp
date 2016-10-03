@@ -106,7 +106,7 @@ bool CommandLineInterface::ParseExcise(std::vector< std::string >& argv)
         {0, 0,                  OPTARG_NONE}
     };
 
-    Cli::ExciseBitset options(0);
+    cli::ExciseBitset options(0);
 
     for (;;)
     {
@@ -123,28 +123,28 @@ bool CommandLineInterface::ParseExcise(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'a':
-                options.set(Cli::EXCISE_ALL);
+                options.set(cli::EXCISE_ALL);
                 break;
             case 'c':
-                options.set(Cli::EXCISE_CHUNKS);
+                options.set(cli::EXCISE_CHUNKS);
                 break;
             case 'd':
-                options.set(Cli::EXCISE_DEFAULT);
+                options.set(cli::EXCISE_DEFAULT);
                 break;
             case 'n':
-                options.set(Cli::EXCISE_NEVER_FIRED);
+                options.set(cli::EXCISE_NEVER_FIRED);
                 break;
             case 'r':
-                options.set(Cli::EXCISE_RL);
+                options.set(cli::EXCISE_RL);
                 break;
             case 't':
-                options.set(Cli::EXCISE_TASK);
+                options.set(cli::EXCISE_TASK);
                 break;
             case 'T':
-                options.set(Cli::EXCISE_TEMPLATE);
+                options.set(cli::EXCISE_TEMPLATE);
                 break;
             case 'u':
-                options.set(Cli::EXCISE_USER);
+                options.set(cli::EXCISE_USER);
                 break;
         }
     }
@@ -195,7 +195,7 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
 
     // We're using a subset of the print options, so
     // we'll just use the same data structure
-    Cli::PrintBitset options(0);
+    cli::PrintBitset options(0);
     bool hasOptions = false;
 
     for (;;)
@@ -213,31 +213,31 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'a':
-                options.set(Cli::PRINT_ALL);
+                options.set(cli::PRINT_ALL);
                 hasOptions = true;
                 break;
             case 'c':
-                options.set(Cli::PRINT_CHUNKS);
+                options.set(cli::PRINT_CHUNKS);
                 hasOptions = true;
                 break;
             case 'd':
-                options.set(Cli::PRINT_DEFAULTS);
+                options.set(cli::PRINT_DEFAULTS);
                 hasOptions = true;
                 break;
             case 'j':
-                options.set(Cli::PRINT_JUSTIFICATIONS);
+                options.set(cli::PRINT_JUSTIFICATIONS);
                 hasOptions = true;
                 break;
             case 'r':
-                options.set(Cli::PRINT_RL);
+                options.set(cli::PRINT_RL);
                 hasOptions = true;
                 break;
             case 't':
-                options.set(Cli::PRINT_TEMPLATE);
+                options.set(cli::PRINT_TEMPLATE);
                 hasOptions = true;
                 break;
             case 'u':
-                options.set(Cli::PRINT_USER);
+                options.set(cli::PRINT_USER);
                 hasOptions = true;
                 break;
         }
@@ -296,8 +296,8 @@ bool CommandLineInterface::ParseMatches(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::eWMEDetail detail = Cli::WME_DETAIL_NONE;
-    Cli::eMatchesMode mode = Cli::MATCHES_ASSERTIONS_RETRACTIONS;
+    cli::eWMEDetail detail = cli::WME_DETAIL_NONE;
+    cli::eMatchesMode mode = cli::MATCHES_ASSERTIONS_RETRACTIONS;
 
     for (;;)
     {
@@ -315,19 +315,19 @@ bool CommandLineInterface::ParseMatches(std::vector< std::string >& argv)
         {
             case 'n':
             case 'c':
-                detail = Cli::WME_DETAIL_NONE;
+                detail = cli::WME_DETAIL_NONE;
                 break;
             case 't':
-                detail = Cli::WME_DETAIL_TIMETAG;
+                detail = cli::WME_DETAIL_TIMETAG;
                 break;
             case 'w':
-                detail = Cli::WME_DETAIL_FULL;
+                detail = cli::WME_DETAIL_FULL;
                 break;
             case 'a':
-                mode = Cli::MATCHES_ASSERTIONS;
+                mode = cli::MATCHES_ASSERTIONS;
                 break;
             case 'r':
-                mode = Cli::MATCHES_RETRACTIONS;
+                mode = cli::MATCHES_RETRACTIONS;
                 break;
         }
     }
@@ -340,11 +340,11 @@ bool CommandLineInterface::ParseMatches(std::vector< std::string >& argv)
 
     if (opt.GetNonOptionArguments() == 2)
     {
-        if (mode != Cli::MATCHES_ASSERTIONS_RETRACTIONS)
+        if (mode != cli::MATCHES_ASSERTIONS_RETRACTIONS)
         {
             return SetError("Error.");
         }
-        return DoMatches(Cli::MATCHES_PRODUCTION, detail, &argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]);
+        return DoMatches(cli::MATCHES_PRODUCTION, detail, &argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]);
     }
 
     return DoMatches(mode, detail);
@@ -459,7 +459,7 @@ bool CommandLineInterface::ParsePFind(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::ProductionFindBitset options(0);
+    cli::ProductionFindBitset options(0);
 
     for (;;)
     {
@@ -476,21 +476,21 @@ bool CommandLineInterface::ParsePFind(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'c':
-                options.set(Cli::PRODUCTION_FIND_ONLY_CHUNKS);
-                options.reset(Cli::PRODUCTION_FIND_NO_CHUNKS);
+                options.set(cli::PRODUCTION_FIND_ONLY_CHUNKS);
+                options.reset(cli::PRODUCTION_FIND_NO_CHUNKS);
                 break;
             case 'l':
-                options.set(Cli::PRODUCTION_FIND_INCLUDE_LHS);
+                options.set(cli::PRODUCTION_FIND_INCLUDE_LHS);
                 break;
             case 'n':
-                options.set(Cli::PRODUCTION_FIND_NO_CHUNKS);
-                options.reset(Cli::PRODUCTION_FIND_ONLY_CHUNKS);
+                options.set(cli::PRODUCTION_FIND_NO_CHUNKS);
+                options.reset(cli::PRODUCTION_FIND_ONLY_CHUNKS);
                 break;
             case 'r':
-                options.set(Cli::PRODUCTION_FIND_INCLUDE_RHS);
+                options.set(cli::PRODUCTION_FIND_INCLUDE_RHS);
                 break;
             case 's':
-                options.set(Cli::PRODUCTION_FIND_SHOWBINDINGS);
+                options.set(cli::PRODUCTION_FIND_SHOWBINDINGS);
                 break;
         }
     }
@@ -502,7 +502,7 @@ bool CommandLineInterface::ParsePFind(std::vector< std::string >& argv)
 
     if (options.none())
     {
-        options.set(Cli::PRODUCTION_FIND_INCLUDE_LHS);
+        options.set(cli::PRODUCTION_FIND_INCLUDE_LHS);
     }
 
     std::string pattern;

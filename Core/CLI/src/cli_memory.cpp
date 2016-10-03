@@ -249,7 +249,7 @@ bool CommandLineInterface::ParseMemories(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
-    Cli::MemoriesBitset options(0);
+    cli::MemoriesBitset options(0);
 
     for (;;)
     {
@@ -266,19 +266,19 @@ bool CommandLineInterface::ParseMemories(std::vector< std::string >& argv)
         switch (opt.GetOption())
         {
             case 'c':
-            options.set(Cli::MEMORIES_CHUNKS);
+            options.set(cli::MEMORIES_CHUNKS);
             break;
             case 'd':
-            options.set(Cli::MEMORIES_DEFAULT);
+            options.set(cli::MEMORIES_DEFAULT);
             break;
             case 'j':
-                options.set(Cli::MEMORIES_JUSTIFICATIONS);
+                options.set(cli::MEMORIES_JUSTIFICATIONS);
                 break;
             case 'T':
-                options.set(Cli::MEMORIES_TEMPLATES);
+                options.set(cli::MEMORIES_TEMPLATES);
                 break;
             case 'u':
-                options.set(Cli::MEMORIES_USER);
+                options.set(cli::MEMORIES_USER);
                 break;
         }
     }

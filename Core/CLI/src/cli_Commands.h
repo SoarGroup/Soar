@@ -106,7 +106,7 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::eLogMode mode = Cli::LOG_NEW;
+                cli::eLogMode mode = cli::LOG_NEW;
 
                 for (;;)
                 {
@@ -123,26 +123,26 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            mode = Cli::LOG_ADD;
+                            mode = cli::LOG_ADD;
                             break;
                         case 'c':
                         case 'd':
                         case 'o':
-                            mode = Cli::LOG_CLOSE;
+                            mode = cli::LOG_CLOSE;
                             break;
                         case 'e':
                         case 'A':
-                            mode = Cli::LOG_NEWAPPEND;
+                            mode = cli::LOG_NEWAPPEND;
                             break;
                         case 'q':
-                            mode = Cli::LOG_QUERY;
+                            mode = cli::LOG_QUERY;
                             break;
                     }
                 }
 
                 switch (mode)
                 {
-                    case Cli::LOG_ADD:
+                    case cli::LOG_ADD:
                     {
                         std::string toAdd;
                         // no less than one non-option argument
@@ -168,7 +168,7 @@ namespace cli
                         return cli.DoCLog(mode, 0, &toAdd);
                     }
 
-                    case Cli::LOG_NEW:
+                    case cli::LOG_NEW:
                         // no more than one argument, no filename == query
                         if (opt.GetNonOptionArguments() > 1)
                         {
@@ -181,7 +181,7 @@ namespace cli
                         }
                         break; // no args case handled below
 
-                    case Cli::LOG_NEWAPPEND:
+                    case cli::LOG_NEWAPPEND:
                         // exactly one argument
                         if (opt.GetNonOptionArguments() > 1)
                         {
@@ -195,8 +195,8 @@ namespace cli
                         return cli.DoCLog(mode, &argv[1]);
 
                     default:
-                    case Cli::LOG_CLOSE:
-                    case Cli::LOG_QUERY:
+                    case cli::LOG_CLOSE:
+                    case cli::LOG_QUERY:
                         // no arguments
                         if (opt.GetNonOptionArguments())
                         {
@@ -277,7 +277,7 @@ namespace cli
                 // Index of command in argv:  command-to-file filename command ...
                 // Unless append option is present, which is handled later.
                 int startOfCommand = 2;
-                Cli::eLogMode mode = Cli::LOG_NEW;
+                cli::eLogMode mode = cli::LOG_NEW;
                 std::string filename = argv[1];
 
                 // Parse out option.
@@ -316,7 +316,7 @@ namespace cli
 
                     if (append)
                     {
-                        mode = Cli::LOG_NEWAPPEND;
+                        mode = cli::LOG_NEWAPPEND;
 
                         // Index of command in argv:  command-to-file -a filename command ...
                         if (argv.size() < 4)
@@ -785,7 +785,7 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::LearnBitset options(0);
+                cli::LearnBitset options(0);
 
                 for (;;)
                 {
@@ -802,37 +802,37 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            options.set(Cli::LEARN_ALL_LEVELS);
+                            options.set(cli::LEARN_ALL_LEVELS);
                             break;
                         case 'b':
-                            options.set(Cli::LEARN_BOTTOM_UP);
+                            options.set(cli::LEARN_BOTTOM_UP);
                             break;
                         case 'd':
-                            options.set(Cli::LEARN_DISABLE);
+                            options.set(cli::LEARN_DISABLE);
                             break;
                         case 'e':
-                            options.set(Cli::LEARN_ENABLE);
+                            options.set(cli::LEARN_ENABLE);
                             break;
                         case 'E':
-                            options.set(Cli::LEARN_EXCEPT);
+                            options.set(cli::LEARN_EXCEPT);
                             break;
                         case 'l':
-                            options.set(Cli::LEARN_LIST);
+                            options.set(cli::LEARN_LIST);
                             break;
                         case 'o':
-                            options.set(Cli::LEARN_ONLY);
+                            options.set(cli::LEARN_ONLY);
                             break;
                         case 'n':
-                            options.set(Cli::LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS);
+                            options.set(cli::LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS);
                             break;
                         case 'N':
-                            options.set(Cli::LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS);
+                            options.set(cli::LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS);
                             break;
                         case 'p':
-                            options.set(Cli::LEARN_ENABLE_THROUGH_EVALUATION_RULES);
+                            options.set(cli::LEARN_ENABLE_THROUGH_EVALUATION_RULES);
                             break;
                         case 'P':
-                            options.set(Cli::LEARN_DISABLE_THROUGH_EVALUATION_RULES);
+                            options.set(cli::LEARN_DISABLE_THROUGH_EVALUATION_RULES);
                             break;
                     }
                 }
@@ -943,7 +943,7 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::ePreferencesDetail detail = Cli::PREFERENCES_ONLY;
+                cli::ePreferencesDetail detail = cli::PREFERENCES_ONLY;
                 bool object = false;
 
                 for (;;)
@@ -961,20 +961,20 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case '0':
-                            detail = Cli::PREFERENCES_ONLY;
+                            detail = cli::PREFERENCES_ONLY;
                             break;
                         case '1':
                         case 'n':
                         case 'N':
-                            detail = Cli::PREFERENCES_NAMES;
+                            detail = cli::PREFERENCES_NAMES;
                             break;
                         case '2':
                         case 't':
-                            detail = Cli::PREFERENCES_TIMETAGS;
+                            detail = cli::PREFERENCES_TIMETAGS;
                             break;
                         case '3':
                         case 'w':
-                            detail = Cli::PREFERENCES_WMES;
+                            detail = cli::PREFERENCES_WMES;
                             break;
 
                         case 'o':
@@ -1052,7 +1052,7 @@ namespace cli
                 };
 
                 int depth = -1;
-                Cli::PrintBitset options(0);
+                cli::PrintBitset options(0);
 
                 for (;;)
                 {
@@ -1069,70 +1069,70 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            options.set(Cli::PRINT_ALL);
+                            options.set(cli::PRINT_ALL);
                             break;
                         case 'c':
-                            options.set(Cli::PRINT_CHUNKS);
+                            options.set(cli::PRINT_CHUNKS);
                             break;
                         case 'd':
-                            options.set(Cli::PRINT_DEPTH);
+                            options.set(cli::PRINT_DEPTH);
                             if (!from_string(depth, opt.GetOptionArgument()) || (depth < 0))
                             {
                                 return cli.SetError("Non-negative depth expected.");
                             }
                             break;
                         case 'D':
-                            options.set(Cli::PRINT_DEFAULTS);
+                            options.set(cli::PRINT_DEFAULTS);
                             break;
                         case 'e':
-                            options.set(Cli::PRINT_EXACT);
+                            options.set(cli::PRINT_EXACT);
                             break;
                         case 'f':
-                            options.set(Cli::PRINT_FULL);
+                            options.set(cli::PRINT_FULL);
                             break;
                         case 'F':
-                            options.set(Cli::PRINT_FILENAME);
+                            options.set(cli::PRINT_FILENAME);
                             break;
                         case 'i':
-                            options.set(Cli::PRINT_INTERNAL);
+                            options.set(cli::PRINT_INTERNAL);
                             break;
                         case 'j':
-                            options.set(Cli::PRINT_JUSTIFICATIONS);
+                            options.set(cli::PRINT_JUSTIFICATIONS);
                             break;
                         case 'n':
-                            options.set(Cli::PRINT_NAME);
+                            options.set(cli::PRINT_NAME);
                             break;
                         case 'o':
-                            options.set(Cli::PRINT_OPERATORS);
+                            options.set(cli::PRINT_OPERATORS);
                             break;
                         case 'r':
-                            options.set(Cli::PRINT_RL);
+                            options.set(cli::PRINT_RL);
                             break;
                         case 's':
-                            options.set(Cli::PRINT_STACK);
+                            options.set(cli::PRINT_STACK);
                             break;
                         case 'S':
-                            options.set(Cli::PRINT_STATES);
+                            options.set(cli::PRINT_STATES);
                             break;
                         case 't':
-                            options.set(Cli::PRINT_TREE);
+                            options.set(cli::PRINT_TREE);
                             break;
                         case 'T':
-                            options.set(Cli::PRINT_TEMPLATE);
+                            options.set(cli::PRINT_TEMPLATE);
                             break;
                         case 'u':
-                            options.set(Cli::PRINT_USER);
+                            options.set(cli::PRINT_USER);
                             break;
                         case 'v':
-                            options.set(Cli::PRINT_VARPRINT);
+                            options.set(cli::PRINT_VARPRINT);
                             break;
                     }
                 }
 
                 // STATES and OPERATORS are sub-options of STACK
-                if (options.test(Cli::PRINT_OPERATORS) || options.test(Cli::PRINT_STATES))
+                if (options.test(cli::PRINT_OPERATORS) || options.test(cli::PRINT_STATES))
                 {
-                    if (!options.test(Cli::PRINT_STACK))
+                    if (!options.test(cli::PRINT_STACK))
                     {
                         return cli.SetError("Options --operators (-o) and --states (-S) are only valid when printing the stack.");
                     }
@@ -1141,7 +1141,7 @@ namespace cli
                 if (opt.GetNonOptionArguments() == 0)
                 {
                     // d and t options require an argument
-                    if (options.test(Cli::PRINT_TREE) || options.test(Cli::PRINT_DEPTH))
+                    if (options.test(cli::PRINT_TREE) || options.test(cli::PRINT_DEPTH))
                     {
                         return cli.SetError(GetSyntax());
                     }
@@ -1149,18 +1149,18 @@ namespace cli
                 }
 
                 // the acDjus options don't allow an argument
-                if (options.test(Cli::PRINT_ALL)
-                        || options.test(Cli::PRINT_CHUNKS)
-                        || options.test(Cli::PRINT_DEFAULTS)
-                        || options.test(Cli::PRINT_JUSTIFICATIONS)
-                        || options.test(Cli::PRINT_RL)
-                        || options.test(Cli::PRINT_TEMPLATE)
-                        || options.test(Cli::PRINT_USER)
-                        || options.test(Cli::PRINT_STACK))
+                if (options.test(cli::PRINT_ALL)
+                        || options.test(cli::PRINT_CHUNKS)
+                        || options.test(cli::PRINT_DEFAULTS)
+                        || options.test(cli::PRINT_JUSTIFICATIONS)
+                        || options.test(cli::PRINT_RL)
+                        || options.test(cli::PRINT_TEMPLATE)
+                        || options.test(cli::PRINT_USER)
+                        || options.test(cli::PRINT_STACK))
                 {
                     return cli.SetError("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
                 }
-                if (options.test(Cli::PRINT_EXACT) && (options.test(Cli::PRINT_DEPTH) || options.test(Cli::PRINT_TREE)))
+                if (options.test(cli::PRINT_EXACT) && (options.test(cli::PRINT_DEPTH) || options.test(cli::PRINT_TREE)))
                 {
                     return cli.SetError("No depth/tree flags allowed when printing exact.");
                 }
@@ -1471,8 +1471,8 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::RunBitset options(0);
-                Cli::eRunInterleaveMode interleaveMode = Cli::RUN_INTERLEAVE_DEFAULT;
+                cli::RunBitset options(0);
+                cli::eRunInterleaveMode interleaveMode = cli::RUN_INTERLEAVE_DEFAULT;
 
                 for (;;)
                 {
@@ -1489,36 +1489,36 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'd':
-                            options.set(Cli::RUN_DECISION);
+                            options.set(cli::RUN_DECISION);
                             break;
                         case 'e':
-                            options.set(Cli::RUN_ELABORATION);
+                            options.set(cli::RUN_ELABORATION);
                             break;
                         case 'g':
-                            options.set(Cli::RUN_GOAL);
+                            options.set(cli::RUN_GOAL);
                             break;
                         case 'i':
-                            options.set(Cli::RUN_INTERLEAVE);
+                            options.set(cli::RUN_INTERLEAVE);
                             interleaveMode = ParseRunInterleaveOptarg(opt);
-                            if (interleaveMode == Cli::RUN_INTERLEAVE_DEFAULT)
+                            if (interleaveMode == cli::RUN_INTERLEAVE_DEFAULT)
                             {
                                 return cli.SetError(opt.GetError().c_str());    // error set in parse function
                             }
                             break;
                         case 'o':
-                            options.set(Cli::RUN_OUTPUT);
+                            options.set(cli::RUN_OUTPUT);
                             break;
                         case 'p':
-                            options.set(Cli::RUN_PHASE);
+                            options.set(cli::RUN_PHASE);
                             break;
                         case 's':
-                            options.set(Cli::RUN_SELF);
+                            options.set(cli::RUN_SELF);
                             break;
                         case 'u':
-                            options.set(Cli::RUN_UPDATE) ;
+                            options.set(cli::RUN_UPDATE) ;
                             break ;
                         case 'n':
-                            options.set(Cli::RUN_NO_UPDATE) ;
+                            options.set(cli::RUN_NO_UPDATE) ;
                             break ;
                     }
                 }
@@ -1530,7 +1530,7 @@ namespace cli
                 }
 
                 // Decide if we explicitly indicated how to run
-                bool specifiedType = (options.test(Cli::RUN_ELABORATION) || options.test(Cli::RUN_DECISION) || options.test(Cli::RUN_PHASE) || options.test(Cli::RUN_OUTPUT)) ;
+                bool specifiedType = (options.test(cli::RUN_ELABORATION) || options.test(cli::RUN_DECISION) || options.test(cli::RUN_PHASE) || options.test(cli::RUN_OUTPUT)) ;
 
                 // Count defaults to -1
                 int count = -1;
@@ -1542,7 +1542,7 @@ namespace cli
                         return cli.SetError("Integer count expected.");
                     }
                     // Allow "run 0" for decisions -- which means run agents to the current stop-before phase
-                    if (count < 0 || (count == 0 && specifiedType && !options.test(Cli::RUN_DECISION)))
+                    if (count < 0 || (count == 0 && specifiedType && !options.test(cli::RUN_DECISION)))
                     {
                         return cli.SetError("Count must be positive.");
                     }
@@ -1554,27 +1554,27 @@ namespace cli
         private:
             cli::Cli& cli;
 
-            Cli::eRunInterleaveMode ParseRunInterleaveOptarg(cli::Options& opt)
+            cli::eRunInterleaveMode ParseRunInterleaveOptarg(cli::Options& opt)
             {
                 if (opt.GetOptionArgument() == "d")
                 {
-                    return Cli::RUN_INTERLEAVE_DECISION;
+                    return cli::RUN_INTERLEAVE_DECISION;
                 }
                 else if (opt.GetOptionArgument() == "e")
                 {
-                    return Cli::RUN_INTERLEAVE_ELABORATION;
+                    return cli::RUN_INTERLEAVE_ELABORATION;
                 }
                 else if (opt.GetOptionArgument() == "o")
                 {
-                    return Cli::RUN_INTERLEAVE_OUTPUT;
+                    return cli::RUN_INTERLEAVE_OUTPUT;
                 }
                 else if (opt.GetOptionArgument() == "p")
                 {
-                    return Cli::RUN_INTERLEAVE_PHASE;
+                    return cli::RUN_INTERLEAVE_PHASE;
                 }
 
                 cli.SetError("Invalid interleave switch: " + opt.GetOptionArgument());
-                return Cli::RUN_INTERLEAVE_DEFAULT;
+                return cli::RUN_INTERLEAVE_DEFAULT;
             }
 
             RunCommand& operator=(const RunCommand&);
@@ -1877,7 +1877,7 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::StatsBitset options(0);
+                cli::StatsBitset options(0);
                 int sort = 0;
 
                 for (;;)
@@ -1895,44 +1895,44 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'd':
-                            options.set(Cli::STATS_DECISION);
+                            options.set(cli::STATS_DECISION);
                             break;
                         case 'm':
-                            options.set(Cli::STATS_MEMORY);
+                            options.set(cli::STATS_MEMORY);
                             break;
                         case 'M':
-                            options.set(Cli::STATS_MAX);
+                            options.set(cli::STATS_MAX);
                             break;
                         case 'r':
-                            options.set(Cli::STATS_RETE);
+                            options.set(cli::STATS_RETE);
                             break;
                         case 'R':
-                            options.set(Cli::STATS_RESET);
+                            options.set(cli::STATS_RESET);
                             break;
                         case 's':
-                            options.set(Cli::STATS_SYSTEM);
+                            options.set(cli::STATS_SYSTEM);
                             break;
                         case 't':
-                            options.set(Cli::STATS_TRACK);
+                            options.set(cli::STATS_TRACK);
                             break;
                         case 'T':
-                            options.set(Cli::STATS_STOP_TRACK);
+                            options.set(cli::STATS_STOP_TRACK);
                             break;
                         case 'c':
-                            options.set(Cli::STATS_CYCLE);
+                            options.set(cli::STATS_CYCLE);
                             break;
                         case 'C':
-                            options.set(Cli::STATS_CSV);
+                            options.set(cli::STATS_CSV);
                             break;
                         case 'S':
-                            options.set(Cli::STATS_CYCLE);
+                            options.set(cli::STATS_CYCLE);
                             if (!from_string(sort, opt.GetOptionArgument()))
                             {
                                 return cli.SetError("Integer expected");
                             }
                             break;
                         case 'a':
-                            options.set(Cli::STATS_AGENT);
+                            options.set(cli::STATS_AGENT);
                             break;
                     }
                 }
@@ -1950,72 +1950,6 @@ namespace cli
             cli::Cli& cli;
 
             StatsCommand& operator=(const StatsCommand&);
-    };
-
-    class StopSoarCommand : public cli::ParserCommand
-    {
-        public:
-            StopSoarCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~StopSoarCommand() {}
-            virtual const char* GetString() const
-            {
-                return "stop-soar";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return
-                    "Syntax: stop-soar [-s] [reason string]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'s', "self",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                bool self = false;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 's':
-                            self = true;
-                            break;
-                    }
-                }
-
-                // Concatinate remaining args for 'reason'
-                if (opt.GetNonOptionArguments())
-                {
-                    std::string reasonForStopping;
-                    unsigned int optind = opt.GetArgument() - opt.GetNonOptionArguments();
-                    while (optind < argv.size())
-                    {
-                        reasonForStopping += argv[optind++] + ' ';
-                    }
-                    return cli.DoStopSoar(self, &reasonForStopping);
-                }
-                return cli.DoStopSoar(self);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            StopSoarCommand& operator=(const StopSoarCommand&);
     };
 
     class TimeCommand : public cli::ParserCommand
@@ -2228,8 +2162,8 @@ namespace cli
                     {0, 0, OPTARG_NONE}
                 };
 
-                Cli::WatchBitset options(0);
-                Cli::WatchBitset settings(0);
+                cli::WatchBitset options(0);
+                cli::WatchBitset settings(0);
                 int learnSetting = 0;
                 int wmeSetting = 0;
 
@@ -2248,156 +2182,156 @@ namespace cli
                     switch (opt.GetOption())
                     {
                         case 'a':
-                            options.set(Cli::WATCH_WMA);
+                            options.set(cli::WATCH_WMA);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_WMA);
+                                settings.reset(cli::WATCH_WMA);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_WMA);
+                                settings.set(cli::WATCH_WMA);
                             }
                             break;
 
                         case 'b':
-                            options.set(Cli::WATCH_BACKTRACING);
+                            options.set(cli::WATCH_BACKTRACING);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_BACKTRACING);
+                                settings.reset(cli::WATCH_BACKTRACING);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_BACKTRACING);
+                                settings.set(cli::WATCH_BACKTRACING);
                             }
                             break;
 
                         case 'c':
-                            options.set(Cli::WATCH_CHUNKS);
+                            options.set(cli::WATCH_CHUNKS);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_CHUNKS);
+                                settings.reset(cli::WATCH_CHUNKS);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_CHUNKS);
+                                settings.set(cli::WATCH_CHUNKS);
                             }
                             break;
 
                         case 'd':
-                            options.set(Cli::WATCH_DECISIONS);
+                            options.set(cli::WATCH_DECISIONS);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_DECISIONS);
+                                settings.reset(cli::WATCH_DECISIONS);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_DECISIONS);
+                                settings.set(cli::WATCH_DECISIONS);
                             }
                             break;
 
                         case 'D':
-                            options.set(Cli::WATCH_DEFAULT);
+                            options.set(cli::WATCH_DEFAULT);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_DEFAULT);
+                                settings.reset(cli::WATCH_DEFAULT);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_DEFAULT);
+                                settings.set(cli::WATCH_DEFAULT);
                             }
                             break;
 
                         case 'e':
-                            options.set(Cli::WATCH_EPMEM);
+                            options.set(cli::WATCH_EPMEM);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_EPMEM);
+                                settings.reset(cli::WATCH_EPMEM);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_EPMEM);
+                                settings.set(cli::WATCH_EPMEM);
                             }
                             break;
 
                         case 'f': // fullwmes
-                            options.set(Cli::WATCH_WME_DETAIL);
+                            options.set(cli::WATCH_WME_DETAIL);
                             wmeSetting = 2;
                             break;
 
                         case 'g':
-                            options.set(Cli::WATCH_GDS);
+                            options.set(cli::WATCH_GDS);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_GDS);
+                                settings.reset(cli::WATCH_GDS);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_GDS);
+                                settings.set(cli::WATCH_GDS);
                             }
                             break;
 
                         case 'i':
-                            options.set(Cli::WATCH_INDIFFERENT);
+                            options.set(cli::WATCH_INDIFFERENT);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_INDIFFERENT);
+                                settings.reset(cli::WATCH_INDIFFERENT);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_INDIFFERENT);
+                                settings.set(cli::WATCH_INDIFFERENT);
                             }
                             break;
 
                         case 'j':
-                            options.set(Cli::WATCH_JUSTIFICATIONS);
+                            options.set(cli::WATCH_JUSTIFICATIONS);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_JUSTIFICATIONS);
+                                settings.reset(cli::WATCH_JUSTIFICATIONS);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_JUSTIFICATIONS);
+                                settings.set(cli::WATCH_JUSTIFICATIONS);
                             }
                             break;
 
                         case 'L':
-                            options.set(Cli::WATCH_LEARNING);
+                            options.set(cli::WATCH_LEARNING);
                             learnSetting = ParseLearningOptarg(opt);
                             if (learnSetting == -1)
                             {
@@ -2429,163 +2363,163 @@ namespace cli
                             break;
 
                         case 'n': // nowmes
-                            options.set(Cli::WATCH_WME_DETAIL);
+                            options.set(cli::WATCH_WME_DETAIL);
                             wmeSetting = 0;
                             break;
 
                         case 'p':
-                            options.set(Cli::WATCH_PHASES);
+                            options.set(cli::WATCH_PHASES);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_PHASES);
+                                settings.reset(cli::WATCH_PHASES);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_PHASES);
+                                settings.set(cli::WATCH_PHASES);
                             }
                             break;
 
                         case 'P': // productions (all)
-                            options.set(Cli::WATCH_DEFAULT);
-                            options.set(Cli::WATCH_USER);
-                            options.set(Cli::WATCH_CHUNKS);
-                            options.set(Cli::WATCH_JUSTIFICATIONS);
+                            options.set(cli::WATCH_DEFAULT);
+                            options.set(cli::WATCH_USER);
+                            options.set(cli::WATCH_CHUNKS);
+                            options.set(cli::WATCH_JUSTIFICATIONS);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_DEFAULT);
-                                settings.reset(Cli::WATCH_USER);
-                                settings.reset(Cli::WATCH_CHUNKS);
-                                settings.reset(Cli::WATCH_JUSTIFICATIONS);
+                                settings.reset(cli::WATCH_DEFAULT);
+                                settings.reset(cli::WATCH_USER);
+                                settings.reset(cli::WATCH_CHUNKS);
+                                settings.reset(cli::WATCH_JUSTIFICATIONS);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_DEFAULT);
-                                settings.set(Cli::WATCH_USER);
-                                settings.set(Cli::WATCH_CHUNKS);
-                                settings.set(Cli::WATCH_JUSTIFICATIONS);
+                                settings.set(cli::WATCH_DEFAULT);
+                                settings.set(cli::WATCH_USER);
+                                settings.set(cli::WATCH_CHUNKS);
+                                settings.set(cli::WATCH_JUSTIFICATIONS);
                             }
                             break;
 
                         case 'r':
-                            options.set(Cli::WATCH_PREFERENCES);
+                            options.set(cli::WATCH_PREFERENCES);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_PREFERENCES);
+                                settings.reset(cli::WATCH_PREFERENCES);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_PREFERENCES);
+                                settings.set(cli::WATCH_PREFERENCES);
                             }
                             break;
 
                         case 'R':
-                            options.set(Cli::WATCH_RL);
+                            options.set(cli::WATCH_RL);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_RL);
+                                settings.reset(cli::WATCH_RL);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_RL);
+                                settings.set(cli::WATCH_RL);
                             }
                             break;
 
                         case 's':
-                            options.set(Cli::WATCH_SMEM);
+                            options.set(cli::WATCH_SMEM);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_SMEM);
+                                settings.reset(cli::WATCH_SMEM);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_SMEM);
+                                settings.set(cli::WATCH_SMEM);
                             }
                             break;
 
                         case 't'://timetags
-                            options.set(Cli::WATCH_WME_DETAIL);
+                            options.set(cli::WATCH_WME_DETAIL);
                             wmeSetting = 1;
                             break;
 
                         case 'T':
-                            options.set(Cli::WATCH_TEMPLATES);
+                            options.set(cli::WATCH_TEMPLATES);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_TEMPLATES);
+                                settings.reset(cli::WATCH_TEMPLATES);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_TEMPLATES);
+                                settings.set(cli::WATCH_TEMPLATES);
                             }
                             break;
 
                         case 'u':
-                            options.set(Cli::WATCH_USER);
+                            options.set(cli::WATCH_USER);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_USER);
+                                settings.reset(cli::WATCH_USER);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_USER);
+                                settings.set(cli::WATCH_USER);
                             }
                             break;
                         case 'w'://wmes
-                            options.set(Cli::WATCH_WMES);
+                            options.set(cli::WATCH_WMES);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_WMES);
+                                settings.reset(cli::WATCH_WMES);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_WMES);
+                                settings.set(cli::WATCH_WMES);
                             }
                             break;
                         case 'W'://waterfall
-                            options.set(Cli::WATCH_WATERFALL);
+                            options.set(cli::WATCH_WATERFALL);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(Cli::WATCH_WATERFALL);
+                                settings.reset(cli::WATCH_WATERFALL);
                             }
                             else
                             {
-                                settings.set(Cli::WATCH_WATERFALL);
+                                settings.set(cli::WATCH_WATERFALL);
                             }
                             break;
                     }
@@ -2617,7 +2551,7 @@ namespace cli
         private:
             cli::Cli& cli;
 
-            bool ProcessWatchLevelSettings(const int level, Cli::WatchBitset& options, Cli::WatchBitset& settings, int& wmeSetting, int& learnSetting)
+            bool ProcessWatchLevelSettings(const int level, cli::WatchBitset& options, cli::WatchBitset& settings, int& wmeSetting, int& learnSetting)
             {
                 if (level < 0)
                 {
@@ -2630,30 +2564,30 @@ namespace cli
                 }
 
                 // All of these are going to change
-                options.set(Cli::WATCH_PREFERENCES);
-                options.set(Cli::WATCH_WMES);
-                options.set(Cli::WATCH_DEFAULT);
-                options.set(Cli::WATCH_USER);
-                options.set(Cli::WATCH_CHUNKS);
-                options.set(Cli::WATCH_JUSTIFICATIONS);
-                options.set(Cli::WATCH_TEMPLATES);
-                options.set(Cli::WATCH_PHASES);
-                options.set(Cli::WATCH_DECISIONS);
-                options.set(Cli::WATCH_WATERFALL);
-                options.set(Cli::WATCH_GDS);
+                options.set(cli::WATCH_PREFERENCES);
+                options.set(cli::WATCH_WMES);
+                options.set(cli::WATCH_DEFAULT);
+                options.set(cli::WATCH_USER);
+                options.set(cli::WATCH_CHUNKS);
+                options.set(cli::WATCH_JUSTIFICATIONS);
+                options.set(cli::WATCH_TEMPLATES);
+                options.set(cli::WATCH_PHASES);
+                options.set(cli::WATCH_DECISIONS);
+                options.set(cli::WATCH_WATERFALL);
+                options.set(cli::WATCH_GDS);
 
                 // Start with all off, turn on as appropriate
-                settings.reset(Cli::WATCH_PREFERENCES);
-                settings.reset(Cli::WATCH_WMES);
-                settings.reset(Cli::WATCH_DEFAULT);
-                settings.reset(Cli::WATCH_USER);
-                settings.reset(Cli::WATCH_CHUNKS);
-                settings.reset(Cli::WATCH_JUSTIFICATIONS);
-                settings.reset(Cli::WATCH_TEMPLATES);
-                settings.reset(Cli::WATCH_PHASES);
-                settings.reset(Cli::WATCH_DECISIONS);
-                settings.reset(Cli::WATCH_WATERFALL);
-                settings.reset(Cli::WATCH_GDS);
+                settings.reset(cli::WATCH_PREFERENCES);
+                settings.reset(cli::WATCH_WMES);
+                settings.reset(cli::WATCH_DEFAULT);
+                settings.reset(cli::WATCH_USER);
+                settings.reset(cli::WATCH_CHUNKS);
+                settings.reset(cli::WATCH_JUSTIFICATIONS);
+                settings.reset(cli::WATCH_TEMPLATES);
+                settings.reset(cli::WATCH_PHASES);
+                settings.reset(cli::WATCH_DECISIONS);
+                settings.reset(cli::WATCH_WATERFALL);
+                settings.reset(cli::WATCH_GDS);
 
                 switch (level)
                 {
@@ -2666,25 +2600,25 @@ namespace cli
                         break;
 
                     case 5:// preferences, waterfall
-                        settings.set(Cli::WATCH_PREFERENCES);
-                        settings.set(Cli::WATCH_WATERFALL);
+                        settings.set(cli::WATCH_PREFERENCES);
+                        settings.set(cli::WATCH_WATERFALL);
                     // falls through
                     case 4:// wmes
-                        settings.set(Cli::WATCH_WMES);
+                        settings.set(cli::WATCH_WMES);
                     // falls through
                     case 3:// productions (default, user, chunks, justifications, templates)
-                        settings.set(Cli::WATCH_DEFAULT);
-                        settings.set(Cli::WATCH_USER);
-                        settings.set(Cli::WATCH_CHUNKS);
-                        settings.set(Cli::WATCH_JUSTIFICATIONS);
-                        settings.set(Cli::WATCH_TEMPLATES);
+                        settings.set(cli::WATCH_DEFAULT);
+                        settings.set(cli::WATCH_USER);
+                        settings.set(cli::WATCH_CHUNKS);
+                        settings.set(cli::WATCH_JUSTIFICATIONS);
+                        settings.set(cli::WATCH_TEMPLATES);
                     // falls through
                     case 2:// phases, gds
-                        settings.set(Cli::WATCH_PHASES);
-                        settings.set(Cli::WATCH_GDS);
+                        settings.set(cli::WATCH_PHASES);
+                        settings.set(cli::WATCH_GDS);
                     // falls through
                     case 1:// decisions
-                        settings.set(Cli::WATCH_DECISIONS);
+                        settings.set(cli::WATCH_DECISIONS);
                         break;
                 }
                 return true;
