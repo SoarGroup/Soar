@@ -223,7 +223,7 @@ bool CommandLineInterface::ParseWMEWatch(std::vector< std::string >& argv)
     }
 
     // no additional arguments
-    if (opt.GetNonOptionArguments())
+    if (!opt.CheckNumNonOptArgs(1, 1))
     {
         return SetError("Syntax: wm watch -[a|r]  -t <type>  <pattern>\nwm watch -[l|R] [-t <type>]");
     }
@@ -1241,12 +1241,12 @@ int RemoveWMEFilter(agent* thisAgent, const char* pIdString, const char* pAttrSt
 
 bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
 {
-    cons* c;
+    cons* c, *next_cons;
     bool didRemoveSome = false;
     cons** prev_cons_rest = &thisAgent->wme_filter_list;
-    for (c = thisAgent->wme_filter_list; c != NIL; c = c->rest)
+    for (c = thisAgent->wme_filter_list; c != NIL; c = next_cons)
     {
-
+        next_cons = c->rest;
         wme_filter* wf = static_cast<wme_filter*>(c->first);
         if ((adds && wf->adds) || (removes && wf->removes))
         {
@@ -1260,7 +1260,7 @@ bool ResetWMEFilters(agent* thisAgent, bool adds, bool removes)
             free_cons(thisAgent, c);
             didRemoveSome = true;
         }
-        prev_cons_rest = &(c->rest);
+        prev_cons_rest = &(next_cons);
     }
     return didRemoveSome;
 }

@@ -44,10 +44,10 @@ void wm_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "wm activation %---timers [<timer>]        %-= wma_forgetting | wma_history\n");
     outputManager->printa_sf(thisAgent, "wm activation %---history <timetag>\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "wm watch %-[--add-filter   ]  --type <t>  pattern %-<t> = [adds | removes | both]\n");
+    outputManager->printa_sf(thisAgent, "wm watch %-[--add-filter   ] --type <t>  pattern %-<t> = [adds | removes | both]\n");
     outputManager->printa_sf(thisAgent, "         %-[--remove-filter]\n");
-    outputManager->printa_sf(thisAgent, "wm watch %-[--list-filter] [--type <t>]\n");
-    outputManager->printa_sf(thisAgent, "         %-[--reset-filter ]\n");
+    outputManager->printa_sf(thisAgent, "wm watch %-[--list-filter ] [--type <t>]\n");
+    outputManager->printa_sf(thisAgent, "         %-[--reset-filter]\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:       help wm\n");
 }

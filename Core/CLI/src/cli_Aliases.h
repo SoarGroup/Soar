@@ -36,8 +36,6 @@ namespace cli
                 t.evaluate("interrupt stop-soar");
                 t.evaluate("is soar init");
                 t.evaluate("man help");
-                t.evaluate("allocate memory allocate");
-                t.evaluate("memories memory usage");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
                 t.evaluate("pr preferences");
@@ -58,9 +56,10 @@ namespace cli
                 t.evaluate("varprint print -v -d 100");
                 t.evaluate("w watch");
                 t.evaluate("wmes print -depth 0 -internal");
-                t.evaluate("wmes print -i");
 
                 // Backward compatibility aliases
+                t.evaluate("allocate memory allocate");
+                t.evaluate("memories memory usage");
                 t.evaluate("init-soar soar init");
                 t.evaluate("chunk-name-format chunk naming-style");
                 t.evaluate("default-wme-depth output print-depth");

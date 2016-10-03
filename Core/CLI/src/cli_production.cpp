@@ -152,9 +152,9 @@ bool CommandLineInterface::ParseExcise(std::vector< std::string >& argv)
     // If there are options, no additional argument.
     if (options.any())
     {
-        if (opt.GetNonOptionArguments())
+        if (!opt.CheckNumNonOptArgs(1, 1))
         {
-            return SetError("Error.");
+            return SetError("Invalid additional arguments.");
         }
         return DoExcise(options);
     }

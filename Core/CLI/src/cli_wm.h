@@ -48,10 +48,9 @@ namespace cli
                     {'s', "set",            OPTARG_NONE},
                     {'S', "stats",          OPTARG_NONE},
                     {'T', "template",       OPTARG_NONE},
-                    {'t', "timers",         OPTARG_NONE},
-                    {'x', "type",           OPTARG_REQUIRED},
+                    {'x', "timers",         OPTARG_NONE},
+                    {'t', "type",           OPTARG_REQUIRED},
                     {'u', "user",           OPTARG_NONE},
-
                     {0, 0, OPTARG_NONE}
                 };
 
