@@ -21,36 +21,36 @@ namespace cli
                 
                 t.evaluate("? help");
                 t.evaluate("a alias");
-                t.evaluate("aw add-wme");
+                t.evaluate("aw wm add");
                 t.evaluate("chdir cd");
                 t.evaluate("ctf command-to-file");
                 t.evaluate("d run -d");
                 t.evaluate("dir ls");
                 t.evaluate("e run -e");
-                t.evaluate("ex excise");
-                t.evaluate("fc firing-counts");
-                t.evaluate("gds_print gds-print");
+                t.evaluate("ex production excise");
+                t.evaluate("fc production firing-counts");
+                t.evaluate("gds_print print --gds");
                 t.evaluate("h help");
-                t.evaluate("inds indifferent-selection");
+                t.evaluate("inds decide indifferent-selection");
                 t.evaluate("init soar init");
-                t.evaluate("interrupt stop-soar");
+                t.evaluate("interrupt soar stop");
                 t.evaluate("is soar init");
                 t.evaluate("man help");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
                 t.evaluate("pr preferences");
                 t.evaluate("ps print --stack");
-                t.evaluate("pw pwatch");
+                t.evaluate("pw production watch");
                 t.evaluate("quit exit");
                 t.evaluate("r run");
-                t.evaluate("rn rete-net");
-                t.evaluate("rw remove-wme");
+                t.evaluate("rn load rete-network");
+                t.evaluate("rw wm remove");
                 t.evaluate("s run 1");
                 t.evaluate("set-default-depth soar print-depth");
-                t.evaluate("ss stop-soar");
+                t.evaluate("ss soar stop");
                 t.evaluate("st stats");
                 t.evaluate("step run -d");
-                t.evaluate("stop stop-soar");
+                t.evaluate("stop soar stop");
                 t.evaluate("topd pwd");
                 t.evaluate("un unalias");
                 t.evaluate("varprint print -v -d 100");
@@ -58,25 +58,54 @@ namespace cli
                 t.evaluate("wmes print -depth 0 -internal");
 
                 // Backward compatibility aliases
+                t.evaluate("indifferent-selection decide indifferent-selection");
+                t.evaluate("numeric-indifferent-mode decide numeric-indifferent-mode");
+                t.evaluate("predict decide predict");
+                t.evaluate("select decide select");
+                t.evaluate("srand decide srand");
+
+                t.evaluate("replay-input load percepts");
+                t.evaluate("rete-net load rete-network");
+                t.evaluate("load-library load library");
+                t.evaluate("source load file");
+                t.evaluate("capture-input save percepts");
+
+                t.evaluate("excise production excise");
+                t.evaluate("firing-counts production firing-counts");
+                t.evaluate("matches production matches");
+                t.evaluate("multi-attributes production multi-attributes");
+                t.evaluate("pbreak production break");
+                t.evaluate("production-find production find");
+                t.evaluate("pwatch production watch");
+
+                t.evaluate("add-wme wm add");
+                t.evaluate("wma wm activation");
+                t.evaluate("remove-wme wm remove");
+                t.evaluate("watch-wmes wm watch");
+
                 t.evaluate("allocate memory allocate");
                 t.evaluate("memories memory usage");
-                t.evaluate("init-soar soar init");
-                t.evaluate("chunk-name-format chunk naming-style");
-                t.evaluate("default-wme-depth output print-depth");
-                t.evaluate("echo-commands output echo-commands");
-                t.evaluate("gp-max soar max-gp");
+
                 t.evaluate("internal-symbols debug internal-symbols");
-                t.evaluate("max-chunks chunk max-chunks");
+                t.evaluate("port debug port");
+
+                t.evaluate("init-soar soar init");
+                t.evaluate("gp-max soar max-gp");
                 t.evaluate("max-dc-time soar max-dc-time");
                 t.evaluate("max-elaborations soar max-elaborations");
                 t.evaluate("max-goal-depth soar max-goal-depth");
                 t.evaluate("max-memory-usage soar max-memory-usage");
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
-                t.evaluate("port debug port");
                 t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
-                t.evaluate("verbose output verbose");
                 t.evaluate("waitsnc soar wait-snc");
+
+                t.evaluate("chunk-name-format chunk naming-style");
+                t.evaluate("max-chunks chunk max-chunks");
+
+                t.evaluate("default-wme-depth output print-depth");
+                t.evaluate("echo-commands output echo-commands");
+                t.evaluate("verbose output verbose");
                 t.evaluate("warnings output warnings");
             }
             

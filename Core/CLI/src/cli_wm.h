@@ -66,6 +66,10 @@ namespace cli
                         break;
                     }
                 }
+                if (!opt.GetNonOptionArguments())
+                {
+                    return cli.SetError("Sub-command is required.");
+                }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;

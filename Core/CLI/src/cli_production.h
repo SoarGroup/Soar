@@ -53,6 +53,7 @@ namespace cli
                     {'r', "rl",                 OPTARG_NONE},
                     {'s', "set",                OPTARG_NONE},
                     {'x', "show-bindings",      OPTARG_NONE},
+                    {'t', "task",               OPTARG_NONE},
                     {'T', "template",           OPTARG_NONE},
                     {'y', "timetags",           OPTARG_NONE},
                     {'u', "user",               OPTARG_NONE},
@@ -71,6 +72,10 @@ namespace cli
                     {
                         break;
                     }
+                }
+                if (!opt.GetNonOptionArguments())
+                {
+                    return cli.SetError("Sub-command is required.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

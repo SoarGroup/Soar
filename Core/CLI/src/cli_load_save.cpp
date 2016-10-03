@@ -204,6 +204,7 @@ bool CommandLineInterface::ParseReteLoad(std::vector< std::string >& argv)
     {
         {'l', "load",        OPTARG_REQUIRED},
         {'r', "restore",    OPTARG_REQUIRED},
+        {'s', "save",        OPTARG_REQUIRED},
         {0, 0, OPTARG_NONE}
     };
 
@@ -228,6 +229,9 @@ bool CommandLineInterface::ParseReteLoad(std::vector< std::string >& argv)
             case 'r':
                 load = true;
                 filename = opt.GetOptionArgument();
+                break;
+            case 's':
+                return ParseReteSave(argv);
                 break;
         }
     }
@@ -319,6 +323,8 @@ bool CommandLineInterface::ParseReteSave(std::vector< std::string >& argv)
     cli::Options opt;
     OptionsData optionsData[] =
     {
+        {'l', "load",        OPTARG_REQUIRED},
+        {'r', "restore",    OPTARG_REQUIRED},
         {'s', "save",        OPTARG_REQUIRED},
         {0, 0, OPTARG_NONE}
     };
@@ -340,6 +346,10 @@ bool CommandLineInterface::ParseReteSave(std::vector< std::string >& argv)
 
         switch (opt.GetOption())
         {
+            case 'r':
+            case 'l':
+                return ParseReteLoad(argv);
+                break;
             case 's':
                 save = true;
                 filename = opt.GetOptionArgument();

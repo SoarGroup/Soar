@@ -283,7 +283,6 @@ bool CommandLineInterface::ParseMemories(std::vector< std::string >& argv)
         }
     }
 
-    assert(opt.GetNonOptionArguments() > 0);
     // Max one additional argument
     if (opt.GetNonOptionArguments() > 2)
     {

@@ -160,17 +160,17 @@ bool CommandLineInterface::ParseExcise(std::vector< std::string >& argv)
     }
 
     // If there are no options, there must be only one production name argument
-    if (opt.GetNonOptionArguments() < 1)
+    if (opt.GetNonOptionArguments() < 2)
     {
         return SetError("Production name is required.");
     }
-    if (opt.GetNonOptionArguments() > 1)
+    if (opt.GetNonOptionArguments() > 2)
     {
         return SetError("Only one production name allowed, call excise multiple times to excise more than one specific production.");
     }
 
     // Pass the production to the DoExcise function
-    return DoExcise(options, &(argv[opt.GetArgument() - opt.GetNonOptionArguments()]));
+    return DoExcise(options, &(argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]));
 }
 bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
 {
@@ -182,7 +182,7 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
         {'d', "defaults",        OPTARG_NONE},
         {'j', "justifications",    OPTARG_NONE},
         {'r', "rl",                OPTARG_NONE},
-        {'t', "template",        OPTARG_NONE},
+        {'T', "template",        OPTARG_NONE},
         {'u', "user",            OPTARG_NONE},
         {0, 0, OPTARG_NONE}
     };
@@ -243,14 +243,14 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
         }
     }
 
-    if (opt.GetNonOptionArguments() > 0)
+    if (opt.GetNonOptionArguments() > 1)
     {
-        if (opt.GetNonOptionArguments() > 1)
+        if (opt.GetNonOptionArguments() > 2)
         {
-            return SetError("Error.");
+            return SetError("Too many parameters.");
         } else {
             /* This might not be needed since we can only get a single argument */
-            for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
+            for (size_t i = opt.GetArgument() - opt.GetNonOptionArguments() + 1; i < argv.size(); ++i)
             {
                 if (!pProduction.empty())
                 {
@@ -333,18 +333,18 @@ bool CommandLineInterface::ParseMatches(std::vector< std::string >& argv)
     }
 
     // Max one additional argument and it is a production
-    if (opt.GetNonOptionArguments() > 1)
+    if (opt.GetNonOptionArguments() > 2)
     {
         return SetError("Error.");
     }
 
-    if (opt.GetNonOptionArguments() == 1)
+    if (opt.GetNonOptionArguments() == 2)
     {
         if (mode != Cli::MATCHES_ASSERTIONS_RETRACTIONS)
         {
             return SetError("Error.");
         }
-        return DoMatches(Cli::MATCHES_PRODUCTION, detail, &argv[opt.GetArgument() - opt.GetNonOptionArguments()]);
+        return DoMatches(Cli::MATCHES_PRODUCTION, detail, &argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]);
     }
 
     return DoMatches(mode, detail);
@@ -352,25 +352,25 @@ bool CommandLineInterface::ParseMatches(std::vector< std::string >& argv)
 bool CommandLineInterface::ParseMultiAttributes(std::vector< std::string >& argv)
 {
     // No more than three arguments
-    if (argv.size() > 3)
+    if (argv.size() > 4)
     {
-        return SetError("Error.");
+        return SetError("Too many parameters");
     }
 
     int n = 0;
     // If we have 3 arguments, third one is an integer
-    if (argv.size() > 2)
+    if (argv.size() > 3)
     {
-        if (!from_string(n, argv[2]) || (n <= 0))
+        if (!from_string(n, argv[3]) || (n <= 0))
         {
             return SetError("Expected non-negative integer.");
         }
     }
 
     // If we have two arguments, second arg is an attribute/identifer/whatever
-    if (argv.size() > 1)
+    if (argv.size() > 2)
     {
-        return DoMultiAttributes(&argv[1], n);
+        return DoMultiAttributes(&argv[2], n);
     }
 
     return DoMultiAttributes();
@@ -411,16 +411,16 @@ bool CommandLineInterface::ParsePBreak(std::vector< std::string >& argv)
     {
         case 'c':
         case 's':
-            if (argv.size() != 3)
+            if (argv.size() != 4)
             {
                 return SetError("pbreak --set/--clear takes exactly one argument.");
             }
 
             // case: clear the interrupt flag on the production
-            return DoPbreak(option, argv[2]);
+            return DoPbreak(option, argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]);
 
         case 'p':
-            if (argv.size() != 2)
+            if (argv.size() != 3)
             {
                 return SetError("pbreak --print takes no arguments.");
             }
@@ -429,13 +429,13 @@ bool CommandLineInterface::ParsePBreak(std::vector< std::string >& argv)
             return DoPbreak('p', "");
 
         default:
-            if (argv.size() == 1)
+            if (argv.size() == 2)
             {
                 return DoPbreak('p', "");
             }
-            else if (argv.size() == 2)
+            else if (argv.size() == 3)
             {
-                return DoPbreak('s', argv[1]);
+                return DoPbreak('s', argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1]);
             }
             else
             {
@@ -495,9 +495,9 @@ bool CommandLineInterface::ParsePFind(std::vector< std::string >& argv)
         }
     }
 
-    if (!opt.GetNonOptionArguments())
+    if (opt.CheckNumNonOptArgs(1, 1))
     {
-        return SetError("Error.");
+        return SetError("No pattern specified.");
     }
 
     if (options.none())
@@ -506,7 +506,7 @@ bool CommandLineInterface::ParsePFind(std::vector< std::string >& argv)
     }
 
     std::string pattern;
-    for (unsigned i = opt.GetArgument() - opt.GetNonOptionArguments(); i < argv.size(); ++i)
+    for (unsigned i = opt.GetArgument() - opt.GetNonOptionArguments() + 1; i < argv.size(); ++i)
     {
         pattern += argv[i];
         pattern += ' ';
@@ -553,14 +553,14 @@ bool CommandLineInterface::ParsePWatch(std::vector< std::string >& argv)
                 break;
         }
     }
-    if (opt.GetNonOptionArguments() > 1)
+    if (opt.GetNonOptionArguments() > 2)
     {
-        return SetError("Error.");
+        return SetError("Too many parameters");
     }
 
-    if (opt.GetNonOptionArguments() == 1)
+    if (opt.GetNonOptionArguments() == 2)
     {
-        return DoPWatch(false, &argv[opt.GetArgument() - opt.GetNonOptionArguments()], setting);
+        return DoPWatch(false, &argv[opt.GetArgument() - opt.GetNonOptionArguments() + 1], setting);
     }
     return DoPWatch(query, 0);
 }
@@ -621,6 +621,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     int64_t exciseCount = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::string lCmd("init");
+    production* nextProd = NULL;
 
     // Process the general options
     if (options.test(EXCISE_ALL))
@@ -648,8 +649,9 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     }
     if (options.test(EXCISE_RL))
     {
-        for (production* prod = thisAgent->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next)
+        for (production* prod = thisAgent->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = nextProd)
         {
+            nextProd = prod->next;
             if (prod->rl_rule)
             {
                 exciseCount++;
@@ -657,8 +659,9 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             }
         }
 
-        for (production* prod = thisAgent->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next)
+        for (production* prod = thisAgent->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = nextProd)
         {
+            nextProd = prod->next;
             if (prod->rl_rule)
             {
                 exciseCount++;
@@ -666,8 +669,9 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             }
         }
 
-        for (production* prod = thisAgent->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next)
+        for (production* prod = thisAgent->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = nextProd)
         {
+            nextProd = prod->next;
             if (prod->rl_rule)
             {
                 exciseCount++;
@@ -681,8 +685,9 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
     {
         for (int i = 0; i < NUM_PRODUCTION_TYPES; i++)
         {
-            for (production* prod = thisAgent->all_productions_of_type[i]; prod != NIL; prod = prod->next)
+            for (production* prod = thisAgent->all_productions_of_type[i]; prod != NIL; prod = nextProd)
             {
+                nextProd = prod->next;
                 if (!prod->firing_count)
                 {
                     exciseCount++;
@@ -970,7 +975,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 
         if (m_RawOutput)
         {
-            m_Result << "Value\tSymbol";
+            m_Result << "Value\tSymbol\n";
         }
 
         while (maList)

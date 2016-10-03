@@ -112,6 +112,7 @@ namespace cli
             bool XMLMoveCurrentToChild(int index) ;
             bool XMLMoveCurrentToLastChild() ;
 
+            /* MToDo | Commands that are consolidated no longer need to be virtual.  Move down */
             virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
             virtual bool DoAlias(std::vector< std::string >* argv = 0);
             virtual bool DoAllocate(const std::string& pool, int blocks);
