@@ -114,7 +114,7 @@ namespace cli
 
             /* MToDo | Commands that are consolidated no longer need to be virtual.  Move down */
             virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
-            virtual bool DoAlias(std::vector< std::string >* argv = 0);
+            virtual bool DoAlias(std::vector< std::string >* argv = 0, bool doRemove = false);
             virtual bool DoAllocate(const std::string& pool, int blocks);
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
@@ -171,7 +171,6 @@ namespace cli
             virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoTime(std::vector<std::string>& argv);
             virtual bool DoTimers(bool* pSetting = 0);
-            virtual bool DoUnalias(std::vector<std::string>& argv);
             virtual bool DoVersion();
             virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);

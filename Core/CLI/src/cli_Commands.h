@@ -21,19 +21,57 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: alias [name [cmd [args]]]";
+                return "Syntax: alias [--remove] [name [cmd args]]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
-                if (argv.size() == 1)
+                cli::Options opt;
+                bool doRemove = false;
+                OptionsData optionsData[] =
+                {
+                    {'r', "remove",             OPTARG_NONE},
+                    {0, 0, OPTARG_NONE}
+                };
+
+                for (;;)
+                {
+                    if (!opt.ProcessOptions(argv, optionsData))
+                    {
+                        cli.SetError(opt.GetError().c_str());
+                        return cli.AppendError(GetSyntax());
+                    }
+                    if (opt.GetOption() == -1)
+                    {
+                        break;
+                    }
+                    switch (opt.GetOption())
+                    {
+                        case 'r':
+                            doRemove = true;
+                            break;
+                    }
+                }
+                std::string arg;
+                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
+                size_t num_args = argv.size() - start_arg_position;
+
+                if (num_args == 0)
                 {
                     return cli.DoAlias();    // list all
+                } else {
+                    argv.erase(argv.begin());
+                    if (doRemove)
+                    {
+                        if (num_args > 1)
+                        {
+                            return cli.SetError("Too many arguments for alias --remove");
+                        }
+                        argv.erase(argv.begin());
+                        return cli.DoAlias(&argv, true);
+                    }
+                    return cli.DoAlias(&argv);
                 }
-
-                argv.erase(argv.begin());
-
-                return cli.DoAlias(&argv);
             }
 
         private:
@@ -2053,42 +2091,6 @@ namespace cli
             cli::Cli& cli;
 
             TimersCommand& operator=(const TimersCommand&);
-    };
-
-    class UnaliasCommand : public cli::ParserCommand
-    {
-        public:
-            UnaliasCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~UnaliasCommand() {}
-            virtual const char* GetString() const
-            {
-                return "unalias";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: unalias name";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // Need exactly one argument
-                if (argv.size() < 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-                if (argv.size() > 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                argv.erase(argv.begin());
-                return cli.DoUnalias(argv);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            UnaliasCommand& operator=(const UnaliasCommand&);
     };
 
     class VersionCommand : public cli::ParserCommand

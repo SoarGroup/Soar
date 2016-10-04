@@ -92,7 +92,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::TclCommand(*this));
     m_Parser.AddCommand(new cli::TimeCommand(*this));
     m_Parser.AddCommand(new cli::TimersCommand(*this));
-    m_Parser.AddCommand(new cli::UnaliasCommand(*this));
     m_Parser.AddCommand(new cli::VersionCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));

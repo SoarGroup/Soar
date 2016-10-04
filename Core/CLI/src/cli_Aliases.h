@@ -52,12 +52,13 @@ namespace cli
                 t.evaluate("step run -d");
                 t.evaluate("stop soar stop");
                 t.evaluate("topd pwd");
-                t.evaluate("un unalias");
+                t.evaluate("un alias -r");
                 t.evaluate("varprint print -v -d 100");
                 t.evaluate("w watch");
                 t.evaluate("wmes print -depth 0 -internal");
 
                 // Backward compatibility aliases
+                t.evaluate("unalias alias -r");
                 t.evaluate("indifferent-selection decide indifferent-selection");
                 t.evaluate("numeric-indifferent-mode decide numeric-indifferent-mode");
                 t.evaluate("predict decide predict");

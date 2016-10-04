@@ -22,13 +22,12 @@ namespace cli
             virtual bool AppendError(const std::string& error) = 0;
 
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) = 0;
-            virtual bool DoUnalias(std::vector<std::string>& argv) = 0;
             virtual bool DoGDSPrint() = 0;
             virtual bool DoRand(bool integer, std::string* bound) = 0;
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
             virtual bool DoLearn(const LearnBitset& options) = 0;
 
-            virtual bool DoAlias(std::vector< std::string >* argv = 0) = 0;
+            virtual bool DoAlias(std::vector< std::string >* argv = 0, bool doRemove = 0) = 0;
             virtual bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
             virtual bool DoCD(const std::string* pDirectory = 0) = 0;
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv) = 0;
