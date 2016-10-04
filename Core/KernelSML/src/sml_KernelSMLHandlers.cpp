@@ -1071,6 +1071,13 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
         // If aliases need to be expanded before going to the filter, we can change this then.
         // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
 
+        /* MToDo | Here's a new function to expand a command.  Did not use for something else
+         *         but it could solve a problem with TclSoarLib.  (Bug is that soar aliases
+         *         prevent Tcl substitution */
+        //        std::string lCmd;
+        //        lCmd = m_CommandLineInterface.ExpandCommand(pCommandName);
+        //        pFunction = m_CommandMap[lCmd.c_str()];
+
         // We'll send the command over as an XML packet, so there's some structure to work with.
         // The current structure is:
         // <filter command="command" output="generated output" error="true | false"></filter>

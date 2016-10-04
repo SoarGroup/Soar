@@ -59,8 +59,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::AliasCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
-    m_Parser.AddCommand(new cli::CLogCommand(*this));
-    m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
     m_Parser.AddCommand(new cli::DecideCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
@@ -159,6 +157,17 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     return true;
 }
 
+EXPORT std::string CommandLineInterface::ExpandCommand(const char* pCommand)
+{
+    std::vector<std::string> lStrVector;
+    std::string lCmd(pCommand);
+    lStrVector.push_back(lCmd);
+    cli::Aliases aliases = m_Parser.GetAliases();
+    aliases.Expand(lStrVector);
+    lCmd = lStrVector.back();
+    return lCmd;
+}
+
 void CommandLineInterface::PushCall(CallData callData)
 {
     m_CallDataStack.push(callData);
@@ -167,10 +176,24 @@ void CommandLineInterface::PushCall(CallData callData)
     {
         m_pAgentSML = callData.pAgent;
     }
-    else
-    {
-        m_pAgentSML = 0;
-    }
+    /* Some commands that don't have a pAgent are causing issues
+     * because some of the new CLI commands need the agent to
+     * access code that the simpler commands may not have needed.
+     * This has been observed with load-library.  A better
+     * solution would be to find a way to get those commands to
+     * include the agent, but I'm not sure how to do that.
+     *
+     * I'm making this change because it fixes a crash and it
+     * seems that a stale value should adversely affect anything.
+     * I couldn't find anything that checks if it's null and
+     * does something different.  So, if a future command
+     * doesn't need the pAgentSML, it will ignore any stale values.
+     * If a future command does need it, then it will be updated with
+     * a new calldata before the command executes. */
+//    else
+//    {
+//        m_pAgentSML = 0;
+//    }
 
     m_RawOutput = callData.rawOutput;
 

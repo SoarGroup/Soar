@@ -90,6 +90,8 @@ namespace cli
             *************************************************************/
             EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, soarxml::ElementXML* pResponse);
 
+            EXPORT std::string ExpandCommand(const char* pCommand);
+
             /*************************************************************
             * @brief Returns true if the given command should always be echoed (to any listeners)
             *        The current implementation doesn't support aliases or short forms of the commands.
