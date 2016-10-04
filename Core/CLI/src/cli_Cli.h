@@ -41,7 +41,7 @@ namespace cli
             virtual bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             virtual bool DoLS() = 0;
             virtual bool DoMemory(std::vector<std::string>& argv, const std::string& pCmd) = 0;
-            virtual bool DoOutput(std::vector<std::string>& argv, const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, bool pAppend = false) = 0;
+            virtual bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0) = 0;
             virtual bool DoPopD() = 0;
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;
             virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0) = 0;

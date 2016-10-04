@@ -50,8 +50,8 @@ class Symbol_Manager {
         Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL);
         Symbol* generate_new_str_constant(const char* prefix, uint64_t* counter);
 
-        void deallocate_symbol_list_removing_references(::cons*& sym_list);
-        ::cons* copy_symbol_list_adding_references(::cons* sym_list);
+        void deallocate_symbol_list_removing_references(cons*& sym_list);
+        cons* copy_symbol_list_adding_references(cons* sym_list);
 
         Symbol* find_variable(const char* name);
         Symbol* find_identifier(char name_letter, uint64_t name_number);

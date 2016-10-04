@@ -92,8 +92,8 @@ extern rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_ident
 extern void deallocate_rhs_value(agent* thisAgent, rhs_value rv);
 extern void deallocate_action_list(agent* thisAgent, action* actions);
 
-void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, ::list** var_list);
-void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc, list** var_list);
+void add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, cons** var_list);
+void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc, cons** var_list);
 
 extern char first_letter_from_rhs_value(rhs_value rv);
 
@@ -131,9 +131,9 @@ inline uint64_t   rhs_value_to_o_id(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->o_id;
 }
-inline ::list*    rhs_value_to_funcall_list(rhs_value rv)
+inline cons*    rhs_value_to_funcall_list(rhs_value rv)
 {
-    return reinterpret_cast< ::list* >(reinterpret_cast<char*>(rv) - 1);
+    return reinterpret_cast< cons* >(reinterpret_cast<char*>(rv) - 1);
 }
 
 inline uint8_t    rhs_value_to_reteloc_field_num(rhs_value rv)
@@ -159,7 +159,7 @@ inline rhs_value  unboundvar_to_rhs_value(uint64_t n)
     return reinterpret_cast<rhs_value>((n << 2) + 3);
 }
 
-inline rhs_value  funcall_list_to_rhs_value(::list* fl)
+inline rhs_value  funcall_list_to_rhs_value(cons* fl)
 {
     return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1);
 }
@@ -181,8 +181,8 @@ inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
         return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
     else if (rhs_value_is_funcall(rv1) && rhs_value_is_funcall(rv2))
     {
-        list* fl1 = rhs_value_to_funcall_list(rv1);
-        list* fl2 = rhs_value_to_funcall_list(rv2);
+        cons* fl1 = rhs_value_to_funcall_list(rv1);
+        cons* fl2 = rhs_value_to_funcall_list(rv2);
         if (fl1->first != fl2->first) return false;
         cons* c, *c2;
 

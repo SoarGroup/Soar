@@ -2,7 +2,11 @@
 #include <agent.cpp>
 #include <callback.cpp>
 #include <chunk_record.cpp>
+#include <cmd_decide_settings.cpp>
+#include <cmd_load_save_settings.cpp>
 #include <cmd_memory_settings.cpp>
+#include <cmd_production_settings.cpp>
+#include <cmd_wm_settings.cpp>
 #include <condition_record.cpp>
 #include <condition.cpp>
 #include <consistency.cpp>

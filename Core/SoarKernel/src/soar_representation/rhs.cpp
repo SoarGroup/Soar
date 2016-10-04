@@ -37,7 +37,7 @@ test var_test_bound_in_reconstructed_conds(
 void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 {
     cons* c;
-    list* fl;
+    cons* fl;
 
     if (rv == NULL) return;
 
@@ -82,7 +82,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
 {
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
-    list* fl=NULL, *new_fl=NULL;
+    cons* fl=NULL, *new_fl=NULL;
 
     if (rhs_value_is_reteloc(rv))
     {
@@ -180,9 +180,9 @@ char first_letter_from_rhs_value(rhs_value rv)
 
 void add_all_variables_in_rhs_value(agent* thisAgent,
                                     rhs_value rv, tc_number tc,
-                                    list** var_list)
+                                    cons** var_list)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 
@@ -212,7 +212,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
  * to a LHS element or a RHS action that has already been executed */
 
 void add_all_variables_in_action(agent* thisAgent, action* a,
-                                 tc_number tc, list** var_list)
+                                 tc_number tc, cons** var_list)
 {
     Symbol* id;
 
@@ -239,7 +239,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
 }
 
 void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc,
-                                      list** var_list)
+                                      cons** var_list)
 {
     action* a;
 
@@ -261,9 +261,9 @@ void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_numb
 
 void add_bound_variables_in_rhs_value(agent* thisAgent,
                                       rhs_value rv, tc_number tc,
-                                      list** var_list)
+                                      cons** var_list)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 
@@ -288,7 +288,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
 }
 
 void add_bound_variables_in_action(agent* thisAgent, action* a,
-                                   tc_number tc, list** var_list)
+                                   tc_number tc, cons** var_list)
 {
     Symbol* id;
 
@@ -312,7 +312,7 @@ void add_bound_variables_in_action(agent* thisAgent, action* a,
 }
 
 void add_bound_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc,
-                                        list** var_list)
+                                        cons** var_list)
 {
     action* a;
 
@@ -376,7 +376,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                            AddAdditionalTestsMode add_original_vars)
 {
     cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
+    cons* fl, *new_fl;
     Symbol* sym;
     int64_t index;
     char prefix[2];

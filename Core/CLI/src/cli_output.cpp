@@ -27,98 +27,74 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const char pOp, const std::string* pAttr, const std::string* pVal, bool pAppend)
+bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
 
-    if (!pOp)
+    if (!pArg1)
     {
-        PrintCLIMessage("Output contains settings and sub-commands to control what Soar prints and where it prints it.\n"
-            "Use 'output ?' and 'help output' to learn more about the output command.");
+        PrintCLIMessage("The 'output' contains settings and sub-commands to control what Soar prints and where it prints it.\n"
+            "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
         return true;
     }
-    else if (pOp == 'G')
+
+    soar_module::param* my_param = thisAgent->outputManager->m_params->get(pArg1->c_str());
+
+    if (!my_param)
     {
-        /* Single command argument */
-        soar_module::param* my_param = thisAgent->outputManager->m_params->get(pAttr->c_str());
-        if (!my_param)
+        return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
+    }
+    else if (my_param == thisAgent->outputManager->m_params->clog)
+    {
+//        argv.erase(argv.begin());
+        return ParseClog(argv);
+    }
+    else if (my_param == thisAgent->outputManager->m_params->ctf)
+    {
+        return ParseCTF(argv);
+    }
+    else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
+    {
+        thisAgent->outputManager->m_params->print_output_settings(thisAgent);
+    }
+    else {
+        if (!pArg2)
         {
-            return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
-        }
-        else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
-        {
-            thisAgent->outputManager->m_params->print_output_settings(thisAgent);
-        }
-        else {
-            /* Command was a valid ebc_param name, so print it's value */
+            /* Sub-command was a variable setting, so print it's value */
             tempStringStream << my_param->get_name() << " =" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
-        }
-        return true;
-    }
-    else if (pOp == 'S')
-    {
-        soar_module::param* my_param = thisAgent->outputManager->m_params->get(pAttr->c_str());
-        if (!my_param)
-        {
-            return SetError("Invalid output command.  Use 'output ?' to see a list of valid sub-commands.");
-        }
-        else if (my_param == thisAgent->outputManager->m_params->clog)
-        {
-            argv.erase(argv.begin());
-            return ParseClog(argv);
-        }
-        else if (my_param == thisAgent->outputManager->m_params->ctf)
-        {
-            argv.erase(argv.begin());
-            if (pAppend)
-            {
-                std::string temp = *(argv.begin());
-                argv[0] = argv[1];
-                argv[1] = temp;
-            }
-            return ParseCTF(argv);
-        }
-
-        if (!my_param->validate_string(pVal->c_str()))
-        {
-            return SetError("Invalid argument for output command. Use 'output ?' to see a list of valid sub-commands.");
-        }
-
-        bool result = my_param->set_string(pVal->c_str());
-
-        if (!result)
-        {
-            return SetError("The output parameter could not be changed.");
-        }
-        else
-        {
-            tempStringStream << my_param->get_name() << " = " << pVal->c_str();
-            PrintCLIMessage(&tempStringStream);
-        }
-        /* The following code assumes that all parameters except learn are boolean */
-        if (!strcmp(pAttr->c_str(), "print-depth"))
-        {
-            thisAgent->outputManager->m_params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
         } else {
-            thisAgent->outputManager->m_params->update_bool_setting(thisAgent, static_cast<soar_module::boolean_param*>(my_param), m_pKernelSML);
-        }
-        return result;
-    }
-    else if (pOp == 's')
-    {
-        thisAgent->explanationMemory->print_global_stats();
-        return true;
-    }
-    else if (pOp == 'h')
-    {
-        PrintCLIMessage_Header("History", 40);
-        return true;
-    }
 
+            if (!my_param->validate_string(pArg2->c_str()))
+            {
+                return SetError("Invalid argument for output command. Use 'output ?' to see a list of valid sub-commands.");
+            }
+
+            bool result = my_param->set_string(pArg2->c_str());
+
+            if (!result)
+            {
+                return SetError("The output parameter could not be changed.");
+            }
+            else
+            {
+                tempStringStream << my_param->get_name() << " = " << pArg2->c_str();
+                PrintCLIMessage(&tempStringStream);
+            }
+            /* The following code assumes that all parameters except learn are boolean */
+            if (!strcmp(pArg1->c_str(), "print-depth"))
+            {
+                thisAgent->outputManager->m_params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
+            } else {
+                thisAgent->outputManager->m_params->update_bool_setting(thisAgent, static_cast<soar_module::boolean_param*>(my_param), m_pKernelSML);
+            }
+            return result;
+        }
+    }
     return true;
 }
+
 bool CommandLineInterface::ParseClog(std::vector< std::string >& argv)
 {
     cli::Options opt;
@@ -127,10 +103,6 @@ bool CommandLineInterface::ParseClog(std::vector< std::string >& argv)
         {'a', "add",        OPTARG_NONE},
         {'A', "append",        OPTARG_NONE},
         {'c', "close",        OPTARG_NONE},
-        {'d', "disable",    OPTARG_NONE},
-        {'e', "existing",    OPTARG_NONE},
-        {'d', "off",        OPTARG_NONE},
-        {'q', "query",        OPTARG_NONE},
         {0, 0, OPTARG_NONE}
     };
 
@@ -154,16 +126,10 @@ bool CommandLineInterface::ParseClog(std::vector< std::string >& argv)
                 mode = cli::LOG_ADD;
                 break;
             case 'c':
-            case 'd':
-            case 'o':
                 mode = cli::LOG_CLOSE;
                 break;
-            case 'e':
             case 'A':
                 mode = cli::LOG_NEWAPPEND;
-                break;
-            case 'q':
-                mode = cli::LOG_QUERY;
                 break;
         }
     }
@@ -220,7 +186,7 @@ bool CommandLineInterface::ParseClog(std::vector< std::string >& argv)
             {
                 return SetError("Please provide a filename.");
             }
-            return DoCLog(mode, &argv[1]);
+            return DoCLog(mode, &argv[opt.GetArgument() - opt.GetNonOptionArguments()]);
 
         default:
         case cli::LOG_CLOSE:

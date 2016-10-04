@@ -94,7 +94,7 @@ void Explanation_Based_Chunker::add_to_locals(condition* cond)
 ------------------------------------------------------------------- */
 
 /* mvp 5-17-94 */
-void print_consed_list_of_conditions(agent* thisAgent, list* c, int indent)
+void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
     {
@@ -110,7 +110,7 @@ void print_consed_list_of_conditions(agent* thisAgent, list* c, int indent)
 }
 
 /* mvp 5-17-94 */
-void print_consed_list_of_condition_wmes(agent* thisAgent, list* c, int indent)
+void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
     {
@@ -149,7 +149,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 {
 
     condition* c;
-    list* grounds_to_print, *locals_to_print, *negateds_to_print;
+    cons* grounds_to_print, *locals_to_print, *negateds_to_print;
 
     dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
 //    dprint(DT_BACKTRACE, "           RHS identities: (%y [o%u] ^%y [o%u] %y [o%u]),\n           Matched cond: %l\n",
@@ -489,7 +489,7 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
     if (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM])
     {
         // use the same code as the backtracing above
-        list* negated_to_print = NIL;
+        cons* negated_to_print = NIL;
         push(thisAgent, c, negated_to_print);
 
         thisAgent->outputManager->printa(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");

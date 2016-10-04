@@ -47,7 +47,7 @@ action_record::~action_record()
 
 void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pIDSet)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 

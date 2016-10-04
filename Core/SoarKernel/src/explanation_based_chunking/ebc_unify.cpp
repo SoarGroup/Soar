@@ -195,7 +195,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
 void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
-    list* fl = rhs_value_to_funcall_list(rv);
+    cons* fl = rhs_value_to_funcall_list(rv);
     rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
     cons* c;
 

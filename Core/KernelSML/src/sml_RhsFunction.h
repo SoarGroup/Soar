@@ -14,7 +14,7 @@
 
 typedef struct symbol_struct Symbol;
 typedef struct agent_struct agent;
-typedef struct cons_struct list;
+typedef struct cons_struct cons;
 
 namespace sml
 {
@@ -28,7 +28,7 @@ namespace sml
             AgentSML* m_pAgentSML ;
             
         public:
-            static Symbol* RhsFunctionCallback(agent* thisAgent, list* args, void* user_data) ;
+            static Symbol* RhsFunctionCallback(agent* thisAgent, cons* args, void* user_data) ;
             static const int kPARAM_NUM_VARIABLE = -1 ;
             
             RhsFunction(AgentSML* pAgent)

@@ -1127,7 +1127,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
     return true;
 }
 
-void free_binding_list(agent* thisAgent, list* bindings)
+void free_binding_list(agent* thisAgent, cons* bindings)
 {
     cons* c;
 
@@ -1138,7 +1138,7 @@ void free_binding_list(agent* thisAgent, list* bindings)
     free_list(thisAgent, bindings);
 }
 
-void print_binding_list(agent* thisAgent, list* bindings)
+void print_binding_list(agent* thisAgent, cons* bindings)
 {
     cons* c;
 
@@ -1148,7 +1148,7 @@ void print_binding_list(agent* thisAgent, list* bindings)
     }
 }
 
-void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_binding_point)
+void reset_old_binding_point(agent* thisAgent, cons** bindings, cons** current_binding_point)
 {
     cons* c, *c_next;
 
@@ -1164,7 +1164,7 @@ void reset_old_binding_point(agent* thisAgent, list** bindings, list** current_b
     bindings = current_binding_point;
 }
 
-Symbol* get_binding(Symbol* f, list* bindings)
+Symbol* get_binding(Symbol* f, cons* bindings)
 {
     cons* c;
 
@@ -1178,7 +1178,7 @@ Symbol* get_binding(Symbol* f, list* bindings)
     return NIL;
 }
 
-bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, list** bindings)
+bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, cons** bindings)
 {
     Binding* b;
     Symbol* bvar;
@@ -1226,7 +1226,7 @@ bool symbols_are_equal_with_bindings(agent* thisAgent, Symbol* s1, Symbol* s2, l
     }
 }
 
-bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, list** bindings)
+bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, cons** bindings)
 {
     //         if (a1->type == FUNCALL_ACTION)
     //         {
@@ -1312,7 +1312,7 @@ bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, l
 
 #define dealloc_and_return(thisAgent,x,y) { deallocate_test(thisAgent, x) ; return (y) ; }
 
-bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list** bindings)
+bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, cons** bindings)
 {
     cons* c1, *c2;
     bool goal_test, impasse_test;
@@ -1432,7 +1432,7 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, list**
     return false;
 }
 
-bool conditions_are_equal_with_bindings(agent* thisAgent, condition* c1, condition* c2, list** bindings)
+bool conditions_are_equal_with_bindings(agent* thisAgent, condition* c1, condition* c2, cons** bindings)
 {
     if (c1->type != c2->type)
     {
@@ -1483,7 +1483,7 @@ bool conditions_are_equal_with_bindings(agent* thisAgent, condition* c1, conditi
 
 void read_pattern_and_get_matching_productions(agent* thisAgent,
         const char* lhs_str,
-        list** current_pf_list,
+        cons** current_pf_list,
         bool show_bindings,
         bool just_chunks,
         bool no_chunks)
@@ -1491,7 +1491,7 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
     condition* c, *clist, *top, *bottom, *pc;
     int i;
     production* prod;
-    list* bindings, *current_binding_point;
+    cons* bindings, *current_binding_point;
     bool match, match_this_c;
 
 
@@ -1590,7 +1590,7 @@ void read_pattern_and_get_matching_productions(agent* thisAgent,
 
 void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
         const char* rhs_string,
-        list** current_pf_list,
+        cons** current_pf_list,
         bool show_bindings,
         bool just_chunks,
         bool no_chunks)
@@ -1599,7 +1599,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
     action* a, *alist, *pa;
     int i;
     production* prod;
-    list* bindings, *current_binding_point;
+    cons* bindings, *current_binding_point;
     bool match, match_this_a, parsed_ok;
     action* rhs;
     condition* top_cond, *bottom_cond;
@@ -1688,7 +1688,7 @@ void read_rhs_pattern_and_get_matching_productions(agent* thisAgent,
 
 bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options, const std::string& pattern)
 {
-    list* current_pf_list = 0;
+    cons* current_pf_list = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     if (options.test(PRODUCTION_FIND_INCLUDE_LHS))

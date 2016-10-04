@@ -2608,7 +2608,7 @@ void bind_variables_in_test(agent* thisAgent,
                             rete_node_level depth,
                             byte field_num,
                             bool dense,
-                            list** varlist,
+                            cons** varlist,
                             test main_eq_test = NULL)
 {
     Symbol* referent;
@@ -2651,7 +2651,7 @@ void bind_variables_in_test(agent* thisAgent,
    bound in some procedure.
 ------------------------------------------------------------------- */
 
-void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, list* vars)
+void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, cons* vars)
 {
     while (vars)
     {
@@ -2726,7 +2726,7 @@ varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
 void deallocate_varnames(agent* thisAgent, varnames* vn)
 {
     Symbol* sym;
-    list* symlist;
+    cons* symlist;
 
     if (vn == NIL)
     {
@@ -2890,7 +2890,7 @@ node_varnames* make_nvn_for_posneg_cond(agent* thisAgent,
                                         node_varnames* parent_nvn)
 {
     node_varnames* New;
-    list* vars_bound;
+    cons* vars_bound;
 
     vars_bound = NIL;
 
@@ -2923,7 +2923,7 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
 {
     node_varnames* New = 0;
     condition* cond;
-    list* vars;
+    cons* vars;
 
     vars = NIL;
 
@@ -3325,7 +3325,7 @@ rete_node* make_node_for_positive_cond(agent* thisAgent,
     var_location left_hash_loc;
     left_hash_loc.var_location_struct::field_num = 0;
     left_hash_loc.var_location_struct::levels_up = 0;
-    list* vars_bound_here;
+    cons* vars_bound_here;
 
     alpha_id = alpha_attr = alpha_value = NIL;
     rt = NIL;
@@ -3468,7 +3468,7 @@ rete_node* make_node_for_negative_cond(agent* thisAgent,
     var_location left_hash_loc;
     left_hash_loc.var_location_struct::field_num = 0;
     left_hash_loc.var_location_struct::levels_up = 0;
-    list* vars_bound_here;
+    cons* vars_bound_here;
 
     alpha_id = alpha_attr = alpha_value = NIL;
     rt = NIL;
@@ -3552,12 +3552,12 @@ void build_network_for_condition_list(agent* thisAgent,
                                       rete_node* parent,
                                       rete_node** dest_bottom_node,
                                       rete_node_level* dest_bottom_depth,
-                                      list** dest_vars_bound)
+                                      cons** dest_vars_bound)
 {
     rete_node* node, *new_node, *child, *subconditions_bottom_node;
     condition* cond;
     rete_node_level current_depth;
-    list* vars_bound;
+    cons* vars_bound;
 
     node = parent;
     current_depth = depth_of_first_cond;
@@ -3760,7 +3760,7 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
 
 void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         rete_node_level bottom_depth,
-        list*& rhs_unbound_vars_for_new_prod,
+        cons*& rhs_unbound_vars_for_new_prod,
         uint64_t& num_rhs_unbound_vars_for_new_prod,
         tc_number rhs_unbound_vars_tc)
 {
@@ -3868,7 +3868,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 {
     rete_node* bottom_node, *p_node;
     rete_node_level bottom_depth;
-    list* vars_bound;
+    cons* vars_bound;
     ms_change* msc;
     action* a;
     byte production_addition_result;
@@ -3883,7 +3883,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
     /* --- change variable names in RHS to Rete location references or
     unbound variable indices --- */
-    list* rhs_unbound_vars_for_new_prod = NIL;
+    cons* rhs_unbound_vars_for_new_prod = NIL;
     uint64_t num_rhs_unbound_vars_for_new_prod = 0;
     tc_number rhs_unbound_vars_tc = get_new_tc_number(thisAgent);
     for (a = p->action_list; a != NIL; a = a->next)
@@ -7301,7 +7301,7 @@ void reteload_free_am_table(agent* thisAgent)
 
 void retesave_varnames(varnames* names, FILE* f)
 {
-    list* c;
+    cons* c;
     uint64_t i;
     Symbol* sym;
 
@@ -7329,7 +7329,7 @@ void retesave_varnames(varnames* names, FILE* f)
 
 varnames* reteload_varnames(agent* thisAgent, FILE* f)
 {
-    list* c;
+    cons* c;
     uint64_t i, count;
     Symbol* sym;
 
@@ -7471,7 +7471,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
     Symbol* sym;
     byte type, field_num;
     int levels_up;
-    list* funcall_list;
+    cons* funcall_list;
     rhs_function* rf;
 
     type = reteload_one_byte(f);
@@ -7697,7 +7697,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     rete_test* rt;
     Symbol* sym;
     uint64_t count;
-    list* temp;
+    cons* temp;
 
     thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &rt);
     rt->type = reteload_one_byte(f);
@@ -7965,7 +7965,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
     alpha_mem* am;
     production* prod;
     Symbol* sym;
-    list* ubv_list;
+    cons* ubv_list;
     var_location left_hash_loc;
     rete_test* other_tests;
 

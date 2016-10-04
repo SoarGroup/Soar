@@ -99,7 +99,7 @@ tc_number get_new_tc_number(agent* thisAgent)
    given tc number.
 ===================================================================== */
 
-void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
+void unmark_identifiers_and_free_list(agent* thisAgent, cons* id_list)
 {
     cons* next;
     Symbol* sym;
@@ -114,7 +114,7 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
     }
 }
 
-void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
+void unmark_variables_and_free_list(agent* thisAgent, cons* var_list)
 {
     cons* next;
     Symbol* sym;
@@ -144,7 +144,7 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 
 ===================================================================== */
 
-void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
+void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
     if (c->type != POSITIVE_CONDITION)  return;
     add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list);
@@ -152,7 +152,7 @@ void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number 
     add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list);
 }
 
-void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
+void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
@@ -162,7 +162,7 @@ void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_lis
     }
 }
 
-void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
+void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
     if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -176,7 +176,7 @@ void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc
     }
 }
 
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
+void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
@@ -215,7 +215,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, list** id_list, list** var_list)
+void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, cons** id_list, cons** var_list)
 {
     if ((sym->symbol_type == VARIABLE_SYMBOL_TYPE) || (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE))
     {
@@ -223,7 +223,7 @@ void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, list** id_lis
     }
 }
 
-void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  list** id_list, list** var_list)
+void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  cons** id_list, cons** var_list)
 {
     cons* c;
 
@@ -233,7 +233,7 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  list** id_list, lis
 }
 
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                    list** id_list, list** var_list)
+                    cons** id_list, cons** var_list)
 {
     if (c->type == POSITIVE_CONDITION)
     {
@@ -243,7 +243,7 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
 }
 
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                      list** id_list, list** var_list)
+                      cons** id_list, cons** var_list)
 {
     if (a->type != MAKE_ACTION) return;
 
@@ -269,7 +269,7 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
     condition* c;
     bool anything_changed;
     bool result;
-    list* new_ids, *new_vars;
+    cons* new_ids, *new_vars;
 
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {

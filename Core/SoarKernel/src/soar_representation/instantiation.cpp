@@ -321,8 +321,8 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                               goal_stack_level new_id_level, char new_id_letter,
                               struct token_struct* tok, wme* w)
 {
-    list* fl;
-    list* arglist;
+    cons* fl;
+    cons* arglist;
     cons* c, *prev_c, *arg_cons;
     rhs_function* rf;
     Symbol* result;
@@ -1234,7 +1234,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     condition* cond;
 
     /* mvp 5-17-94 */
-    list* c, *c_old;
+    cons* c, *c_old;
     preference* pref;
     goal_stack_level level;
 

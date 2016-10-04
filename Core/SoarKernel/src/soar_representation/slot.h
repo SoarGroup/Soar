@@ -41,7 +41,7 @@ typedef struct slot_struct
     wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
     preference* all_preferences;      /* dll of all pref's in the slot */
     preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
-    ::list* CDPS;                     /* list of prefs in the CDPS to backtrace through */
+    cons* CDPS;                     /* list of prefs in the CDPS to backtrace through */
     Symbol* impasse_id;               /* NIL if slot is not impassed */
     bool isa_context_slot;
     byte impasse_type;

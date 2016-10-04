@@ -42,7 +42,7 @@ typedef byte ms_trace_type;
 typedef byte wme_trace_type;
 typedef char varnames;
 typedef char* rhs_value;
-typedef cons list;
+typedef cons cons;
 typedef signed short goal_stack_level;
 typedef test_info* test;
 typedef uint64_t tc_number;

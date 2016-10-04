@@ -115,281 +115,6 @@ namespace cli
             CDCommand& operator=(const CDCommand&);
     };
 
-    class CLogCommand : public cli::ParserCommand
-    {
-        public:
-            CLogCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~CLogCommand() {}
-            virtual const char* GetString() const
-            {
-                return "clog";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: clog -[Ae] filename\nclog -a string\nclog [-cdoq]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'a', "add",        OPTARG_NONE},
-                    {'A', "append",        OPTARG_NONE},
-                    {'c', "close",        OPTARG_NONE},
-                    {'d', "disable",    OPTARG_NONE},
-                    {'e', "existing",    OPTARG_NONE},
-                    {'d', "off",        OPTARG_NONE},
-                    {'q', "query",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                cli::eLogMode mode = cli::LOG_NEW;
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
-                    ;
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-
-                    switch (opt.GetOption())
-                    {
-                        case 'a':
-                            mode = cli::LOG_ADD;
-                            break;
-                        case 'c':
-                        case 'd':
-                        case 'o':
-                            mode = cli::LOG_CLOSE;
-                            break;
-                        case 'e':
-                        case 'A':
-                            mode = cli::LOG_NEWAPPEND;
-                            break;
-                        case 'q':
-                            mode = cli::LOG_QUERY;
-                            break;
-                    }
-                }
-
-                switch (mode)
-                {
-                    case cli::LOG_ADD:
-                    {
-                        std::string toAdd;
-                        // no less than one non-option argument
-                        if (opt.GetNonOptionArguments() < 1)
-                        {
-                            return cli.SetError("Provide a string to add.");
-                        }
-
-                        // move to the first non-option arg
-                        std::vector<std::string>::iterator iter = argv.begin();
-                        for (int i = 0; i < (opt.GetArgument() - opt.GetNonOptionArguments()); ++i)
-                        {
-                            ++iter;
-                        }
-
-                        // combine all args
-                        while (iter != argv.end())
-                        {
-                            toAdd += *iter;
-                            toAdd += ' ';
-                            ++iter;
-                        }
-                        return cli.DoCLog(mode, 0, &toAdd);
-                    }
-
-                    case cli::LOG_NEW:
-                        // no more than one argument, no filename == query
-                        if (opt.GetNonOptionArguments() > 1)
-                        {
-                            return cli.SetError("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
-                        }
-
-                        if (opt.GetNonOptionArguments() == 1)
-                        {
-                            return cli.DoCLog(mode, &argv[1]);
-                        }
-                        break; // no args case handled below
-
-                    case cli::LOG_NEWAPPEND:
-                        // exactly one argument
-                        if (opt.GetNonOptionArguments() > 1)
-                        {
-                            return cli.SetError("Filename expected, enclose filename in quotes if there are spaces in the path.");
-                        }
-
-                        if (opt.GetNonOptionArguments() < 1)
-                        {
-                            return cli.SetError("Please provide a filename.");
-                        }
-                        return cli.DoCLog(mode, &argv[1]);
-
-                    default:
-                    case cli::LOG_CLOSE:
-                    case cli::LOG_QUERY:
-                        // no arguments
-                        if (opt.GetNonOptionArguments())
-                        {
-                            return cli.SetError("No arguments when querying log status.");
-                        }
-                        break; // no args case handled below
-                }
-
-                // the no args case
-                return cli.DoCLog(mode);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            CLogCommand& operator=(const CLogCommand&);
-    };
-
-    class TclCommand : public cli::ParserCommand
-    {
-
-        public:
-            TclCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~TclCommand() {}
-            virtual const char* GetString() const
-            {
-                return "tcl";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: tcl [ on | off ]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                if (argv.size() < 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                std::string concat_message(argv[1]);
-                for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
-                {
-                    concat_message += ' ' ;
-                    concat_message += argv[i] ;
-                }
-                return cli.DoTclCommand(concat_message);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            TclCommand& operator=(const TclCommand&);
-    };
-
-    class CommandToFileCommand : public cli::ParserCommand
-    {
-        public:
-            CommandToFileCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~CommandToFileCommand() {}
-            virtual const char* GetString() const
-            {
-                return "command-to-file";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: command-to-file [-a] filename command [args]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // Not going to use normal option parsing in this case because I do not want to disturb the other command on the line
-                if (argv.size() < 3)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                // Index of command in argv:  command-to-file filename command ...
-                // Unless append option is present, which is handled later.
-                int startOfCommand = 2;
-                cli::eLogMode mode = cli::LOG_NEW;
-                std::string filename = argv[1];
-
-                // Parse out option.
-                for (int i = 1; i < 3; ++i)
-                {
-                    bool append = false;
-                    bool unrecognized = false;
-                    std::string arg = argv[i];
-                    if (arg[0] == '-')
-                    {
-                        if (arg[1] == 'a')
-                        {
-                            append = true;
-                        }
-                        else if (arg[1] == '-')
-                        {
-                            if (arg[2] == 'a')
-                            {
-                                append = true;
-                            }
-                            else
-                            {
-                                unrecognized = true;
-                            }
-                        }
-                        else
-                        {
-                            unrecognized = true;
-                        }
-                    }
-
-                    if (unrecognized)
-                    {
-                        return cli.SetError("Unrecognized option: " + arg);
-                    }
-
-                    if (append)
-                    {
-                        mode = cli::LOG_NEWAPPEND;
-
-                        // Index of command in argv:  command-to-file -a filename command ...
-                        if (argv.size() < 4)
-                        {
-                            return cli.SetError(GetSyntax());
-                        }
-
-                        startOfCommand = 3;
-
-                        // Re-set filename if necessary
-                        if (i == 1)
-                        {
-                            filename = argv[2];
-                        }
-
-                        break;
-                    }
-                }
-
-                // Restructure argv
-                std::vector<std::string> newArgv;
-                for (std::vector<int>::size_type i = startOfCommand; i < argv.size(); ++i)
-                {
-                    newArgv.push_back(argv[i]);
-                }
-
-                return cli.DoCommandToFile(mode, filename, newArgv);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            CommandToFileCommand& operator=(const CommandToFileCommand&);
-    };
-
     class DebugCommand : public cli::ParserCommand
     {
         public:
@@ -1970,6 +1695,67 @@ namespace cli
             StatsCommand& operator=(const StatsCommand&);
     };
 
+    class SVSCommand : public cli::ParserCommand
+    {
+        public:
+            SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~SVSCommand() {}
+            virtual const char* GetString() const
+            {
+                return "svs";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return "Syntax: svs <elements to inspect>\n"
+                       "        svs [--enable | -e | --on | --disable | -d | --off]";
+            }
+
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                return cli.DoSVS(argv);
+            }
+
+        private:
+            cli::Cli& cli;
+    };
+
+    class TclCommand : public cli::ParserCommand
+    {
+
+        public:
+            TclCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~TclCommand() {}
+            virtual const char* GetString() const
+            {
+                return "tcl";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return "Syntax: tcl [ on | off ]";
+            }
+
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                if (argv.size() < 2)
+                {
+                    return cli.SetError(GetSyntax());
+                }
+
+                std::string concat_message(argv[1]);
+                for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
+                {
+                    concat_message += ' ' ;
+                    concat_message += argv[i] ;
+                }
+                return cli.DoTclCommand(concat_message);
+            }
+
+        private:
+            cli::Cli& cli;
+
+            TclCommand& operator=(const TclCommand&);
+    };
+
     class TimeCommand : public cli::ParserCommand
     {
         public:
@@ -2636,30 +2422,6 @@ namespace cli
             }
 
             WatchCommand& operator=(const WatchCommand&);
-    };
-
-    class SVSCommand : public cli::ParserCommand
-    {
-        public:
-            SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SVSCommand() {}
-            virtual const char* GetString() const
-            {
-                return "svs";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: svs <elements to inspect>\n"
-                       "        svs [--enable | -e | --on | --disable | -d | --off]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                return cli.DoSVS(argv);
-            }
-
-        private:
-            cli::Cli& cli;
     };
 }
 

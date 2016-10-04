@@ -486,7 +486,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'n':
                     {
-                        list* la = va_arg(args, list *);
+                        cons* la = va_arg(args, cons *);
                         if (la)
                         {
                             this->rhs_value_to_string(funcall_list_to_rhs_value(la), destString);

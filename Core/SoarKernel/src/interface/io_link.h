@@ -33,7 +33,7 @@ typedef unsigned char byte;
 typedef struct cons_struct cons;
 typedef struct wme_struct wme;
 typedef struct callback_struct soar_callback;
-typedef cons list;
+typedef cons cons;
 typedef struct symbol_struct Symbol;
 
 typedef void* soar_callback_data;
@@ -44,8 +44,8 @@ extern void do_input_cycle(agent* thisAgent);
 extern void do_output_cycle(agent* thisAgent);
 
 extern void inform_output_module_of_wm_changes(agent* thisAgent,
-        ::list* wmes_being_added,
-        ::list* wmes_being_removed);
+        cons* wmes_being_added,
+        cons* wmes_being_removed);
 
 extern Symbol* get_next_io_symbol_from_text_input_line(agent* thisAgent,
         char** text_read_position); /* in io.cpp */
@@ -175,7 +175,7 @@ typedef struct output_link_struct
     struct output_link_struct* next, *prev;  /* dll of all existing links */
     byte status;                             /* current xxx_OL_STATUS */
     wme* link_wme;                           /* points to the output link wme */
-    ::list* ids_in_tc;                         /* ids in TC(link) */
+    cons* ids_in_tc;                         /* ids in TC(link) */
     soar_callback* cb;                       /* corresponding output function */
 } output_link;
 

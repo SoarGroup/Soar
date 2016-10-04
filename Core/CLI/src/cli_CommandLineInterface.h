@@ -141,7 +141,7 @@ namespace cli
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
-            virtual bool DoOutput(std::vector<std::string>& argv, const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, bool pAppend = false);
+            virtual bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
             virtual bool DoPredict();

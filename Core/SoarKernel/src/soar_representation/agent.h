@@ -195,7 +195,7 @@ typedef struct EXPORT agent_struct
     bool                system_halted;
 
     /* --- list of productions whose firings are being traced --- */
-    ::list*             productions_being_traced;
+    cons*             productions_being_traced;
 
     /* --- various user-settable system parameters --- */
     int64_t             sysparams[HIGHEST_SYSPARAM_NUMBER + 1];
@@ -398,8 +398,8 @@ typedef struct EXPORT agent_struct
        =================================================================== */
 
     uint64_t            current_wme_timetag;
-    ::list*             wmes_to_add;
-    ::list*             wmes_to_remove;
+    cons*             wmes_to_add;
+    cons*             wmes_to_remove;
 
     /* ---------------------------------------------------------------------
        Top_goal and bottom_goal point to the top and bottom goal identifiers,
@@ -415,7 +415,7 @@ typedef struct EXPORT agent_struct
     Symbol*             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
     dl_list*            context_slots_with_changed_acceptable_preferences;
-    ::list*             slots_for_possible_removal;
+    cons*             slots_for_possible_removal;
 
     dl_list*            disconnected_ids;
     goal_stack_level    highest_level_anything_could_fall_from;
@@ -425,7 +425,7 @@ typedef struct EXPORT agent_struct
     goal_stack_level    level_at_which_marking_started;
     goal_stack_level    walk_level;
     tc_number           walk_tc_number;
-    ::list*             promoted_ids;
+    cons*             promoted_ids;
     int                 link_update_mode;
 
     /* ----------------------- Trace Formats -------------------------- */
@@ -437,7 +437,7 @@ typedef struct EXPORT agent_struct
     struct hash_table_struct* (stack_tr_ht[3]);
     tc_number           tf_printing_tc;
 
-    ::list*             wme_filter_list; /* kjh(CUSP-B2) */
+    cons*             wme_filter_list; /* kjh(CUSP-B2) */
 
     /* ----------------------- RHS Function Stuff -------------------------- */
 
@@ -475,11 +475,11 @@ typedef struct EXPORT agent_struct
     char          current_line[1024];
     int           current_line_index;
 
-    ::list*             variables_set;
+    cons*             variables_set;
 
     multi_attribute*    multi_attributes;
 
-    ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
+    cons*                   soar_callbacks[NUMBER_OF_CALLBACKS];
 
     bool      did_PE;
     int        FIRING_TYPE;

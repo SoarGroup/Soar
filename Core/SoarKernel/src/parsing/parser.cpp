@@ -1432,7 +1432,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 {
     rhs_function* rf;
     Symbol* fun_name;
-    list* fl;
+    cons* fl;
     cons* c, *prev_c;
     rhs_value arg_rv;
     int num_args;
