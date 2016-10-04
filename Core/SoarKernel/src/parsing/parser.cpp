@@ -326,7 +326,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         }
         case IDENTIFIER_LEXEME:
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
+//            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             std::string lStr;
             thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
             newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());

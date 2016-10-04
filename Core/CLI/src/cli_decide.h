@@ -69,7 +69,7 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required.");
+                    return cli.SetError("Sub-command is required. Use 'decide ?' or 'help decide' to learn more about the decide command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

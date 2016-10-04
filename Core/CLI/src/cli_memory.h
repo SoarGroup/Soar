@@ -58,7 +58,7 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required.");
+                    return cli.SetError("Sub-command is required. Use 'memory ?' or 'help memory' to learn more about the memory command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

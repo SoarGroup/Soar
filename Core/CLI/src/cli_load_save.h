@@ -33,69 +33,7 @@ namespace cli
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
-                OptionsData optionsData[] =
-                {
-                    {'c', "close", OPTARG_NONE},
-                    {'f', "flush", OPTARG_NONE},
-                    {'o', "open", OPTARG_REQUIRED},
-                    {'l', "load",        OPTARG_REQUIRED},
-                    {'r', "restore",    OPTARG_REQUIRED},
-                    {'s', "save",        OPTARG_REQUIRED},
-                    {'a', "all",            OPTARG_NONE},
-                    {'d', "disable",        OPTARG_NONE},
-                    {'v', "verbose",        OPTARG_NONE},
-                    {0, 0, OPTARG_NONE}
-                };
-
-                for (;;)
-                {
-                    if (!opt.ProcessOptions(argv, optionsData))
-                    {
-                        cli.SetError(opt.GetError().c_str());
-                        return cli.AppendError(GetSyntax());
-                    }
-                    if (opt.GetOption() == -1)
-                    {
-                        break;
-                    }
-                }
-                if (opt.GetNonOptionArguments() < 2)
-                {
-                    return cli.SetError("Sub-command is required.");
-                }
-                std::string lCmd;
-                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
-                size_t num_args = argv.size() - start_arg_position;
-                lCmd = argv[start_arg_position];
-                if (num_args > 0)
-                {
-                    return cli.DoLoad(argv, lCmd);
-                }
-                return cli.DoLoad(argv, lCmd);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            LoadCommand& operator=(const LoadCommand&);
-    };
-    class SaveCommand : public cli::ParserCommand
-    {
-        public:
-            SaveCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~SaveCommand() {}
-            virtual const char* GetString() const
-            {
-                return "save";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return  "Use 'save ?' or 'help save' to learn more about the save command.";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                cli::Options opt;
+                std::vector< std::string > argv_orig = argv;
                 OptionsData optionsData[] =
                 {
                     {'c', "close", OPTARG_NONE},
@@ -124,17 +62,79 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required.");
+                    return cli.SetError("Sub-command is required. Use 'load ?' or 'help load' to learn more about the load command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
-                lCmd = argv[start_arg_position];
                 if (num_args > 0)
                 {
-                    return cli.DoSave(argv, lCmd);
+                    lCmd = argv[start_arg_position];
                 }
-                return cli.DoSave(argv, lCmd);
+                return cli.DoLoad(argv_orig, lCmd);
+            }
+
+        private:
+            cli::Cli& cli;
+
+            LoadCommand& operator=(const LoadCommand&);
+    };
+    class SaveCommand : public cli::ParserCommand
+    {
+        public:
+            SaveCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~SaveCommand() {}
+            virtual const char* GetString() const
+            {
+                return "save";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return  "Use 'save ?' or 'help save' to learn more about the save command.";
+            }
+
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                cli::Options opt;
+                std::vector< std::string > argv_orig = argv;
+                OptionsData optionsData[] =
+                {
+                    {'c', "close", OPTARG_NONE},
+                    {'f', "flush", OPTARG_NONE},
+                    {'o', "open", OPTARG_REQUIRED},
+                    {'l', "load",        OPTARG_REQUIRED},
+                    {'r', "restore",    OPTARG_REQUIRED},
+                    {'s', "save",        OPTARG_REQUIRED},
+                    {'a', "all",            OPTARG_NONE},
+                    {'d', "disable",        OPTARG_NONE},
+                    {'v', "verbose",        OPTARG_NONE},
+                    {0, 0, OPTARG_NONE}
+                };
+
+                for (;;)
+                {
+                    if (!opt.ProcessOptions(argv, optionsData))
+                    {
+                        cli.SetError(opt.GetError().c_str());
+                        return cli.AppendError(GetSyntax());
+                    }
+                    if (opt.GetOption() == -1)
+                    {
+                        break;
+                    }
+                }
+                if (!opt.GetNonOptionArguments())
+                {
+                    return cli.SetError("Sub-command is required. Use 'save ?' or 'help save' to learn more about the save command.");
+                }
+                std::string lCmd;
+                size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
+                size_t num_args = argv.size() - start_arg_position;
+                if (num_args > 0)
+                {
+                    lCmd = argv[start_arg_position];
+                }
+                return cli.DoSave(argv_orig, lCmd);
             }
 
         private:

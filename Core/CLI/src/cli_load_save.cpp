@@ -63,6 +63,8 @@ bool CommandLineInterface::DoLoad(std::vector<std::string>& argv, const std::str
     }
     else if (my_param == thisAgent->command_params->load_params->rete_cmd)
     {
+        argv.erase(argv.begin());
+        argv[0] = "rete-net";
         return ParseReteLoad(argv);
     }
     else if (my_param == thisAgent->command_params->load_params->library_cmd)
@@ -96,7 +98,9 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
     }
     else if (my_param == thisAgent->command_params->save_params->rete_cmd)
     {
-        return ParseReteSave(argv);
+        argv.erase(argv.begin());
+        argv[0] = "rete-net";
+        return ParseReteLoad(argv);
     }
     else if ((my_param == thisAgent->command_params->save_params->help_cmd) || (my_param == thisAgent->command_params->save_params->qhelp_cmd))
     {
@@ -104,6 +108,7 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
     }
     return false;
 }
+
 bool CommandLineInterface::ParseReplayInput(std::vector< std::string >& argv)
 {
     cli::Options opt;
@@ -208,6 +213,7 @@ bool CommandLineInterface::ParseReteLoad(std::vector< std::string >& argv)
         {0, 0, OPTARG_NONE}
     };
 
+    bool save = false;
     bool load = false;
     std::string filename;
 
@@ -228,27 +234,30 @@ bool CommandLineInterface::ParseReteLoad(std::vector< std::string >& argv)
             case 'l':
             case 'r':
                 load = true;
+                save = false;
                 filename = opt.GetOptionArgument();
                 break;
             case 's':
-                return ParseReteSave(argv);
+                save = true;
+                load = false;
+                filename = opt.GetOptionArgument();
                 break;
         }
     }
 
     // Must have a save or load operation
-    if (!load)
+    if (!save && !load)
     {
-        return SetError("Syntax: load rete-net --load <filename>");
+        return SetError("Invalid syntax for that command.");
+    }
+    if (opt.GetNonOptionArguments())
+    {
+        return SetError("Please specify a file name.");
     }
 
-    // No additional arguments
-    if (!opt.CheckNumNonOptArgs(1, 1))
-    {
-        return SetError(opt.GetError().c_str());
-    }
+    return DoReteNet(save, filename);
 
-    return DoReteNet(false, filename);
+
 }
 
 bool CommandLineInterface::ParseLoadLibrary(std::vector< std::string >& argv)
@@ -270,6 +279,7 @@ bool CommandLineInterface::ParseLoadLibrary(std::vector< std::string >& argv)
 
     return DoLoadLibrary(libraryCommand);
 }
+
 bool CommandLineInterface::ParseCaptureInput(std::vector< std::string >& argv)
 {
     cli::Options opt;

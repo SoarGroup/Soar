@@ -75,7 +75,7 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required.");
+                    return cli.SetError("Sub-command is required. Use 'production ?' or 'help production' to learn more about the production command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

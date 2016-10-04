@@ -56,7 +56,7 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
 
     ctf = new soar_module::boolean_param("command-to-file", on, new soar_module::f_predicate<boolean>());
     add(ctf);
-    clog = new soar_module::boolean_param("clog", on, new soar_module::f_predicate<boolean>());
+    clog = new soar_module::boolean_param("log", on, new soar_module::f_predicate<boolean>());
     add(clog);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);

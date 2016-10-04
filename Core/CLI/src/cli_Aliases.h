@@ -23,7 +23,7 @@ namespace cli
                 t.evaluate("a alias");
                 t.evaluate("aw wm add");
                 t.evaluate("chdir cd");
-                t.evaluate("ctf command-to-file");
+                t.evaluate("ctf output command-to-file");
                 t.evaluate("d run -d");
                 t.evaluate("dir ls");
                 t.evaluate("e run -e");
@@ -105,6 +105,8 @@ namespace cli
                 t.evaluate("chunk-name-format chunk naming-style");
                 t.evaluate("max-chunks chunk max-chunks");
 
+                t.evaluate("clog output output log");
+                t.evaluate("command-to-file output command-to-file");
                 t.evaluate("default-wme-depth output print-depth");
                 t.evaluate("echo-commands output echo-commands");
                 t.evaluate("verbose output verbose");

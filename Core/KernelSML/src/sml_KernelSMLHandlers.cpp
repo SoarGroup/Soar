@@ -533,7 +533,7 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
     // Close log
     if (m_CommandLineInterface.IsLogOpen())
     {
-        m_CommandLineInterface.DoCommand(0, pAgentSML, "clog --close", false, true, 0) ;
+        m_CommandLineInterface.DoCommand(0, pAgentSML, "output log --close", false, true, 0) ;
     }
 
     // Release any wmes or other objects we're keeping
