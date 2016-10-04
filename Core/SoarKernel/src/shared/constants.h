@@ -159,8 +159,9 @@
 #define TRACE_WMA_SYSPARAM                       24
 #define TRACE_EPMEM_SYSPARAM                     25
 #define TRACE_SMEM_SYSPARAM                      26
-#define TRACE_GDS_SYSPARAM                       27
+#define TRACE_GDS_WMES_SYSPARAM                       27
+#define TRACE_GDS_STATE_REMOVAL_SYSPARAM         28
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  28
+#define HIGHEST_SYSPARAM_NUMBER                  29
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_CONSTANTS_H_ */

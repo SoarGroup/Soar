@@ -1911,6 +1911,7 @@ namespace cli
                     {'e', "epmem",                       OPTARG_OPTIONAL},
                     {'f', "fullwmes",                    OPTARG_NONE},
                     {'g', "gds",                         OPTARG_OPTIONAL},
+                    {'G', "gds-wmes",                    OPTARG_OPTIONAL},
                     {'i', "indifferent-selection",       OPTARG_OPTIONAL},
                     {'j', "justifications",              OPTARG_OPTIONAL},
                     {'L', "learning",                    OPTARG_REQUIRED},
@@ -2051,18 +2052,34 @@ namespace cli
                             break;
 
                         case 'g':
-                            options.set(cli::WATCH_GDS);
+                            options.set(cli::WATCH_GDS_STATE_REMOVAL);
                             if (opt.GetOptionArgument().size())
                             {
                                 if (!CheckOptargRemoveOrZero(opt))
                                 {
                                     return cli.SetError(opt.GetError().c_str());
                                 }
-                                settings.reset(cli::WATCH_GDS);
+                                settings.reset(cli::WATCH_GDS_STATE_REMOVAL);
                             }
                             else
                             {
-                                settings.set(cli::WATCH_GDS);
+                                settings.set(cli::WATCH_GDS_STATE_REMOVAL);
+                            }
+                            break;
+
+                        case 'G':
+                            options.set(cli::WATCH_GDS_WMES);
+                            if (opt.GetOptionArgument().size())
+                            {
+                                if (!CheckOptargRemoveOrZero(opt))
+                                {
+                                    return cli.SetError(opt.GetError().c_str());
+                                }
+                                settings.reset(cli::WATCH_GDS_WMES);
+                            }
+                            else
+                            {
+                                settings.set(cli::WATCH_GDS_WMES);
                             }
                             break;
 
@@ -2342,7 +2359,8 @@ namespace cli
                 options.set(cli::WATCH_PHASES);
                 options.set(cli::WATCH_DECISIONS);
                 options.set(cli::WATCH_WATERFALL);
-                options.set(cli::WATCH_GDS);
+                options.set(cli::WATCH_GDS_WMES);
+                options.set(cli::WATCH_GDS_STATE_REMOVAL);
 
                 // Start with all off, turn on as appropriate
                 settings.reset(cli::WATCH_PREFERENCES);
@@ -2355,7 +2373,8 @@ namespace cli
                 settings.reset(cli::WATCH_PHASES);
                 settings.reset(cli::WATCH_DECISIONS);
                 settings.reset(cli::WATCH_WATERFALL);
-                settings.reset(cli::WATCH_GDS);
+                settings.reset(cli::WATCH_GDS_WMES);
+                settings.reset(cli::WATCH_GDS_STATE_REMOVAL);
 
                 switch (level)
                 {
@@ -2367,9 +2386,10 @@ namespace cli
                         wmeSetting = 0;
                         break;
 
-                    case 5:// preferences, waterfall
+                    case 5:// preferences, waterfall, gds wme additions
                         settings.set(cli::WATCH_PREFERENCES);
                         settings.set(cli::WATCH_WATERFALL);
+                        settings.set(cli::WATCH_GDS_WMES);
                     // falls through
                     case 4:// wmes
                         settings.set(cli::WATCH_WMES);
@@ -2383,7 +2403,7 @@ namespace cli
                     // falls through
                     case 2:// phases, gds
                         settings.set(cli::WATCH_PHASES);
-                        settings.set(cli::WATCH_GDS);
+                        settings.set(cli::WATCH_GDS_STATE_REMOVAL);
                     // falls through
                     case 1:// decisions
                         settings.set(cli::WATCH_DECISIONS);

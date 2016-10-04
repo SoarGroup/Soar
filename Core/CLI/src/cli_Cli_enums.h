@@ -205,7 +205,8 @@ namespace cli
         WATCH_EPMEM,
         WATCH_SMEM,
         WATCH_WMA,
-        WATCH_GDS,
+        WATCH_GDS_WMES,
+        WATCH_GDS_STATE_REMOVAL,
         WATCH_NUM_OPTIONS, // must be last
     };
 
