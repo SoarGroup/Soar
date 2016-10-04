@@ -22,7 +22,6 @@ namespace cli
             virtual bool AppendError(const std::string& error) = 0;
 
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) = 0;
-            virtual bool DoGDSPrint() = 0;
             virtual bool DoRand(bool integer, std::string* bound) = 0;
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
             virtual bool DoLearn(const LearnBitset& options) = 0;
@@ -42,7 +41,7 @@ namespace cli
             virtual bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             virtual bool DoLS() = 0;
             virtual bool DoMemory(std::vector<std::string>& argv, const std::string& pCmd) = 0;
-            virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoOutput(std::vector<std::string>& argv, const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, bool pAppend = false) = 0;
             virtual bool DoPopD() = 0;
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;
             virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0) = 0;

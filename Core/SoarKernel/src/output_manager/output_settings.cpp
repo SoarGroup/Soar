@@ -54,7 +54,7 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
     verbose = new soar_module::boolean_param("verbose", pOutput_sysparams[OM_VERBOSE] ? on : off, new soar_module::f_predicate<boolean>());
     add(verbose);
 
-    ctf = new soar_module::boolean_param("ctf", on, new soar_module::f_predicate<boolean>());
+    ctf = new soar_module::boolean_param("command-to-file", on, new soar_module::f_predicate<boolean>());
     add(ctf);
     clog = new soar_module::boolean_param("clog", on, new soar_module::f_predicate<boolean>());
     add(clog);

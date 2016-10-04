@@ -702,31 +702,6 @@ namespace cli
             EpMemCommand& operator=(const EpMemCommand&);
     };
 
-    class GDSPrintCommand : public cli::ParserCommand
-    {
-        public:
-            GDSPrintCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~GDSPrintCommand() {}
-            virtual const char* GetString() const
-            {
-                return "gds-print";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: gds-print";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoGDSPrint();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            GDSPrintCommand& operator=(const GDSPrintCommand&);
-    };
-
     class GPCommand : public cli::ParserCommand
     {
         public:
@@ -1069,23 +1044,24 @@ namespace cli
                 OptionsData optionsData[] =
                 {
                     {'a', "all",            OPTARG_NONE},
-                    {'c', "chunks",            OPTARG_NONE},
-                    {'d', "depth",            OPTARG_REQUIRED},
-                    {'D', "defaults",        OPTARG_NONE},
-                    {'e', "exact",            OPTARG_NONE},
-                    {'f', "full",            OPTARG_NONE},
-                    {'F', "filename",        OPTARG_NONE},
-                    {'i', "internal",        OPTARG_NONE},
-                    {'j', "justifications",    OPTARG_NONE},
-                    {'n', "name",            OPTARG_NONE},
-                    {'o', "operators",        OPTARG_NONE},
-                    {'r', "rl",                OPTARG_NONE},
-                    {'s', "stack",            OPTARG_NONE},
-                    {'S', "states",            OPTARG_NONE},
-                    {'t', "tree",            OPTARG_NONE},
-                    {'T', "template",        OPTARG_NONE},
-                    {'u', "user",            OPTARG_NONE},
-                    {'v', "varprint",        OPTARG_NONE},
+                    {'c', "chunks",         OPTARG_NONE},
+                    {'d', "depth",          OPTARG_REQUIRED},
+                    {'D', "defaults",       OPTARG_NONE},
+                    {'e', "exact",          OPTARG_NONE},
+                    {'f', "full",           OPTARG_NONE},
+                    {'F', "filename",       OPTARG_NONE},
+                    {'g', "gds",            OPTARG_NONE},
+                    {'i', "internal",       OPTARG_NONE},
+                    {'j', "justifications", OPTARG_NONE},
+                    {'n', "name",           OPTARG_NONE},
+                    {'o', "operators",      OPTARG_NONE},
+                    {'r', "rl",             OPTARG_NONE},
+                    {'s', "stack",          OPTARG_NONE},
+                    {'S', "states",         OPTARG_NONE},
+                    {'t', "tree",           OPTARG_NONE},
+                    {'T', "template",       OPTARG_NONE},
+                    {'u', "user",           OPTARG_NONE},
+                    {'v', "varprint",       OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -1130,6 +1106,9 @@ namespace cli
                             break;
                         case 'F':
                             options.set(cli::PRINT_FILENAME);
+                            break;
+                        case 'g':
+                            options.set(cli::PRINT_GDS);
                             break;
                         case 'i':
                             options.set(cli::PRINT_INTERNAL);
@@ -1190,13 +1169,14 @@ namespace cli
                 if (options.test(cli::PRINT_ALL)
                         || options.test(cli::PRINT_CHUNKS)
                         || options.test(cli::PRINT_DEFAULTS)
+                        || options.test(cli::PRINT_GDS)
                         || options.test(cli::PRINT_JUSTIFICATIONS)
                         || options.test(cli::PRINT_RL)
                         || options.test(cli::PRINT_TEMPLATE)
                         || options.test(cli::PRINT_USER)
                         || options.test(cli::PRINT_STACK))
                 {
-                    return cli.SetError("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
+                    return cli.SetError("No argument allowed when printing all/chunks/defaults/GDS/justifications/rl/template/user/stack.");
                 }
                 if (options.test(cli::PRINT_EXACT) && (options.test(cli::PRINT_DEPTH) || options.test(cli::PRINT_TREE)))
                 {

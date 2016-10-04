@@ -129,7 +129,6 @@ namespace cli
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
             virtual bool DoExplain(const std::string* pArg = 0, const std::string* pArg2 = 0);
             virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0);
-            virtual bool DoGDSPrint();
             virtual bool DoGP(const std::string& productionString);
             virtual bool DoHelp(const std::vector<std::string>& argv);
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0);
@@ -142,7 +141,7 @@ namespace cli
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
-            virtual bool DoOutput(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
+            virtual bool DoOutput(std::vector<std::string>& argv, const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, bool pAppend = false);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
             virtual bool DoPredict();
@@ -210,18 +209,16 @@ namespace cli
             void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf = true);
 
             bool ParseAllocate(std::vector< std::string >& argv);
-            bool ParseMemories(std::vector< std::string >& argv);
+            bool ParseClog(std::vector< std::string >& argv);
+            bool ParseCTF(std::vector< std::string >& argv);
             bool ParseExcise(std::vector< std::string >& argv);
             bool ParseFC(std::vector< std::string >& argv);
+            bool ParseMemories(std::vector< std::string >& argv);
             bool ParseMatches(std::vector< std::string >& argv);
             bool ParseMultiAttributes(std::vector< std::string >& argv);
             bool ParsePBreak(std::vector< std::string >& argv);
             bool ParsePFind(std::vector< std::string >& argv);
             bool ParsePWatch(std::vector< std::string >& argv);
-            bool ParseWMEAdd(std::vector< std::string >& argv);
-            bool ParseWMERemove(std::vector< std::string >& argv);
-            bool ParseWMEWatch(std::vector< std::string >& argv);
-            bool ParseWMA(std::vector< std::string >& argv);
             bool ParseReplayInput(std::vector< std::string >& argv);
             bool ParseSource(std::vector< std::string >& argv);
             bool ParseReteLoad(std::vector< std::string >& argv);
@@ -233,6 +230,10 @@ namespace cli
             bool ParsePredict(std::vector< std::string >& argv);
             bool ParseSelect(std::vector< std::string >& argv);
             bool ParseSRand(std::vector< std::string >& argv);
+            bool ParseWMEAdd(std::vector< std::string >& argv);
+            bool ParseWMERemove(std::vector< std::string >& argv);
+            bool ParseWMEWatch(std::vector< std::string >& argv);
+            bool ParseWMA(std::vector< std::string >& argv);
 
         protected:
 

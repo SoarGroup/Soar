@@ -36,6 +36,8 @@ namespace cli
                 cli::Options opt;
                 std::string subCommandArg;
                 bool backwardCompatibleReplacement = false;
+                bool appendMode = false;
+                std::vector< std::string > argv_orig = argv;
 
                 OptionsData optionsData[] =
                 {
@@ -43,6 +45,9 @@ namespace cli
                     {'d', "disable",    OPTARG_NONE},
                     {'e', "on",         OPTARG_NONE},
                     {'d', "off",        OPTARG_NONE},
+                    {'a', "add",        OPTARG_NONE},
+                    {'A', "append",        OPTARG_NONE},
+                    {'c', "close",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -72,6 +77,9 @@ namespace cli
                             subCommandArg = "off";
                             backwardCompatibleReplacement = true;
                             break;
+                        case 'a':
+                            appendMode = true;
+                            break;
                     }
                 }
                 if (!opt.GetNonOptionArguments())
@@ -91,15 +99,15 @@ namespace cli
 
                 if ((num_args == 1) && !backwardCompatibleReplacement)
                 {
-                    return cli.DoOutput('G', &arg);
+                    return cli.DoOutput(argv_orig, 'G', &arg, NULL);
                 }
-                if (backwardCompatibleReplacement || (num_args == 2))
+                if (backwardCompatibleReplacement || (num_args >= 2))
                 {
-                    return cli.DoOutput('S', &arg, &subCommandArg);
+                    return cli.DoOutput(argv_orig, 'S', &arg, &subCommandArg, appendMode);
                 }
 
                 // case: nothing = full configuration information
-                return cli.DoOutput();
+                return cli.DoOutput(argv);
             }
 
         private:

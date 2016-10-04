@@ -50,6 +50,7 @@ namespace cli
         PRINT_DEFAULTS,
         PRINT_FULL,
         PRINT_FILENAME,
+        PRINT_GDS,
         PRINT_INTERNAL,
         PRINT_TREE,
         PRINT_JUSTIFICATIONS,

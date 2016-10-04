@@ -67,7 +67,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::EchoCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
     m_Parser.AddCommand(new cli::ExplainCommand(*this));
-    m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
