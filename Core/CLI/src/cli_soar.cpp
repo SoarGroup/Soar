@@ -104,7 +104,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << pAttr->c_str() << " =" ;
+            tempStringStream << pAttr->c_str() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         }
         return true;

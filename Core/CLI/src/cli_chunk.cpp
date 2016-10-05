@@ -72,7 +72,7 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
     else {
         if (!pVal)
         {
-            tempStringStream << my_param->get_name() << " =" ;
+            tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         } else {
             if (!my_param->validate_string(pVal->c_str()))
@@ -88,7 +88,7 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
             }
             else
             {
-                tempStringStream << my_param->get_name() << " = " << pVal->c_str();
+                tempStringStream << my_param->get_name() << " is now " << pVal->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
             /* The following code assumes that all parameters except learn are boolean */

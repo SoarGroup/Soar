@@ -38,8 +38,8 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        cli.SetError(opt.GetError().c_str());
-                        return cli.AppendError(GetSyntax());
+//                        cli.SetError(opt.GetError().c_str());
+//                        return cli.AppendError(GetSyntax());
                     }
                     if (opt.GetOption() == -1)
                     {
@@ -65,7 +65,7 @@ namespace cli
                     {
                         if (num_args > 1)
                         {
-                            return cli.SetError("Too many arguments for alias --remove");
+                            return cli.SetError("If your alias has -r or --remove, enclose in quotes.");
                         }
                         argv.erase(argv.begin());
                         return cli.DoAlias(&argv, true);

@@ -122,7 +122,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
         }
         
         std::string tempString(my_param->get_name());
-        tempString.append(" =");
+        tempString.append(" is");
         PrintCLIMessage_Item(tempString.c_str(), my_param, 0);
         return true;
     }
@@ -175,7 +175,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
         }
         else
         {
-            tempString << my_param->get_name() << " = " << pVal->c_str();
+            tempString << my_param->get_name() << " is now " << pVal->c_str();
             PrintCLIMessage(&tempString);
             if (thisAgent->EpMem->epmem_db->get_status() == soar_module::connected)
             {

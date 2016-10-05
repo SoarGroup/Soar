@@ -132,7 +132,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
 
         std::string tempString(my_param->get_name());
-        tempString.append(" =");
+        tempString.append(" is");
         PrintCLIMessage_Item(tempString.c_str(), my_param, 0);
         return true;
     }
@@ -263,7 +263,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
         else
         {
-            tempString << my_param->get_name() << " = " << pArg2->c_str();
+            tempString << my_param->get_name() << " is now " << pArg2->c_str();
             PrintCLIMessage(&tempString);
             if (thisAgent->SMem->connected())
             {

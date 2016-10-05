@@ -62,7 +62,7 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
         if (!pArg2)
         {
             /* Sub-command was a variable setting, so print it's value */
-            tempStringStream << my_param->get_name() << " =" ;
+            tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         } else {
 
@@ -79,7 +79,7 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
             }
             else
             {
-                tempStringStream << my_param->get_name() << " = " << pArg2->c_str();
+                tempStringStream << my_param->get_name() << " is now " << pArg2->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
             /* The following code assumes that all parameters except learn are boolean */
