@@ -153,7 +153,6 @@ namespace cli
             virtual bool DoPushD(const std::string& directory);
             virtual bool DoPWatch(bool query = true, const std::string* pProduction = 0, bool setting = false);
             virtual bool DoPWD();
-            virtual bool DoRand(bool integer, std::string* bound);
             virtual bool DoRemoveWME(uint64_t timetag);
             virtual bool DoReplayInput(eReplayInputMode mode, std::string* pathname);
             virtual bool DoReteNet(bool save, std::string filename);

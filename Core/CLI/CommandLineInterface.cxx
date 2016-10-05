@@ -13,7 +13,6 @@
 #include "src/cli_preferences.cpp"
 #include "src/cli_print.cpp"
 #include "src/cli_production.cpp"
-#include "src/cli_rand.cpp"
 #include "src/cli_rl.cpp"
 #include "src/cli_run.cpp"
 #include "src/cli_smem.cpp"

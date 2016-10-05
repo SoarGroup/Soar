@@ -67,16 +67,17 @@ namespace cli
                         break;
                     }
                 }
-                if (!opt.GetNonOptionArguments())
-                {
-                    return cli.SetError("Sub-command is required. Use 'decide ?' or 'help decide' to learn more about the decide command.");
-                }
+//                if (!opt.GetNonOptionArguments())
+//                {
+//                    re
+//                    return cli.SetError("Sub-command is required. Use 'decide ?' or 'help decide' to learn more about the decide command.");
+//                }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
-                lCmd = argv[start_arg_position];
                 if (num_args > 0)
                 {
+                    lCmd = argv[start_arg_position];
                     return cli.DoDecide(argv, lCmd);
                 }
                 return cli.DoDecide(argv, lCmd);

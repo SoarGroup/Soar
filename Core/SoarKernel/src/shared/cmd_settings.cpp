@@ -1,6 +1,8 @@
 #include "agent.h"
 #include "output_manager.h"
 #include "cmd_settings.h"
+#include "decision_manipulation.h"
+#include "exploration.h"
 
 //#include "sml_KernelSML.h"
 //#include "sml_Events.h"
@@ -32,24 +34,61 @@ void decide_param_container::print_settings(agent* thisAgent)
     Output_Manager* outputManager = &Output_Manager::Get_OM();
 
     outputManager->reset_column_indents();
-//    outputManager->set_column_indent(0, 40);
-    outputManager->set_column_indent(1, 33);
-    outputManager->set_column_indent(2, 50);
-    outputManager->printa(thisAgent,    "============= Decide Sub-Commands =============\n");
-    outputManager->printa_sf(thisAgent, "decide %-[? | help] %-%s\n", "Print this help listing");
-    outputManager->printa_sf(thisAgent, "decide indifferent-selection %- %-%s\n", "Does stuff");
-    outputManager->printa_sf(thisAgent, "decide numeric-indifferent-mode %- %-%s\n", "Does stuff");
-    outputManager->printa_sf(thisAgent, "decide predict %- %-%s\n", "Does stuff");
-    outputManager->printa_sf(thisAgent, "decide select %- %-%s\n", "Does stuff");
-    outputManager->printa_sf(thisAgent, "decide set-random-seed %- %-%s\n", "Does stuff\n");
+    outputManager->set_column_indent(1, 34);
+    outputManager->set_column_indent(2, 70);
 
-    outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:  %-%-help decide\n");
-
+    outputManager->printa(thisAgent,    "=============================================================================\n");
+    outputManager->printa(thisAgent,    "-                      Decide Sub-Commands and Options                      -\n");
+    outputManager->printa(thisAgent,    "=============================================================================\n");
+    outputManager->printa_sf(thisAgent, "decide %-[? | help]\n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "decide numeric-indifferent-mode %-[--avg --sum]\n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--stats]\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--boltzmann | --epsilon-greedy |%-\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %- --first | --last | -- softmax   ]%-\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--epsilon --temperature] [value]\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--reduction-policy] <param> [<policy>]\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--reduction-rate] <param> <policy> [<rate>]\n");
+    outputManager->printa_sf(thisAgent, "decide indifferent-selection %-[--auto-reduce] [setting]\n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "decide predict\n");
+    outputManager->printa_sf(thisAgent, "decide select %-<operator ID>\n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "decide set-random-seed %-[<seed>] \n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:    help decide\n");
 }
 
 void decide_param_container::print_summary(agent* thisAgent)
 {
-    print_settings(thisAgent);
+    std::string tempString;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 55);
+
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent,    "                     Decide Summary\n");
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Numeric indifference mode:",
+        (thisAgent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG) ? "average" : "sum", 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Exploration Policy:",
+        exploration_convert_policy(exploration_get_policy(thisAgent)), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Automatic Policy Parameter Reduction:",
+        ((exploration_get_auto_update(thisAgent)) ? ("on") : ("off")), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon:",
+        std::to_string(exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON)).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon Reduction Policy:",
+        exploration_convert_reduction_policy(exploration_get_reduction_policy(thisAgent, EXPLORATION_PARAM_EPSILON)), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Temperature:",
+        std::to_string(exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_TEMPERATURE)).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Temperature Reduction Policy:",
+        exploration_convert_reduction_policy(exploration_get_reduction_policy(thisAgent, EXPLORATION_PARAM_TEMPERATURE)), 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "For a full list of sub-commands and settings:  decide ?");
 }
 
 load_param_container::load_param_container(agent* new_agent): soar_module::param_container(new_agent)

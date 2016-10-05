@@ -76,7 +76,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::ProductionCommand(*this));
     m_Parser.AddCommand(new cli::PushDCommand(*this));
     m_Parser.AddCommand(new cli::PWDCommand(*this));
-    m_Parser.AddCommand(new cli::RandCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
     m_Parser.AddCommand(new cli::SaveCommand(*this));

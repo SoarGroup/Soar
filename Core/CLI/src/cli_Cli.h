@@ -21,15 +21,13 @@ namespace cli
             virtual bool SetError(const std::string& error) = 0;
             virtual bool AppendError(const std::string& error) = 0;
 
-            virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) = 0;
-            virtual bool DoRand(bool integer, std::string* bound) = 0;
-            virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
             virtual bool DoLearn(const LearnBitset& options) = 0;
 
             virtual bool DoAlias(std::vector< std::string >* argv = 0, bool doRemove = 0) = 0;
             virtual bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
             virtual bool DoCD(const std::string* pDirectory = 0) = 0;
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv) = 0;
+            virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false) = 0;
             virtual bool DoDebug(std::vector< std::string >* argv = 0) = 0;
             virtual bool DoDecide(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             virtual bool DoDirs() = 0;
@@ -48,6 +46,7 @@ namespace cli
             virtual bool DoPushD(const std::string& directory) = 0;
             virtual bool DoPWD() = 0;
             virtual bool DoRL(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0) = 0;
+            virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) = 0;
             virtual bool DoSVS(const std::vector<std::string>& args) = 0;
             virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
             virtual bool DoSave(std::vector<std::string>& argv, const std::string& pCmd) = 0;
