@@ -141,9 +141,9 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "====== Soar General Commands and Settings =====\n");
     outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
     outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes current state of Soar");
-    outputManager->printa_sf(thisAgent, "soar reset%-%-%s\n", "Re-initializes Soar completely");
+//    outputManager->printa_sf(thisAgent, "soar reset%-%-%s\n", "Re-initializes Soar completely");
     outputManager->printa_sf(thisAgent, "soar stop%-%-%s\n", "Stop Soar execution");
-    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
+//    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
     outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 50).c_str(), "Maximum elaboration in a phase");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 50).c_str(), "Maximum goal stack depth");
