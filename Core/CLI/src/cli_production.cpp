@@ -68,6 +68,10 @@ bool CommandLineInterface::DoProduction(std::vector<std::string>& argv, const st
     {
         return ParseMatches(argv);
     }
+    else if (my_param == thisAgent->command_params->production_params->memories_cmd)
+    {
+        return ParseMemories(argv);
+    }
     else if (my_param == thisAgent->command_params->production_params->multi_attributes_cmd)
     {
         return ParseMultiAttributes(argv);
@@ -1721,3 +1725,220 @@ bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options,
     return true;
 }
 
+struct MemoriesSort
+{
+    bool operator()(std::pair< std::string, uint64_t > a, std::pair< std::string, uint64_t > b) const
+    {
+        return a.second < b.second;
+    }
+};
+
+bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const std::string* pProduction)
+{
+    std::vector< std::pair< std::string, uint64_t > > memories;
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    // get either one production or all of them
+    if (options.none())
+    {
+        if (!pProduction)
+        {
+            return SetError("Production required.");
+        }
+
+        Symbol* sym = thisAgent->symbolManager->find_str_constant(pProduction->c_str());
+
+        if (!sym || !(sym->sc->production))
+        {
+            return SetError("Production not found.");
+        }
+
+        // save the tokens/name pair
+        std::pair< std::string, uint64_t > memory;
+        memory.first = *pProduction;
+        memory.second = count_rete_tokens_for_production(thisAgent, sym->sc->production);
+        memories.push_back(memory);
+
+    }
+    else
+    {
+        bool foundProduction = false;
+
+        for (unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
+        {
+            // if filter is set, skip types that are not specified
+            if (!options.none())
+            {
+                switch (i)
+                {
+                    case USER_PRODUCTION_TYPE:
+                        if (!options.test(MEMORIES_USER))
+                        {
+                            continue;
+                        }
+                        break;
+
+                    case DEFAULT_PRODUCTION_TYPE:
+                        if (!options.test(MEMORIES_DEFAULT))
+                        {
+                            continue;
+                        }
+                        break;
+
+                    case CHUNK_PRODUCTION_TYPE:
+                        if (!options.test(MEMORIES_CHUNKS))
+                        {
+                            continue;
+                        }
+                        break;
+
+                    case JUSTIFICATION_PRODUCTION_TYPE:
+                        if (!options.test(MEMORIES_JUSTIFICATIONS))
+                        {
+                            continue;
+                        }
+                        break;
+
+                    case TEMPLATE_PRODUCTION_TYPE:
+                        if (!options.test(MEMORIES_TEMPLATES))
+                        {
+                            continue;
+                        }
+                        break;
+
+                    default:
+                        assert(false);
+                        break;
+                }
+            }
+
+            for (production* pSoarProduction = thisAgent->all_productions_of_type[i];
+                    pSoarProduction != 0;
+                    pSoarProduction = pSoarProduction->next)
+            {
+                foundProduction = true;
+
+                // save the tokens/name pair
+                std::pair< std::string, uint64_t > memory;
+                memory.first = pSoarProduction->name->sc->name;
+                memory.second = count_rete_tokens_for_production(thisAgent, pSoarProduction);
+                memories.push_back(memory);
+            }
+        }
+
+        if (!foundProduction)
+        {
+            return SetError("Production not found.");
+        }
+    }
+
+    // sort them
+    MemoriesSort s;
+    sort(memories.begin(), memories.end(), s);
+
+    // print them
+    int i = 0;
+    for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = memories.rbegin();
+            j != memories.rend() && (n == 0 || i < n);
+            ++j, ++i)
+    {
+        if (m_RawOutput)
+        {
+            m_Result  << std::setw(6) << j->second << ":  " << j->first << "\n";
+        }
+        else
+        {
+            std::string temp;
+            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);
+            AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(j->second, temp));
+        }
+    }
+    return true;
+}
+
+bool CommandLineInterface::ParseMemories(std::vector< std::string >& argv)
+{
+    cli::Options opt;
+    OptionsData optionsData[] =
+    {
+        {'c', "chunks",            OPTARG_NONE},
+        {'d', "default",        OPTARG_NONE},
+        {'j', "justifications",    OPTARG_NONE},
+        {'T', "template",        OPTARG_NONE},
+        {'u', "user",            OPTARG_NONE},
+        {0, 0, OPTARG_NONE}
+    };
+
+    cli::MemoriesBitset options(0);
+
+    for (;;)
+    {
+        if (!opt.ProcessOptions(argv, optionsData))
+        {
+            return SetError(opt.GetError().c_str());
+        }
+        ;
+        if (opt.GetOption() == -1)
+        {
+            break;
+        }
+
+        switch (opt.GetOption())
+        {
+            case 'c':
+            options.set(cli::MEMORIES_CHUNKS);
+            break;
+            case 'd':
+            options.set(cli::MEMORIES_DEFAULT);
+            break;
+            case 'j':
+                options.set(cli::MEMORIES_JUSTIFICATIONS);
+                break;
+            case 'T':
+                options.set(cli::MEMORIES_TEMPLATES);
+                break;
+            case 'u':
+                options.set(cli::MEMORIES_USER);
+                break;
+        }
+    }
+
+    // Max one additional argument
+    if (opt.GetNonOptionArguments() > 2)
+    {
+        return SetError("Syntax: memories [options] [number]\nmemories production_name");
+    }
+
+    // It is either a production or a number
+    int n = 0;
+    if (opt.GetNonOptionArguments() == 2)
+    {
+        int optind = opt.GetArgument() - opt.GetNonOptionArguments() + 1;
+        if (from_string(n, argv[optind]))
+        {
+            // number
+            if (n <= 0)
+            {
+                return SetError("Expected positive integer.");
+            }
+        }
+        else
+        {
+            // production
+            if (options.any())
+            {
+                return SetError("Do not specify production type when specifying a production name.");
+            }
+            return DoMemories(options, 0, &argv[optind]);
+        }
+    }
+
+    // Default to all types when no production and no type specified
+    if (options.none())
+    {
+        options.flip();
+    }
+
+    // handle production/number cases
+    return DoMemories(options, n);
+}

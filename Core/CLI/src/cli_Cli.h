@@ -40,7 +40,6 @@ namespace cli
             virtual bool DoHelp(const std::vector<std::string>& argv) = 0;
             virtual bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             virtual bool DoLS() = 0;
-            virtual bool DoMemory(std::vector<std::string>& argv, const std::string& pCmd) = 0;
             virtual bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0) = 0;
             virtual bool DoPopD() = 0;
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0) = 0;

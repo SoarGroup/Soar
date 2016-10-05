@@ -74,7 +74,7 @@ namespace cli
                 t.evaluate("excise production excise");
                 t.evaluate("firing-counts production firing-counts");
                 t.evaluate("matches production matches");
-                t.evaluate("multi-attributes production multi-attributes");
+                t.evaluate("multi-attributes production optimize-multi-attribute");
                 t.evaluate("pbreak production break");
                 t.evaluate("production-find production find");
                 t.evaluate("pwatch production watch");

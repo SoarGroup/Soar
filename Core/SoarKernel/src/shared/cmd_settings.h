@@ -50,22 +50,6 @@ class load_param_container: public soar_module::param_container
         void print_summary(agent* thisAgent);
 };
 
-class memory_param_container: public soar_module::param_container
-{
-    public:
-
-        soar_module::boolean_param* allocate_cmd;
-        soar_module::boolean_param* memories_cmd;
-
-        soar_module::boolean_param* help_cmd;
-        soar_module::boolean_param* qhelp_cmd;
-
-        memory_param_container(agent* new_agent);
-
-        void print_settings(agent* thisAgent);
-        void print_summary(agent* thisAgent);
-};
-
 class production_param_container: public soar_module::param_container
 {
     public:
@@ -73,6 +57,7 @@ class production_param_container: public soar_module::param_container
         soar_module::boolean_param* excise_cmd;
         soar_module::boolean_param* firing_counts_cmd;
         soar_module::boolean_param* matches_cmd;
+        soar_module::boolean_param* memories_cmd;
         soar_module::boolean_param* multi_attributes_cmd;
         soar_module::boolean_param* break_cmd;
         soar_module::boolean_param* find_cmd;

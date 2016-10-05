@@ -139,7 +139,6 @@ namespace cli
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
-            virtual bool DoMemory(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);

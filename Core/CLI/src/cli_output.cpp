@@ -281,3 +281,123 @@ bool CommandLineInterface::ParseCTF(std::vector< std::string >& argv)
 
     return DoCommandToFile(mode, filename, newArgv);
 }
+bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv)
+{
+    std::string oldResult(m_Result.str());
+    m_Result.str("");
+
+    // Fire off command
+    bool ret = m_Parser.handle_command(argv);
+
+    if (!m_Result.str().empty())
+    {
+        m_Result << std::endl;
+    }
+
+    std::string res = m_Result.str();
+    m_Result.str("");
+    m_Result << oldResult;
+
+    if (!DoCLog(mode, &filename, 0, true))
+    {
+        return false;
+    }
+
+    if (!DoCLog(LOG_ADD, 0, &res, true))
+    {
+        return false;
+    }
+
+    if (!DoCLog(LOG_CLOSE, 0, 0, true))
+    {
+        return false;
+    }
+
+    return ret;
+}
+bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent)
+{
+    std::ios_base::openmode openmode = std::ios_base::out;
+
+    switch (mode)
+    {
+        case LOG_NEWAPPEND:
+            openmode |= std::ios_base::app;
+        // falls through
+
+        case LOG_NEW:
+            if (!pFilename)
+            {
+                break;    // handle as just a query
+            }
+
+            if (m_pLogFile)
+            {
+                return SetError("Log already open: " + m_LogFilename);
+            }
+
+            {
+                std::string filename = *pFilename;
+
+                m_pLogFile = new std::ofstream(filename.c_str(), openmode);
+                if (!m_pLogFile)
+                {
+                    return SetError("Failed to open " + filename);
+                }
+
+                m_LogFilename = filename;
+            }
+            break;
+
+        case LOG_ADD:
+            if (!m_pLogFile)
+            {
+                return SetError("Log is not open.");
+            }
+            (*m_pLogFile) << *pToAdd << std::endl;
+            return true;
+
+        case LOG_CLOSE:
+            if (!m_pLogFile)
+            {
+                return SetError("Log is not open.");
+            }
+
+            delete m_pLogFile;
+            m_pLogFile = 0;
+            m_LogFilename.clear();
+            break;
+
+        default:
+        case LOG_QUERY:
+            break;
+    }
+
+    if (!silent)
+    {
+        if (m_RawOutput)
+        {
+            m_Result << "Log file ";
+            if (IsLogOpen())
+            {
+                m_Result << "'" + m_LogFilename + "' open.";
+            }
+            else
+            {
+                m_Result << "closed.";
+            }
+
+        }
+        else
+        {
+            const char* setting = IsLogOpen() ? sml_Names::kTrue : sml_Names::kFalse;
+            AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
+
+            if (m_LogFilename.size())
+            {
+                AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename);
+            }
+        }
+    }
+    return true;
+}

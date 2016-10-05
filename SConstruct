@@ -273,7 +273,6 @@ env.Replace(
         '#Core/SoarKernel/src/parsing',
         '#Core/SoarKernel/src/reinforcement_learning',
         '#Core/SoarKernel/src/semantic_memory',
-        '#Core/SoarKernel/src/settings',
         '#Core/SoarKernel/src/shared',
         '#Core/SoarKernel/src/soar_representation',
         '#Core/SoarKernel/src/visualizer',

@@ -14,7 +14,6 @@
 #include "cli_explain.h"
 #include "cli_chunk.h"
 #include "cli_load_save.h"
-#include "cli_memory.h"
 #include "cli_output.h"
 #include "cli_production.h"
 #include "cli_soar.h"
@@ -70,7 +69,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::LearnCommand(*this));
     m_Parser.AddCommand(new cli::LoadCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
-    m_Parser.AddCommand(new cli::MemoryCommand(*this));
     m_Parser.AddCommand(new cli::OutputCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
