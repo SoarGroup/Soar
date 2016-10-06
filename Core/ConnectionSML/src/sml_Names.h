@@ -399,6 +399,7 @@ namespace sml
             static char const* const kParamWatchSMem;
             static char const* const kParamWatchWMA;
             static char const* const kParamWatchGDS;
+            static char const* const kParamWatchGDSStateRemoval;
 
             // Values (these are not case sensitive unlike the rest)
             static char const* const kTrue ;

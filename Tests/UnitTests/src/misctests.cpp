@@ -115,8 +115,8 @@ void MiscTest::testInstantiationDeallocationStackOverflow()
 
 void MiscTest::test_clog()
 {
-    pAgent->ExecuteCommandLine("clog clog-test.txt");
-    CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine("output log clog-test.txt");
+    CPPUNIT_ASSERT_MESSAGE("output log clog-test.txt", pAgent->GetLastCommandLineResult());
     pAgent->ExecuteCommandLine("watch 5");
     CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(5);
@@ -125,14 +125,14 @@ void MiscTest::test_clog()
     pKernel->DestroyAgent(pAgent);
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
-    pAgent->ExecuteCommandLine("clog clog-test.txt");
-    CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine("output log clog-test.txt");
+    CPPUNIT_ASSERT_MESSAGE("output log clog-test.txt", pAgent->GetLastCommandLineResult());
     pAgent->ExecuteCommandLine("watch 5");
     CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(5);
     pAgent->InitSoar();
     pAgent->RunSelf(5);
-    pAgent->ExecuteCommandLine("clog --close");
+    pAgent->ExecuteCommandLine("output log --close");
     remove("clog-test.txt");
 }
 

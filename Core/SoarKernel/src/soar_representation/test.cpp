@@ -33,7 +33,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
     cons* new_c;
 
@@ -241,7 +241,7 @@ void deallocate_test(agent* thisAgent, test t)
             }
             break;
         default: /* relational tests other than equality */
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #else
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
@@ -676,7 +676,7 @@ test equality_test_found_in_test(test t)
 ===================================================================== */
 
 void add_all_variables_in_test(agent* thisAgent, test t,
-                               tc_number tc, list** var_list)
+                               tc_number tc, cons** var_list)
 {
     cons* c;
     Symbol* referent;
@@ -716,7 +716,7 @@ void add_all_variables_in_test(agent* thisAgent, test t,
  * it also consider whether the LTIs level can be determined by being linked
  * to a LHS element or a RHS action that has already been executed */
 
-void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list)
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list)
 {
     cons* c;
     Symbol* referent = NULL;
@@ -1007,9 +1007,9 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
  *           Returns the next item in the conjunct list.  Null if it
  *           was the last one.
  */
-::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem)
+cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
 {
-    ::list* prev, *next;
+    cons* prev, *next;
     next = pDeleteItem->rest;
 
     /* -- Fix links in conjunct list -- */

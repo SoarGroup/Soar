@@ -54,9 +54,9 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
     verbose = new soar_module::boolean_param("verbose", pOutput_sysparams[OM_VERBOSE] ? on : off, new soar_module::f_predicate<boolean>());
     add(verbose);
 
-    ctf = new soar_module::boolean_param("ctf", on, new soar_module::f_predicate<boolean>());
+    ctf = new soar_module::boolean_param("command-to-file", on, new soar_module::f_predicate<boolean>());
     add(ctf);
-    clog = new soar_module::boolean_param("clog", on, new soar_module::f_predicate<boolean>());
+    clog = new soar_module::boolean_param("log", on, new soar_module::f_predicate<boolean>());
     add(clog);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
@@ -96,16 +96,25 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
 {
     std::string tempString;
     Output_Manager* outputManager = &Output_Manager::Get_OM();
-
     outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 40);
-    outputManager->set_column_indent(1, 50);
-    outputManager->printa(thisAgent, "=============== Output Settings =============\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print-depth", print_depth->get_string(), 45).c_str(), "Default print depth for 'print'");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("warnings", warnings->get_string(), 45).c_str(), "Print all warnings");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("verbose", verbose->get_string(), 45).c_str(), "Include verbose output");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("echo-commands", echo_commands->get_string(), 45).c_str(), "Echo commands to debugger");
-    outputManager->printa(thisAgent, "---------------------------------------------\n");
+    outputManager->set_column_indent(0, 25);
+    outputManager->set_column_indent(1, 58);
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa(thisAgent, "-           Output Sub-Commands and Options           -\n");
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output", "[? | help]", 55).c_str());
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output log", "[--append | -A] <filename>", 55).c_str(), "Log all output to file");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output log", "--add <string>", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output log", "[--close]", 55).c_str());
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output command-to-file", "[-a] <file> <cmd> [args]", 55).c_str(), "Log execution of single command");
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print-depth", print_depth->get_string(), 55).c_str(), "Default print depth for 'print'");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("warnings", warnings->get_string(), 55).c_str(), "Print all warnings");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("verbose", verbose->get_string(), 55).c_str(), "Include verbose output");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("echo-commands", echo_commands->get_string(), 55).c_str(), "Echo commands to debugger");
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "To view/change a setting: %-%-output <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help output\n");
 }

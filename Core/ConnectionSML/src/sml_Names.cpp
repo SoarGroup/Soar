@@ -409,6 +409,7 @@ char const* const sml_Names::kParamWatchEpMem                       = "watchepme
 char const* const sml_Names::kParamWatchSMem                        = "watchsmem";
 char const* const sml_Names::kParamWatchWMA                         = "watchwma";
 char const* const sml_Names::kParamWatchGDS                         = "watchgds";
+char const* const sml_Names::kParamWatchGDSStateRemoval             = "watchgdsstateremoval";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue  = "true" ;

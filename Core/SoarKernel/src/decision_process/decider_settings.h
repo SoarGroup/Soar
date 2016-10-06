@@ -28,6 +28,10 @@ class decider_param_container: public soar_module::param_container
         soar_module::boolean_param* wait_snc;
 
         soar_module::boolean_param* init_cmd;
+//        soar_module::boolean_param* reset_cmd;
+//        soar_module::boolean_param* run_cmd;
+        soar_module::boolean_param* stop_cmd;
+        soar_module::boolean_param* version_cmd;
         soar_module::boolean_param* help_cmd;
         soar_module::boolean_param* qhelp_cmd;
 

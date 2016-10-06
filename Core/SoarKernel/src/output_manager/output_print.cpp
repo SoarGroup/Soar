@@ -37,11 +37,12 @@ void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
     va_end(args);
     printa(pSoarAgent, buf.c_str());
 }
-
+#include "xml.h"
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
     if (pSoarAgent)
     {
+//        xml_generate_message(pSoarAgent, const_cast<char*>(msg));
         if (!pSoarAgent->output_settings->print_enabled) return;
         if (pSoarAgent->output_settings->callback_mode)
         {
@@ -485,7 +486,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'n':
                     {
-                        list* la = va_arg(args, list *);
+                        cons* la = va_arg(args, cons *);
                         if (la)
                         {
                             this->rhs_value_to_string(funcall_list_to_rhs_value(la), destString);

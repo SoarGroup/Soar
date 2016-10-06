@@ -44,14 +44,14 @@ typedef struct bt_info_struct
     wme* wme_;                      /* the actual wme that was matched */
     goal_stack_level level;         /* level (at firing time) of the id of the wme */
     preference* trace;              /* preference for BT, or NIL */
-    ::list* CDPS;            /* list of substate evaluation prefs to backtrace through,
+    cons* CDPS;            /* list of substate evaluation prefs to backtrace through,
                               i.e. the context dependent preference set. */
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
 typedef struct reorder_info_struct
 {
-    ::list* vars_requiring_bindings;         /* used only during reordering */
+    cons* vars_requiring_bindings;         /* used only during reordering */
     struct condition_struct* next_min_cost;  /* used only during reordering */
 } reorder_info;
 
@@ -110,8 +110,8 @@ void        copy_condition_list(agent* thisAgent, condition* top_cond, condition
 void        deallocate_condition(agent* thisAgent, condition*& cond);
 void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
-void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, ::list** var_list);
-void        unmark_variables_and_free_list(agent* thisAgent, ::list* var_list);
+void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list);
+void        unmark_variables_and_free_list(agent* thisAgent, cons* var_list);
 
 int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);

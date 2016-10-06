@@ -3918,7 +3918,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_WMES_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4439,7 +4439,7 @@ approaches may be better */
 void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 {
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];

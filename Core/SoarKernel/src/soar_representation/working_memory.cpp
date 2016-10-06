@@ -172,7 +172,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
         }
     }
 
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
@@ -191,7 +191,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);

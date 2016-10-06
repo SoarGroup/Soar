@@ -165,14 +165,16 @@ void AliasTest::testDefaults()
     std::vector< std::string > stop;
     stop.push_back("stop");
     CPPUNIT_ASSERT(aliases->Expand(stop));
-    CPPUNIT_ASSERT(stop.size() == 1);
-    CPPUNIT_ASSERT(stop.front() == "stop-soar");
+    CPPUNIT_ASSERT(stop.size() == 2);
+    CPPUNIT_ASSERT(stop[0] == "soar");
+    CPPUNIT_ASSERT(stop[1] == "stop");
     
     std::vector< std::string > interrupt;
     interrupt.push_back("interrupt");
     CPPUNIT_ASSERT(aliases->Expand(interrupt));
-    CPPUNIT_ASSERT(interrupt.size() == 1);
-    CPPUNIT_ASSERT(interrupt.front() == "stop-soar");
+    CPPUNIT_ASSERT(interrupt.size() == 2);
+    CPPUNIT_ASSERT(interrupt[0] == "soar");
+    CPPUNIT_ASSERT(interrupt[1] == "stop");
     
     std::vector< std::string > w;
     w.push_back("w");

@@ -36,6 +36,9 @@ namespace cli
                 cli::Options opt;
                 std::string subCommandArg;
                 bool backwardCompatibleReplacement = false;
+                /* Store original argv for CTF and CLOG.  Both sub-commands are still
+                 * using their original parsing.  No time to rewrite right now. */
+                std::vector< std::string > argv_orig = argv;
 
                 OptionsData optionsData[] =
                 {
@@ -43,6 +46,9 @@ namespace cli
                     {'d', "disable",    OPTARG_NONE},
                     {'e', "on",         OPTARG_NONE},
                     {'d', "off",        OPTARG_NONE},
+                    {'a', "add",        OPTARG_NONE},
+                    {'A', "append",        OPTARG_NONE},
+                    {'c', "close",        OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -74,28 +80,37 @@ namespace cli
                             break;
                     }
                 }
-                std::string arg;
+                if (!opt.GetNonOptionArguments())
+                {
+                    return cli.SetError("The 'output' commands contains settings and sub-commands to control what Soar prints and where it prints it.\n\n"
+                        "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
+                }
+                std::string arg, arg2;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
+
                 if (num_args > 0)
                 {
+                    argv_orig.erase(argv_orig.begin());
                     arg = argv[start_arg_position];
-                } else if (num_args > 2)
+                }
+                if (num_args > 1)
                 {
-                    return cli.SetError("Too many arguments for the 'output' command.");
+                    arg2 = argv[start_arg_position+1];
+                }
+                if (backwardCompatibleReplacement)
+                {
+                    return cli.DoOutput(argv_orig, &arg, &subCommandArg);
+                } else if (num_args == 1)
+                {
+                    return cli.DoOutput(argv_orig, &arg);
+                }
+                if (num_args >= 2)
+                {
+                    return cli.DoOutput(argv_orig, &arg, &arg2);
                 }
 
-                if ((num_args == 1) && !backwardCompatibleReplacement)
-                {
-                    return cli.DoOutput('G', &arg);
-                }
-                if (backwardCompatibleReplacement || (num_args == 2))
-                {
-                    return cli.DoOutput('S', &arg, &subCommandArg);
-                }
-
-                // case: nothing = full configuration information
-                return cli.DoOutput();
+                return cli.DoOutput(argv_orig);
             }
 
         private:

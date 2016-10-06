@@ -260,7 +260,7 @@ bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
     return false;
 }
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
 
 #include "output_manager.h"
 

@@ -1103,7 +1103,7 @@ Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* 
 void Symbol_Manager::reset_variable_generator(condition* conds_with_vars_to_avoid, action* actions_with_vars_to_avoid)
 {
     tc_number tc;
-    list* var_list;
+    cons* var_list;
     cons* c;
     int i;
 
@@ -1177,7 +1177,7 @@ Symbol* Symbol_Manager::generate_new_variable(const char* prefix)
    incrementing the reference count on each symbol in the list.
 ---------------------------------------------------------------- */
 
-list* Symbol_Manager::copy_symbol_list_adding_references(list* sym_list)
+cons* Symbol_Manager::copy_symbol_list_adding_references(cons* sym_list)
 {
     cons* c, *first, *prev;
 
@@ -1207,7 +1207,7 @@ list* Symbol_Manager::copy_symbol_list_adding_references(list* sym_list)
    Frees a list of symbols, decrementing their reference counts.
 ---------------------------------------------------------------- */
 
-void Symbol_Manager::deallocate_symbol_list_removing_references(list*& sym_list)
+void Symbol_Manager::deallocate_symbol_list_removing_references(cons*& sym_list)
 {
     cons* c;
     Symbol* lSym;

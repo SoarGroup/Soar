@@ -162,7 +162,7 @@ void SoarDecider::print_soar_status(sml::KernelSML* pKernelSML)
     outputManager->set_column_indent(0, 55);
 
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent,    "                     Soar %s Summary\n", sml::sml_Names::kSoarVersionValue);
+    outputManager->printa_sf(thisAgent, "-                   Soar %s Summary                -\n", sml::sml_Names::kSoarVersionValue);
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Enabled:", enabledStr.c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Disabled:", disabledStr.c_str(), 55).c_str());

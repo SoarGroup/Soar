@@ -34,7 +34,7 @@ print "   kernel cli sml_python sml_tcl sml_java debugger tests headers tclsoarl
 print "Default targets:"
 print "   kernel cli sml_java debugger headers"
 print "Settings available:"
-print "   --dbg, --static, --out, --build, --no-scu, --verbose"
+print "   --dbg, --opt, --static, --out, --build, --scu, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
 print "   --no-svs --no-kernel-scu --no-cli-scu"
 print "================================================================================"

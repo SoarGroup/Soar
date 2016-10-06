@@ -25,7 +25,7 @@
 using namespace sml ;
 
 // This method is called by the kernel, which in turn calls the Execute method of the RhsFunction.
-Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user_data)
+Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, cons* args, void* user_data)
 {
     // Since we registered this callback, we know what the user data is.
     RhsFunction* rhsFunction = static_cast<RhsFunction*>(user_data);

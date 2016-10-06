@@ -17,6 +17,8 @@
 #include "sml_Utils.h"
 
 #include "agent.h"
+#include "soarversion.h"
+#include "build_time_date.h"
 #include "decider.h"
 #include "decider_settings.h"
 #include "ebc.h"
@@ -80,13 +82,56 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
 
             return ok;
         }
+        else if (my_param == thisAgent->Decider->params->stop_cmd)
+        {
+            if (pVal && !pVal->empty() && !strcmp(pVal->c_str(),"self"))
+            {
+                m_pAgentSML->Interrupt(sml::sml_STOP_AFTER_DECISION_CYCLE);
+            }
+            else
+            {
+                // Make sure the system stop event will be fired at the end of the run.
+                // We used to call FireSystemStop() in this function, but that's no good because
+                // it comes before the agent has stopped because interrupt only stops at the next
+                // phase or similar boundary (so could be a long time off).
+                // So instead we set a flag and allow system stop to fire at the end of the run.
+                m_pKernelSML->RequireSystemStop(true) ;
+                m_pKernelSML->InterruptAllAgents(sml::sml_STOP_AFTER_DECISION_CYCLE);
+            }
+            return true;
+        }
+        else if (my_param == thisAgent->Decider->params->version_cmd)
+        {
+            std::ostringstream timedatestamp;
+            timedatestamp << kDatestamp << " " << kTimestamp;
+            std::string sTimeDateStamp = timedatestamp.str();
+
+            if (m_RawOutput)
+            {
+                m_Result << sml_Names::kSoarVersionValue << "\n";
+                m_Result << "Build date: " << sTimeDateStamp.c_str() << " " ;
+
+            }
+            else
+            {
+                std::string temp;
+                int major = MAJOR_VERSION_NUMBER;
+                int minor = MINOR_VERSION_NUMBER;
+                int micro = MICRO_VERSION_NUMBER;
+                AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, to_string(major, temp));
+                AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, to_string(minor, temp));
+                AppendArgTagFast(sml_Names::kParamVersionMicro, sml_Names::kTypeInt, to_string(micro, temp));
+                AppendArgTag(sml_Names::kParamBuildDate, sml_Names::kTypeString, sTimeDateStamp);
+            }
+            return true;
+        }
         else if ((my_param == thisAgent->Decider->params->help_cmd) || (my_param == thisAgent->Decider->params->qhelp_cmd))
         {
             thisAgent->Decider->params->print_soar_settings(thisAgent);
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << pAttr->c_str() << " =" ;
+            tempStringStream << pAttr->c_str() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         }
         return true;

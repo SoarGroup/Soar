@@ -12,6 +12,7 @@
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
+#include "cli_Cli_enums.h"
 
 #include "agent.h"
 #include "debug.h"
@@ -38,24 +39,8 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
     if (!argv)
     {
-        Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
-        PrintCLIMessage_Header("Debug", 40);
-        PrintCLIMessage_Section("Commands", 40);
-        PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 40);
-        PrintCLIMessage_Justify("port", "Prints listening port", 40);
-        PrintCLIMessage_Section("Debug Database Storage", 40);
-        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 40);
-        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 40);
-        PrintCLIMessage_Item("path:", l_OutputManager->m_params->path, 40);
-        PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("lazy-commit:", l_OutputManager->m_params->lazy_commit, 40);
-        PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 40);
-        PrintCLIMessage("");
-
-        result = true;
-        goto print_syntax;
+        PrintCLIMessage("Sub-command is required.\nUse 'debug ?' to learn more about the debug command.");
+        return true;
     }
 
     numArgs = argv->size() - 1;
@@ -133,7 +118,22 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     }
     else if (numArgs == 2)
     {
-        if (sub_command[0] == 's')
+        if (sub_command[0] == 'a')
+        {
+            int blocks = 0;
+            if (!from_string(blocks, argv->at(2)))
+            {
+                return SetError("Expected an integer (number of blocks).");
+            }
+
+            if (blocks < 1)
+            {
+                return SetError("Expected a positive integer (number of blocks).");
+            }
+
+            return DoAllocate(argv->at(1), blocks);
+        }
+        else if (sub_command[0] == 's')
         {
             std::string parameter_name = argv->at(1);
             std::string parameter_value = argv->at(2);
@@ -200,6 +200,11 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     }
     else if (numArgs == 0)
     {
+        if (sub_command[0] == 'a')
+        {
+            return DoAllocate(std::string(), 0);
+            return true;
+        }
         if (sub_command[0] == 'i')
         {
             thisAgent->symbolManager->print_internal_symbols();
@@ -219,6 +224,25 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 std::string temp;
                 AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
             }            return true;
+        }
+        else if (sub_command[0] == '?')
+        {
+            Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
+            PrintCLIMessage_Header("Debug Commands and Settings", 70);
+//            PrintCLIMessage_Section("Commands", 70);
+            PrintCLIMessage_Justify("allocate [pool blocks]", "Allocates extra memory to a memory pool", 70);
+            PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 70);
+            PrintCLIMessage_Justify("port", "Prints listening port", 70);
+    //        PrintCLIMessage_Section("Debug Database Storage", 60);
+    //        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 60);
+    //        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 60);
+    //        PrintCLIMessage_Item("path:", l_OutputManager->m_params->path, 60);
+    //        PrintCLIMessage_Section("Performance", 60);
+    //        PrintCLIMessage_Item("lazy-commit:", l_OutputManager->m_params->lazy_commit, 60);
+    //        PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 60);
+    //        PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 60);
+    //        PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 60);
+    //        PrintCLIMessage("");
         }
         else
         {
@@ -270,7 +294,25 @@ void CommandLineInterface::Run_DC(agent* thisAgent, int run_count)
 //        {0, 0, cli::OPTARG_NONE}
 //    };
 
-    cli::Cli::RunBitset options(0);
-    DoRun(options, run_count, cli::Cli::RUN_INTERLEAVE_DEFAULT);
+    cli::RunBitset options(0);
+    DoRun(options, run_count, cli::RUN_INTERLEAVE_DEFAULT);
 
+}
+bool CommandLineInterface::DoAllocate(const std::string& pool, int blocks)
+{
+    if (pool.empty())
+    {
+        GetMemoryPoolStatistics(); // cli_stats.cpp
+        return true;
+    }
+
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    if (thisAgent->memoryManager->add_block_to_memory_pool_by_name(pool, blocks))
+    {
+        m_Result << pool << " blocks increased by " << blocks;
+        return true;
+    }
+
+    SetError("Could not allocate memory.  Probably a bad pool name: " + pool);
+    return false;
 }

@@ -185,7 +185,7 @@ void FunctionalTestHarness::installRHS()
 	::rhs_function* halt_function = lookup_rhs_function(internal_agent, make_str_constant(internal_agent, "halt"));
 	halt_routine = halt_function->f;
 	
-	auto call_routine = [](::agent* thisAgent, ::list* args, void* user_data) -> Symbol* {
+	auto call_routine = [](::agent* thisAgent, cons* args, void* user_data) -> Symbol* {
 		return static_cast<user_data_struct*>(user_data)->function();
 	};
 	

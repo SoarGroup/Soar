@@ -32,7 +32,7 @@
    returns their sum.
 -------------------------------------------------------------------- */
 
-Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* plus_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     bool float_found;
     int64_t i;
@@ -96,7 +96,7 @@ Symbol* plus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
    returns their product.
 -------------------------------------------------------------------- */
 
-Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* times_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     bool float_found;
     int64_t i;
@@ -162,7 +162,7 @@ Symbol* times_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    If >=2 arguments (x, y1, ..., yk), returns x - y1 - ... - yk.
 -------------------------------------------------------------------- */
 
-Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* minus_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double f = 0;  /* For gcc -Wall */
@@ -255,7 +255,7 @@ Symbol* minus_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
    If >=2 arguments (x, y1, ..., yk), returns x / y1 / ... / yk.
 -------------------------------------------------------------------- */
 
-Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* fp_divide_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double f;
@@ -346,7 +346,7 @@ Symbol* fp_divide_rhs_function_code(agent* thisAgent, list* args, void* /*user_d
    Takes two int_constant arguments, and returns their quotient.
 -------------------------------------------------------------------- */
 
-Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* div_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
 
@@ -377,7 +377,7 @@ Symbol* div_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
        two args is negative. */
 }
 
-Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* size_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg1;
     slot* s;
@@ -401,7 +401,7 @@ Symbol* size_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
     }
     return thisAgent->symbolManager->make_int_constant(count);
 }
-Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
 	Symbol* arg1;
 	slot* s;
@@ -433,7 +433,7 @@ Symbol* sum_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the remainder after dividing x by y.
 -------------------------------------------------------------------- */
 
-Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* mod_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg1, *arg2;
 
@@ -472,7 +472,7 @@ Symbol* mod_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    and returns the minimum value in the list
 -------------------------------------------------------------------- */
 
-Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* min_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     bool float_found;
     bool first = true;
@@ -550,7 +550,7 @@ Symbol* min_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    and returns the maximum value in the list
 -------------------------------------------------------------------- */
 
-Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* max_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     bool float_found;
     bool first = true;
@@ -626,7 +626,7 @@ Symbol* max_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the sine of an angle measured in radians.
  */
-Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* sin_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double  arg_value;
@@ -661,7 +661,7 @@ Symbol* sin_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the cosine of an angle measured in radians.
  */
-Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* cos_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double  arg_value;
@@ -695,7 +695,7 @@ Symbol* cos_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
  *
  * Returns as a float the square root of its argument (integer or float).
  */
-Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* sqrt_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double  arg_value;
@@ -730,7 +730,7 @@ Symbol* sqrt_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/
  * Returns as a float in radians the arctangent of (first_arg/second_arg)
  * which are floats or integers.
  */
-Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* atan2_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     cons* c;
@@ -796,7 +796,7 @@ Symbol* atan2_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*
  *
  * Returns the absolute value of a float as a float, of an int as an int.
  */
-Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* abs_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg,
             *return_value;
@@ -833,7 +833,7 @@ Symbol* abs_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the integer portion is returned.
 -------------------------------------------------------------------- */
 
-Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* int_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* sym;
 
@@ -902,7 +902,7 @@ Symbol* int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
    the integer portion is converted.
 -------------------------------------------------------------------- */
 
-Symbol* float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* float_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* sym;
 
@@ -1055,7 +1055,7 @@ double round_off_heading_float(double n, double m)
     return unbounded_rounded / 10.0;
 }
 
-Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double n = 0, f_m = 0;
@@ -1124,7 +1124,7 @@ Symbol* round_off_heading_air_rhs_function_code(agent* thisAgent, list* args, vo
 
  Takes two numbers and returns the first rounded to the nearest second.
 -------------------------------------------------------------------- */
-Symbol* round_off_air_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* round_off_air_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double n = 0, f_m = 0;
@@ -1309,7 +1309,7 @@ int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_
  Takes 4 args and returns integer heading from x1,y1 to x2,y2
 -------------------------------------------------------------------- */
 
-Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* compute_heading_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     int64_t current_x, current_y;
@@ -1378,7 +1378,7 @@ Symbol* compute_heading_rhs_function_code(agent* thisAgent, list* args, void* /*
  Takes 4 args and returns integer range from x1,y1 to x2,y2
 -------------------------------------------------------------------- */
 
-Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* compute_range_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* arg;
     double current_x, current_y;
@@ -1451,7 +1451,7 @@ Symbol* compute_range_rhs_function_code(agent* thisAgent, list* args, void* /*us
  Returns [0,1.0] of no argument, or if argument is not positive.
  Returns [0,n] if argument is positive.
 -------------------------------------------------------------------- */
-Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* rand_float_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     double n = 0;
     if (args)
@@ -1495,7 +1495,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
  Returns [-2^31,2^31-1] of no argument, or if argument is not positive.
  Returns [0,n] if argument is positive.
 -------------------------------------------------------------------- */
-Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* rand_int_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     int64_t n = 0;
     if (args)
@@ -1628,7 +1628,7 @@ double _dice_prob_atleast(int64_t dice, int64_t sides, int64_t count)
 
 // Taken primarily from Jon Voigt's soar-dice project
 // (compute-dice-probability dice sides count predicate) = 0..1
-Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     int64_t dice;
     int64_t sides;

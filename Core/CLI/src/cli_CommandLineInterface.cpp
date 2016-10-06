@@ -10,11 +10,15 @@
 #include <cctype>
 
 #include "cli_Commands.h"
+#include "cli_decide.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
-#include "cli_soar.h"
+#include "cli_load_save.h"
 #include "cli_output.h"
+#include "cli_production.h"
+#include "cli_soar.h"
 #include "cli_visualize.h"
+#include "cli_wm.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -51,65 +55,40 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_XMLResult       = new XMLTrace() ;
 
     // parser takes ownership and deletes commands in its destructor
-    m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
-    m_Parser.AddCommand(new cli::AllocateCommand(*this));
-    m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
-    m_Parser.AddCommand(new cli::CLogCommand(*this));
-    m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
+    m_Parser.AddCommand(new cli::DecideCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
-    m_Parser.AddCommand(new cli::ExciseCommand(*this));
     m_Parser.AddCommand(new cli::ExplainCommand(*this));
-    m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
-    m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
-    m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
-    m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
+    m_Parser.AddCommand(new cli::LoadCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
-    m_Parser.AddCommand(new cli::MatchesCommand(*this));
-    m_Parser.AddCommand(new cli::MemoriesCommand(*this));
-    m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
-    m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
     m_Parser.AddCommand(new cli::OutputCommand(*this));
-    m_Parser.AddCommand(new cli::PbreakCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
-    m_Parser.AddCommand(new cli::PredictCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
     m_Parser.AddCommand(new cli::PrintCommand(*this));
-    m_Parser.AddCommand(new cli::ProductionFindCommand(*this));
+    m_Parser.AddCommand(new cli::ProductionCommand(*this));
     m_Parser.AddCommand(new cli::PushDCommand(*this));
-    m_Parser.AddCommand(new cli::PWatchCommand(*this));
     m_Parser.AddCommand(new cli::PWDCommand(*this));
-    m_Parser.AddCommand(new cli::RandCommand(*this));
-    m_Parser.AddCommand(new cli::RemoveWMECommand(*this));
-    m_Parser.AddCommand(new cli::ReplayInputCommand(*this));
-    m_Parser.AddCommand(new cli::ReteNetCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
-    m_Parser.AddCommand(new cli::SelectCommand(*this));
+    m_Parser.AddCommand(new cli::SaveCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
     m_Parser.AddCommand(new cli::SoarCommand(*this));
-    m_Parser.AddCommand(new cli::SourceCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
-    m_Parser.AddCommand(new cli::SRandCommand(*this));
     m_Parser.AddCommand(new cli::StatsCommand(*this));
-    m_Parser.AddCommand(new cli::StopSoarCommand(*this));
     m_Parser.AddCommand(new cli::TclCommand(*this));
     m_Parser.AddCommand(new cli::TimeCommand(*this));
     m_Parser.AddCommand(new cli::TimersCommand(*this));
-    m_Parser.AddCommand(new cli::UnaliasCommand(*this));
-    m_Parser.AddCommand(new cli::VersionCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));
-    m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
-    m_Parser.AddCommand(new cli::WMACommand(*this));
+    m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
 
@@ -174,6 +153,17 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     return true;
 }
 
+EXPORT std::string CommandLineInterface::ExpandCommand(const char* pCommand)
+{
+    std::vector<std::string> lStrVector;
+    std::string lCmd(pCommand);
+    lStrVector.push_back(lCmd);
+    cli::Aliases aliases = m_Parser.GetAliases();
+    aliases.Expand(lStrVector);
+    lCmd = lStrVector.back();
+    return lCmd;
+}
+
 void CommandLineInterface::PushCall(CallData callData)
 {
     m_CallDataStack.push(callData);
@@ -182,10 +172,24 @@ void CommandLineInterface::PushCall(CallData callData)
     {
         m_pAgentSML = callData.pAgent;
     }
-    else
-    {
-        m_pAgentSML = 0;
-    }
+    /* Some commands that don't have a pAgent are causing issues
+     * because some of the new CLI commands need the agent to
+     * access code that the simpler commands may not have needed.
+     * This has been observed with load-library.  A better
+     * solution would be to find a way to get those commands to
+     * include the agent, but I'm not sure how to do that.
+     *
+     * I'm making this change because it fixes a crash and it
+     * seems that a stale value should adversely affect anything.
+     * I couldn't find anything that checks if it's null and
+     * does something different.  So, if a future command
+     * doesn't need the pAgentSML, it will ignore any stale values.
+     * If a future command does need it, then it will be updated with
+     * a new calldata before the command executes. */
+//    else
+//    {
+//        m_pAgentSML = 0;
+//    }
 
     m_RawOutput = callData.rawOutput;
 
