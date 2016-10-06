@@ -14,6 +14,12 @@
 
 #define SOAR_RELEASE_VERSION
 
+#ifdef NDEBUG
+    #define SOAR_RELEASE_VERSION
+#else
+    #undef SOAR_RELEASE_VERSION
+#endif
+
 /* Defining SOAR_RELEASE_VERSION will:
  *
  * 1 -  Remove debug trace statements
@@ -58,10 +64,6 @@
 /* --------------- Compiler directives for debugging ---------------------- *
  *   Note: #defines that enable trace messages pf SQL processing and errors   *
  *   can be found in soar_db.cpp                                              */
-
-#ifdef NDEBUG
-    #define SOAR_RELEASE_VERSION
-#endif
 /* =============================== */
 
 #ifndef SOAR_RELEASE_VERSION

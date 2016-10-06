@@ -245,7 +245,28 @@ void production_param_container::print_settings(agent* thisAgent)
 
 void production_param_container::print_summary(agent* thisAgent)
 {
-    print_settings(thisAgent);
+    uint64_t totalProductions = thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+    totalProductions += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
+    totalProductions += thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+    totalProductions += thisAgent->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+
+    std::string tempString;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 25);
+    outputManager->set_column_indent(1, 58);
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa(thisAgent, "-                     Productions                     -\n");
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("User rules", std::to_string(thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE]), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Default rules", std::to_string(thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE]), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Chunks", std::to_string(thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE]), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Justifications", std::to_string(thisAgent->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE]), 55).c_str());
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Total", std::to_string(totalProductions), 55).c_str());
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Use 'production ?' for a command overview or 'help production' for the manual page.");
 }
 
 

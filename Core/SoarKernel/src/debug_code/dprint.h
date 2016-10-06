@@ -19,7 +19,7 @@
     #define DEBUG_OUTPUT_ON
 #endif
 
-#if !defined(SOAR_RELEASE_VERSION)
+#if defined(DEBUG_OUTPUT_ON)
 
     #include "output_manager.h"
 

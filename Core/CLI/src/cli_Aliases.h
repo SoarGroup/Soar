@@ -30,7 +30,6 @@ namespace cli
                 t.evaluate("ex production excise");
                 t.evaluate("fc production firing-counts");
                 t.evaluate("gds_print print --gds");
-                t.evaluate("h help");
                 t.evaluate("inds decide indifferent-selection");
                 t.evaluate("init soar init");
                 t.evaluate("interrupt soar stop");
@@ -38,7 +37,6 @@ namespace cli
                 t.evaluate("man help");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
-                t.evaluate("pr preferences");
                 t.evaluate("ps print --stack");
                 t.evaluate("pw production watch");
                 t.evaluate("quit exit");

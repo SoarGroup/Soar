@@ -156,8 +156,6 @@ void SoarDecider::print_soar_status(sml::KernelSML* pKernelSML)
         thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE] +
         thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
 
-
-
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 55);
 

@@ -39,7 +39,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
     if (!argv)
     {
-        PrintCLIMessage("Sub-command is required.\nUse 'debug ?' to learn more about the debug command.");
+        PrintCLIMessage("The debug command contains low-level debugging commands that most users will not need.\n\nUse 'debug ?' to learn more about the debug command.");
         return true;
     }
 

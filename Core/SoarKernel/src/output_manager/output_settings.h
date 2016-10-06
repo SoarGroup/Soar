@@ -41,6 +41,7 @@ class OM_Parameters: public soar_module::param_container
         soar_module::boolean_param* qhelp_cmd;
 
         void print_output_settings(agent* thisAgent);
+        void print_output_summary(agent* thisAgent);
 
         void update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam, sml::KernelSML* pKernelSML);
         void update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam);

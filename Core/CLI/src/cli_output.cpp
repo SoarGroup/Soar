@@ -34,8 +34,10 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
 
     if (!pArg1)
     {
-        PrintCLIMessage("The 'output' commands contains settings and sub-commands to control what Soar prints and where it prints it.\n"
-            "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
+        thisAgent->outputManager->m_params->print_output_summary(thisAgent);
+
+//        PrintCLIMessage("The 'output' commands contains settings and sub-commands to control what Soar prints and where it prints it.\n"
+//            "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
         return true;
     }
 

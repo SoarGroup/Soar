@@ -126,7 +126,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: debug [internal-symbols | port | ? ] [arguments*]";
+                return "Syntax: debug [ allocate | internal-symbols | port | ? ] [arguments*]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)

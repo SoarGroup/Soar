@@ -92,6 +92,33 @@ void OM_Parameters::update_int_setting(agent* thisAgent, soar_module::integer_pa
 
 std::string concatJustified(const char* left_string, std::string right_string, int pWidth);
 
+void OM_Parameters::print_output_summary(agent* thisAgent)
+{
+    std::string tempString;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 25);
+    outputManager->set_column_indent(1, 58);
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa(thisAgent, "-                   Output Status                     -\n");
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Printing to console", (outputManager->is_printing_to_stdout() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Print callbacks", (thisAgent->output_settings->callback_mode ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Printing warnings", (warnings->get_value() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Verbose output", (verbose->get_value() ? "Yes" : "No"), 55).c_str());
+#ifndef SOAR_RELEASE_VERSION
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Soar release compilation", "OFF", 55).c_str());
+#endif
+#ifdef DEBUG_OUTPUT_ON
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Debug printing", "ON", 55).c_str());
+#endif
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "To enable specific types of trace messages, use the 'watch' command.\n");
+    outputManager->printa_sf(thisAgent, "Use 'output ?' for a command overview or 'help output' for the manual page.");
+}
+
 void OM_Parameters::print_output_settings(agent* thisAgent)
 {
     std::string tempString;
@@ -115,6 +142,6 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("verbose", verbose->get_string(), 55).c_str(), "Include verbose output");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("echo-commands", echo_commands->get_string(), 55).c_str(), "Echo commands to debugger");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "To view/change a setting: %-%-output <setting> [<value>]\n");
-    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help output\n");
+    outputManager->printa_sf(thisAgent, "To view/change a setting: %-%- output <setting> [<value>]\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%- help output\n");
 }

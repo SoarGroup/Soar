@@ -73,12 +73,13 @@ namespace cli
                         break;
                     }
                 }
+                std::string lCmd;
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("The 'production' commands contains commands to manipulate Soar rules and analyze their usage.\n\n"
-                        "Use 'production ?' to see an overview of the command or 'help production' to read the manual page.");
+                    return cli.DoProduction(argv, lCmd);
+//                    return cli.SetError("The 'production' commands contains commands to manipulate Soar rules and analyze their usage.\n\n"
+//                        "Use 'production ?' to see an overview of the command or 'help production' to read the manual page.");
                 }
-                std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
                 lCmd = argv[start_arg_position];

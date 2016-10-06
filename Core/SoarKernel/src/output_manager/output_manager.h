@@ -134,6 +134,7 @@ class Output_Manager
 
         /* Methods for the cli output command */
         void print_output_summary();
+        bool is_printing_to_stdout() { return stdout_mode; };
 
         void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
