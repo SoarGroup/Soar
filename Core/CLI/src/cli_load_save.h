@@ -62,7 +62,7 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required. Use 'load ?' or 'help load' to learn more about the load command.");
+                    return cli.SetError("File type is required. \n\nUse 'load ?' or 'help load' to learn more about the load command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
@@ -125,7 +125,7 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required. Use 'save ?' or 'help save' to learn more about the save command.");
+                    return cli.SetError("File type is required. \n\nUse 'save ?' or 'help save' to learn more about the save command.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

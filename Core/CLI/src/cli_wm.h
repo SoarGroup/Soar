@@ -68,7 +68,8 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required.");
+                    return cli.SetError("The 'wm' commands contains commands and settings related to working memomory: add, remove, activation and watch.\n\n"
+                        "Use 'wm ?' to see an overview of the command or 'help wm' to read the manual page.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

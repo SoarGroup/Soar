@@ -29,6 +29,14 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     
     if (!pOp)
     {
+        std::string lStr("Episodic memory is ");
+        lStr.append(thisAgent->EpMem->epmem_params->learning->get_value() ? "enabled." : "not enabled.");
+        PrintCLIMessage(lStr.c_str());
+        PrintCLIMessage("Use 'epmem ?' to see EpMem setting and 'help epmem' to learn more about the epmem command.");
+        return true;
+    }
+    else if (pOp == '?')
+    {
         // Print Epmem Settings
         PrintCLIMessage_Header("Episodic Memory Settings", 40);
         PrintCLIMessage_Item("learning:", thisAgent->EpMem->epmem_params->learning, 40);

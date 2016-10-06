@@ -75,7 +75,8 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required. Use 'production ?' or 'help production' to learn more about the production command.");
+                    return cli.SetError("The 'production' commands contains commands to manipulate Soar rules and analyze their usage.\n\n"
+                        "Use 'production ?' to see an overview of the command or 'help production' to read the manual page.");
                 }
                 std::string lCmd;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();

@@ -414,6 +414,10 @@ namespace cli
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
+                    if (opt.CheckNumNonOptArgs(1, 1) && argv[1][0] == '?')
+                    {
+                        return cli.DoSMem('?');
+                    }
                     return cli.SetError("Too many arguments, check syntax.");
                 }
 
@@ -1323,6 +1327,7 @@ namespace cli
                     case 0:
                     default:
                         // no options
+                        // case: init takes no arguments
                         break;
 
                     case 'a':
@@ -1472,6 +1477,10 @@ namespace cli
                 // bad: no option, but more than one argument
                 if (argv.size() > 1)
                 {
+                    if (opt.CheckNumNonOptArgs(1, 1) && argv[1][0] == '?')
+                    {
+                        return cli.DoSMem('?');
+                    }
                     return cli.SetError("Too many arguments.");
                 }
 

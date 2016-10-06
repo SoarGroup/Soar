@@ -82,7 +82,8 @@ namespace cli
                 }
                 if (!opt.GetNonOptionArguments())
                 {
-                    return cli.SetError("Sub-command is required. Use 'output ?' or 'help output' to learn more about the output command.");
+                    return cli.SetError("The 'output' commands contains settings and sub-commands to control what Soar prints and where it prints it.\n\n"
+                        "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
                 }
                 std::string arg, arg2;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
