@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "ebc.h"
+#include "output_manager.h"
 
 #define setting_on(s) pEBC_settings[s] ? on : off
 
