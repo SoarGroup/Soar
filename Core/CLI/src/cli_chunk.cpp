@@ -61,6 +61,14 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
         thisAgent->explanationMemory->print_global_stats();
 
     }
+    else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->always_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->never_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->flagged_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->unflagged_cmd))
+    {
+        thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
+        return true;
+    }
     else if (my_param == thisAgent->explanationBasedChunker->ebc_params->history_cmd)
     {
         PrintCLIMessage_Header("Chunking History", 60);

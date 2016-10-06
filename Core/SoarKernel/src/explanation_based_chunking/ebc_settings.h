@@ -48,6 +48,11 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* allow_probabilistic_operators;
         soar_module::boolean_param* allow_conflated_reasoning;
 
+        soar_module::boolean_param* always_cmd;
+        soar_module::boolean_param* never_cmd;
+        soar_module::boolean_param* flagged_cmd;
+        soar_module::boolean_param* unflagged_cmd;
+
         ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
         void update_params(bool pEBC_settings[]);
         void update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam = NULL, soar_module::integer_param* pChangedIntParam = NULL);

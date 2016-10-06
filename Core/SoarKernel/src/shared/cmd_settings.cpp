@@ -233,8 +233,8 @@ void production_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "production matches %-[--names --count  ] [--assertions ]\n");
     outputManager->printa_sf(thisAgent, "                   %-[--timetags --wmes] [--retractions]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "production memory-usage   %-[options] [max] %-%s\n", "Prints memory usage for a type of rule");
-    outputManager->printa_sf(thisAgent, "production memory-usage   %-<production_name> %-%s\n", "Prints memory usage for a specific rule");
+    outputManager->printa_sf(thisAgent, "production memory-usage   %-[options] [max] %-\n");
+    outputManager->printa_sf(thisAgent, "production memory-usage   %-<production_name> %-\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production multi-attributes %-[symbol [n]]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
