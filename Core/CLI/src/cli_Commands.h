@@ -1795,31 +1795,6 @@ namespace cli
             TimersCommand& operator=(const TimersCommand&);
     };
 
-    class VersionCommand : public cli::ParserCommand
-    {
-        public:
-            VersionCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~VersionCommand() {}
-            virtual const char* GetString() const
-            {
-                return "version";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: version";
-            }
-
-            virtual bool Parse(std::vector< std::string >&)
-            {
-                return cli.DoVersion();
-            }
-
-        private:
-            cli::Cli& cli;
-
-            VersionCommand& operator=(const VersionCommand&);
-    };
-
     class WatchCommand : public cli::ParserCommand
     {
         public:

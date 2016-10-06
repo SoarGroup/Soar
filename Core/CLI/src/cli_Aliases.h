@@ -46,7 +46,7 @@ namespace cli
                 t.evaluate("rn load rete-network");
                 t.evaluate("rw wm remove");
                 t.evaluate("s run 1");
-                t.evaluate("set-default-depth soar print-depth");
+                t.evaluate("set-default-depth output print-depth");
                 t.evaluate("ss soar stop");
                 t.evaluate("st stats");
                 t.evaluate("step run -d");
@@ -100,6 +100,7 @@ namespace cli
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
                 t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
+                t.evaluate("version soar version");
                 t.evaluate("waitsnc soar wait-snc");
 
                 t.evaluate("chunk-name-format chunk naming-style");
@@ -111,6 +112,11 @@ namespace cli
                 t.evaluate("echo-commands output echo-commands");
                 t.evaluate("verbose output verbose");
                 t.evaluate("warnings output warnings");
+
+                t.evaluate("c explain chunk");
+                t.evaluate("i explain instantiation");
+                t.evaluate("wt explain wm-trace");
+                t.evaluate("et explain explanation-trace");
             }
             
             virtual ~Aliases() {}

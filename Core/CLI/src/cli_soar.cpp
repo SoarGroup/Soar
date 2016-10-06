@@ -17,6 +17,8 @@
 #include "sml_Utils.h"
 
 #include "agent.h"
+#include "soarversion.h"
+#include "build_time_date.h"
 #include "decider.h"
 #include "decider_settings.h"
 #include "ebc.h"
@@ -95,6 +97,31 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
                 // So instead we set a flag and allow system stop to fire at the end of the run.
                 m_pKernelSML->RequireSystemStop(true) ;
                 m_pKernelSML->InterruptAllAgents(sml::sml_STOP_AFTER_DECISION_CYCLE);
+            }
+            return true;
+        }
+        else if (my_param == thisAgent->Decider->params->version_cmd)
+        {
+            std::ostringstream timedatestamp;
+            timedatestamp << kDatestamp << " " << kTimestamp;
+            std::string sTimeDateStamp = timedatestamp.str();
+
+            if (m_RawOutput)
+            {
+                m_Result << sml_Names::kSoarVersionValue << "\n";
+                m_Result << "Build date: " << sTimeDateStamp.c_str() << " " ;
+
+            }
+            else
+            {
+                std::string temp;
+                int major = MAJOR_VERSION_NUMBER;
+                int minor = MINOR_VERSION_NUMBER;
+                int micro = MICRO_VERSION_NUMBER;
+                AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, to_string(major, temp));
+                AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, to_string(minor, temp));
+                AppendArgTagFast(sml_Names::kParamVersionMicro, sml_Names::kTypeInt, to_string(micro, temp));
+                AppendArgTag(sml_Names::kParamBuildDate, sml_Names::kTypeString, sTimeDateStamp);
             }
             return true;
         }

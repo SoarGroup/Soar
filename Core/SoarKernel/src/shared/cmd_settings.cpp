@@ -282,16 +282,23 @@ void wm_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "wm add    %-<id> [^]<attribute> <value> [+]\n");
     outputManager->printa_sf(thisAgent, "wm remove %-<timetag>\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---get <parameter>         %-= activation | decay-rate | decay-thresh | forgetting | \n");
-    outputManager->printa_sf(thisAgent, "wm activation %---set <parameter> <value> %-  forget-wme | max-pow-cache | petrov-approx | timers\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---stats [<statistic>]     %-= forgotten-wmes\n");
-    outputManager->printa_sf(thisAgent, "wm activation %---timers [<timer>]        %-= wma_forgetting | wma_history\n");
+    outputManager->printa_sf(thisAgent, "wm activation %---get <parameter>         \n");
+    outputManager->printa_sf(thisAgent, "wm activation %---set <parameter> <value> \n");
+    outputManager->printa_sf(thisAgent, "              %-<parameter> = activation  | decay-rate\n");
+    outputManager->printa_sf(thisAgent, "              %-            decay-thresh  | forgetting\n");
+    outputManager->printa_sf(thisAgent, "              %-            forget-wme    | max-pow-cache\n");
+    outputManager->printa_sf(thisAgent, "              %-            petrov-approx | timers\n");
+    outputManager->printa_sf(thisAgent, "wm activation %---stats [<statistic>]     \n");
+    outputManager->printa_sf(thisAgent, "              %-<statistic> = forgotten-wmes\n");
+    outputManager->printa_sf(thisAgent, "wm activation %---timers [<timer>]        \n");
+    outputManager->printa_sf(thisAgent, "              %-<timer> = wma_forgetting | wma_history\n");
     outputManager->printa_sf(thisAgent, "wm activation %---history <timetag>\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "wm watch %-[--add-filter   ] --type <t>  pattern %-<t> = [adds | removes | both]\n");
+    outputManager->printa_sf(thisAgent, "wm watch %-[--add-filter   ] --type <t>  pattern\n");
     outputManager->printa_sf(thisAgent, "         %-[--remove-filter]\n");
     outputManager->printa_sf(thisAgent, "wm watch %-[--list-filter ] [--type <t>]\n");
     outputManager->printa_sf(thisAgent, "         %-[--reset-filter]\n");
+    outputManager->printa_sf(thisAgent, "              %-<t> = [adds | removes | both]\n");
     outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:       help wm\n");
 }

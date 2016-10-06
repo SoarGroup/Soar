@@ -39,25 +39,8 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
     if (!argv)
     {
-        Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
-        PrintCLIMessage_Header("Debug", 40);
-        PrintCLIMessage_Section("Commands", 40);
-        PrintCLIMessage_Justify("allocate [pool blocks]", "Allocates extra memory to a memory pool", 40);
-        PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 40);
-        PrintCLIMessage_Justify("port", "Prints listening port", 40);
-        PrintCLIMessage_Section("Debug Database Storage", 40);
-        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 40);
-        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 40);
-        PrintCLIMessage_Item("path:", l_OutputManager->m_params->path, 40);
-        PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("lazy-commit:", l_OutputManager->m_params->lazy_commit, 40);
-        PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 40);
-        PrintCLIMessage("");
-
-        result = true;
-        goto print_syntax;
+        PrintCLIMessage("Sub-command is required.\nUse 'debug ?' to learn more about the debug command.");
+        return true;
     }
 
     numArgs = argv->size() - 1;
@@ -241,6 +224,25 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
                 std::string temp;
                 AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
             }            return true;
+        }
+        else if (sub_command[0] == '?')
+        {
+            Output_Manager* l_OutputManager = &Output_Manager::Get_OM();
+            PrintCLIMessage_Header("Debug Commands and Settings", 70);
+//            PrintCLIMessage_Section("Commands", 70);
+            PrintCLIMessage_Justify("allocate [pool blocks]", "Allocates extra memory to a memory pool", 70);
+            PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 70);
+            PrintCLIMessage_Justify("port", "Prints listening port", 70);
+    //        PrintCLIMessage_Section("Debug Database Storage", 60);
+    //        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 60);
+    //        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 60);
+    //        PrintCLIMessage_Item("path:", l_OutputManager->m_params->path, 60);
+    //        PrintCLIMessage_Section("Performance", 60);
+    //        PrintCLIMessage_Item("lazy-commit:", l_OutputManager->m_params->lazy_commit, 60);
+    //        PrintCLIMessage_Item("page-size:", l_OutputManager->m_params->page_size, 60);
+    //        PrintCLIMessage_Item("cache-size:", l_OutputManager->m_params->cache_size, 60);
+    //        PrintCLIMessage_Item("optimization:", l_OutputManager->m_params->opt, 60);
+    //        PrintCLIMessage("");
         }
         else
         {

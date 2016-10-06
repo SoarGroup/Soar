@@ -58,6 +58,9 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     add(stop_cmd);
 //    run_cmd = new soar_module::boolean_param("run", on, new soar_module::f_predicate<boolean>());
 //    add(run_cmd);
+    version_cmd = new soar_module::boolean_param("version", on, new soar_module::f_predicate<boolean>());
+    add(version_cmd);
+
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -142,8 +145,9 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
     outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes current state of Soar");
 //    outputManager->printa_sf(thisAgent, "soar reset%-%-%s\n", "Re-initializes Soar completely");
-    outputManager->printa_sf(thisAgent, "soar stop%-%-%s\n", "Stop Soar execution");
+    outputManager->printa_sf(thisAgent, "soar stop%-[--self]%-%s\n", "Stop Soar execution");
 //    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
+    outputManager->printa_sf(thisAgent, "soar version%-%-%s\n", "Print version number of Soar");
     outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 50).c_str(), "Maximum elaboration in a phase");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 50).c_str(), "Maximum goal stack depth");
