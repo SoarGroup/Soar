@@ -131,7 +131,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */
-            tempStringStream << pAttr->c_str() << " is" ;
+            tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         }
         return true;
@@ -157,7 +157,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
         else
         {
-            tempStringStream << pAttr->c_str() << " is now " << pVal->c_str();
+            tempStringStream << my_param->get_name() << " is now " << pVal->c_str();
             PrintCLIMessage(&tempStringStream);
         }
         const char* lCmdName = pAttr->c_str();
