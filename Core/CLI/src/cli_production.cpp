@@ -972,7 +972,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 
         if (!maList)
         {
-            m_Result << "No multi-attributes found.";
+            m_Result << "No optimized attributes found.";
         }
 
         std::stringstream buffer;

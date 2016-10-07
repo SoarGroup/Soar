@@ -133,14 +133,47 @@ void decider_param_container::update_enum_setting(agent* thisAgent, soar_module:
     }
 }
 
-void decider_param_container::print_soar_settings(agent* thisAgent)
+void decider_param_container::print_status(agent* thisAgent)
+{
+    std::string stateStackStr, enabledStr, disabledStr;
+    int soarStackDepth;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    soarStackDepth = thisAgent->Decider->get_state_stack_string(stateStackStr);
+    thisAgent->Decider->get_enabled_module_strings(enabledStr, disabledStr);
+    uint64_t totalProductions =
+        thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE] +
+        thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE] +
+        thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 55);
+
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "-                   Soar %s Summary                -\n", sml::sml_Names::kSoarVersionValue);
+    outputManager->printa(thisAgent,    "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Enabled:", enabledStr.c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Disabled:", disabledStr.c_str(), 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Number of rules:", std::to_string(totalProductions).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Decisions", std::to_string(thisAgent->d_cycle_count).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Elaborations", std::to_string(thisAgent->e_cycle_count).c_str(), 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("State stack", stateStackStr.c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Current number of states", std::to_string(soarStackDepth).c_str(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Next phase", thisAgent->outputManager->phase_to_string(thisAgent->current_phase), 55).c_str());
+
+    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings:  soar ?");
+}
+
+void decider_param_container::print_settings(agent* thisAgent)
 {
     std::string tempString;
     Output_Manager* outputManager = &Output_Manager::Get_OM();
 
     outputManager->reset_column_indents();
 //    outputManager->set_column_indent(0, 40);
-    outputManager->set_column_indent(1, 55);
+    outputManager->set_column_indent(1, 52);
     outputManager->printa(thisAgent, "====== Soar General Commands and Settings =====\n");
     outputManager->printa_sf(thisAgent, "soar ? %-%-%s\n", "Print this help listing");
     outputManager->printa_sf(thisAgent, "soar init%-%-%s\n", "Re-initializes current state of Soar");
@@ -149,15 +182,15 @@ void decider_param_container::print_soar_settings(agent* thisAgent)
 //    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
     outputManager->printa_sf(thisAgent, "soar version%-%-%s\n", "Print version number of Soar");
     outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 50).c_str(), "Maximum elaboration in a phase");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 50).c_str(), "Maximum goal stack depth");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 50).c_str(), "Used with run --out");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dc-time", max_dc_time->get_string(), 50).c_str(), "Maximum time per decision");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-memory-usage", max_memory_usage->get_string(), 50).c_str(), "Maximum memory usage");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-gp", max_gp->get_string(), 50).c_str(), "Maximum rules gp can generate");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 50).c_str(), "Phase before which Soar will stop");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 50).c_str(), "Wait after state-no-change");
-    outputManager->printa(thisAgent, "---------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 47).c_str(), "Maximum elaboration in a phase");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 47).c_str(), "Maximum goal stack depth");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 47).c_str(), "Used with run --out");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dc-time", max_dc_time->get_string(), 47).c_str(), "Maximum time per decision");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-memory-usage", max_memory_usage->get_string(), 47).c_str(), "Maximum memory usage");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-gp", max_gp->get_string(), 47).c_str(), "Maximum rules gp can generate");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("stop-phase", stop_phase->get_string(), 47).c_str(), "Phase before which Soar will stop");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("wait-snc", wait_snc->get_string(), 47).c_str(), "Wait after state-no-change");
+    outputManager->printa(thisAgent, "-----------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- soar <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help soar\n");
 }

@@ -185,7 +185,7 @@ production_param_container::production_param_container(agent* new_agent): soar_m
     add(matches_cmd);
     memories_cmd = new soar_module::boolean_param("memory-usage", on, new soar_module::f_predicate<boolean>());
     add(memories_cmd);
-    multi_attributes_cmd = new soar_module::boolean_param("optimize-multi-attribute", on, new soar_module::f_predicate<boolean>());
+    multi_attributes_cmd = new soar_module::boolean_param("optimize-attribute", on, new soar_module::f_predicate<boolean>());
     add(multi_attributes_cmd);
     break_cmd = new soar_module::boolean_param("break", on, new soar_module::f_predicate<boolean>());
     add(break_cmd);
@@ -238,7 +238,7 @@ void production_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "production memory-usage   %-[options] [max] %-\n");
     outputManager->printa_sf(thisAgent, "production memory-usage   %-<production_name> %-\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "production multi-attributes %-[symbol [n]]\n");
+    outputManager->printa_sf(thisAgent, "production optimize-attribute [symbol [n]]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production watch %-[--disable --enable] <prod-name>\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");

@@ -39,7 +39,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
 
     if (!pOp)
     {
-        thisAgent->Decider->print_soar_status(m_pKernelSML);
+        thisAgent->Decider->params->print_status(thisAgent);
         return true;
     }
     else if (pOp == 'G')
@@ -127,7 +127,7 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pAttr, cons
         }
         else if ((my_param == thisAgent->Decider->params->help_cmd) || (my_param == thisAgent->Decider->params->qhelp_cmd))
         {
-            thisAgent->Decider->params->print_soar_settings(thisAgent);
+            thisAgent->Decider->params->print_settings(thisAgent);
         }
         else {
             /* Command was a valid ebc_param name, so print it's value */

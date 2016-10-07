@@ -37,7 +37,8 @@ class decider_param_container: public soar_module::param_container
 
         decider_param_container(agent* new_agent, uint64_t pDecider_settings[]);
 
-        void print_soar_settings(agent* thisAgent);
+        void print_status(agent* thisAgent);
+        void print_settings(agent* thisAgent);
 
         void update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam );
         void update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam);
