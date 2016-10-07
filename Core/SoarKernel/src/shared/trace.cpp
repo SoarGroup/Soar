@@ -21,21 +21,22 @@
 
 #include "trace.h"
 
-#include "mem.h"
-#include "production.h"
-#include "lexer.h"
-#include "symbol.h"
 #include "agent.h"
-#include "print.h"
 #include "decide.h"
+#include "lexer.h"
+#include "mem.h"
+#include "output_manager.h"
+#include "print.h"
+#include "production.h"
+#include "run_soar.h"
 #include "slot.h"
+#include "soar_TraceNames.h"
+#include "symbol_manager.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "xml.h"
-#include "soar_TraceNames.h"
-#include "output_manager.h"
 
 #include <ctype.h>
-#include "run_soar.h"
 #include <stdlib.h>
 
 using namespace soar_TraceNames;
@@ -76,7 +77,7 @@ typedef struct trace_format_struct
     {
         char* string;                           /* string to print */
         struct trace_format_struct* subformat;  /* [subformat in brackets] */
-        list* attribute_path;  /* list.of.attr.path.symbols (NIL if path is '*') */
+        cons* attribute_path;  /* list.of.attr.path.symbols (NIL if path is '*') */
     } data;
 } trace_format;
 
@@ -102,7 +103,7 @@ void deallocate_trace_format_list(agent* thisAgent, trace_format* tf)
             case VALUES_RECURSIVELY_TFT:
             case ATTS_AND_VALUES_TFT:
             case ATTS_AND_VALUES_RECURSIVELY_TFT:
-                deallocate_symbol_list_removing_references(thisAgent, tf->data.attribute_path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(tf->data.attribute_path);
                 break;
 
             case IF_ALL_DEFINED_TFT:
@@ -175,11 +176,11 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
                 first = NIL;
             }
             deallocate_trace_format_list(thisAgent, first);
-            print(thisAgent,  "Error:  bad trace format string: %s\n", string);
+            thisAgent->outputManager->printa_sf(thisAgent,  "Error:  bad trace format string: %s\n", string);
             if (format_string_error_message)
             {
-                print(thisAgent,  "        %s\n", format_string_error_message);
-                print(thisAgent,  "        Error found at: %s\n", format);
+                thisAgent->outputManager->printa_sf(thisAgent,  "        %s\n", format_string_error_message);
+                thisAgent->outputManager->printa_sf(thisAgent,  "        Error found at: %s\n", format);
             }
             return NIL;
         }
@@ -205,9 +206,9 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
     return first;
 }
 
-list* parse_attribute_path_in_brackets(agent* thisAgent)
+cons* parse_attribute_path_in_brackets(agent* thisAgent)
 {
-    list* path;
+    cons* path;
     char name[MAX_LEXEME_LENGTH + 20], *ch;
     Symbol* sym;
 
@@ -239,17 +240,17 @@ list* parse_attribute_path_in_brackets(agent* thisAgent)
             if (*format == 0)
             {
                 format_string_error_message = "'[' without closing ']'";
-                deallocate_symbol_list_removing_references(thisAgent, path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
                 return NIL;
             }
             if (ch == name)
             {
                 format_string_error_message = "null attribute found in attribute path";
-                deallocate_symbol_list_removing_references(thisAgent, path);
+                thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
                 return NIL;
             }
             *ch = 0;
-            sym = make_str_constant(thisAgent, name);
+            sym = thisAgent->symbolManager->make_str_constant(name);
             push(thisAgent, sym, path);
             if (*format == ']')
             {
@@ -264,7 +265,7 @@ list* parse_attribute_path_in_brackets(agent* thisAgent)
     if (*format != ']')
     {
         format_string_error_message = "'[' without closing ']'";
-        deallocate_symbol_list_removing_references(thisAgent, path);
+        thisAgent->symbolManager->deallocate_symbol_list_removing_references(path);
         return NIL;
     }
     format++;
@@ -341,7 +342,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
 {
     trace_format* tf, *pattern;
     char* ch;
-    list* attribute_path;
+    cons* attribute_path;
     int n;
 
     if (*format == 0)
@@ -656,25 +657,29 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
         {
             case STRING_TFT:
             {
-                char* s;
-                size_t i, len;
+                std::string temp;
+                temp = string_to_escaped_string(tf->data.string, '"');
+                thisAgent->outputManager->printa_sf(thisAgent,  "%s", temp.c_str());
 
-                s = string_to_escaped_string(tf->data.string, '"', NULL);
-                len = strlen(s);
-                for (i = 1; i < len - 1; i++)
-                {
-                    print(thisAgent,  "%c", *(s + i));
-                }
+//                char* s;
+//                size_t i, len;
+//
+//                s = string_to_escaped_string(tf->data.string, '"', NULL);
+//                len = strlen(s);
+//                for (i = 1; i < len - 1; i++)
+//                {
+//                    thisAgent->outputManager->printa_sf(thisAgent,  "%c", *(s + i));
+//                }
             }
             break;
             case PERCENT_TFT:
-                print_string(thisAgent, "%%");
+                thisAgent->outputManager->printa(thisAgent, "%%");
                 break;
             case L_BRACKET_TFT:
-                print_string(thisAgent, "%[");
+                thisAgent->outputManager->printa(thisAgent, "%[");
                 break;
             case R_BRACKET_TFT:
-                print_string(thisAgent, "%]");
+                thisAgent->outputManager->printa(thisAgent, "%]");
                 break;
 
             case VALUES_TFT:
@@ -683,87 +688,87 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
             case ATTS_AND_VALUES_RECURSIVELY_TFT:
                 if (tf->type == VALUES_TFT)
                 {
-                    print_string(thisAgent, "%v[");
+                    thisAgent->outputManager->printa(thisAgent, "%v[");
                 }
                 else if (tf->type == VALUES_RECURSIVELY_TFT)
                 {
-                    print_string(thisAgent, "%o[");
+                    thisAgent->outputManager->printa(thisAgent, "%o[");
                 }
                 else if (tf->type == ATTS_AND_VALUES_TFT)
                 {
-                    print_string(thisAgent, "%av[");
+                    thisAgent->outputManager->printa(thisAgent, "%av[");
                 }
                 else
                 {
-                    print_string(thisAgent, "%ao[");
+                    thisAgent->outputManager->printa(thisAgent, "%ao[");
                 }
                 if (tf->data.attribute_path)
                 {
                     for (c = tf->data.attribute_path; c != NIL; c = c->rest)
                     {
-                        print_string(thisAgent, static_cast<Symbol*>(c->first)->sc->name);
+                        thisAgent->outputManager->printa(thisAgent, static_cast<Symbol*>(c->first)->sc->name);
                         if (c->rest)
                         {
-                            print_string(thisAgent, ".");
+                            thisAgent->outputManager->printa(thisAgent, ".");
                         }
                     }
                 }
                 else
                 {
-                    print_string(thisAgent, "*");
+                    thisAgent->outputManager->printa(thisAgent, "*");
                 }
-                print_string(thisAgent, "]");
+                thisAgent->outputManager->printa(thisAgent, "]");
                 break;
 
             case CURRENT_STATE_TFT:
-                print_string(thisAgent, "%cs");
+                thisAgent->outputManager->printa(thisAgent, "%cs");
                 break;
             case CURRENT_OPERATOR_TFT:
-                print_string(thisAgent, "%co");
+                thisAgent->outputManager->printa(thisAgent, "%co");
                 break;
             case DECISION_CYCLE_COUNT_TFT:
-                print_string(thisAgent, "%dc");
+                thisAgent->outputManager->printa(thisAgent, "%dc");
                 break;
             case ELABORATION_CYCLE_COUNT_TFT:
-                print_string(thisAgent, "%ec");
+                thisAgent->outputManager->printa(thisAgent, "%ec");
                 break;
             case IDENTIFIER_TFT:
-                print_string(thisAgent, "%id");
+                thisAgent->outputManager->printa(thisAgent, "%id");
                 break;
 
             case IF_ALL_DEFINED_TFT:
-                print_string(thisAgent, "%ifdef[");
+                thisAgent->outputManager->printa(thisAgent, "%ifdef[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print_string(thisAgent, "]");
+                thisAgent->outputManager->printa(thisAgent, "]");
                 break;
 
             case LEFT_JUSTIFY_TFT:
             case RIGHT_JUSTIFY_TFT:
                 if (tf->type == LEFT_JUSTIFY_TFT)
                 {
-                    print_string(thisAgent, "%left[");
+                    thisAgent->outputManager->printa(thisAgent, "%left[");
                 }
                 else
                 {
-                    print_string(thisAgent, "%right[");
+                    thisAgent->outputManager->printa(thisAgent, "%right[");
                 }
-                print(thisAgent,  "%d,", tf->num);
+                thisAgent->outputManager->printa_sf(thisAgent,  "%d,", tf->num);
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print_string(thisAgent, "]");
+                thisAgent->outputManager->printa(thisAgent, "]");
                 break;
 
             case SUBGOAL_DEPTH_TFT:
-                print_string(thisAgent, "%sd");
+                thisAgent->outputManager->printa(thisAgent, "%sd");
                 break;
 
             case REPEAT_SUBGOAL_DEPTH_TFT:
-                print_string(thisAgent, "%rsd[");
+                thisAgent->outputManager->printa(thisAgent, "%rsd[");
                 print_trace_format_list(thisAgent, tf->data.subformat);
-                print_string(thisAgent, "]");
+                thisAgent->outputManager->printa(thisAgent, "]");
                 break;
 
             case NEWLINE_TFT:
-                print_string(thisAgent, "%nl");
+                thisAgent->outputManager->printa(thisAgent, "%nl");
                 break;
 
             default:
@@ -927,7 +932,7 @@ bool remove_trace_format(agent* thisAgent,
         deallocate_trace_format_list(thisAgent, tr->format);
         remove_from_hash_table(thisAgent, ht, tr);
         thisAgent->memoryManager->free_memory(tr, MISCELLANEOUS_MEM_USAGE);
-        symbol_remove_ref(thisAgent, &name_restriction);
+        thisAgent->symbolManager->symbol_remove_ref(&name_restriction);
         return true;
     }
     /* --- no name restriction --- */
@@ -971,7 +976,7 @@ bool add_trace_format(agent* thisAgent,
     /* --- now add the new one --- */
     if (name_restriction)
     {
-        symbol_add_ref(thisAgent, name_restriction);
+        thisAgent->symbolManager->symbol_add_ref(name_restriction);
         if (stack_trace)
         {
             ht = thisAgent->stack_tr_ht[type_restriction];
@@ -1008,33 +1013,33 @@ void print_tracing_rule(agent* thisAgent, int type_restriction, Symbol* name_res
 {
     if (thisAgent->printing_stack_traces)
     {
-        print_string(thisAgent, "stack-trace-format");
+        thisAgent->outputManager->printa(thisAgent, "stack-trace-format");
     }
     else
     {
-        print_string(thisAgent, "object-trace-format");
+        thisAgent->outputManager->printa(thisAgent, "object-trace-format");
     }
-    print(thisAgent,  " :add %c ", tracing_object_letters[type_restriction]);
+    thisAgent->outputManager->printa_sf(thisAgent,  " :add %c ", tracing_object_letters[type_restriction]);
     if (name_restriction)
     {
-        print_with_symbols(thisAgent, "%y ", name_restriction);
+        thisAgent->outputManager->printa_sf(thisAgent, "%y ", name_restriction);
     }
-    print_string(thisAgent, "\"");
+    thisAgent->outputManager->printa(thisAgent, "\"");
     print_trace_format_list(thisAgent, format);
-    print(thisAgent,  "\"\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "\"\n");
 }
 
 void print_tracing_rule_tcl(agent* thisAgent, int type_restriction, Symbol* name_restriction,
                             trace_format* format)
 {
-    print(thisAgent,  "%c ", tracing_object_letters[type_restriction]);
+    thisAgent->outputManager->printa_sf(thisAgent,  "%c ", tracing_object_letters[type_restriction]);
     if (name_restriction)
     {
-        print_with_symbols(thisAgent, "%y ", name_restriction);
+        thisAgent->outputManager->printa_sf(thisAgent, "%y ", name_restriction);
     }
-    print_string(thisAgent, "{");
+    thisAgent->outputManager->printa(thisAgent, "{");
     print_trace_format_list(thisAgent, format);
-    print(thisAgent,  "}\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "}\n");
 }
 
 
@@ -1195,7 +1200,7 @@ struct tracing_parameters
 
 void add_values_of_attribute_path(agent* thisAgent,
                                   Symbol* object,
-                                  list* path,
+                                  cons* path,
                                   growable_string* result,
                                   bool recursive,
                                   int* count)
@@ -1298,7 +1303,7 @@ void add_trace_for_wme(agent* thisAgent,
 
 void add_trace_for_attribute_path(agent* thisAgent,
                                   Symbol* object,
-                                  list* path,
+                                  cons* path,
                                   growable_string* result,
                                   bool print_attributes,
                                   bool recursive)
@@ -1735,7 +1740,7 @@ void print_object_trace(agent* thisAgent, Symbol* object)
 
     thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = object_to_trace_string(thisAgent, object);
-    print_string(thisAgent, text_of_growable_string(gs));
+    thisAgent->outputManager->printa(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 }
 
@@ -1757,7 +1762,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
             wme* w;
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
-                if (w->attr == thisAgent->attribute_symbol)
+                if (w->attr == thisAgent->symbolManager->soarSymbols.attribute_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseObject, w->value->sc->name);
                     break;
@@ -1767,7 +1772,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol* object, Symbol* state, int 
             // find impasse type and add it to XML
             for (w = object->id->impasse_wmes; w != NIL; w = w->next)
             {
-                if (w->attr == thisAgent->impasse_symbol)
+                if (w->attr == thisAgent->symbolManager->soarSymbols.impasse_symbol)
                 {
                     xml_att_val(thisAgent, kState_ImpasseType, w->value->sc->name);
                     break;
@@ -1834,7 +1839,7 @@ void print_stack_trace(agent* thisAgent, Symbol* object, Symbol* state, int slot
 
     thisAgent->tf_printing_tc  = get_new_tc_number(thisAgent);
     gs = selection_to_trace_string(thisAgent, object, state, slot_type, allow_cycle_counts);
-    print_string(thisAgent, text_of_growable_string(gs));
+    thisAgent->outputManager->printa(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 
     // RPM 5/05
@@ -1867,9 +1872,9 @@ void print_object_trace_using_provided_format_string(agent* thisAgent,
 
     tparams = saved_tparams;
 
-    start_fresh_line(thisAgent);
+    thisAgent->outputManager->start_fresh_line(thisAgent);
 
-    print_string(thisAgent, text_of_growable_string(gs));
+    thisAgent->outputManager->printa(thisAgent, text_of_growable_string(gs));
     free_growable_string(thisAgent, gs);
 }
 /* kjh(B1) end */

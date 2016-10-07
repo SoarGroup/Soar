@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 smem --enable
 smem --add {
    (<L1> ^value bar)

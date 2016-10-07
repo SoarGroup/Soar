@@ -13,17 +13,6 @@
 
 #include <unordered_map>
 
-namespace sml
-{
-    class Kernel;
-    class AgentSML;
-}
-
-class Output_Manager;
-class Memory_Manager;
-
-typedef struct agent_struct agent;
-
 typedef void* (*MessageFunction)(const char* pMessage, void* pMessageData);
 typedef struct Soar_Loaded_Library_struct
 {
@@ -44,7 +33,8 @@ class EXPORT Soar_Instance
 
         void init_Soar_Instance(sml::Kernel* pKernel);
         void Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
-        std::string Message_Library(const char* pMessage);
+        std::string Tcl_Message_Library(const char* pMessage);
+        std::string Message_Library(std::string &pMessage);
         void Clean_Up_Libraries();
 
         void Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);

@@ -24,7 +24,7 @@
 
 // Forward definitions for kernel
 typedef struct symbol_struct Symbol;
-typedef struct cons_struct list;
+typedef struct cons_struct cons;
 typedef struct wme_struct wme;
 
 #include <map>

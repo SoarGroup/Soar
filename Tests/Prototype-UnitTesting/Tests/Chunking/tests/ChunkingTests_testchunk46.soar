@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {apply*test-done
     (state <s> ^superstate nil ^test-done)

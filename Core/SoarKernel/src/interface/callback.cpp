@@ -22,13 +22,16 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "callback.h"
 
 #include "agent.h"
+#include "run_soar.h"
+#include "output_manager.h"
 #include "print.h"
 
 #include <stdlib.h>
+
+#define NUMBER_OF_MONITORABLE_CALLBACKS (NUMBER_OF_CALLBACKS - 2)
 
 const char* soar_callback_names[] =
 {
@@ -200,7 +203,7 @@ SOAR_CALLBACK_TYPE soar_callback_name_to_enum(char* name,
 bool soar_exists_callback(agent* the_agent,
                           SOAR_CALLBACK_TYPE callback_type)
 {
-    list* cb_cons;
+    cons* cb_cons;
 
     cb_cons = the_agent->soar_callbacks[callback_type];
 
@@ -387,7 +390,7 @@ void soar_invoke_first_callback(agent* thisAgent,
                                 SOAR_CALLBACK_TYPE callback_type,
                                 soar_call_data call_data)
 {
-    list* head;
+    cons* head;
 
     /* if no callback is registered, just return */
     head = thisAgent->soar_callbacks[callback_type];
@@ -515,9 +518,9 @@ void soar_list_all_callbacks(agent* thisAgent,
 
     for (ct = 1; ct < limit; ct++)
     {
-        print(thisAgent,  "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), false));
+        thisAgent->outputManager->printa_sf(thisAgent,  "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), false));
         soar_list_all_callbacks_for_event(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(ct));
-        print(thisAgent,  "\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "\n");
     }
 }
 
@@ -534,28 +537,28 @@ void soar_list_all_callbacks_for_event(agent* thisAgent,
 
         cb = static_cast< soar_callback* >(c->first);
 
-        print(thisAgent,  "%s ", cb->id.c_str());
+        thisAgent->outputManager->printa_sf(thisAgent,  "%s ", cb->id.c_str());
     }
 }
 
 void soar_pop_callback(agent* thisAgent,
                        SOAR_CALLBACK_TYPE callback_type)
 {
-    list* head;
+    cons* head;
     soar_callback* cb;
 
     head = thisAgent->soar_callbacks[callback_type];
 
     if (head == NULL)
     {
-        print_string(thisAgent, "Attempt to remove non-existant callback.\n");
+        thisAgent->outputManager->printa(thisAgent, "Attempt to remove non-existant callback.\n");
         return;
     }
 
     if ((callback_type == PRINT_CALLBACK)
             && (head->rest == NULL))
     {
-        print_string(thisAgent, "Attempt to remove last print callback. Ignored.\n");
+        thisAgent->outputManager->printa(thisAgent, "Attempt to remove last print callback. Ignored.\n");
         return;
     }
 
@@ -599,7 +602,7 @@ void soar_remove_all_callbacks_for_event(agent* thisAgent,
         SOAR_CALLBACK_TYPE ct)
 {
     cons* c;
-    list* next;
+    cons* next;
 
     next = thisAgent->soar_callbacks[ct];
 
@@ -623,7 +626,7 @@ void soar_remove_callback(agent* thisAgent,
 {
     cons* c;
     cons* prev_c = NULL;      /* Initialized to placate gcc -Wall */
-    list* head;
+    cons* head;
 
     head = thisAgent->soar_callbacks[callback_type];
 

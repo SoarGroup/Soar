@@ -13,9 +13,10 @@
 #include "production.h"
 #include "rhs.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900
@@ -26,8 +27,11 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
+    settings = new Explainer_Parameters(thisAgent);
+
     initialize_counters();
-    enabled = false;
+    m_enabled = false;
+    m_justifications_enabled = false;
     num_rules_watched = 0;
 
     print_explanation_trace = true;
@@ -54,7 +58,7 @@ void Explanation_Memory::initialize_counters()
     id_set_counter = 0;
 
     stats.duplicates = 0;
-    stats.unorderable = 0;
+    stats.could_not_repair = 0;
     stats.justification_did_not_match = 0;
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
@@ -75,15 +79,12 @@ void Explanation_Memory::initialize_counters()
 }
 void Explanation_Memory::clear_explanations()
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
-
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
     Symbol* lSym;
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         lSym = it->first;
-        symbol_remove_ref(thisAgent, &lSym);
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
         delete it->second;
     }
     chunks->clear();
@@ -117,15 +118,10 @@ void Explanation_Memory::clear_explanations()
     }
     all_excised_productions->clear();
     dprint(DT_EXPLAIN, "Explanation logger done clear_explanations...\n");
-    //debug_trace_set(DT_ID_LEAKING, false);
-    //debug_trace_set(DT_EXPLAIN, false);
-
 }
 
 Explanation_Memory::~Explanation_Memory()
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
     dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
 
     current_recording_chunk = NULL;
@@ -138,8 +134,6 @@ Explanation_Memory::~Explanation_Memory()
     delete all_actions;
     delete instantiations;
     dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
-    //debug_trace_set(DT_ID_LEAKING, false);
-    //debug_trace_set(DT_EXPLAIN, false);
 }
 
 void Explanation_Memory::re_init()
@@ -156,7 +150,7 @@ void Explanation_Memory::re_init()
 void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 {
     bool lShouldRecord = false;
-    if ((!enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
+    if ((!m_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
     {
         dprint(DT_EXPLAIN, "Explainer ignoring this chunk because it is not being watched.\n");
         current_recording_chunk = NULL;
@@ -219,23 +213,19 @@ void Explanation_Memory::add_result_instantiations(instantiation* pBaseInst, pre
     }
 }
 
-void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
+void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
 {
-    //debug_trace_set(DT_ID_LEAKING, true);
-    //debug_trace_set(DT_EXPLAIN, true);
     if (current_recording_chunk)
     {
         dprint(DT_EXPLAIN, "Recording chunk contents for %y (c%u).  Backtrace number: %d\n", pProduction->name, current_recording_chunk->chunkID, backtrace_number);
         current_recording_chunk->record_chunk_contents(pProduction, lhs, rhs, results, pIdentitySetMappings, pBaseInstantiation, backtrace_number, pChunkInstantiation);
         chunks->insert({pProduction->name, current_recording_chunk});
         chunks_by_ID->insert({current_recording_chunk->chunkID, current_recording_chunk});
-        symbol_add_ref(thisAgent, pProduction->name);
+        thisAgent->symbolManager->symbol_add_ref(pProduction->name);
         dprint(DT_EXPLAIN, "Explanation logger done record_chunk_contents...\n");
     } else {
         dprint(DT_EXPLAIN, "Not recording chunk contents for %y because it is not being watched.\n", pProduction->name);
     }
-    //debug_trace_set(DT_EXPLAIN, false);
-    //debug_trace_set(DT_ID_LEAKING, false);
 }
 
 condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
@@ -403,7 +393,7 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 {
     Symbol* sym;
 
-    sym = find_str_constant(thisAgent, pStringParameter->c_str());
+    sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
     if (sym && (sym->sc->production))
     {
         toggle_production_watch(sym->sc->production);
@@ -417,33 +407,41 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
+    uint64_t lObjectID = 0;
 
-    sym = find_str_constant(thisAgent, pStringParameter->c_str());
-    if (sym && sym->sc->production)
+    if (from_string(lObjectID, pStringParameter->c_str()))
     {
-        /* Print chunk record if we can find it */
-        chunk_record* lFoundChunk = get_chunk_record(sym);
-        if (lFoundChunk)
+        if (!print_chunk_explanation_for_id(lObjectID))
         {
-                    discuss_chunk(lFoundChunk);
-                    return true;
+            outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
         }
+    } else {
 
-        outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
-        return false;
+        sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
+        if (sym && sym->sc->production)
+        {
+            /* Print chunk record if we can find it */
+            chunk_record* lFoundChunk = get_chunk_record(sym);
+            if (lFoundChunk)
+            {
+                discuss_chunk(lFoundChunk);
+                return true;
+            }
+
+            outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+            return false;
+        }
     }
-
-    /* String has never been seen by Soar or is not a rule name */
-    outputManager->printa_sf(thisAgent, "Could not find a chunk named %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
     return false;
-
 }
 
 void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.\n  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
+        outputManager->printa_sf(thisAgent, "Now explaining %y.\n"
+            "- Note that future explain commands are now relative\n"
+            "  to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -551,42 +549,56 @@ bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionI
     return true;
 }
 
-bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDString)
 {
-    /* First argument must be an object type.  Current valid types are 'chunk',
-     * and 'instantiation' */
     bool lSuccess = false;
     uint64_t lObjectID = 0;
-    char lFirstChar = pObjectTypeString->at(0);
-    if (lFirstChar == 'c')
+    if (!from_string(lObjectID, pObjectIDString->c_str()))
     {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
-        }
-            lSuccess = print_chunk_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'i')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
-        }
-            lSuccess = print_instantiation_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'l')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
-        }
-        lSuccess = print_condition_explanation_for_id(lObjectID);
-    } else
-    {
-        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
-        return false;
+        outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
     }
-
+    lSuccess = print_instantiation_explanation_for_id(lObjectID);
     return lSuccess;
 }
+
+//bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+//{
+//    /* First argument must be an object type.  Current valid types are 'chunk',
+//     * and 'instantiation' */
+//    bool lSuccess = false;
+//    uint64_t lObjectID = 0;
+//    char lFirstChar = pObjectTypeString->at(0);
+//    if (lFirstChar == 'c')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
+//        }
+//            lSuccess = print_chunk_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'i')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
+//        }
+//            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'l')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
+//        }
+//        lSuccess = print_condition_explanation_for_id(lObjectID);
+//    } else
+//    {
+//        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
+//        return false;
+//    }
+//
+//    return lSuccess;
+//}
 
 
 bool Explanation_Memory::current_discussed_chunk_exists()
@@ -672,7 +684,7 @@ void Explanation_Memory::visualize_instantiation_graph()
 
 void Explanation_Memory::visualize_contributors()
 {
-    bool old_Simple_Setting = thisAgent->visualizationManager->is_simple_inst_enabled();
+    bool old_Simple_Setting = (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name);
     thisAgent->visualizationManager->viz_graph_start();
     current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)

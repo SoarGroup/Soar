@@ -593,9 +593,9 @@ void FullTests_Parent::testAgent()
 	
 	// Register for a String event
 	bool stringEventHandlerReceived(false);
-	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_EDIT_PRODUCTION, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("edit-production my*production", NULL));
-	no_agent_assertTrue_msg("edit-production my*production", agent->GetLastCommandLineResult());
+	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("cli tcl on", NULL));
+	no_agent_assertTrue_msg("puts hello world", agent->GetLastCommandLineResult());
 	no_agent_assertTrue(stringEventHandlerReceived);
 	stringEventHandlerReceived = false;
 	no_agent_assertTrue(m_pKernel->UnregisterForStringEvent(stringCall));
@@ -1380,7 +1380,7 @@ void FullTests_Parent::testGDSBug1011()
 void FullTests_Parent::testLearn()
 {
 	loadProductions(SoarHelper::GetResource("testLearn.soar"));
-	agent->ExecuteCommandLine("learn --except");
+	agent->ExecuteCommandLine("chunk unflagged");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;
@@ -1401,7 +1401,7 @@ void FullTests_Parent::testLearn()
 	
 	// turn learn except on
 	agent->ExecuteCommandLine("init");
-	agent->ExecuteCommandLine("learn --except");
+	agent->ExecuteCommandLine("chunk unflagged");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;
@@ -1444,7 +1444,7 @@ void FullTests_Parent::testLearn()
 	// go to only mode
 	agent->ExecuteCommandLine("init");
 	agent->ExecuteCommandLine("excise -c");
-	agent->ExecuteCommandLine("learn --only");
+	agent->ExecuteCommandLine("chunk only");
 	m_pKernel->RunAllAgentsForever();
 	{
 		sml::ClientAnalyzedXML response;

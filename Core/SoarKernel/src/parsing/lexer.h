@@ -44,6 +44,9 @@ enum lexer_token_type {
   GREATER_EQUAL_LEXEME,              /**< ">=" */
   NOT_EQUAL_LEXEME,                  /**< "<>" */
   LESS_EQUAL_GREATER_LEXEME,         /**< "<=>" */
+  NOT_AT_LEXEME,                     /**< "!@" */
+  UNARY_AT_LEXEME,                   /**< "@+" */
+  UNARY_NOT_AT_LEXEME,               /**< "@-" */
   LESS_LESS_LEXEME,                  /**< "<<" */
   GREATER_GREATER_LEXEME,            /**< ">>" */
   AMPERSAND_LEXEME,                  /**< "&" */
@@ -116,19 +119,6 @@ namespace soar
         static Lexeme get_lexeme_from_string (agent* thisAgent, const char* input);
 
         /**
-         * Tell the lexer whether to allow identifiers to be read.
-         * @param allow True to allow identifiers to be read; false
-         * to set the type of any identifier lexeme to SYM_CONSTANT_LEXEME
-         * instead.
-         */
-        void set_allow_ids(bool allow);
-        bool get_allow_ids();
-        /**
-         *  Print an out the current source line and column; useful for
-         *  error messages. TODO: it's a no-op for now.
-         */
-        void print_location_of_most_recent_lexeme ();
-        /**
          * Return the current level of parentheses nesting (0 means
          * no open paren's have been encountered).
          */
@@ -179,7 +169,6 @@ namespace soar
         const char*         production_string;
         //0 means top level, no left parens seen
         int                 parentheses_level;
-        bool                allow_ids;
         agent*              thisAgent;
 
         //length of "-->" and "<=>". If a longer one is added, be

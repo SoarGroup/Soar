@@ -52,9 +52,9 @@ sp {apply*retrieve-lti
 }
 
 sp {success
-   (state <s> ^superstate.superstate.superstate.superstate nil)
+   (state <s> ^superstate.superstate nil)
 -->
+   (write |Success!| (crlf))
    (exec succeeded)
-   (halt)
 }
 

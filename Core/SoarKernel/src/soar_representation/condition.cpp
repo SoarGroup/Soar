@@ -11,15 +11,18 @@
  * =======================================================================
  */
 
-#include "run_soar.h"
 #include "condition.h"
 
 #include "agent.h"
-#include "test.h"
-#include "memory_manager.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "identity_record.h"
+#include "memory_manager.h"
+#include "output_manager.h"
+#include "run_soar.h"
+#include "symbol.h"
+#include "symbol_manager.h"
+#include "test.h"
 
 /* ----------------------------------------------------------------
    Deallocates a condition list (including any NCC's and tests in it).
@@ -80,7 +83,7 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     cond->next = cond->prev = cond->counterpart = NULL;
     cond->inst = NULL;
     cond->bt.wme_ = NULL;
-    cond->bt.level = 0;
+    cond->bt.level = NO_WME_LEVEL;
     cond->bt.trace = NULL;
     cond->bt.CDPS = NULL;
     /* Other data initialized to 0 in struct initializers */
@@ -329,7 +332,7 @@ int condition_count(condition* pCond)
     return cnt;
 }
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -352,7 +355,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                     {
                         lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
                         lNewIDSet->rule_variable = pTest->data.referent;
-                        symbol_add_ref(thisAgent, lNewIDSet->rule_variable);
+                        thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
                     } else {
                         lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
                         lNewIDSet->rule_variable = NULL;
@@ -364,7 +367,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map_type* pID_Set_Map)
+void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {

@@ -9,28 +9,34 @@
 
 #include "output_manager.h"
 
-#include "ebc.h"
-#include "rhs.h"
-#include "print.h"
 #include "agent.h"
 #include "condition.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "lexer.h"
-#include "rete.h"
-#include "production_reorder.h"
-#include "rhs.h"
-#include "rhs_functions.h"
 #include "preference.h"
-#include "working_memory.h"
+#include "print.h"
+#include "production_reorder.h"
+#include "production.h"
+#include "rete.h"
+#include "rhs_functions.h"
+#include "rhs.h"
 #include "soar_instance.h"
+#include "symbol_manager.h"
+#include "symbol.h"
 #include "test.h"
+#include "working_memory.h"
+
+#include "soar_TraceNames.h"
+
+#include <vector>
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
     assert(thisAgent && w);
 
     sprinta_sf(thisAgent, destString, "(t%u(r%u): %y(l%d) ^%y %y(l%d)%s",
-        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_identifier() ? w->value->id->level : 0,
+        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_sti() ? w->value->id->level : 0,
         (w->acceptable ? " +)" : ")"));
 
     /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
@@ -53,42 +59,85 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
     return;
 }
 
-const char* Output_Manager::test_type_to_string_brief(byte test_type)
+const char* Output_Manager::phase_to_string(top_level_phase pPhase)
+{
+    switch (pPhase)
+    {
+        case INPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Input;
+            break;
+        case PREFERENCE_PHASE:
+            return soar_TraceNames::kPhaseName_Pref;
+            break;
+        case WM_PHASE:
+            return soar_TraceNames::kPhaseName_WM;
+            break;
+        case DECISION_PHASE:
+            return soar_TraceNames::kPhaseName_Decision;
+            break;
+        case OUTPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Output;
+            break;
+        case PROPOSE_PHASE:
+            return soar_TraceNames::kPhaseName_Propose;
+            break;
+        case APPLY_PHASE:
+            return soar_TraceNames::kPhaseName_Apply;
+            break;
+        default:
+            return soar_TraceNames::kPhaseName_Unknown;
+            break;
+    }
+}
+
+const char* Output_Manager::test_type_to_string(byte test_type)
 {
     switch (test_type)
     {
+        case EQUALITY_TEST:
+            return "=";
+            break;
         case NOT_EQUAL_TEST:
-            return "<> ";
+            return "<>";
             break;
         case LESS_TEST:
-            return "< ";
+            return "<";
             break;
         case GREATER_TEST:
-            return "> ";
+            return ">";
             break;
         case LESS_OR_EQUAL_TEST:
-            return "<= ";
+            return "<=";
             break;
         case GREATER_OR_EQUAL_TEST:
-            return ">= ";
+            return ">=";
+            break;
+        case SMEM_LINK_TEST:
+            return "@";
+            break;
+        case SMEM_LINK_UNARY_TEST:
+            return "@+";
+            break;
+        case SMEM_LINK_NOT_TEST:
+            return "!@";
+            break;
+        case SMEM_LINK_UNARY_NOT_TEST:
+            return "@-";
+            break;
+        case GOAL_ID_TEST:
+            return "state";
+            break;
+        case IMPASSE_ID_TEST:
+            return "impasse";
             break;
         case SAME_TYPE_TEST:
-            return "<=> ";
+            return "<=>";
             break;
         case CONJUNCTIVE_TEST:
             return "{ }";
             break;
-        case GOAL_ID_TEST:
-            return "IS_G_ID ";
-            break;
-        case IMPASSE_ID_TEST:
-            return "IS_IMPASSE ";
-            break;
-        case EQUALITY_TEST:
-            return "= ";
-            break;
     }
-    return "UNDEFINED TEST TYPE";
+    return "?-test";
 }
 
 void Output_Manager::test_to_string(test t, std::string &destString, bool show_equality)
@@ -96,55 +145,63 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
     cons* c;
     if (!t)
     {
-        destString += "[BLANK TEST]";
+        destString += "{empty test}";
 
         return;
     }
 
-    if (t->type == EQUALITY_TEST)
+    switch (t->type)
     {
-        if (show_equality)
-        {
-            destString += test_type_to_string_brief(t->type);
-        }
-        destString += t->data.referent->to_string(false);
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        destString += "{ ";
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
+        case EQUALITY_TEST:
+            if (show_equality)
+            {
+                destString += test_type_to_string(t->type);
+            }
+            destString += t->data.referent->to_string(false);
+            break;
+        case CONJUNCTIVE_TEST:
+            destString += "{ ";
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
 
-            this->test_to_string(static_cast<test>(c->first), destString, show_equality);
+                this->test_to_string(static_cast<test>(c->first), destString, show_equality);
+                destString += ' ';
+            }
+            destString += '}';
+            break;
+        case NOT_EQUAL_TEST:
+        case LESS_TEST:
+        case GREATER_TEST:
+        case LESS_OR_EQUAL_TEST:
+        case GREATER_OR_EQUAL_TEST:
+        case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
+            destString += test_type_to_string(t->type);
             destString += ' ';
-        }
-        destString += '}';
+            destString += t->data.referent->to_string(false);
+            break;
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+            destString += test_type_to_string(t->type);
+            break;
+        case DISJUNCTION_TEST:
+            destString += "<< ";
+            for (c = t->data.disjunction_list; c != NIL; c = c->rest)
+            {
+                destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+                destString += ' ';
+            }
+            destString += ">>";
+            break;
+        default:
+            destString += "{INVALID TEST!}";
+            assert(false);
+            break;
     }
-    else if (test_has_referent(t))
-    {
-        destString += test_type_to_string_brief(t->type);
-        destString += t->data.referent->to_string(false);
-    }
-    else if (t->type == DISJUNCTION_TEST)
-    {
-        destString += "<< ";
-        for (c = t->data.disjunction_list; c != NIL; c = c->rest)
-        {
-            destString += static_cast<symbol_struct*>(c->first)->to_string(false);
-            destString += ' ';
-        }
-        destString += ">>";
-    }
-    else if (t->type == GOAL_ID_TEST)
-    {
-        destString += "state";
-    }
-    else if (t->type == IMPASSE_ID_TEST)
-    {
-        destString += "impasse";
-    } else {
-        destString += "[INVALID TEST!!!]";
-    }
+
     return;
 }
 
@@ -199,15 +256,28 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
-void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
+void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size)
+{
+    std::string lStr;
+    Output_Manager* output_manager = &Output_Manager::Get_OM();
+
+    output_manager->rhs_value_to_string(rv, lStr);
+    if (!lStr.empty())
+    {
+        strcpy(dest, lStr.c_str());
+        dest[dest_size - 1] = 0; /* ensure null termination */
+    }
+}
+
+void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
     cons* c;
-    list* fl;
+    cons* fl;
     rhs_function* rf;
 
-    if (!rv)
+    if (!rhs_value_true_null(rv))
     {
         destString += '#';
     }
@@ -231,7 +301,7 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             }
         }
         if (m_print_identity_effective && rsym->o_id) {
-            sprinta_sf(thisAgent, destString, " (%u)", rsym->o_id);
+            sprint_sf(destString, " [%u]", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -246,12 +316,12 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
             {
                 destString += sym->to_string(false);
             } else {
-                destString += "[STI-RETE]";
+                destString += "[RETE-loc]";
             }
         }
         else
         {
-            destString += "[STI]";
+            destString += "[RETE-loc]";
         }
     }
     else
@@ -264,14 +334,25 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         destString += '(';
         if (rf->name)
         {
-            destString += rf->name->to_string(false);
+            if (!strcmp(rf->name->sc->name, "+"))
+            {
+                destString.push_back('+');
+            }
+            else if (!strcmp(rf->name->sc->name, "-"))
+            {
+                destString.push_back('-');
+            }
+            else
+            {
+                destString.append(rf->name->to_string(true));
+            }
         } else {
-            destString += '#';
+            destString += "UNKNOWN_FUNCTION";
         }
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w, false);
+            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, pEmptyStringForNullIdentity);
         }
         destString += ')';
     }
@@ -284,22 +365,22 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     {
         if (m_pre_string) destString += m_pre_string;
         destString += "(rhs_function ";
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';
-        rhs_value_to_string(thisAgent, a->id, destString);
+        rhs_value_to_string(a->id, destString);
         destString += " ^";
-        rhs_value_to_string(thisAgent, a->attr, destString);
+        rhs_value_to_string(a->attr, destString);
         destString += ' ';
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += " ";
         destString += preference_to_char(a->preference_type);
         if (a->referent)
         {
             destString += " ";
-            rhs_value_to_string(thisAgent, a->referent, destString);
+            rhs_value_to_string(a->referent, destString);
         }
         destString += ')';
     }
@@ -325,24 +406,24 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c", pref->id, pref->attr, pref->value, preference_to_char(pref->type));
         if (preference_is_binary(pref->type))
         {
-            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+            sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }
     }
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue;
         if (pref->o_ids.id) {
-            lID = "<" + std::to_string(pref->o_ids.id) + ">";
+            lID = "[" + std::to_string(pref->o_ids.id) + "]";
         } else {
             lID = pref->id->to_string(false);
         }
         if (pref->o_ids.attr) {
-            lAttr = "<" + std::to_string(pref->o_ids.attr) + ">";
+            lAttr = "[" + std::to_string(pref->o_ids.attr) + "]";
         } else {
             lAttr = pref->attr->to_string(false);
         }
         if (pref->o_ids.value) {
-            lValue = "<" + std::to_string(pref->o_ids.value) + ">";
+            lValue = "[" + std::to_string(pref->o_ids.value) + "]";
         } else {
             lValue = pref->value->to_string(false);
         }
@@ -382,7 +463,7 @@ void Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top
 
 void Output_Manager::debug_print_production(TraceMode mode, production* prod)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent) return;
 
     if (prod)
@@ -499,7 +580,7 @@ void add_inst_of_type(agent* thisAgent, unsigned int productionType, std::vector
 
 void Output_Manager::print_all_inst(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
     if (!m_defaultAgent) return;
 
     print( "--- Instantiations: ---\n");
@@ -520,14 +601,14 @@ void Output_Manager::print_all_inst(TraceMode mode)
 
 void Output_Manager::print_saved_test(TraceMode mode, saved_test* st)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     print_sf("  Index: %y  Test: %t\n", st->var, st->the_test);
 }
 
 void Output_Manager::print_saved_test_list(TraceMode mode, saved_test* st)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     while (st)
     {
@@ -540,7 +621,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
 {
     cons* c;;
 
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!var_names)
     {
@@ -563,7 +644,7 @@ void Output_Manager::print_varnames(TraceMode mode, varnames* var_names)
 void Output_Manager::print_varnames_node(TraceMode mode, node_varnames* var_names_node)
 {
 
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!var_names_node)
     {
@@ -611,7 +692,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
 
         if (possible_id)
         {
-            newSym = find_identifier(m_defaultAgent, toupper(find_string[0]), strtol(&find_string[1], NULL, 10));
+            newSym = m_defaultAgent->symbolManager->find_identifier(toupper(find_string[0]), strtol(&find_string[1], NULL, 10));
             if (newSym)
             {
                 found = true;
@@ -619,7 +700,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         }
         if (!found && possible_var)
         {
-            newSym = find_variable(m_defaultAgent, find_string);
+            newSym = m_defaultAgent->symbolManager->find_variable(find_string);
             if (newSym)
             {
                 found = true;
@@ -627,7 +708,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         }
         if (!found && possible_sc)
         {
-            newSym = find_str_constant(m_defaultAgent, find_string);
+            newSym = m_defaultAgent->symbolManager->find_str_constant(find_string);
             if (newSym)
             {
                 found = true;
@@ -637,7 +718,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         {
             if (convert >> newInt)
             {
-                newSym = find_int_constant(m_defaultAgent, newInt);
+                newSym = m_defaultAgent->symbolManager->find_int_constant(newInt);
             }
             if (newSym)
             {
@@ -648,7 +729,7 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
         {
             if (convert >> newFloat)
             {
-                newSym = find_float_constant(m_defaultAgent, newFloat);
+                newSym = m_defaultAgent->symbolManager->find_float_constant(newFloat);
             }
             if (newSym)
             {
@@ -660,11 +741,11 @@ void Output_Manager::debug_find_and_print_sym(char* find_string)
     {
         debug_print_sf(DT_DEBUG,
                "%y:\n"
-               "  type     = %s\n"
+               "  type     = %d\n"
                "  refcount = %d\n"
                "  tc_num   = %d\n",
                newSym,
-               newSym->type_string(),
+               newSym->symbol_type,
                newSym->reference_count,
                newSym->tc_num);
     }
@@ -678,7 +759,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 {
     TraceMode mode = * static_cast < TraceMode* >(vMode);
 
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return false;
+    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return false;
 
     Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
     return false;
@@ -686,209 +767,21 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
 void Output_Manager::print_identifiers(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
 
     print("--- Identifiers: ---\n");
-    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->identifier_hash_table, om_print_sym, &mode);
+    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->identifier_hash_table, om_print_sym, &mode);
 }
 
 void Output_Manager::print_variables(TraceMode mode)
 {
-    if (!is_debug_mode_enabled(mode)) return;
+    if (!is_trace_enabled(mode)) return;
 
     if (!m_defaultAgent) return;
 
     print("--- Variables: ---\n");
-    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->variable_hash_table, om_print_sym, &mode);
+    do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->variable_hash_table, om_print_sym, &mode);
 }
 
-void debug_print_db_err(TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-    if (!thisAgent) return;
-
-    print_sysparam_trace(thisAgent, 0, "Debug| Printing database status/errors...\n");
-//  if (thisAgent->debug_params->epmem_commands->get_value() == on)
-//  {
-//    if (!db_err_epmem_db)
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access epmem database because wmg not yet initialized.\n");
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| EpMem DB: %d - %s\n", sqlite3_errcode( db_err_epmem_db->get_db() ),
-//          sqlite3_errmsg( db_err_epmem_db->get_db() ));
-//    }
-//  }
-//  if (thisAgent->debug_params->smem_commands->get_value() == on)
-//  {
-//    if (!db_err_smem_db)
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access smem database because wmg not yet initialized.\n");
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| SMem DB: %d - %s\n", sqlite3_errcode( db_err_smem_db->get_db() ),
-//          sqlite3_errmsg( db_err_smem_db->get_db() ));
-//    }
-//  }
-}
-
-void debug_print_epmem_table(const char* table_name, TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-//    if (!thisAgent) return;
-
-//  if (!db_err_epmem_db)
-//  {
-//    if ((thisAgent->epmem_db) && ( thisAgent->epmem_db->get_status() == soar_module::connected ))
-//    {
-//      db_err_epmem_db = m_defaultAgent->epmem_db;
-//      thisAgent->debug_params->epmem_commands->set_value(on);
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access epmem database because database not yet initialized.\n");
-//      return;
-//    }
-//  }
-//
-//  db_err_epmem_db->print_table(table_name);
-}
-
-void debug_print_smem_table(const char* table_name, TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_debug_mode_enabled(mode)) return;
-    //agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-//    if (!thisAgent) return;
-
-//  if (!db_err_smem_db)
-//  {
-//    if (thisAgent->smem_db && ( thisAgent->smem_db->get_status() == soar_module::connected ))
-//    {
-//      db_err_smem_db = m_defaultAgent->smem_db;
-//      thisAgent->debug_params->smem_commands->set_value(on);
-//    }
-//    else
-//    {
-//      print_trace (thisAgent,0, "Debug| Cannot access smem database because database not yet initialized.\n");
-//      return;
-//    }
-//  }
-//  db_err_smem_db->print_table(table_name);
-}
-
-void Output_Manager::print_current_lexeme(TraceMode mode, soar::Lexer* lexer)
-{
-    std::string lex_type_string;
-
-    if (!is_debug_mode_enabled(mode)) return;
-
-    switch (lexer->current_lexeme.type)
-    {
-        case EOF_LEXEME:
-            lex_type_string = "EOF_LEXEME";
-            break;
-        case IDENTIFIER_LEXEME:
-            lex_type_string = "IDENTIFIER_LEXEME";
-            break;
-        case VARIABLE_LEXEME:
-            lex_type_string = "VARIABLE_LEXEME";
-            break;
-        case STR_CONSTANT_LEXEME:
-            lex_type_string = "STR_CONSTANT_LEXEME";
-            break;
-        case INT_CONSTANT_LEXEME:
-            lex_type_string = "INT_CONSTANT_LEXEME";
-            break;
-        case FLOAT_CONSTANT_LEXEME:
-            lex_type_string = "FLOAT_CONSTANT_LEXEME";
-            break;
-        case L_PAREN_LEXEME:
-            lex_type_string = "L_PAREN_LEXEME";
-            break;
-        case R_PAREN_LEXEME:
-            lex_type_string = "R_PAREN_LEXEME";
-            break;
-        case L_BRACE_LEXEME:
-            lex_type_string = "L_BRACE_LEXEME";
-            break;
-        case R_BRACE_LEXEME:
-            lex_type_string = "R_BRACE_LEXEME";
-            break;
-        case PLUS_LEXEME:
-            lex_type_string = "PLUS_LEXEME";
-            break;
-        case MINUS_LEXEME:
-            lex_type_string = "MINUS_LEXEME";
-            break;
-        case RIGHT_ARROW_LEXEME:
-            lex_type_string = "RIGHT_ARROW_LEXEME";
-            break;
-        case GREATER_LEXEME:
-            lex_type_string = "GREATER_LEXEME";
-            break;
-        case LESS_LEXEME:
-            lex_type_string = "LESS_LEXEME";
-            break;
-        case EQUAL_LEXEME:
-            lex_type_string = "EQUAL_LEXEME";
-            break;
-        case LESS_EQUAL_LEXEME:
-            lex_type_string = "LESS_EQUAL_LEXEME";
-            break;
-        case GREATER_EQUAL_LEXEME:
-            lex_type_string = "GREATER_EQUAL_LEXEME";
-            break;
-        case NOT_EQUAL_LEXEME:
-            lex_type_string = "NOT_EQUAL_LEXEME";
-            break;
-        case LESS_EQUAL_GREATER_LEXEME:
-            lex_type_string = "LESS_EQUAL_GREATER_LEXEME";
-            break;
-        case LESS_LESS_LEXEME:
-            lex_type_string = "LESS_LESS_LEXEME";
-            break;
-        case GREATER_GREATER_LEXEME:
-            lex_type_string = "GREATER_GREATER_LEXEME";
-            break;
-        case AMPERSAND_LEXEME:
-            lex_type_string = "AMPERSAND_LEXEME";
-            break;
-        case AT_LEXEME:
-            lex_type_string = "AT_LEXEME";
-            break;
-        case TILDE_LEXEME:
-            lex_type_string = "TILDE_LEXEME";
-            break;
-        case UP_ARROW_LEXEME:
-            lex_type_string = "UP_ARROW_LEXEME";
-            break;
-        case EXCLAMATION_POINT_LEXEME:
-            lex_type_string = "EXCLAMATION_POINT_LEXEME";
-            break;
-        case COMMA_LEXEME:
-            lex_type_string = "COMMA_LEXEME";
-            break;
-        case PERIOD_LEXEME:
-            lex_type_string = "PERIOD_LEXEME";
-            break;
-        case QUOTED_STRING_LEXEME:
-            lex_type_string = "QUOTED_STRING_LEXEME";
-            break;
-        case DOLLAR_STRING_LEXEME:
-            lex_type_string = "DOLLAR_STRING_LEXEME";
-            break;
-        case NULL_LEXEME:
-            lex_type_string = "NULL_LEXEME";
-            break;
-        default:
-            break;
-    }
-    print_sf( "%s: \"%s\"\n", lex_type_string.c_str(), lexer->current_lexeme.string());
-
-}

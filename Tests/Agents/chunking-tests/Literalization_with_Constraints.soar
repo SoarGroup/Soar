@@ -6,7 +6,7 @@
 #   one should be thrown out.
                                 
 
-learn --on
+chunk always
 watch --learn 2
 
 sp {init

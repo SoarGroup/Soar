@@ -7,15 +7,18 @@
 
 #include "ebc.h"
 #include "agent.h"
+#include "dprint.h"
 #include "instantiation.h"
 #include "condition.h"
 #include "preference.h"
-#include <assert.h>
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "print.h"
 #include "rhs.h"
 #include "xml.h"
-#include "dprint.h"
+
+#include <assert.h>
 
 Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
@@ -27,12 +30,12 @@ Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found o%u in variablization table: %y\n", index_id, iter->second);
+        dprint(DT_VM_MAPS, "...found %u in variablization table: %y\n", index_id, iter->second);
         return iter->second;
     }
     else
     {
-        dprint(DT_VM_MAPS, "...did not find o%u in variablization table.\n", index_id);
+        dprint(DT_VM_MAPS, "...did not find %u in variablization table.\n", index_id);
         dprint_variablization_table(DT_VM_MAPS);
         return NULL;
     }
@@ -47,7 +50,7 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
            instantiated_sym, pIdentity, variable);
 
     (*o_id_to_var_map)[pIdentity] = variable;
-    symbol_add_ref(thisAgent, variable);
+    thisAgent->symbolManager->symbol_add_ref(variable);
 
     dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
 }
@@ -78,9 +81,9 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
     var_info = get_variablization(pIdentity);
     if (var_info)
     {
-        symbol_remove_ref(thisAgent, &(*sym));
+        thisAgent->symbolManager->symbol_remove_ref(&(*sym));
         *sym = var_info;
-        symbol_add_ref(thisAgent, var_info);
+        thisAgent->symbolManager->symbol_add_ref(var_info);
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
 
         return;
@@ -91,7 +94,7 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if ((*sym)->is_identifier())
+        if ((*sym)->is_sti())
         {
             char prefix_char = static_cast<char>(tolower((*sym)->id->name_letter));
             if (((prefix_char == 's') || (prefix_char == 'S')) && !(*sym)->id->isa_goal)
@@ -108,11 +111,11 @@ void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pId
             prefix[0] = 'c';
         }
         prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
+        var = thisAgent->symbolManager->generate_new_variable(prefix);
 
         store_variablization((*sym), var, pIdentity);
 
-        symbol_remove_ref(thisAgent, &*sym);
+        thisAgent->symbolManager->symbol_remove_ref(&*sym);
         *sym = var;
         dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
     }
@@ -126,7 +129,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
 
     if (rhs_value_is_funcall(pRhs_val))
     {
-        list* fl = rhs_value_to_funcall_list(pRhs_val);
+        cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
 
         for (c = fl->rest; c != NIL; c = c->rest)
@@ -158,11 +161,11 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     }
     if (!found_variablization && rs->referent->is_sti())
     {
-        /* -- First instance of an unbound rhs var -- */
+        /* -- First time we've encountered an unbound rhs var. -- */
         dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
         prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
         prefix[1] = 0;
-        var = generate_new_variable(thisAgent, prefix);
+        var = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
         store_variablization(rs->referent, var, rs->o_id);
         found_variablization = var;
@@ -170,14 +173,13 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     if (found_variablization)
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
-//        dprint(DT_DEBUG, "(1)... refcount for matched symbol %y: %u\n", rs->referent, rs->referent->reference_count);
         if (pShouldCachedMatchValue)
         {
             add_matched_sym_for_rhs_var(found_variablization, rs->referent);
         }
-        symbol_remove_ref(thisAgent, &rs->referent);
+        thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         rs->referent = found_variablization;
-        symbol_add_ref(thisAgent, found_variablization);
+        thisAgent->symbolManager->symbol_add_ref(found_variablization);
     }
     else
     {
@@ -230,10 +232,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test t)
         if ((t->type == EQUALITY_TEST) &&
             (t->identity && !t->data.referent->is_variable()))
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", t);
-            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t's eq_test is: %t\n", t, t->eq_test);
             variablize_lhs_symbol(&(t->data.referent), t->identity);
-            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's eq_test is: %t\n", t, t->eq_test);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's new eq_test is: %t\n", t, t->eq_test);
         }
     }
 }
@@ -263,9 +264,9 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        symbol_remove_ref(thisAgent, &t->data.referent);
+        thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
         t->data.referent = found_variablization;
-        symbol_add_ref(thisAgent, found_variablization);
+        thisAgent->symbolManager->symbol_add_ref(found_variablization);
     }
     else
     {
@@ -405,10 +406,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
-    symbol_remove_ref(thisAgent, &id_sym);
-    symbol_remove_ref(thisAgent, &attr_sym);
-    symbol_remove_ref(thisAgent, &val_sym);
-    symbol_remove_ref(thisAgent, &ref_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&id_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&val_sym);
+    thisAgent->symbolManager->symbol_remove_ref(&ref_sym);
 
     if (ref_sym->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
     {
@@ -417,6 +418,9 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     else if (ref_sym->symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
     {
         initial_value = ref_sym->fc->value;
+    } else {
+        deallocate_action_list(thisAgent, rhs);
+        return NULL;
     }
 
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
@@ -457,7 +461,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id);
     } else {
-        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
     }
     if (!result->rhs_funcs.attr)
     {
@@ -470,7 +474,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id);
     } else {
-        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
     }
     if (!result->rhs_funcs.value)
     {
@@ -483,7 +487,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id);
     } else {
-        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
+        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
     }
     if (preference_is_binary(result->type))
     {
@@ -497,11 +501,12 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
     }
 
+    dprint_set_indents(DT_RHS_VARIABLIZATION, "");
+    dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
+    dprint_clear_indents(DT_RHS_VARIABLIZATION);
+
     if (variablize)
     {
-        dprint_set_indents(DT_RHS_VARIABLIZATION, "");
-        dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
-        dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
         variablize_rhs_symbol(a->id, true);
         variablize_rhs_symbol(a->attr);
@@ -510,8 +515,9 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         {
             variablize_rhs_symbol(a->referent);
         }
-        dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
     }
+
+    dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
 
     a->next = variablize_results_into_actions(result->next_result, variablize);
     return a;

@@ -32,9 +32,8 @@ template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_p
  *    The eq_test pointer is used to cache the main equality test for an
  *    element in a condition so that we do not have to continually re-scan
  *
- *    Note that conjunctive tests always have a NULL original_test.  Each
- *    constituent test of the conjunctive test contains links to its original
- *    test already --*/
+ *    Note that conjunctive tests always have a NULL identity.  Each
+ *    constituent test of the conjunctive test has its own identity */
 
 typedef struct test_struct
 {
@@ -42,8 +41,8 @@ typedef struct test_struct
     union test_info_union
     {
         Symbol*        referent;         /* for relational tests */
-        ::list*        disjunction_list;   /* for disjunction tests */
-        ::list*        conjunct_list;      /* for conjunctive tests */
+        cons*        disjunction_list;   /* for disjunction tests */
+        cons*        conjunct_list;      /* for conjunctive tests */
     } data;
     test_struct*     eq_test;
     tc_number        tc_num;
@@ -54,24 +53,11 @@ typedef struct test_struct
  *     considered blank when that pointer is nil. --- */
 typedef test_info* test;
 
-/* ----------------------------------------------------------------
-   Returns true iff the test contains a test for a variable
-   symbol.  Assumes test is not a conjunctive one and does not
-   try to search them.
----------------------------------------------------------------- */
-inline bool test_has_referent(test t)
-{
-    return ((t->type != DISJUNCTION_TEST) && (t->type != GOAL_ID_TEST) &&
-            (t->type != IMPASSE_ID_TEST) && (t->type != CONJUNCTIVE_TEST));
-};
-
-
 /* --- Descriptions of these functions can be found in the test.cpp --- */
 char first_letter_from_test(test t);
 bool tests_are_equal(test t1, test t2, bool neg);
 bool tests_identical(test t1, test t2, bool considerIdentity = false);
 bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
-bool test_is_variable(agent* thisAgent, test t);
 test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
 test equality_test_found_in_test(test t);
 
@@ -83,10 +69,10 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = f
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 test copy_test_without_relationals(agent* thisAgent, test t);
 
-void add_test(agent* thisAgent, test* dest_address, test new_test);
+bool add_test(agent* thisAgent, test* dest_address, test new_test);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
 
-::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem);
+cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
@@ -94,10 +80,19 @@ void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num,
 void add_identity_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
-void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
-void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list, bool add_LTIs = false);
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity, tc_number tc, symbol_with_match_list* var_list, bool add_LTIs = false);
+void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity, tc_number tc, symbol_with_match_list* var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
-const char* test_type_to_string(byte test_type);
+
+inline bool test_has_referent(test t)
+{
+    return ((t->type != CONJUNCTIVE_TEST) &&
+            (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) &&
+            (t->type != DISJUNCTION_TEST) &&
+            (t->type != SMEM_LINK_UNARY_TEST) &&
+            (t->type != SMEM_LINK_UNARY_NOT_TEST));
+};
 
 #endif /* TEST_H_ */

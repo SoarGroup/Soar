@@ -8,18 +8,21 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "decide.h"
 #include "dprint.h"
+#include "ebc_settings.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
+#include "production.h"
 #include "print.h"
 #include "rhs.h"
-#include "ebc_settings.h"
 #include "soar_instance.h"
 #include "test.h"
 #include "xml.h"
+
+#include <assert.h>
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
@@ -36,14 +39,14 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
 
     /* Create data structures used for EBC */
-    o_id_to_var_map = new id_to_sym_map_type();
-    instantiation_identities = new inst_to_id_map_type();
-    id_to_rule_sym_debug_map = new id_to_sym_map_type();
+    o_id_to_var_map = new id_to_sym_map();
+    instantiation_identities = new inst_to_id_map();
+    id_to_rule_sym_debug_map = new id_to_sym_map();
     constraints = new constraint_list();
-    attachment_points = new attachment_points_map_type();
-    unification_map = new id_to_id_map_type();
+    attachment_points = new attachment_points_map();
+    unification_map = new id_to_id_map();
     cond_merge_map = new triple_merge_map();
-    rhs_var_to_match_map = new sym_to_sym_map_type();
+    rhs_var_to_match_map = new sym_to_sym_map();
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
@@ -125,11 +128,11 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_EXCEPT] &&
             member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
-            print(thisAgent,  message.str().c_str());
+            thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
 //            chunk_history += "Did not attempt to learn a chunk for match of ";
 //            chunk_history += inst->prod_name->to_string();
@@ -144,11 +147,11 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_ONLY]  &&
             !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
-        if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";
-            print(thisAgent,  message.str().c_str());
+            thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
 //            chunk_history += "Did not attempt to learn a chunk for match of ";
 //            chunk_history += inst->prod_name->to_string();
@@ -168,7 +171,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     {
         std::ostringstream message;
         message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " is not the bottom state";
-        print(thisAgent,  message.str().c_str());
+        thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
         xml_generate_verbose(thisAgent, message.str().c_str());
 //        chunk_history += "Did not attempt to learn a chunk for match of ";
 //        chunk_history += inst->prod_name->to_string();
@@ -219,7 +222,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         case numberedFormat:
         {
             increment_counter(chunk_count);
-            return (generate_new_str_constant(thisAgent, rule_prefix.c_str(), &(chunk_count)));
+            return (thisAgent->symbolManager->generate_new_str_constant(rule_prefix.c_str(), &(chunk_count)));
         }
         case ruleFormat:
         {
@@ -246,14 +249,14 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                     case NO_CHANGE_IMPASSE_TYPE:
                     {
                         Symbol* sym;
-                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->attribute_symbol);
+                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->symbolManager->soarSymbols.attribute_symbol);
                         if (sym)
                         {
-                            if (sym == thisAgent->operator_symbol)
+                            if (sym == thisAgent->symbolManager->soarSymbols.operator_symbol)
                             {
                                 lImpasseName = "OpNoChange";
                             }
-                            else if (sym == thisAgent->state_symbol)
+                            else if (sym == thisAgent->symbolManager->soarSymbols.state_symbol)
                             {
                                 lImpasseName = "StateNoChange";
                             }
@@ -306,23 +309,23 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     lImpasseName.erase();
     if (lName.str().empty()) { return NULL; }
 
-    if (find_str_constant(thisAgent, lName.str().c_str()))
+    if (thisAgent->symbolManager->find_str_constant(lName.str().c_str()))
     {
         uint64_t collision_count = 1;
         std::stringstream newLName;
 
-        print(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
         xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {
             newLName.str("");
             newLName << lName.str() << "-" << collision_count++;
         }
-        while (find_str_constant(thisAgent, newLName.str().c_str()));
+        while (thisAgent->symbolManager->find_str_constant(newLName.str().c_str()));
         lName.str(newLName.str());
         newLName.str("");
     }
 
-    generated_name = make_str_constant(thisAgent, lName.str().c_str());
+    generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
     return generated_name;
 }

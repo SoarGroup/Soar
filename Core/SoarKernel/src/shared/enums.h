@@ -8,7 +8,7 @@
 #ifndef ENUMS_H_
 #define ENUMS_H_
 
-typedef unsigned char byte;
+#include "constants.h"
 
 /* ------------------------- debug trace channels -----------------------------
  *
@@ -65,9 +65,29 @@ enum TraceMode
     DT_UNIFY_SINGLETONS = 44,
     DT_EXTRA_RESULTS = 45,
     DT_PARSER_PROMOTE = 46,
+    DT_SMEM_INSTANCE = 47,
     num_trace_modes
 };
 
+enum Decider_settings {
+    DECIDER_MAX_GP,
+    DECIDER_MAX_DC_TIME,
+    DECIDER_MAX_ELABORATIONS,
+    DECIDER_MAX_GOAL_DEPTH,
+    DECIDER_MAX_MEMORY_USAGE,
+    DECIDER_MAX_NIL_OUTPUT_CYCLES,
+    DECIDER_STOP_PHASE,
+    DECIDER_WAIT_SNC,
+    num_decider_settings
+};
+
+enum Output_sysparams {
+    OM_ECHO_COMMANDS,
+    OM_WARNINGS,
+    OM_VERBOSE,
+    OM_PRINT_DEPTH,
+    num_output_sysparams
+};
 enum EBCLearnChoices { ebc_always, ebc_never, ebc_only, ebc_except };
 
 enum ChunkingSettings {
@@ -79,6 +99,7 @@ enum ChunkingSettings {
     SETTING_EBC_BOTTOM_ONLY,
     SETTING_EBC_INTERRUPT,
     SETTING_EBC_INTERRUPT_FAILURE,
+    SETTING_EBC_INTERRUPT_WATCHED,
     SETTING_EBC_UTILITY_MODE,
     SETTING_EBC_IDENTITY_VRBLZ,
     SETTING_EBC_CONSTRAINTS,
@@ -86,7 +107,6 @@ enum ChunkingSettings {
     SETTING_EBC_OSK,
     SETTING_EBC_REPAIR_LHS,
     SETTING_EBC_REPAIR_RHS,
-    SETTING_EBC_REPAIR_PROMOTION,
     SETTING_EBC_MERGE,
     SETTING_EBC_USER_SINGLETONS,
     SETTING_EBC_ALLOW_LOCAL_NEGATIONS,
@@ -94,7 +114,6 @@ enum ChunkingSettings {
     SETTING_EBC_ALLOW_OPAQUE,
     SETTING_EBC_ALLOW_PROB,
     SETTING_EBC_ALLOW_CONFLATED,
-    SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT,
     SETTING_EBC_ALLOW_LOCAL_PROMOTION,
     num_ebc_settings
  };
@@ -106,7 +125,17 @@ enum BTSourceType {
     BT_Normal
 };
 
-enum visualizationObjectType {
+enum visMemoryFormat {
+    viz_node,
+    viz_record
+};
+
+enum visRuleFormat {
+    viz_name,
+    viz_full
+};
+
+enum visObjectType {
     viz_inst_record,
     viz_chunk_record,
     viz_simple_inst,
@@ -137,6 +166,7 @@ enum SoarCannedMessageType {
     ebc_error_no_conditions,
     ebc_progress_repairing,
     ebc_progress_repaired,
+    ebc_progress_validating
 };
 
 enum EBCTraceType {
@@ -284,11 +314,12 @@ enum TestType
     GOAL_ID_TEST = 9,            /* item must be a goal identifier */
     IMPASSE_ID_TEST = 10,        /* item must be an impasse identifier */
     EQUALITY_TEST = 11,
+    SMEM_LINK_TEST = 12,
+    SMEM_LINK_NOT_TEST = 13,
+    SMEM_LINK_UNARY_TEST = 14,
+    SMEM_LINK_UNARY_NOT_TEST = 15,
     NUM_TEST_TYPES
 };
-
-/* Null variablization identity set (used by EBC) */
-#define NULL_IDENTITY_SET 0
 
 /* -------------------------------
       Types of Productions
@@ -336,18 +367,6 @@ enum PreferenceType
     NUMERIC_INDIFFERENT_PREFERENCE_TYPE = 13,
     NUM_PREFERENCE_TYPES = 14,
 };
-
-inline bool preference_is_unary(byte p)
-{
-    return (p < 9);
-}
-inline bool preference_is_binary(byte p)
-{
-    return (p > 8);
-}
-
-extern const char* preference_name[NUM_PREFERENCE_TYPES];
-
 
 /* --- types of conditions --- */
 enum ConditionType {
@@ -424,68 +443,17 @@ enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_
     /* BE LAST.                  */
 } ;
 
-#define NUMBER_OF_MONITORABLE_CALLBACKS (NUMBER_OF_CALLBACKS - 2)
+enum epmem_variable_key
+{
+    var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
+    var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
+    var_next_id
+};
 
-#define PE_PRODS 0
-#define IE_PRODS 1
-#define NO_SAVED_PRODS -1
-
-/* ------------------------------------------------------------------------
-
-                             Impasse Types
-
------------------------------------------------------------------------- */
-
-#define NONE_IMPASSE_TYPE 0                   /* no impasse */
-#define CONSTRAINT_FAILURE_IMPASSE_TYPE 1
-#define CONFLICT_IMPASSE_TYPE 2
-#define TIE_IMPASSE_TYPE 3
-#define NO_CHANGE_IMPASSE_TYPE 4
-
-/* ---------------------------------------
-    Match Set print parameters
---------------------------------------- */
-
-#define MS_ASSERT_RETRACT 0      /* print both retractions and assertions */
-#define MS_ASSERT         1      /* print just assertions */
-#define MS_RETRACT        2      /* print just retractions */
-
-typedef byte ms_trace_type;   /* must be one of the above constants */
-
-/* ---------------------------------------
-    How much information to print about
-    the wmes matching an instantiation
---------------------------------------- */
-
-#define NONE_WME_TRACE    1      /* don't print anything */
-#define TIMETAG_WME_TRACE 2      /* print just timetag */
-#define FULL_WME_TRACE    3      /* print whole wme */
-#define NO_WME_TRACE_SET  4
-
-typedef byte wme_trace_type;   /* must be one of the above constants */
-
-/* -------------------------------
-      Ways to Do User-Select
-------------------------------- */
-
-#define USER_SELECT_BOLTZMANN 1   /* boltzmann algorithm, with respect to temperature */
-#define USER_SELECT_E_GREEDY  2   /* with probability epsilon choose random, otherwise greedy */
-#define USER_SELECT_FIRST     3   /* just choose the first candidate item */
-#define USER_SELECT_LAST      4   /* choose the last item   AGR 615 */
-#define USER_SELECT_RANDOM    5   /* pick one at random */
-#define USER_SELECT_SOFTMAX   6   /* pick one at random, probabalistically biased by numeric preferences */
-#define USER_SELECT_INVALID   7   /* should be 1+ last item, used for validity checking */
-
-/* -------------------------------
-      Exploration constants
-------------------------------- */
-#define EXPLORATION_REDUCTION_EXPONENTIAL   0
-#define EXPLORATION_REDUCTION_LINEAR        1
-#define EXPLORATION_REDUCTIONS              2 // set as greatest reduction + 1
-
-#define EXPLORATION_PARAM_EPSILON           0
-#define EXPLORATION_PARAM_TEMPERATURE       1
-#define EXPLORATION_PARAMS                  2 // set as greatest param + 1
-
+enum smem_query_levels { qry_search, qry_full };
+enum smem_install_type { wm_install, fake_install };
+enum smem_storage_type { store_level, store_recursive }; // ways to store an identifier
+enum smem_cue_element_type { attr_t, value_const_t, value_lti_t, smem_cue_element_type_none };
+enum smem_variable_key { var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode };
 
 #endif /* ENUMS_H_ */

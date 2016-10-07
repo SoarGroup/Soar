@@ -20,6 +20,7 @@
 #include "episodic_memory.h"
 #include "lexer.h"
 #include "print.h"
+#include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
 #include "test.h"
@@ -160,6 +161,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
     mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
+    mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
 
 #ifdef DEBUG_OUTPUT_ON
     debug_set_mode_info(mode_info, true);
@@ -170,15 +172,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
-    epmem_commands = new soar_module::boolean_param("epmem", off, new soar_module::f_predicate<boolean>());
-    smem_commands = new soar_module::boolean_param("smem", off, new soar_module::f_predicate<boolean>());
-    sql_commands = new soar_module::boolean_param("sql", off, new soar_module::f_predicate<boolean>());
-    use_new_chunking = new soar_module::boolean_param("chunk", on, new soar_module::f_predicate<boolean>());
-
-    add(epmem_commands);
-    add(smem_commands);
-    add(sql_commands);
-    add(use_new_chunking);
 }
 
 #include "sqlite3.h"
@@ -267,7 +260,7 @@ bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
     return false;
 }
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
 
 #include "output_manager.h"
 
@@ -285,7 +278,7 @@ std::string get_stacktrace(const char* prefix)
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
     // the stack summarized in the string returned
-    void* addrlist[7];
+    void* addrlist[12];
 
     // retrieve current stack addresses
     int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
@@ -369,7 +362,7 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = find_identifier(thisAgent, 'V', 30);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('V', 30);
             if (sym)
             {
                 dprint(DT_DEBUG, "%y found.\n", sym);
@@ -382,7 +375,31 @@ void debug_test(int type)
             break;
         }
         case 2:
-            dprint(DT_DEBUG, "%8");
+//            rhs_value rv;
+//            rv = reteloc_to_rhs_value(0,0);
+//            dprint(DT_DEBUG, "NULL reteloc: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = reteloc_to_rhs_value(1,0);
+//            dprint(DT_DEBUG, "Non-NULL reteloc: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = funcall_list_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL funcall: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            cons* ls;
+//            allocate_cons(thisAgent, &ls);
+//            rv = funcall_list_to_rhs_value(ls);
+//            dprint(DT_DEBUG, "Non-NULL funcall: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            free_cons(thisAgent, ls);
+//            rv = unboundvar_to_rhs_value(0);
+//            dprint(DT_DEBUG, "NULL unbound: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = unboundvar_to_rhs_value(1);
+//            dprint(DT_DEBUG, "Non-NULL unbound: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = rhs_symbol_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rhs_symbol rs;
+//            rs->referent = NULL;
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Semi-NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rs->referent = thisAgent->symbolManager->find_identifier('S', 1);
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Non-NULL symbol: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
             break;
         case 3:
         {
@@ -392,10 +409,10 @@ void debug_test(int type)
         }
         case 4:
         {
-            Symbol *sym = find_identifier(thisAgent, 'G', 1);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('G', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", static_cast<int64_t>(sym->id->level), static_cast<int64_t>(sym->id->promotion_level));
             } else {
                 dprint(DT_DEBUG, "Could not find G1.\n");
             }
@@ -404,7 +421,7 @@ void debug_test(int type)
 
         case 5:
         {
-            print_internal_symbols(thisAgent);
+//            print_internal_symbols(thisAgent);
             dprint_identifiers(DT_DEBUG);
             break;
         }

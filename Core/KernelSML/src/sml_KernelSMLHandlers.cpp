@@ -30,6 +30,8 @@
 
 #include "agent.h"
 #include "io_link.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #ifndef NO_SVS
     #include "svs_interface.h"
@@ -181,6 +183,25 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 
     /* -- Load user settings for this agent.  Checks current working
      *    directory, dll path and the SOAR_HOME environment variable -- */
+    std::string lFileName("settings.soar");
+    std::string directory = searchForFile(lFileName);
+    if (!directory.empty())
+    {
+        directory.insert(0, "source ");
+        std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
+    } else {
+        pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
+        return false;
+    }
+
+    // Return true if we got an agent constructed.
+    return true ;
+}
+
+std::string searchForFile(std::string& pFileName)
+{
+    /* -- Load user settings for this agent.  Checks current working
+     *    directory, dll path and the SOAR_HOME environment variable -- */
     std::string directory;
     char buf[1024];
     char* ret;
@@ -194,7 +215,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         {
             directory += '/';
         }
-        directory.append("settings.soar");
+        directory += pFileName;
         normalize_separators(directory);
         if (fileExists(directory.c_str()))
         {
@@ -211,7 +232,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
             {
                 directory += '/';
             }
-            directory.append("settings.soar");
+            directory += pFileName;
             normalize_separators(directory);
             if (fileExists(directory.c_str()))
             {
@@ -227,7 +248,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         {
             directory += '/';
         }
-        directory.append("settings.soar");
+        directory += pFileName;
         normalize_separators(directory);
         if (fileExists(directory.c_str()))
         {
@@ -236,23 +257,11 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         ret = buf;
         strcpy(ret, libPath.c_str());
     }
-    if (found_settings)
+    if (!found_settings)
     {
-        directory = "source ";
-        directory.append(ret);
-        if (directory.find_last_of("/\\") != directory.size() - 1)
-        {
-            directory += '/';
-        }
-        directory.append("settings.soar");
-        normalize_separators(directory);
-        pAgentSML->ExecuteCommandLine(directory.c_str());
-    } else {
-        std::cout << "Warning:  Could not find settings.soar file." << std::endl;
+        directory.erase();
     }
-
-    // Return true if we got an agent constructed.
-    return true ;
+    return directory;
 }
 
 // Handle registering and unregistering for kernel events
@@ -524,7 +533,7 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
     // Close log
     if (m_CommandLineInterface.IsLogOpen())
     {
-        m_CommandLineInterface.DoCommand(0, pAgentSML, "clog --close", false, true, 0) ;
+        m_CommandLineInterface.DoCommand(0, pAgentSML, "output log --close", false, true, 0) ;
     }
 
     // Release any wmes or other objects we're keeping
@@ -680,7 +689,7 @@ bool KernelSML::HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pComma
         return InvalidArg(pConnection, pResponse, pCommandName, "Need to specify the production name to check.") ;
     }
 
-    Symbol* sym = find_str_constant(pAgentSML->GetSoarAgent(), pName);
+    Symbol* sym = pAgentSML->GetSoarAgent()->symbolManager->find_str_constant(pName);
 
     bool found = true;
     if (!sym || !(sym->sc->production))
@@ -888,7 +897,7 @@ bool KernelSML::HandleGetAllInput(AgentSML* pAgentSML, char const* /*pCommandNam
     wme* pInputLinkWme = 0;
     for (wme* w = pSoarAgent->io_header->id->input_wmes; w != NIL; w = w->next)
     {
-        if (w->attr == pSoarAgent->input_link_symbol)
+        if (w->attr == pSoarAgent->symbolManager->soarSymbols.input_link_symbol)
         {
             pInputLinkWme = w;
             break;
@@ -1061,6 +1070,13 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
         // Update: to simplify things, I'm removing expand command line.
         // If aliases need to be expanded before going to the filter, we can change this then.
         // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
+
+        /* MToDo | Here's a new function to expand a command.  Did not use for something else
+         *         but it could solve a problem with TclSoarLib.  (Bug is that soar aliases
+         *         prevent Tcl substitution */
+        //        std::string lCmd;
+        //        lCmd = m_CommandLineInterface.ExpandCommand(pCommandName);
+        //        pFunction = m_CommandMap[lCmd.c_str()];
 
         // We'll send the command over as an XML packet, so there's some structure to work with.
         // The current structure is:

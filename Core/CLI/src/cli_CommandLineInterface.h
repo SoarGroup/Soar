@@ -90,6 +90,8 @@ namespace cli
             *************************************************************/
             EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, soarxml::ElementXML* pResponse);
 
+            EXPORT std::string ExpandCommand(const char* pCommand);
+
             /*************************************************************
             * @brief Returns true if the given command should always be echoed (to any listeners)
             *        The current implementation doesn't support aliases or short forms of the commands.
@@ -112,82 +114,67 @@ namespace cli
             bool XMLMoveCurrentToChild(int index) ;
             bool XMLMoveCurrentToLastChild() ;
 
+            /* MToDo | Commands that are consolidated no longer need to be virtual.  Move down */
             virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
-            virtual bool DoAlias(std::vector< std::string >* argv = 0);
+            virtual bool DoAlias(std::vector< std::string >* argv = 0, bool doRemove = false);
             virtual bool DoAllocate(const std::string& pool, int blocks);
             virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
             virtual bool DoCD(const std::string* pDirectory = 0);
-            virtual bool DoChunk(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoCLIMessage(const std::string& pMessage);
+            virtual bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
             virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
             virtual bool DoDebug(std::vector< std::string >* argv = 0);
-            virtual bool DoDefaultWMEDepth(const int* pDepth);
+            virtual bool DoDecide(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoDirs();
             virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
-            virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands);
-            virtual bool DoEditProduction(std::string productionName);
             virtual bool DoEpMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0, const epmem_time_id memory_id = 0);
             virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
-            virtual bool DoExplain(ExplainBitset options, const std::string* pObject, const std::string* pObject2);
+            virtual bool DoExplain(const std::string* pArg = 0, const std::string* pArg2 = 0);
             virtual bool DoFiringCounts(PrintBitset options, const int numberToList = -1, const std::string* pProduction = 0);
-            virtual bool DoGDSPrint();
             virtual bool DoGP(const std::string& productionString);
-            virtual bool DoGPMax(const int& maximum);
             virtual bool DoHelp(const std::vector<std::string>& argv);
             virtual bool DoIndifferentSelection(const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0);
-            virtual bool DoInitSoar();
-            virtual bool DoInternalSymbols();
             virtual bool DoLearn(const LearnBitset& options);
+            virtual bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoLoadLibrary(const std::string& libraryCommand);
             virtual bool DoLS();
             virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
-            virtual bool DoMaxDCTime(const int n = 0);
-            virtual bool DoMaxElaborations(const int n = 0);
-            virtual bool DoMaxGoalDepth(const int n = 0);
-            virtual bool DoMaxMemoryUsage(const int n = 0);
-            virtual bool DoMaxNilOutputCycles(const int n = 0);
             virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
             virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
             virtual bool DoNumericIndifferentMode(bool query, bool usesAvgNIM);
-            virtual bool DoOSupportMode(int mode = -1);
+            virtual bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0);
             virtual bool DoPbreak(const char& mode, const std::string& production);
             virtual bool DoPopD();
-            virtual bool DoPort();
             virtual bool DoPredict();
             virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);
             virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0);
+            virtual bool DoProduction(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoProductionFind(const ProductionFindBitset& options, const std::string& pattern);
             virtual bool DoPushD(const std::string& directory);
             virtual bool DoPWatch(bool query = true, const std::string* pProduction = 0, bool setting = false);
             virtual bool DoPWD();
-            virtual bool DoRand(bool integer, std::string* bound);
             virtual bool DoRemoveWME(uint64_t timetag);
             virtual bool DoReplayInput(eReplayInputMode mode, std::string* pathname);
             virtual bool DoReteNet(bool save, std::string filename);
             virtual bool DoRL(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
+            virtual bool DoSave(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoSelect(const std::string* pOp = 0);
-            virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
-            virtual bool DoSMem(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoSoarNews();
+            virtual bool DoSMem(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
+            virtual bool DoSoar(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
             virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
             virtual bool DoSP(const std::string& production);
             virtual bool DoSRand(uint32_t* pSeed = 0);
             virtual bool DoStats(const StatsBitset& options, int sort = 0);
-            virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0);
+            virtual bool DoSVS(const std::vector<std::string>& args);
+            virtual bool DoTclCommand(const std::string& pMessage);
             virtual bool DoTime(std::vector<std::string>& argv);
             virtual bool DoTimers(bool* pSetting = 0);
-            virtual bool DoUnalias(std::vector<std::string>& argv);
-            virtual bool DoVerbose(bool* pSetting = 0);
-            virtual bool DoVersion();
-            virtual bool DoVisualize(VisualizeBitset options, VisualizeBitset pSettings, const std::string& pObject, const std::string& pObject2, const std::string& pFileName, const std::string& pLineStyle, const std::string& pImageType, int pDepth);
-            virtual bool DoWaitSNC(bool* pSetting = 0);
-            virtual bool DoWarnings(bool* pSetting = 0);
+            virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
             virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
+            virtual bool DoWM(std::vector<std::string>& argv, const std::string& pCmd);
             virtual bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
-            virtual bool DoSVS(const std::vector<std::string>& args);
 
             // utility for kernel SML
             bool IsLogOpen();
@@ -219,6 +206,33 @@ namespace cli
             void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf = true);
+
+            bool ParseAllocate(std::vector< std::string >& argv);
+            bool ParseClog(std::vector< std::string >& argv);
+            bool ParseCTF(std::vector< std::string >& argv);
+            bool ParseExcise(std::vector< std::string >& argv);
+            bool ParseFC(std::vector< std::string >& argv);
+            bool ParseMemories(std::vector< std::string >& argv);
+            bool ParseMatches(std::vector< std::string >& argv);
+            bool ParseMultiAttributes(std::vector< std::string >& argv);
+            bool ParsePBreak(std::vector< std::string >& argv);
+            bool ParsePFind(std::vector< std::string >& argv);
+            bool ParsePWatch(std::vector< std::string >& argv);
+            bool ParseReplayInput(std::vector< std::string >& argv);
+            bool ParseSource(std::vector< std::string >& argv);
+            bool ParseReteLoad(std::vector< std::string >& argv);
+            bool ParseLoadLibrary(std::vector< std::string >& argv);
+            bool ParseCaptureInput(std::vector< std::string >& argv);
+            bool ParseReteSave(std::vector< std::string >& argv);
+            bool ParseIndifferentSelection(std::vector< std::string >& argv);
+            bool ParseNumericIndifferentMode(std::vector< std::string >& argv);
+            bool ParsePredict(std::vector< std::string >& argv);
+            bool ParseSelect(std::vector< std::string >& argv);
+            bool ParseSRand(std::vector< std::string >& argv);
+            bool ParseWMEAdd(std::vector< std::string >& argv);
+            bool ParseWMERemove(std::vector< std::string >& argv);
+            bool ParseWMEWatch(std::vector< std::string >& argv);
+            bool ParseWMA(std::vector< std::string >& argv);
 
         protected:
 

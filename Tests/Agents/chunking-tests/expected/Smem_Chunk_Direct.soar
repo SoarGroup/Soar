@@ -1,19 +1,11 @@
-sp {answer*apply*sub-op*make-chunk*snc*t4-1
-    (@L1 -^value <v*1>)
+sp {answer*apply*sub-op*make-chunk*StateNoChange*t4-1
     (state <s1> ^superstate nil)
     (<s1> ^result1 <l1>)
-    (<l1> ^next @L1)
+    (<l1> ^next <l2>)
+    (<l2> -^value <v*1>)
     -->
-    (<s1> ^result <l2> +)
-    (<l2> ^result1 @L1 +)
-    (<l2> ^result2 <l1> +)
-}
-
-sp {answer*snc*t3-1
-    (@L1 -^value <v*1>)
-    (state <s1> ^superstate nil)
-    (<s1> ^result1 <l1>)
-    (<l1> ^next @L1)
-    -->
-    (@L1 ^value bar +)
+    (<s1> ^result <l3> +)
+    (<l3> ^result1 <l4> +)
+    (<l4> ^value bar +)
+    (<l3> ^result2 <l1> +)
 }

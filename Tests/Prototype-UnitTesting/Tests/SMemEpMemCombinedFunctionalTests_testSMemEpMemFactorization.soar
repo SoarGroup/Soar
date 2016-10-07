@@ -3,7 +3,7 @@
 epmem --set learning on
 smem --set learning on
 
-learn --off
+chunk never
 
 sp {elaboration*original-number-to-factor-mod-two
    (state <s> ^original-number-to-factor <n>)

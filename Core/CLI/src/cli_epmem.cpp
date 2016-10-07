@@ -29,30 +29,38 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     
     if (!pOp)
     {
+        std::string lStr("Episodic memory is ");
+        lStr.append(thisAgent->EpMem->epmem_params->learning->get_value() ? "enabled." : "not enabled.");
+        PrintCLIMessage(lStr.c_str());
+        PrintCLIMessage("Use 'epmem ?' to see EpMem setting and 'help epmem' to learn more about the epmem command.");
+        return true;
+    }
+    else if (pOp == '?')
+    {
         // Print Epmem Settings
         PrintCLIMessage_Header("Episodic Memory Settings", 40);
-        PrintCLIMessage_Item("learning:", thisAgent->epmem_params->learning, 40);
+        PrintCLIMessage_Item("learning:", thisAgent->EpMem->epmem_params->learning, 40);
         PrintCLIMessage_Section("Encoding", 40);
-        PrintCLIMessage_Item("phase:", thisAgent->epmem_params->phase, 40);
-        PrintCLIMessage_Item("trigger:", thisAgent->epmem_params->trigger, 40);
-        PrintCLIMessage_Item("force:", thisAgent->epmem_params->force, 40);
-        PrintCLIMessage_Item("exclusions:", thisAgent->epmem_params->exclusions, 40);
+        PrintCLIMessage_Item("phase:", thisAgent->EpMem->epmem_params->phase, 40);
+        PrintCLIMessage_Item("trigger:", thisAgent->EpMem->epmem_params->trigger, 40);
+        PrintCLIMessage_Item("force:", thisAgent->EpMem->epmem_params->force, 40);
+        PrintCLIMessage_Item("exclusions:", thisAgent->EpMem->epmem_params->exclusions, 40);
         PrintCLIMessage_Section("Storage", 40);
-        PrintCLIMessage_Item("database:", thisAgent->epmem_params->database, 40);
-        PrintCLIMessage_Item("append:", thisAgent->epmem_params->append_db, 40);
-        PrintCLIMessage_Item("path:", thisAgent->epmem_params->path, 40);
-        PrintCLIMessage_Item("lazy-commit:", thisAgent->epmem_params->lazy_commit, 40);
+        PrintCLIMessage_Item("database:", thisAgent->EpMem->epmem_params->database, 40);
+        PrintCLIMessage_Item("append:", thisAgent->EpMem->epmem_params->append_db, 40);
+        PrintCLIMessage_Item("path:", thisAgent->EpMem->epmem_params->path, 40);
+        PrintCLIMessage_Item("lazy-commit:", thisAgent->EpMem->epmem_params->lazy_commit, 40);
         PrintCLIMessage_Section("Retrieval", 40);
-        PrintCLIMessage_Item("balance:", thisAgent->epmem_params->balance, 40);
-        PrintCLIMessage_Item("graph-match:", thisAgent->epmem_params->graph_match, 40);
-        PrintCLIMessage_Item("graph-match-ordering:", thisAgent->epmem_params->gm_ordering, 40);
+        PrintCLIMessage_Item("balance:", thisAgent->EpMem->epmem_params->balance, 40);
+        PrintCLIMessage_Item("graph-match:", thisAgent->EpMem->epmem_params->graph_match, 40);
+        PrintCLIMessage_Item("graph-match-ordering:", thisAgent->EpMem->epmem_params->gm_ordering, 40);
         PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("page-size:", thisAgent->epmem_params->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", thisAgent->epmem_params->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", thisAgent->epmem_params->opt, 40);
-        PrintCLIMessage_Item("timers:", thisAgent->epmem_params->timers, 40);
+        PrintCLIMessage_Item("page-size:", thisAgent->EpMem->epmem_params->page_size, 40);
+        PrintCLIMessage_Item("cache-size:", thisAgent->EpMem->epmem_params->cache_size, 40);
+        PrintCLIMessage_Item("optimization:", thisAgent->EpMem->epmem_params->opt, 40);
+        PrintCLIMessage_Item("timers:", thisAgent->EpMem->epmem_params->timers, 40);
         PrintCLIMessage_Section("Experimental", 40);
-        PrintCLIMessage_Item("merge:", thisAgent->epmem_params->merge, 40);
+        PrintCLIMessage_Item("merge:", thisAgent->EpMem->epmem_params->merge, 40);
         PrintCLIMessage("");
         
         return true;
@@ -85,7 +93,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 'e')
     {
-        bool result = thisAgent->epmem_params->learning->set_string("on");
+        bool result = thisAgent->EpMem->epmem_params->learning->set_string("on");
         
         if (!result)
         {
@@ -100,7 +108,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 'd')
     {
-        bool result = thisAgent->epmem_params->learning->set_string("off");
+        bool result = thisAgent->EpMem->epmem_params->learning->set_string("off");
         
         if (!result)
         {
@@ -115,21 +123,23 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 'g')
     {
-        soar_module::param* my_param = thisAgent->epmem_params->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->EpMem->epmem_params->get(pAttr->c_str());
         if (!my_param)
         {
             return SetError("Invalid epmem parameter.");
         }
         
-        PrintCLIMessage_Item("", my_param, 0);
+        std::string tempString(my_param->get_name());
+        tempString.append(" is");
+        PrintCLIMessage_Item(tempString.c_str(), my_param, 0);
         return true;
     }
     else if (pOp == 'i')
     {
         epmem_reinit_cmd(thisAgent);
         PrintCLIMessage("Episodic memory system re-initialized.");
-        if ((thisAgent->epmem_params->database->get_value() != epmem_param_container::memory) &&
-                (thisAgent->epmem_params->append_db->get_value() == on))
+        if ((thisAgent->EpMem->epmem_params->database->get_value() != epmem_param_container::memory) &&
+                (thisAgent->EpMem->epmem_params->append_db->get_value() == on))
         {
             PrintCLIMessage("Note: There was no effective change to episodic memory contents \n"
                             "      because Soar is storing episodic memory to a database file and append \n"
@@ -153,7 +163,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
     }
     else if (pOp == 's')
     {
-        soar_module::param* my_param = thisAgent->epmem_params->get(pAttr->c_str());
+        soar_module::param* my_param = thisAgent->EpMem->epmem_params->get(pAttr->c_str());
         if (!my_param)
         {
             return SetError("Invalid epmem parameter.");
@@ -164,7 +174,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
             return SetError("Invalid setting for epmem parameter.");
         }
         
-        epmem_param_container::db_choices last_db_mode = thisAgent->epmem_params->database->get_value();
+        epmem_param_container::db_choices last_db_mode = thisAgent->EpMem->epmem_params->database->get_value();
         bool result = my_param->set_string(pVal->c_str());
         
         if (!result)
@@ -173,11 +183,11 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
         }
         else
         {
-            tempString << pAttr->c_str() << " = " << pVal->c_str();
+            tempString << my_param->get_name() << " is now " << pVal->c_str();
             PrintCLIMessage(&tempString);
-            if (thisAgent->epmem_db->get_status() == soar_module::connected)
+            if (thisAgent->EpMem->epmem_db->get_status() == soar_module::connected)
             {
-                if (((!strcmp(pAttr->c_str(), "database")) && (thisAgent->epmem_params->database->get_value() != last_db_mode)) ||
+                if (((!strcmp(pAttr->c_str(), "database")) && (thisAgent->EpMem->epmem_params->database->get_value() != last_db_mode)) ||
                         (!strcmp(pAttr->c_str(), "path")))
                 {
                     PrintCLIMessage("To finalize episodic memory database switch, issue an epmem --init command.\n");
@@ -185,7 +195,7 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
             }
             if (!strcmp(pAttr->c_str(), "append"))
             {
-                if (thisAgent->epmem_params->append_db->get_value() == off)
+                if (thisAgent->EpMem->epmem_params->append_db->get_value() == off)
                 {
                     PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
                                     "         Soar will erase the episodic memory database.\n");
@@ -202,25 +212,25 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
         {
             // print episodic memory statistics
             PrintCLIMessage_Header("Episodic Memory Statistics", 40);
-            PrintCLIMessage_Item("Time:", thisAgent->epmem_stats->time, 40);
-            PrintCLIMessage_Item("SQLite Version:", thisAgent->epmem_stats->db_lib_version, 40);
-            PrintCLIMessage_Item("Memory Usage:", thisAgent->epmem_stats->mem_usage, 40);
-            PrintCLIMessage_Item("Memory Highwater:", thisAgent->epmem_stats->mem_high, 40);
-            PrintCLIMessage_Item("Retrievals:", thisAgent->epmem_stats->ncbr, 40);
-            PrintCLIMessage_Item("Queries:", thisAgent->epmem_stats->cbr, 40);
-            PrintCLIMessage_Item("Nexts:", thisAgent->epmem_stats->nexts, 40);
-            PrintCLIMessage_Item("Prevs:", thisAgent->epmem_stats->prevs, 40);
-            PrintCLIMessage_Item("Last Retrieval WMEs:", thisAgent->epmem_stats->ncb_wmes, 40);
-            PrintCLIMessage_Item("Last Query Positive:", thisAgent->epmem_stats->qry_pos, 40);
-            PrintCLIMessage_Item("Last Query Negative:", thisAgent->epmem_stats->qry_neg, 40);
-            PrintCLIMessage_Item("Last Query Retrieved:", thisAgent->epmem_stats->qry_ret, 40);
-            PrintCLIMessage_Item("Last Query Cardinality:", thisAgent->epmem_stats->qry_card, 40);
-            PrintCLIMessage_Item("Last Query Literals:", thisAgent->epmem_stats->qry_lits, 40);
+            PrintCLIMessage_Item("Time:", thisAgent->EpMem->epmem_stats->time, 40);
+            PrintCLIMessage_Item("SQLite Version:", thisAgent->EpMem->epmem_stats->db_lib_version, 40);
+            PrintCLIMessage_Item("Memory Usage:", thisAgent->EpMem->epmem_stats->mem_usage, 40);
+            PrintCLIMessage_Item("Memory Highwater:", thisAgent->EpMem->epmem_stats->mem_high, 40);
+            PrintCLIMessage_Item("Retrievals:", thisAgent->EpMem->epmem_stats->ncbr, 40);
+            PrintCLIMessage_Item("Queries:", thisAgent->EpMem->epmem_stats->cbr, 40);
+            PrintCLIMessage_Item("Nexts:", thisAgent->EpMem->epmem_stats->nexts, 40);
+            PrintCLIMessage_Item("Prevs:", thisAgent->EpMem->epmem_stats->prevs, 40);
+            PrintCLIMessage_Item("Last Retrieval WMEs:", thisAgent->EpMem->epmem_stats->ncb_wmes, 40);
+            PrintCLIMessage_Item("Last Query Positive:", thisAgent->EpMem->epmem_stats->qry_pos, 40);
+            PrintCLIMessage_Item("Last Query Negative:", thisAgent->EpMem->epmem_stats->qry_neg, 40);
+            PrintCLIMessage_Item("Last Query Retrieved:", thisAgent->EpMem->epmem_stats->qry_ret, 40);
+            PrintCLIMessage_Item("Last Query Cardinality:", thisAgent->EpMem->epmem_stats->qry_card, 40);
+            PrintCLIMessage_Item("Last Query Literals:", thisAgent->EpMem->epmem_stats->qry_lits, 40);
         }
         else
         {
             // check attribute name
-            soar_module::statistic* my_stat = thisAgent->epmem_stats->get(pAttr->c_str());
+            soar_module::statistic* my_stat = thisAgent->EpMem->epmem_stats->get(pAttr->c_str());
             if (!my_stat)
             {
                 return SetError("Invalid statistic.");
@@ -260,12 +270,12 @@ bool CommandLineInterface::DoEpMem(const char pOp, const std::string* pAttr, con
             } bar(m_RawOutput, this, m_Result);
             
             PrintCLIMessage_Header("Episodic Memory Timers", 40);
-            thisAgent->epmem_timers->for_each(bar);
+            thisAgent->EpMem->epmem_timers->for_each(bar);
         }
         else
         {
             // check attribute name
-            soar_module::timer* my_timer = thisAgent->epmem_timers->get(pAttr->c_str());
+            soar_module::timer* my_timer = thisAgent->EpMem->epmem_timers->get(pAttr->c_str());
             if (!my_timer)
             {
                 return SetError("Invalid timer.");

@@ -1,21 +1,21 @@
 #include "condition_record.h"
 
+#include "action_record.h"
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
+#include "instantiation_record.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "rhs.h"
+#include "symbol_manager.h"
 #include "symbol.h"
 #include "test.h"
-#include "output_manager.h"
-#include "visualize.h"
 #include "working_memory.h"
-#include "dprint.h"
-#include "action_record.h"
-#include "explanation_memory.h"
-#include "instantiation_record.h"
-#include "explanation_memory.h"
+#include "visualize.h"
 
 void condition_record::connect_to_action()
 {
@@ -31,9 +31,9 @@ void condition_record::connect_to_action()
 //    cached_pref = NULL;
 }
 
-void condition_record::viz_connect_to_action()
+void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
 {
-    if (parent_instantiation)
+    if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
     {
         assert(parent_action);
         assert(my_instantiation);
@@ -68,21 +68,21 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
 {
     /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
      * we use actual tests if we know it's a literal condition because identifier is STI */
-    if (condition_tests.id->eq_test->data.referent->is_identifier() &&
+    if (condition_tests.id->eq_test->data.referent->is_sti() &&
         !condition_tests.attr->eq_test->data.referent->is_variable() &&
         !condition_tests.attr->eq_test->data.referent->is_variable())
     {
         matched_wme = new symbol_triple(condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent);
-        symbol_add_ref(thisAgent, matched_wme->id);
-        symbol_add_ref(thisAgent, matched_wme->attr);
-        symbol_add_ref(thisAgent, matched_wme->value);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
     } else {
         if (pCond->bt.wme_)
         {
             matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
-            symbol_add_ref(thisAgent, matched_wme->id);
-            symbol_add_ref(thisAgent, matched_wme->attr);
-            symbol_add_ref(thisAgent, matched_wme->value);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
         } else {
             matched_wme = NULL;
         }
@@ -109,7 +109,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     if (pCond->bt.level)
     {
         wme_level_at_firing = pCond->bt.level;
-    } else if (condition_tests.id->eq_test->data.referent->is_identifier())
+    } else if (condition_tests.id->eq_test->data.referent->is_sti())
     {
         assert (condition_tests.id->eq_test->data.referent->id->level);
         wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
@@ -143,9 +143,9 @@ condition_record::~condition_record()
     if (matched_wme)
     {
         dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        symbol_remove_ref(thisAgent, &matched_wme->id);
-        symbol_remove_ref(thisAgent, &matched_wme->attr);
-        symbol_remove_ref(thisAgent, &matched_wme->value);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->id);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->attr);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->value);
         delete matched_wme;
     }
     if (path_to_base)

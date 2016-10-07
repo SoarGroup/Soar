@@ -17,7 +17,8 @@
 #include "ebc.h"
 #include "instantiation.h"
 #include "mem.h"
-#include "print.h"
+#include "preference.h"
+#include "output_manager.h"
 #include "production_reorder.h"
 #include "rete.h"
 #include "reinforcement_learning.h"
@@ -72,7 +73,7 @@ tc_number get_new_tc_number(agent* thisAgent)
     thisAgent->current_tc_number++;
     if (thisAgent->current_tc_number == 0)
     {
-        reset_id_and_variable_tc_numbers(thisAgent);
+        thisAgent->symbolManager->reset_id_and_variable_tc_numbers();
         thisAgent->current_tc_number = 1;
     }
     return thisAgent->current_tc_number;
@@ -98,7 +99,7 @@ tc_number get_new_tc_number(agent* thisAgent)
    given tc number.
 ===================================================================== */
 
-void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
+void unmark_identifiers_and_free_list(agent* thisAgent, cons* id_list)
 {
     cons* next;
     Symbol* sym;
@@ -113,7 +114,7 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
     }
 }
 
-void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
+void unmark_variables_and_free_list(agent* thisAgent, cons* var_list)
 {
     cons* next;
     Symbol* sym;
@@ -143,35 +144,25 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 
 ===================================================================== */
 
-void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc,
-                                      list** var_list, bool add_LTIs)
+void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
-    if (c->type != POSITIVE_CONDITION)
-    {
-        return;
-    }
-    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list, add_LTIs);
-    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list, add_LTIs);
-    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list, add_LTIs);
+    if (c->type != POSITIVE_CONDITION)  return;
+    add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list);
+    add_bound_variables_in_test(thisAgent, c->data.tests.attr_test, tc, var_list);
+    add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list);
 }
 
-void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list, bool add_LTIs = false)
+void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
     for (c = cond_list; c != NIL; c = c->next)
     {
-        add_bound_variables_in_condition(thisAgent, c, tc, var_list, add_LTIs);
+        add_bound_variables_in_condition(thisAgent, c, tc, var_list);
     }
 }
 
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list);
-
-void add_all_variables_in_condition(agent* thisAgent,
-                                    condition* c, tc_number tc,
-                                    list** var_list)
+void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
     if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -185,8 +176,7 @@ void add_all_variables_in_condition(agent* thisAgent,
     }
 }
 
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list)
+void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
@@ -225,8 +215,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
-                      list** id_list, list** var_list)
+void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, cons** id_list, cons** var_list)
 {
     if ((sym->symbol_type == VARIABLE_SYMBOL_TYPE) || (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE))
     {
@@ -234,21 +223,17 @@ void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
     }
 }
 
-void add_test_to_tc(agent* thisAgent, test t, tc_number tc,
-                    list** id_list, list** var_list)
+void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  cons** id_list, cons** var_list)
 {
     cons* c;
 
-    if (!t)
-    {
-        return;
-    }
+    if (!t) return;
     add_symbol_to_tc(thisAgent, t->eq_test->data.referent, tc, id_list, var_list);
 
 }
 
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                    list** id_list, list** var_list)
+                    cons** id_list, cons** var_list)
 {
     if (c->type == POSITIVE_CONDITION)
     {
@@ -258,12 +243,10 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
 }
 
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                      list** id_list, list** var_list)
+                      cons** id_list, cons** var_list)
 {
-    if (a->type != MAKE_ACTION)
-    {
-        return;
-    }
+    if (a->type != MAKE_ACTION) return;
+
     add_symbol_to_tc(thisAgent, rhs_value_to_symbol(a->id), tc, id_list, var_list);
     if (rhs_value_is_symbol(a->value))
     {
@@ -286,7 +269,7 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
     condition* c;
     bool anything_changed;
     bool result;
-    list* new_ids, *new_vars;
+    cons* new_ids, *new_vars;
 
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -343,99 +326,6 @@ bool action_is_in_tc(action* a, tc_number tc)
 
 /* *********************************************************************
 
-                         Variable Generator
-
-   These routines are used for generating new variables.  The variables
-   aren't necessarily "completely" new--they might occur in some existing
-   production.  But we usually need to make sure the new variables don't
-   overlap with those already used in a *certain* production--for instance,
-   when variablizing a chunk, we don't want to introduce a new variable that
-   conincides with the name of a variable already in an NCC in the chunk.
-
-   To use these routines, first call reset_variable_generator(), giving
-   it lists of conditions and actions whose variables should not be
-   used.  Then call generate_new_variable() any number of times; each
-   time, you give it a string to use as the prefix for the new variable's
-   name.  The prefix string should not include the opening "<".
-********************************************************************* */
-
-
-void reset_variable_generator(agent* thisAgent,
-                              condition* conds_with_vars_to_avoid,
-                              action* actions_with_vars_to_avoid)
-{
-    tc_number tc;
-    list* var_list;
-    cons* c;
-    int i;
-
-    /* --- reset counts, and increment the gensym number --- */
-    for (i = 0; i < 26; i++)
-    {
-        thisAgent->gensymed_variable_count[i] = 1;
-    }
-    thisAgent->current_variable_gensym_number++;
-    if (thisAgent->current_variable_gensym_number == 0)
-    {
-        reset_variable_gensym_numbers(thisAgent);
-        thisAgent->current_variable_gensym_number = 1;
-    }
-
-    /* --- mark all variables in the given conds and actions --- */
-    tc = get_new_tc_number(thisAgent);
-    var_list = NIL;
-    add_all_variables_in_condition_list(thisAgent, conds_with_vars_to_avoid, tc, &var_list);
-    add_all_variables_in_action_list(thisAgent, actions_with_vars_to_avoid, tc, &var_list);
-    for (c = var_list; c != NIL; c = c->rest)
-    {
-        static_cast<Symbol*>(c->first)->var->gensym_number = thisAgent->current_variable_gensym_number;
-    }
-    free_list(thisAgent, var_list);
-}
-
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix)
-{
-#define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */
-    char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
-    Symbol* New;
-    char first_letter;
-
-    first_letter = *prefix;
-    if (isalpha(first_letter))
-    {
-        if (isupper(first_letter))
-        {
-            first_letter = static_cast<char>(tolower(first_letter));
-        }
-    }
-    else
-    {
-        first_letter = 'v';
-    }
-
-    while (true)
-    {
-        SNPRINTF(name, GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
-                 static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter - 'a']++));
-        name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-
-        New = make_variable(thisAgent, name);
-        if (New->var->gensym_number != thisAgent->current_variable_gensym_number)
-        {
-            break;
-        }
-        /* -- A variable with that name already existed.  make_variable just returned it and
-         *    incremented its refcount, so reverse that refcount addition and try again. -- */
-        symbol_remove_ref(thisAgent, &New);
-    }
-
-    New->var->current_binding_value = NIL;
-    New->var->gensym_number = thisAgent->current_variable_gensym_number;
-    return New;
-}
-
-/* *********************************************************************
-
                          Production Management
 
     Make_production() does reordering, compile-time o-support calc's,
@@ -466,16 +356,25 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 {
     tc_number tc;
 
-    reset_variable_generator(thisAgent, *lhs_top, *rhs_top);
+    thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
-    add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL, true);
+    add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
     {
+        /* If there are problems on the LHS, we need the ungrounded_syms
+         * from them, before we return.  So we call, reorder_lhs too.
+         * Note ungrounded_syms is null when not called for a chunk. */
+        if (ungrounded_syms)
+        {
+            reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
+        }
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
     if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
     {
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
 
@@ -496,25 +395,10 @@ production* make_production(agent*          thisAgent,
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-#ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
-        calculate_compile_time_o_support(*lhs_top, *rhs_top);
-#ifdef DEBUG_CT_OSUPPORT
-        for (a = *rhs_top; a != NIL; a = a->next)
-            if ((a->type == MAKE_ACTION) && (a->support == UNKNOWN_SUPPORT))
-            {
-                break;
-            }
-        if (a)
-        {
-            print_with_symbols(thisAgent, "\nCan't classify %y\n", name);
-        }
-#endif
-#else
         for (a = *rhs_top; a != NIL; a = a->next)
         {
             a->support = UNKNOWN_SUPPORT;
         }
-#endif
     }
     else
     {
@@ -532,9 +416,8 @@ production* make_production(agent*          thisAgent,
 
     if (name->sc->production)
     {
-        print(thisAgent,  "Internal error: make_production called with name %s\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: make_production called with name %s\nfor which a production already exists.\n",
               thisAgent->name_of_production_being_reordered);
-        print(thisAgent,  "for which a production already exists\n");
     }
     name->sc->production = p;
     p->documentation = NIL;
@@ -592,8 +475,8 @@ void deallocate_production(agent* thisAgent, production* prod)
     }
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
-    deallocate_symbol_list_removing_references(thisAgent, prod->rhs_unbound_variables);
-    symbol_remove_ref(thisAgent, &prod->name);
+    thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
+    thisAgent->symbolManager->symbol_remove_ref(&prod->name);
     free_memory_block_for_string(thisAgent, prod->original_rule_name);
     if (prod->documentation)
     {
@@ -628,9 +511,9 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     remove_from_dll(thisAgent->all_productions_of_type[prod->type], prod, next, prev);
 
     // Remove reference from apoptosis object store
-    if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->rl_params) && (thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
+    if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->RL->rl_params) && (thisAgent->RL->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
     {
-        thisAgent->rl_prods->remove_object(prod);
+        thisAgent->RL->rl_prods->remove_object(prod);
     }
 
     // Remove RL-related pointers to this production
@@ -642,7 +525,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     thisAgent->num_productions_of_type[prod->type]--;
     if (print_sharp_sign)
     {
-        print(thisAgent,  "#");
+        thisAgent->outputManager->printa(thisAgent,  "#");
     }
     if (prod->p_node)
     {

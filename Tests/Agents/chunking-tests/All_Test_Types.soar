@@ -5,7 +5,7 @@
 #-  RHS actions with literals that are the same symbols
 #   as were variablized. 
 srand 23
-learn --on
+chunk always
 
 sp {init-superstate
     (state <s> ^superstate nil)

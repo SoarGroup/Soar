@@ -79,9 +79,9 @@ inline Symbol* varnames_to_one_var(varnames* x)
 {
     return reinterpret_cast<Symbol*>(x);
 }
-inline list* varnames_to_var_list(varnames* x)
+inline cons* varnames_to_var_list(varnames* x)
 {
-    return reinterpret_cast<list*>(static_cast<char*>(x) - 1);
+    return reinterpret_cast<cons*>(static_cast<char*>(x) - 1);
 }
 
 /* --- tells where to find a variable --- */
@@ -172,7 +172,7 @@ typedef struct rete_test_struct
     {
         var_location variable_referent;   /* for relational tests to a variable */
         Symbol* constant_referent;        /* for relational tests to a constant */
-        list* disjunction_list;           /* list of symbols in disjunction test */
+        cons* disjunction_list;           /* list of symbols in disjunction test */
     } data;
     struct rete_test_struct* next; /* next in list of tests at the node */
 } rete_test;
@@ -260,9 +260,6 @@ typedef struct rete_node_struct
     } b;
 } rete_node;
 
-//
-// 255 == ERROR_TEST_TYPE.  I use 255 here for brevity.
-//
 /* --- for the last two (i.e., the relational tests), we add in one of
        the following, to specifiy the kind of relation --- */
 #define RELATIONAL_EQUAL_RETE_TEST            0x00
@@ -272,6 +269,8 @@ typedef struct rete_node_struct
 #define RELATIONAL_LESS_OR_EQUAL_RETE_TEST    0x04
 #define RELATIONAL_GREATER_OR_EQUAL_RETE_TEST 0x05
 #define RELATIONAL_SAME_TYPE_RETE_TEST        0x06
+#define RELATIONAL_SMEM_LINK_TEST             0x07
+#define RELATIONAL_SMEM_LINK_NOT_TEST         0x08
 
 /* --- types of tests found at beta nodes --- */
 #define CONSTANT_RELATIONAL_RETE_TEST 0x00
@@ -279,8 +278,12 @@ typedef struct rete_node_struct
 #define DISJUNCTION_RETE_TEST         0x20
 #define ID_IS_GOAL_RETE_TEST          0x30
 #define ID_IS_IMPASSE_RETE_TEST       0x31
+#define UNARY_SMEM_LINK_RETE_TEST     0x40
+#define UNARY_SMEM_LINK_NOT_RETE_TEST 0x41
+
 //#define test_is_constant_relational_test(x) (((x) & 0xF0)==0x00)
 //#define test_is_variable_relational_test(x) (((x) & 0xF0)==0x10)
+//#define kind_of_relational_test(x) ((x) & 0x0F)
 
 inline bool test_is_constant_relational_test(byte x)
 {
@@ -292,19 +295,9 @@ inline bool test_is_variable_relational_test(byte x)
     return (((x) & 0xF0) == VARIABLE_RELATIONAL_RETE_TEST);
 }
 
-
-//#define kind_of_relational_test(x) ((x) & 0x0F)
-//#define test_is_not_equal_test(x) (((x)==0x01) || ((x)==0x11))
-
 inline byte kind_of_relational_test(byte x)
 {
     return ((x) & 0x0F);
-}
-
-inline bool test_is_not_equal_test(byte x)
-{
-    return (((x) == (CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST))
-            || ((x) == (VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST)));
 }
 
 typedef struct three_field_varnames_struct
@@ -396,6 +389,9 @@ extern void excise_production_from_rete(agent* thisAgent, production* p);
 extern void add_wme_to_rete(agent* thisAgent, wme* w);
 extern void remove_wme_from_rete(agent* thisAgent, wme* w);
 
+void retesave_eight_bytes(uint64_t w, FILE* f);
+void retesave_string(const char* s, FILE* f);
+
 extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         struct rete_node_struct* p_node,
         struct token_struct* tok,
@@ -465,6 +461,12 @@ inline TestType relational_test_type_to_test_type(byte test_type)
         case RELATIONAL_SAME_TYPE_RETE_TEST:
             return SAME_TYPE_TEST;
             break;
+        case RELATIONAL_SMEM_LINK_TEST:
+            return SMEM_LINK_TEST;
+            break;
+        case RELATIONAL_SMEM_LINK_NOT_TEST:
+            return SMEM_LINK_NOT_TEST;
+            break;
         default:
             break;
     }
@@ -493,6 +495,12 @@ inline byte test_type_to_relational_test_type(byte test_type)
             break;
         case SAME_TYPE_TEST:
             return RELATIONAL_SAME_TYPE_RETE_TEST;
+            break;
+        case SMEM_LINK_TEST:
+            return RELATIONAL_SMEM_LINK_TEST;
+            break;
+        case SMEM_LINK_NOT_TEST:
+            return RELATIONAL_SMEM_LINK_NOT_TEST;
             break;
         default:
             break;

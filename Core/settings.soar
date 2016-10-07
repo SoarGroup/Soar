@@ -13,39 +13,31 @@
 ################
 # User aliases #
 ################
-alias cnf               chunk-name-format
-alias ea                excise --all
-alias ec                excise --chunks
-alias ep                epmem
-alias eps               epmem -S
-alias m                 matches
-alias pcf               print -cfi
-alias pf                production-find
-alias ps                print --stack
-alias quit              exit
-alias r                 run
-alias s                 run 1
-alias sm                smem
-alias sms               smem -S
-alias wmes              print -depth 0 -internal
-
-# Backward compatibility aliases
-alias max-chunks chunk max-chunks
-alias chunk-name-format chunk naming-style
+#alias ea                excise --all
+#alias ec                excise --chunks
+#alias ep                epmem
+#alias m                 production matches
+#alias pcf               print -cf
+#alias pcfi              print -cfi
+#alias sm                smem
+#alias sms               smem -S
 
 #################
 # Soar Settings #
 #################
 
-max-goal-depth 23
-default-wme-depth 2
+soar max-goal-depth 23
+#output print-depth 2
 
 ###################
 # Module Settings #
 ###################
-# cli tcl on
-# epmem -e
-# smem -e
-# learn -e
+# chunk always
+# explain all
+# epmem on
+# smem --on
+# rl --on
+# wma --on
+# tcl on
 
 echo "\nUser settings loaded from settings.soar..."

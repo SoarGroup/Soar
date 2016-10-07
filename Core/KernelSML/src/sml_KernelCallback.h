@@ -27,7 +27,7 @@
 // Forward definitions for kernel
 typedef struct agent_struct agent;
 typedef struct symbol_struct Symbol;
-typedef struct cons_struct list;
+typedef struct cons_struct cons;
 
 namespace sml
 {

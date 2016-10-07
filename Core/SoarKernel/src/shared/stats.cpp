@@ -2,126 +2,11 @@
 
 #include "agent.h"
 #include "misc.h"
-#include "print.h"
+#include "output_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
 #include <time.h>
-
-#ifdef REAL_TIME_BEHAVIOR
-/* RMJ */
-void init_real_time(agent* thisAgent)
-{
-    thisAgent->real_time_tracker =
-        (struct timeval*) malloc(sizeof(struct timeval));
-    timerclear(thisAgent->real_time_tracker);
-    thisAgent->real_time_idling = false;
-    current_real_time =
-        (struct timeval*) malloc(sizeof(struct timeval));
-}
-void test_for_input_delay(agent* thisAgent)
-{
-    /* RMJ; For real-time behavior, don't start any new decision phase
-     * until the specified "artificial" time step has passed
-     */
-    start_timer(thisAgent, current_real_time);
-    if (timercmp(current_real_time, thisAgent->real_time_tracker, <))
-    {
-        if (!(thisAgent->real_time_idling))
-        {
-            thisAgent->real_time_idling = true;
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
-            {
-                print_phase(thisAgent, "\n--- Real-time Idle Phase ---\n");
-            }
-        }
-        break;
-    }
-    /* Artificial time delay has passed.
-     * Reset new delay and start the decision phase with input
-    */
-    thisAgent->real_time_tracker->tv_sec = current_real_time->tv_sec;
-    thisAgent->real_time_tracker->tv_usec =
-        current_real_time->tv_usec +
-        1000 * thisAgent->sysparams[REAL_TIME_SYSPARAM];
-    if (thisAgent->real_time_tracker->tv_usec >= 1000000)
-    {
-        thisAgent->real_time_tracker->tv_sec +=
-            thisAgent->real_time_tracker->tv_usec / 1000000;
-        thisAgent->real_time_tracker->tv_usec %= 1000000;
-    }
-    thisAgent->real_time_idling = false;
-}
-#endif // REAL_TIME_BEHAVIOR
-
-#ifdef ATTENTION_LAPSE
-/* RMJ */
-int64_t init_lapse_duration(struct timeval* tv)
-{
-    return 0;
-}
-void init_attention_lapse(void)
-{
-    thisAgent->attention_lapse_tracker =
-        (struct timeval*) malloc(sizeof(struct timeval));
-    wake_from_attention_lapse();
-#ifndef REAL_TIME_BEHAVIOR
-    current_real_time =
-        (struct timeval*) malloc(sizeof(struct timeval));
-#endif // REAL_TIME_BEHAVIOR
-}
-void start_attention_lapse(int64_t duration)
-{
-    /* Set tracker to time we should wake up */
-    start_timer(thisAgent->attention_lapse_tracker);
-    thisAgent->attention_lapse_tracker->tv_usec += 1000 * duration;
-    if (thisAgent->attention_lapse_tracker->tv_usec >= 1000000)
-    {
-        thisAgent->attention_lapse_tracker->tv_sec +=
-            thisAgent->attention_lapse_tracker->tv_usec / 1000000;
-        thisAgent->attention_lapse_tracker->tv_usec %= 1000000;
-    }
-    thisAgent->attention_lapsing = true;
-}
-void wake_from_attention_lapse(void)
-{
-    /* Set tracker to last time we woke up */
-    start_timer(thisAgent->attention_lapse_tracker);
-    thisAgent->attention_lapsing = false;
-}
-void determine_lapsing(agent* thisAgent)
-{
-    /* RMJ; decide whether to start or finish an attentional lapse */
-    if (thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM])
-    {
-        if (thisAgent->attention_lapsing)
-        {
-            /* If lapsing, is it time to stop? */
-            start_timer(thisAgent, current_real_time);
-            if (cmp(current_real_time, thisAgent->attention_lapse_tracker, >))
-            {
-                wake_from_attention_lapse();
-            }
-        }
-        else
-        {
-            /* If not lapsing, should we start? */
-            lapse_duration = init_lapse_duration(thisAgent->attention_lapse_tracker);
-            if (lapse_duration > 0)
-            {
-                start_attention_lapse(lapse_duration);
-            }
-        }
-    }
-}
-/* RMJ;
-   When doing attentional lapsing, we need a function that determines
-   when (and for how long) attentional lapses should occur.  This
-   will normally be provided as a user-defined TCL procedure.  But
-   we need to put a placeholder function here just to be safe.
-*/
-
-#endif // ATTENTION_LAPSE
 
 void stats_init_db(agent* thisAgent)
 {
@@ -141,7 +26,7 @@ void stats_init_db(agent* thisAgent)
         char buf[256];
         SNPRINTF(buf, 254, "DB ERROR: %s", thisAgent->stats_db->get_errmsg());
 
-        print(thisAgent,  buf);
+        thisAgent->outputManager->printa_sf(thisAgent,  buf);
         xml_generate_warning(thisAgent, buf);
     }
     else

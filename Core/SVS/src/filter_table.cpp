@@ -194,7 +194,7 @@ filter* parse_filter_spec(soar_interface* si, Symbol* root, scene* scn)
     bool fail;
     filter* f = NULL;
     
-    if (!root->is_identifier())
+    if (!root->is_sti())
     {
         string strval;
         long intval;

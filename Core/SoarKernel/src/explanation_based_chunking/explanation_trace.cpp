@@ -13,17 +13,18 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "rete.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
 
 #include <assert.h>
-#include "dprint.h"
 
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,
@@ -212,26 +213,40 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         {
             dprint(DT_ADD_ADDITIONALS, "Creating disjunction test.\n");
             chunk_test = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-            chunk_test->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            chunk_test->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(rt->data.disjunction_list);
             has_referent = false;
         } else {
             if (test_is_constant_relational_test(rt->type))
             {
                 dprint(DT_ADD_ADDITIONALS, "Creating constant relational test.\n");
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+//                if ((test_type == SMEM_LINK_TEST) || (test_type == SMEM_LINK_NOT_TEST))
+//                {
+//                    chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+//                } else {
+                    chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+//                }
             }
             else if (test_is_variable_relational_test(rt->type))
             {
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
                 dprint(DT_ADD_ADDITIONALS, "Creating variable relational test.\n");
-
-                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                    rt->data.variable_referent.field_num,
-                    rt->data.variable_referent.levels_up);
-                chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
-                chunk_test->identity = ref_test->identity;
-                dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+//                if ((test_type == SMEM_LINK_TEST) || (test_type == SMEM_LINK_NOT_TEST))
+//                {
+//                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+//                        rt->data.variable_referent.field_num,
+//                        rt->data.variable_referent.levels_up);
+//                    chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+//                    chunk_test->identity = ref_test->identity;
+//                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+//                } else {
+                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
+                        rt->data.variable_referent.field_num,
+                        rt->data.variable_referent.levels_up);
+                    chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+                    chunk_test->identity = ref_test->identity;
+                    dprint(DT_ADD_ADDITIONALS, "Created relational test for chunk: %t [%g].\n", chunk_test, chunk_test);
+//                }
             }
         }
         if (chunk_test)
@@ -309,8 +324,7 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                             {
                                 /* This is the special case */
                                 check_test->identity = new_test->identity;
-                                dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %s\n", check_test,
-                                    thisAgent->explanationBasedChunker->get_ovar_for_o_id(check_test->identity));
+                                dprint(DT_IDENTITY_PROP, "Copying identity to equality test for add_relational_test special case %t: %u\n", check_test, check_test->identity);
                                 deallocate_test(thisAgent, new_test);
                                 return;
                             }

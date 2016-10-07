@@ -30,6 +30,7 @@
 #include "callback.h"
 #include "decide.h"
 #include "lexer.h"
+#include "output_manager.h"
 #include "print.h"
 #include "production.h"
 #include "slot.h"
@@ -80,7 +81,7 @@ void add_output_function(agent* thisAgent,
     if (soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, output_link_name)
             != NULL)
     {
-        print(thisAgent,  "Error: tried to add_output_function with duplicate name %s\n",
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: tried to add_output_function with duplicate name %s\n",
               output_link_name);
         /* Replaced deprecated control_c_handler with an appropriate assertion */
         //control_c_handler(0);
@@ -146,22 +147,22 @@ void remove_output_function(agent* thisAgent, const char* name)
 
 Symbol* get_new_io_identifier(agent* thisAgent, char first_letter)
 {
-    return make_new_identifier(thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
+    return thisAgent->symbolManager->make_new_identifier(first_letter, TOP_GOAL_LEVEL, NIL);
 }
 
 Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
 {
-    Symbol* id = find_identifier(thisAgent, first_letter, number) ;
+    Symbol* id = thisAgent->symbolManager->find_identifier(first_letter, number) ;
 
     // DJP: The other "make_<type>" methods either make a new object or incremenent the refence
     // on an existing object.  So I'm going to make this method function the same way for identifiers.
     if (id)
     {
-        symbol_add_ref(thisAgent, id);
+        thisAgent->symbolManager->symbol_add_ref(id);
     }
     else
     {
-        id = make_new_identifier(thisAgent, first_letter, TOP_GOAL_LEVEL, NIL);
+        id = thisAgent->symbolManager->make_new_identifier(first_letter, TOP_GOAL_LEVEL, NIL);
     }
 
     return id ;
@@ -169,22 +170,22 @@ Symbol* get_io_identifier(agent* thisAgent, char first_letter, uint64_t number)
 
 Symbol* get_io_str_constant(agent* thisAgent, char const* name)
 {
-    return make_str_constant(thisAgent, name);
+    return thisAgent->symbolManager->make_str_constant(name);
 }
 
 Symbol* get_io_int_constant(agent* thisAgent, int64_t value)
 {
-    return make_int_constant(thisAgent, value);
+    return thisAgent->symbolManager->make_int_constant(value);
 }
 
 Symbol* get_io_float_constant(agent* thisAgent, double value)
 {
-    return make_float_constant(thisAgent, value);
+    return thisAgent->symbolManager->make_float_constant(value);
 }
 
 void release_io_symbol(agent* thisAgent, Symbol* sym)
 {
-    symbol_remove_ref(thisAgent, &sym);
+    thisAgent->symbolManager->symbol_remove_ref(&sym);
 }
 
 wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
@@ -194,7 +195,7 @@ wme* add_input_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
     /* --- a little bit of error checking --- */
     if (!(id && attr && value))
     {
-        print(thisAgent,  "Error: an input routine gave a NULL argument to add_input_wme.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine gave a NULL argument to add_input_wme.\n");
         return NIL;
     }
 
@@ -253,7 +254,7 @@ bool remove_input_wme(agent* thisAgent, wme* w)
     /* --- a little bit of error checking --- */
     if (!w)
     {
-        print(thisAgent,  "Error: an input routine called remove_input_wme on a NULL wme.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine called remove_input_wme on a NULL wme.\n");
         return false;
     }
     for (temp = w->id->id->input_wmes; temp != NIL; temp = temp->next)
@@ -263,8 +264,8 @@ bool remove_input_wme(agent* thisAgent, wme* w)
         }
     if (!temp)
     {
-        print(thisAgent,  "Error: an input routine called remove_input_wme on a wme that\n");
-        print(thisAgent,  "isn't one of the input wmes currently in working memory.\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "Error: an input routine called remove_input_wme on a wme that\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "isn't one of the input wmes currently in working memory.\n");
         return false;
     }
     /* Note: for efficiency, it might be better to use a hash table for the
@@ -319,10 +320,10 @@ void do_input_cycle(agent* thisAgent)
           thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
           thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
           add_input_wme (thisAgent, thisAgent->io_header,
-          make_str_constant(thisAgent, "input-link"),
+          thisAgent->symbolManager->make_str_constant("input-link"),
           thisAgent->io_header_input);
           add_input_wme (thisAgent, thisAgent->io_header,
-          make_str_constant(thisAgent, "output-link"),
+          thisAgent->symbolManager->make_str_constant("output-link"),
           thisAgent->io_header_output);
         */
         /* --- add top state io link before calling input phase callback so
@@ -514,8 +515,8 @@ void update_for_io_wme_change(wme* w)
 }
 
 void inform_output_module_of_wm_changes(agent* thisAgent,
-                                        list* wmes_being_added,
-                                        list* wmes_being_removed)
+                                        cons* wmes_being_added,
+                                        cons* wmes_being_removed)
 {
     cons* c;
     wme* w;
@@ -545,7 +546,7 @@ void inform_output_module_of_wm_changes(agent* thisAgent,
             w->id->to_string(false, id, 100);
             if (!strcmp(id, "I3"))
             {
-                print(thisAgent,  "--> Added to I3, but doesn't register as an OL change!");
+                thisAgent->outputManager->printa_sf(thisAgent,  "--> Added to I3, but doesn't register as an OL change!");
             }
         }
 #endif
@@ -612,7 +613,7 @@ void remove_output_link_tc_info(agent* thisAgent, output_link* ol)
             id->id->associated_output_links = c->rest;
         }
         free_cons(thisAgent, c);
-        symbol_remove_ref(thisAgent, &id);
+        thisAgent->symbolManager->symbol_remove_ref(&id);
     }
 }
 
@@ -632,7 +633,7 @@ void add_id_to_output_link_tc(agent* thisAgent, Symbol* id)
 
     /* --- add id to output_link's list --- */
     push(thisAgent, id, thisAgent->output_link_for_tc->ids_in_tc);
-    symbol_add_ref(thisAgent, id);  /* make sure the id doesn't get deallocated before we
+    thisAgent->symbolManager->symbol_add_ref(id);  /* make sure the id doesn't get deallocated before we
                            have a chance to free the cons cell we just added */
 
     /* --- add output_link to id's list --- */
@@ -942,7 +943,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
         int_val = strtol(input_string, NULL, 10);
         if (errno)
         {
-            print(thisAgent,  "Text Input Error: bad integer (probably too large)\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Text Input Error: bad integer (probably too large)\n");
             return NIL;
         }
         return get_io_int_constant(thisAgent, int_val);
@@ -955,7 +956,7 @@ Symbol* get_io_symbol_from_tio_constituent_string(agent* thisAgent, char* input_
         float_val = strtod(input_string, NULL);
         if (errno)
         {
-            print(thisAgent,  "Text Input Error: bad floating point number\n");
+            thisAgent->outputManager->printa_sf(thisAgent,  "Text Input Error: bad floating point number\n");
             return NIL;
         }
         return get_io_float_constant(thisAgent, float_val);

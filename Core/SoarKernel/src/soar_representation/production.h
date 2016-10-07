@@ -17,7 +17,7 @@ typedef struct production_struct
     char*                           filename;                   /* name of source file, or NIL. */
     SupportType                     declared_support;
     action*                         action_list;                /* RHS actions */
-    ::list*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
+    cons*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     uint64_t                        reference_count;
@@ -114,35 +114,17 @@ void init_production_utilities(agent* thisAgent);
 tc_number get_new_tc_number(agent* thisAgent);
 
 void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
-                      ::list** id_list, ::list** var_list);
+                      cons** id_list, cons** var_list);
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                    ::list** id_list, ::list** var_list);
+                    cons** id_list, cons** var_list);
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                      ::list** id_list, ::list** var_list);
+                      cons** id_list, cons** var_list);
 bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
 bool action_is_in_tc(action* a, tc_number tc);
 
-/* --------------------------------------------------------------------
-                         Variable Generator
+void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
+        tc_number tc, cons** var_list);
 
-   These routines are used for generating new variables.  The variables
-   aren't necessarily "completely" new--they might occur in some existing
-   production.  But we usually need to make sure the new variables don't
-   overlap with those already used in a *certain* production--for instance,
-   when variablizing a chunk, we don't want to introduce a new variable that
-   conincides with the name of a variable already in an NCC in the chunk.
-
-   To use these routines, first call reset_variable_generator(), giving
-   it lists of conditions and actions whose variables should not be
-   used.  Then call generate_new_variable() any number of times; each
-   time, you give it a string to use as the prefix for the new variable's
-   name.  The prefix string should not include the opening "<".
--------------------------------------------------------------------- */
-
-void reset_variable_generator(agent* thisAgent,
-                              condition* conds_with_vars_to_avoid,
-                              action* actions_with_vars_to_avoid);
-Symbol* generate_new_variable(agent* thisAgent, const char* prefix);
 
 /* -------------------------------------------------------------------
                          Production Management

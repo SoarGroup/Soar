@@ -2,9 +2,7 @@
 # - 
 
 srand 23
-learn --on
-
-smem --add {(@T1 ^D X )}
+chunk always
 
 sp {init
    (state <s> ^superstate <ss>)
@@ -13,8 +11,8 @@ sp {init
    (<s> ^wme hustle
         ^foo bar
         ^value 3)
-   (<ss> ^mazin <mazin> ^loop <ss>)
-   (<mazin> ^assanie @T1 ^loop2 <ss> ^loop3 <mazin>)
+   (<ss> ^mz <m> ^loop <ss>)
+   (<m> ^loop2 <ss> ^loop3 <m>)
 }
 
 sp {propose

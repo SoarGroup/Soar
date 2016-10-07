@@ -1,0 +1,26 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+import sys
+Import('env', 'g_msvs_variant')
+cli_env = env.Clone()
+
+if sys.platform == 'linux2':
+    # Following flag fixes a bux in Unbuntu 13.10 that prevents it from
+    # properly linking to the pthread and dl libraries needed by TestCLI
+    cli_env.Append(LINKFLAGS = [r'-Wl,--no-as-needed'])
+
+mincli = cli_env.Install('$OUT_DIR', cli_env.Program('minsoar', 'mincli.cpp'))
+cli_env.Alias('oldcli', [mincli])
+
+if 'MSVSProject' in cli_env['BUILDERS']:
+    mincli_proj = cli_env.MSVSProject(
+        target = '#mincli' + cli_env['MSVSPROJECTSUFFIX'],
+        srcs = [cli_env.File('mincli.cpp').srcnode().path],
+        buildtarget = mincli,
+        variant = g_msvs_variant,
+        auto_build_solution = 0,
+    )
+    Import('msvs_projs')
+    msvs_projs.extend([mincli_proj])

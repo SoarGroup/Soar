@@ -426,7 +426,7 @@ NamedEventDataList* CreateStringEventData()
     NamedEventDataList* namedEventData = new NamedEventDataList();
     namedEventData->name = "string";
     
-    namedEventData->eventData.push_back(new EventData(smlEVENT_EDIT_PRODUCTION, "smlEVENT_EDIT_PRODUCTION"));
+    namedEventData->eventData.push_back(new EventData(smlEVENT_TCL_LIBRARY_MESSAGE, "smlEVENT_TCL_LIBRARY_MESSAGE"));
     namedEventData->eventData.push_back(new EventData(smlEVENT_LOAD_LIBRARY, "smlEVENT_LOAD_LIBRARY"));
     
     return namedEventData;

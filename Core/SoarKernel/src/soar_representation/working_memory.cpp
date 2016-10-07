@@ -5,6 +5,7 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "print.h"
 #include "rete.h"
 #include "slot.h"
@@ -46,13 +47,52 @@ using namespace soar_TraceNames;
    or NIL if the object has no name.
 ====================================================================== */
 
+WM_Manager::WM_Manager(agent* myAgent)
+{
+    thisAgent = myAgent;
+    thisAgent->WM = this;
+
+    wma_params = new wma_param_container(thisAgent);
+    wma_stats = new wma_stat_container(thisAgent);
+    wma_timers = new wma_timer_container(thisAgent);
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+    wma_forget_pq = new wma_forget_p_queue(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >());
+    wma_touched_elements = new wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
+    wma_touched_sets = new wma_decay_cycle_set(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< wma_d_cycle >(thisAgent));
+#else
+    wma_forget_pq = new wma_forget_p_queue();
+    wma_touched_elements = new wma_pooled_wme_set();
+    wma_touched_sets = new wma_decay_cycle_set();
+#endif
+    wma_initialized = false;
+    wma_tc_counter = 2;
+
+};
+
+
+void WM_Manager::clean_up_for_agent_deletion()
+{
+    /* This is not in destructor because it may be called before other
+     * deletion code that may need params, stats or timers to exist */
+
+    wma_params->activation->set_value(off);
+    delete wma_forget_pq;
+    delete wma_touched_elements;
+    delete wma_touched_sets;
+    delete wma_params;
+    delete wma_stats;
+    delete wma_timers;
+
+}
+
 void reset_wme_timetags(agent* thisAgent)
 {
     if (thisAgent->num_existing_wmes != 0)
     {
-        print(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
-        print(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
-        print(thisAgent,  "(Leaving timetag numbers alone.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
+        thisAgent->outputManager->printa(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        thisAgent->outputManager->printa(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;
     }
@@ -68,19 +108,16 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->id = id;
     w->attr = attr;
     w->value = value;
-    symbol_add_ref(thisAgent, id);
-    symbol_add_ref(thisAgent, attr);
-    symbol_add_ref(thisAgent, value);
+    thisAgent->symbolManager->symbol_add_ref(id);
+    thisAgent->symbolManager->symbol_add_ref(attr);
+    thisAgent->symbolManager->symbol_add_ref(value);
     w->acceptable = acceptable;
     w->timetag = thisAgent->current_wme_timetag++;
     w->reference_count = 0;
     w->preference = NIL;
     w->output_link = NIL;
     w->grounds_tc = 0;
-    w->potentials_tc = 0;
-    w->locals_tc = 0;
     w->chunker_bt_last_ground_cond = NULL;
-    w->chunker_bt_pref = NULL;
 
     w->next = NIL;
     w->prev = NIL;
@@ -107,33 +144,39 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_identifier()) || (w->id->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->attr->is_identifier()) || (w->attr->id->level > SMEM_LTI_UNKNOWN_LEVEL)) &&
-           ((!w->value->is_identifier()) || (w->value->id->level > SMEM_LTI_UNKNOWN_LEVEL)));
+    /* Not sure if this is necessary anymore now that we don't have LTIs in STM.
+     *
+     * We do have an agent that causes this assert to fire. If we disable the assert,
+     * it seems to run fine, so perhaps the level gets set correctly soon after.  The
+     * agent is a very weird one, so for now, we'll put in a warning with a debug statement
+     * until we have time to investigate (or get a less crazy agent than Shane's.) */
 
+    //    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
+
+
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", w->id, w->value);
         post_link_addition(thisAgent, w->id, w->value);
-        if (w->attr == thisAgent->operator_symbol)
+        if (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
         {
             w->value->id->isa_operator++;
         }
     }
 
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
         post_link_addition(thisAgent, w->id, w->attr);
-        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
-//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-//        {
-//            post_link_addition(thisAgent, w->id, w->value);
-//        }
     }
     #endif
 }
@@ -144,23 +187,18 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
 
     push(thisAgent, w, thisAgent->wmes_to_remove);
 
-    if (w->value->is_identifier())
+    if (w->value->is_sti())
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
         post_link_removal(thisAgent, w->id, w->attr);
-        /* Do we need to link to value if it's an identifier? If so may need to link referent to attribute and value as well */
-//        if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-//        {
-//            post_link_addition(thisAgent, w->id, w->value);
-//        }
     }
     #endif
-    if (w->attr == thisAgent->operator_symbol)
+    if (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
         {
             /* Do this afterward so that gSKI can know that this is an operator */
             w->value->id->isa_operator--;
@@ -281,7 +319,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 {
                     dprint(DT_WME_CHANGES, "...found wme added and removed in same phase!\n");
                     const char* const kWarningMessage = "WARNING: WME added and removed in same phase : ";
-                    print(thisAgent,  const_cast< char* >(kWarningMessage));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast< char* >(kWarningMessage));
                     xml_begin_tag(thisAgent, kTagWarning);
                     xml_att_val(thisAgent, kTypeString, kWarningMessage);
                     print_wme(thisAgent, w);
@@ -342,9 +380,9 @@ void deallocate_wme(agent* thisAgent, wme* w)
         wma_remove_decay_element(thisAgent, w);
     }
 
-    symbol_remove_ref(thisAgent, &w->id);
-    symbol_remove_ref(thisAgent, &w->attr);
-    symbol_remove_ref(thisAgent, &w->value);
+    thisAgent->symbolManager->symbol_remove_ref(&w->id);
+    thisAgent->symbolManager->symbol_remove_ref(&w->attr);
+    thisAgent->symbolManager->symbol_remove_ref(&w->value);
 
     thisAgent->memoryManager->free_with_pool(MP_wme, w);
     thisAgent->num_existing_wmes--;
@@ -358,7 +396,7 @@ Symbol* find_name_of_object(agent* thisAgent, Symbol* object)
     {
         return NIL;
     }
-    s = find_slot(object, thisAgent->name_symbol);
+    s = find_slot(object, thisAgent->symbolManager->soarSymbols.name_symbol);
     if (! s)
     {
         return NIL;

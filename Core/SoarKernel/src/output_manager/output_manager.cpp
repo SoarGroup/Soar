@@ -21,7 +21,7 @@
 #include "print.h"
 #include "soar_instance.h"
 
-bool is_DT_mode_enabled(TraceMode mode) { return Output_Manager::Get_OM().is_debug_mode_enabled(mode); }
+bool is_DT_mode_enabled(TraceMode mode) { return Output_Manager::Get_OM().is_trace_enabled(mode); }
 
 AgentOutput_Info::AgentOutput_Info()
 {
@@ -98,12 +98,11 @@ void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pS
 Output_Manager::Output_Manager()
 {
     m_defaultAgent = NIL;
-    m_params = new OM_Parameters();
+    m_params = new OM_Parameters(NULL, settings);
     m_db = NIL;
     m_pre_string = strdup("          ");
     m_post_string = NULL;
 
-    next_output_string = 0;
     reset_column_indents();
 
     initialize_debug_trace(mode_info);
@@ -214,34 +213,4 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
 void Output_Manager::store_refcount(Symbol* sym, const char* callers, bool isAdd)
 {
     m_db->store_refcount(sym, callers, isAdd);
-}
-
-OM_Parameters::OM_Parameters(): soar_module::param_container(NULL)
-{
-    database = new soar_module::constant_param<soar_module::db_choices>("database", soar_module::file, new soar_module::f_predicate<soar_module::db_choices>());
-    database->add_mapping(soar_module::memory, "memory");
-    database->add_mapping(soar_module::file, "file");
-    append_db = new soar_module::boolean_param("append", off, new soar_module::f_predicate<boolean>());
-    path = new soar_module::string_param("path", "debug.db", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    lazy_commit = new soar_module::boolean_param("lazy-commit", off, new soar_module::f_predicate<boolean>());
-    page_size = new soar_module::constant_param<soar_module::page_choices>("page-size", soar_module::page_8k, new soar_module::f_predicate<soar_module::page_choices>());
-    page_size->add_mapping(soar_module::page_1k, "1k");
-    page_size->add_mapping(soar_module::page_2k, "2k");
-    page_size->add_mapping(soar_module::page_4k, "4k");
-    page_size->add_mapping(soar_module::page_8k, "8k");
-    page_size->add_mapping(soar_module::page_16k, "16k");
-    page_size->add_mapping(soar_module::page_32k, "32k");
-    page_size->add_mapping(soar_module::page_64k, "64k");
-    cache_size = new soar_module::integer_param("cache-size", 10000, new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
-    opt = new soar_module::constant_param<soar_module::opt_choices>("optimization", soar_module::opt_safety, new soar_module::f_predicate<soar_module::opt_choices>());
-    opt->add_mapping(soar_module::opt_safety, "safety");
-    opt->add_mapping(soar_module::opt_speed, "performance");
-
-    add(database);
-    add(append_db);
-    add(path);
-    add(lazy_commit);
-    add(page_size);
-    add(cache_size);
-    add(opt);
 }

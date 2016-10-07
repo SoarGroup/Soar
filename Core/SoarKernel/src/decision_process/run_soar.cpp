@@ -20,6 +20,7 @@
 #include "callback.h"
 #include "consistency.h"
 #include "decide.h"
+#include "decider.h"
 #include "episodic_memory.h"
 #include "ebc.h"
 #include "explanation_memory.h"
@@ -31,6 +32,7 @@
 #include "reinforcement_learning.h"
 #include "rete.h"
 #include "semantic_memory.h"
+#include "smem_timers.h"
 #include "slot.h"
 #include "soar_rand.h"
 #include "stats.h"
@@ -47,23 +49,8 @@
 #include <assert.h>
 #include <time.h>
 
-/* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
 extern void determine_highest_active_production_level_in_stack_apply(agent* thisAgent);
-/* REW: end   08.20.97 */
-
-#if (defined(REAL_TIME_BEHAVIOR) || defined(ATTENTION_LAPSE))
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global
-      and allocate memory for it in init_soar() (init agent.c) */
-struct timeval* current_real_time;
-#endif
-
-#ifdef ATTENTION_LAPSE
-/* RMJ; just a temporary variable, but we don't want to
-      reallocate it every time we process a phase, so we make it global */
-int64_t lapse_duration;
-#endif
 
 /* ===================================================================
 
@@ -172,7 +159,7 @@ void set_sysparam(agent* thisAgent, int param_number, int64_t new_value)
 {
     if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER))
     {
-        print(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
         return;
     }
     thisAgent->sysparams[param_number] = new_value;
@@ -198,22 +185,11 @@ void init_sysparams(agent* thisAgent)
     thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
     thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
-    thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM] = 100;
-    thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = 15;
-    thisAgent->sysparams[MAX_GOAL_DEPTH] = 100;  /* generate an interrupt so users can recover before exceed program stack*/
-    thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = 100000000; /* default to 100MB.  Event generated when exceeded*/
-
-#ifdef ATTENTION_LAPSE
-    /* RMJ */
-    thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM] = false;
-#endif /* ATTENTION_LAPSE */
 
     thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
     thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
-    thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = true;
     thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
     thisAgent->sysparams[TIMERS_ENABLED] = true;
-    thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }
 
 /* ===================================================================
@@ -318,11 +294,11 @@ void reset_statistics(agent* thisAgent)
     reset_timers(thisAgent);
     reset_max_stats(thisAgent);
 
-    thisAgent->wma_timers->reset();
-    thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
+    thisAgent->WM->wma_timers->reset();
+    thisAgent->EpMem->epmem_timers->reset();
+    thisAgent->SMem->timers->reset();
 
-    thisAgent->wma_d_cycle_count = 0;
+    thisAgent->WM->wma_d_cycle_count = 0;
 }
 
 void reset_timers(agent* thisAgent)
@@ -380,7 +356,7 @@ void reset_max_stats(agent* thisAgent)
 bool reinitialize_soar(agent* thisAgent)
 {
     ++thisAgent->init_count;
-    ++thisAgent->rl_init_count;
+    ++thisAgent->RL->rl_init_count;
 
     int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
     int64_t cur_TRACE_PHASES_SYSPARAM;
@@ -390,6 +366,7 @@ bool reinitialize_soar(agent* thisAgent)
     int64_t cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
     int64_t cur_TRACE_WM_CHANGES_SYSPARAM;
     int64_t cur_TRACE_GDS_SYSPARAM;
+    int64_t cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM;
 
     thisAgent->did_PE = false;    /* RCHONG:  10.11 */
 
@@ -403,7 +380,8 @@ bool reinitialize_soar(agent* thisAgent)
     cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM   = thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM];
     cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM      = thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM];
     cur_TRACE_WM_CHANGES_SYSPARAM               = thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM];
-    cur_TRACE_GDS_SYSPARAM                      = thisAgent->sysparams[TRACE_GDS_SYSPARAM];
+    cur_TRACE_GDS_SYSPARAM                      = thisAgent->sysparams[TRACE_GDS_WMES_SYSPARAM];
+    cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM        = thisAgent->sysparams[TRACE_GDS_STATE_REMOVAL_SYSPARAM];
 
     /* Temporarily disable tracing: */
     set_sysparam(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        false);
@@ -413,7 +391,8 @@ bool reinitialize_soar(agent* thisAgent)
     set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
     set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      false);
     set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
-    set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      false);
+    set_sysparam(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      false);
+    set_sysparam(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        false);
 
     bool ok = reinitialize_agent(thisAgent);
 
@@ -434,7 +413,8 @@ bool reinitialize_soar(agent* thisAgent)
     set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM);
     set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
     set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
+    set_sysparam(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
+    set_sysparam(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM);
 
     soar_invoke_callbacks(thisAgent, AFTER_INIT_SOAR_CALLBACK, 0);
 
@@ -448,7 +428,6 @@ bool reinitialize_soar(agent* thisAgent)
     delete thisAgent->stats_db;
     thisAgent->stats_db = new soar_module::sqlite_database();
 
-    // voigtjr: WARN_IF_TIMERS_REPORT_ZERO block goes here in other kernel
     return ok ;
 }
 
@@ -486,7 +465,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
     if (thisAgent->system_halted)
     {
-        print(thisAgent,
+        thisAgent->outputManager->printa_sf(thisAgent,
               "\nSystem halted.  Use (init-soar) before running Soar again.");
         xml_generate_error(thisAgent, "System halted.  Use (init-soar) before running Soar again.");
         thisAgent->stop_soar = true;
@@ -522,13 +501,6 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_DECISION_CYCLE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
             }  /* end if e_cycles_this_d_cycle == 0 */
-
-#ifdef REAL_TIME_BEHAVIOR  /* RM Jones */
-            test_for_input_delay(thisAgent);
-#endif
-#ifdef ATTENTION_LAPSE  /* RM Jones */
-            determine_lapsing(thisAgent);
-#endif
 
             if (thisAgent->input_cycle_flag == true)   /* Soar 7 flag, but always true for Soar8 */
             {
@@ -635,9 +607,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (smem_enabled(thisAgent))
+                if (thisAgent->SMem->enabled())
                 {
-                    smem_go(thisAgent, true);
+                    thisAgent->SMem->go(true);
                 }
 
                 // allow epmem searches in proposal phase
@@ -827,9 +799,9 @@ void do_one_top_level_phase(agent* thisAgent)
                 do_preference_phase(thisAgent);
                 do_working_memory_phase(thisAgent);
 
-                if (smem_enabled(thisAgent))
+                if (thisAgent->SMem->enabled())
                 {
-                    smem_go(thisAgent, true);
+                    thisAgent->SMem->go(true);
                 }
 
                 /* Update accounting.  Moved here by KJC 04/05/05 */
@@ -912,13 +884,13 @@ void do_one_top_level_phase(agent* thisAgent)
 
             do_output_cycle(thisAgent);
 
-            if (smem_enabled(thisAgent))
+            if (thisAgent->SMem->enabled())
             {
-                smem_go(thisAgent, false);
+                thisAgent->SMem->go(false);
             }
 
             ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count);
+            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
             ///////////////////////////////////////////////////////////////////
 
             // update histories only first, allows:
@@ -929,16 +901,16 @@ void do_one_top_level_phase(agent* thisAgent)
                 wma_go(thisAgent, wma_histories);
             }
 
-            if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_output))
+            if (epmem_enabled(thisAgent) && (thisAgent->EpMem->epmem_params->phase->get_value() == epmem_param_container::phase_output))
             {
                 // since we consolidated wma histories from this decision,
                 // we need to pretend it's the next time step in case
                 // an epmem retrieval wants to know current activation value
-                thisAgent->wma_d_cycle_count++;
+                thisAgent->WM->wma_d_cycle_count++;
                 {
                     epmem_go(thisAgent);
                 }
-                thisAgent->wma_d_cycle_count--;
+                thisAgent->WM->wma_d_cycle_count--;
             }
 
             // now both update histories and forget, allows
@@ -951,19 +923,19 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count);
+            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
             ///////////////////////////////////////////////////////////////////
 
             // RL apoptosis
             {
-                rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
+                rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
                 if (rl_apoptosis != rl_param_container::apoptosis_none)
                 {
-                    thisAgent->rl_prods->process_buffered_references();
-                    thisAgent->rl_prods->forget();
-                    thisAgent->rl_prods->time_forward();
+                    thisAgent->RL->rl_prods->process_buffered_references();
+                    thisAgent->RL->rl_prods->forget();
+                    thisAgent->RL->rl_prods->time_forward();
 
-                    for (rl_production_memory::object_set::iterator p = thisAgent->rl_prods->forgotten_begin(); p != thisAgent->rl_prods->forgotten_end(); p++)
+                    for (rl_production_memory::object_set::iterator p = thisAgent->RL->rl_prods->forgotten_begin(); p != thisAgent->RL->rl_prods->forgotten_end(); p++)
                     {
                         // conditions:
                         // - no matched instantiations AND
@@ -979,7 +951,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
-            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
+            if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES]))
             {
                 thisAgent->run_last_output_count = 0 ;
                 thisAgent->run_generated_output_count++ ;
@@ -1015,9 +987,9 @@ void do_one_top_level_phase(agent* thisAgent)
                     thisAgent->max_dc_time_usec = dc_time_usec;
                     thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
                 }
-                if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0)
+                if (thisAgent->Decider->settings[DECIDER_MAX_DC_TIME] > 0)
                 {
-                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT]))
+                    if (dc_time_usec >= static_cast<uint64_t>(thisAgent->Decider->settings[DECIDER_MAX_DC_TIME]))
                     {
                         thisAgent->stop_soar = true;
                         thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
@@ -1025,7 +997,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
                 thisAgent->last_derived_kernel_time_usec = derived_kernel_time_usec;
 
-                double total_epmem_time = thisAgent->epmem_timers->total->value();
+                double total_epmem_time = thisAgent->EpMem->epmem_timers->total->value();
                 if (thisAgent->total_dc_epmem_time_sec >= 0)
                 {
                     double delta_epmem_time = total_epmem_time - thisAgent->total_dc_epmem_time_sec;
@@ -1037,7 +1009,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
                 thisAgent->total_dc_epmem_time_sec = total_epmem_time;
 
-                double total_smem_time = thisAgent->smem_timers->total->value();
+                double total_smem_time = thisAgent->SMem->timers->total->value();
                 if (thisAgent->total_dc_smem_time_sec >= 0)
                 {
                     double delta_smem_time = total_smem_time - thisAgent->total_dc_smem_time_sec;
@@ -1082,7 +1054,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
             thisAgent->current_phase = INPUT_PHASE;
             thisAgent->d_cycle_count++;
-            thisAgent->wma_d_cycle_count++;
+            thisAgent->WM->wma_d_cycle_count++;
             /* REW: end 09.15.96 */
             break;
 
@@ -1127,7 +1099,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
             if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
             {
-                print_string(thisAgent, "\n");
+                thisAgent->outputManager->printa(thisAgent, "\n");
                 print_lowest_slot_in_context_stack(thisAgent);
             }
 
@@ -1135,7 +1107,7 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->e_cycles_this_d_cycle = 0;
             thisAgent->pe_cycles_this_d_cycle = 0;
 
-            if (epmem_enabled(thisAgent) && (thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
+            if (epmem_enabled(thisAgent) && (thisAgent->EpMem->epmem_params->phase->get_value() == epmem_param_container::phase_selection))
             {
                 epmem_go(thisAgent);
             }
@@ -1200,7 +1172,7 @@ void do_one_top_level_phase(agent* thisAgent)
     {
         if (thisAgent->reason_for_stopping)
         {
-            print(thisAgent,  "\n%s\n", thisAgent->reason_for_stopping);
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n%s\n", thisAgent->reason_for_stopping);
         }
     }
 }
@@ -1341,7 +1313,7 @@ void run_for_n_modifications_of_output(agent* thisAgent, int64_t n)
                 count++;
             }
         }
-        if (count >= thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])
+        if (count >= thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES])
         {
             break;
             //thisAgent->stop_soar = true;
@@ -1401,9 +1373,9 @@ Symbol* attr_of_slot_just_decided(agent* thisAgent)
 {
     if (thisAgent->bottom_goal->id->operator_slot->wmes)
     {
-        return thisAgent->operator_symbol;
+        return thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    return thisAgent->state_symbol;
+    return thisAgent->symbolManager->soarSymbols.state_symbol;
 }
 
 void run_for_n_selections_of_slot(agent* thisAgent, int64_t n, Symbol* attr_of_slot)
@@ -1532,28 +1504,28 @@ void init_agent_memory(agent* thisAgent)
     create_top_goal(thisAgent);
     if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
     {
-        print_string(thisAgent, "\n");
+        thisAgent->outputManager->printa(thisAgent, "\n");
         print_lowest_slot_in_context_stack(thisAgent);
     }
     thisAgent->current_phase = INPUT_PHASE;
     thisAgent->d_cycle_count++;
-    thisAgent->wma_d_cycle_count++;
+    thisAgent->WM->wma_d_cycle_count++;
 
     /* The following code was taken from the do_input_cycle function of io.cpp */
     // Creating the io_header and adding the top state io header wme
     thisAgent->io_header_link = add_input_wme(thisAgent,
                                 thisAgent->top_state,
-                                thisAgent->io_symbol,
+                                thisAgent->symbolManager->soarSymbols.io_symbol,
                                 thisAgent->io_header);
     // Creating the input and output header symbols and wmes
     // RPM 9/06 changed to use thisAgent->input/output_link_symbol
     // Note we don't have to save these wmes for later release since their parent
     //  is already being saved (above), and when we release it they will automatically be released
     add_input_wme(thisAgent, thisAgent->io_header,
-                  thisAgent->input_link_symbol,
+                  thisAgent->symbolManager->soarSymbols.input_link_symbol,
                   thisAgent->io_header_input);
     add_input_wme(thisAgent, thisAgent->io_header,
-                  thisAgent->output_link_symbol,
+                  thisAgent->symbolManager->soarSymbols.output_link_symbol,
                   thisAgent->io_header_output);
 
     // KJC & RPM 10/06
@@ -1583,9 +1555,9 @@ void init_agent_memory(agent* thisAgent)
     reset_timers(thisAgent);
     reset_max_stats(thisAgent);
 
-    thisAgent->wma_timers->reset();
-    thisAgent->epmem_timers->reset();
-    thisAgent->smem_timers->reset();
+    thisAgent->WM->wma_timers->reset();
+    thisAgent->EpMem->epmem_timers->reset();
+    thisAgent->SMem->timers->reset();
 
     // This is an important part of the state of the agent for io purposes
     // (see io.cpp for details)

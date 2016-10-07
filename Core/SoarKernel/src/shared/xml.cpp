@@ -23,13 +23,15 @@
 #include "xml.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "callback.h"
 #include "ElementXML.h"
 #include "print.h"
 #include "soar_TraceNames.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "XMLTrace.h"
+
+#include <assert.h>
 
 using namespace soar_TraceNames;
 namespace stn = soar_TraceNames;
@@ -216,6 +218,25 @@ void xml_object(agent* pAgent, char const* pTag, char const* pAttribute, double 
     pXML->EndTag(pTag) ;
 }
 
+inline char const* symbol_type_to_string(byte pType)
+{
+    switch (pType)
+    {
+        case VARIABLE_SYMBOL_TYPE:
+            return soar_TraceNames::kTypeVariable ;
+        case IDENTIFIER_SYMBOL_TYPE:
+            return soar_TraceNames::kTypeID ;
+        case INT_CONSTANT_SYMBOL_TYPE:
+            return soar_TraceNames::kTypeInt ;
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+            return soar_TraceNames::kTypeDouble ;
+        case STR_CONSTANT_SYMBOL_TYPE:
+            return soar_TraceNames::kTypeString ;
+        default:
+            return "UNDEFINED!";
+    }
+}
+
 void xml_object(agent* pAgent, wme* pWME, bool printTimetag)
 {
     // <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
@@ -232,7 +253,7 @@ void xml_object(agent* pAgent, wme* pWME, bool printTimetag)
     xml_att_val(pAgent, kWME_Id, pWME->id);
     xml_att_val(pAgent, kWME_Attribute, pWME->attr);
     xml_att_val(pAgent, kWME_Value, pWME->value);
-    xml_att_val(pAgent, kWME_ValueType, pWME->value->type_string());
+    xml_att_val(pAgent, kWME_ValueType, symbol_type_to_string(pWME->value->symbol_type));
 
     if (pWME->acceptable)
     {

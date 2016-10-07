@@ -9,6 +9,7 @@
 #define CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_SETTINGS_H_
 
 #include "kernel.h"
+
 #include "soar_module.h"
 
 class ebc_param_container: public soar_module::param_container
@@ -29,6 +30,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* bottom_level_only;
         soar_module::boolean_param* interrupt_on_chunk;
         soar_module::boolean_param* interrupt_on_failure;
+        soar_module::boolean_param* interrupt_on_watched;
         soar_module::boolean_param* utility_mode;
 
         soar_module::boolean_param* mechanism_identity_analysis;
@@ -37,7 +39,6 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_OSK;
         soar_module::boolean_param* mechanism_repair_rhs;
         soar_module::boolean_param* mechanism_repair_lhs;
-        soar_module::boolean_param* mechanism_promotion_tracking;
         soar_module::boolean_param* mechanism_merge;
         soar_module::boolean_param* mechanism_user_singletons;
 
@@ -45,8 +46,12 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* allow_missing_OSK;
         soar_module::boolean_param* allow_opaque_knowledge;
         soar_module::boolean_param* allow_probabilistic_operators;
-        soar_module::boolean_param* allow_multiple_prefs;
-        soar_module::boolean_param* allow_temporal_constraint;
+        soar_module::boolean_param* allow_conflated_reasoning;
+
+        soar_module::boolean_param* always_cmd;
+        soar_module::boolean_param* never_cmd;
+        soar_module::boolean_param* flagged_cmd;
+        soar_module::boolean_param* unflagged_cmd;
 
         ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
         void update_params(bool pEBC_settings[]);

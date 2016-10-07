@@ -1,9 +1,9 @@
 sp {answer*apply*query*success*2*snc*t3-3
     (state <s1> ^step 2)
     (<s1> ^superstate nil)
-    (<s1> ^result <t1>)
-    (<s1> ^result <t2>)
-    (<t2> ^foo <c1>)
+    (<s1> ^result <l1>)
+    (<s1> ^result <l2>)
+    (<l2> ^foo <c1>)
     -->
     (<s1> ^result2 <c1> +)
 }
@@ -12,14 +12,14 @@ sp {answer*apply*query*success*1*snc*t3-1
     (state <s1> ^step 1)
     (<s1> ^superstate nil)
     -->
-    (<s1> ^result @T2 +)
-    (@T2 ^D Y +)
+    (<s1> ^result <l1> +)
+    (<l1> ^D Y +)
 }
 
 sp {answer*elab*query*success*2*onc*t3-2
     (state <s1> ^step 2)
-    (<s1> ^result @T2)
     (<s1> ^superstate nil)
+    (<s1> ^result <l1>)
     -->
-    (@T2 ^foo bar +)
+    (<l1> ^foo bar +)
 }

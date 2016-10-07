@@ -17,7 +17,7 @@
 #include "kernel.h"
 
 #include "misc.h"
-#include "symbol.h"
+#include "agent.h"
 #include "stl_typedefs.h"
 
 #include <map>
@@ -27,6 +27,7 @@
 #include <functional>
 #include <assert.h>
 #include <cmath>
+#include "symbol_manager.h"
 
 // separates this functionality
 // just for Soar modules
@@ -546,7 +547,7 @@ namespace soar_module
                 for (std::set<Symbol*>::iterator p = my_set->begin(); p != my_set->end(); p++)
                 {
                     Symbol* lSym = (*p);
-                    symbol_remove_ref(thisAgent, &lSym);
+                    thisAgent->symbolManager->symbol_remove_ref(&lSym);
                 }
 
                 delete my_set;
@@ -608,7 +609,7 @@ namespace soar_module
                             to_string(my_sym->fc->value, temp_str);
                         }
 
-                        my_sym = make_str_constant(thisAgent, temp_str.c_str());
+                        my_sym = thisAgent->symbolManager->make_str_constant(temp_str.c_str());
                     }
 
                     std::set<Symbol*>::iterator p = my_set->find(my_sym);
@@ -616,7 +617,7 @@ namespace soar_module
 
                     if (test_sym != my_sym)
                     {
-                        symbol_remove_ref(thisAgent, &my_sym);
+                        thisAgent->symbolManager->symbol_remove_ref(&my_sym);
                     }
                 }
 
@@ -625,7 +626,7 @@ namespace soar_module
 
             virtual void set_value(const char* new_value)
             {
-                Symbol* my_sym = make_str_constant(thisAgent, new_value);
+                Symbol* my_sym = thisAgent->symbolManager->make_str_constant(new_value);
                 std::set<Symbol*>::iterator p = my_set->find(my_sym);
 
                 if (p != my_set->end())
@@ -633,8 +634,8 @@ namespace soar_module
                     my_set->erase(p);
 
                     // remove for now and when added to the set
-                    symbol_remove_ref(thisAgent, &my_sym);
-                    symbol_remove_ref(thisAgent, &my_sym);
+                    thisAgent->symbolManager->symbol_remove_ref(&my_sym);
+                    thisAgent->symbolManager->symbol_remove_ref(&my_sym);
 
                     // regenerate value from scratch
                     value->clear();

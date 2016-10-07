@@ -21,10 +21,14 @@
 
 #include "agent.h"
 #include "decide.h"
+#include "decider.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "rhs_functions.h"
 #include "soar_rand.h"
 #include "soar_instance.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
@@ -557,7 +561,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
     {
         // if the agent halted because it is in an infinite loop of no-change impasses
         // interrupt the agents and allow the user to try to recover.
-        if (m_agent->bottom_goal->id->level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+        if (m_agent->bottom_goal->id->level >=  m_agent->Decider->settings[DECIDER_MAX_GOAL_DEPTH])
         {
             // the agent halted because it seems to be in an infinite loop, so throw interrupt
             m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;
@@ -826,7 +830,7 @@ void AgentSML::RegisterRHSFunction(RhsFunction* rhsFunction)
 {
     // Tell Soar about it
     add_rhs_function(m_agent,
-                     make_str_constant(m_agent, rhsFunction->GetName()),
+                     m_agent->symbolManager->make_str_constant(rhsFunction->GetName()),
                      RhsFunction::RhsFunctionCallback,
                      rhsFunction->GetNumExpectedParameters(),
                      rhsFunction->IsValueReturned(),
@@ -845,9 +849,9 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
 
     // Tell the kernel we are done listening.
     //RPM 9/06: removed symbol ref so symbol is released properly
-    Symbol* tmp = make_str_constant(m_agent, szName);
+    Symbol* tmp = m_agent->symbolManager->make_str_constant(szName);
     remove_rhs_function(m_agent, tmp);
-    symbol_remove_ref(m_agent, &tmp);
+    m_agent->symbolManager->symbol_remove_ref(&tmp);
 }
 
 char const* AgentSML::GetValueType(int type)
@@ -1189,7 +1193,7 @@ bool AgentSML::RemoveInputWME(int64_t clientTimeTag)
 
     CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
-    if (pWME->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    if (pWME->value->is_sti())
     {
         this->RemoveID(pWME->value->to_string(true)) ;
     }
@@ -1551,7 +1555,7 @@ void AgentSML::ReplayInputWMEs()
     /* These prints seem to be the only ones in the sml files.  Should they be using another mechanism? */
     if (m_CapturedActions.empty())
     {
-        print(m_agent, "\n\nWarning: end of replay has been reached.\n");
+        m_agent->outputManager->printa(m_agent, "\n\nWarning: end of replay has been reached.\n");
         return;
     }
 
@@ -1575,7 +1579,7 @@ void AgentSML::ReplayInputWMEs()
 
             if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
             {
-                print(m_agent, "\n\nWarning: replay add-wme failed.\n");
+                m_agent->outputManager->printa(m_agent, "\n\nWarning: replay add-wme failed.\n");
             }
         }
         else
@@ -1583,7 +1587,7 @@ void AgentSML::ReplayInputWMEs()
             // remove-wme
             if (!RemoveInputWME(ca.clientTimeTag))
             {
-                print(m_agent, "\n\nWarning: replay remove-wme failed.\n");
+                m_agent->outputManager->printa(m_agent, "\n\nWarning: replay remove-wme failed.\n");
             }
         }
     }

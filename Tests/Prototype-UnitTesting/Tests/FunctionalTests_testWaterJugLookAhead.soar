@@ -5,7 +5,7 @@ multi-attributes superstate-set 20
 
 #echo {learning is on}
 
-learn --on
+chunk always
 
 sp {top-goal*halt*success
    :default

@@ -10,6 +10,7 @@
 
 #include "kernel.h"
 
+#include "explanation_settings.h"
 #include "chunk_record.h"
 #include "stl_typedefs.h"
 
@@ -21,8 +22,10 @@
 #include <string>
 
 typedef struct chunking_stats_struct {
+        uint64_t            lhs_repair;
+        uint64_t            rhs_repair;
         uint64_t            duplicates;
-        uint64_t            unorderable;
+        uint64_t            could_not_repair;
         uint64_t            justification_did_not_match;
         uint64_t            chunk_did_not_match;
         uint64_t            no_grounds;
@@ -52,9 +55,15 @@ class Explanation_Memory
         friend class cli::CommandLineInterface;
 
     public:
-        bool                    get_enabled() { return enabled; }
-        void                    set_enabled(bool pEnabled) { enabled = pEnabled; }
-        bool                    isRecordingChunk() { return (enabled || current_recording_chunk); }
+
+        Explainer_Parameters*   settings;
+
+        bool                    enabled() { return (m_enabled || (num_rules_watched > 0)); }
+        void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
+        bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
+
+        bool                    isRecordingJustifications() { return m_justifications_enabled; };
+        void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
 
         void                    re_init();
         void                    clear_explanations();
@@ -64,7 +73,7 @@ class Explanation_Memory
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);
@@ -77,7 +86,7 @@ class Explanation_Memory
         void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_grounded(int pNumConds);
         void increment_stat_reverted();
-        void increment_stat_unorderable() { stats.unorderable++; };
+        void increment_stat_could_not_repair() { stats.could_not_repair++; };
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
@@ -88,6 +97,8 @@ class Explanation_Memory
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
+        void increment_stat_lhs_repaired() { stats.lhs_repair++; if (current_recording_chunk) current_recording_chunk->stats.lhs_repair = true; };
+        void increment_stat_rhs_repaired() { stats.rhs_repair++; if (current_recording_chunk) current_recording_chunk->stats.rhs_repair = true; };
         void increment_stat_justifications() { stats.justifications_succeeded++; };
         void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
         void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
@@ -103,9 +114,9 @@ class Explanation_Memory
         bool toggle_production_watch(production* pProduction);
 
         bool explain_chunk(const std::string* pStringParameter);
-        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
+        bool explain_instantiation(const std::string* pStringParameter);
+//        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
-        void print_explainer_stats();
         void print_global_stats();
         void print_chunk_stats();
         void print_all_watched_rules();
@@ -128,7 +139,8 @@ class Explanation_Memory
         agent*                  thisAgent;
         Output_Manager*         outputManager;
 
-        bool                    enabled;
+        bool                    m_enabled;
+        bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;
 
@@ -152,6 +164,8 @@ class Explanation_Memory
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL, production_record* pExcisedRule = NULL);
+        void                    print_chunk_actions(action_record_list* pActionRecords, production* pOriginalRule, production_record* pExcisedRule);
+        void                    print_instantiation_actions(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs);
         bool                    print_chunk_explanation_for_id(uint64_t pChunkID);
         void                    print_chunk_explanation();
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);

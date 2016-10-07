@@ -15,14 +15,17 @@
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
 
+#include "agent.h"
+#include "mem.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 
 #include <iostream>
 
 using namespace sml ;
 
 // This method is called by the kernel, which in turn calls the Execute method of the RhsFunction.
-Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* user_data)
+Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, cons* args, void* user_data)
 {
     // Since we registered this callback, we know what the user data is.
     RhsFunction* rhsFunction = static_cast<RhsFunction*>(user_data);
@@ -59,7 +62,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
             else
             {
                 // We have to return something to prevent a crash, so we return an error code
-                pSoarReturn = make_str_constant(thisAgent, "error_expected_rhs_function_to_return_value_but_it_did_NOT");
+                pSoarReturn = thisAgent->symbolManager->make_str_constant("error_expected_rhs_function_to_return_value_but_it_did_NOT");
             }
         }
         else
@@ -71,7 +74,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
         // In any case, we are done using the return value
         //if(pReturn != 0)
         //{
-        //  symbol_remove_ref(thisAgent, &pReturn) ;
+        //  thisAgent->symbolManager->symbol_remove_ref(&pReturn) ;
         //}
     }
     else
@@ -82,7 +85,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
         // We can return anything we want to soar; we return an error message so at least the problem is obvious.
         if (rhsFunction->IsValueReturned() == true)
         {
-            pSoarReturn = make_str_constant(thisAgent, "error_wrong_number_of_args_passed_to_rhs_function");
+            pSoarReturn = thisAgent->symbolManager->make_str_constant("error_wrong_number_of_args_passed_to_rhs_function");
         }
     }
     
@@ -119,7 +122,7 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     
     std::string result = ostr.str();
     char const* pResultStr = result.c_str() ;
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
+    Symbol* pResult = m_pAgentSML->GetSoarAgent()->symbolManager->make_str_constant(pResultStr) ;
     return pResult ;
 }
 
@@ -169,7 +172,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
     
     std::string result = m_pAgentSML->ExecuteCommandLine(argument) ;
     
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+    Symbol* pResult = m_pAgentSML->GetSoarAgent()->symbolManager->make_str_constant(result.c_str()) ;
     return pResult ;
 }
 
@@ -217,6 +220,6 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         result = std::string("Error: Nobody was registered to implement rhs function ") + function ;
     }
     
-    Symbol* pResult = make_str_constant(m_pAgentSML->GetSoarAgent(), result.c_str()) ;
+    Symbol* pResult = m_pAgentSML->GetSoarAgent()->symbolManager->make_str_constant(result.c_str()) ;
     return pResult ;
 }

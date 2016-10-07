@@ -6,7 +6,7 @@
 #include "soar_module.h"
 #include "symbol.h"
 #include "working_memory.h"
-#include "print.h"
+#include "output_manager.h"
 #include "soar_interface.h"
 #include "decide.h"
 #include "slot.h"
@@ -47,17 +47,17 @@ soar_interface::~soar_interface()
 
 void soar_interface::del_sym(Symbol* s)
 {
-    symbol_remove_ref(thisAgent, &s);
+    thisAgent->symbolManager->symbol_remove_ref(&s);
 }
 
 
 wme* soar_interface::make_id_wme(Symbol* id, const string& attr)
 {
-    Symbol* attrsym = make_str_constant(thisAgent, attr.c_str());
-    Symbol* valsym = make_new_identifier(thisAgent, attr[0], id->id->level);
+    Symbol* attrsym = thisAgent->symbolManager->make_str_constant(attr.c_str());
+    Symbol* valsym = thisAgent->symbolManager->make_new_identifier(attr[0], id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attrsym, valsym);
-    symbol_remove_ref(thisAgent, &attrsym);
-    symbol_remove_ref(thisAgent, &valsym);
+    thisAgent->symbolManager->symbol_remove_ref(&attrsym);
+    thisAgent->symbolManager->symbol_remove_ref(&valsym);
     return w;
 }
 
@@ -76,9 +76,9 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
         n = attr->sc->name[0];
     }
 
-    val = make_new_identifier(thisAgent, n, id->id->level);
+    val = thisAgent->symbolManager->make_new_identifier(n, id->id->level);
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
-    symbol_remove_ref(thisAgent, &val);
+    thisAgent->symbolManager->symbol_remove_ref(&val);
     return w;
 }
 
@@ -92,7 +92,7 @@ bool soar_interface::get_child_wmes(Symbol* id, wme_vector& childs)
     slot* s;
     wme* w;
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return false;
     }
@@ -154,7 +154,7 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
     wme* w1;
     string a;
 
-    if (!id->is_identifier())
+    if (!id->is_sti())
     {
         return false;
     }
@@ -177,7 +177,7 @@ bool soar_interface::find_child_wme(Symbol* id, const string& attr, wme*& w)
 wme* soar_interface::make_wme(Symbol* id, Symbol* attr, Symbol* val)
 {
     wme* w = soar_module::add_module_wme(thisAgent, id, attr, val);
-    symbol_remove_ref(thisAgent, &val);
+    thisAgent->symbolManager->symbol_remove_ref(&val);
     return w;
 }
 
@@ -186,12 +186,12 @@ wme* soar_interface::make_wme(Symbol* id, const std::string& attr, Symbol* val)
     wme* w;
     Symbol* attrsym = make_sym(attr);
     w = make_wme(id, attrsym, val);
-    symbol_remove_ref(thisAgent, &attrsym);
+    thisAgent->symbolManager->symbol_remove_ref(&attrsym);
 
     return w;
 }
 
 void soar_interface::print(const string& msg)
 {
-    print_string(thisAgent, msg.c_str());
+    thisAgent->outputManager->printa(thisAgent, msg.c_str());
 }

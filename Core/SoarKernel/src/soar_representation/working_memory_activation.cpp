@@ -21,7 +21,7 @@
 #include "misc.h"
 #include "rete.h"
 #include "preference.h"
-#include "print.h"
+#include "output_manager.h"
 #include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
@@ -152,7 +152,7 @@ wma_param_container::wma_param_container(agent* new_agent): soar_module::param_c
 
 bool wma_enabled(agent* thisAgent)
 {
-    return (thisAgent->wma_params->activation->get_value() == on);
+    return (thisAgent->WM->wma_params->activation->get_value() == on);
 }
 
 /////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ wma_timer_level_predicate::wma_timer_level_predicate(agent* new_agent): soar_mod
 
 bool wma_timer_level_predicate::operator()(soar_module::timer::timer_level val)
 {
-    return (thisAgent->wma_params->timers->get_value() >= val);
+    return (thisAgent->WM->wma_params->timers->get_value() >= val);
 }
 
 //
@@ -214,14 +214,14 @@ wma_timer::wma_timer(const char* new_name, agent* new_agent, soar_module::timer:
 
 void wma_init(agent* thisAgent)
 {
-    if (thisAgent->wma_initialized)
+    if (thisAgent->WM->wma_initialized)
     {
         return;
     }
 
-    double decay_rate = thisAgent->wma_params->decay_rate->get_value();
-    double decay_thresh = thisAgent->wma_params->decay_thresh->get_value();
-    int64_t max_pow_cache = thisAgent->wma_params->max_pow_cache->get_value();
+    double decay_rate = thisAgent->WM->wma_params->decay_rate->get_value();
+    double decay_thresh = thisAgent->WM->wma_params->decay_thresh->get_value();
+    int64_t max_pow_cache = thisAgent->WM->wma_params->max_pow_cache->get_value();
 
     // Pre-compute the integer powers of the decay exponent in order to avoid
     // repeated calls to pow() at runtime
@@ -238,67 +238,67 @@ void wma_init(agent* thisAgent)
             // MB * 1024 bytes/KB * 1024 KB/MB
             double cache_bound = (static_cast<unsigned int>(max_pow_cache * 1024 * 1024) / static_cast<unsigned int>(sizeof(double)));
 
-            thisAgent->wma_power_size = static_cast< unsigned int >(ceil((cache_full > cache_bound) ? (cache_bound) : (cache_full)));
+            thisAgent->WM->wma_power_size = static_cast< unsigned int >(ceil((cache_full > cache_bound) ? (cache_bound) : (cache_full)));
         }
 
-        thisAgent->wma_power_array = new double[ thisAgent->wma_power_size ];
+        thisAgent->WM->wma_power_array = new double[ thisAgent->WM->wma_power_size ];
 
-        thisAgent->wma_power_array[0] = 0.0;
-        for (unsigned int i = 1; i < thisAgent->wma_power_size; i++)
+        thisAgent->WM->wma_power_array[0] = 0.0;
+        for (unsigned int i = 1; i < thisAgent->WM->wma_power_size; i++)
         {
-            thisAgent->wma_power_array[ i ] = pow(static_cast<double>(i), decay_rate);
+            thisAgent->WM->wma_power_array[ i ] = pow(static_cast<double>(i), decay_rate);
         }
     }
 
     // calculate the pre-log'd forgetting threshold, to avoid most
     // calls to log
-    thisAgent->wma_thresh_exp = exp(decay_thresh);
+    thisAgent->WM->wma_thresh_exp = exp(decay_thresh);
 
     // approximation cache
-    if (thisAgent->wma_params->forgetting->get_value() == wma_param_container::approx)
+    if (thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::approx)
     {
-        thisAgent->wma_approx_array = new wma_d_cycle[ WMA_REFERENCES_PER_DECISION ];
+        thisAgent->WM->wma_approx_array = new wma_d_cycle[ WMA_REFERENCES_PER_DECISION ];
 
-        thisAgent->wma_approx_array[0] = 0;
+        thisAgent->WM->wma_approx_array[0] = 0;
         for (int i = 1; i < WMA_REFERENCES_PER_DECISION; i++)
         {
-            thisAgent->wma_approx_array[i] = static_cast< wma_d_cycle >(ceil(exp(static_cast<double>(decay_thresh - log(static_cast<double>(i))) / static_cast<double>(decay_rate))));
+            thisAgent->WM->wma_approx_array[i] = static_cast< wma_d_cycle >(ceil(exp(static_cast<double>(decay_thresh - log(static_cast<double>(i))) / static_cast<double>(decay_rate))));
         }
     }
 
     // note initialization
-    thisAgent->wma_initialized = true;
+    thisAgent->WM->wma_initialized = true;
 }
 
 void wma_deinit(agent* thisAgent)
 {
-    if (!thisAgent->wma_initialized)
+    if (!thisAgent->WM->wma_initialized)
     {
         return;
     }
 
     // release power array memory
-    delete[] thisAgent->wma_power_array;
+    delete[] thisAgent->WM->wma_power_array;
 
     // release approximation array memory (if applicable)
-    if (thisAgent->wma_params->forgetting->get_value() == wma_param_container::approx)
+    if (thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::approx)
     {
-        delete[] thisAgent->wma_approx_array;
+        delete[] thisAgent->WM->wma_approx_array;
     }
 
     // clear touched
-    thisAgent->wma_touched_elements->clear();
-    thisAgent->wma_touched_sets->clear();
+    thisAgent->WM->wma_touched_elements->clear();
+    thisAgent->WM->wma_touched_sets->clear();
 
     // clear forgetting priority queue
-    for (wma_forget_p_queue::iterator pq_p = thisAgent->wma_forget_pq->begin(); pq_p != thisAgent->wma_forget_pq->end(); pq_p++)
+    for (wma_forget_p_queue::iterator pq_p = thisAgent->WM->wma_forget_pq->begin(); pq_p != thisAgent->WM->wma_forget_pq->end(); pq_p++)
     {
         pq_p->second->~wma_decay_set();
         thisAgent->memoryManager->free_with_pool(MP_wma_decay_set, pq_p->second);
     }
-    thisAgent->wma_forget_pq->clear();
+    thisAgent->WM->wma_forget_pq->clear();
 
-    thisAgent->wma_initialized = false;
+    thisAgent->WM->wma_initialized = false;
 }
 
 /////////////////////////////////////////////////////
@@ -328,13 +328,13 @@ inline bool wma_should_have_decay_element(wme* w)
 
 inline double wma_pow(agent* thisAgent, wma_d_cycle cycle_diff)
 {
-    if (cycle_diff < thisAgent->wma_power_size)
+    if (cycle_diff < thisAgent->WM->wma_power_size)
     {
-        return thisAgent->wma_power_array[ cycle_diff ];
+        return thisAgent->WM->wma_power_array[ cycle_diff ];
     }
     else
     {
-        return pow(static_cast<double>(cycle_diff), thisAgent->wma_params->decay_rate->get_value());
+        return pow(static_cast<double>(cycle_diff), thisAgent->WM->wma_params->decay_rate->get_value());
     }
 }
 
@@ -361,7 +361,7 @@ inline double wma_sum_history(agent* thisAgent, wma_history* history, wma_d_cycl
     }
 
     // see (Petrov, 2006)
-    if (thisAgent->wma_params->petrov_approx->get_value() == on)
+    if (thisAgent->WM->wma_params->petrov_approx->get_value() == on)
     {
         // if ( n > k )
         if (history->total_references > history->history_references)
@@ -371,7 +371,7 @@ inline double wma_sum_history(agent* thisAgent, wma_history* history, wma_d_cycl
             // ( 1 - d ) * ( tn - tk )
 
             // decay_rate is negated (for nice printing)
-            double d_inv = (1 + thisAgent->wma_params->decay_rate->get_value());
+            double d_inv = (1 + thisAgent->WM->wma_params->decay_rate->get_value());
 
             return_val += (((history->total_references - history->history_references) * (pow(static_cast<double>(current_cycle - history->first_reference), d_inv) - pow(static_cast<double>(cycle_diff), d_inv))) /
                            (d_inv * ((current_cycle - history->first_reference) - cycle_diff)));
@@ -417,7 +417,7 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
     wme* cond_wme;
     wma_pooled_wme_set::iterator wme_p;
 
-    tc_number tc = (thisAgent->wma_tc_counter++);
+    tc_number tc = (thisAgent->WM->wma_tc_counter++);
 
     uint64_t num_cond_wmes = 0;
     double combined_time_sum = 0.0;
@@ -569,7 +569,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
                 msg.append(temp);
                 msg.append("\n");
 
-                print(thisAgent,  msg.c_str());
+                thisAgent->outputManager->printa(thisAgent,  msg.c_str());
                 xml_generate_warning(thisAgent, msg.c_str());
             }
         }
@@ -583,7 +583,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
         else
         {
             temp_el->num_references += num_references;
-            thisAgent->wma_touched_elements->insert(w);
+            thisAgent->WM->wma_touched_elements->insert(w);
         }
     }
     // i-supported, non-architectural WME
@@ -635,7 +635,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
                 if ((*wme_p)->wma_decay_el)
                 {
                     (*wme_p)->wma_decay_el->num_references += num_references;
-                    thisAgent->wma_touched_elements->insert((*wme_p));
+                    thisAgent->WM->wma_touched_elements->insert((*wme_p));
                 }
             }
         }
@@ -660,9 +660,9 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
     {
         if (!temp_el->just_removed)
         {
-            thisAgent->wma_touched_elements->erase(w);
+            thisAgent->WM->wma_touched_elements->erase(w);
 
-            if ((thisAgent->wma_params->forgetting->get_value() == wma_param_container::approx) || (thisAgent->wma_params->forgetting->get_value() == wma_param_container::bsearch))
+            if ((thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::approx) || (thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::bsearch))
             {
                 wma_forgetting_remove_from_p_queue(thisAgent, temp_el);
             }
@@ -701,7 +701,7 @@ void wma_remove_decay_element(agent* thisAgent, wme* w)
 
             msg.append("\n");
 
-            print(thisAgent,  msg.c_str());
+            thisAgent->outputManager->printa(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
 
@@ -743,8 +743,8 @@ inline void wma_forgetting_add_to_p_queue(agent* thisAgent, wma_decay_element* d
     {
         decay_el->forget_cycle = new_cycle;
 
-        wma_forget_p_queue::iterator pq_p = thisAgent->wma_forget_pq->find(new_cycle);
-        if (pq_p == thisAgent->wma_forget_pq->end())
+        wma_forget_p_queue::iterator pq_p = thisAgent->WM->wma_forget_pq->find(new_cycle);
+        if (pq_p == thisAgent->WM->wma_forget_pq->end())
         {
             wma_decay_set* newbie;
             thisAgent->memoryManager->allocate_with_pool(MP_wma_decay_set, &newbie);
@@ -755,7 +755,7 @@ inline void wma_forgetting_add_to_p_queue(agent* thisAgent, wma_decay_element* d
 #endif
             newbie->insert(decay_el);
 
-            thisAgent->wma_forget_pq->insert(std::make_pair(new_cycle, newbie));
+            thisAgent->WM->wma_forget_pq->insert(std::make_pair(new_cycle, newbie));
         }
         else
         {
@@ -769,8 +769,8 @@ inline void wma_forgetting_remove_from_p_queue(agent* thisAgent, wma_decay_eleme
     if (decay_el)
     {
         // try to find set for the element per cycle
-        wma_forget_p_queue::iterator pq_p = thisAgent->wma_forget_pq->find(decay_el->forget_cycle);
-        if (pq_p != thisAgent->wma_forget_pq->end())
+        wma_forget_p_queue::iterator pq_p = thisAgent->WM->wma_forget_pq->find(decay_el->forget_cycle);
+        if (pq_p != thisAgent->WM->wma_forget_pq->end())
         {
             wma_decay_set::iterator d_p = pq_p->second->find(decay_el);
             if (d_p != pq_p->second->end())
@@ -779,7 +779,7 @@ inline void wma_forgetting_remove_from_p_queue(agent* thisAgent, wma_decay_eleme
 
                 if (pq_p->second->empty())
                 {
-                    thisAgent->wma_touched_sets->insert(pq_p->first);
+                    thisAgent->WM->wma_touched_sets->insert(pq_p->first);
                 }
             }
         }
@@ -797,8 +797,8 @@ inline void wma_forgetting_move_in_p_queue(agent* thisAgent, wma_decay_element* 
 
 inline wma_d_cycle wma_forgetting_estimate_cycle(agent* thisAgent, wma_decay_element* decay_el, bool fresh_reference)
 {
-    wma_d_cycle return_val = static_cast<wma_d_cycle>(thisAgent->wma_d_cycle_count);
-    wma_param_container::forgetting_choices forgetting = thisAgent->wma_params->forgetting->get_value();
+    wma_d_cycle return_val = static_cast<wma_d_cycle>(thisAgent->WM->wma_d_cycle_count);
+    wma_param_container::forgetting_choices forgetting = thisAgent->WM->wma_params->forgetting->get_value();
 
     if (fresh_reference && (forgetting == wma_param_container::approx))
     {
@@ -819,9 +819,9 @@ inline wma_d_cycle wma_forgetting_estimate_cycle(agent* thisAgent, wma_decay_ele
             cycle_diff = (return_val - history->access_history[ p ].d_cycle);
 
             approx_ref = ((history->access_history[ p ].num_references < WMA_REFERENCES_PER_DECISION) ? (history->access_history[ p ].num_references) : (WMA_REFERENCES_PER_DECISION - 1));
-            if (thisAgent->wma_approx_array[ approx_ref ] > cycle_diff)
+            if (thisAgent->WM->wma_approx_array[ approx_ref ] > cycle_diff)
             {
-                to_add += (thisAgent->wma_approx_array[ approx_ref ] - cycle_diff);
+                to_add += (thisAgent->WM->wma_approx_array[ approx_ref ] - cycle_diff);
             }
 
             counter--;
@@ -830,9 +830,9 @@ inline wma_d_cycle wma_forgetting_estimate_cycle(agent* thisAgent, wma_decay_ele
         return_val += to_add;
     }
 
-    if (return_val == static_cast<wma_d_cycle>(thisAgent->wma_d_cycle_count))
+    if (return_val == static_cast<wma_d_cycle>(thisAgent->WM->wma_d_cycle_count))
     {
-        double my_thresh = thisAgent->wma_thresh_exp;
+        double my_thresh = thisAgent->WM->wma_thresh_exp;
 
         // binary parameter search
         {
@@ -898,7 +898,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle(agent* thisAgent, wma_decay_ele
 inline bool wma_forgetting_forget_wme(agent* thisAgent, wme* w)
 {
     bool return_val = false;
-    bool fake = (thisAgent->wma_params->fake_forgetting->get_value() == on);
+    bool fake = (thisAgent->WM->wma_params->fake_forgetting->get_value() == on);
 
     if (w->preference && w->preference->slot)
     {
@@ -932,12 +932,12 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
     slot* s;
     wme* w;
 
-    if (!thisAgent->wma_forget_pq->empty())
+    if (!thisAgent->WM->wma_forget_pq->empty())
     {
-        wma_forget_p_queue::iterator pq_p = thisAgent->wma_forget_pq->begin();
-        wma_d_cycle current_cycle = thisAgent->wma_d_cycle_count;
-        double decay_thresh = thisAgent->wma_thresh_exp;
-        bool forget_only_lti = (thisAgent->wma_params->forget_wme->get_value() == wma_param_container::lti);
+        wma_forget_p_queue::iterator pq_p = thisAgent->WM->wma_forget_pq->begin();
+        wma_d_cycle current_cycle = thisAgent->WM->wma_d_cycle_count;
+        double decay_thresh = thisAgent->WM->wma_thresh_exp;
+        bool forget_only_lti = (thisAgent->WM->wma_params->forget_wme->get_value() == wma_param_container::lti);
 
         if (pq_p->first == current_cycle)
         {
@@ -952,7 +952,7 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
                 {
                     (*current_p)->forget_cycle = WMA_FORGOTTEN_CYCLE;
 
-                    if (!forget_only_lti || ((*current_p)->this_wme->id->id->smem_lti != NIL))
+                    if (!forget_only_lti || ((*current_p)->this_wme->id->id->LTI_ID != NIL))
                     {
                         do_forget = true;
 
@@ -1004,24 +1004,24 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
             }
 
             // clean up decay set
-            thisAgent->wma_touched_sets->insert(pq_p->first);
+            thisAgent->WM->wma_touched_sets->insert(pq_p->first);
             pq_p->second->clear();
         }
 
         // clean up touched sets
-        for (wma_decay_cycle_set::iterator touched_it = thisAgent->wma_touched_sets->begin(); touched_it != thisAgent->wma_touched_sets->end(); touched_it++)
+        for (wma_decay_cycle_set::iterator touched_it = thisAgent->WM->wma_touched_sets->begin(); touched_it != thisAgent->WM->wma_touched_sets->end(); touched_it++)
         {
-            pq_p = thisAgent->wma_forget_pq->find(*touched_it);
+            pq_p = thisAgent->WM->wma_forget_pq->find(*touched_it);
 
-            if ((pq_p != thisAgent->wma_forget_pq->end()) && (pq_p->second->empty()))
+            if ((pq_p != thisAgent->WM->wma_forget_pq->end()) && (pq_p->second->empty()))
             {
                 pq_p->second->~wma_decay_set();
                 thisAgent->memoryManager->free_with_pool(MP_wma_decay_set, pq_p->second);
 
-                thisAgent->wma_forget_pq->erase(pq_p);
+                thisAgent->WM->wma_forget_pq->erase(pq_p);
             }
         }
-        thisAgent->wma_touched_sets->clear();
+        thisAgent->WM->wma_touched_sets->clear();
     }
 
     return return_val;
@@ -1029,14 +1029,14 @@ inline bool wma_forgetting_update_p_queue(agent* thisAgent)
 
 inline bool wma_forgetting_naive_sweep(agent* thisAgent)
 {
-    wma_d_cycle current_cycle = thisAgent->wma_d_cycle_count;
-    double decay_thresh = thisAgent->wma_thresh_exp;
-    bool forget_only_lti = (thisAgent->wma_params->forget_wme->get_value() == wma_param_container::lti);
+    wma_d_cycle current_cycle = thisAgent->WM->wma_d_cycle_count;
+    double decay_thresh = thisAgent->WM->wma_thresh_exp;
+    bool forget_only_lti = (thisAgent->WM->wma_params->forget_wme->get_value() == wma_param_container::lti);
     bool return_val = false;
 
     for (wme* w = thisAgent->all_wmes_in_rete; w; w = w->rete_next)
     {
-        if (w->wma_decay_el && (!forget_only_lti || (w->id->id->smem_lti != NIL)))
+        if (w->wma_decay_el && (!forget_only_lti || (w->id->id->LTI_ID != NIL)))
         {
             // to be forgotten, wme must...
             // - have been accessed (can't imagine why not, but just in case)
@@ -1131,11 +1131,11 @@ inline void wma_update_decay_histories(agent* thisAgent)
 {
     wma_pooled_wme_set::iterator wme_p;
     wma_decay_element* temp_el;
-    wma_d_cycle current_cycle = thisAgent->wma_d_cycle_count;
-    bool forgetting = ((thisAgent->wma_params->forgetting->get_value() == wma_param_container::approx) || (thisAgent->wma_params->forgetting->get_value() == wma_param_container::bsearch));
+    wma_d_cycle current_cycle = thisAgent->WM->wma_d_cycle_count;
+    bool forgetting = ((thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::approx) || (thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::bsearch));
 
     // add to history for changed elements
-    for (wme_p = thisAgent->wma_touched_elements->begin(); wme_p != thisAgent->wma_touched_elements->end(); wme_p++)
+    for (wme_p = thisAgent->WM->wma_touched_elements->begin(); wme_p != thisAgent->WM->wma_touched_elements->end(); wme_p++)
     {
         temp_el = (*wme_p)->wma_decay_el;
 
@@ -1168,7 +1168,7 @@ inline void wma_update_decay_histories(agent* thisAgent)
 
             msg.append("\n");
 
-            print(thisAgent,  msg.c_str());
+            thisAgent->outputManager->printa(thisAgent,  msg.c_str());
             xml_generate_warning(thisAgent, msg.c_str());
         }
 
@@ -1204,7 +1204,7 @@ inline void wma_update_decay_histories(agent* thisAgent)
 
         temp_el->just_created = false;
     }
-    thisAgent->wma_touched_elements->clear();
+    thisAgent->WM->wma_touched_elements->clear();
 }
 
 /////////////////////////////////////////////////////
@@ -1223,7 +1223,7 @@ double wma_get_wme_activation(agent* thisAgent, wme* w, bool log_result)
 
     if (w->wma_decay_el)
     {
-        return_val = wma_calculate_decay_activation(thisAgent, w->wma_decay_el, thisAgent->wma_d_cycle_count, log_result);
+        return_val = wma_calculate_decay_activation(thisAgent, w->wma_decay_el, thisAgent->WM->wma_d_cycle_count, log_result);
     }
 
     return return_val;
@@ -1257,7 +1257,7 @@ void wma_get_wme_history(agent* thisAgent, wme* w, std::string& buffer)
         wma_history* history = &(w->wma_decay_el->touches);
         unsigned int p = history->next_p;
         unsigned int counter = history->history_ct;
-        wma_d_cycle current_cycle = thisAgent->wma_d_cycle_count;
+        wma_d_cycle current_cycle = thisAgent->WM->wma_d_cycle_count;
 
         //
 
@@ -1295,7 +1295,7 @@ void wma_get_wme_history(agent* thisAgent, wme* w, std::string& buffer)
 
         //
 
-        wma_param_container::forgetting_choices forget = thisAgent->wma_params->forgetting->get_value();
+        wma_param_container::forgetting_choices forget = thisAgent->WM->wma_params->forgetting->get_value();
 
         if ((forget == wma_param_container::bsearch) || (forget == wma_param_container::approx))
         {
@@ -1318,20 +1318,20 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
     // update history for all touched elements
     if (go_action == wma_histories)
     {
-        thisAgent->wma_timers->history->start();
+        thisAgent->WM->wma_timers->history->start();
 
         wma_update_decay_histories(thisAgent);
 
-        thisAgent->wma_timers->history->stop();
+        thisAgent->WM->wma_timers->history->stop();
     }
     // check forgetting queue
     else if (go_action == wma_forgetting)
     {
-        wma_param_container::forgetting_choices forgetting = thisAgent->wma_params->forgetting->get_value();
+        wma_param_container::forgetting_choices forgetting = thisAgent->WM->wma_params->forgetting->get_value();
 
         if (forgetting != wma_param_container::disabled)
         {
-            thisAgent->wma_timers->forgetting->start();
+            thisAgent->WM->wma_timers->forgetting->start();
 
             bool forgot_something = false;
 
@@ -1350,7 +1350,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                 {
                     const char* msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
 
-                    print(thisAgent,  const_cast<char*>(msg));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
 
@@ -1362,19 +1362,19 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
 
                 if (wm_removal_diff > 0)
                 {
-                    thisAgent->wma_stats->forgotten_wmes->set_value(thisAgent->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >(wm_removal_diff));
+                    thisAgent->WM->wma_stats->forgotten_wmes->set_value(thisAgent->WM->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >(wm_removal_diff));
                 }
 
                 if (thisAgent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ])
                 {
                     const char* msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
 
-                    print(thisAgent,  const_cast<char*>(msg));
+                    thisAgent->outputManager->printa(thisAgent,  const_cast<char*>(msg));
                     xml_generate_message(thisAgent, const_cast<char*>(msg));
                 }
             }
 
-            thisAgent->wma_timers->forgetting->stop();
+            thisAgent->WM->wma_timers->forgetting->stop();
         }
     }
 }

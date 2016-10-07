@@ -30,7 +30,6 @@ class MiscTest : public CPPUNIT_NS::TestCase
 #endif
 #ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(testInstantiationDeallocationStackOverflow);
-        CPPUNIT_TEST(testSmemArithmetic);
 #endif
         /* This test has not been kept up to date.  Disabled for quite some time
          *
@@ -53,8 +52,6 @@ class MiscTest : public CPPUNIT_NS::TestCase
         void testWrongAgentWmeFunctions();
         void testRHSRand();
         void testMultipleKernels();
-        void testSmemArithmetic();
-
         void testSource();
 
         void testSoarRand();
@@ -118,8 +115,8 @@ void MiscTest::testInstantiationDeallocationStackOverflow()
 
 void MiscTest::test_clog()
 {
-    pAgent->ExecuteCommandLine("clog clog-test.txt");
-    CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine("output log clog-test.txt");
+    CPPUNIT_ASSERT_MESSAGE("output log clog-test.txt", pAgent->GetLastCommandLineResult());
     pAgent->ExecuteCommandLine("watch 5");
     CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(5);
@@ -128,14 +125,14 @@ void MiscTest::test_clog()
     pKernel->DestroyAgent(pAgent);
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
-    pAgent->ExecuteCommandLine("clog clog-test.txt");
-    CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine("output log clog-test.txt");
+    CPPUNIT_ASSERT_MESSAGE("output log clog-test.txt", pAgent->GetLastCommandLineResult());
     pAgent->ExecuteCommandLine("watch 5");
     CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
     pAgent->RunSelf(5);
     pAgent->InitSoar();
     pAgent->RunSelf(5);
-    pAgent->ExecuteCommandLine("clog --close");
+    pAgent->ExecuteCommandLine("output log --close");
     remove("clog-test.txt");
 }
 
@@ -380,20 +377,6 @@ void MiscTest::testMultipleKernels()
     pAgent->ExecuteCommandLine("p s1");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
 }
-
-void MiscTest::testSmemArithmetic()
-{
-    source("arithmetic/arithmetic.soar") ;
-    pAgent->ExecuteCommandLine("watch 0");
-    pAgent->ExecuteCommandLine("srand 1080");
-
-    pAgent->RunSelfForever();
-
-    sml::ClientAnalyzedXML stats;
-    pAgent->ExecuteCommandLineXML("stats", &stats);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
-}
-
 
 void MiscTest::testSource()
 {

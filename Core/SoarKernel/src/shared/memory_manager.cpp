@@ -222,13 +222,13 @@ can we keep a block counter on the agent and check it modulo some function of th
 uint64_t total = 0;
 for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += memory_for_usage[i];
 
-if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {
+if (total > thisAgent->Decider->settings[DECIDER_MAX_MEMORY_USAGE]) {
 soar_invoke_callbacks(thisAgent, thisAgent,
 MAX_MEMORY_USAGE_CALLBACK,
 (soar_call_data) NULL);
 print (thisAgent, "%8lu bytes total memory allocated\n", total);
 print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n",
-thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
+thisAgent->Decider->settings[DECIDER_MAX_MEMORY_USAGE]);
 }
 
      */

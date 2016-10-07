@@ -13,10 +13,11 @@ import fnmatch
 from SCons.Node.Alias import default_ans
 import SCons.Script
 import shutil
+import time
 
 join = os.path.join
 
-SOAR_VERSION = "9.5.1"
+SOAR_VERSION = "9.6.0"
 
 soarversionFile = open('soarversion', 'w')
 print >> soarversionFile, SOAR_VERSION
@@ -33,7 +34,7 @@ print "   kernel cli sml_python sml_tcl sml_java debugger tests headers tclsoarl
 print "Default targets:"
 print "   kernel cli sml_java debugger headers"
 print "Settings available:"
-print "   --dbg, --static, --out, --build, --no-scu, --verbose"
+print "   --dbg, --opt, --static, --out, --build, --scu, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
 print "   --no-svs --no-kernel-scu --no-cli-scu"
 print "================================================================================"
@@ -134,16 +135,17 @@ AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
 AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1, help='Linker flags')
 AddOption('--no-default-flags', action='store_false', dest='defflags', default=True, help="Don't pass any default flags to the compiler or linker")
-AddOption('--no-scu', action='store_false', dest='scu', default=True, help='Don\'t build using single compilation units.')
+AddOption('--no-scu', action='store_false', dest='scu', default=False, help='Don\'t build using single compilation units.')
 AddOption('--no-scu-kernel', action='store_true', dest='no_scu_kernel', default=False, help='Never build kernel in a single compilation unit.')
 AddOption('--no-scu-cli', action='store_true', dest='no_scu_cli', default=False, help='Never build CLI in a single compilation unit.')
-AddOption('--scu', action='store_true', dest='scu', default=True, help='Build using single compilation units.')
+AddOption('--scu', action='store_true', dest='scu', default=False, help='Build using single compilation units.')
 AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR', help='Directory to install binaries. Defaults to "out".')
 AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR', help='Directory to store intermediate (object) files. Defaults to "build".')
 AddOption('--python', action='store', type='string', dest='python', default=sys.executable, nargs=1, help='Python executable')
 AddOption('--tcl', action='store', type='string', dest='tcl', nargs=1, help='Active TCL (>= 8.6) libraries')
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Enable debug build.  Disables compiler optimizations, includes debugging symbols, debug trace statements and assertions')
+AddOption('--opt', action='store_false', dest='dbg', default=False, help='Enable optimized build.  Enables compiler optimizations, removes debugging symbols, debug trace statements and assertions')
 AddOption('--verbose', action='store_true', dest='verbose', default=False, help='Output full compiler commands')
 AddOption('--no-svs', action='store_true', dest='nosvs', default=False, help='Build Soar without SVS functionality')
 
@@ -166,6 +168,18 @@ env = Environment(
     VISHIDDEN=False,  # needed by swig
 )
 
+# This creates a file for cli_version.cpp to source.  For optimized builds, this guarantees
+# that the build date will be correct in every build.  (Turned off for debug, b/c it was adding
+# extra compilation time.  (for some reason, this will build it the first two times you compile after
+# it exists.)
+
+if ((GetOption('dbg') == None) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
+    cli_version_dep = open('Core/shared/build_time_date.h', 'w')
+    print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
+    print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
+    print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"
+    cli_version_dep.close()
+    
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))
 elif sys.platform == 'darwin':
@@ -261,6 +275,7 @@ env.Replace(
         '#Core/SoarKernel/src/semantic_memory',
         '#Core/SoarKernel/src/shared',
         '#Core/SoarKernel/src/soar_representation',
+        '#Core/SoarKernel/src/visualizer',
         '#Core/ElementXML/src',
         '#Core/KernelSML/src',
         '#Core/ConnectionSML/src',

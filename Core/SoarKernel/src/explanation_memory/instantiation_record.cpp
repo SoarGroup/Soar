@@ -1,22 +1,23 @@
 #include "instantiation_record.h"
+
+#include "action_record.h"
 #include "agent.h"
+#include "condition_record.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
+#include "production_record.h"
 #include "production.h"
 #include "rete.h"
 #include "rhs.h"
+#include "symbol_manager.h"
 #include "symbol.h"
 #include "test.h"
-#include "output_manager.h"
-#include "visualize.h"
 #include "working_memory.h"
-#include "dprint.h"
-#include "action_record.h"
-#include "condition_record.h"
-#include "explanation_memory.h"
-#include "production_record.h"
-#include "explanation_memory.h"
+#include "visualize.h"
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
@@ -25,7 +26,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     instantiationID     = pInst->i_id;
     cached_inst         = pInst;
     production_name     = pInst->prod_name;
-    symbol_add_ref(thisAgent, production_name);
+    thisAgent->symbolManager->symbol_add_ref(production_name);
     original_production = pInst->prod;
     excised_production  = NULL;
 
@@ -43,9 +44,18 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     {
         original_production->save_for_justification_explanation = true;
     }
+//    if (pInst->i_id == 4)
+//    {
+//        dprint(DT_DEBUG, "Found.\n");
+//    }
 
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
+    {
+        new_action_record = thisAgent->explanationMemory->add_result(pref);
+        actions->push_front(new_action_record);
+    }
+    for (preference* pref = pInst->preferences_cached; pref != NIL; pref = pref->inst_next)
     {
         new_action_record = thisAgent->explanationMemory->add_result(pref);
         actions->push_front(new_action_record);
@@ -56,7 +66,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 instantiation_record::~instantiation_record()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
-    symbol_remove_ref(thisAgent, &production_name);
+    thisAgent->symbolManager->symbol_remove_ref(&production_name);
     delete conditions;
     delete actions;
     dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);
@@ -100,7 +110,7 @@ void instantiation_record::viz_connect_conditions()
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
         lCondRecord = (*it);
-        lCondRecord->viz_connect_to_action();
+        lCondRecord->viz_connect_to_action(this->match_level);
     }
 }
 
@@ -201,12 +211,12 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
             lParentInst->create_identity_paths(path_to_base);
             //            } else {
             //                dprint(DT_EXPLAIN_PATHS, "...not recursing because match level is 0 or condition level < match level\n");
-            //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", match_level, (*it)->get_level());
+            //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", static_cast<int64_t>(match_level), static_cast<int64_t>((*it)->get_level()));
             //            }
             //            path_to_base->pop_back();
         } else {
             dprint(DT_EXPLAIN_PATHS, "...not recursing because no parent or parent != match level\n");
-            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? lParentInst->get_match_level() : 0), match_level);
+            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), static_cast<int64_t>(match_level));
         }
     }
 }
@@ -253,9 +263,8 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         outputManager->set_column_indent(1, 57);
         outputManager->set_column_indent(2, 72);
         /* Print header */
-        outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y)\n\n",
-            instantiationID, production_name);
-        outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n\n");
+        outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y at level %d)\n",
+            instantiationID, production_name, static_cast<int64_t>(match_level));
         outputManager->set_print_test_format(false, true);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -305,16 +314,11 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
-            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
-        outputManager->printa(thisAgent, "\n");
-
     }
-
 }
 
 void instantiation_record::print_for_explanation_trace(bool printFooter)
@@ -348,8 +352,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                 assert(top);
                 assert(rhs);
             } else {
-                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n",
-                    instantiationID, production_name);
+                outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
+                    instantiationID, production_name, match_level);
                 outputManager->printa_sf(thisAgent,
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
@@ -374,8 +378,9 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         outputManager->set_column_indent(2, 100);
         outputManager->set_column_indent(3, 115);
         thisAgent->outputManager->set_print_test_format(true, false);
-        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y)\n\n",
-            instantiationID, production_name);
+        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
+            instantiationID, production_name, match_level);
+        thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
         outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -445,13 +450,10 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_action_list(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
-            outputManager->printa_sf(thisAgent, "\n- All working memory elements matched at level %d or higher.\n", match_level);
-            thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "- This instantiation produced one of the results of the chunk being explained.", "- Shortest path to a result instantiation: ");
         }
-        outputManager->printa(thisAgent, "\n");
 
         if (original_production && original_production->p_node)
         {
@@ -622,7 +624,14 @@ void instantiation_record::viz_et_instantiation()
             thisAgent->visualizationManager->viz_endl();
         }
         thisAgent->visualizationManager->viz_seperator();
+
+//        if (instantiationID == 4)
+//        {
+//            dprint(DT_DEBUG, "Found.\n");
+//        }
+
         action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
+
         if (original_production && original_production->p_node)
         {
             deallocate_condition_list(thisAgent, top);
@@ -633,7 +642,7 @@ void instantiation_record::viz_et_instantiation()
 
 void instantiation_record::visualize()
 {
-    if (thisAgent->visualizationManager->is_simple_inst_enabled())
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
         viz_simple_instantiation();
     } else {

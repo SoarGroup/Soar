@@ -18,19 +18,22 @@
  *
  */
 
-#include "run_soar.h"
 #include "consistency.h"
 
 #include "agent.h"
-#include "print.h"
 #include "decide.h"
-#include "symbol.h"
+#include "decider.h"
+#include "output_manager.h"
+#include "preference.h"
+#include "print.h"
+#include "output_manager.h"
 #include "production.h"
 #include "rete.h"
+#include "run_soar.h"
 #include "slot.h"
+#include "symbol.h"
 #include "working_memory.h"
 #include "xml.h"
-#include "preference.h"
 
 #include <stdlib.h>
 
@@ -47,14 +50,14 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
 
     /*         printf("Examining slot (next)\n");
     for (next = s; next; next=next->next){
-         print_with_symbols("Slot ID:   [%y]\n", next->id);
-     print_with_symbols("Slot Attr: [%y]\n", next->attr);
+         thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", next->id);
+     thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", next->attr);
     }
 
          printf("Examining slot (prev)\n");
     for (prev = s->prev; prev; prev=prev->prev){
-         print_with_symbols("Slot ID:   [%y]\n", prev->id);
-     print_with_symbols("Slot Attr: [%y]\n", prev->attr);
+         thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", prev->id);
+     thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", prev->attr);
     }
 
     printf("Examining slot WMEs\n");
@@ -67,20 +70,20 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
       print_wme(thisAgent, slot_wmes);
     }
 
-    if (thisAgent->highest_goal_whose_context_changed) print_with_symbols("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
+    if (thisAgent->highest_goal_whose_context_changed) thisAgent->outputManager->printa_sf("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
 
-    print_with_symbols("Slot ID:   [%y]\n", s->id);
-    print_with_symbols("Slot Attr: [%y]\n", s->attr);
+    thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", s->id);
+    thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", s->attr);
     if (s->isa_context_slot) printf("this is a context slot.\n");
-    if (s->impasse_id) print_with_symbols("Impasse: [%y]\n", s->impasse_id);
+    if (s->impasse_id) thisAgent->outputManager->printa_sf("Impasse: [%y]\n", s->impasse_id);
     if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
 
-    print_with_symbols("WME ID:    [%y]\n", w->id);
-    print_with_symbols("WME Attr:  [%y]\n", w->attr);
-    print_with_symbols("WME Value: [%y]\n", w->value);
+    thisAgent->outputManager->printa_sf("WME ID:    [%y]\n", w->id);
+    thisAgent->outputManager->printa_sf("WME Attr:  [%y]\n", w->attr);
+    thisAgent->outputManager->printa_sf("WME Value: [%y]\n", w->value);
     if (w->value->id->isa_operator) printf("This is an operator\n");
 
-    print_with_symbols("s->id->id->operator_slot->id: [%y]\n", s->id->id->operator_slot->id); */
+    thisAgent->outputManager->printa_sf("s->id->id->operator_slot->id: [%y]\n", s->id->id->operator_slot->id); */
 
     if (s->wmes)   /* If there is something in the context slot */
     {
@@ -88,15 +91,15 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
         {
             if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
             {
-                print(thisAgent,  "\n        REMOVING: Operator from context slot (proposal no longer matches): ");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n        REMOVING: Operator from context slot (proposal no longer matches): ");
                 print_wme(thisAgent, w);
             }
             remove_wmes_for_context_slot(thisAgent, s);
             if (s->id->id->lower_goal)
             {
-                if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                 {
-                    print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
+                    thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
                 }
 
                 remove_existing_context_and_descendents(thisAgent, s->id->id->lower_goal);
@@ -133,7 +136,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
     if (s->isa_context_slot)
     {
         printf("    slot (s)  isa context slot: ");
-        print_with_symbols(thisAgent, "    Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
+        thisAgent->outputManager->printa_sf(thisAgent, "    Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
     }
     /* printf("    Address of s: %x\n", s); */
     printf("    s->impasse_type: %d\n", s->impasse_type);
@@ -165,7 +168,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
         current_impasse_attribute = attribute_of_existing_impasse(thisAgent, goal);
 #ifdef DEBUG_CONSISTENCY_CHECK
         printf("    Goal is impassed:  Impasse type: %d: ", current_impasse_type);
-        print_with_symbols(thisAgent, "    Impasse attribute: [%y]\n", current_impasse_attribute);
+        thisAgent->outputManager->printa_sf(thisAgent, "    Impasse attribute: [%y]\n", current_impasse_attribute);
 #endif
         /* Special case for an operator no-change */
         if ((operator_in_slot) &&
@@ -250,7 +253,7 @@ bool decision_consistent_with_current_preferences(agent* thisAgent, Symbol* goal
                     if (current_operator->value == cand->value)
                     {
 #ifdef DEBUG_CONSISTENCY_CHECK
-                        print_with_symbols(thisAgent, "       Operator slot ID [%y] and candidate ID [%y] are the same.\n",
+                        thisAgent->outputManager->printa_sf(thisAgent, "       Operator slot ID [%y] and candidate ID [%y] are the same.\n",
                                            current_operator->value,
                                            cand->value);
 #endif
@@ -336,13 +339,13 @@ void remove_current_decision(agent* thisAgent, slot* s)
     if (!s->wmes)
         if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
+            thisAgent->outputManager->printa_sf(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
         }
 
     if (s->id)
         if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
-            print_with_symbols(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id);
+            thisAgent->outputManager->printa_sf(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id);
         }
 
     /* If there is an operator in the slot, remove it */
@@ -375,7 +378,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #ifdef DEBUG_CONSISTENCY_CHECK
     if (thisAgent->highest_goal_whose_context_changed)
     {
-        print_with_symbols(thisAgent, "    Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
+        thisAgent->outputManager->printa_sf(thisAgent, "    Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
     }
 #endif
 
@@ -386,7 +389,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
     {
         /* REW: end   05.05.97 */
 #ifdef DEBUG_CONSISTENCY_CHECK
-        print_with_symbols(thisAgent, "    Looking at goal [%y] to see if its preferences have changed\n", goal);
+        thisAgent->outputManager->printa_sf(thisAgent, "    Looking at goal [%y] to see if its preferences have changed\n", goal);
 #endif
         s = goal->id->operator_slot;
 
@@ -406,12 +409,12 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
                 if (!decision_consistent_with_current_preferences(thisAgent, goal, s))
                 {
 #ifdef DEBUG_CONSISTENCY_CHECK
-                    print_with_symbols(thisAgent, "   The current preferences indicate that the decision at [%y] needs to be removed.\n", goal);
+                    thisAgent->outputManager->printa_sf(thisAgent, "   The current preferences indicate that the decision at [%y] needs to be removed.\n", goal);
 #endif
-                    if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
                     {
-                        print_with_symbols(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
-                        print_with_symbols(thisAgent, "consistent with the current preferences.\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
+                        thisAgent->outputManager->printa_sf(thisAgent, "consistent with the current preferences.\n");
                     }
                     /* This doesn't seem like it should be necessary but evidently it is: see 2.008 */
                     remove_current_decision(thisAgent, s);
@@ -436,7 +439,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 bool i_activity_at_goal(Symbol* goal)
 {
 
-    /* print_with_symbols("\nLooking for I-activity at goal: %y\n", goal); */
+    /* thisAgent->outputManager->printa_sf("\nLooking for I-activity at goal: %y\n", goal); */
 
     if (goal->id->ms_i_assertions)
     {
@@ -501,7 +504,7 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
         /* Debugging only */
-        print(thisAgent,  "In highest_active_goal_propose:\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "In highest_active_goal_propose:\n");
         if (goal->id->ms_i_assertions)
         {
             print_assertion(goal->id->ms_i_assertions);
@@ -526,7 +529,7 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
        an unrecoverable error. */
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-    print(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+    thisAgent->outputManager->printa_sf(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
     xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
     if (thisAgent->nil_goal_retractions)
@@ -555,7 +558,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
 
 #if 0 //DEBUG_DETERMINE_LEVEL_PHASE
         /* Debugging only */
-        print(thisAgent,  "In highest_active_goal_apply :\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "In highest_active_goal_apply :\n");
         if (goal->id->ms_i_assertions)
         {
             print_assertion(goal->id->ms_i_assertions);
@@ -585,7 +588,7 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
        an unrecoverable error. */
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-    print(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+    thisAgent->outputManager->printa_sf(thisAgent,  "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
     xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
     if (thisAgent->nil_goal_retractions)
@@ -641,12 +644,12 @@ bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol* goal)
 #endif
 
 #ifdef DEBUG_CONSISTENCY_CHECK
-    print(thisAgent,  "\nStart: CONSISTENCY CHECK at level %d\n", goal->id->level);
+    thisAgent->outputManager->printa_sf(thisAgent,  "\nStart: CONSISTENCY CHECK at level %d\n", static_cast<int64_t>(goal->id->level));
 
     /* Just a bunch of debug stuff for now */
     if (thisAgent->highest_goal_whose_context_changed)
     {
-        print_with_symbols(thisAgent, "current_agent(highest_goal_whose_context_changed) = [%y]\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "current_agent(highest_goal_whose_context_changed) = [%y]\n",
                            thisAgent->highest_goal_whose_context_changed);
     }
     else
@@ -753,12 +756,11 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
     /* Check for Max ELABORATIONS EXCEEDED */
 
-    if (thisAgent->e_cycles_this_d_cycle >=
-            static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
+    if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
-            print(thisAgent,  "\nWarning: reached max-elaborations; proceeding to output phase.");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning: reached max-elaborations; proceeding to output phase.");
             xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to output phase.");
         }
         thisAgent->current_phase = OUTPUT_PHASE;
@@ -816,7 +818,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
     {
         case NIL_GOAL_RETRACTIONS:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nOnly NIL goal retractions are active");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nOnly NIL goal retractions are active");
 #endif
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
@@ -824,7 +826,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
         case NEW_DECISION:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThis is a new decision....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThis is a new decision....");
 #endif
             thisAgent->FIRING_TYPE = active_production_type_at_goal(thisAgent->active_goal);
             /* in APPLY phase, we can test for ONC here, check ms_o_assertions */
@@ -833,7 +835,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
         case LOWER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is lower than the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is lower than the previous level....");
 #endif
             /* Is there a minor quiescence at the previous level? */
             if (minor_quiescence_at_goal(thisAgent, thisAgent->previous_active_goal))
@@ -855,22 +857,22 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
-                print(thisAgent,  "\nSaved production type: IE _PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nSaved production type: IE _PRODS");
             }
             if (goal->id->saved_firing_type == PE_PRODS)
             {
-                print(thisAgent,  "\nSaved production type: PE _PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nSaved production type: PE _PRODS");
             }
             if (goal->id->saved_firing_type == NO_SAVED_PRODS)
             {
-                print(thisAgent,  "\nSaved production type: NONE");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nSaved production type: NONE");
             }
 #endif
 
             if (goal->id->saved_firing_type != NO_SAVED_PRODS)
             {
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-                print(thisAgent,  "\nRestoring production type from previous processing at this level");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nRestoring production type from previous processing at this level");
 #endif
                 thisAgent->FIRING_TYPE = goal->id->saved_firing_type;
                 // KJC 04.05 commented the next line after reworking the phases in init_soar.cpp
@@ -891,7 +893,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
         case SAME_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is the same as the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is the same as the previous level....");
 #endif
             if (minor_quiescence_at_goal(thisAgent, thisAgent->active_goal))
             {
@@ -910,7 +912,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 
         case HIGHER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is higher than the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is higher than the previous level....");
 #endif
 
             goal = thisAgent->previous_active_goal;
@@ -919,19 +921,19 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent)
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as IE_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as IE_PRODS");
             }
             else if (goal->id->saved_firing_type == PE_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as PE_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as PE_PRODS");
             }
             else if (goal->id->saved_firing_type == NO_SAVED_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as NO_SAVED_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as NO_SAVED_PRODS");
             }
             else
             {
-                print(thisAgent,  "\n Unknown SAVED firing type???????");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Unknown SAVED firing type???????");
             }
 #endif
 
@@ -1020,12 +1022,11 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
     /* Check for Max ELABORATIONS EXCEEDED */
 
-    if (thisAgent->e_cycles_this_d_cycle >=
-            static_cast<uint64_t>(thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM]))
+    if (thisAgent->e_cycles_this_d_cycle >= thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])
     {
-        if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_WARNINGS])
         {
-            print(thisAgent,  "\nWarning: reached max-elaborations; proceeding to decision phase.");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning: reached max-elaborations; proceeding to decision phase.");
             xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
         }
         thisAgent->current_phase = DECISION_PHASE;
@@ -1085,7 +1086,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
     {
         case NIL_GOAL_RETRACTIONS:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nOnly NIL goal retractions are active");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nOnly NIL goal retractions are active");
 #endif
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
@@ -1093,7 +1094,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
         case NEW_DECISION:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThis is a new decision....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThis is a new decision....");
 #endif
             thisAgent->FIRING_TYPE = IE_PRODS;
             //thisAgent->current_phase = PREFERENCE_PHASE;
@@ -1101,7 +1102,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
         case LOWER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is lower than the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is lower than the previous level....");
 #endif
             /* There is always a minor quiescence at the previous level
                in the propose phase, so check for consistency. */
@@ -1117,7 +1118,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
         case SAME_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is the same as the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is the same as the previous level....");
 #endif
             thisAgent->FIRING_TYPE = IE_PRODS;
             // thisAgent->current_phase = PREFERENCE_PHASE;
@@ -1125,7 +1126,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 
         case HIGHER_LEVEL:
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
-            print(thisAgent,  "\nThe level is higher than the previous level....");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\nThe level is higher than the previous level....");
 #endif
 
             goal = thisAgent->previous_active_goal;
@@ -1134,19 +1135,19 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE
             if (goal->id->saved_firing_type == IE_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as IE_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as IE_PRODS");
             }
             else if (goal->id->saved_firing_type == PE_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as PE_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as PE_PRODS");
             }
             else if (goal->id->saved_firing_type == NO_SAVED_PRODS)
             {
-                print(thisAgent,  "\n Saving current firing type as NO_SAVED_PRODS");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Saving current firing type as NO_SAVED_PRODS");
             }
             else
             {
-                print(thisAgent,  "\n Unknown SAVED firing type???????");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n Unknown SAVED firing type???????");
             }
 #endif
 

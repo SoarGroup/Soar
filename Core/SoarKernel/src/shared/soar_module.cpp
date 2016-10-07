@@ -21,6 +21,7 @@
 #include "instantiation.h"
 #include "slot.h"
 #include "mem.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "soar_TraceNames.h"
@@ -77,7 +78,7 @@ namespace soar_module
 
     void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%s is not a valid command or option.  Did you mean", badCommand.c_str());
+        thisAgent->outputManager->printa_sf(thisAgent, "%?  Did you mean", badCommand.c_str());
         thisAgent->outputManager->display_ambiguous_command_error(thisAgent, matched_name_list);
     }
 

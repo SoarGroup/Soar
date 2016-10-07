@@ -23,7 +23,6 @@
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
-#define num_output_strings 10
 #define DEBUG_SCHEMA_VERSION "0.1"
 
 typedef struct trace_mode_info_struct
@@ -100,14 +99,6 @@ class Output_Manager
         char* m_pre_string, *m_post_string;
         int  m_column_indent[MAX_COLUMNS];
 
-        /* -- A quick replacement for Soar's printed_output_strings system.  Rather than have
-         *    one string buffer, it rotates through 10 of them.  It allows us to have multiple
-         *    function calls that use that buffer within one print statements.  There are
-         *    probably better approaches, but this avoided revising a lot of other code and
-         *    does the job.  -- */
-        char        printed_output_strings[output_string_size][num_output_strings];
-        int64_t     next_output_string;
-
         /* -- The following tracks column of the next character to print if Soar is writing to cout --*/
         int     global_printer_output_column;
         void    update_printer_columns(agent* pSoarAgent, const char* msg);
@@ -124,9 +115,8 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void test_to_string(test t, std::string &destString, bool show_equality = false);
-        const char* test_type_to_string_brief(byte test_type);
+        const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
 
@@ -134,16 +124,21 @@ class Output_Manager
 
     public:
 
+        uint64_t settings[num_output_sysparams];
+
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
 
-        bool is_debug_mode_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+        bool is_trace_enabled(TraceMode mode) { return mode_info[mode].enabled; }
+
+        /* Methods for the cli output command */
+        void print_output_summary();
+        bool is_printing_to_stdout() { return stdout_mode; };
 
         void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
-
 
         /* Core printing functions */
         void printa(agent* pSoarAgent, const char* msg);
@@ -158,6 +153,8 @@ class Output_Manager
         void print(const char* msg) { if (m_defaultAgent) printa(m_defaultAgent, msg); }
         void print_sf(const char* format, ...);
         void sprint_sf(std::string &destString, const char* format, ...);
+        size_t sprint_sf_cstr(char* dest, size_t dest_size, const char* format, ...);
+
         /* Print to database */
         void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
         void store_refcount(Symbol* sym, const char* callers, bool isAdd);
@@ -169,41 +166,35 @@ class Output_Manager
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
         void debug_start_fresh_line(TraceMode mode);
 
-        char* get_printed_output_string()
-        {
-            if (++next_output_string == num_output_strings)
-            {
-                next_output_string = 0;
-            }
-            return printed_output_strings[next_output_string];
-        }
+        const char* phase_to_string(top_level_phase pPhase);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
+        /* Methods to make printing prettier */
         int get_printer_output_column(agent* thisAgent = NULL);
         void set_printer_output_column(agent* thisAgent = NULL, int pOutputColumn = 1);
 
+        void print_spaces(agent* thisAgent, int n)
+        {
+            std::string lStr = std::string(n, ' ');
+            printa(thisAgent, lStr.c_str());
+        }
+
         void set_print_indents(const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (pPre)
-            {
+            if (pPre) {
                 if (m_pre_string) free(m_pre_string);
-                if (strlen(pPre) > 0)
-                {
+                if (strlen(pPre) > 0) {
                     m_pre_string = strdup(pPre);
-                }
-                else
-                {
+                } else {
                     m_pre_string = NULL;
                 }
             }
-            if (pPost)
-            {
+            if (pPost) {
                 if (m_post_string) free(m_post_string);
-                if (strlen(pPost) > 0)
-                {
+                if (strlen(pPost) > 0) {
                     m_post_string = strdup(pPost);
-                }
-                else
-                {
+                } else {
                     m_post_string = NULL;
                 }
             }
@@ -228,18 +219,18 @@ class Output_Manager
 
         void set_dprint_indents(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL)
         {
-            if (is_debug_mode_enabled(mode)) set_print_indents(pPre, pPost);
+            if (is_trace_enabled(mode)) set_print_indents(pPre, pPost);
         }
         void set_dprint_test_format(TraceMode mode, bool pActual, bool p_Identity)
         {
-            if (is_debug_mode_enabled(mode)) set_print_test_format(pActual, p_Identity);
+            if (is_trace_enabled(mode)) set_print_test_format(pActual, p_Identity);
         }
         void clear_dprint_indents(TraceMode mode)
         {
-            if (is_debug_mode_enabled(mode)) clear_print_indents();
+            if (is_trace_enabled(mode)) clear_print_indents();
         }
         void clear_dprint_test_format(TraceMode mode) {
-            if (is_debug_mode_enabled(mode)) clear_print_test_format();
+            if (is_trace_enabled(mode)) clear_print_test_format();
         }
         void set_column_indent(int pColumnIndex, int pColumnNum) {
             if (pColumnIndex >= MAX_COLUMNS) return;
@@ -250,7 +241,6 @@ class Output_Manager
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
         void debug_print_production(TraceMode mode, production* prod);
 
-        void print_current_lexeme(TraceMode mode, soar::Lexer* lexer);
         void print_identifiers(TraceMode mode);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);
@@ -261,7 +251,7 @@ class Output_Manager
 
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
-        void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, int64_t pSysParam = 0);
+        void display_soar_feedback(agent* thisAgent, SoarCannedMessageType pErrorType, bool shouldPrint = true);
         void display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1 = NULL, const char* pString2 = NULL);
         void display_ambiguous_command_error(agent* thisAgent, std::list< std::string > matched_objects_str);
 
@@ -270,6 +260,17 @@ class Output_Manager
         char* NULL_SYM_STR;
 
 };
+
+inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
+inline const char* capitalizYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
+
+inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
+{
+    std::string return_string = left_string;
+    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    return_string += right_string;
+    return return_string;
+}
 
 /* ------------------------------------
  *    Format strings for Soar printing:

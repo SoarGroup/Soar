@@ -20,6 +20,8 @@ typedef struct chunk_stats_struct {
         uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                reverted;
+        bool                lhs_repair;
+        bool                rhs_repair;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;
@@ -36,15 +38,15 @@ class chunk_record
         chunk_record(agent* myAgent, uint64_t pChunkID);
         ~chunk_record();
 
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map_type* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    generate_dependency_paths();
         void                    end_chunk_record();
 
         void                    excise_chunk_record();
 
-        void					print_for_explanation_trace();
-        void					print_for_wme_trace();
-        void					visualize();
+        void                    print_for_explanation_trace();
+        void                    print_for_wme_trace();
+        void                    visualize();
 
     private:
         agent*                  thisAgent;

@@ -10,11 +10,11 @@
 #include "decision_manipulation.h"
 
 #include "agent.h"
-#include "soar_rand.h"
-
 #include "decide.h"
 #include "misc.h"
 #include "preference.h"
+#include "soar_rand.h"
+#include "symbol.h"
 
 /***************************************************************************
  * Function     : select_init

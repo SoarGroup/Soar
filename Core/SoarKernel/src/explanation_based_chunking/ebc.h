@@ -9,6 +9,8 @@
 #define EBC_MANAGER_H_
 
 #include "kernel.h"
+
+#include "ebc_structs.h"
 #include "stl_typedefs.h"
 
 #include <list>
@@ -16,63 +18,9 @@
 #include <unordered_map>
 #include <cstdlib>
 
-#define BUFFER_PROD_NAME_SIZE 256
-#define CHUNK_COND_HASH_TABLE_SIZE 1024
-#define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
-
 #define BUILD_WITH_EXPLAINER
 
 tc_number get_new_tc_number(agent* thisAgent);
-
-typedef struct constraint_struct
-{
-    test eq_test;
-    test constraint_test;
-    constraint_struct(test new_eq, test new_constraint) : eq_test(new_eq), constraint_test(new_constraint) {}
-} constraint;
-
-typedef struct attachment_struct
-{
-        condition* cond;
-        WME_Field field;
-        attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
-
-} attachment_point;
-
-typedef struct chunk_cond_struct
-{
-    condition* cond;                /* points to the original condition */
-
-    condition* instantiated_cond;   /* points to cond in chunk instantiation */
-    condition* variablized_cond;    /* points to cond in the actual chunk */
-
-    /* dll of all cond's in a set (i.e., a chunk_cond_set, or the grounds) */
-    struct chunk_cond_struct* next, *prev;
-
-    /* dll of cond's in this particular hash bucket for this set */
-    struct chunk_cond_struct* next_in_bucket, *prev_in_bucket;
-
-    uint32_t hash_value;             /* equals hash_condition(cond) */
-    uint32_t compressed_hash_value;  /* above, compressed to a few bits */
-} chunk_cond;
-
-typedef struct chunk_cond_set_struct
-{
-    chunk_cond* all;       /* header for dll of all chunk_cond's in the set */
-    chunk_cond* table[CHUNK_COND_HASH_TABLE_SIZE];  /* hash table buckets */
-} chunk_cond_set;
-
-typedef struct backtrace_struct
-{
-    int result;                    /* 1 when this is a result of the chunk */
-    condition* trace_cond;         /* The (local) condition being traced */
-    char   prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
-    condition* grounds;            /* The list of conds for the LHS of chunk */
-    condition* potentials;         /* The list of conds which aren't linked */
-    condition* locals;             /* Conds in the subgoal -- need to BT */
-    condition* negated;            /* Negated conditions (sub/super) */
-    struct backtrace_struct* next_backtrace; /* Pointer to next in this list */
-} backtrace_str;
 
 class Explanation_Based_Chunker
 {
@@ -90,8 +38,8 @@ class Explanation_Based_Chunker
         bool                    max_chunks_reached;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-        ::list*     chunk_free_problem_spaces;
-        ::list*     chunky_problem_spaces;   /* AGR MVL1 */
+        cons*     chunk_free_problem_spaces;
+        cons*     chunky_problem_spaces;   /* AGR MVL1 */
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
@@ -112,6 +60,8 @@ class Explanation_Based_Chunker
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
         void unify_identity(test t);
+        void unify_preference_identities(preference* lPref);
+        uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
@@ -125,6 +75,9 @@ class Explanation_Based_Chunker
          * template instances.  We make these two methods public to support that. */
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
+
+        /* Methods for printing in Soar trace */
+        void print_current_built_rule(const char* pHeader = NULL);
 
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
@@ -142,7 +95,7 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void cleanup_for_instantiation(uint64_t pI_id);
+        void cleanup_after_instantiation_creation(uint64_t pI_id);
         void cleanup_for_instantiation_deallocation(uint64_t pI_id);
         void clear_variablization_maps();
 
@@ -169,9 +122,9 @@ class Explanation_Based_Chunker
         tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
-        ::list*             grounds;
-        ::list*             locals;
-        ::list*             positive_potentials;
+        cons*             grounds;
+        cons*             locals;
+        cons*             positive_potentials;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           locals_tc;
@@ -206,15 +159,15 @@ class Explanation_Based_Chunker
          *    formation and variablization.  The data stored within
          *    them is temporary and cleared after use. -- */
 
-        inst_to_id_map_type*            instantiation_identities;
-        id_to_sym_map_type*             o_id_to_var_map;
-        id_to_sym_map_type*             id_to_rule_sym_debug_map;
+        inst_to_id_map*            instantiation_identities;
+        id_to_sym_map*             o_id_to_var_map;
+        id_to_sym_map*             id_to_rule_sym_debug_map;
 
-        id_to_id_map_type*              unification_map;
+        id_to_id_map*              unification_map;
         identity_triple*                local_singleton_superstate_identity;
 
         constraint_list*                constraints;
-        attachment_points_map_type*     attachment_points;
+        attachment_points_map*     attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to
          *    merge or eliminate positive conditions on the LHS of a chunk. -- */
@@ -222,7 +175,7 @@ class Explanation_Based_Chunker
 
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
-        sym_to_sym_map_type*            rhs_var_to_match_map;
+        sym_to_sym_map*            rhs_var_to_match_map;
 
         bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
@@ -259,11 +212,8 @@ class Explanation_Based_Chunker
         /* Dependency analysis methods */
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
-        void add_to_potentials(condition* cond);
         void add_to_locals(condition* cond);
         void trace_locals(goal_stack_level grounds_level);
-        void trace_grounded_potentials();
-        bool trace_ungrounded_potentials(goal_stack_level grounds_level);
         void backtrace_through_instantiation(
                 instantiation* inst,
                 goal_stack_level grounds_level,
@@ -326,8 +276,6 @@ class Explanation_Based_Chunker
         void clear_data();
         void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
 
-        /* Methods for printing in Soar trace */
-        void print_current_built_rule(const char* pHeader);
 };
 
 #endif /* EBC_MANAGER_H_ */

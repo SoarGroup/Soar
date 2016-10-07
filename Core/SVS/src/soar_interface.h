@@ -1,20 +1,25 @@
 #ifndef SOAR_INTERFACE_H
 #define SOAR_INTERFACE_H
 
-#include <utility>
-#include <list>
-#include <sstream>
-#include <vector>
-#include "portability.h"
+
+#include "kernel.h"
+
+#include "agent.h"
+#include "production.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "mat.h"
 
-#include "Export.h"
+#include <list>
+#include <sstream>
+#include <utility>
+#include <vector>
 
-tc_number get_new_tc_number(agent* thisAgent);
-extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
-extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
-extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
+//#include "Export.h"
+
+//extern EXPORT Symbol* make_str_constant(agent* thisAgent, char const* name);
+//extern EXPORT Symbol* make_int_constant(agent* thisAgent, int64_t value);
+//extern EXPORT Symbol* make_float_constant(agent* thisAgent, double value);
 
 typedef std::vector<wme*> wme_vector;
 
@@ -90,17 +95,17 @@ inline tc_number soar_interface::new_tc_num()
 
 inline Symbol* soar_interface::make_sym(const std::string& val)
 {
-    return make_str_constant(thisAgent, val.c_str());
+    return thisAgent->symbolManager->make_str_constant(val.c_str());
 }
 
 inline Symbol* soar_interface::make_sym(int val)
 {
-    return make_int_constant(thisAgent, val);
+    return thisAgent->symbolManager->make_int_constant(val);
 }
 
 inline Symbol* soar_interface::make_sym(double val)
 {
-    return make_float_constant(thisAgent, val);
+    return thisAgent->symbolManager->make_float_constant(val);
 }
 
 template<class T>

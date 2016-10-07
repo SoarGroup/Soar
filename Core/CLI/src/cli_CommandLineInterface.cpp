@@ -10,9 +10,15 @@
 #include <cctype>
 
 #include "cli_Commands.h"
+#include "cli_decide.h"
 #include "cli_explain.h"
 #include "cli_chunk.h"
+#include "cli_load_save.h"
+#include "cli_output.h"
+#include "cli_production.h"
+#include "cli_soar.h"
 #include "cli_visualize.h"
+#include "cli_wm.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -24,9 +30,14 @@
 #include "XMLTrace.h"
 
 #include "agent.h"
+#include "output_manager.h"
 #include "print.h"
+#include "production.h"
 #include "lexer.h"
 #include "slot.h"
+#include "soar_module.h"
+#include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 #include "xml.h"
 
@@ -44,81 +55,40 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_XMLResult       = new XMLTrace() ;
 
     // parser takes ownership and deletes commands in its destructor
-    m_Parser.AddCommand(new cli::AddWMECommand(*this));
     m_Parser.AddCommand(new cli::AliasCommand(*this));
-    m_Parser.AddCommand(new cli::AllocateCommand(*this));
-    m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
     m_Parser.AddCommand(new cli::CDCommand(*this));
     m_Parser.AddCommand(new cli::ChunkCommand(*this));
-    m_Parser.AddCommand(new cli::CliExtensionMessageCommand(*this));
-    m_Parser.AddCommand(new cli::CLogCommand(*this));
-    m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
     m_Parser.AddCommand(new cli::DebugCommand(*this));
-    m_Parser.AddCommand(new cli::DefaultWMEDepthCommand(*this));
+    m_Parser.AddCommand(new cli::DecideCommand(*this));
     m_Parser.AddCommand(new cli::DirsCommand(*this));
     m_Parser.AddCommand(new cli::EchoCommand(*this));
-    m_Parser.AddCommand(new cli::EchoCommandsCommand(*this));
-    m_Parser.AddCommand(new cli::EditProductionCommand(*this));
     m_Parser.AddCommand(new cli::EpMemCommand(*this));
-    m_Parser.AddCommand(new cli::ExciseCommand(*this));
     m_Parser.AddCommand(new cli::ExplainCommand(*this));
-    m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
-    m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
     m_Parser.AddCommand(new cli::GPCommand(*this));
-    m_Parser.AddCommand(new cli::GPMaxCommand(*this));
     m_Parser.AddCommand(new cli::HelpCommand(*this));
-    m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
-    m_Parser.AddCommand(new cli::InitSoarCommand(*this));
-    m_Parser.AddCommand(new cli::InternalSymbolsCommand(*this));
     m_Parser.AddCommand(new cli::LearnCommand(*this));
-    m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
+    m_Parser.AddCommand(new cli::LoadCommand(*this));
     m_Parser.AddCommand(new cli::LSCommand(*this));
-    m_Parser.AddCommand(new cli::MatchesCommand(*this));
-    m_Parser.AddCommand(new cli::MaxDCTimeCommand(*this));
-    m_Parser.AddCommand(new cli::MaxElaborationsCommand(*this));
-    m_Parser.AddCommand(new cli::MaxGoalDepthCommand(*this));
-    m_Parser.AddCommand(new cli::MaxMemoryUsageCommand(*this));
-    m_Parser.AddCommand(new cli::MaxNilOutputCyclesCommand(*this));
-    m_Parser.AddCommand(new cli::MemoriesCommand(*this));
-    m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
-    m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
-    m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
-    m_Parser.AddCommand(new cli::PbreakCommand(*this));
+    m_Parser.AddCommand(new cli::OutputCommand(*this));
     m_Parser.AddCommand(new cli::PopDCommand(*this));
-    m_Parser.AddCommand(new cli::PortCommand(*this));
-    m_Parser.AddCommand(new cli::PredictCommand(*this));
     m_Parser.AddCommand(new cli::PreferencesCommand(*this));
     m_Parser.AddCommand(new cli::PrintCommand(*this));
-    m_Parser.AddCommand(new cli::ProductionFindCommand(*this));
+    m_Parser.AddCommand(new cli::ProductionCommand(*this));
     m_Parser.AddCommand(new cli::PushDCommand(*this));
-    m_Parser.AddCommand(new cli::PWatchCommand(*this));
     m_Parser.AddCommand(new cli::PWDCommand(*this));
-    m_Parser.AddCommand(new cli::RandCommand(*this));
-    m_Parser.AddCommand(new cli::RemoveWMECommand(*this));
-    m_Parser.AddCommand(new cli::ReplayInputCommand(*this));
-    m_Parser.AddCommand(new cli::ReteNetCommand(*this));
     m_Parser.AddCommand(new cli::RLCommand(*this));
     m_Parser.AddCommand(new cli::RunCommand(*this));
-    m_Parser.AddCommand(new cli::SelectCommand(*this));
-    m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
+    m_Parser.AddCommand(new cli::SaveCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
-    m_Parser.AddCommand(new cli::SoarNewsCommand(*this));
-    m_Parser.AddCommand(new cli::SourceCommand(*this));
+    m_Parser.AddCommand(new cli::SoarCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
-    m_Parser.AddCommand(new cli::SRandCommand(*this));
     m_Parser.AddCommand(new cli::StatsCommand(*this));
-    m_Parser.AddCommand(new cli::StopSoarCommand(*this));
+    m_Parser.AddCommand(new cli::TclCommand(*this));
     m_Parser.AddCommand(new cli::TimeCommand(*this));
     m_Parser.AddCommand(new cli::TimersCommand(*this));
-    m_Parser.AddCommand(new cli::UnaliasCommand(*this));
-    m_Parser.AddCommand(new cli::VerboseCommand(*this));
-    m_Parser.AddCommand(new cli::VersionCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
-    m_Parser.AddCommand(new cli::WaitSNCCommand(*this));
-    m_Parser.AddCommand(new cli::WarningsCommand(*this));
     m_Parser.AddCommand(new cli::WatchCommand(*this));
-    m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
-    m_Parser.AddCommand(new cli::WMACommand(*this));
+    m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
 
@@ -183,6 +153,17 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     return true;
 }
 
+EXPORT std::string CommandLineInterface::ExpandCommand(const char* pCommand)
+{
+    std::vector<std::string> lStrVector;
+    std::string lCmd(pCommand);
+    lStrVector.push_back(lCmd);
+    cli::Aliases aliases = m_Parser.GetAliases();
+    aliases.Expand(lStrVector);
+    lCmd = lStrVector.back();
+    return lCmd;
+}
+
 void CommandLineInterface::PushCall(CallData callData)
 {
     m_CallDataStack.push(callData);
@@ -191,10 +172,24 @@ void CommandLineInterface::PushCall(CallData callData)
     {
         m_pAgentSML = callData.pAgent;
     }
-    else
-    {
-        m_pAgentSML = 0;
-    }
+    /* Some commands that don't have a pAgent are causing issues
+     * because some of the new CLI commands need the agent to
+     * access code that the simpler commands may not have needed.
+     * This has been observed with load-library.  A better
+     * solution would be to find a way to get those commands to
+     * include the agent, but I'm not sure how to do that.
+     *
+     * I'm making this change because it fixes a crash and it
+     * seems that a stale value should adversely affect anything.
+     * I couldn't find anything that checks if it's null and
+     * does something different.  So, if a future command
+     * doesn't need the pAgentSML, it will ignore any stale values.
+     * If a future command does need it, then it will be updated with
+     * a new calldata before the command executes. */
+//    else
+//    {
+//        m_pAgentSML = 0;
+//    }
 
     m_RawOutput = callData.rawOutput;
 
@@ -703,46 +698,46 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
     int levels_up;
     wme* w;
 
-    v = find_variable(thisAgent, var_name);
-    if (v == thisAgent->s_context_variable)
+    v = thisAgent->symbolManager->find_variable(var_name);
+    if (v == thisAgent->symbolManager->soarSymbols.s_context_variable)
     {
         levels_up = 0;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->o_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.o_context_variable)
     {
         levels_up = 0;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->ss_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.ss_context_variable)
     {
         levels_up = 1;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->so_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.so_context_variable)
     {
         levels_up = 1;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->sss_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.sss_context_variable)
     {
         levels_up = 2;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->sso_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.sso_context_variable)
     {
         levels_up = 2;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
-    else if (v == thisAgent->ts_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.ts_context_variable)
     {
         levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
-        *dest_attr_of_slot = thisAgent->state_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.state_symbol;
     }
-    else if (v == thisAgent->to_context_variable)
+    else if (v == thisAgent->symbolManager->soarSymbols.to_context_variable)
     {
         levels_up = thisAgent->top_goal ? thisAgent->bottom_goal->id->level - thisAgent->top_goal->id->level : 0;
-        *dest_attr_of_slot = thisAgent->operator_symbol;
+        *dest_attr_of_slot = thisAgent->symbolManager->soarSymbols.operator_symbol;
     }
     else
     {
@@ -766,7 +761,7 @@ void get_context_var_info(agent* thisAgent, const char* var_name,
         return;
     }
 
-    if (*dest_attr_of_slot == thisAgent->state_symbol)
+    if (*dest_attr_of_slot == thisAgent->symbolManager->soarSymbols.state_symbol)
     {
         *dest_current_value = g;
     }
@@ -787,7 +782,7 @@ bool read_id_or_context_var_from_string(agent* thisAgent, const char* lex_string
 
     if (lexeme.type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, lexeme.id_letter, lexeme.id_number);
+        id = thisAgent->symbolManager->find_identifier(lexeme.id_letter, lexeme.id_number);
         if (!id)
         {
             return false;
@@ -827,10 +822,10 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
 
     if (lexeme->type == IDENTIFIER_LEXEME)
     {
-        id = find_identifier(thisAgent, lexeme->id_letter, lexeme->id_number);
+        id = thisAgent->symbolManager->find_identifier(lexeme->id_letter, lexeme->id_number);
         if (!id)
         {
-            print(thisAgent,  "There is no identifier %c%lu.\n", lexeme->id_letter,
+            thisAgent->outputManager->printa_sf(thisAgent,  "There is no identifier %c%u.\n", lexeme->id_letter,
                   lexeme->id_number);
             // TODO: store location in lexeme and then rewrite comment print statements
             // lexer->print_location_of_most_recent_lexeme();
@@ -843,26 +838,26 @@ Symbol* read_identifier_or_context_variable(agent* thisAgent, soar::Lexeme* lexe
         get_context_var_info(thisAgent, lexeme->string(), &g, &attr, &value);
         if (!attr)
         {
-            print(thisAgent, "Expected identifier (or context variable)\n");
+            thisAgent->outputManager->printa(thisAgent, "Expected identifier (or context variable)\n");
             // print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (!value)
         {
-            print(thisAgent,  "There is no current %s.\n", lexeme->string());
+            thisAgent->outputManager->printa_sf(thisAgent,  "There is no current %s.\n", lexeme->string());
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         if (value->symbol_type != IDENTIFIER_SYMBOL_TYPE)
         {
-            print(thisAgent,  "The current %s ", lexeme->string());
-            print_with_symbols(thisAgent, "(%y) is not an identifier.\n", value);
+            thisAgent->outputManager->printa_sf(thisAgent,  "The current %s ", lexeme->string());
+            thisAgent->outputManager->printa_sf(thisAgent, "(%y) is not an identifier.\n", value);
             // lexer->print_location_of_most_recent_lexeme();
             return NIL;
         }
         return value;
     }
-    print(thisAgent, "Expected identifier (or context variable)\n");
+    thisAgent->outputManager->printa(thisAgent, "Expected identifier (or context variable)\n");
     // lexer->print_location_of_most_recent_lexeme();
     return NIL;
 }

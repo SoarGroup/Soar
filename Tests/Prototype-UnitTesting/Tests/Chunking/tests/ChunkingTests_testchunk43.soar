@@ -1,6 +1,6 @@
 # Literalization of conjunction
 
-learn --on
+chunk always
 watch --learn 2
 
 sp {init

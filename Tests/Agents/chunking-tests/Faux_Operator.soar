@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {propose-real-operator
    (state <s> ^superstate nil

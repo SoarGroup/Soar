@@ -3,10 +3,10 @@
 
 srand 23
 smem --enable
-learn -e
+chunk always
 
-smem --add {(@T1 ^D X )}
-smem --add {(@T2 ^D Y )}
+smem --add {(<t1> ^D X )}
+smem --add {(<t2> ^D Y )}
 
 sp {init
     (state <s> ^superstate nil -^result)

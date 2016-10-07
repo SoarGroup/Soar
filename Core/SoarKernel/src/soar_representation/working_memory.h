@@ -32,6 +32,7 @@
 #define WMEM_H
 
 #include "kernel.h"
+#include "stl_typedefs.h"
 
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
@@ -42,6 +43,42 @@ void do_buffered_wm_changes(agent* thisAgent);
 
 void deallocate_wme(agent* thisAgent, wme* w);
 Symbol* find_name_of_object(agent* thisAgent, Symbol* id);
+
+class WM_Manager
+{
+    public:
+        WM_Manager(agent* myAgent);
+        ~WM_Manager() {};
+
+        void clean_up_for_agent_deletion();
+
+        wma_param_container* wma_params;
+        wma_stat_container* wma_stats;
+        wma_timer_container* wma_timers;
+
+        wma_pooled_wme_set* wma_touched_elements;
+        wma_forget_p_queue* wma_forget_pq;
+        wma_decay_cycle_set* wma_touched_sets;
+
+        unsigned int wma_power_size;
+        double* wma_power_array;
+        wma_d_cycle* wma_approx_array;
+        double wma_thresh_exp;
+        bool wma_initialized;
+        tc_number wma_tc_counter;
+        wma_d_cycle wma_d_cycle_count;
+
+        /* TEMPORARY HACK (Ideally this should be doable through
+         the external kernel interface but for now using a
+         couple of global STL lists to get this information
+         from the rhs function to this preference adding code)*/
+        wme* glbDeepCopyWMEs = NULL;
+
+    private:
+
+        agent* thisAgent;
+
+};
 
 typedef struct wme_struct
 {
@@ -60,8 +97,6 @@ typedef struct wme_struct
     struct preference_struct* preference;     /* pref. supporting it, or NIL */
     struct output_link_struct* output_link;   /* for top-state output commands */
     tc_number grounds_tc;                     /* for chunker use only */
-    tc_number potentials_tc, locals_tc;
-    struct preference_struct* chunker_bt_pref;
     struct condition_struct* chunker_bt_last_ground_cond;
 
     struct gds_struct* gds;

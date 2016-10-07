@@ -9,19 +9,20 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
 #include "ebc.h"
+#include "ebc_repair.h"
 #include "output_manager.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
-#include "repair.h"
 #include "rete.h"
+#include "run_soar.h"
 #include "symbol.h"
+#include "symbol_manager.h"
 #include "working_memory.h"
 
 #include <assert.h>
-#include "run_soar.h"
-#include "dprint.h"
 
 /* =================================================================
 
@@ -32,7 +33,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-list* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
     cons* new_c;
 
@@ -68,11 +69,13 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
             break;
         case DISJUNCTION_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
-            new_ct->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, t->data.disjunction_list);
+            new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
@@ -173,6 +176,8 @@ test copy_test_without_relationals(agent* thisAgent, test t)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
         case EQUALITY_TEST:
             return copy_test(thisAgent, t);
             break;
@@ -216,9 +221,11 @@ void deallocate_test(agent* thisAgent, test t)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             break;
         case DISJUNCTION_TEST:
-            deallocate_symbol_list_removing_references(thisAgent, t->data.disjunction_list);
+            thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
             dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE conjunctive test\n");
@@ -234,10 +241,10 @@ void deallocate_test(agent* thisAgent, test t)
             }
             break;
         default: /* relational tests other than equality */
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
-            symbol_remove_ref(thisAgent, &t->data.referent);
+#ifdef DEBUG_REFCOUNT_DB
+            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #else
-            symbol_remove_ref(thisAgent, &t->data.referent);
+            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
 #endif
             break;
     }
@@ -256,7 +263,7 @@ void deallocate_test(agent* thisAgent, test t)
    need not be a conjunctive test nor even exist.
 ---------------------------------------------------------------- */
 
-void add_test(agent* thisAgent, test* dest_test_address, test new_test)
+bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
 {
 
 	test destination = 0;//, original = 0;
@@ -264,16 +271,18 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
 
     if (!new_test)
     {
-        return;
+        return false;
     }
 
     if (!(*dest_test_address))
     {
         *dest_test_address = new_test;
-        return;
+        return true;
     }
 
     destination = *dest_test_address;
+    assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
+
     if (destination->type != CONJUNCTIVE_TEST)
     {
         destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
@@ -284,11 +293,10 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
         c->rest = NIL;
         *dest_test_address = destination;
     }
+
     if (!destination->eq_test)
     {
         destination->eq_test = new_test->eq_test;
-    } else {
-        assert(new_test->type != EQUALITY_TEST);
     }
 
     /* --- now add add_test to the conjunct list --- */
@@ -297,6 +305,7 @@ void add_test(agent* thisAgent, test* dest_test_address, test new_test)
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
 
+    return true;
 }
 
 
@@ -374,9 +383,9 @@ bool tests_are_equal(test t1, test t2, bool neg)
     switch (t1->type)
     {
         case GOAL_ID_TEST:
-            return true;
-
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             return true;
 
         case DISJUNCTION_TEST:
@@ -466,6 +475,8 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
     {
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             return true;
         case DISJUNCTION_TEST:
         {
@@ -520,6 +531,10 @@ uint32_t hash_test(agent* thisAgent, test t)
             return 34894895;  /* just use some unusual number */
         case IMPASSE_ID_TEST:
             return 2089521;
+        case SMEM_LINK_UNARY_TEST:
+            return 42201412;
+        case SMEM_LINK_UNARY_NOT_TEST:
+            return 1455212;
         case DISJUNCTION_TEST:
             result = 7245;
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
@@ -543,6 +558,8 @@ uint32_t hash_test(agent* thisAgent, test t)
         case LESS_OR_EQUAL_TEST:
         case GREATER_OR_EQUAL_TEST:
         case SAME_TYPE_TEST:
+        case SMEM_LINK_TEST:
+        case SMEM_LINK_NOT_TEST:
             return (t->type << 24) + t->data.referent->hash_id;
         default:
         {
@@ -659,7 +676,7 @@ test equality_test_found_in_test(test t)
 ===================================================================== */
 
 void add_all_variables_in_test(agent* thisAgent, test t,
-                               tc_number tc, list** var_list)
+                               tc_number tc, cons** var_list)
 {
     cons* c;
     Symbol* referent;
@@ -674,6 +691,8 @@ void add_all_variables_in_test(agent* thisAgent, test t,
         case GOAL_ID_TEST:
         case IMPASSE_ID_TEST:
         case DISJUNCTION_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
             break;
         case CONJUNCTIVE_TEST:
             for (c = t->data.conjunct_list; c != NIL; c = c->rest)
@@ -697,26 +716,52 @@ void add_all_variables_in_test(agent* thisAgent, test t,
  * it also consider whether the LTIs level can be determined by being linked
  * to a LHS element or a RHS action that has already been executed */
 
-void add_bound_variables_in_test(agent* thisAgent, test t,
-                                 tc_number tc, list** var_list, bool add_LTIs)
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list)
 {
-    Symbol* referent;
+    cons* c;
+    Symbol* referent = NULL;
 
     if (!t) return;
 
-    referent = t->eq_test->data.referent;
-    if (referent->is_variable() || (add_LTIs && referent->is_lti()))
+    switch (t->type)
+    {
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case DISJUNCTION_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
+            break;
+        case CONJUNCTIVE_TEST:
+            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+            {
+                add_bound_variables_in_test(thisAgent, static_cast<test>(c->first), tc, var_list);
+            }
+            break;
+            /* If you re-enable the next section, variables bound to lti-id's will be legal on the rhs.
+             * Note that they will not work as expected and will point to instance variable */
+            //        case SMEM_LINK_TEST:
+            //            referent = t->data.referent;
+            //            break;
+        case EQUALITY_TEST:
+        case SMEM_LINK_TEST:
+            referent = t->data.referent;
+            break;
+        default:
+            break;
+    }
+
+    if (referent && referent->is_variable())
     {
         referent->mark_if_unmarked(thisAgent, tc, var_list);
     }
     return;
 }
 
-void add_bound_variables_in_test_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list, bool add_LTIs)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
 {
     Symbol* referent;
 
-    if (pSym->is_variable() || (add_LTIs && pSym->is_lti()))
+    if (pSym->is_variable())
     {
         if (pSym->tc_num != tc)
         {
@@ -753,19 +798,20 @@ char first_letter_from_test(test t)
     {
         case EQUALITY_TEST:
             return first_letter_from_symbol(t->data.referent);
+        case CONJUNCTIVE_TEST:
+            return first_letter_from_symbol(t->eq_test->data.referent);
+//            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+//            {
+//                ch = first_letter_from_test(static_cast<test>(c->first));
+//                if (ch != '*')
+//                {
+//                    return ch;
+//                }
+//            }
         case GOAL_ID_TEST:
             return 's';
         case IMPASSE_ID_TEST:
             return 'i';
-        case CONJUNCTIVE_TEST:
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                ch = first_letter_from_test(static_cast<test>(c->first));
-                if (ch != '*')
-                {
-                    return ch;
-                }
-            }
             return '*';
         default:  /* disjunction tests, and relational tests other than equality */
             return '*';
@@ -787,9 +833,9 @@ void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter)
 
     prefix[0] = first_letter;
     prefix[1] = 0;
-    New = generate_new_variable(thisAgent, prefix);
+    New = thisAgent->symbolManager->generate_new_variable(prefix);
     eq_test = make_test(thisAgent, New, EQUALITY_TEST);
-    symbol_remove_ref (thisAgent, &New);
+    thisAgent->symbolManager->symbol_remove_ref (&New);
     add_test(thisAgent, t, eq_test);
 }
 
@@ -823,10 +869,18 @@ void add_rete_test_list_to_tests(agent* thisAgent,
         {
             New = make_test(thisAgent, NIL, IMPASSE_ID_TEST);
         }
+        else if (rt->type == UNARY_SMEM_LINK_RETE_TEST)
+        {
+            New = make_test(thisAgent, NIL, SMEM_LINK_UNARY_TEST);
+        }
+        else if (rt->type == UNARY_SMEM_LINK_NOT_RETE_TEST)
+        {
+            New = make_test(thisAgent, NIL, SMEM_LINK_UNARY_NOT_TEST);
+        }
         else if (rt->type == DISJUNCTION_RETE_TEST)
         {
             New = make_test(thisAgent, NIL, DISJUNCTION_TEST);
-            New->data.disjunction_list = copy_symbol_list_adding_references(thisAgent, rt->data.disjunction_list);
+            New->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(rt->data.disjunction_list);
         }
         else if (test_is_constant_relational_test(rt->type))
         {
@@ -845,29 +899,29 @@ void add_rete_test_list_to_tests(agent* thisAgent,
                    there to test against --- */
                 if (rt->data.variable_referent.field_num == 0)
                 {
-                    if (!cond->data.tests.id_test->eq_test)
+                    if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                     }
                 }
                 else if (rt->data.variable_referent.field_num == 1)
                 {
-                    if (!cond->data.tests.attr_test->eq_test)
+                    if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                     }
                 }
                 else
                 {
-                    if (!cond->data.tests.value_test->eq_test)
+                    if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
                     {
                         add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
                     }
                 }
             }
             referent = var_bound_in_reconstructed_conds(thisAgent, cond,
-                       rt->data.variable_referent.field_num,
-                       rt->data.variable_referent.levels_up);
+                rt->data.variable_referent.field_num,
+                rt->data.variable_referent.levels_up);
             New = make_test(thisAgent, referent, test_type);
         }
         else
@@ -915,68 +969,6 @@ void add_hash_info_to_id_test(agent* thisAgent,
     add_test(thisAgent, &(cond->data.tests.id_test), New);
 }
 
-/* ----------------------------------------------------------------
-   Returns true iff the test contains a test for a variable
-   symbol.  Assumes test is not a conjunctive one and does not
-   try to search them.
----------------------------------------------------------------- */
-bool test_is_variable(agent* thisAgent, test t)
-{
-    if (!t || !test_has_referent(t))
-    {
-        return false;
-    }
-    return (t->data.referent->is_variable());
-}
-
-const char* test_type_to_string(byte test_type)
-{
-    switch (test_type)
-    {
-        case NOT_EQUAL_TEST:
-            return "NOT_EQUAL_TEST";
-            break;
-        case LESS_TEST:
-            return "LESS_TEST";
-            break;
-        case GREATER_TEST:
-            return "GREATER_TEST";
-            break;
-        case LESS_OR_EQUAL_TEST:
-            return "LESS_OR_EQUAL_TEST";
-            break;
-        case GREATER_OR_EQUAL_TEST:
-            return "GREATER_OR_EQUAL_TEST";
-            break;
-        case SAME_TYPE_TEST:
-            return "SAME_TYPE_TEST";
-            break;
-        case DISJUNCTION_TEST:
-            return "DISJUNCTION_TEST";
-            break;
-        case CONJUNCTIVE_TEST:
-            return "CONJUNCTIVE_TEST";
-            break;
-        case GOAL_ID_TEST:
-            return "GOAL_ID_TEST";
-            break;
-        case IMPASSE_ID_TEST:
-            return "IMPASSE_ID_TEST";
-            break;
-        case EQUALITY_TEST:
-            return "EQUALITY_TEST";
-            break;
-    }
-    return "UNDEFINED TEST TYPE";
-}
-
-inline bool is_test_type_with_no_referent(TestType test_type)
-{
-    return ((test_type == DISJUNCTION_TEST) ||
-            (test_type == CONJUNCTIVE_TEST) ||
-            (test_type == GOAL_ID_TEST) ||
-            (test_type == IMPASSE_ID_TEST));
-}
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
 {
@@ -997,7 +989,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
 
     if (sym)
     {
-        symbol_add_ref(thisAgent, sym);
+        thisAgent->symbolManager->symbol_add_ref(sym);
     }
 
     return new_ct;
@@ -1015,9 +1007,9 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
  *           Returns the next item in the conjunct list.  Null if it
  *           was the last one.
  */
-::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem)
+cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
 {
-    ::list* prev, *next;
+    cons* prev, *next;
     next = pDeleteItem->rest;
 
     /* -- Fix links in conjunct list -- */

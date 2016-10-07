@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "ebc.h"
+#include "output_manager.h"
 
 #define setting_on(s) pEBC_settings[s] ? on : off
 
@@ -23,7 +24,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_OSK] = false;
     pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
     pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] = true;
     pEBC_settings[SETTING_EBC_MERGE] = true;
     pEBC_settings[SETTING_EBC_USER_SINGLETONS] = false;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
@@ -31,7 +31,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] = true;
     pEBC_settings[SETTING_EBC_ALLOW_PROB] = true;
     pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
-    pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
 
     pMaxChunks = 50;
@@ -50,13 +49,22 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     chunk_in_states->add_mapping(ebc_only, "only");
     chunk_in_states->add_mapping(ebc_only, "flagged");
     chunk_in_states->add_mapping(ebc_except, "except");
-    chunk_in_states->add_mapping(ebc_except, "all-except");
+    chunk_in_states->add_mapping(ebc_except, "unflagged");
     add(chunk_in_states);
 
     naming_style = new soar_module::constant_param<chunkNameFormats>("naming-style", ruleFormat, new soar_module::f_predicate<chunkNameFormats>());
     naming_style->add_mapping(ruleFormat, "rule");
     naming_style->add_mapping(numberedFormat, "numbered");
     add(naming_style);
+
+    always_cmd = new soar_module::boolean_param("always", on, new soar_module::f_predicate<boolean>());
+    add(always_cmd);
+    never_cmd = new soar_module::boolean_param("never", on, new soar_module::f_predicate<boolean>());
+    add(never_cmd);
+    flagged_cmd = new soar_module::boolean_param("flagged", on, new soar_module::f_predicate<boolean>());
+    add(flagged_cmd);
+    unflagged_cmd = new soar_module::boolean_param("unflagged", on, new soar_module::f_predicate<boolean>());
+    add(unflagged_cmd);
 
     history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());
     add(history_cmd);
@@ -78,6 +86,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(interrupt_on_chunk);
     interrupt_on_failure = new soar_module::boolean_param("interrupt-on-failure", setting_on(SETTING_EBC_INTERRUPT_FAILURE), new soar_module::f_predicate<boolean>());
     add(interrupt_on_failure);
+    interrupt_on_watched = new soar_module::boolean_param("interrupt-on-watched", setting_on(SETTING_EBC_INTERRUPT_WATCHED), new soar_module::f_predicate<boolean>());
+    add(interrupt_on_watched);
     utility_mode = new soar_module::boolean_param("record-utility", setting_on(SETTING_EBC_UTILITY_MODE), new soar_module::f_predicate<boolean>());
     add(utility_mode);
 
@@ -94,8 +104,6 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(mechanism_repair_rhs);
     mechanism_repair_lhs = new soar_module::boolean_param("repair-lhs", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_lhs);
-    mechanism_promotion_tracking = new soar_module::boolean_param("repair-rhs-promotion", setting_on(SETTING_EBC_REPAIR_PROMOTION), new soar_module::f_predicate<boolean>());
-    add(mechanism_promotion_tracking);
     mechanism_merge = new soar_module::boolean_param("merge", setting_on(SETTING_EBC_MERGE), new soar_module::f_predicate<boolean>());
     add(mechanism_merge);
     mechanism_user_singletons = new soar_module::boolean_param("user-singletons", setting_on(SETTING_EBC_USER_SINGLETONS), new soar_module::f_predicate<boolean>());
@@ -109,10 +117,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(allow_opaque_knowledge);
     allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
     add(allow_probabilistic_operators);
-    allow_multiple_prefs = new soar_module::boolean_param("allow-multiple-prefs", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
-    add(allow_multiple_prefs);
-    allow_temporal_constraint = new soar_module::boolean_param("allow-higher-level-ltm", setting_on(SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT), new soar_module::f_predicate<boolean>());
-    add(allow_temporal_constraint);
+    allow_conflated_reasoning = new soar_module::boolean_param("allow-conflated-reasoning", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
+    add(allow_conflated_reasoning);
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
@@ -176,6 +182,10 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] = pChangedParam->get_value();
     }
+    else if (pChangedParam == interrupt_on_watched)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] = pChangedParam->get_value();
+    }
     else if (pChangedParam == utility_mode)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_UTILITY_MODE] = pChangedParam->get_value();
@@ -204,10 +214,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_promotion_tracking)
-    {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_PROMOTION] = pChangedParam->get_value();
-    }
     else if (pChangedParam == mechanism_merge)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
@@ -232,13 +238,49 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
     }
-    else if (pChangedParam == allow_multiple_prefs)
+    else if (pChangedParam == allow_conflated_reasoning)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
     }
-    else if (pChangedParam == allow_temporal_constraint)
+    else if (pChangedParam == always_cmd)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_always);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == never_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
+        chunk_in_states->set_value(ebc_never);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == flagged_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_only);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == unflagged_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_except);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
     }
 }
 
@@ -271,7 +313,6 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_OSK->set_value(pEBC_settings[SETTING_EBC_OSK] ? on : off);
     mechanism_repair_rhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_RHS] ? on : off);
     mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
-    mechanism_promotion_tracking->set_value(pEBC_settings[SETTING_EBC_REPAIR_PROMOTION] ? on : off);
     mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
     mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
 
@@ -279,6 +320,5 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);
     allow_opaque_knowledge->set_value(pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] ? on : off);
     allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
-    allow_multiple_prefs->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
-    allow_temporal_constraint->set_value(pEBC_settings[SETTING_EBC_ALLOW_TEMPORAL_CONSTRAINT] ? on : off);
+    allow_conflated_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
 }

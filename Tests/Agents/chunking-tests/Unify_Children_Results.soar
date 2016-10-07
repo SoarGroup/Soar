@@ -2,7 +2,7 @@
 # - 
 
 srand 23
-learn --on
+chunk always
 
 sp {top-state*propose*init-agent
   (state <s> ^superstate nil)

@@ -15,6 +15,7 @@
 
 #include "kernel.h"
 
+#include "soar_module.h"
 #include "production.h"
 
 #include <map>
@@ -30,6 +31,36 @@
 // made negative to never conflict with impasse constants
 #define STATE_NO_CHANGE_IMPASSE_TYPE -1
 #define OP_NO_CHANGE_IMPASSE_TYPE -2
+
+/// RL-trace structure -bazald
+// goal stack level, WMEs attached to the operator, and the probability of selection
+struct RL_Trace
+{
+    struct Entry
+    {
+        Entry() : probability(0.0), next(NIL) {}
+        ~Entry() { delete next;}
+
+        Entry(const Entry& rhs) : probability(rhs.probability), next(rhs.next)
+                { const_cast<Entry&>(rhs).next = NIL; }
+
+        Entry& operator=(const Entry& rhs)
+        {
+            Entry temp(rhs);
+
+            std::swap(probability, temp.probability);
+            std::swap(next, temp.next);
+
+            return *this;
+        }
+
+        uint64_t init;
+        double probability;
+        RL_Trace* next;
+    };
+
+    std::map<std::vector<std::string>, Entry> split;
+};
 
 //////////////////////////////////////////////////////////
 // RL Parameters
@@ -277,5 +308,27 @@ extern void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Sym
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear(agent* thisAgent, Symbol* goal);
+
+class RL_Manager
+{
+    public:
+        RL_Manager(agent* myAgent);
+        ~RL_Manager() {};
+
+        void clean_up_for_agent_deletion();
+
+        uint64_t                                rl_init_count;             /* # of inits done so far */
+        exploration_parameter*                  exploration_params[ EXPLORATION_PARAMS ];
+        rl_param_container*                     rl_params;
+        rl_stat_container*                      rl_stats;
+        rl_production_memory*                   rl_prods;
+        int                                     rl_template_count;
+        std::map<goal_stack_level, RL_Trace>    rl_trace;
+
+    private:
+
+        agent* thisAgent;
+
+};
 
 #endif
