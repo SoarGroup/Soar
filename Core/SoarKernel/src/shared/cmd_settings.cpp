@@ -144,6 +144,8 @@ save_param_container::save_param_container(agent* new_agent): soar_module::param
     add(input_cmd);
     rete_cmd = new soar_module::boolean_param("rete-network", on, new soar_module::f_predicate<boolean>());
     add(rete_cmd);
+    chunks_cmd = new soar_module::boolean_param("chunks", on, new soar_module::f_predicate<boolean>());
+    add(chunks_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -278,6 +280,10 @@ wm_param_container::wm_param_container(agent* new_agent): soar_module::param_con
     add(add_cmd);
     remove_cmd = new soar_module::boolean_param("remove", on, new soar_module::f_predicate<boolean>());
     add(remove_cmd);
+
+//    find_cmd = new soar_module::boolean_param("find", on, new soar_module::f_predicate<boolean>());
+//    add(find_cmd);
+
     watch_cmd = new soar_module::boolean_param("watch", on, new soar_module::f_predicate<boolean>());
     add(watch_cmd);
     wma_cmd = new soar_module::boolean_param("activation", on, new soar_module::f_predicate<boolean>());

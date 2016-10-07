@@ -111,7 +111,7 @@ void OM_Parameters::print_output_summary(agent* thisAgent)
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Soar release compilation", "OFF", 55).c_str());
 #endif
-#ifdef DEBUG_OUTPUT_ON
+#ifndef SOAR_RELEASE_VERSION
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Debug printing", "ON", 55).c_str());
 #endif
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");

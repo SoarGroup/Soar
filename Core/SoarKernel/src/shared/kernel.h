@@ -14,10 +14,8 @@
 
 #define SOAR_RELEASE_VERSION
 
-#ifdef NDEBUG
+#ifndef NDEBUG
     #define SOAR_RELEASE_VERSION
-#else
-    #undef SOAR_RELEASE_VERSION
 #endif
 
 /* Defining SOAR_RELEASE_VERSION will:

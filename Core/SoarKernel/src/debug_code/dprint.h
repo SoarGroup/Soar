@@ -8,18 +8,7 @@
 #ifndef CORE_SOARKERNEL_SRC_DEBUG_CODE_DPRINT_H_
 #define CORE_SOARKERNEL_SRC_DEBUG_CODE_DPRINT_H_
 
-
 #ifndef SOAR_RELEASE_VERSION
-    /* ----------------------------------------------------------------------------
-     * Commenting out this setting will disable dprint statements globally
-     *
-     * To completely compile out debug statements, use --opt or uncomment out line
-     * that defines SOAR_RELEASE_VERSION in kernel.h
-     * ---------------------------------------------------------------------------- */
-    #define DEBUG_OUTPUT_ON
-#endif
-
-#if defined(DEBUG_OUTPUT_ON)
 
     #include "output_manager.h"
 

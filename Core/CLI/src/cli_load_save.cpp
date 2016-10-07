@@ -102,6 +102,30 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
         argv[0] = "rete-net";
         return ParseReteLoad(argv);
     }
+    else if (my_param == thisAgent->command_params->save_params->chunks_cmd)
+    {
+        if ((argv.size() < 3) || (argv.size() > 3))
+        {
+            return SetError("Syntax: save chunks <filename>");
+
+        }
+        else
+        {
+            std::string lFile = argv[2];
+            std::vector< std::string > lCmdVector;
+            lCmdVector.push_back("print");
+            lCmdVector.push_back("-cf");
+            if (DoCommandToFile(LOG_NEW, lFile, lCmdVector))
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Chunks written to file %s.\n", lFile.c_str());
+                return true;
+            } else {
+                /* CTF should have set the error */
+                return false;
+            }
+
+        }
+    }
     else if ((my_param == thisAgent->command_params->save_params->help_cmd) || (my_param == thisAgent->command_params->save_params->qhelp_cmd))
     {
         thisAgent->command_params->save_params->print_settings(thisAgent);

@@ -27,7 +27,7 @@ AgentOutput_Info::AgentOutput_Info()
 {
     print_enabled = true;
     printer_output_column = 1;
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_agent(true);
     #else
         set_output_params_agent(false);
@@ -106,7 +106,7 @@ Output_Manager::Output_Manager()
     reset_column_indents();
 
     initialize_debug_trace(mode_info);
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_global(true);
     #else
         set_output_params_global(false);
