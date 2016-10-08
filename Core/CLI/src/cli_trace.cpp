@@ -24,7 +24,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting)
+bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     if (options.none())

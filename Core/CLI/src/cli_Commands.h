@@ -1803,19 +1803,204 @@ namespace cli
 
             TimersCommand& operator=(const TimersCommand&);
     };
-
-    class WatchCommand : public cli::ParserCommand
+    class TraceLevelCommand :public cli::ParserCommand
     {
         public:
-            WatchCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~WatchCommand() {}
+            TraceLevelCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~TraceLevelCommand() {}
             virtual const char* GetString() const
             {
-                return "watch";
+                return "trace-level";
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: watch [options]\nwatch [level]";
+                return "Syntax: trace-level [level]";
+            }
+
+            virtual bool Parse(std::vector< std::string >& argv)
+            {
+                cli::Options opt;
+                OptionsData optionsData[] =
+                {
+                    {0, 0, OPTARG_NONE}
+                };
+
+                cli::WatchBitset options(0);
+                cli::WatchBitset settings(0);
+                int learnSetting = 0;
+                int wmeSetting = 0;
+
+                for (;;)
+                {
+                    if (!opt.ProcessOptions(argv, optionsData))
+                    {
+                        return cli.SetError(opt.GetError());
+                    }
+
+                    if (opt.GetOption() == -1)
+                    {
+                        break;
+                    }
+                    switch (opt.GetOption())
+                    {
+                        case 'l':
+                        {
+                            int level = 0;
+                            if (!from_string(level, opt.GetOptionArgument()))
+                            {
+                                return cli.SetError(GetSyntax());
+                            }
+                            if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
+                            {
+                                return cli.SetError(opt.GetError().c_str());
+                            }
+                        }
+                        break;
+                        case 'a':
+                        case 'b':
+                        case 'c':
+                        case 'd':
+                        case 'D':
+                        case 'e':
+                        case 'f': // fullwmes
+                        case 'g':
+                        case 'G':
+                        case 'i':
+                        case 'j':
+                        case 'L':
+                        case 'N': // none
+                        case 'n': // nowmes
+                        case 'p':
+                        case 'P': // productions (all)
+                        case 'r':
+                        case 'R':
+                        case 's':
+                        case 't'://timetags
+                        case 'T':
+                        case 'u':
+                        case 'w'://wmes
+                        case 'W'://waterfall
+                            break;
+                    }
+
+                }
+
+                if (opt.GetNonOptionArguments() > 1)
+                {
+                    return cli.SetError("Too many arguments for trace-level.");
+                }
+
+                if (opt.GetNonOptionArguments() == 1)
+                {
+                    int optind = opt.GetArgument() - opt.GetNonOptionArguments();
+                    int level = 0;
+                    if (!from_string(level, argv[optind]))
+                    {
+                        return cli.SetError("Integer argument expected.");
+                    }
+                    if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
+                    {
+                        return cli.SetError(opt.GetError().c_str());
+                    }
+                    return cli.DoTrace(options, settings, wmeSetting, learnSetting);
+                }
+                return cli.SetError("Please specify a trace-level between 0-5.\n"
+                    "To turn on a specific trace setting, use the 'trace' command.\n\n"
+                    "To learn more about the trace-level command, use 'trace-level ?'");
+            }
+
+        private:
+            cli::Cli& cli;
+
+            bool ProcessWatchLevelSettings(const int level, cli::WatchBitset& options, cli::WatchBitset& settings, int& wmeSetting, int& learnSetting)
+            {
+                if (level < 0)
+                {
+                    return cli.SetError("Expected trace level from 0 to 5.");
+                }
+
+                if (level > 5)
+                {
+                    return cli.SetError("Expected trace level from 0 to 5.");
+                }
+
+                // All of these are going to change
+                options.set(cli::WATCH_PREFERENCES);
+                options.set(cli::WATCH_WMES);
+                options.set(cli::WATCH_DEFAULT);
+                options.set(cli::WATCH_USER);
+                options.set(cli::WATCH_CHUNKS);
+                options.set(cli::WATCH_JUSTIFICATIONS);
+                options.set(cli::WATCH_TEMPLATES);
+                options.set(cli::WATCH_PHASES);
+                options.set(cli::WATCH_DECISIONS);
+                options.set(cli::WATCH_WATERFALL);
+                options.set(cli::WATCH_GDS_WMES);
+                options.set(cli::WATCH_GDS_STATE_REMOVAL);
+
+                // Start with all off, turn on as appropriate
+                settings.reset(cli::WATCH_PREFERENCES);
+                settings.reset(cli::WATCH_WMES);
+                settings.reset(cli::WATCH_DEFAULT);
+                settings.reset(cli::WATCH_USER);
+                settings.reset(cli::WATCH_CHUNKS);
+                settings.reset(cli::WATCH_JUSTIFICATIONS);
+                settings.reset(cli::WATCH_TEMPLATES);
+                settings.reset(cli::WATCH_PHASES);
+                settings.reset(cli::WATCH_DECISIONS);
+                settings.reset(cli::WATCH_WATERFALL);
+                settings.reset(cli::WATCH_GDS_WMES);
+                settings.reset(cli::WATCH_GDS_STATE_REMOVAL);
+
+                switch (level)
+                {
+                    case 0:// none
+                        options.reset();
+                        options.flip();
+                        settings.reset();
+                        learnSetting = 0;
+                        wmeSetting = 0;
+                        break;
+
+                    case 5:// preferences, waterfall, gds wme additions
+                        settings.set(cli::WATCH_PREFERENCES);
+                        settings.set(cli::WATCH_WATERFALL);
+                        settings.set(cli::WATCH_GDS_WMES);
+                    // falls through
+                    case 4:// wmes
+                        settings.set(cli::WATCH_WMES);
+                    // falls through
+                    case 3:// productions (default, user, chunks, justifications, templates)
+                        settings.set(cli::WATCH_DEFAULT);
+                        settings.set(cli::WATCH_USER);
+                        settings.set(cli::WATCH_CHUNKS);
+                        settings.set(cli::WATCH_JUSTIFICATIONS);
+                        settings.set(cli::WATCH_TEMPLATES);
+                    // falls through
+                    case 2:// phases, gds
+                        settings.set(cli::WATCH_PHASES);
+                        settings.set(cli::WATCH_GDS_STATE_REMOVAL);
+                    // falls through
+                    case 1:// decisions
+                        settings.set(cli::WATCH_DECISIONS);
+                        break;
+                }
+                return true;
+            }
+            TraceLevelCommand& operator=(const TraceLevelCommand&);
+    };
+    class TraceCommand : public cli::ParserCommand
+    {
+        public:
+            TraceCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            virtual ~TraceCommand() {}
+            virtual const char* GetString() const
+            {
+                return "trace";
+            }
+            virtual const char* GetSyntax() const
+            {
+                return "Syntax: trace [options]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -2049,13 +2234,13 @@ namespace cli
                             int level = 0;
                             if (!from_string(level, opt.GetOptionArgument()))
                             {
-                                return cli.SetError("Integer argument expected.");
+                                return cli.SetError(GetSyntax());
                             }
-
-                            if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
-                            {
-                                return cli.SetError(opt.GetError().c_str());
-                            }
+                            return true;
+//                            if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
+//                            {
+//                                return cli.SetError(opt.GetError().c_str());
+//                            }
                         }
                         break;
 
@@ -2230,27 +2415,25 @@ namespace cli
                     }
                 }
 
-                if (opt.GetNonOptionArguments() > 1)
+                if (opt.GetNonOptionArguments() > 0)
                 {
-                    return cli.SetError("Only non option argument allowed is watch level.");
+                    return cli.SetError(GetSyntax());
                 }
 
-                // Allow watch level by itself
+                // Allow watch level by itself for backwards compatibility
                 if (opt.GetNonOptionArguments() == 1)
                 {
                     int optind = opt.GetArgument() - opt.GetNonOptionArguments();
                     int level = 0;
                     if (!from_string(level, argv[optind]))
                     {
-                        return cli.SetError("Integer argument expected.");
+                        return cli.SetError(GetSyntax());
                     }
-                    if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting))
-                    {
-                        return cli.SetError(opt.GetError().c_str());
-                    }
+                    /* Allow to go through for backwards compatibility */
+                    return true;
                 }
 
-                return cli.DoWatch(options, settings, wmeSetting, learnSetting);
+                return cli.DoTrace(options, settings, wmeSetting, learnSetting);
             }
 
         private:
@@ -2361,7 +2544,7 @@ namespace cli
                 return cli.SetError("Invalid argument, expected remove or 0. Got: " + opt.GetOptionArgument());
             }
 
-            WatchCommand& operator=(const WatchCommand&);
+            TraceCommand& operator=(const TraceCommand&);
     };
 }
 
