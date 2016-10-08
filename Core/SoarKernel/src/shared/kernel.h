@@ -14,7 +14,7 @@
 
 //#define SOAR_RELEASE_VERSION
 
-#ifndef NDEBUG
+#ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
 #endif
 

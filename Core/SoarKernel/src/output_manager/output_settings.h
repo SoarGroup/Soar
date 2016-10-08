@@ -35,6 +35,10 @@ class OM_Parameters: public soar_module::param_container
         soar_module::boolean_param* verbose;
         soar_module::boolean_param* echo_commands;
 
+        soar_module::boolean_param* enabled;
+        soar_module::boolean_param* callback_enabled;
+        soar_module::boolean_param* stdout_enabled;
+
         soar_module::boolean_param* ctf;
         soar_module::boolean_param* clog;
         soar_module::boolean_param* help_cmd;
