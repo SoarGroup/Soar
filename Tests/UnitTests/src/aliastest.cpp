@@ -180,7 +180,7 @@ void AliasTest::testDefaults()
     w.push_back("w");
     CPPUNIT_ASSERT(aliases->Expand(w));
     CPPUNIT_ASSERT(w.size() == 1);
-    CPPUNIT_ASSERT(w.front() == "watch");
+    CPPUNIT_ASSERT(w.front() == "trace");
 }
 
 void AliasTest::testSimpleCommand()

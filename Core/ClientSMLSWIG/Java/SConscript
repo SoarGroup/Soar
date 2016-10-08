@@ -20,9 +20,14 @@ def ConfigureJNI(env):
             # there used to be.  Current temp solution is just setting JAVA_HOME to
             # my particular install, which in OSX Sierra with Java up to date as of 10/8
             # /Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home 
-            if (os.path.exists('/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home')):
-                base = '/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home'
-            else:
+            try:
+                p = subprocess.Popen(['/usr/libexec/java_home'], stdout = subprocess.PIPE)
+                base = p.stdout.readline().split()[-1]
+                p.wait()
+            except OSError:
+                print >>sys.stderr, 'Error running /usr/libexec/java_home to get java home'
+                Exit(1)
+            if (not os.path.exists(base)):
                 base = '/System/Library/Frameworks/JavaVM.framework'
         else:
             # Search for the java compiler
