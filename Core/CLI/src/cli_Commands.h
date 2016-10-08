@@ -2415,7 +2415,7 @@ namespace cli
                     }
                 }
 
-                if (opt.GetNonOptionArguments() > 0)
+                if (opt.GetNonOptionArguments() > 1)
                 {
                     return cli.SetError(GetSyntax());
                 }

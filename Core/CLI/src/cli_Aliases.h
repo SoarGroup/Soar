@@ -52,7 +52,7 @@ namespace cli
                 t.evaluate("topd pwd");
                 t.evaluate("un alias -r");
                 t.evaluate("varprint print -v -d 100");
-                t.evaluate("w watch");
+                t.evaluate("w trace");
                 t.evaluate("wmes print -depth 0 -internal");
 
                 // Backward compatibility aliases
@@ -115,6 +115,9 @@ namespace cli
                 t.evaluate("i explain instantiation");
                 t.evaluate("wt explain wm-trace");
                 t.evaluate("et explain explanation-trace");
+
+                t.evaluate("watch trace");
+
             }
             
             virtual ~Aliases() {}
