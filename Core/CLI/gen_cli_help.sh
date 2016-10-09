@@ -6,6 +6,8 @@
 # Wiki html -> text conversion is performed by w3m, which you can get at
 # http://w3m.sourceforge.net
 #
+# github-markdown-preview can be installed via gem
+#
 # Joseph Xu March 2011
 # Modified  March 2012
 

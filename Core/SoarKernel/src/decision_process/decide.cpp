@@ -1030,11 +1030,11 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     cons* CDPS;
     preference* p;
 
-    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
-        print_preference(thisAgent, pref);
-    }
+//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//    {
+//        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
+//        print_preference(thisAgent, pref);
+//    }
 
     for (CDPS = s->CDPS; CDPS != NIL; CDPS = CDPS->rest)
     {
@@ -1085,10 +1085,10 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
         push(thisAgent, pref, s->CDPS);
         preference_add_ref(pref);
     }
-    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
-    }
+//    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//    {
+//        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
+//    }
 
 }
 
@@ -1287,27 +1287,27 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If debugging a context-slot, print all preferences that we're deciding through */
 
-    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
-    {
-
-        thisAgent->outputManager->printa_sf(thisAgent,
-              "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
-        thisAgent->outputManager->printa_sf(thisAgent, "All Preferences for slot:");
-
-        for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
-        {
-            if (s->preferences[i])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent, "\n   %ss:\n", preference_name(i));
-                for (p = s->preferences[i]; p; p = p->next)
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent, "   ");
-                    print_preference(thisAgent, p);
-                }
-            }
-        }
-        thisAgent->outputManager->printa_sf(thisAgent, "-------------------------------\n");
-    }
+//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
+//    {
+//
+//        thisAgent->outputManager->printa_sf(thisAgent,
+//              "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
+//        thisAgent->outputManager->printa_sf(thisAgent, "All Preferences for slot:");
+//
+//        for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
+//        {
+//            if (s->preferences[i])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent, "\n   %ss:\n", preference_name(i));
+//                for (p = s->preferences[i]; p; p = p->next)
+//                {
+//                    thisAgent->outputManager->printa_sf(thisAgent, "   ");
+//                    print_preference(thisAgent, p);
+//                }
+//            }
+//        }
+//        thisAgent->outputManager->printa_sf(thisAgent, "-------------------------------\n");
+//    }
 
     /* === Requires === */
 
@@ -1358,11 +1358,11 @@ byte run_preference_semantics(agent* thisAgent,
          * even though we really aren't.  Requires aren't actually handled by
          * the CDPS mechanism since they are already backtraced through. */
 
-        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
-            print_preference(thisAgent, candidates);
-        }
+//        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//        {
+//            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
+//            print_preference(thisAgent, candidates);
+//        }
 
         return NONE_IMPASSE_TYPE;
     }
@@ -3606,16 +3606,16 @@ void do_preference_phase(agent* thisAgent)
     {
         thisAgent->change_level = thisAgent->next_change_level;
 
-        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-        {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
-                static_cast<int64_t>(thisAgent->active_level));
-            if (thisAgent->active_goal)
-            {
-                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
-            }
-            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
-        }
+//        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//        {
+//            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
+//                static_cast<int64_t>(thisAgent->active_level));
+//            if (thisAgent->active_goal)
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
+//            }
+//            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
+//        }
 
         thisAgent->newly_created_instantiations = NIL;
 
@@ -3670,24 +3670,24 @@ void do_preference_phase(agent* thisAgent)
         // Update accounting
         thisAgent->inner_e_cycle_count++;
 
-        if (thisAgent->active_goal == NIL)
-        {
-            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                      " inner elaboration loop doesn't have active goal.\n");
-            }
-            break;
-        }
-
-        if (thisAgent->active_goal->id->lower_goal == NIL)
-        {
-            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
-            }
-            break;
-        }
+//        if (thisAgent->active_goal == NIL)
+//        {
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,
+//                      " inner elaboration loop doesn't have active goal.\n");
+//            }
+//            break;
+//        }
+//
+//        if (thisAgent->active_goal->id->lower_goal == NIL)
+//        {
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
+//            }
+//            break;
+//        }
 
         if (thisAgent->current_phase == APPLY_PHASE)
         {
@@ -3705,15 +3705,15 @@ void do_preference_phase(agent* thisAgent)
         {
             thisAgent->active_level = thisAgent->active_goal->id->level;
         }
-        else
-        {
-            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                      " inner elaboration loop finished but not at quiescence.\n");
-            }
-            break;
-        }
+//        else
+//        {
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,
+//                      " inner elaboration loop finished but not at quiescence.\n");
+//            }
+//            break;
+//        }
     } // end inner elaboration loop
 
     // Deallocate preferences delayed during inner elaboration loop.

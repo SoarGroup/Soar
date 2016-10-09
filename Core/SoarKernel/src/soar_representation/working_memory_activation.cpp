@@ -1346,7 +1346,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
 
             if (forgot_something)
             {
-                if (thisAgent->trace_settings[ TRACE_WM_CHANGES_SYSPARAM ])
+                if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
                 {
                     const char* msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
 
@@ -1365,7 +1365,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                     thisAgent->WM->wma_stats->forgotten_wmes->set_value(thisAgent->WM->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >(wm_removal_diff));
                 }
 
-                if (thisAgent->trace_settings[ TRACE_WM_CHANGES_SYSPARAM ])
+                if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
                 {
                     const char* msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
 

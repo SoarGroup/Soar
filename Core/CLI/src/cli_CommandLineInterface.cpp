@@ -85,7 +85,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::StatsCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
     m_Parser.AddCommand(new cli::TraceCommand(*this));
-    m_Parser.AddCommand(new cli::TraceLevelCommand(*this));
     m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
