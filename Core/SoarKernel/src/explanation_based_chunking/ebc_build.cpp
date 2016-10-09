@@ -494,7 +494,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     dprint(DT_BACKTRACE, "...adding negated conditions from backtraced negated set.\n");
     /* --- scan through negated conditions and check which ones are connected
        to the grounds --- */
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
     }
@@ -508,7 +508,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         if (cond_is_in_tc(thisAgent, cc->cond, tc_to_use))
         {
             /* --- negated cond is in the TC, so add it to the grounds --- */
-            if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
                 thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
@@ -808,7 +808,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
             xml_begin_tag(thisAgent, kTagBacktraceResult);
@@ -817,7 +817,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagBacktraceResult);
         }
@@ -885,8 +885,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_name = generate_chunk_name(m_inst, pForChunk);
 
         m_prod_type = CHUNK_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
+        m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM] != 0);
     }
     else
     {
@@ -894,8 +894,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_name = generate_chunk_name(m_inst, pForChunk);
 //        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+        m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_justifications_attempted();
         #endif
@@ -1002,7 +1002,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
     #endif
 
     m_inst = inst;

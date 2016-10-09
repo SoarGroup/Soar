@@ -259,7 +259,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
 #endif
 #endif
 
@@ -306,7 +306,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 #endif
     dprint(DT_WME_CHANGES, "...looking for wmes added and removed in same phase.\n");
     /* --- warn if watching wmes and same wme was added and removed -- */
-    if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
     {
         for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
         {
@@ -336,7 +336,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     {
         next_c = c->rest;
         w = static_cast<wme_struct*>(c->first);
-        if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             /* print ("=>WM: ");
              * print_wme (w);
@@ -354,7 +354,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     {
         next_c = c->rest;
         w = static_cast<wme_struct*>(c->first);
-        if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             /* print ("<=WM: ");
              * print_wme (thisAgent, w);

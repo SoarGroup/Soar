@@ -986,7 +986,7 @@ void do_buffered_link_changes(agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
 #endif
 #endif
 
@@ -1030,7 +1030,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     cons* CDPS;
     preference* p;
 
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
         print_preference(thisAgent, pref);
@@ -1085,7 +1085,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
         push(thisAgent, pref, s->CDPS);
         preference_add_ref(pref);
     }
-    else if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
     }
@@ -1287,7 +1287,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If debugging a context-slot, print all preferences that we're deciding through */
 
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
+    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
     {
 
         thisAgent->outputManager->printa_sf(thisAgent,
@@ -1358,7 +1358,7 @@ byte run_preference_semantics(agent* thisAgent,
          * even though we really aren't.  Requires aren't actually handled by
          * the CDPS mechanism since they are already backtraced through. */
 
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
             print_preference(thisAgent, candidates);
@@ -3155,7 +3155,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
         if (goal->id->lower_goal)
         {
-            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
             }
@@ -3201,7 +3201,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (goal->id->lower_goal)
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
         }
@@ -3532,7 +3532,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         // check level for legal change
         if (sym->id->level <= thisAgent->change_level)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,
                                    "*** Waterfall: aborting firing because (%y * *)", sym);
@@ -3555,7 +3555,7 @@ void do_preference_phase(agent* thisAgent)
      extra newline printed out.  The simple fix is to monitor
      get_printer_output_column and see if it's at the beginning of a line
      or not when we're ready to print a newline.  94.11.14 */
-    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
     {
         if (thisAgent->current_phase == APPLY_PHASE)   /* it's always IE for PROPOSE */
         {
@@ -3606,7 +3606,7 @@ void do_preference_phase(agent* thisAgent)
     {
         thisAgent->change_level = thisAgent->next_change_level;
 
-        if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
                 static_cast<int64_t>(thisAgent->active_level));
@@ -3672,7 +3672,7 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->active_goal == NIL)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " inner elaboration loop doesn't have active goal.\n");
@@ -3682,7 +3682,7 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->active_goal->id->lower_goal == NIL)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
             }
@@ -3707,7 +3707,7 @@ void do_preference_phase(agent* thisAgent)
         }
         else
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " inner elaboration loop finished but not at quiescence.\n");
@@ -3758,7 +3758,7 @@ void do_preference_phase(agent* thisAgent)
 void do_working_memory_phase(agent* thisAgent)
 {
 
-    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
     {
         if (thisAgent->current_phase == APPLY_PHASE)    /* it's always IE for PROPOSE */
         {
@@ -3918,7 +3918,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_WMES_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4439,7 +4439,7 @@ approaches may be better */
 void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 {
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4505,7 +4505,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         }
     }
 
-    if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
         print_wme(thisAgent, w);

@@ -929,7 +929,7 @@ void init_instantiation(agent*          thisAgent,
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
 {
     return ((inst)->prod
-            && (thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
+            && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
                                      + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
 /* -----------------------------------------------------------------------
@@ -1029,7 +1029,7 @@ void create_instantiation(agent* thisAgent, production* prod,
         thisAgent->outputManager->start_fresh_line(thisAgent);
         thisAgent->outputManager->printa(thisAgent,  "Firing ");
         print_instantiation_with_wmes(thisAgent, inst,
-                                      static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
+                                      static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                       0);
     }
 
@@ -1048,7 +1048,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* 7.1/8 merge: Not sure about this.  This code in 704, but not in either 7.1 or 703/soar8 */
     /* --- Before executing the RHS actions, tell the user that the -- */
     /* --- phase has changed to output by printing the arrow --- */
-    if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
@@ -1186,7 +1186,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     /* --- print trace info: printing preferences --- */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
      the o-support info for the preferences we're about to print */
-    if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
         for (pref = inst->preferences_generated; pref != NIL;
                 pref = pref->inst_next)
@@ -1481,15 +1481,15 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                     thisAgent->outputManager->start_fresh_line(thisAgent);
                     thisAgent->outputManager->printa(thisAgent,  "Retracting ");
                     print_instantiation_with_wmes(thisAgent, inst,
-                                                  static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
+                                                  static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
                                                   1);
-                    if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+                    if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                     {
                         thisAgent->outputManager->printa(thisAgent,  " -->\n");
                         xml_object(thisAgent, kTagActionSideMarker);
                     }
                 }
-                if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
                 {
                     thisAgent->outputManager->printa(thisAgent,  " ");
                     print_preference(thisAgent, pref);

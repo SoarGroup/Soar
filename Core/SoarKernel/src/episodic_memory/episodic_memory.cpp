@@ -4859,7 +4859,7 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
                             new_king = true;
                         }
                     }
-                    if (new_king && thisAgent->sysparams[TRACE_EPMEM_SYSPARAM])
+                    if (new_king && thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM])
                     {
                         char buf[256];
                         SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));

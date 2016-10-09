@@ -24,7 +24,7 @@ class decider_param_container: public soar_module::param_container
         soar_module::integer_param* max_goal_depth;
         soar_module::integer_param* max_memory_usage;
         soar_module::integer_param* max_nil_output_cycles;
-
+        soar_module::boolean_param* timers_enabled;
         soar_module::boolean_param* wait_snc;
 
         soar_module::boolean_param* init_cmd;
@@ -39,10 +39,6 @@ class decider_param_container: public soar_module::param_container
 
         void print_status(agent* thisAgent);
         void print_settings(agent* thisAgent);
-
-        void update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam );
-        void update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam);
-        void update_enum_setting(agent* thisAgent, soar_module::param* pChangedParam, sml::KernelSML* pKernelSML);
 };
 
 

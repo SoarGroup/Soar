@@ -22,7 +22,6 @@
 #include "src/cli_svs.cpp"
 #include "src/cli_tcl.cpp"
 #include "src/cli_time.cpp"
-#include "src/cli_timers.cpp"
 #include "src/cli_visualize.cpp"
 #include "src/cli_trace.cpp"
 #include "src/cli_wm.cpp"

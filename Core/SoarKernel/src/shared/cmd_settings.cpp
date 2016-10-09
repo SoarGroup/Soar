@@ -1,8 +1,10 @@
-#include "agent.h"
-#include "output_manager.h"
 #include "cmd_settings.h"
+
+#include "agent.h"
+#include "decider.h"
 #include "decision_manipulation.h"
 #include "exploration.h"
+#include "output_manager.h"
 
 //#include "sml_KernelSML.h"
 //#include "sml_Events.h"
@@ -80,7 +82,7 @@ void decide_param_container::print_summary(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Exploration Policy:",
         exploration_convert_policy(exploration_get_policy(thisAgent)), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Automatic Policy Parameter Reduction:",
-        ((exploration_get_auto_update(thisAgent)) ? ("on") : ("off")), 55).c_str());
+        (thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] ? ("on") : ("off")), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon:",
         std::to_string(exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON)).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon Reduction Policy:",

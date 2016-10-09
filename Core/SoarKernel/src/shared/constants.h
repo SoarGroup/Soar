@@ -120,8 +120,6 @@
 #define ATTRIBUTE_IMPASSE_LEVEL 32767
 #define LOWEST_POSSIBLE_GOAL_LEVEL 32767
 #define NIL (0)
-#define PRINT_BUFSIZE 5000   /* --- size of output buffer for a calls to print routines --- */
-#define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 
 /* ====================================================================
              Global System Parameters and Related Definitions
@@ -131,13 +129,11 @@
 #define INVALID_SYSPARAM                          0
 #define TRACE_CONTEXT_DECISIONS_SYSPARAM          1
 #define TRACE_PHASES_SYSPARAM                     2
-
-/* --- Warning: these next four MUST be consecutive and in the order of the production types defined above --- */
-#define TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM      3
-#define TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM   4
-#define TRACE_FIRINGS_OF_CHUNKS_SYSPARAM          5
-#define TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM  6
-#define TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM       7
+#define TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM      3     // 1 Warning: these next four MUST be
+#define TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM   4     // 2  consecutive and in the order of
+#define TRACE_FIRINGS_OF_CHUNKS_SYSPARAM          5     // 3  the production types defined
+#define TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM  6     // 4  in the enum ProductionType
+#define TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM       7     // 5  in enums.h
 #define TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM     8
 #define TRACE_FIRINGS_PREFERENCES_SYSPARAM        9
 #define TRACE_WM_CHANGES_SYSPARAM                10
@@ -146,22 +142,16 @@
 #define TRACE_CHUNKS_SYSPARAM                    13
 #define TRACE_JUSTIFICATIONS_SYSPARAM            14
 #define TRACE_BACKTRACING_SYSPARAM               15
-#define TRACE_LOADING_SYSPARAM                   16
-/* ====== User Select === */
-#define USER_SELECT_MODE_SYSPARAM                17
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         18
-#define TRACE_INDIFFERENT_SYSPARAM               19
-#define TIMERS_ENABLED                           20
-/* auto-reduction of exploration parameters */
-#define USER_SELECT_REDUCE_SYSPARAM              21
-#define TRACE_RL_SYSPARAM                        22
-#define TRACE_WATERFALL_SYSPARAM                 23
-#define TRACE_WMA_SYSPARAM                       24
-#define TRACE_EPMEM_SYSPARAM                     25
-#define TRACE_SMEM_SYSPARAM                      26
-#define TRACE_GDS_WMES_SYSPARAM                       27
-#define TRACE_GDS_STATE_REMOVAL_SYSPARAM         28
+#define TRACE_OPERAND2_REMOVALS_SYSPARAM         16
+#define TRACE_INDIFFERENT_SYSPARAM               17
+#define TRACE_RL_SYSPARAM                        18
+#define TRACE_WATERFALL_SYSPARAM                 19
+#define TRACE_WMA_SYSPARAM                       20
+#define TRACE_EPMEM_SYSPARAM                     21
+#define TRACE_SMEM_SYSPARAM                      22
+#define TRACE_GDS_WMES_SYSPARAM                  23
+#define TRACE_GDS_STATE_REMOVAL_SYSPARAM         24
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  29
+#define HIGHEST_SYSPARAM_NUMBER                  25
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_CONSTANTS_H_ */

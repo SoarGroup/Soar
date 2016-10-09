@@ -39,57 +39,17 @@
 
 void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
 {
-
-    /* REW: begin 11.25.96 */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     thisAgent->timers_gds.start();
 #endif
 #endif
-    /* REW: end   11.25.96 */
-
-    /*         printf("Examining slot (next)\n");
-    for (next = s; next; next=next->next){
-         thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", next->id);
-     thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", next->attr);
-    }
-
-         printf("Examining slot (prev)\n");
-    for (prev = s->prev; prev; prev=prev->prev){
-         thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", prev->id);
-     thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", prev->attr);
-    }
-
-    printf("Examining slot WMEs\n");
-    for (slot_wmes=s->wmes; slot_wmes; slot_wmes=slot_wmes->next){
-      print_wme(thisAgent, slot_wmes);
-    }
-
-    printf("Examining acceptable preference WMEs\n");
-    for (slot_wmes=s->acceptable_preference_wmes; slot_wmes; slot_wmes=slot_wmes->next){
-      print_wme(thisAgent, slot_wmes);
-    }
-
-    if (thisAgent->highest_goal_whose_context_changed) thisAgent->outputManager->printa_sf("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
-
-    thisAgent->outputManager->printa_sf("Slot ID:   [%y]\n", s->id);
-    thisAgent->outputManager->printa_sf("Slot Attr: [%y]\n", s->attr);
-    if (s->isa_context_slot) printf("this is a context slot.\n");
-    if (s->impasse_id) thisAgent->outputManager->printa_sf("Impasse: [%y]\n", s->impasse_id);
-    if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
-
-    thisAgent->outputManager->printa_sf("WME ID:    [%y]\n", w->id);
-    thisAgent->outputManager->printa_sf("WME Attr:  [%y]\n", w->attr);
-    thisAgent->outputManager->printa_sf("WME Value: [%y]\n", w->value);
-    if (w->value->id->isa_operator) printf("This is an operator\n");
-
-    thisAgent->outputManager->printa_sf("s->id->id->operator_slot->id: [%y]\n", s->id->id->operator_slot->id); */
 
     if (s->wmes)   /* If there is something in the context slot */
     {
         if (s->wmes->value == w->value)   /* The WME in the context slot is WME whose pref changed */
         {
-            if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,  "\n        REMOVING: Operator from context slot (proposal no longer matches): ");
                 print_wme(thisAgent, w);
@@ -97,7 +57,7 @@ void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w)
             remove_wmes_for_context_slot(thisAgent, s);
             if (s->id->id->lower_goal)
             {
-                if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id->lower_goal);
                 }
@@ -337,16 +297,20 @@ void remove_current_decision(agent* thisAgent, slot* s)
 {
 
     if (!s->wmes)
-        if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+    {
+        if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "\n       REMOVING CONTEXT SLOT: Slot Identifier [%y] and attribute [%y]\n", s->id, s->attr);
         }
+    }
 
     if (s->id)
-        if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+    {
+        if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "\n          Decision for goal [%y] is inconsistent.  Replacing it with....\n", s->id);
         }
+    }
 
     /* If there is an operator in the slot, remove it */
     remove_wmes_for_context_slot(thisAgent, s);
@@ -411,7 +375,7 @@ bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level)
 #ifdef DEBUG_CONSISTENCY_CHECK
                     thisAgent->outputManager->printa_sf(thisAgent, "   The current preferences indicate that the decision at [%y] needs to be removed.\n", goal);
 #endif
-                    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+                    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
                     {
                         thisAgent->outputManager->printa_sf(thisAgent, "Removing substates of %y because the operator last selected in %y is not\n", goal, goal);
                         thisAgent->outputManager->printa_sf(thisAgent, "consistent with the current preferences.\n");

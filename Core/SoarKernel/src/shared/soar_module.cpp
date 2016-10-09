@@ -35,7 +35,7 @@ namespace soar_module
 {
     timer::timer(const char* new_name, agent* new_agent, timer_level new_level, predicate<timer_level>* new_pred, bool soar_control): named_object(new_name), thisAgent(new_agent), level(new_level), pred(new_pred)
     {
-        stopwatch.set_enabled(((soar_control) ? (&(new_agent->sysparams[ TIMERS_ENABLED ])) : (NULL)));
+        stopwatch.set_enabled(soar_control ? &(new_agent->timers_enabled) : (NULL));
         reset();
     }
 

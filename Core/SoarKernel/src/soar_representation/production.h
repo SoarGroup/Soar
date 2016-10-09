@@ -166,7 +166,7 @@ production* make_production(agent* thisAgent, ProductionType type,
                                    bool reorder_nccs, preference* results);
 
 void deallocate_production(agent* thisAgent, production* prod);
-void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
+void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign = true);
 void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign);

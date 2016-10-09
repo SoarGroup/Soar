@@ -540,26 +540,18 @@ void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign)
 {
-
-    // Iterating through the productions of the appropriate type and excising them
     while (thisAgent->all_productions_of_type[type])
     {
-        excise_production(thisAgent,
-                          thisAgent->all_productions_of_type[type],
-                          print_sharp_sign && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
+        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign);
     }
 }
 
 void excise_all_productions(agent* thisAgent,
                             bool print_sharp_sign)
 {
-
-    // Excise all the productions of the four different types
     for (int i = 0; i < NUM_PRODUCTION_TYPES; i++)
     {
-        excise_all_productions_of_type(thisAgent,
-                                       static_cast<byte>(i),
-                                       print_sharp_sign && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
+        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign);
     }
 }
 
@@ -577,10 +569,7 @@ uint32_t canonical_test(test t)
 {
     Symbol* sym;
 
-    if (!t)
-    {
-        return NON_EQUAL_TEST_RETURN_VAL;
-    }
+    if (!t) return NON_EQUAL_TEST_RETURN_VAL;
 
     if (t->type == EQUALITY_TEST)
     {
