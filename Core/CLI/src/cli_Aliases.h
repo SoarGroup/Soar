@@ -98,6 +98,7 @@ namespace cli
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
                 t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
+                t.evaluate("timers soar timers");
                 t.evaluate("version soar version");
                 t.evaluate("waitsnc soar wait-snc");
 
