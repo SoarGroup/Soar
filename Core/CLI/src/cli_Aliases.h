@@ -69,12 +69,13 @@ namespace cli
                 t.evaluate("source load file");
                 t.evaluate("capture-input save percepts");
 
+                t.evaluate("pbreak production break");
                 t.evaluate("excise production excise");
+                t.evaluate("production-find production find");
                 t.evaluate("firing-counts production firing-counts");
                 t.evaluate("matches production matches");
+                t.evaluate("memories memory-usage");
                 t.evaluate("multi-attributes production optimize-attribute");
-                t.evaluate("pbreak production break");
-                t.evaluate("production-find production find");
                 t.evaluate("pwatch production watch");
 
                 t.evaluate("add-wme wm add");
@@ -82,11 +83,10 @@ namespace cli
                 t.evaluate("remove-wme wm remove");
                 t.evaluate("watch-wmes wm watch");
 
-                t.evaluate("allocate memory allocate");
-                t.evaluate("memories memory usage");
-
+                t.evaluate("allocate debug allocate");
                 t.evaluate("internal-symbols debug internal-symbols");
                 t.evaluate("port debug port");
+                t.evaluate("time debug time");
 
                 t.evaluate("init-soar soar init");
                 t.evaluate("stop-soar soar stop");
@@ -98,6 +98,8 @@ namespace cli
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
                 t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
+                t.evaluate("cli soar tcl");
+                t.evaluate("tcl soar tcl");
                 t.evaluate("timers soar timers");
                 t.evaluate("version soar version");
                 t.evaluate("waitsnc soar wait-snc");

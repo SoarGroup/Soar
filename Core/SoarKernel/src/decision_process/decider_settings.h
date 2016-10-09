@@ -24,11 +24,12 @@ class decider_param_container: public soar_module::param_container
         soar_module::integer_param* max_goal_depth;
         soar_module::integer_param* max_memory_usage;
         soar_module::integer_param* max_nil_output_cycles;
+        soar_module::boolean_param* tcl_enabled;
         soar_module::boolean_param* timers_enabled;
         soar_module::boolean_param* wait_snc;
 
         soar_module::boolean_param* init_cmd;
-//        soar_module::boolean_param* reset_cmd;
+        soar_module::boolean_param* reset_cmd;
 //        soar_module::boolean_param* run_cmd;
         soar_module::boolean_param* stop_cmd;
         soar_module::boolean_param* version_cmd;

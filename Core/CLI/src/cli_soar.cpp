@@ -166,8 +166,6 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
         }
         else
         {
-            tempStringStream << my_param->get_name() << " is now " << lArg.c_str();
-            PrintCLIMessage(&tempStringStream);
         }
 
         const char* lCmdName = pArg1->c_str();
@@ -203,6 +201,32 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
         else if (my_param == thisAgent->Decider->params->timers_enabled)
         {
             thisAgent->timers_enabled = thisAgent->Decider->params->timers_enabled->get_value();
+        }
+        else if (my_param == thisAgent->Decider->params->tcl_enabled)
+        {
+            if (thisAgent->Decider->params->tcl_enabled->get_value() == true)
+            {
+                if (Soar_Instance::Get_Soar_Instance().is_Tcl_on())
+                {
+                    PrintCLIMessage("Tcl mode is already on.");
+                } else {
+                    std::string result;
+                    result = this->m_pKernelSML->FireCliExtensionMessageEvent("on");
+                    if (result.size() != 0) return SetError(result);
+                }
+            } else
+            {
+                if (Soar_Instance::Get_Soar_Instance().is_Tcl_on())
+                {
+                    PrintCLIMessage("Soar does not currently support turning Tcl off after it has been enabled.");
+                    thisAgent->Decider->params->tcl_enabled->set_value(on);
+                }
+                else
+                {
+                    PrintCLIMessage("Tcl mode is already off.");
+                }
+            }
+            return true;
         }
         else if (my_param == thisAgent->Decider->params->max_gp)
         {

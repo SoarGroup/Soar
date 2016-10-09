@@ -126,7 +126,7 @@ namespace cli
             }
             virtual const char* GetSyntax() const
             {
-                return "Syntax: debug [ allocate | internal-symbols | port | ? ] [arguments*]";
+                return "Syntax: debug [ allocate | internal-symbols | port | time | ? ] [arguments*]";
             }
 
             virtual bool Parse(std::vector< std::string >& argv)
@@ -1662,77 +1662,6 @@ namespace cli
 
         private:
             cli::Cli& cli;
-    };
-
-    class TclCommand : public cli::ParserCommand
-    {
-
-        public:
-            TclCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~TclCommand() {}
-            virtual const char* GetString() const
-            {
-                return "tcl";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: tcl [ on | off ]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                if (argv.size() < 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                std::string concat_message(argv[1]);
-                for (std::vector<int>::size_type i = 2; i < argv.size(); ++i)
-                {
-                    concat_message += ' ' ;
-                    concat_message += argv[i] ;
-                }
-                return cli.DoTclCommand(concat_message);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            TclCommand& operator=(const TclCommand&);
-    };
-
-    class TimeCommand : public cli::ParserCommand
-    {
-        public:
-            TimeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-            virtual ~TimeCommand() {}
-            virtual const char* GetString() const
-            {
-                return "time";
-            }
-            virtual const char* GetSyntax() const
-            {
-                return "Syntax: time command [arguments]";
-            }
-
-            virtual bool Parse(std::vector< std::string >& argv)
-            {
-                // There must at least be a command
-                if (argv.size() < 2)
-                {
-                    return cli.SetError(GetSyntax());
-                }
-
-                std::vector<std::string>::iterator iter = argv.begin();
-                argv.erase(iter);
-
-                return cli.DoTime(argv);
-            }
-
-        private:
-            cli::Cli& cli;
-
-            TimeCommand& operator=(const TimeCommand&);
     };
 
     class TraceLevelCommand :public cli::ParserCommand

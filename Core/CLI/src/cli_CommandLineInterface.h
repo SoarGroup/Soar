@@ -144,8 +144,6 @@ namespace cli
             virtual bool DoSRand(uint32_t* pSeed = 0);
             virtual bool DoStats(const StatsBitset& options, int sort = 0);
             virtual bool DoSVS(const std::vector<std::string>& args);
-            virtual bool DoTclCommand(const std::string& pMessage);
-            virtual bool DoTime(std::vector<std::string>& argv);
             virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
             virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoWM(std::vector<std::string>& argv, const std::string& pCmd);
@@ -173,6 +171,7 @@ namespace cli
             bool DoReteNet(bool save, std::string filename);
             bool DoSelect(const std::string* pOp = 0);
             bool DoSource(std::string filename, SourceBitset* pOptions = 0);
+            bool DoTime(std::vector<std::string>& argv);
             bool DoTraceBackwardsCompatible(std::vector< std::string >& argv, bool fromTraceLevel = false);
             bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);

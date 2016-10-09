@@ -55,8 +55,6 @@ namespace cli
             virtual bool DoSoar(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
             virtual bool DoSP(const std::string& production) = 0;
             virtual bool DoStats(const StatsBitset& options, int sort = 0) = 0;
-            virtual bool DoTclCommand(const std::string& pMessage) = 0;
-            virtual bool DoTime(std::vector<std::string>& argv) = 0;
             virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) = 0;
             virtual bool DoTraceBackwardsCompatible(std::vector< std::string >& argv, bool fromTraceLevel = false) = 0;
             virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
