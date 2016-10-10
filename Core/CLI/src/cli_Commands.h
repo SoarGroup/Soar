@@ -3,7 +3,8 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
+#include "cli_CommandLineInterface.h"
 
 #include "misc.h"
 #include "sml_Events.h"
@@ -13,7 +14,7 @@ namespace cli
     class AliasCommand : public cli::ParserCommand
     {
         public:
-            AliasCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            AliasCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~AliasCommand() {}
             virtual const char* GetString() const
             {
@@ -75,7 +76,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             AliasCommand& operator=(const AliasCommand&);
     };
@@ -83,7 +84,7 @@ namespace cli
     class CDCommand : public cli::ParserCommand
     {
         public:
-            CDCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            CDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~CDCommand() {}
             virtual const char* GetString() const
             {
@@ -110,7 +111,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             CDCommand& operator=(const CDCommand&);
     };
@@ -118,7 +119,7 @@ namespace cli
     class DebugCommand : public cli::ParserCommand
     {
         public:
-            DebugCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            DebugCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~DebugCommand() {}
             virtual const char* GetString() const
             {
@@ -142,7 +143,7 @@ namespace cli
 
             }
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
             DebugCommand& operator=(const DebugCommand&);
     };
 
@@ -150,7 +151,7 @@ namespace cli
     class DirsCommand : public cli::ParserCommand
     {
         public:
-            DirsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            DirsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~DirsCommand() {}
             virtual const char* GetString() const
             {
@@ -167,7 +168,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             DirsCommand& operator=(const DirsCommand&);
     };
@@ -175,7 +176,7 @@ namespace cli
     class EchoCommand : public cli::ParserCommand
     {
         public:
-            EchoCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            EchoCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~EchoCommand() {}
             virtual const char* GetString() const
             {
@@ -227,7 +228,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             EchoCommand& operator=(const EchoCommand&);
     };
@@ -235,7 +236,7 @@ namespace cli
     class EpMemCommand : public cli::ParserCommand
     {
         public:
-            EpMemCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            EpMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~EpMemCommand() {}
             virtual const char* GetString() const
             {
@@ -426,7 +427,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             EpMemCommand& operator=(const EpMemCommand&);
     };
@@ -434,7 +435,7 @@ namespace cli
     class GPCommand : public cli::ParserCommand
     {
         public:
-            GPCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            GPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~GPCommand() {}
             virtual const char* GetString() const
             {
@@ -461,7 +462,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             GPCommand& operator=(const GPCommand&);
     };
@@ -469,7 +470,7 @@ namespace cli
     class HelpCommand : public cli::ParserCommand
     {
         public:
-            HelpCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            HelpCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~HelpCommand() {}
             virtual const char* GetString() const
             {
@@ -486,7 +487,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             HelpCommand& operator=(const HelpCommand&);
     };
@@ -495,7 +496,7 @@ namespace cli
     class LearnCommand : public cli::ParserCommand
     {
         public:
-            LearnCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            LearnCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~LearnCommand() {}
             virtual const char* GetString() const
             {
@@ -589,7 +590,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             LearnCommand& operator=(const LearnCommand&);
     };
@@ -597,7 +598,7 @@ namespace cli
     class LSCommand : public cli::ParserCommand
     {
         public:
-            LSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            LSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~LSCommand() {}
             virtual const char* GetString() const
             {
@@ -619,7 +620,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             LSCommand& operator=(const LSCommand&);
     };
@@ -627,7 +628,7 @@ namespace cli
     class PopDCommand : public cli::ParserCommand
     {
         public:
-            PopDCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            PopDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~PopDCommand() {}
             virtual const char* GetString() const
             {
@@ -649,7 +650,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             PopDCommand& operator=(const PopDCommand&);
     };
@@ -657,7 +658,7 @@ namespace cli
     class PreferencesCommand : public cli::ParserCommand
     {
         public:
-            PreferencesCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            PreferencesCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~PreferencesCommand() {}
             virtual const char* GetString() const
             {
@@ -748,7 +749,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             PreferencesCommand& operator=(const PreferencesCommand&);
     };
@@ -756,7 +757,7 @@ namespace cli
     class PrintCommand : public cli::ParserCommand
     {
         public:
-            PrintCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            PrintCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~PrintCommand() {}
             virtual const char* GetString() const
             {
@@ -925,7 +926,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             PrintCommand& operator=(const PrintCommand&);
     };
@@ -933,7 +934,7 @@ namespace cli
     class PushDCommand : public cli::ParserCommand
     {
         public:
-            PushDCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            PushDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~PushDCommand() {}
             virtual const char* GetString() const
             {
@@ -959,7 +960,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             PushDCommand& operator=(const PushDCommand&);
     };
@@ -967,7 +968,7 @@ namespace cli
     class PWDCommand : public cli::ParserCommand
     {
         public:
-            PWDCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            PWDCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~PWDCommand() {}
             virtual const char* GetString() const
             {
@@ -989,7 +990,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             PWDCommand& operator=(const PWDCommand&);
     };
@@ -997,7 +998,7 @@ namespace cli
     class RLCommand : public cli::ParserCommand
     {
         public:
-            RLCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            RLCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~RLCommand() {}
             virtual const char* GetString() const
             {
@@ -1118,7 +1119,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             RLCommand& operator=(const RLCommand&);
     };
@@ -1126,7 +1127,7 @@ namespace cli
     class RunCommand : public cli::ParserCommand
     {
         public:
-            RunCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            RunCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~RunCommand() {}
             virtual const char* GetString() const
             {
@@ -1235,7 +1236,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             cli::eRunInterleaveMode ParseRunInterleaveOptarg(cli::Options& opt)
             {
@@ -1266,7 +1267,7 @@ namespace cli
     class SMemCommand : public cli::ParserCommand
     {
         public:
-            SMemCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SMemCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SMemCommand() {}
             virtual const char* GetString() const
             {
@@ -1489,7 +1490,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SMemCommand& operator=(const SMemCommand&);
     };
@@ -1497,7 +1498,7 @@ namespace cli
     class SPCommand : public cli::ParserCommand
     {
         public:
-            SPCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SPCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SPCommand() {}
             virtual const char* GetString() const
             {
@@ -1525,7 +1526,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SPCommand& operator=(const SPCommand&);
     };
@@ -1533,7 +1534,7 @@ namespace cli
     class StatsCommand : public cli::ParserCommand
     {
         public:
-            StatsCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            StatsCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~StatsCommand() {}
             virtual const char* GetString() const
             {
@@ -1635,7 +1636,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             StatsCommand& operator=(const StatsCommand&);
     };
@@ -1643,7 +1644,7 @@ namespace cli
     class SVSCommand : public cli::ParserCommand
     {
         public:
-            SVSCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SVSCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SVSCommand() {}
             virtual const char* GetString() const
             {
@@ -1661,13 +1662,13 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
     };
 
     class TraceCommand : public cli::ParserCommand
     {
         public:
-            TraceCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            TraceCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~TraceCommand() {}
             virtual const char* GetString() const
             {
@@ -2056,7 +2057,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             bool ProcessWatchLevelSettings(const int level, cli::WatchBitset& options, cli::WatchBitset& settings, int& wmeSetting, int& learnSetting)
             {

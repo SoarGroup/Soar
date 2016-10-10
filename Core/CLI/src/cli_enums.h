@@ -5,8 +5,8 @@
  *      Author: mazzin
  */
 
-#ifndef CORE_CLI_SRC_CLI_CLI_ENUMS_H_
-#define CORE_CLI_SRC_CLI_CLI_ENUMS_H_
+#ifndef CORE_CLI_SRC_CLI_ENUMS_H_
+#define CORE_CLI_SRC_CLI_ENUMS_H_
 
 #include <bitset>
 
@@ -227,4 +227,4 @@ namespace cli
     };
     typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
 }
-#endif /* CORE_CLI_SRC_CLI_CLI_ENUMS_H_ */
+#endif /* CORE_CLI_SRC_CLI_ENUMS_H_ */

@@ -8,12 +8,11 @@
 ------------------------------------------------------------------ */
 
 
+#include "cli_enums.h"
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
-#include "cli_Cli_enums.h"
-
 #include "agent.h"
 #include "debug.h"
 #include "episodic_memory.h"

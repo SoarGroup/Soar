@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 //#include "misc.h"
 //#include "sml_Events.h"
 
@@ -19,7 +19,7 @@ namespace cli
     class LoadCommand : public cli::ParserCommand
     {
         public:
-            LoadCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            LoadCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~LoadCommand() {}
             virtual const char* GetString() const
             {
@@ -75,14 +75,14 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             LoadCommand& operator=(const LoadCommand&);
     };
     class SaveCommand : public cli::ParserCommand
     {
         public:
-            SaveCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SaveCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SaveCommand() {}
             virtual const char* GetString() const
             {
@@ -138,7 +138,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SaveCommand& operator=(const SaveCommand&);
     };

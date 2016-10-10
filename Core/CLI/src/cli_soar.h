@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 #include "misc.h"
 #include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class SoarCommand : public cli::ParserCommand
     {
         public:
-            SoarCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SoarCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SoarCommand() {}
             virtual const char* GetString() const
             {
@@ -134,7 +134,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SoarCommand& operator=(const SoarCommand&);
     };

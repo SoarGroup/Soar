@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 #include "misc.h"
 #include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class ChunkCommand : public cli::ParserCommand
     {
         public:
-            ChunkCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            ChunkCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~ChunkCommand() {}
             virtual const char* GetString() const
             {
@@ -83,7 +83,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             ChunkCommand& operator=(const ChunkCommand&);
     };

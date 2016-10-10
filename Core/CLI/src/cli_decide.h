@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 //#include "misc.h"
 //#include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class DecideCommand : public cli::ParserCommand
     {
         public:
-            DecideCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            DecideCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~DecideCommand() {}
             virtual const char* GetString() const
             {
@@ -84,7 +84,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             DecideCommand& operator=(const DecideCommand&);
     };
