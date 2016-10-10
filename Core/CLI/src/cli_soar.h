@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 #include "misc.h"
 #include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class SoarCommand : public cli::ParserCommand
     {
         public:
-            SoarCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SoarCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SoarCommand() {}
             virtual const char* GetString() const
             {
@@ -34,14 +34,14 @@ namespace cli
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
-                std::string subCommandArg;
+                std::string subCommandArg, subCommandArgAlt;
                 bool backwardCompatibleReplacement = false;
 
                 OptionsData optionsData[] =
                 {
                     {'e', "enable",             OPTARG_NONE},
-//                    {'d', "disable",          OPTARG_NONE},
                     {'e', "on",                 OPTARG_NONE},
+                    {'d', "disable",            OPTARG_NONE},
                     {'d', "off",                OPTARG_NONE},
                     {'A', "AfterPhaseIgnored",  OPTARG_NONE},
                     {'B', "BeforePhaseIgnored", OPTARG_NONE},
@@ -86,6 +86,7 @@ namespace cli
                             break;
                         case 'd':
                             subCommandArg = "decide";
+                            subCommandArgAlt = "off";
                             backwardCompatibleReplacement = true;
                             break;
                         case 'i':
@@ -125,7 +126,7 @@ namespace cli
                 }
                 if (backwardCompatibleReplacement || (num_args == 2))
                 {
-                    return cli.DoSoar('S', &arg, &subCommandArg);
+                    return cli.DoSoar('S', &arg, &subCommandArg, &subCommandArgAlt);
                 }
 
                 // case: nothing = full configuration information
@@ -133,7 +134,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SoarCommand& operator=(const SoarCommand&);
     };

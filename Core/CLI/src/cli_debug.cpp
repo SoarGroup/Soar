@@ -8,12 +8,11 @@
 ------------------------------------------------------------------ */
 
 
+#include "cli_enums.h"
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
-#include "cli_Cli_enums.h"
-
 #include "agent.h"
 #include "debug.h"
 #include "episodic_memory.h"
@@ -25,8 +24,11 @@
 #include "sml_AgentSML.h"
 #include "soar_instance.h"
 
+#include <time.h>
+
 using namespace cli;
 using namespace sml;
+
 
 bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 {
@@ -39,13 +41,21 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
     if (!argv)
     {
-        PrintCLIMessage("The debug command contains low-level debugging commands that most users will not need.\n\nUse 'debug ?' to learn more about the debug command.");
+        PrintCLIMessage("The debug command contains low-level technical debugging commands.\n\nUse 'debug ?' to learn more about the debug command.");
         return true;
     }
 
     numArgs = argv->size() - 1;
     sub_command = argv->front();
-
+    if (sub_command[0] == 't')
+    {
+        if (numArgs < 2)
+        {
+            return (SetError("You must submit a command that you'd like timed."));
+        }
+        argv->erase(argv->begin());
+        return DoTime(*argv);
+    }
     if (numArgs == 1)
     {
         if (sub_command[0] == 'g')
@@ -64,7 +74,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             PrintCLIMessage(&tempString);
             return true;
         }
-        else if (sub_command[0] == 't')
+        else if (sub_command[0] == 'x')
         {
             std::string mode = argv->at(1);
             int debug_type;
@@ -233,6 +243,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             PrintCLIMessage_Justify("allocate [pool blocks]", "Allocates extra memory to a memory pool", 70);
             PrintCLIMessage_Justify("internal-symbols", "Prints symbol table", 70);
             PrintCLIMessage_Justify("port", "Prints listening port", 70);
+            PrintCLIMessage_Justify("time <command> [args]", "Executes command and prints time spent", 70);
     //        PrintCLIMessage_Section("Debug Database Storage", 60);
     //        PrintCLIMessage_Item("database:", l_OutputManager->m_params->database, 60);
     //        PrintCLIMessage_Item("append-database:", l_OutputManager->m_params->append_db, 60);
@@ -315,4 +326,31 @@ bool CommandLineInterface::DoAllocate(const std::string& pool, int blocks)
 
     SetError("Could not allocate memory.  Probably a bad pool name: " + pool);
     return false;
+}
+
+bool CommandLineInterface::DoTime(std::vector<std::string>& argv)
+{
+
+    soar_timer timer;
+
+    timer.start();
+
+    // Execute command
+    bool ret = m_Parser.handle_command(argv);
+
+    timer.stop();
+
+    double elapsed = timer.get_usec() / 1000000.0;
+
+    // Print elapsed time and return
+    if (m_RawOutput)
+    {
+        m_Result << "\n(" << elapsed << "s) real";
+    }
+    else
+    {
+        std::string temp;
+        AppendArgTagFast(sml_Names::kParamRealSeconds, sml_Names::kTypeDouble, to_string(elapsed, temp));
+    }
+    return ret;
 }

@@ -257,15 +257,17 @@ agent* create_soar_agent(char* agent_name)                                      
     //
     // This was moved here so that system parameters could
     // be set before the agent was initialized.
-    init_sysparams(thisAgent);
+    init_trace_settings(thisAgent);
 
     /* Initializing all the timer structures.  Must be initialized after sysparams */
+    thisAgent->timers_enabled = true;
+
 #ifndef NO_TIMING_STUFF
-    thisAgent->timers_cpu.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_kernel.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_phase.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_cpu.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_kernel.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_phase.set_enabled(&(thisAgent->timers_enabled));
 #ifdef DETAILED_TIMING_STATS
-    thisAgent->timers_gds.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
 #endif
     reset_timers(thisAgent);
 #endif

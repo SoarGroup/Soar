@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 //#include "misc.h"
 //#include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class WMCommand : public cli::ParserCommand
     {
         public:
-            WMCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            WMCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~WMCommand() {}
             virtual const char* GetString() const
             {
@@ -83,7 +83,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             WMCommand& operator=(const WMCommand&);
     };

@@ -177,8 +177,6 @@ class Explanation_Based_Chunker
          * variablized rhs item. */
         sym_to_sym_map*            rhs_var_to_match_map;
 
-        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
-
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);

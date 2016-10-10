@@ -198,7 +198,7 @@ typedef struct EXPORT agent_struct
     cons*             productions_being_traced;
 
     /* --- various user-settable system parameters --- */
-    int64_t             sysparams[HIGHEST_SYSPARAM_NUMBER + 1];
+    int64_t             trace_settings[HIGHEST_SYSPARAM_NUMBER + 1];
 
     /* --- parameters for running Soar --- */
     /*  --- the code loops go_number times over the go_type phases --- */
@@ -340,7 +340,8 @@ typedef struct EXPORT agent_struct
     total_kernel_time should always be slightly greater than the derived total
     kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
-    /* REW: begin 28.07.96 */
+    bool timers_enabled;
+
 #ifndef NO_TIMING_STUFF
     soar_timer timers_cpu;    // start_total_tv
     soar_timer timers_kernel; // start_kernel_tv
@@ -373,14 +374,13 @@ typedef struct EXPORT agent_struct
 
     /* accumulated cpu time spent in various parts of the system */
     /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
-#ifdef DETAILED_TIMING_STATS
-    soar_timer timers_gds;                                        // start_gds_tv
-    soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
-    soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
-    soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time
-    soar_timer_accumulator timers_gds_cpu_time[NUM_PHASE_TYPES];          // gds_cpu_time
-#endif // DETAILED_TIMING_STATS
-    /* REW: end 28.07.96 */
+    #ifdef DETAILED_TIMING_STATS
+        soar_timer timers_gds;                                        // start_gds_tv
+        soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
+        soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
+        soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time
+        soar_timer_accumulator timers_gds_cpu_time[NUM_PHASE_TYPES];          // gds_cpu_time
+    #endif // DETAILED_TIMING_STATS
 #endif // NO_TIMING_STUFF
 
     /* ----------------------- Firer stuff -------------------------- */

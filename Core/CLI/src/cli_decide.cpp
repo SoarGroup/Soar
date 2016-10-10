@@ -18,6 +18,7 @@
 
 #include "agent.h"
 #include "cmd_settings.h"
+#include "decider.h"
 #include "decision_manipulation.h"
 #include "exploration.h"
 #include "misc.h"
@@ -360,7 +361,7 @@ bool CommandLineInterface::DoIndifferentSelection(const char pOp, const std::str
     {
         if (!p1)
         {
-            bool setting = exploration_get_auto_update(thisAgent);
+            bool setting = thisAgent->Decider->settings[DECIDER_AUTO_REDUCE];
 
             if (m_RawOutput)
             {
@@ -380,7 +381,8 @@ bool CommandLineInterface::DoIndifferentSelection(const char pOp, const std::str
                 return SetError("Invalid parameter value.");
             }
 
-            return exploration_set_auto_update(thisAgent, (*p1 == "on"));
+            thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] = (*p1 == "on");
+            return true;
         }
     }
 
@@ -559,7 +561,7 @@ bool CommandLineInterface::DoIndifferentSelection(const char pOp, const std::str
         temp = "";
 
         temp = "Automatic Policy Parameter Reduction: ";
-        temp += ((exploration_get_auto_update(thisAgent)) ? ("on") : ("off"));
+        temp += (thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] ? ("on") : ("off"));
 
         if (m_RawOutput)
         {

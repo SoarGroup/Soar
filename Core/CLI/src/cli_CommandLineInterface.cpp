@@ -83,11 +83,8 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::SoarCommand(*this));
     m_Parser.AddCommand(new cli::SPCommand(*this));
     m_Parser.AddCommand(new cli::StatsCommand(*this));
-    m_Parser.AddCommand(new cli::TclCommand(*this));
-    m_Parser.AddCommand(new cli::TimeCommand(*this));
-    m_Parser.AddCommand(new cli::TimersCommand(*this));
     m_Parser.AddCommand(new cli::VisualizeCommand(*this));
-    m_Parser.AddCommand(new cli::WatchCommand(*this));
+    m_Parser.AddCommand(new cli::TraceCommand(*this));
     m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
 }
@@ -620,7 +617,7 @@ void CommandLineInterface::PrintCLIMessage(std::ostringstream* printString, bool
     PrintCLIMessage(printString->str().c_str(), add_raw_lf);
 }
 
-void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf)
+void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, const char* commentString)
 {
     std::ostringstream tempString;
     size_t left_width, right_width, middle_width;
@@ -640,6 +637,10 @@ void CommandLineInterface::PrintCLIMessage_Justify(const char* prefixString, con
     sep_string.insert(0, middle_width, ' ');
 
     tempString << prefixString << sep_string << printString;
+    if (commentString)
+    {
+        tempString << "     " << commentString;
+    }
     PrintCLIMessage(&tempString);
 }
 

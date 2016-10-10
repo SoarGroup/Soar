@@ -9013,7 +9013,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
-    char c_id_test[PRINT_BUFSIZE];
+    std::string id_test_str;
 
     if (!conds)
     {
@@ -9109,11 +9109,9 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 //print_string (thisAgent, "impasse ");
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
-
-            Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
-            //thisAgent->outputManager->printa(thisAgent, c_id_test);
-            //xml_test(thisAgent, kConditionId, id_test) ;
-            xml_att_val(thisAgent, kConditionId, c_id_test);
+            id_test_str.clear();
+            thisAgent->outputManager->sprinta_sf(thisAgent, id_test_str, "%t", id_test);
+            xml_att_val(thisAgent, kConditionId, id_test_str.c_str());
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
             deallocate_test(thisAgent, id_test);
 

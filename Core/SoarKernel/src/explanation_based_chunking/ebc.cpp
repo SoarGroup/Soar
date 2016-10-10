@@ -128,7 +128,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_EXCEPT] &&
             member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
@@ -147,7 +147,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_ONLY]  &&
             !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";

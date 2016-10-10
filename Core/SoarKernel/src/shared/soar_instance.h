@@ -61,6 +61,7 @@ class EXPORT Soar_Instance
         void CLI_Debug_Print(const char* text);
         void configure_for_unit_tests() { m_launched_by_unit_test = true; }
         bool was_run_from_unit_test() { return m_launched_by_unit_test; };
+        bool is_Tcl_on() { return m_tcl_enabled; };
 
     private:
 
@@ -74,6 +75,7 @@ class EXPORT Soar_Instance
         Output_Manager*         m_Output_Manager;
         Memory_Manager*         m_Memory_Manager;
         bool                    m_launched_by_unit_test;
+        bool                    m_tcl_enabled;
 
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;

@@ -23,6 +23,7 @@
 #include "soar_instance.h"
 #include "test.h"
 #include "working_memory.h"
+#include "xml.h"
 
 #include <iostream>
 #include <cstdarg>
@@ -37,7 +38,6 @@ void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
     va_end(args);
     printa(pSoarAgent, buf.c_str());
 }
-#include "xml.h"
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
     if (pSoarAgent)
@@ -48,7 +48,7 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
         {
             soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
         }
-        if (pSoarAgent->output_settings->stdout_mode)
+        if (stdout_mode)
         {
             fputs(msg, stdout);
         }

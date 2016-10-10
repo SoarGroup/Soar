@@ -75,6 +75,7 @@ class save_param_container: public soar_module::param_container
 {
     public:
 
+        soar_module::boolean_param* chunks_cmd;
         soar_module::boolean_param* input_cmd;
         soar_module::boolean_param* rete_cmd;
 
@@ -93,6 +94,7 @@ class wm_param_container: public soar_module::param_container
 
         soar_module::boolean_param* add_cmd;
         soar_module::boolean_param* remove_cmd;
+//        soar_module::boolean_param* find_cmd;
         soar_module::boolean_param* watch_cmd;
         soar_module::boolean_param* wma_cmd;
 

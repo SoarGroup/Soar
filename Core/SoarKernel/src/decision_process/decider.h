@@ -16,7 +16,7 @@
 class SoarDecider
 {
         friend cli::CommandLineInterface;
-
+        friend decider_param_container;
 
     public:
 
@@ -30,8 +30,6 @@ class SoarDecider
         /* Settings and cli command related functions */
         decider_param_container*    params;
         uint64_t                    settings[num_decider_settings];
-
-        void                        print_soar_status(sml::KernelSML* pKernelSML);
 
     private:
 

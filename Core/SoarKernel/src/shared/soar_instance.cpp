@@ -25,6 +25,7 @@ Soar_Instance::Soar_Instance()
     m_Memory_Manager = NULL;
     m_Output_Manager = NULL;
     m_launched_by_unit_test = false;
+    m_tcl_enabled = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
 }
@@ -157,14 +158,16 @@ std::string Soar_Instance::Message_Library(std::string &pMessage)
         if (lMessage == "on")
         {
             libraryInfo->isOn = true;
-            resultString = "\n" + lCLIExtensionName + " CLI module loaded and enabled.\n";
+            resultString = "\n" + lCLIExtensionName + " is loaded and enabled.\n";
             m_Output_Manager->print(resultString.c_str());
+            m_tcl_enabled = true; // This was intended to be general purpose, but currently only used for tcl
         }
         else if (lMessage == "off")
         {
-            resultString = lCLIExtensionName + " CLI module deactivated.\n";
+            resultString = lCLIExtensionName + " has been deactivated.\n";
             m_Output_Manager->print(resultString.c_str());
             libraryInfo->isOn = false;
+            m_tcl_enabled = false; // This was intended to be general purpose, but currently only used for tcl
         }
     }
 

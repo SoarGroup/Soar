@@ -163,7 +163,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
 
-#ifdef DEBUG_OUTPUT_ON
+#ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
 #else
     debug_set_mode_info(mode_info, false);

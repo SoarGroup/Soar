@@ -12,7 +12,7 @@
 
 #include "kernel.h"
 
-void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
+void set_trace_setting(agent* thisAgent, int param_number, int64_t new_value);
 
 void reset_statistics(agent* thisAgent);
 void setup_signal_handling(void);
@@ -112,8 +112,8 @@ void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
 
 void do_one_top_level_phase(agent* thisAgent);
 
-extern void init_sysparams(agent* thisAgent);
-extern void set_sysparam(agent* thisAgent, int param_number, int64_t new_value);
+extern void init_trace_settings(agent* thisAgent);
+extern void set_trace_setting(agent* thisAgent, int param_number, int64_t new_value);
 
 #endif
 

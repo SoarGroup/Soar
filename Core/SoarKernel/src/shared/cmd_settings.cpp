@@ -1,8 +1,10 @@
-#include "agent.h"
-#include "output_manager.h"
 #include "cmd_settings.h"
+
+#include "agent.h"
+#include "decider.h"
 #include "decision_manipulation.h"
 #include "exploration.h"
+#include "output_manager.h"
 
 //#include "sml_KernelSML.h"
 //#include "sml_Events.h"
@@ -80,7 +82,7 @@ void decide_param_container::print_summary(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Exploration Policy:",
         exploration_convert_policy(exploration_get_policy(thisAgent)), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Automatic Policy Parameter Reduction:",
-        ((exploration_get_auto_update(thisAgent)) ? ("on") : ("off")), 55).c_str());
+        (thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] ? ("on") : ("off")), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon:",
         std::to_string(exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON)).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Epsilon Reduction Policy:",
@@ -144,6 +146,8 @@ save_param_container::save_param_container(agent* new_agent): soar_module::param
     add(input_cmd);
     rete_cmd = new soar_module::boolean_param("rete-network", on, new soar_module::f_predicate<boolean>());
     add(rete_cmd);
+    chunks_cmd = new soar_module::boolean_param("chunks", on, new soar_module::f_predicate<boolean>());
+    add(chunks_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -185,7 +189,7 @@ production_param_container::production_param_container(agent* new_agent): soar_m
     add(matches_cmd);
     memories_cmd = new soar_module::boolean_param("memory-usage", on, new soar_module::f_predicate<boolean>());
     add(memories_cmd);
-    multi_attributes_cmd = new soar_module::boolean_param("optimize-multi-attribute", on, new soar_module::f_predicate<boolean>());
+    multi_attributes_cmd = new soar_module::boolean_param("optimize-attribute", on, new soar_module::f_predicate<boolean>());
     add(multi_attributes_cmd);
     break_cmd = new soar_module::boolean_param("break", on, new soar_module::f_predicate<boolean>());
     add(break_cmd);
@@ -238,7 +242,7 @@ void production_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "production memory-usage   %-[options] [max] %-\n");
     outputManager->printa_sf(thisAgent, "production memory-usage   %-<production_name> %-\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "production multi-attributes %-[symbol [n]]\n");
+    outputManager->printa_sf(thisAgent, "production optimize-attribute [symbol [n]]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production watch %-[--disable --enable] <prod-name>\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
@@ -278,6 +282,10 @@ wm_param_container::wm_param_container(agent* new_agent): soar_module::param_con
     add(add_cmd);
     remove_cmd = new soar_module::boolean_param("remove", on, new soar_module::f_predicate<boolean>());
     add(remove_cmd);
+
+//    find_cmd = new soar_module::boolean_param("find", on, new soar_module::f_predicate<boolean>());
+//    add(find_cmd);
+
     watch_cmd = new soar_module::boolean_param("watch", on, new soar_module::f_predicate<boolean>());
     add(watch_cmd);
     wma_cmd = new soar_module::boolean_param("activation", on, new soar_module::f_predicate<boolean>());
