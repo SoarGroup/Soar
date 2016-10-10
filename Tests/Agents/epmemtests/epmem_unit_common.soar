@@ -69,6 +69,8 @@ sp {ep-unit*apply*count*remove-store
     (<sres> ^success <store>)
 -->
     (<scmd> ^store <store> -)
+#    (write (crlf) |Stored parity id | <store> )
+#    (interrupt)
 }
 
 sp {ep-unit*apply*count*remove-parity
@@ -77,6 +79,7 @@ sp {ep-unit*apply*count*remove-parity
                ^parity <parity>)
 -->
     (<s> ^parity <parity> -)
+#    (interrupt)
 }
 
 sp {ep-unit*propose*count
@@ -147,7 +150,6 @@ sp {apply*test*pass
 }
 -->
     (<s> ^test-passed true)
-    #    (write (crlf) |- Result | <result> | had an augmentation of ^| <augmentation> | but no failed metadata.|)
 }
 
 sp {apply*test*pass*trace
@@ -160,15 +162,20 @@ sp {apply*test*pass*trace
 
 sp {apply*test*fail
     (state <s> ^operator <o>
-               ^epmem.result <result>
-               ^stats <stats>)
+               ^epmem.result <result>)
     (<o> ^name test
          ^test <test>)
     (<test> ^result.<metadata> <value>)
     (<result> ^<augmentation>
              -^<metadata> <value>)
 -->
+    (<s> ^test-failed true)
+}
+
+
+sp {apply*test*fail*trace
+    (state <s> ^test-failed)
+-->
     (write (crlf) |Test failed!|)
-    (write (crlf) |- Result | <result> | had an augmentation of ^| <augmentation> | but no augmentation ^| <metadata> | | <value>)
     (interrupt)
 }

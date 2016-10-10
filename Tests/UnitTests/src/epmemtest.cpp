@@ -28,7 +28,12 @@ class EpmemTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testEpmemUnit_11);
         CPPUNIT_TEST(testEpmemUnit_12);
         CPPUNIT_TEST(testEpmemUnit_13);
-        CPPUNIT_TEST(testEpmemUnit_14);
+        /* In Soar 9.6.0, this test should fail.  It was testing whether epmem could
+         * determine that an LTI should only match after it was promoted to an LTI.
+         * Epmem no longer tracks promotion time, so this should indeed return an
+         * earlier episode.  Keeping around because it might make the basis of a good
+         * test for epmem's new interaction with smem */
+//        CPPUNIT_TEST(testEpmemUnit_14);
         CPPUNIT_TEST(testHamiltonian);
         CPPUNIT_TEST(testSVS);
         CPPUNIT_TEST(testSVSHard);
