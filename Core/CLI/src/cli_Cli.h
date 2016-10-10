@@ -55,8 +55,7 @@ namespace cli
             virtual bool DoSoar(const char pOp = 0, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
             virtual bool DoSP(const std::string& production) = 0;
             virtual bool DoStats(const StatsBitset& options, int sort = 0) = 0;
-            virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) = 0;
-            virtual bool DoTraceBackwardsCompatible(std::vector< std::string >& argv, bool fromTraceLevel = false) = 0;
+            virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting, bool fromWatch) = 0;
             virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0) = 0;
             virtual bool DoWM(std::vector<std::string>& argv, const std::string& pCmd) = 0;
 
@@ -66,7 +65,7 @@ namespace cli
             virtual void PrintCLIMessage(std::ostringstream* printString, bool add_raw_lf = true) = 0;
             virtual void PrintCLIMessage(std::string* printString, bool add_raw_lf = true) = 0;
             virtual void PrintCLIMessage(const char* printString, bool add_raw_lf = true) = 0;
-            virtual void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf = true) = 0;
+            virtual void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, const char* commentString) = 0;
             virtual void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf = true) = 0;
             virtual void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf = true) = 0;
             virtual void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf = true) = 0;

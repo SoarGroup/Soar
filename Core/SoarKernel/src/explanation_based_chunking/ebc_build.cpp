@@ -460,7 +460,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 {
     cons* c;
     condition* ground, *c_vrblz, *first_vrblz = nullptr, *prev_vrblz;
-    bool should_unify_and_simplify = learning_is_on_for_instantiation();
+    bool should_unify_and_simplify = m_learning_on_for_instantiation;
 
     tc_number tc_to_use = get_new_tc_number(thisAgent);
 
@@ -1101,7 +1101,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     /* Determine if we create a justification or chunk */
-    variablize = learning_is_on_for_instantiation();
+    variablize = m_learning_on_for_instantiation;
     if (variablize && !m_reliable)
     {
         variablize = false;

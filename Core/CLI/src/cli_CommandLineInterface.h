@@ -144,7 +144,7 @@ namespace cli
             virtual bool DoSRand(uint32_t* pSeed = 0);
             virtual bool DoStats(const StatsBitset& options, int sort = 0);
             virtual bool DoSVS(const std::vector<std::string>& args);
-            virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
+            virtual bool DoTrace(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting, bool fromWatch);
             virtual bool DoVisualize(const std::string* pArg = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             virtual bool DoWM(std::vector<std::string>& argv, const std::string& pCmd);
 
@@ -172,7 +172,6 @@ namespace cli
             bool DoSelect(const std::string* pOp = 0);
             bool DoSource(std::string filename, SourceBitset* pOptions = 0);
             bool DoTime(std::vector<std::string>& argv);
-            bool DoTraceBackwardsCompatible(std::vector< std::string >& argv, bool fromTraceLevel = false);
             bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
             bool DoWMA(const char pOp = 0, const std::string* pAttr = 0, const std::string* pVal = 0);
 
@@ -203,7 +202,7 @@ namespace cli
             void PrintCLIMessage(std::ostringstream* printString, bool add_raw_lf = true);
             void PrintCLIMessage(std::string* printString, bool add_raw_lf = true);
             void PrintCLIMessage(const char* printString, bool add_raw_lf = true);
-            void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, bool add_raw_lf = true);
+            void PrintCLIMessage_Justify(const char* prefixString, const char* printString, int column_width, const char* commentString = 0);
             void PrintCLIMessage_Item(const char* prefixString, soar_module::named_object* printObject, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Header(const char* headerString, int column_width, bool add_raw_lf = true);
             void PrintCLIMessage_Section(const char* headerString, int column_width, bool add_raw_lf = true);

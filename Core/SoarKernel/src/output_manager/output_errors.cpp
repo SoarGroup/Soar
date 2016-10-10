@@ -112,7 +112,7 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_no_conditions:
         {
-            printa(thisAgent, "\nWarning: Chunking has produced a rule with no conditions.  Ignoring.\n\n"
+            printa(thisAgent, "\nWarning: Soar has created a chunk or justification with no conditions.  Ignoring.\n\n"
                                 "         Any results created will lose support when the sub-state disappears.\n"
                                 "         To avoid this issue, the problem-solving in the sub-state must\n"
                                 "         positively test at least one item in the super-state.\n");

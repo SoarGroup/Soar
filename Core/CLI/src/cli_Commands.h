@@ -1681,6 +1681,7 @@ namespace cli
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
+                bool fromWatch = false;
 
                 OptionsData optionsData[] =
                 {
@@ -1883,6 +1884,7 @@ namespace cli
                             {
                                 return cli.SetError(opt.GetError().c_str());
                             }
+                            fromWatch = true;
                         }
                         break;
 
@@ -2047,9 +2049,10 @@ namespace cli
                     {
                         return cli.SetError(opt.GetError().c_str());
                     }
+                    fromWatch = true;
                 }
 
-                return cli.DoTrace(options, settings, wmeSetting, learnSetting);
+                return cli.DoTrace(options, settings, wmeSetting, learnSetting, fromWatch);
             }
 
         private:
@@ -2078,7 +2081,6 @@ namespace cli
                 options.set(cli::WATCH_PHASES);
                 options.set(cli::WATCH_DECISIONS);
                 options.set(cli::WATCH_WATERFALL);
-                options.set(cli::WATCH_GDS_WMES);
                 options.set(cli::WATCH_GDS_STATE_REMOVAL);
 
                 // Start with all off, turn on as appropriate
@@ -2092,7 +2094,6 @@ namespace cli
                 settings.reset(cli::WATCH_PHASES);
                 settings.reset(cli::WATCH_DECISIONS);
                 settings.reset(cli::WATCH_WATERFALL);
-                settings.reset(cli::WATCH_GDS_WMES);
                 settings.reset(cli::WATCH_GDS_STATE_REMOVAL);
 
                 switch (level)
@@ -2103,35 +2104,37 @@ namespace cli
                         settings.reset();
                         learnSetting = 0;
                         wmeSetting = 0;
+                        cli.PrintCLIMessage("Trace level 0 enabled: All trace level categories cleared.");
+                        cli.PrintCLIMessage("                       Extra trace messages may still be enabled.");
                         break;
-
                     case 5:// preferences, waterfall, gds wme additions
-                        cli.PrintCLIMessage("Trace level 5 enabled: Preferences, waterfall inhibitions, IE loop, GDS changes");
+                        cli.PrintCLIMessage("Trace level 5 enabled: Preferences created");
                         settings.set(cli::WATCH_PREFERENCES);
-                        settings.set(cli::WATCH_WATERFALL);
-                        settings.set(cli::WATCH_GDS_WMES);
                     // falls through
-                        cli.PrintCLIMessage("Trace level 4 enabled: Working memory");
+                    case 4:
+                        cli.PrintCLIMessage("Trace level 4 enabled: Working memory additions and removals");
                         settings.set(cli::WATCH_WMES);
                     // falls through
                     case 3:// productions (default, user, chunks, justifications, templates)
-                        cli.PrintCLIMessage("Trace level 3 enabled: Rule firings");
+                        cli.PrintCLIMessage("Trace level 3 enabled: All rule firings");
                         settings.set(cli::WATCH_DEFAULT);
                         settings.set(cli::WATCH_USER);
                         settings.set(cli::WATCH_CHUNKS);
                         settings.set(cli::WATCH_JUSTIFICATIONS);
                         settings.set(cli::WATCH_TEMPLATES);
+                        settings.set(cli::WATCH_WATERFALL);
                     // falls through
                     case 2:// phases, gds
-                        cli.PrintCLIMessage("Trace level 2 enabled: Phases, GDS state removals");
+                        cli.PrintCLIMessage("Trace level 2 enabled: All phases, GDS state removals");
                         settings.set(cli::WATCH_PHASES);
                         settings.set(cli::WATCH_GDS_STATE_REMOVAL);
                     // falls through
                     case 1:// decisions
-                        cli.PrintCLIMessage("Trace level 1 enabled:  Decisions");
+                        cli.PrintCLIMessage("Trace level 1 enabled: Operator decision and state changes");
                         settings.set(cli::WATCH_DECISIONS);
                         break;
                 }
+                cli.PrintCLIMessage("\nFor a full list of trace options enabled, use 'trace' (no arguments)");
                 return true;
             }
 

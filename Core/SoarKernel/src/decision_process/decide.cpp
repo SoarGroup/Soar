@@ -3670,24 +3670,24 @@ void do_preference_phase(agent* thisAgent)
         // Update accounting
         thisAgent->inner_e_cycle_count++;
 
-//        if (thisAgent->active_goal == NIL)
-//        {
+        if (thisAgent->active_goal == NIL)
+        {
 //            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
 //            {
 //                thisAgent->outputManager->printa_sf(thisAgent,
 //                      " inner elaboration loop doesn't have active goal.\n");
 //            }
-//            break;
-//        }
-//
-//        if (thisAgent->active_goal->id->lower_goal == NIL)
-//        {
+            break;
+        }
+
+        if (thisAgent->active_goal->id->lower_goal == NIL)
+        {
 //            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
 //            {
 //                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
 //            }
-//            break;
-//        }
+            break;
+        }
 
         if (thisAgent->current_phase == APPLY_PHASE)
         {
@@ -3705,15 +3705,15 @@ void do_preference_phase(agent* thisAgent)
         {
             thisAgent->active_level = thisAgent->active_goal->id->level;
         }
-//        else
-//        {
+        else
+        {
 //            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
 //            {
 //                thisAgent->outputManager->printa_sf(thisAgent,
 //                      " inner elaboration loop finished but not at quiescence.\n");
 //            }
-//            break;
-//        }
+            break;
+        }
     } // end inner elaboration loop
 
     // Deallocate preferences delayed during inner elaboration loop.
