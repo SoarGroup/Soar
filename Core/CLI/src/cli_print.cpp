@@ -32,9 +32,71 @@
 #include "trace.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "sml_Utils.h"
 
 using namespace cli;
 using namespace sml;
+
+bool print_gds(agent* thisAgent)
+{
+    wme* w;
+    Symbol* goal;
+
+
+    thisAgent->outputManager->printa_sf(thisAgent,  "********************* Current GDS **************************\n");
+    thisAgent->outputManager->printa_sf(thisAgent,  "stepping thru all wmes in rete, looking for any that are in a gds...\n");
+    for (w = thisAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
+    {
+        if (w->gds)
+        {
+            if (w->gds->goal)
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "  For Goal  %y  ", w->gds->goal);
+            }
+            else
+            {
+                thisAgent->outputManager->printa_sf(thisAgent,  "  Old GDS value ");
+            }
+            thisAgent->outputManager->printa_sf(thisAgent,  "(%u: ", w->timetag);
+            thisAgent->outputManager->printa_sf(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
+            if (w->acceptable)
+            {
+                thisAgent->outputManager->printa(thisAgent, " +");
+            }
+            thisAgent->outputManager->printa(thisAgent, ")");
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+        }
+    }
+    thisAgent->outputManager->printa_sf(thisAgent,  "************************************************************\n");
+    for (goal = thisAgent->top_goal; goal != NIL; goal = goal->id->lower_goal)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "  For Goal  %y  ", goal);
+        if (goal->id->gds)
+        {
+            /* Loop over all the WMEs in the GDS */
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+            for (w = goal->id->gds->wmes_in_gds; w != NIL; w = w->gds_next)
+            {
+                thisAgent->outputManager->printa_sf(thisAgent,  "                (%u: ", w->timetag);
+                thisAgent->outputManager->printa_sf(thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
+                if (w->acceptable)
+                {
+                    thisAgent->outputManager->printa(thisAgent, " +");
+                }
+                thisAgent->outputManager->printa(thisAgent, ")");
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+            }
+
+        }
+        else
+        {
+            thisAgent->outputManager->printa_sf(thisAgent,  ": No GDS for this goal.\n");
+        }
+    }
+
+    thisAgent->outputManager->printa_sf(thisAgent,  "************************************************************\n");
+    return true;
+}
 
 void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators)
 {
@@ -512,10 +574,10 @@ int read_pattern_component(agent* thisAgent, soar::Lexeme* lexeme, Symbol** dest
     }
 }
 
-list* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
+cons* read_pattern_and_get_matching_wmes(agent* thisAgent, const char* pattern)
 {
     int parentheses_level;
-    list* wmes;
+    cons* wmes;
     wme* w;
     Symbol* id, *attr, *value;
     int id_result, attr_result, value_result;
@@ -593,7 +655,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
     cons* c;
     Symbol* id;
     wme* w;
-    list* wmes;
+    cons* wmes;
 
 	soar::Lexeme lexeme = soar::Lexer::get_lexeme_from_string(thisAgent, arg);
 
@@ -750,7 +812,10 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         print_stack_trace(thisAgent, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
         return true;
     }
-
+    if (options.test(PRINT_GDS))
+    {
+        print_gds(thisAgent);
+    }
     // Cache the flags since it makes function calls huge
     bool intern = options.test(PRINT_INTERNAL);
     bool tree = options.test(PRINT_TREE);

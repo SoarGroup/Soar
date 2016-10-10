@@ -158,7 +158,7 @@ cons* destructively_reverse_list(cons* c)
     return prev;
 }
 
-bool member_of_list(void* item, list* the_list)
+bool member_of_list(void* item, cons* the_list)
 {
     while (the_list)
     {
@@ -171,7 +171,7 @@ bool member_of_list(void* item, list* the_list)
     return false;
 }
 
-list* add_if_not_member(agent* thisAgent, void* item, list* old_list)
+cons* add_if_not_member(agent* thisAgent, void* item, cons* old_list)
 {
     cons* c;
 
@@ -186,7 +186,7 @@ list* add_if_not_member(agent* thisAgent, void* item, list* old_list)
     return c;
 }
 
-void free_list(agent* thisAgent, list* the_list)
+void free_list(agent* thisAgent, cons* the_list)
 {
     cons* c;
 
@@ -198,7 +198,7 @@ void free_list(agent* thisAgent, list* the_list)
     }
 }
 
-list* extract_list_elements(agent* thisAgent, list** header, cons_test_fn f, void* data)
+cons* extract_list_elements(agent* thisAgent, cons** header, cons_test_fn f, void* data)
 {
     cons* first_extracted_element, *tail_of_extracted_elements;
     cons* c, *prev_c, *next_c;

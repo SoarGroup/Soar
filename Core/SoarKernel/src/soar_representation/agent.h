@@ -162,6 +162,15 @@ typedef struct EXPORT agent_struct
     Explanation_Memory*         explanationMemory;
     GraphViz_Visualizer*        visualizationManager;
 
+    /* This contains parameters that are used to interface to certain CLI
+     * commands that were combined in Soar 9.6 */
+    cli_command_params*         command_params;
+
+    // MToDo | Move these two
+    debug_param_container*      debug_params;
+    AgentOutput_Info*           output_settings;
+
+
     /* ----------------------- Top-level stuff -------------------------- */
 
     /* --- headers of dll's of all productions of each type --- */
@@ -186,10 +195,10 @@ typedef struct EXPORT agent_struct
     bool                system_halted;
 
     /* --- list of productions whose firings are being traced --- */
-    ::list*             productions_being_traced;
+    cons*             productions_being_traced;
 
     /* --- various user-settable system parameters --- */
-    int64_t             sysparams[HIGHEST_SYSPARAM_NUMBER + 1];
+    int64_t             trace_settings[HIGHEST_SYSPARAM_NUMBER + 1];
 
     /* --- parameters for running Soar --- */
     /*  --- the code loops go_number times over the go_type phases --- */
@@ -331,7 +340,8 @@ typedef struct EXPORT agent_struct
     total_kernel_time should always be slightly greater than the derived total
     kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
-    /* REW: begin 28.07.96 */
+    bool timers_enabled;
+
 #ifndef NO_TIMING_STUFF
     soar_timer timers_cpu;    // start_total_tv
     soar_timer timers_kernel; // start_kernel_tv
@@ -364,14 +374,13 @@ typedef struct EXPORT agent_struct
 
     /* accumulated cpu time spent in various parts of the system */
     /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
-#ifdef DETAILED_TIMING_STATS
-    soar_timer timers_gds;                                        // start_gds_tv
-    soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
-    soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
-    soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time
-    soar_timer_accumulator timers_gds_cpu_time[NUM_PHASE_TYPES];          // gds_cpu_time
-#endif // DETAILED_TIMING_STATS
-    /* REW: end 28.07.96 */
+    #ifdef DETAILED_TIMING_STATS
+        soar_timer timers_gds;                                        // start_gds_tv
+        soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];    // ownership_cpu_time
+        soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];     // chunking_cpu_time
+        soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];        // match_cpu_time
+        soar_timer_accumulator timers_gds_cpu_time[NUM_PHASE_TYPES];          // gds_cpu_time
+    #endif // DETAILED_TIMING_STATS
 #endif // NO_TIMING_STUFF
 
     /* ----------------------- Firer stuff -------------------------- */
@@ -389,8 +398,8 @@ typedef struct EXPORT agent_struct
        =================================================================== */
 
     uint64_t            current_wme_timetag;
-    ::list*             wmes_to_add;
-    ::list*             wmes_to_remove;
+    cons*             wmes_to_add;
+    cons*             wmes_to_remove;
 
     /* ---------------------------------------------------------------------
        Top_goal and bottom_goal point to the top and bottom goal identifiers,
@@ -406,7 +415,7 @@ typedef struct EXPORT agent_struct
     Symbol*             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
     dl_list*            context_slots_with_changed_acceptable_preferences;
-    ::list*             slots_for_possible_removal;
+    cons*             slots_for_possible_removal;
 
     dl_list*            disconnected_ids;
     goal_stack_level    highest_level_anything_could_fall_from;
@@ -416,7 +425,7 @@ typedef struct EXPORT agent_struct
     goal_stack_level    level_at_which_marking_started;
     goal_stack_level    walk_level;
     tc_number           walk_tc_number;
-    ::list*             promoted_ids;
+    cons*             promoted_ids;
     int                 link_update_mode;
 
     /* ----------------------- Trace Formats -------------------------- */
@@ -428,7 +437,7 @@ typedef struct EXPORT agent_struct
     struct hash_table_struct* (stack_tr_ht[3]);
     tc_number           tf_printing_tc;
 
-    ::list*             wme_filter_list; /* kjh(CUSP-B2) */
+    cons*             wme_filter_list; /* kjh(CUSP-B2) */
 
     /* ----------------------- RHS Function Stuff -------------------------- */
 
@@ -466,11 +475,11 @@ typedef struct EXPORT agent_struct
     char          current_line[1024];
     int           current_line_index;
 
-    ::list*             variables_set;
+    cons*             variables_set;
 
     multi_attribute*    multi_attributes;
 
-    ::list*                   soar_callbacks[NUMBER_OF_CALLBACKS];
+    cons*                   soar_callbacks[NUMBER_OF_CALLBACKS];
 
     bool      did_PE;
     int        FIRING_TYPE;
@@ -521,14 +530,6 @@ typedef struct EXPORT agent_struct
     // predict
     uint32_t     predict_seed;
     std::string* prediction;
-
-    // debug parameters
-    debug_param_container* debug_params;
-
-    // parser symbol clean-up list
-    ::list*             parser_syms;
-
-    AgentOutput_Info* output_settings;
 
     // BasicWeightedCue from JSoar for unit testing
 	class BasicWeightedCue
@@ -587,6 +588,22 @@ inline void push(agent* thisAgent, P item, T*& list_header)
     push_cons_xy298->rest = (list_header);
     (list_header) = push_cons_xy298;
 }
+
+class cli_command_params
+{
+    public:
+
+        cli_command_params(agent* thisAgent);
+        ~cli_command_params();
+
+        decide_param_container*         decide_params;
+        load_param_container*           load_params;
+        save_param_container*           save_params;
+        memory_param_container*         memory_params;
+        production_param_container*     production_params;
+        wm_param_container*             wm_params;
+
+};
 
 void    init_soar_agent(agent* thisAgent);
 agent*  create_soar_agent(char* name);

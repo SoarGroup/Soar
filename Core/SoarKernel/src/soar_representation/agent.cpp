@@ -18,9 +18,10 @@
  */
 
 
-#include <decider.h>
 #include "agent.h"
+
 #include "callback.h"
+#include "cmd_settings.h"
 #include "debug.h"
 #include "decide.h"
 #include "decider.h"
@@ -30,7 +31,6 @@
 #include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "exploration.h"
-
 #include "instantiation.h"
 #include "io_link.h"
 #include "lexer.h"
@@ -257,15 +257,17 @@ agent* create_soar_agent(char* agent_name)                                      
     //
     // This was moved here so that system parameters could
     // be set before the agent was initialized.
-    init_sysparams(thisAgent);
+    init_trace_settings(thisAgent);
 
     /* Initializing all the timer structures.  Must be initialized after sysparams */
+    thisAgent->timers_enabled = true;
+
 #ifndef NO_TIMING_STUFF
-    thisAgent->timers_cpu.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_kernel.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_phase.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_cpu.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_kernel.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_phase.set_enabled(&(thisAgent->timers_enabled));
 #ifdef DETAILED_TIMING_STATS
-    thisAgent->timers_gds.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
 #endif
     reset_timers(thisAgent);
 #endif
@@ -275,6 +277,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->outputManager = &Output_Manager::Get_OM();
     thisAgent->debug_params = new debug_param_container(thisAgent);
+    thisAgent->command_params = new cli_command_params(thisAgent);
     thisAgent->EpMem = new EpMem_Manager(thisAgent);
     thisAgent->SMem = new SMem_Manager(thisAgent);
     thisAgent->symbolManager = new Symbol_Manager(thisAgent);
@@ -324,6 +327,9 @@ void destroy_soar_agent(agent* delete_agent)
 
     delete delete_agent->debug_params;
     delete_agent->debug_params = NULL;
+    delete delete_agent->command_params;
+    delete_agent->command_params = NULL;
+
     stats_close(delete_agent);
     delete delete_agent->stats_db;
     delete_agent->stats_db = NULL;
@@ -443,4 +449,22 @@ bool reinitialize_agent(agent* thisAgent)
     xml_reset(thisAgent);
 
     return ok;
+}
+
+cli_command_params::cli_command_params(agent* thisAgent)
+{
+    decide_params = new decide_param_container(thisAgent);
+    load_params = new load_param_container(thisAgent);
+    production_params = new production_param_container(thisAgent);
+    save_params = new save_param_container(thisAgent);
+    wm_params = new wm_param_container(thisAgent);
+}
+
+cli_command_params::~cli_command_params()
+{
+    delete decide_params;
+    delete load_params;
+    delete production_params;
+    delete save_params;
+    delete wm_params;
 }

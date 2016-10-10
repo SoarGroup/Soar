@@ -78,6 +78,8 @@ enum Decider_settings {
     DECIDER_MAX_NIL_OUTPUT_CYCLES,
     DECIDER_STOP_PHASE,
     DECIDER_WAIT_SNC,
+    DECIDER_EXPLORATION_POLICY,
+    DECIDER_AUTO_REDUCE,
     num_decider_settings
 };
 

@@ -155,7 +155,7 @@ struct varSymbol   : public Symbol
     char* name;
     Symbol* current_binding_value;
     uint64_t gensym_number;
-    ::cons* rete_binding_locations;
+    cons* rete_binding_locations;
 };
 
 struct idSymbol    : public Symbol
@@ -211,7 +211,7 @@ struct idSymbol    : public Symbol
 
 
     /* --- fields used for Soar I/O stuff --- */
-    ::cons* associated_output_links;
+    cons* associated_output_links;
     struct wme_struct* input_wmes;
 
     int depth;

@@ -326,7 +326,7 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         }
         case IDENTIFIER_LEXEME:
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
+//            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
             std::string lStr;
             thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
             newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
@@ -1432,7 +1432,7 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 {
     rhs_function* rf;
     Symbol* fun_name;
-    list* fl;
+    cons* fl;
     cons* c, *prev_c;
     rhs_value arg_rv;
     int num_args;
@@ -2299,7 +2299,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- if there's already a prod with this name, excise it --- */
     if (name->sc->production)
     {
-        excise_production(thisAgent, name->sc->production, (true && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
+        excise_production(thisAgent, name->sc->production);
     }
 
     /* --- read optional documentation string --- */

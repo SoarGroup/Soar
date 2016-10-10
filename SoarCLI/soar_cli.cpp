@@ -426,6 +426,11 @@ void SoarCLI::switchagent(const char* agentname)
 
 void SoarCLI::deleteagent(const char* agentname)
 {
+    if (agents.size() == 1)
+    {
+        cout << getcol(acc::Red) << "Cannot destroy agent named "  << getcol(acc::Purple) << agentname << getcol(acc::Red) << " because it is the last agent left." << getcol(acc::Off) << endl;
+        return;
+    }
     vector<Agent*>::iterator iter;
     int x = 1;
     for (iter = agents.begin(); iter != agents.end(); ++iter, ++x)

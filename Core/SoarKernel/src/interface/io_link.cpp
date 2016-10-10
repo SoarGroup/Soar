@@ -515,8 +515,8 @@ void update_for_io_wme_change(wme* w)
 }
 
 void inform_output_module_of_wm_changes(agent* thisAgent,
-                                        list* wmes_being_added,
-                                        list* wmes_being_removed)
+                                        cons* wmes_being_added,
+                                        cons* wmes_being_removed)
 {
     cons* c;
     wme* w;

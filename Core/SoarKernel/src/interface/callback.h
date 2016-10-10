@@ -279,7 +279,7 @@ typedef void (*soar_callback_fn)(agent*,
                                  soar_call_data);
 typedef void (*soar_callback_free_fn)(soar_callback_data);  // JRV 2008 This is a function pointer used to free the user data but currently nobody uses it
 typedef struct cons_struct cons;
-typedef cons list;
+typedef cons cons;
 
 #include <string>
 

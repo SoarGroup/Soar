@@ -23,6 +23,7 @@
 #include "soar_instance.h"
 #include "test.h"
 #include "working_memory.h"
+#include "xml.h"
 
 #include <iostream>
 #include <cstdarg>
@@ -37,17 +38,17 @@ void Output_Manager::printa_sf(agent* pSoarAgent, const char* format, ...)
     va_end(args);
     printa(pSoarAgent, buf.c_str());
 }
-
 void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 {
     if (pSoarAgent)
     {
+//        xml_generate_message(pSoarAgent, const_cast<char*>(msg));
         if (!pSoarAgent->output_settings->print_enabled) return;
         if (pSoarAgent->output_settings->callback_mode)
         {
             soar_invoke_callbacks(pSoarAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char*>(msg)));
         }
-        if (pSoarAgent->output_settings->stdout_mode)
+        if (stdout_mode)
         {
             fputs(msg, stdout);
         }
@@ -485,7 +486,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
 
                     case 'n':
                     {
-                        list* la = va_arg(args, list *);
+                        cons* la = va_arg(args, cons *);
                         if (la)
                         {
                             this->rhs_value_to_string(funcall_list_to_rhs_value(la), destString);

@@ -770,7 +770,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     }
     else
     {
-        if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
+        if (thisAgent->trace_settings[ TRACE_RL_SYSPARAM ] && using_gaps &&
                 (data->gap_age == 0) && !data->prev_op_rl_rules->empty())
         {
             char buf[256];
@@ -829,7 +829,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             double discount = pow(gamma, static_cast< double >(effective_age));
 
             // notify of gap closure
-            if (data->gap_age && using_gaps && thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
+            if (data->gap_age && using_gaps && thisAgent->trace_settings[ TRACE_RL_SYSPARAM ])
             {
                 char buf[256];
                 SNPRINTF(buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
@@ -974,7 +974,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     new_gql = old_gql + eta * (delta_ecr + delta_efr);
 
                     // print as necessary
-                    if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
+                    if (thisAgent->trace_settings[ TRACE_RL_SYSPARAM ])
                     {
                         std::ostringstream ss;
                         ss << "RL update " << prod->name->sc->name << " "

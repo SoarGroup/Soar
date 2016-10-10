@@ -61,6 +61,14 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
         thisAgent->explanationMemory->print_global_stats();
 
     }
+    else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->always_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->never_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->flagged_cmd) ||
+        (my_param == thisAgent->explanationBasedChunker->ebc_params->unflagged_cmd))
+    {
+        thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
+        return true;
+    }
     else if (my_param == thisAgent->explanationBasedChunker->ebc_params->history_cmd)
     {
         PrintCLIMessage_Header("Chunking History", 60);
@@ -72,7 +80,7 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
     else {
         if (!pVal)
         {
-            tempStringStream << my_param->get_name() << " =" ;
+            tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         } else {
             if (!my_param->validate_string(pVal->c_str()))
@@ -88,7 +96,7 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
             }
             else
             {
-                tempStringStream << my_param->get_name() << " = " << pVal->c_str();
+                tempStringStream << my_param->get_name() << " is now " << pVal->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
             /* The following code assumes that all parameters except learn are boolean */

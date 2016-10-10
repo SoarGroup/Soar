@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 #include "misc.h"
 #include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class SoarCommand : public cli::ParserCommand
     {
         public:
-            SoarCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            SoarCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~SoarCommand() {}
             virtual const char* GetString() const
             {
@@ -34,14 +34,14 @@ namespace cli
             virtual bool Parse(std::vector< std::string >& argv)
             {
                 cli::Options opt;
-                std::string subCommandArg;
+                std::string subCommandArg, subCommandArgAlt;
                 bool backwardCompatibleReplacement = false;
 
                 OptionsData optionsData[] =
                 {
                     {'e', "enable",             OPTARG_NONE},
-//                    {'d', "disable",          OPTARG_NONE},
                     {'e', "on",                 OPTARG_NONE},
+                    {'d', "disable",            OPTARG_NONE},
                     {'d', "off",                OPTARG_NONE},
                     {'A', "AfterPhaseIgnored",  OPTARG_NONE},
                     {'B', "BeforePhaseIgnored", OPTARG_NONE},
@@ -49,7 +49,8 @@ namespace cli
                     {'d', "decide",             OPTARG_NONE},
                     {'i', "input",              OPTARG_NONE},
                     {'o', "output",             OPTARG_NONE},
-                    {'p', "propose",           OPTARG_NONE},
+                    {'p', "propose",            OPTARG_NONE},
+                    {'s', "self",               OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -85,6 +86,7 @@ namespace cli
                             break;
                         case 'd':
                             subCommandArg = "decide";
+                            subCommandArgAlt = "off";
                             backwardCompatibleReplacement = true;
                             break;
                         case 'i':
@@ -99,11 +101,17 @@ namespace cli
                             subCommandArg = "propose";
                             backwardCompatibleReplacement = true;
                             break;
+                        case 's':
+                            std::string sarg("stop"), sarg2("self");
+                            return cli.DoSoar('G', &sarg, &sarg2);
+                            break;
                     }
                 }
                 std::string arg;
+                std::string reasonForStopping;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
+
                 if (num_args > 0)
                 {
                     arg = argv[start_arg_position];
@@ -118,16 +126,15 @@ namespace cli
                 }
                 if (backwardCompatibleReplacement || (num_args == 2))
                 {
-                    return cli.DoSoar('S', &arg, &subCommandArg);
+                    return cli.DoSoar('S', &arg, &subCommandArg, &subCommandArgAlt);
                 }
-
 
                 // case: nothing = full configuration information
                 return cli.DoSoar();
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             SoarCommand& operator=(const SoarCommand&);
     };

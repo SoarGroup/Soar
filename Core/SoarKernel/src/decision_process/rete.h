@@ -79,9 +79,9 @@ inline Symbol* varnames_to_one_var(varnames* x)
 {
     return reinterpret_cast<Symbol*>(x);
 }
-inline list* varnames_to_var_list(varnames* x)
+inline cons* varnames_to_var_list(varnames* x)
 {
-    return reinterpret_cast<list*>(static_cast<char*>(x) - 1);
+    return reinterpret_cast<cons*>(static_cast<char*>(x) - 1);
 }
 
 /* --- tells where to find a variable --- */
@@ -172,7 +172,7 @@ typedef struct rete_test_struct
     {
         var_location variable_referent;   /* for relational tests to a variable */
         Symbol* constant_referent;        /* for relational tests to a constant */
-        list* disjunction_list;           /* list of symbols in disjunction test */
+        cons* disjunction_list;           /* list of symbols in disjunction test */
     } data;
     struct rete_test_struct* next; /* next in list of tests at the node */
 } rete_test;

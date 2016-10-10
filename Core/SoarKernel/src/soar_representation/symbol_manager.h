@@ -16,7 +16,7 @@
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
     /* -- Reference count functions for symbols
      *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
-     *      If DEBUG_TRACE_REFCOUNT_INVENTORY is defined, an alternate version of the function is used
+     *      If DEBUG_REFCOUNT_DB is defined, an alternate version of the function is used
      *      that sends a bunch of trace information to the debug database for deeper analysis of possible
      *      bugs. -- */
     #include <string>
@@ -50,8 +50,8 @@ class Symbol_Manager {
         Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL);
         Symbol* generate_new_str_constant(const char* prefix, uint64_t* counter);
 
-        void deallocate_symbol_list_removing_references(::cons*& sym_list);
-        ::cons* copy_symbol_list_adding_references(::cons* sym_list);
+        void deallocate_symbol_list_removing_references(cons*& sym_list);
+        cons* copy_symbol_list_adding_references(cons* sym_list);
 
         Symbol* find_variable(const char* name);
         Symbol* find_identifier(char name_letter, uint64_t name_number);
@@ -88,7 +88,7 @@ class Symbol_Manager {
 
         //-- symbol_add_ref -----------------
 
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
         #define symbol_add_ref(sym) \
             ({debug_store_refcount(sym, true); \
                 symbol_add_ref_func(sym); })
@@ -98,7 +98,7 @@ class Symbol_Manager {
         inline void symbol_add_ref(Symbol* x)
         #endif
         {
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
             //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
         #else
             //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
@@ -122,7 +122,7 @@ class Symbol_Manager {
 
         //-- symbol_remove_ref -----------------
 
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
         #define symbol_remove_ref(&sym) \
             ({debug_store_refcount(sym, false); \
                 symbol_remove_ref_func(sym);})
@@ -132,7 +132,7 @@ class Symbol_Manager {
         inline void symbol_remove_ref(Symbol** x)
         #endif
         {
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
             //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
         #else
         //    dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);

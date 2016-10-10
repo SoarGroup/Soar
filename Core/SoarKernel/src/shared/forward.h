@@ -42,7 +42,7 @@ typedef byte ms_trace_type;
 typedef byte wme_trace_type;
 typedef char varnames;
 typedef char* rhs_value;
-typedef cons list;
+typedef cons cons;
 typedef signed short goal_stack_level;
 typedef test_info* test;
 typedef uint64_t tc_number;
@@ -69,6 +69,14 @@ class OM_Parameters;
 class OM_DB;
 class AgentOutput_Info;
 class debug_param_container;
+
+class cli_command_params;
+class decide_param_container;
+class load_param_container;
+class save_param_container;
+class memory_param_container;
+class production_param_container;
+class wm_param_container;
 
 class Explanation_Based_Chunker;
 class Explanation_Memory;

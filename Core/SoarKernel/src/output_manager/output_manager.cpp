@@ -27,7 +27,7 @@ AgentOutput_Info::AgentOutput_Info()
 {
     print_enabled = true;
     printer_output_column = 1;
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_agent(true);
     #else
         set_output_params_agent(false);
@@ -38,18 +38,10 @@ void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
     if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
     {
         callback_mode = false;
-        stdout_mode = true;
         db_mode = false;
-        callback_dbg_mode = false;
-        stdout_dbg_mode = true;
-        db_dbg_mode = false;
     } else {
         callback_mode = true;
-        stdout_mode = false;
         db_mode = false;
-        callback_dbg_mode = false;
-        stdout_dbg_mode = false;
-        db_dbg_mode = false;
     }
 }
 
@@ -106,7 +98,7 @@ Output_Manager::Output_Manager()
     reset_column_indents();
 
     initialize_debug_trace(mode_info);
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_global(true);
     #else
         set_output_params_global(false);
@@ -184,7 +176,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column = 1;
-                if (pSoarAgent->output_settings->stdout_mode)
+                if (stdout_mode)
                 {
                     global_printer_output_column = 1;
                 }
@@ -198,7 +190,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column++;
-                if (pSoarAgent->output_settings->stdout_mode)
+                if (stdout_mode)
                 {
                     global_printer_output_column++;
                 }

@@ -38,8 +38,8 @@ class Explanation_Based_Chunker
         bool                    max_chunks_reached;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-        ::list*     chunk_free_problem_spaces;
-        ::list*     chunky_problem_spaces;   /* AGR MVL1 */
+        cons*     chunk_free_problem_spaces;
+        cons*     chunky_problem_spaces;   /* AGR MVL1 */
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
@@ -122,9 +122,9 @@ class Explanation_Based_Chunker
         tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
-        ::list*             grounds;
-        ::list*             locals;
-        ::list*             positive_potentials;
+        cons*             grounds;
+        cons*             locals;
+        cons*             positive_potentials;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           locals_tc;
@@ -176,8 +176,6 @@ class Explanation_Based_Chunker
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
         sym_to_sym_map*            rhs_var_to_match_map;
-
-        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);

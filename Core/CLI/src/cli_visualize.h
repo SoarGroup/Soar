@@ -10,7 +10,7 @@
 
 #include "cli_Parser.h"
 #include "cli_Options.h"
-#include "cli_Cli.h"
+
 #include "misc.h"
 #include "sml_Events.h"
 
@@ -20,7 +20,7 @@ namespace cli
     class VisualizeCommand : public cli::ParserCommand
     {
         public:
-            VisualizeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+            VisualizeCommand(cli::CommandLineInterface& cli) : cli(cli), ParserCommand() {}
             virtual ~VisualizeCommand() {}
             virtual const char* GetString() const
             {
@@ -91,7 +91,7 @@ namespace cli
             }
 
         private:
-            cli::Cli& cli;
+            cli::CommandLineInterface& cli;
 
             VisualizeCommand& operator=(const VisualizeCommand&);
     };

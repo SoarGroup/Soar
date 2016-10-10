@@ -470,7 +470,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", pref->id, pref->value);
         post_link_addition(thisAgent, pref->id, pref->value);
     }
-#ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+#ifdef DEBUG_ATTR_AS_LINKS
     if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", pref->id, pref->attr);
@@ -544,7 +544,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", pref->id, pref->value);
         post_link_removal(thisAgent, pref->id, pref->value);
     }
-#ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+#ifdef DEBUG_ATTR_AS_LINKS
     if (pref->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", pref->id, pref->attr);

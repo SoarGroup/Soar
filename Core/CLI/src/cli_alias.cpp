@@ -1,15 +1,28 @@
 #include "portability.h"
 
 #include "cli_CommandLineInterface.h"
-#include "sml_Utils.h"
 #include "cli_Aliases.h"
+
+#include "sml_AgentSML.h"
 #include "sml_Names.h"
+#include "sml_Utils.h"
+
+#include "agent.h"
+#include "output_manager.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
+
+bool CommandLineInterface::DoAlias(std::vector< std::string >* argv, bool doRemove)
 {
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    if (doRemove)
+    {
+        m_Parser.GetAliases().SetAlias(*argv);
+        return true;
+    }
     if (!argv || argv->size() == 1)
     {
         std::map< std::string, std::vector< std::string > >::const_iterator iter = m_Parser.GetAliases().Begin();
@@ -19,6 +32,13 @@ bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
             return true;
         }
         
+        Output_Manager* outputManager = thisAgent->outputManager;
+
+        if (!argv) PrintCLIMessage_Header("Soar Aliases", 43);
+        outputManager->reset_column_indents();
+        outputManager->set_column_indent(0, 28);
+        outputManager->set_column_indent(1, 43);
+        std::string lStr;
         while (iter != m_Parser.GetAliases().End())
         {
             if (!argv || argv->front() == iter->first)
@@ -33,7 +53,14 @@ bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
                 
                 if (m_RawOutput)
                 {
-                    m_Result << iter->first << "=" << expansion << "\n";
+                    lStr.clear();
+                    if (!argv)
+                    {
+                        outputManager->sprinta_sf(thisAgent, lStr, "%s %-%-= %s\n", iter->first.c_str(), expansion.c_str());
+                    m_Result << lStr;
+                    } else {
+                        m_Result << iter->first << " = \"" << expansion << "\"\n";
+                    }
                 }
                 else
                 {

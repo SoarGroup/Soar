@@ -51,8 +51,7 @@ class AgentOutput_Info
         AgentOutput_Info();
 
         bool print_enabled;
-        bool callback_mode, stdout_mode, db_mode;
-        bool callback_dbg_mode, stdout_dbg_mode, db_dbg_mode;
+        bool callback_mode, db_mode;
         int  printer_output_column;
         void set_output_params_agent(bool pDebugEnabled);
 } ;
@@ -134,6 +133,8 @@ class Output_Manager
 
         /* Methods for the cli output command */
         void print_output_summary();
+        bool is_printing_to_stdout() { return stdout_mode; };
+        void set_printing_to_stdout(bool pEnabled) { stdout_mode = pEnabled; };
 
         void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }

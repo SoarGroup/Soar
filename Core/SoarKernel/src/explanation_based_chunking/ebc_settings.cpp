@@ -2,6 +2,7 @@
 
 #include "agent.h"
 #include "ebc.h"
+#include "output_manager.h"
 
 #define setting_on(s) pEBC_settings[s] ? on : off
 
@@ -55,6 +56,15 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     naming_style->add_mapping(ruleFormat, "rule");
     naming_style->add_mapping(numberedFormat, "numbered");
     add(naming_style);
+
+    always_cmd = new soar_module::boolean_param("always", on, new soar_module::f_predicate<boolean>());
+    add(always_cmd);
+    never_cmd = new soar_module::boolean_param("never", on, new soar_module::f_predicate<boolean>());
+    add(never_cmd);
+    flagged_cmd = new soar_module::boolean_param("flagged", on, new soar_module::f_predicate<boolean>());
+    add(flagged_cmd);
+    unflagged_cmd = new soar_module::boolean_param("unflagged", on, new soar_module::f_predicate<boolean>());
+    add(unflagged_cmd);
 
     history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());
     add(history_cmd);
@@ -231,6 +241,46 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     else if (pChangedParam == allow_conflated_reasoning)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
+    }
+    else if (pChangedParam == always_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_always);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == never_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
+        chunk_in_states->set_value(ebc_never);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == flagged_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_only);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+    }
+    else if (pChangedParam == unflagged_cmd)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
+        chunk_in_states->set_value(ebc_except);
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
     }
 }
 

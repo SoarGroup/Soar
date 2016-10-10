@@ -274,7 +274,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
     cons* c;
-    list* fl;
+    cons* fl;
     rhs_function* rf;
 
     if (!rhs_value_true_null(rv))

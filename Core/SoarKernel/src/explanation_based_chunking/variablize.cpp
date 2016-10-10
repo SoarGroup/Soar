@@ -129,7 +129,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
 
     if (rhs_value_is_funcall(pRhs_val))
     {
-        list* fl = rhs_value_to_funcall_list(pRhs_val);
+        cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
 
         for (c = fl->rest; c != NIL; c = c->rest)

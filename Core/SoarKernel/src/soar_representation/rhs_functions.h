@@ -34,7 +34,7 @@
 #include "kernel.h"
 #include "Export.h"
 
-typedef Symbol* ((*rhs_function_routine)(agent* thisAgent, ::list* args, void* user_data));
+typedef Symbol* ((*rhs_function_routine)(agent* thisAgent, cons* args, void* user_data));
 
 typedef struct rhs_function_struct
 {

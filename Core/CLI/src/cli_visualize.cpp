@@ -187,7 +187,7 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
             /* Done with dummy command parameters.  Remaining parameters are all settings*/
             if (!pArg2)
             {
-                tempStringStream << my_param->get_name() << " =" ;
+                tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
             return true;
             } else {
@@ -204,7 +204,7 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
                 }
                 else
                 {
-                    tempStringStream << my_param->get_name() << " = " << pArg2->c_str();
+                    tempStringStream << my_param->get_name() << " is now " << pArg2->c_str();
                     PrintCLIMessage(&tempStringStream);
                 }
                 return result;

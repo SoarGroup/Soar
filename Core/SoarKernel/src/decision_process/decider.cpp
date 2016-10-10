@@ -144,40 +144,6 @@ int SoarDecider::get_state_stack_string(std::string &stateStackStr)
     return soarStackDepth;
 }
 
-void SoarDecider::print_soar_status(sml::KernelSML* pKernelSML)
-{
-    std::string stateStackStr, enabledStr, disabledStr;
-    int soarStackDepth;
-
-    soarStackDepth = get_state_stack_string(stateStackStr);
-    get_enabled_module_strings(enabledStr, disabledStr);
-    uint64_t totalProductions =
-        thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE] +
-        thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE] +
-        thisAgent->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
-
-
-
-    outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 55);
-
-    outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent,    "                     Soar %s Summary\n", sml::sml_Names::kSoarVersionValue);
-    outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Enabled:", enabledStr.c_str(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Disabled:", disabledStr.c_str(), 55).c_str());
-    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Number of rules:", std::to_string(totalProductions).c_str(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Decisions", std::to_string(thisAgent->d_cycle_count).c_str(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Inferences", std::to_string(thisAgent->e_cycle_count).c_str(), 55).c_str());
-    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("State stack", stateStackStr.c_str(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Current number of states", std::to_string(soarStackDepth).c_str(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Next phase", thisAgent->outputManager->phase_to_string(thisAgent->current_phase), 55).c_str());
-
-    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings:  soar ?");
-}
-
 void SoarDecider::clean_up_for_agent_deletion()
 {
     delete params;

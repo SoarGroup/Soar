@@ -958,7 +958,7 @@ extern void print_sysparam_trace(agent* thisAgent, int64_t sysParamIndex, const 
     va_list args;
     std::string buf;
 
-    if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->sysparams[ sysParamIndex ])
+    if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->trace_settings[ sysParamIndex ])
     {
         va_start(args, format);
         thisAgent->outputManager->sprinta_sf(thisAgent, buf, format, args);

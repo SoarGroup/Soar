@@ -2,6 +2,7 @@
 #include <agent.cpp>
 #include <callback.cpp>
 #include <chunk_record.cpp>
+#include <cmd_settings.cpp>
 #include <condition_record.cpp>
 #include <condition.cpp>
 #include <consistency.cpp>

@@ -36,4 +36,4 @@ Soar Consortium.
 ## Included Software
 Licenses for other software included in this distribution are included 
 at:
-https://raw.githubusercontent.com/SoarGroup/Release-Support/master/docs/license.txt
+https://raw.githubusercontent.com/SoarGroup/Release-Support/master/txt/license.txt

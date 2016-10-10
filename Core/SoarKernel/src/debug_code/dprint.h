@@ -4,22 +4,46 @@
  *  Created on: Jul 2, 2016
  *      Author: mazzin
  */
-
 #ifndef CORE_SOARKERNEL_SRC_DEBUG_CODE_DPRINT_H_
 #define CORE_SOARKERNEL_SRC_DEBUG_CODE_DPRINT_H_
 
+#include "kernel.h"
 
-#ifndef SOAR_RELEASE_VERSION
-    /* ----------------------------------------------------------------------------
-     * Commenting out this setting will disable dprint statements globally
-     *
-     * To completely compile out debug statements, use --opt or uncomment out line
-     * that defines SOAR_RELEASE_VERSION in kernel.h
-     * ---------------------------------------------------------------------------- */
-    #define DEBUG_OUTPUT_ON
-#endif
+#ifdef SOAR_RELEASE_VERSION
 
-#if !defined(SOAR_RELEASE_VERSION)
+    /* These definitions will cause debug printing to be compiled out */
+
+    #define dprint(mode, format, ...) ((void)0)
+    #define dprint_set_indents(mode, ...) ((void)0)
+    #define dprint_set_default_test_format(mode, ...) ((void)0)
+    #define dprint_clear_indents(mode, ...) ((void)0)
+    #define dprint_reset_test_format(mode, ...) ((void)0)
+    #define dprint_y(mode, format, ...) ((void)0)
+    #define dprint_noprefix(mode, format, ...) ((void)0)
+    #define dprint_start_fresh_line(mode) ((void)0)
+    #define dprint_header(mode, h, ...) ((void)0)
+
+    #define dprint_current_lexeme(mode) ((void)0)
+    #define dprint_production(mode, prod) ((void)0)
+    #define dprint_identifiers(mode) ((void)0)
+    #define dprint_saved_test_list(mode, st) ((void)0)
+    #define dprint_varnames(mode, var_names) ((void)0)
+    #define dprint_varnames_node(mode, var_names_node) ((void)0)
+    #define dprint_all_inst(mode) ((void)0)
+
+    #define dprint_variablization_table(mode, ...) ((void)0)
+    #define dprint_tables(mode) ((void)0)
+    #define dprint_o_id_tables(mode) ((void)0)
+    #define dprint_attachment_points(mode) ((void)0)
+    #define dprint_constraints(mode) ((void)0)
+    #define dprint_merge_map(mode) ((void)0)
+    #define dprint_ovar_to_o_id_map(mode) ((void)0)
+    #define dprint_o_id_substitution_map(mode) ((void)0)
+    #define dprint_o_id_to_ovar_debug_map(mode) ((void)0)
+
+#else
+
+    /* Since SOAR_RELEASE_VERSION is off, define debug print macros that do something */
 
     #include "output_manager.h"
 
@@ -57,35 +81,6 @@
     #define dprint_ovar_to_o_id_map(mode) thisAgent->explanationBasedChunker->print_ovar_to_o_id_map (mode)
     #define dprint_o_id_substitution_map(mode) thisAgent->explanationBasedChunker->print_o_id_substitution_map (mode)
     #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->explanationBasedChunker->print_o_id_to_ovar_debug_map (mode)
-
-#else
-    #define dprint(mode, format, ...) ((void)0)
-    #define dprint_set_indents(mode, ...) ((void)0)
-    #define dprint_set_default_test_format(mode, ...) ((void)0)
-    #define dprint_clear_indents(mode, ...) ((void)0)
-    #define dprint_reset_test_format(mode, ...) ((void)0)
-    #define dprint_y(mode, format, ...) ((void)0)
-    #define dprint_noprefix(mode, format, ...) ((void)0)
-    #define dprint_start_fresh_line(mode) ((void)0)
-    #define dprint_header(mode, h, ...) ((void)0)
-
-    #define dprint_current_lexeme(mode) ((void)0)
-    #define dprint_production(mode, prod) ((void)0)
-    #define dprint_identifiers(mode) ((void)0)
-    #define dprint_saved_test_list(mode, st) ((void)0)
-    #define dprint_varnames(mode, var_names) ((void)0)
-    #define dprint_varnames_node(mode, var_names_node) ((void)0)
-    #define dprint_all_inst(mode) ((void)0)
-
-    #define dprint_variablization_table(mode, ...) ((void)0)
-    #define dprint_tables(mode) ((void)0)
-    #define dprint_o_id_tables(mode) ((void)0)
-    #define dprint_attachment_points(mode) ((void)0)
-    #define dprint_constraints(mode) ((void)0)
-    #define dprint_merge_map(mode) ((void)0)
-    #define dprint_ovar_to_o_id_map(mode) ((void)0)
-    #define dprint_o_id_substitution_map(mode) ((void)0)
-    #define dprint_o_id_to_ovar_debug_map(mode) ((void)0)
 
 #endif
 

@@ -36,6 +36,14 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
     if (!pOp)
     {
+        std::string lStr("Semantic memory is ");
+        lStr.append(thisAgent->SMem->settings->learning->get_value() ? "enabled." : "not enabled.");
+        PrintCLIMessage(lStr.c_str());
+        PrintCLIMessage("Use 'smem ?' to see SMem setting and 'help smem' to learn more about the smem command.");
+        return true;
+    }
+    else if (pOp == '?')
+    {
         // Print SMem Settings
         PrintCLIMessage_Header("Semantic Memory Settings", 40);
         PrintCLIMessage_Item("enabled:", thisAgent->SMem->settings->learning, 40);
@@ -140,7 +148,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
 
         std::string tempString(my_param->get_name());
-        tempString.append(" =");
+        tempString.append(" is");
         PrintCLIMessage_Item(tempString.c_str(), my_param, 0);
         return true;
     }
@@ -288,7 +296,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
         else
         {
-            tempString << my_param->get_name() << " = " << pArg2->c_str();
+            tempString << my_param->get_name() << " is now " << pArg2->c_str();
             PrintCLIMessage(&tempString);
             if (thisAgent->SMem->connected())
             {

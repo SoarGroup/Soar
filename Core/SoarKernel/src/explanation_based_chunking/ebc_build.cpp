@@ -460,7 +460,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 {
     cons* c;
     condition* ground, *c_vrblz, *first_vrblz = nullptr, *prev_vrblz;
-    bool should_unify_and_simplify = learning_is_on_for_instantiation();
+    bool should_unify_and_simplify = m_learning_on_for_instantiation;
 
     tc_number tc_to_use = get_new_tc_number(thisAgent);
 
@@ -494,7 +494,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     dprint(DT_BACKTRACE, "...adding negated conditions from backtraced negated set.\n");
     /* --- scan through negated conditions and check which ones are connected
        to the grounds --- */
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");
     }
@@ -508,7 +508,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         if (cond_is_in_tc(thisAgent, cc->cond, tc_to_use))
         {
             /* --- negated cond is in the TC, so add it to the grounds --- */
-            if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
                 thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
@@ -769,6 +769,15 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
             break;
         }
     }
+
+    /* Note that in Soar 9.3.4, chunking would not create a chunk for a
+     * a result if another result was also being returned to an even higher
+     * superstate.  In this part of the code, it would set learning off
+     * so that an intermediate justification is created instead.  We disabled that
+     * aspect in 2/2013 to fix issues that Shiwali was having with her research
+     * agents. Documenting here in case this ever needs to changed back or made
+     * an option. */
+
     if (!pref)
     {
         return false;
@@ -799,7 +808,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
             xml_begin_tag(thisAgent, kTagBacktraceResult);
@@ -808,7 +817,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagBacktraceResult);
         }
@@ -876,8 +885,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_name = generate_chunk_name(m_inst, pForChunk);
 
         m_prod_type = CHUNK_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
+        m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM] != 0);
     }
     else
     {
@@ -885,8 +894,8 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
         m_prod_name = generate_chunk_name(m_inst, pForChunk);
 //        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+        m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_justifications_attempted();
         #endif
@@ -993,7 +1002,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
     #endif
 
     m_inst = inst;
@@ -1092,7 +1101,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
 
     /* Determine if we create a justification or chunk */
-    variablize = learning_is_on_for_instantiation();
+    variablize = m_learning_on_for_instantiation;
     if (variablize && !m_reliable)
     {
         variablize = false;

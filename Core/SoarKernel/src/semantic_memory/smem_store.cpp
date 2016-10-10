@@ -204,7 +204,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         disconnect_ltm(pLTI_ID);
 
         // provide trace output
-        if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ])
+        if (thisAgent->trace_settings[ TRACE_SMEM_SYSPARAM ])
         {
             char buf[256];
 
@@ -288,7 +288,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     }
 
                     // provide trace output
-                    if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ])
+                    if (thisAgent->trace_settings[ TRACE_SMEM_SYSPARAM ])
                     {
                         char buf[256];
 
@@ -329,7 +329,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     }
 
                     // provide trace output
-                    if (thisAgent->sysparams[ TRACE_SMEM_SYSPARAM ])
+                    if (thisAgent->trace_settings[ TRACE_SMEM_SYSPARAM ])
                     {
                         char buf[256];
 
