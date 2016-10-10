@@ -1,0 +1,18 @@
+source epmem_unit_common.soar
+
+sp {apply*init2
+    (state <s> ^operator.name init)
+-->
+    (<s> ^tests <tests>)
+
+    (<tests> ^test <t-14>)
+    (<t-14> ^id 14
+            ^name |LTI promotion constraint|
+            ^commands <c-14>
+            ^result <r-14>)
+    (<c-14> ^query <q-14>
+            ^before 22)
+    (<q-14> ^parity <parity>)
+    (<r-14> ^failure <q-14>)
+
+}

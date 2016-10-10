@@ -1,0 +1,16 @@
+source epmem_unit_common.soar
+
+sp {apply*init2
+    (state <s> ^operator.name init)
+-->
+    (<s> ^tests <tests>)
+        (<tests> ^test <t-02>)
+    (<t-02> ^id 02
+            ^name |bad state|
+            ^note |attempting to retrieve bad state name|
+            ^commands <c-02>
+            ^result <r-02>)
+    (<c-02> ^query <q-02>)
+    (<q-02> ^name bad-state-name)
+    (<r-02> ^failure <q-02>)
+}
