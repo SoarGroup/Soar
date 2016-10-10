@@ -2104,15 +2104,14 @@ namespace cli
                         settings.reset();
                         learnSetting = 0;
                         wmeSetting = 0;
-                        cli.PrintCLIMessage("Trace level 0 enabled: All trace level categories cleared.");
-                        cli.PrintCLIMessage("                       Extra trace messages may still be enabled.");
+                        cli.PrintCLIMessage("Trace level 0 enabled: All trace messages disabled.");
                         break;
                     case 5:// preferences, waterfall, gds wme additions
-                        cli.PrintCLIMessage("Trace level 5 enabled: Preferences created");
+                        cli.PrintCLIMessage("Trace level 5 enabled: Preferences");
                         settings.set(cli::WATCH_PREFERENCES);
                     // falls through
                     case 4:
-                        cli.PrintCLIMessage("Trace level 4 enabled: Working memory additions and removals");
+                        cli.PrintCLIMessage("Trace level 4 enabled: WM additions and removals");
                         settings.set(cli::WATCH_WMES);
                     // falls through
                     case 3:// productions (default, user, chunks, justifications, templates)
@@ -2125,7 +2124,7 @@ namespace cli
                         settings.set(cli::WATCH_WATERFALL);
                     // falls through
                     case 2:// phases, gds
-                        cli.PrintCLIMessage("Trace level 2 enabled: All phases, GDS state removals");
+                        cli.PrintCLIMessage("Trace level 2 enabled: All phases and GDS state removals");
                         settings.set(cli::WATCH_PHASES);
                         settings.set(cli::WATCH_GDS_STATE_REMOVAL);
                     // falls through
@@ -2134,7 +2133,7 @@ namespace cli
                         settings.set(cli::WATCH_DECISIONS);
                         break;
                 }
-                cli.PrintCLIMessage("\nFor a full list of trace options enabled, use 'trace' (no arguments)");
+                cli.PrintCLIMessage("\nFor a full list of trace options, use 'trace' (no arguments)");
                 return true;
             }
 
