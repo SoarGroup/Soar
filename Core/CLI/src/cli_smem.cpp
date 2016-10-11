@@ -240,7 +240,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
         smem_param_container::db_choices last_db_mode = thisAgent->SMem->settings->database->get_value();
         bool result = my_param->set_string(pArg2->c_str());
-
+        if (!strcmp(pArg1->c_str(), "initial-variable-id"))
+        {
+            uint64_t counter = 1;
+            from_c_string(counter, pArg2->c_str());
+            if (counter == 0)
+            {
+                return SetError("The id counter must be at least 1.\n");
+            }
+            thisAgent->SMem->set_id_counter(counter);
+            result = true;
+        }
         if (!result)
         {
             SetError("This parameter is protected while the semantic memory database is open.");
@@ -263,8 +273,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
                 {
                     PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
                                     "         Soar will erase the semantic memory database.\n");
-        }
-
+                }
             }
         }
         return result;

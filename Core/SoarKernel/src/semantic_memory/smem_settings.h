@@ -48,6 +48,7 @@ class smem_param_container: public soar_module::param_container
 
         void print_settings(agent* thisAgent);
         void print_summary(agent* thisAgent);
+        soar_module::unsigned_integer_param* initial_variable_id;
 
         smem_param_container(agent* new_agent);
 };
