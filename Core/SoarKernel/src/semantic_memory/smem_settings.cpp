@@ -276,8 +276,8 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("append", append_db->get_string(), 55).c_str(), "Append or overwrite after init");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("path", path->get_string(), 55).c_str(), "Path to database on disk");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa(thisAgent, "smem [? | help]   %-Print this help screen\n");
-    outputManager->printa(thisAgent, "smem [--enable | --disable ]   %-Enable/disable semantic memory\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [? | help]", "", 55).c_str(), "Print this help screen");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--enable | --disable ]", "", 55).c_str(), "Enable/disable semantic memory");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--get | --set] ","<option> [<value>]", 55).c_str(), "Print or set value of an SMem parameter");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --add","{ (id ^attr value)* }", 55).c_str(), "Add concepts to semantic memory");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --backup","<filename>", 55).c_str(), "Saves a copy of database");
@@ -305,7 +305,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("timers <detail>", timers->get_string(), 55).c_str(), "How detailed timers should be (use --set)");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --timers ","[<timer>]", 55).c_str(), "Print timer summary or specific statistic");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --stats","[<stat>]", 55).c_str(), "Print statistic summary or specific statistic");
-    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa(thisAgent, "                  ---------------------\n");
     outputManager->printa(thisAgent,
         "Detail: off, one, two, three\n"
         "Timers: smem_api, smem_hash, smem_init, smem_query,\n"
