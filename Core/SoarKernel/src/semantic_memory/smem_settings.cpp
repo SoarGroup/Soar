@@ -95,6 +95,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     base_incremental_threshes = new soar_module::int_set_param("base-incremental-threshes", new soar_module::f_predicate< int64_t >());
     add(base_incremental_threshes);
 
+    // initial variable id
+    initial_variable_id = new soar_module::unsigned_integer_param("initial-variable-id", 1, new soar_module::predicate<uint64_t>(), new smem_db_predicate<uint64_t>(thisAgent));
+    add(initial_variable_id);
+
     /* Moved from init_agent */
     base_incremental_threshes->set_string("10");
 

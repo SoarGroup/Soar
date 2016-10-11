@@ -46,6 +46,8 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::int_set_param* base_incremental_threshes;
 
+        soar_module::unsigned_integer_param* initial_variable_id;
+
         smem_param_container(agent* new_agent);
 };
 

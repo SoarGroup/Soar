@@ -361,6 +361,7 @@ namespace soar_module
 
     // these are easy definitions for int and double parameters
     typedef primitive_param<int64_t> integer_param;
+    typedef primitive_param<uint64_t> unsigned_integer_param;
     typedef primitive_param<double> decimal_param;
 
 
