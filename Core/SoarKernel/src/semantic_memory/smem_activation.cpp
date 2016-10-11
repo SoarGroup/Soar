@@ -12,6 +12,9 @@
 #include "smem_stats.h"
 #include "smem_timers.h"
 
+#include "VariadicBind.h"
+#include "guard.hpp"
+
 double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t n, uint64_t activations_first)
 {
     double sum = 0.0;
@@ -21,29 +24,29 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
 
     if (n == 0)
     {
-        SQL->lti_access_get->bind_int(1, pLTI_ID);
-        SQL->lti_access_get->execute();
+        reset_guard r(SQL.lti_access_get);
 
-        n = SQL->lti_access_get->column_int(0);
-        activations_first = SQL->lti_access_get->column_int(2);
+        SQL.lti_access_get.bind(0, pLTI_ID);
+        SQL.lti_access_get.exec();
 
-        SQL->lti_access_get->reinitialize();
+        n = SQL.lti_access_get.getColumn(0).getInt();
+        activations_first = SQL.lti_access_get.getColumn(2).getInt();
     }
 
     // get all history
-    SQL->history_get->bind_int(1, pLTI_ID);
-    SQL->history_get->execute();
-    {
-        int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
-        t_k = static_cast<uint64_t>(time_now - SQL->history_get->column_int(available_history - 1));
+    reset_guard r(SQL.history_get);
 
-        for (int i = 0; i < available_history; i++)
-        {
-            sum += pow(static_cast<double>(time_now - SQL->history_get->column_int(i)),
-                       static_cast<double>(-d));
-        }
+    SQL.history_get.bind(1, pLTI_ID);
+    SQL.history_get.exec();
+
+    int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
+    t_k = static_cast<uint64_t>(time_now - SQL.history_get.getColumn(available_history - 1).getInt());
+
+    for (int i = 0; i < available_history; i++)
+    {
+        sum += pow(static_cast<double>(time_now - SQL.history_get.getColumn(i).getInt()),
+                   static_cast<double>(-d));
     }
-    SQL->history_get->reinitialize();
 
     // if available history was insufficient, approximate rest
     if (n > SMEM_ACT_HISTORY_ENTRIES)
@@ -88,12 +91,11 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                     {
                         std::list< uint64_t > to_update;
 
-                        SQL->lti_get_t->bind_int(1, time_diff);
-                        while (SQL->lti_get_t->execute() == soar_module::row)
-                        {
-                            to_update.push_back(static_cast< uint64_t >(SQL->lti_get_t->column_int(0)));
-                        }
-                        SQL->lti_get_t->reinitialize();
+                        reset_guard r(SQL.lti_get_t);
+                        SQL.lti_get_t.bind(1, time_diff);
+
+                        while (SQL.lti_get_t.executeStep())
+                            to_update.push_back(SQL.lti_get_t.getColumn(0).getInt());
 
                         for (std::list< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
                         {
@@ -115,27 +117,30 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     uint64_t prev_access_n = 0;
     uint64_t prev_access_t = 0;
     uint64_t prev_access_1 = 0;
+
     {
         // get old (potentially useful below)
-        {
-            SQL->lti_access_get->bind_int(1, pLTI_ID);
-            SQL->lti_access_get->execute();
+        reset_guard r(SQL.lti_access_get);
 
-            prev_access_n = SQL->lti_access_get->column_int(0);
-            prev_access_t = SQL->lti_access_get->column_int(1);
-            prev_access_1 = SQL->lti_access_get->column_int(2);
+        SQL.lti_access_get.bind(1, pLTI_ID);
+        SQL.lti_access_get.exec();
 
-            SQL->lti_access_get->reinitialize();
-        }
+        prev_access_n = SQL.lti_access_get.getColumn(0).getInt();
+        prev_access_t = SQL.lti_access_get.getColumn(1).getInt();
+        prev_access_1 = SQL.lti_access_get.getColumn(2).getInt();
 
         // set new
         if (add_access)
         {
-            SQL->lti_access_set->bind_int(1, (prev_access_n + 1));
-            SQL->lti_access_set->bind_int(2, time_now);
-            SQL->lti_access_set->bind_int(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
-            SQL->lti_access_set->bind_int(4, pLTI_ID);
-            SQL->lti_access_set->execute(soar_module::op_reinit);
+            reset_guard r(SQL.lti_access_set);
+
+            SQLite::bind(SQL.lti_access_set,
+                 prev_access_n + 1,
+                 time_now,
+                 ((prev_access_n == 0) ? (time_now) : (prev_access_1)),
+                 pLTI_ID);
+
+            SQL.lti_access_set.exec();
         }
     }
 
@@ -156,9 +161,10 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                SQL->history_add->bind_int(1, pLTI_ID);
-                SQL->history_add->bind_int(2, time_now);
-                SQL->history_add->execute(soar_module::op_reinit);
+                reset_guard r(SQL.history_add);
+
+                SQLite::bind(SQL.history_add, pLTI_ID, time_now);
+                SQL.history_add.exec();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);;
@@ -167,9 +173,10 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                SQL->history_push->bind_int(1, time_now);
-                SQL->history_push->bind_int(2, pLTI_ID);
-                SQL->history_push->execute(soar_module::op_reinit);
+                reset_guard r(SQL.history_push);
+
+                SQLite::bind(SQL.history_push, time_now, pLTI_ID);
+                SQL.history_push.exec();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
@@ -179,29 +186,29 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
-        SQL->act_lti_child_ct_get->bind_int(1, pLTI_ID);
-        SQL->act_lti_child_ct_get->execute();
+        reset_guard r(SQL.act_lti_child_ct_get);
+        SQLite::bind(SQL.act_lti_child_ct_get, pLTI_ID);
 
-        num_edges = SQL->act_lti_child_ct_get->column_int(0);
-
-        SQL->act_lti_child_ct_get->reinitialize();
+        SQL.act_lti_child_ct_get.exec();
+        num_edges = SQL.act_lti_child_ct_get.getColumn(0).getInt();
     }
 
     // only if augmentation count is less than threshold do we associate with edges
     if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()))
     {
         // activation_value=? WHERE lti=?
-        SQL->act_set->bind_double(1, new_activation);
-        SQL->act_set->bind_int(2, pLTI_ID);
-        SQL->act_set->execute(soar_module::op_reinit);
+        reset_guard r(SQL.act_set);
+
+        SQLite::bind(SQL.act_set, new_activation, pLTI_ID);
+        SQL.act_set.exec();
     }
 
     // always associate activation with lti
     {
         // activation_value=? WHERE lti=?
-        SQL->act_lti_set->bind_double(1, new_activation);
-        SQL->act_lti_set->bind_int(2, pLTI_ID);
-        SQL->act_lti_set->execute(soar_module::op_reinit);
+        reset_guard r(SQL.act_lti_set);
+        SQLite::bind(SQL.act_lti_set, new_activation, pLTI_ID);
+        SQL.act_lti_set.exec();
     }
 
     ////////////////////////////////////////////////////////////////////////////

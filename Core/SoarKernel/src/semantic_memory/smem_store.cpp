@@ -9,6 +9,7 @@
 #include "smem_db.h"
 #include "smem_stats.h"
 #include "smem_settings.h"
+#include "VariadicBind.h"
 
 #include "agent.h"
 #include "episodic_memory.h"
@@ -102,41 +103,39 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
         std::set<uint64_t> distinct_attr;
 
         // pairs first, accumulate distinct attributes and pair count
-        SQL->web_all->bind_int(1, pLTI_ID);
-        while (SQL->web_all->execute() == soar_module::row)
+        SQLite::bind(SQL.web_all, pLTI_ID);
+        while (SQL.web_all.executeStep())
         {
             pair_count++;
 
-            child_attr = SQL->web_all->column_int(0);
+            child_attr = SQL.web_all.getColumn(0).getInt();
             distinct_attr.insert(child_attr);
 
             // null -> attr/lti
-            if (SQL->web_all->column_int(1) != SMEM_AUGMENTATIONS_NULL)
+            if (SQL.web_all.getColumn(1).getInt() != SMEM_AUGMENTATIONS_NULL)
             {
                 // adjust in opposite direction ( adjust, attribute, const )
-                SQL->wmes_constant_frequency_update->bind_int(1, -1);
-                SQL->wmes_constant_frequency_update->bind_int(2, child_attr);
-                SQL->wmes_constant_frequency_update->bind_int(3, SQL->web_all->column_int(1));
-                SQL->wmes_constant_frequency_update->execute(soar_module::op_reinit);
+                SQLite::bind(SQL.wmes_lti_frequency_update, -1, child_attr, SQL.web_all.getColumn(1).getInt());
+                SQL.wmes_lti_frequency_update.exec();
+                SQL.wmes_lti_frequency_update.reset();
             }
             else
             {
                 // adjust in opposite direction ( adjust, attribute, lti )
-                SQL->wmes_lti_frequency_update->bind_int(1, -1);
-                SQL->wmes_lti_frequency_update->bind_int(2, child_attr);
-                SQL->wmes_lti_frequency_update->bind_int(3, SQL->web_all->column_int(2));
-                SQL->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                SQLite::bind(SQL.wmes_lti_frequency_update, -1, child_attr, SQL.web_all.getColumn(2).getInt());
+                SQL.wmes_lti_frequency_update.exec();
+                SQL.wmes_lti_frequency_update.reset();
             }
         }
-        SQL->web_all->reinitialize();
+        SQL.web_all.reset();
 
         // now attributes
         for (std::set<uint64_t>::iterator a = distinct_attr.begin(); a != distinct_attr.end(); a++)
         {
             // adjust in opposite direction ( adjust, attribute )
-            SQL->attribute_frequency_update->bind_int(1, -1);
-            SQL->attribute_frequency_update->bind_int(2, *a);
-            SQL->attribute_frequency_update->execute(soar_module::op_reinit);
+            SQLite::bind(SQL.attribute_frequency_update, -1, *a);
+            SQL.attribute_frequency_update.exec();
+            SQL.attribute_frequency_update.reset();
         }
 
         // update local statistic
@@ -144,10 +143,9 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
     }
 
     // disconnect
-    {
-        SQL->web_truncate->bind_int(1, pLTI_ID);
-        SQL->web_truncate->execute(soar_module::op_reinit);
-    }
+    SQLite::bind(SQL.web_truncate, pLTI_ID);
+    SQL.web_truncate.exec();
+    SQL.web_truncate.reset();
 }
 
 /* This function now requires that all LTI IDs are set up beforehand */
@@ -174,12 +172,12 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
     else
     {
-        SQL->act_lti_child_ct_get->bind_int(1, pLTI_ID);
-        SQL->act_lti_child_ct_get->execute();
+        SQLite::bind(SQL.act_lti_child_ct_get, pLTI_ID);
+        SQL.act_lti_child_ct_get.exec();
 
-        existing_edges = static_cast<uint64_t>(SQL->act_lti_child_ct_get->column_int(0));
+        existing_edges = static_cast<uint64_t>(SQL.act_lti_child_ct_get.getColumn(0).getInt());
 
-        SQL->act_lti_child_ct_get->reinitialize();
+        SQL.act_lti_child_ct_get.reset();
     }
 
     // get new edges
@@ -206,12 +204,12 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             {
                 // lti_id, attribute_s_id
                 assert(attr_hash);
-                SQL->web_attr_child->bind_int(1, pLTI_ID);
-                SQL->web_attr_child->bind_int(2, attr_hash);
-                if (SQL->web_attr_child->execute(soar_module::op_reinit) != soar_module::row)
-                {
+                SQLite::bind(SQL.web_attr_child, pLTI_ID, attr_hash);
+
+                if (!SQL.web_attr_child.executeStep())
                     attr_new.insert(attr_hash);
-                }
+
+                SQL.web_attr_child.reset();
             }
 
             for (v = s->second->begin(); v != s->second->end(); v++)
@@ -228,13 +226,12 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         // lti_id, attribute_s_id, val_const
                         assert(pLTI_ID && attr_hash && value_hash);
-                        SQL->web_const_child->bind_int(1, pLTI_ID);
-                        SQL->web_const_child->bind_int(2, attr_hash);
-                        SQL->web_const_child->bind_int(3, value_hash);
-                        if (SQL->web_const_child->execute(soar_module::op_reinit) != soar_module::row)
-                        {
+                        SQLite::bind(SQL.web_const_child, pLTI_ID, attr_hash, value_hash);
+
+                        if (!SQL.web_const_child.executeStep())
                             const_new.insert(std::make_pair(attr_hash, value_hash));
-                        }
+
+                        SQL.web_const_child.reset();
                     }
 
                     // provide trace output
@@ -261,13 +258,12 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         // lti_id, attribute_s_id, val_lti
                         assert(pLTI_ID && attr_hash && value_lti);
-                        SQL->web_lti_child->bind_int(1, pLTI_ID);
-                        SQL->web_lti_child->bind_int(2, attr_hash);
-                        SQL->web_lti_child->bind_int(3, value_lti);
-                        if (SQL->web_lti_child->execute(soar_module::op_reinit) != soar_module::row)
-                        {
+                        SQLite::bind(SQL.web_lti_child, pLTI_ID, attr_hash, value_lti);
+
+                        if (!SQL.web_lti_child.executeStep())
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
-                        }
+
+                        SQL.web_lti_child.reset();
                     }
 
                     // provide trace output
@@ -305,19 +301,17 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             if (after_above)
             {
                 // update smem_augmentations to inf
-                SQL->act_set->bind_double(1, web_act);
-                SQL->act_set->bind_int(2, pLTI_ID);
-                SQL->act_set->execute(soar_module::op_reinit);
+                SQLite::bind(SQL.act_set, web_act, pLTI_ID);
+                SQL.act_set.exec();
+                SQL.act_set.reset();
             }
         }
     }
 
     // update edge counter
-    {
-        SQL->act_lti_child_ct_set->bind_int(1, new_edges);
-        SQL->act_lti_child_ct_set->bind_int(2, pLTI_ID);
-        SQL->act_lti_child_ct_set->execute(soar_module::op_reinit);
-    }
+    SQLite::bind(SQL.act_lti_child_ct_set, new_edges, pLTI_ID);
+    SQL.act_lti_child_ct_set.exec();
+    SQL.act_lti_child_ct_get.reset();
 
     // now we can safely activate the lti
     if (activate)
@@ -339,33 +333,26 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    SQL->web_add->bind_int(1, pLTI_ID);
-                    SQL->web_add->bind_int(2, p->first);
-                    SQL->web_add->bind_int(3, p->second);
-                    SQL->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
-                    SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->execute(soar_module::op_reinit);
+                    SQLite::bind(SQL.web_add, pLTI_ID, p->first, p->second, SMEM_AUGMENTATIONS_NULL, web_act);
+                    SQL.web_add.exec();
+                    SQL.web_add.reset();
                 }
 
                 // update counter
+                // check if counter exists (and add if does not): attribute_s_id, val
+                SQLite::bind(SQL.wmes_constant_frequency_check, p->first, p->second);
+                if (!SQL.wmes_constant_frequency_check.executeStep())
                 {
-                    // check if counter exists (and add if does not): attribute_s_id, val
-                    SQL->wmes_constant_frequency_check->bind_int(1, p->first);
-                    SQL->wmes_constant_frequency_check->bind_int(2, p->second);
-                    if (SQL->wmes_constant_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
-                    {
-                        SQL->wmes_constant_frequency_add->bind_int(1, p->first);
-                        SQL->wmes_constant_frequency_add->bind_int(2, p->second);
-                        SQL->wmes_constant_frequency_add->execute(soar_module::op_reinit);
-                    }
-                    else
-                    {
-                        // adjust count (adjustment, attribute_s_id, val)
-                        SQL->wmes_constant_frequency_update->bind_int(1, 1);
-                        SQL->wmes_constant_frequency_update->bind_int(2, p->first);
-                        SQL->wmes_constant_frequency_update->bind_int(3, p->second);
-                        SQL->wmes_constant_frequency_update->execute(soar_module::op_reinit);
-                    }
+                    SQLite::bind(SQL.wmes_constant_frequency_add, p->first, p->second);
+                    SQL.wmes_constant_frequency_add.exec();
+                    SQL.wmes_constant_frequency_add.reset();
+                }
+                else
+                {
+                    // adjust count (adjustment, attribute_s_id, val)
+                    SQLite::bind(SQL.wmes_constant_frequency_update, 1, p->first, p->second);
+                    SQL.wmes_constant_frequency_update.exec();
+                    SQL.wmes_constant_frequency_update.reset();
                 }
             }
         }
@@ -377,32 +364,26 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 // insert
                 {
                     // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    SQL->web_add->bind_int(1, pLTI_ID);
-                    SQL->web_add->bind_int(2, p->first);
-                    SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
-                    SQL->web_add->bind_int(4, p->second);
-                    SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->execute(soar_module::op_reinit);
+                    SQLite::bind(SQL.web_add, pLTI_ID, p->first, SMEM_AUGMENTATIONS_NULL, p->second, web_act);
+                    SQL.web_add.exec();
+                    SQL.web_add.reset();
                 }
 
                 // update counter
                 {
                     // check if counter exists (and add if does not): attribute_s_id, val
-                    SQL->wmes_lti_frequency_check->bind_int(1, p->first);
-                    SQL->wmes_lti_frequency_check->bind_int(2, p->second);
-                    if (SQL->wmes_lti_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                    SQLite::bind(SQL.wmes_lti_frequency_check, p->first, p->second);
+                    if (!SQL.wmes_lti_frequency_check.executeStep())
                     {
-                        SQL->wmes_lti_frequency_add->bind_int(1, p->first);
-                        SQL->wmes_lti_frequency_add->bind_int(2, p->second);
-                        SQL->wmes_lti_frequency_add->execute(soar_module::op_reinit);
-                    }
+                        SQLite::bind(SQL.wmes_lti_frequency_add, p->first, p->second);
+                        SQL.wmes_lti_frequency_add.exec();
+                        SQL.wmes_lti_frequency_add.reset();                    }
                     else
                     {
                         // adjust count (adjustment, attribute_s_id, lti)
-                        SQL->wmes_lti_frequency_update->bind_int(1, 1);
-                        SQL->wmes_lti_frequency_update->bind_int(2, p->first);
-                        SQL->wmes_lti_frequency_update->bind_int(3, p->second);
-                        SQL->wmes_lti_frequency_update->execute(soar_module::op_reinit);
+                        SQLite::bind(SQL.wmes_lti_frequency_update, 1, p->first, p->second);
+                        SQL.wmes_lti_frequency_update.exec();
+                        SQL.wmes_lti_frequency_update.reset();
                     }
                 }
             }
@@ -413,18 +394,19 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             for (std::set< smem_hash_id >::iterator a = attr_new.begin(); a != attr_new.end(); a++)
             {
                 // check if counter exists (and add if does not): attribute_s_id
-                SQL->attribute_frequency_check->bind_int(1, *a);
-                if (SQL->attribute_frequency_check->execute(soar_module::op_reinit) != soar_module::row)
+                SQLite::bind(SQL.attribute_frequency_check, *a);
+                if (!SQL.attribute_frequency_check.executeStep())
                 {
-                    SQL->attribute_frequency_add->bind_int(1, *a);
-                    SQL->attribute_frequency_add->execute(soar_module::op_reinit);
+                    SQLite::bind(SQL.attribute_frequency_add, *a);
+                    SQL.attribute_frequency_add.exec();
+                    SQL.attribute_frequency_add.reset();
                 }
                 else
                 {
                     // adjust count (adjustment, attribute_s_id)
-                    SQL->attribute_frequency_update->bind_int(1, 1);
-                    SQL->attribute_frequency_update->bind_int(2, *a);
-                    SQL->attribute_frequency_update->execute(soar_module::op_reinit);
+                    SQLite::bind(SQL.attribute_frequency_update, 1, *a);
+                    SQL.attribute_frequency_update.exec();
+                    SQL.attribute_frequency_update.reset();
                 }
             }
         }

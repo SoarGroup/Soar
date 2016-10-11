@@ -106,13 +106,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 that smem_update_schema_one_to_two can convert.  It tests for the existence of a table name to determine if this is the old version. */
 bool SMem_Manager::is_version_one_db()
 {
-    double check_num_tables;
-    DB->sql_simple_get_float("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'", check_num_tables);
-    if (check_num_tables == 0)
-    {
-        return false;
-    }
-    return true;
+    return DB.execAndGet("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'").getInt64() != 0;
 }
 
 smem_path_param::smem_path_param(const char* new_name, const char* new_value, soar_module::predicate<const char*>* new_val_pred, soar_module::predicate<const char*>* new_prot_pred, agent* new_agent): soar_module::string_param(new_name, new_value, new_val_pred, new_prot_pred), thisAgent(new_agent) {}
@@ -129,55 +123,34 @@ void smem_path_param::set_value(const char* new_value)
     bool attempt_connection_here = !thisAgent->SMem->connected();
     if (attempt_connection_here)
     {
-        thisAgent->SMem->DB->connect(db_path);
-    }
-
-    if (thisAgent->SMem->DB->get_status() == soar_module::problem)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "Semantic memory database error: %s\n", thisAgent->SMem->DB->get_errmsg());
-    }
-    else
-    {
-        // temporary queries for one-time init actions
-        soar_module::sqlite_statement* temp_q = NULL;
-
-        // If the database is on file, make sure the database contents use the current schema
-        // If it does not, switch to memory-based database
-
-        if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
+        try
         {
-            bool sql_is_new;
-            std::string schema_version;
-            if (thisAgent->SMem->DB->sql_is_new_db(sql_is_new))
+            thisAgent->SMem->recreateDB(db_path);
+        }
+        catch (SQLite::Exception& e)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Semantic memory database error: %s\n", e.getErrorStr());
+        }
+    }
+
+    // If the database is on file, make sure the database contents use the current schema
+    // If it does not, switch to memory-based database
+
+    if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
+    {
+        std::string schema_version;
+        if (thisAgent->SMem->DB.containsData())
+        {
+            // Check if table exists already
+            thisAgent->SMem->DB.exec("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+            if (thisAgent->SMem->is_version_one_db())
             {
-                if (!sql_is_new)
-                {
-                    // Check if table exists already
-                    temp_q = new soar_module::sqlite_statement(thisAgent->SMem->DB, "CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
-                    temp_q->prepare();
-                    if (temp_q->get_status() == soar_module::ready)
-                    {
-                        if (!thisAgent->SMem->DB->sql_simple_get_string("SELECT version_number FROM versions WHERE system = 'smem_schema'", schema_version))
-                        {
-                            if (thisAgent->SMem->is_version_one_db())
-                            {
-                                thisAgent->outputManager->printa(thisAgent, "...You have selected a database with an old version.\n"
-                                      "...If you proceed, the database will be converted to a\n"
-                                      "...new version when the database is initialized.\n"
-                                      "...Conversion can take a large amount of time with large databases.\n");
-                            }
-                        }
-                    }
-                }
+                thisAgent->outputManager->printa(thisAgent, "...You have selected a database with an old version.\n"
+                                                 "...If you proceed, the database will be converted to a\n"
+                                                 "...new version when the database is initialized.\n"
+                                                 "...Conversion can take a large amount of time with large databases.\n");
             }
         }
-
-        delete temp_q;
-        temp_q = NULL;
-    }
-    if (attempt_connection_here)
-    {
-        thisAgent->SMem->DB->disconnect();
     }
 }
 
@@ -229,21 +202,21 @@ smem_db_lib_version_stat::smem_db_lib_version_stat(agent* new_agent, const char*
 
 const char* smem_db_lib_version_stat::get_value()
 {
-    return thisAgent->SMem->DB->lib_version();
+    return SQLite::getLibVersion();
 }
 
 smem_mem_usage_stat::smem_mem_usage_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_usage_stat::get_value()
 {
-    return thisAgent->SMem->DB->memory_usage();
+    return thisAgent->SMem->DB.getMemoryUsage();
 }
 
 smem_mem_high_stat::smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_high_stat::get_value()
 {
-    return thisAgent->SMem->DB->memory_highwater();
+    return thisAgent->SMem->DB.getMemoryHighwater();
 }
 
 bool SMem_Manager::enabled()
@@ -253,5 +226,5 @@ bool SMem_Manager::enabled()
 
 bool SMem_Manager::connected()
 {
-    return (DB->get_status() == soar_module::connected);
+    return true;
 }

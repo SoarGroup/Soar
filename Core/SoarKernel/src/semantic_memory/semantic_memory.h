@@ -19,7 +19,10 @@
 #include "smem_structs.h"
 #include "smem_settings.h"
 #include "smem_stats.h"
-#include "smem_job_queue.hpp"
+#include "smem_db.h"
+
+#include "sqlite_job_queue.hpp"
+#include "Database.h"
 
 #include <atomic>
 #include <thread>
@@ -100,7 +103,8 @@ class SMem_Manager
         };
 
         // Multi-Threading
-        static SMem_JobQueue JobQueue;
+        void recreateDB(std::string path);
+        sqlite_job_queue JobQueue;
 
         std::mutex agent_jobqueue_boundary_mutex;
         struct query_result
@@ -120,10 +124,12 @@ class SMem_Manager
         uint64_t                        smem_validation;
         int64_t                         smem_max_cycle;
 
-        smem_statement_container*       SQL;
+        SQLite::Database                DB;
+        smem_statement_container        SQL;
         smem_param_container*           settings;
         smem_stat_container*            statistics;
-        soar_module::sqlite_database*   DB;
+
+        static const std::string            memoryDatabasePath;
 
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
@@ -190,7 +196,7 @@ class SMem_Manager
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
         void                            process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, const id_set& prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, std::list<uint64_t> *match_ids = nullptr, uint64_t number_to_retrieve = 1, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
-        soar_module::sqlite_statement*  setup_web_crawl(smem_weighted_cue_element* el);
+        SQLite::Statement& setup_web_crawl(smem_weighted_cue_element* el);
 
 
 };

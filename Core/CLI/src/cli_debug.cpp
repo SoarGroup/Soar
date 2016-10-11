@@ -178,7 +178,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             }
             else if (database_name[0] == 's')
             {
-                thisAgent->SMem->DB->print_table(table_name.c_str());
+                std::cerr << thisAgent->SMem->DB.printTable(table_name);
             }
             else
             {

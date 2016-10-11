@@ -51,7 +51,17 @@
 
 #include "smem_math_query.h"
 
-SMem_JobQueue SMem_Manager::JobQueue;
+const std::string SMem_Manager::memoryDatabasePath = "file:smem_soar?mode=memory&cache=shared";
+
+void SMem_Manager::recreateDB(std::string db_path)
+{
+    DB = SQLite::Database(db_path, SQLite::OPEN_READWRITE);
+
+    // reinitialize in-place
+    static_assert(!std::has_virtual_destructor<sqlite_job_queue>::value, "Unsafe");
+    JobQueue.~sqlite_job_queue();
+    new (&JobQueue) sqlite_job_queue(db_path);
+}
 
 wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
 {
@@ -476,7 +486,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL.begin.exec();
+                        thisAgent->SMem->SQL.begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -493,7 +504,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL.commit.exec();
+                        thisAgent->SMem->SQL.commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -512,7 +524,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->begin->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL.begin.exec();
+                        thisAgent->SMem->SQL.begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -529,7 +542,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL->commit->execute(soar_module::op_reinit);
+                        thisAgent->SMem->SQL.commit.exec();
+                        thisAgent->SMem->SQL.commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -731,15 +745,16 @@ void SMem_Manager::reinit()
 }
 
 SMem_Manager::SMem_Manager(agent* myAgent)
+: thisAgent(myAgent),
+DB(SMem_Manager::memoryDatabasePath, SQLite::OPEN_READWRITE),
+SQL(this),
+JobQueue(SMem_Manager::memoryDatabasePath)
 {
-    thisAgent = myAgent;
     thisAgent->SMem = this;
 
     settings = new smem_param_container(thisAgent);
     statistics = new smem_stat_container(thisAgent);
     timers = new smem_timer_container(thisAgent);
-
-    DB = new soar_module::sqlite_database();
 
     smem_validation = 0;
 
@@ -755,5 +770,4 @@ void SMem_Manager::clean_up_for_agent_deletion()
     delete settings;
     delete statistics;
     delete timers;
-    delete DB;
 }

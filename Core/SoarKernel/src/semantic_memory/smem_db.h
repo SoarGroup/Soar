@@ -12,90 +12,121 @@
 
 #include "smem_stats.h"
 #include "soar_module.h"
-#include "soar_db.h"
 
-class smem_statement_container: public soar_module::sqlite_statement_container
+#include "Database.h"
+#include "Statement.h"
+
+class statement_container
+{
+protected:
+    std::list<SQLite::Statement> structure;
+    SQLite::Database& DB;
+
+public:
+    statement_container(SQLite::Database& database)
+    : DB(database)
+    {}
+
+
+    void add_structure(const std::string& new_structure)
+    {
+        structure.push_back(SQLite::Statement(DB, new_structure));
+    }
+
+    void createStructure()
+    {
+        for (auto& statement : structure)
+        {
+            statement.reset();
+            statement.exec();
+        }
+    }
+};
+
+class smem_statement_container : public statement_container
 {
     public:
-        soar_module::sqlite_statement* begin;
-        soar_module::sqlite_statement* commit;
-        soar_module::sqlite_statement* rollback;
+        SQLite::Statement begin;
+        SQLite::Statement commit;
+        SQLite::Statement rollback;
 
-        soar_module::sqlite_statement* var_get;
-        soar_module::sqlite_statement* var_set;
-        soar_module::sqlite_statement* var_create;
+        SQLite::Statement var_get;
+        SQLite::Statement var_set;
+        SQLite::Statement var_create;
 
-        soar_module::sqlite_statement* hash_rev_int;
-        soar_module::sqlite_statement* hash_rev_float;
-        soar_module::sqlite_statement* hash_rev_str;
-        soar_module::sqlite_statement* hash_rev_type;
-        soar_module::sqlite_statement* hash_get_int;
-        soar_module::sqlite_statement* hash_get_float;
-        soar_module::sqlite_statement* hash_get_str;
-        soar_module::sqlite_statement* hash_add_type;
-        soar_module::sqlite_statement* hash_add_int;
-        soar_module::sqlite_statement* hash_add_float;
-        soar_module::sqlite_statement* hash_add_str;
+        SQLite::Statement hash_rev_int;
+        SQLite::Statement hash_rev_float;
+        SQLite::Statement hash_rev_str;
+        SQLite::Statement hash_rev_type;
+        SQLite::Statement hash_get_int;
+        SQLite::Statement hash_get_float;
+        SQLite::Statement hash_get_str;
+        SQLite::Statement hash_add_type;
+        SQLite::Statement hash_add_int;
+        SQLite::Statement hash_add_float;
+        SQLite::Statement hash_add_str;
 
-        soar_module::sqlite_statement* lti_id_exists;
-        soar_module::sqlite_statement* lti_id_max  ;
-        soar_module::sqlite_statement* lti_add;
-        soar_module::sqlite_statement* lti_access_get;
-        soar_module::sqlite_statement* lti_access_set;
-        soar_module::sqlite_statement* lti_get_t;
+        SQLite::Statement lti_id_exists;
+        SQLite::Statement lti_id_max  ;
+        SQLite::Statement lti_add;
+        SQLite::Statement lti_access_get;
+        SQLite::Statement lti_access_set;
+        SQLite::Statement lti_get_t;
 
-        soar_module::sqlite_statement* web_add;
-        soar_module::sqlite_statement* web_truncate;
-        soar_module::sqlite_statement* web_expand;
+        SQLite::Statement web_add;
+        SQLite::Statement web_truncate;
+        SQLite::Statement web_expand;
 
-        soar_module::sqlite_statement* web_all;
+        SQLite::Statement web_all;
 
-        soar_module::sqlite_statement* web_attr_all;
-        soar_module::sqlite_statement* web_const_all;
-        soar_module::sqlite_statement* web_lti_all;
+        SQLite::Statement web_attr_all;
+        SQLite::Statement web_const_all;
+        SQLite::Statement web_lti_all;
 
-        soar_module::sqlite_statement* web_attr_child;
-        soar_module::sqlite_statement* web_const_child;
-        soar_module::sqlite_statement* web_lti_child;
+        SQLite::Statement web_attr_child;
+        SQLite::Statement web_const_child;
+        SQLite::Statement web_lti_child;
 
-        soar_module::sqlite_statement* attribute_frequency_check;
-        soar_module::sqlite_statement* wmes_constant_frequency_check;
-        soar_module::sqlite_statement* wmes_lti_frequency_check;
+        SQLite::Statement attribute_frequency_check;
+        SQLite::Statement wmes_constant_frequency_check;
+        SQLite::Statement wmes_lti_frequency_check;
 
-        soar_module::sqlite_statement* attribute_frequency_add;
-        soar_module::sqlite_statement* wmes_constant_frequency_add;
-        soar_module::sqlite_statement* wmes_lti_frequency_add;
+        SQLite::Statement attribute_frequency_add;
+        SQLite::Statement wmes_constant_frequency_add;
+        SQLite::Statement wmes_lti_frequency_add;
 
-        soar_module::sqlite_statement* attribute_frequency_update;
-        soar_module::sqlite_statement* wmes_constant_frequency_update;
-        soar_module::sqlite_statement* wmes_lti_frequency_update;
+        SQLite::Statement attribute_frequency_update;
+        SQLite::Statement wmes_constant_frequency_update;
+        SQLite::Statement wmes_lti_frequency_update;
 
-        soar_module::sqlite_statement* attribute_frequency_get;
-        soar_module::sqlite_statement* wmes_constant_frequency_get;
-        soar_module::sqlite_statement* wmes_lti_frequency_get;
+        SQLite::Statement attribute_frequency_get;
+        SQLite::Statement wmes_constant_frequency_get;
+        SQLite::Statement wmes_lti_frequency_get;
 
-        soar_module::sqlite_statement* act_set;
-        soar_module::sqlite_statement* act_lti_child_ct_set;
-        soar_module::sqlite_statement* act_lti_child_ct_get;
-        soar_module::sqlite_statement* act_lti_set;
-        soar_module::sqlite_statement* act_lti_get;
+        SQLite::Statement act_set;
+        SQLite::Statement act_lti_child_ct_set;
+        SQLite::Statement act_lti_child_ct_get;
+        SQLite::Statement act_lti_set;
+        SQLite::Statement act_lti_get;
 
-        soar_module::sqlite_statement* history_get;
-        soar_module::sqlite_statement* history_push;
-        soar_module::sqlite_statement* history_add;
+        SQLite::Statement history_get;
+        SQLite::Statement history_push;
+        SQLite::Statement history_add;
 
-        soar_module::sqlite_statement* vis_lti;
-        soar_module::sqlite_statement* vis_lti_act;
-        soar_module::sqlite_statement* vis_value_const;
-        soar_module::sqlite_statement* vis_value_lti;
+        SQLite::Statement vis_lti;
+        SQLite::Statement vis_lti_act;
+        SQLite::Statement vis_value_const;
+        SQLite::Statement vis_value_lti;
 
-        smem_statement_container(agent* new_agent);
+        smem_statement_container(SMem_Manager* SMem);
+
+        smem_statement_container(smem_statement_container&& other);
+        smem_statement_container& operator=(smem_statement_container&& other);
 
     private:
-
         void create_tables();
         void create_indices();
-        void drop_tables(agent* new_agent);
+        void drop_tables();
 };
 
 #endif /* CORE_SOARKERNEL_SRC_SEMANTIC_MEMORY_SMEM_DB_H_ */

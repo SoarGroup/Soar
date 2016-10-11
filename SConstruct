@@ -282,7 +282,7 @@ else:
     sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
 
 if sys.platform != 'win32':
-    env.Append(CXXFLAGS='-std=c++11')
+    env.Append(CXXFLAGS='-std=c++14')
 
 env.Append(CPPPATH=sys_inc_path, LIBPATH=sys_lib_path)
 

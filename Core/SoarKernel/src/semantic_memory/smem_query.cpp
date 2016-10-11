@@ -15,36 +15,32 @@
 #include "symbol.h"
 #include "working_memory.h"
 
+#include "VariadicBind.h"
+
 #include <thread>
 
-soar_module::sqlite_statement* SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
+SQLite::Statement& SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
 {
-    soar_module::sqlite_statement* q = NULL;
-
     // first, point to correct query and setup
     // query-specific parameters
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        q = SQL->web_attr_all;
+        SQLite::bind(SQL.web_attr_all, 1, el->attr_hash);
+        return SQL.web_attr_all;
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        q = SQL->web_const_all;
-        q->bind_int(2, el->value_hash);
+        SQLite::bind(SQL.web_const_all, el->attr_hash, el->value_hash);
+        return SQL.web_const_all;
     }
-    else if (el->element_type == value_lti_t)
+    else //if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        q = SQL->web_lti_all;
-        q->bind_int(2, el->value_lti);
+        SQLite::bind(SQL.web_lti_all, el->attr_hash, el->value_lti);
+        return SQL.web_lti_all;
     }
-
-    // all require hash as first parameter
-    q->bind_int(1, el->attr_hash);
-
-    return q;
 }
 
 bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery)
@@ -57,105 +53,102 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
     uint64_t value_lti;
     smem_cue_element_type element_type;
 
-    soar_module::sqlite_statement* q = NULL;
+    SQLite::Statement* q = &SQL.wmes_constant_frequency_get;
 
+    // we only have to do hard work if
+    attr_hash = hash(w->attr, false);
+    if (attr_hash != NIL)
     {
-        // we only have to do hard work if
-        attr_hash = hash(w->attr, false);
-        if (attr_hash != NIL)
+        if (w->value->is_constant() && mathQuery == NIL)
         {
-            if (w->value->is_constant() && mathQuery == NIL)
-            {
-                value_lti = NIL;
-                value_hash = hash(w->value, false);
-                element_type = value_const_t;
+            value_lti = NIL;
+            value_hash = hash(w->value, false);
+            element_type = value_const_t;
 
-                if (value_hash != NIL)
-                {
-                    q = SQL->wmes_constant_frequency_get;
-                    q->bind_int(1, attr_hash);
-                    q->bind_int(2, value_hash);
-                }
-                else if (pos_cue)
-                {
-                    good_wme = false;
-                }
-                else
-                {
-                    //This would be a negative query that smem has no hash for.  This means that
-                    //there is no way it could be in any of the results, and we don't
-                    //need to continue processing it, let alone use it in the search.  --ACN
-                    return true;
-                }
+            if (value_hash != NIL)
+            {
+                q = &SQL.wmes_constant_frequency_get;
+                SQLite::bind(*q, attr_hash, value_hash);
+            }
+            else if (pos_cue)
+            {
+                good_wme = false;
             }
             else
             {
-                //If we get here on a math query, the value may not be an identifier
-                if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-                {
-                    value_lti = w->value->id->LTI_ID;
-                }
-                else
-                {
-                    value_lti = 0;
-                }
-                value_hash = NIL;
-
-                if (value_lti == NIL)
-                {
-                    q = SQL->attribute_frequency_get;
-                    q->bind_int(1, attr_hash);
-
-                    element_type = attr_t;
-                }
-                else
-                {
-                    q = SQL->wmes_lti_frequency_get;
-                    q->bind_int(1, attr_hash);
-                    q->bind_int(2, value_lti);
-
-                    element_type = value_lti_t;
-                }
-            }
-
-            if (good_wme)
-            {
-                if (q->execute() == soar_module::row)
-                {
-                    new_cue_element = new smem_weighted_cue_element;
-
-                    new_cue_element->weight = q->column_int(0);
-                    new_cue_element->attr_hash = attr_hash;
-                    new_cue_element->value_hash = value_hash;
-                    new_cue_element->value_lti = value_lti;
-                    new_cue_element->cue_element = w;
-
-                    new_cue_element->element_type = element_type;
-                    new_cue_element->pos_element = pos_cue;
-                    new_cue_element->mathElement = mathQuery;
-
-                    weighted_pq.push(new_cue_element);
-                    new_cue_element = NULL;
-                }
-                else
-                {
-                    if (pos_cue)
-                    {
-                        good_wme = false;
-                    }
-                }
-
-                q->reinitialize();
+                //This would be a negative query that smem has no hash for.  This means that
+                //there is no way it could be in any of the results, and we don't
+                //need to continue processing it, let alone use it in the search.  --ACN
+                return true;
             }
         }
         else
         {
-            if (pos_cue)
+            //If we get here on a math query, the value may not be an identifier
+            if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
             {
-                good_wme = false;
+                value_lti = w->value->id->LTI_ID;
+            }
+            else
+            {
+                value_lti = 0;
+            }
+            value_hash = NIL;
+
+            if (value_lti == NIL)
+            {
+                q = &SQL.attribute_frequency_get;
+                SQLite::bind(*q, attr_hash);
+
+                element_type = attr_t;
+            }
+            else
+            {
+                q = &SQL.wmes_lti_frequency_get;
+                SQLite::bind(*q, attr_hash, value_lti);
+
+                element_type = value_lti_t;
             }
         }
+
+        if (good_wme)
+        {
+            if (q->executeStep())
+            {
+                new_cue_element = new smem_weighted_cue_element;
+
+                new_cue_element->weight = q->getColumn(0).getInt64();
+                new_cue_element->attr_hash = attr_hash;
+                new_cue_element->value_hash = value_hash;
+                new_cue_element->value_lti = value_lti;
+                new_cue_element->cue_element = w;
+
+                new_cue_element->element_type = element_type;
+                new_cue_element->pos_element = pos_cue;
+                new_cue_element->mathElement = mathQuery;
+
+                weighted_pq.push(new_cue_element);
+                new_cue_element = NULL;
+            }
+            else
+            {
+                if (pos_cue)
+                {
+                    good_wme = false;
+                }
+            }
+
+            q->reset();
+        }
     }
+    else
+    {
+        if (pos_cue)
+        {
+            good_wme = false;
+        }
+    }
+
     //If we brought in a math query and didn't use it
     if (!good_wme && mathQuery != NIL)
     {
@@ -311,7 +304,6 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
     prohibit.insert(prohibit_lti.begin(), prohibit_lti.end());
 
     uint64_t king_id = NIL;
-    soar_module::sqlite_statement* q = NULL;
 
     std::list<uint64_t> temp;
     if (match_ids == nullptr)
@@ -329,7 +321,6 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         }
     }
 
-    soar_module::sqlite_statement* q2 = NULL;
     id_set::iterator prohibit_p;
 
     uint64_t cand;
@@ -342,16 +333,16 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         // confirmation walk
         if (settings->base_update->get_value() == smem_param_container::bupt_naive)
         {
-            q = setup_web_crawl((*cand_set));
+            SQLite::Statement& q = setup_web_crawl((*cand_set));
 
             // queue up distinct lti's to update
             // - set because queries could contain wilds
             // - not in loop because the effects of activation may actually
             //   alter the resultset of the query (isolation???)
             std::set< uint64_t > to_update;
-            while (q->execute() == soar_module::row)
+            while (q.executeStep())
             {
-                to_update.insert(q->column_int(0));
+                to_update.insert(q.getColumn(0).getInt64());
             }
 
             for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
@@ -359,30 +350,30 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                 lti_activate((*it), false);
             }
 
-            q->reinitialize();
+            q.reset();
         }
     }
 
     // setup first query, which is sorted on activation already
-    q = setup_web_crawl((*cand_set));
+    SQLite::Statement& q = setup_web_crawl((*cand_set));
     thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
 
     // this becomes the minimal set to walk (till match or fail)
-    if (q->execute() == soar_module::row)
+    if (q.executeStep())
     {
         smem_prioritized_activated_lti_queue plentiful_parents;
         bool more_rows = true;
         bool use_db = false;
         bool has_feature = false;
 
-        while (more_rows && (q->column_double(1) == static_cast<double>(SMEM_ACT_MAX)))
+        while (more_rows && (q.getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
         {
-            SQL->act_lti_get->bind_int(1, q->column_int(0));
-            SQL->act_lti_get->execute();
-            plentiful_parents.push(std::make_pair< double, uint64_t >(SQL->act_lti_get->column_double(0), q->column_int(0)));
-            SQL->act_lti_get->reinitialize();
+            SQLite::bind(SQL.act_lti_get, q.getColumn(0).getInt64());
+            SQL.act_lti_get.exec();
+            plentiful_parents.push(std::make_pair<double, uint64_t>(SQL.act_lti_get.getColumn(0).getDouble(), q.getColumn(0).getInt64()));
+            SQL.act_lti_get.reset();
 
-            more_rows = (q->execute() == soar_module::row);
+            more_rows = q.executeStep();
         }
         bool first_element = false;
         while ((match_ids->size() < number_to_retrieve || needFullSearch) && ((more_rows) || (!plentiful_parents.empty())))
@@ -401,13 +392,13 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                 }
                 else
                 {
-                    use_db = (q->column_double(1) >  plentiful_parents.top().first);
+                    use_db = q.getColumn(1).getDouble() >  plentiful_parents.top().first;
                 }
 
                 if (use_db)
                 {
-                    cand = q->column_int(0);
-                    more_rows = (q->execute() == soar_module::row);
+                    cand = q.getColumn(0).getInt64();
+                    more_rows = q.executeStep();
                 }
                 else
                 {
@@ -431,44 +422,45 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                         continue;
                     }
 
+                    SQLite::Statement* q2 = nullptr;
                     if ((*next_element)->element_type == attr_t)
                     {
                         // parent=? AND attribute_s_id=?
-                        q2 = SQL->web_attr_child;
+                        q2 = &SQL.web_attr_child;
                     }
                     else if ((*next_element)->element_type == value_const_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                        q2 = SQL->web_const_child;
-                        q2->bind_int(3, (*next_element)->value_hash);
+                        q2 = &SQL.web_const_child;
+                        q2->bind(3, (*next_element)->value_hash);
                     }
                     else if ((*next_element)->element_type == value_lti_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_lti_id=?
-                        q2 = SQL->web_lti_child;
-                        q2->bind_int(3, (*next_element)->value_lti);
+                        q2 = &SQL.web_lti_child;
+                        q2->bind(3, (*next_element)->value_lti);
                     }
 
                     // all require own id, attribute
-                    q2->bind_int(1, cand);
-                    q2->bind_int(2, (*next_element)->attr_hash);
+                    q2->bind(1, cand);
+                    q2->bind(2, (*next_element)->attr_hash);
 
-                    has_feature = (q2->execute() == soar_module::row);
+                    has_feature = q2->executeStep();
                     bool mathQueryMet = false;
                     if ((*next_element)->mathElement != NIL && has_feature)
                     {
                         do
                         {
-                            smem_hash_id valueHash = q2->column_int(2 - 1);
-                            SQL->hash_rev_type->bind_int(1, valueHash);
+                            smem_hash_id valueHash = q2->getColumn(2 - 1).getInt64();
+                            SQL.hash_rev_type.bind(1, valueHash);
 
-                            if (SQL->hash_rev_type->execute() != soar_module::row)
+                            if (SQL.hash_rev_type.executeStep())
                             {
                                 good_cand = false;
                             }
                             else
                             {
-                                switch (SQL->hash_rev_type->column_int(1 - 1))
+                                switch (SQL.hash_rev_type.getColumn(1 - 1).getInt64())
                                 {
                                     case FLOAT_CONSTANT_SYMBOL_TYPE:
                                         mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
@@ -478,9 +470,9 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                                         break;
                                 }
                             }
-                            SQL->hash_rev_type->reinitialize();
+                            SQL.hash_rev_type.reset();
                         }
-                        while (q2->execute() == soar_module::row);
+                        while (q2->executeStep());
                         good_cand = mathQueryMet;
                     }
                     else
@@ -488,7 +480,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                         good_cand = (((*next_element)->pos_element) ? (has_feature) : (!has_feature));
                     }
                     //In CSoar this needs to happen before the break, or the query might not be ready next time
-                    q2->reinitialize();
+                    q2->reset();
                     if (!good_cand)
                     {
                         break;
@@ -524,7 +516,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
             }
         }
     }
-    q->reinitialize();
+    q.reset();
 
     // clean weighted cue
     for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
@@ -638,7 +630,7 @@ void SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery,
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
-        auto job = SMem_Manager::JobQueue.add([=]() {
+        auto job = SMem_Manager::JobQueue.post([=]() {
             process_query_SQL(weighted_cue, needFullSearch, prohibit, state, query, negquery, match_ids, number_to_retrieve, depth);
         });
 

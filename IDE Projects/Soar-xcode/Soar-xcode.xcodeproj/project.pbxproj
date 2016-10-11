@@ -126,8 +126,27 @@
 		4D7433FB1D884DEF00072482 /* tokenizertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7433EB1D884DEF00072482 /* tokenizertest.cpp */; };
 		4D7734BC1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
 		4D7734BD1B3EFC33006FC37C /* handlers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D7734BA1B3EFC33006FC37C /* handlers.cpp */; };
-		4D97E30F1D9822CB00A9B56B /* smem_job_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */; };
-		4D97E3101D9822CB00A9B56B /* smem_job_queue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */; };
+		4D97E3211DA28BE600A9B56B /* Assertion.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3121DA28BE600A9B56B /* Assertion.h */; };
+		4D97E3221DA28BE600A9B56B /* Backup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E3131DA28BE600A9B56B /* Backup.cpp */; };
+		4D97E3231DA28BE600A9B56B /* Backup.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3141DA28BE600A9B56B /* Backup.h */; };
+		4D97E3241DA28BE600A9B56B /* Column.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E3151DA28BE600A9B56B /* Column.cpp */; };
+		4D97E3251DA28BE600A9B56B /* Column.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3161DA28BE600A9B56B /* Column.h */; };
+		4D97E3261DA28BE600A9B56B /* Database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E3171DA28BE600A9B56B /* Database.cpp */; };
+		4D97E3271DA28BE600A9B56B /* Database.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3181DA28BE600A9B56B /* Database.h */; };
+		4D97E3281DA28BE600A9B56B /* Exception.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E3191DA28BE600A9B56B /* Exception.cpp */; };
+		4D97E3291DA28BE600A9B56B /* Exception.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E31A1DA28BE600A9B56B /* Exception.h */; };
+		4D97E32A1DA28BE600A9B56B /* SQLiteCpp.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E31B1DA28BE600A9B56B /* SQLiteCpp.h */; };
+		4D97E32B1DA28BE600A9B56B /* Statement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E31C1DA28BE600A9B56B /* Statement.cpp */; };
+		4D97E32C1DA28BE600A9B56B /* Statement.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E31D1DA28BE600A9B56B /* Statement.h */; };
+		4D97E32D1DA28BE600A9B56B /* Transaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E31E1DA28BE600A9B56B /* Transaction.cpp */; };
+		4D97E32E1DA28BE600A9B56B /* Transaction.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E31F1DA28BE600A9B56B /* Transaction.h */; };
+		4D97E3421DA28CB900A9B56B /* VariadicBind.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3411DA28CB900A9B56B /* VariadicBind.h */; };
+		4D97E3441DA28EF500A9B56B /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3431DA28EF500A9B56B /* sqlite3.h */; };
+		4D97E3471DA28FA300A9B56B /* job_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E3451DA28FA300A9B56B /* job_queue.cpp */; };
+		4D97E3481DA28FA300A9B56B /* job_queue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3461DA28FA300A9B56B /* job_queue.hpp */; };
+		4D97E34E1DA2978D00A9B56B /* sqlite_job_queue.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E34D1DA2978D00A9B56B /* sqlite_job_queue.hpp */; };
+		4D97E3511DA2A64D00A9B56B /* sqlite_job_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D97E34F1DA2A59D00A9B56B /* sqlite_job_queue.cpp */; };
+		4D97E3551DA4435D00A9B56B /* guard.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4D97E3531DA4435D00A9B56B /* guard.hpp */; };
 		4D9868001B30894500B13711 /* testMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9867F11B30891B00B13711 /* testMain.cpp */; };
 		4D9868071B309E9000B13711 /* TestRunner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868011B308B8100B13711 /* TestRunner.cpp */; };
 		4D9868081B309E9400B13711 /* TestHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D9868041B30941F00B13711 /* TestHelpers.cpp */; };
@@ -476,7 +495,6 @@
 		4DD80DAF1D85B02A00E85AA0 /* soar_module.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D931D85B02A00E85AA0 /* soar_module.h */; };
 		4DD80DB01D85B02A00E85AA0 /* soar_rand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D941D85B02A00E85AA0 /* soar_rand.cpp */; };
 		4DD80DB11D85B02A00E85AA0 /* soar_rand.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D951D85B02A00E85AA0 /* soar_rand.h */; };
-		4DD80DB21D85B02A00E85AA0 /* sqlite3.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D961D85B02A00E85AA0 /* sqlite3.h */; };
 		4DD80DB31D85B02A00E85AA0 /* stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D971D85B02A00E85AA0 /* stats.cpp */; };
 		4DD80DB41D85B02A00E85AA0 /* stats.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D981D85B02A00E85AA0 /* stats.h */; };
 		4DD80DB51D85B02A00E85AA0 /* stl_typedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */; };
@@ -754,8 +772,27 @@
 		4D7734BA1B3EFC33006FC37C /* handlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = handlers.cpp; sourceTree = "<group>"; };
 		4D7734BB1B3EFC33006FC37C /* handlers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = handlers.hpp; sourceTree = "<group>"; };
 		4D7A66341D92D2AB00F54998 /* unistd_windows.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = unistd_windows.h; sourceTree = "<group>"; };
-		4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_job_queue.cpp; sourceTree = "<group>"; };
-		4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = smem_job_queue.hpp; sourceTree = "<group>"; };
+		4D97E3121DA28BE600A9B56B /* Assertion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Assertion.h; sourceTree = "<group>"; };
+		4D97E3131DA28BE600A9B56B /* Backup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Backup.cpp; sourceTree = "<group>"; };
+		4D97E3141DA28BE600A9B56B /* Backup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Backup.h; sourceTree = "<group>"; };
+		4D97E3151DA28BE600A9B56B /* Column.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Column.cpp; sourceTree = "<group>"; };
+		4D97E3161DA28BE600A9B56B /* Column.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Column.h; sourceTree = "<group>"; };
+		4D97E3171DA28BE600A9B56B /* Database.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Database.cpp; sourceTree = "<group>"; };
+		4D97E3181DA28BE600A9B56B /* Database.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Database.h; sourceTree = "<group>"; };
+		4D97E3191DA28BE600A9B56B /* Exception.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Exception.cpp; sourceTree = "<group>"; };
+		4D97E31A1DA28BE600A9B56B /* Exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exception.h; sourceTree = "<group>"; };
+		4D97E31B1DA28BE600A9B56B /* SQLiteCpp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLiteCpp.h; sourceTree = "<group>"; };
+		4D97E31C1DA28BE600A9B56B /* Statement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Statement.cpp; sourceTree = "<group>"; };
+		4D97E31D1DA28BE600A9B56B /* Statement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Statement.h; sourceTree = "<group>"; };
+		4D97E31E1DA28BE600A9B56B /* Transaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Transaction.cpp; sourceTree = "<group>"; };
+		4D97E31F1DA28BE600A9B56B /* Transaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Transaction.h; sourceTree = "<group>"; };
+		4D97E3411DA28CB900A9B56B /* VariadicBind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VariadicBind.h; sourceTree = "<group>"; };
+		4D97E3431DA28EF500A9B56B /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlite3.h; sourceTree = "<group>"; };
+		4D97E3451DA28FA300A9B56B /* job_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = job_queue.cpp; sourceTree = "<group>"; };
+		4D97E3461DA28FA300A9B56B /* job_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = job_queue.hpp; sourceTree = "<group>"; };
+		4D97E34D1DA2978D00A9B56B /* sqlite_job_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = sqlite_job_queue.hpp; sourceTree = "<group>"; };
+		4D97E34F1DA2A59D00A9B56B /* sqlite_job_queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sqlite_job_queue.cpp; sourceTree = "<group>"; };
+		4D97E3531DA4435D00A9B56B /* guard.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = guard.hpp; sourceTree = "<group>"; };
 		4D9867ED1B30842D00B13711 /* TestCategory.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestCategory.hpp; sourceTree = "<group>"; };
 		4D9867F11B30891B00B13711 /* testMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testMain.cpp; sourceTree = "<group>"; };
 		4D9867F71B30893700B13711 /* JSoar-UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "JSoar-UnitTests"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1110,7 +1147,6 @@
 		4DD80D931D85B02A00E85AA0 /* soar_module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = soar_module.h; sourceTree = "<group>"; };
 		4DD80D941D85B02A00E85AA0 /* soar_rand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = soar_rand.cpp; sourceTree = "<group>"; };
 		4DD80D951D85B02A00E85AA0 /* soar_rand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = soar_rand.h; sourceTree = "<group>"; };
-		4DD80D961D85B02A00E85AA0 /* sqlite3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sqlite3.h; sourceTree = "<group>"; };
 		4DD80D971D85B02A00E85AA0 /* stats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stats.cpp; sourceTree = "<group>"; };
 		4DD80D981D85B02A00E85AA0 /* stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stats.h; sourceTree = "<group>"; };
 		4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stl_typedefs.h; sourceTree = "<group>"; };
@@ -1361,6 +1397,28 @@
 				4D7335851B3B3BEF00D2E085 /* WmaFunctionalTests.hpp */,
 			);
 			path = wma;
+			sourceTree = "<group>";
+		};
+		4D97E3111DA28BE600A9B56B /* SQLiteCpp */ = {
+			isa = PBXGroup;
+			children = (
+				4D97E3121DA28BE600A9B56B /* Assertion.h */,
+				4D97E3131DA28BE600A9B56B /* Backup.cpp */,
+				4D97E3141DA28BE600A9B56B /* Backup.h */,
+				4D97E3151DA28BE600A9B56B /* Column.cpp */,
+				4D97E3161DA28BE600A9B56B /* Column.h */,
+				4D97E3171DA28BE600A9B56B /* Database.cpp */,
+				4D97E3181DA28BE600A9B56B /* Database.h */,
+				4D97E3191DA28BE600A9B56B /* Exception.cpp */,
+				4D97E31A1DA28BE600A9B56B /* Exception.h */,
+				4D97E31B1DA28BE600A9B56B /* SQLiteCpp.h */,
+				4D97E31C1DA28BE600A9B56B /* Statement.cpp */,
+				4D97E31D1DA28BE600A9B56B /* Statement.h */,
+				4D97E31E1DA28BE600A9B56B /* Transaction.cpp */,
+				4D97E31F1DA28BE600A9B56B /* Transaction.h */,
+				4D97E3411DA28CB900A9B56B /* VariadicBind.h */,
+			);
+			path = SQLiteCpp;
 			sourceTree = "<group>";
 		};
 		4D9867EA1B3083E200B13711 /* Prototype-UnitTesting */ = {
@@ -1734,6 +1792,7 @@
 			isa = PBXGroup;
 			children = (
 				4DD688FF1D7F07ED00C06358 /* sqlite3.c */,
+				4D97E3431DA28EF500A9B56B /* sqlite3.h */,
 			);
 			name = sqlite;
 			path = ../../Core/SoarKernel/sqlite;
@@ -1920,8 +1979,6 @@
 				4DD80D6E1D85B01F00E85AA0 /* smem_structs.h */,
 				4DD80D6F1D85B01F00E85AA0 /* smem_timers.cpp */,
 				4DD80D701D85B01F00E85AA0 /* smem_timers.h */,
-				4D97E30D1D9822CB00A9B56B /* smem_job_queue.cpp */,
-				4D97E30E1D9822CB00A9B56B /* smem_job_queue.hpp */,
 			);
 			path = semantic_memory;
 			sourceTree = "<group>";
@@ -1929,6 +1986,7 @@
 		4DD689661D7F080200C06358 /* shared */ = {
 			isa = PBXGroup;
 			children = (
+				4D97E3111DA28BE600A9B56B /* SQLiteCpp */,
 				4DD80D831D85B02A00E85AA0 /* constants.h */,
 				4DD80D841D85B02A00E85AA0 /* enums.h */,
 				4DD80D851D85B02A00E85AA0 /* forward.h */,
@@ -1948,7 +2006,6 @@
 				4DD80D931D85B02A00E85AA0 /* soar_module.h */,
 				4DD80D941D85B02A00E85AA0 /* soar_rand.cpp */,
 				4DD80D951D85B02A00E85AA0 /* soar_rand.h */,
-				4DD80D961D85B02A00E85AA0 /* sqlite3.h */,
 				4DD80D971D85B02A00E85AA0 /* stats.cpp */,
 				4DD80D981D85B02A00E85AA0 /* stats.h */,
 				4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */,
@@ -1957,6 +2014,11 @@
 				4DD80D9C1D85B02A00E85AA0 /* triples.h */,
 				4DD80D9D1D85B02A00E85AA0 /* xml.cpp */,
 				4DD80D9E1D85B02A00E85AA0 /* xml.h */,
+				4D97E3451DA28FA300A9B56B /* job_queue.cpp */,
+				4D97E3461DA28FA300A9B56B /* job_queue.hpp */,
+				4D97E3531DA4435D00A9B56B /* guard.hpp */,
+				4D97E34F1DA2A59D00A9B56B /* sqlite_job_queue.cpp */,
+				4D97E34D1DA2978D00A9B56B /* sqlite_job_queue.hpp */,
 			);
 			path = shared;
 			sourceTree = "<group>";
@@ -2140,9 +2202,11 @@
 				4DD688501D7F07AE00C06358 /* sock_ClientNamedPipe.h in Headers */,
 				4DD80D7E1D85B01F00E85AA0 /* smem_stats.h in Headers */,
 				4D1ED1961D89E54C005E98E5 /* cli_output.h in Headers */,
+				4D97E32A1DA28BE600A9B56B /* SQLiteCpp.h in Headers */,
 				4DD689D41D7F080300C06358 /* io_link.h in Headers */,
 				4DD688F21D7F07D200C06358 /* assert.hpp in Headers */,
 				4DD688DE1D7F07C600C06358 /* sml_UpdateListener.h in Headers */,
+				4D97E3421DA28CB900A9B56B /* VariadicBind.h in Headers */,
 				4DD80DB71D85B02A00E85AA0 /* trace.h in Headers */,
 				4DD687D61D7F079600C06358 /* sml_ClientXML.h in Headers */,
 				4DD688441D7F07AE00C06358 /* sml_TagError.h in Headers */,
@@ -2150,6 +2214,7 @@
 				4DD80D7D1D85B01F00E85AA0 /* smem_settings.h in Headers */,
 				4DD688461D7F07AE00C06358 /* sml_TagFilter.h in Headers */,
 				4DD688F81D7F07D200C06358 /* portability_posix.h in Headers */,
+				4D97E32E1DA28BE600A9B56B /* Transaction.h in Headers */,
 				4DD80D5E1D85B00E00E85AA0 /* visualize.h in Headers */,
 				4DD80CF41D85AFE300E85AA0 /* dprint.h in Headers */,
 				4DD6883C1D7F07AE00C06358 /* sml_RemoteConnection.h in Headers */,
@@ -2174,6 +2239,7 @@
 				4DD688661D7F07AE00C06358 /* thread_OSspecific.h in Headers */,
 				4DD687C81D7F079600C06358 /* sml_ClientIdentifier.h in Headers */,
 				4DD80D461D85B00200E85AA0 /* instantiation_record.h in Headers */,
+				4D97E3231DA28BE600A9B56B /* Backup.h in Headers */,
 				4DD688361D7F07AE00C06358 /* sml_Handles.h in Headers */,
 				4D1ED17F1D89E54C005E98E5 /* cli_CommandLineInterface.h in Headers */,
 				4DD80DD91D85B03500E85AA0 /* agent.h in Headers */,
@@ -2204,16 +2270,19 @@
 				4DD688F31D7F07D200C06358 /* Export.h in Headers */,
 				4DD688831D7F07BA00C06358 /* XMLTrace.h in Headers */,
 				4DD80DEC1D85B03500E85AA0 /* symbol_manager.h in Headers */,
+				4D97E3441DA28EF500A9B56B /* sqlite3.h in Headers */,
 				4DD68A7E1D7F082500C06358 /* command_table.h in Headers */,
 				4DD80CF11D85AFE300E85AA0 /* debug_stacktrace.h in Headers */,
 				4DD80DF21D85B03500E85AA0 /* working_memory_activation.h in Headers */,
 				4DD688FC1D7F07D200C06358 /* soarversion.h in Headers */,
 				4DD68AA41D7F082500C06358 /* params.h in Headers */,
 				4DD688DA1D7F07C600C06358 /* sml_StringListener.h in Headers */,
+				4D97E3271DA28BE600A9B56B /* Database.h in Headers */,
 				4DD80D221D85AFF800E85AA0 /* ebc.h in Headers */,
 				4DD689E71D7F080300C06358 /* reinforcement_learning.h in Headers */,
 				4DD687CA1D7F079600C06358 /* sml_ClientIntElement.h in Headers */,
 				4DD688421D7F07AE00C06358 /* sml_TagCommand.h in Headers */,
+				4D97E32C1DA28BE600A9B56B /* Statement.h in Headers */,
 				4DD688FD1D7F07D200C06358 /* tokenizer.h in Headers */,
 				4DD688541D7F07AE00C06358 /* sock_DataSender.h in Headers */,
 				4DD689E51D7F080300C06358 /* exploration.h in Headers */,
@@ -2231,12 +2300,14 @@
 				4DD687CC1D7F079600C06358 /* sml_ClientKernel.h in Headers */,
 				4DD688D41D7F07C600C06358 /* sml_RhsListener.h in Headers */,
 				4DD687D91D7F079600C06358 /* sml_ListMap.h in Headers */,
+				4D97E3291DA28BE600A9B56B /* Exception.h in Headers */,
 				4DD689E31D7F080300C06358 /* parser.h in Headers */,
 				4DD6883A1D7F07AE00C06358 /* sml_Names.h in Headers */,
 				4DD80CF31D85AFE300E85AA0 /* debug.h in Headers */,
 				4DD6887C1D7F07BA00C06358 /* ElementXMLInterface.h in Headers */,
 				4D16297D1D7F0C6E00A27F4E /* config.h in Headers */,
 				4DD80DF41D85B03500E85AA0 /* working_memory.h in Headers */,
+				4D97E3211DA28BE600A9B56B /* Assertion.h in Headers */,
 				4DD688401D7F07AE00C06358 /* sml_TagArg.h in Headers */,
 				4DD80DDF1D85B03500E85AA0 /* preference.h in Headers */,
 				4DD68AB11D7F082500C06358 /* soar_interface.h in Headers */,
@@ -2244,7 +2315,6 @@
 				4DD68A881D7F082500C06358 /* common.h in Headers */,
 				4DD80DDB1D85B03500E85AA0 /* condition.h in Headers */,
 				4D16297E1D7F0C6E00A27F4E /* dbg.h in Headers */,
-				4DD80DB21D85B02A00E85AA0 /* sqlite3.h in Headers */,
 				4DD688CE1D7F07C600C06358 /* sml_ProductionListener.h in Headers */,
 				4DD688CA1D7F07C600C06358 /* sml_OutputListener.h in Headers */,
 				4DD688C81D7F07C600C06358 /* sml_OldRunScheduler.h in Headers */,
@@ -2262,7 +2332,6 @@
 				4DD80DAF1D85B02A00E85AA0 /* soar_module.h in Headers */,
 				4DD80DA61D85B02A00E85AA0 /* memory_manager.h in Headers */,
 				4DD80D081D85AFEC00E85AA0 /* osupport.h in Headers */,
-				4D97E3101D9822CB00A9B56B /* smem_job_queue.hpp in Headers */,
 				4DD688C31D7F07C600C06358 /* sml_KernelSML.h in Headers */,
 				4DD6885E1D7F07AE00C06358 /* sock_Socket.h in Headers */,
 				4DD687D01D7F079600C06358 /* sml_ClientTraceXML.h in Headers */,
@@ -2285,6 +2354,7 @@
 				4DD687C41D7F079600C06358 /* sml_ClientEvents.h in Headers */,
 				4D1629821D7F0C6E00A27F4E /* simplex.h in Headers */,
 				4DD80D061D85AFEC00E85AA0 /* decision_manipulation.h in Headers */,
+				4D97E34E1DA2978D00A9B56B /* sqlite_job_queue.hpp in Headers */,
 				4DD68A8E1D7F082500C06358 /* filter_input.h in Headers */,
 				4DD80D0C1D85AFEC00E85AA0 /* run_soar.h in Headers */,
 				4DD68AA81D7F082500C06358 /* scene.h in Headers */,
@@ -2300,13 +2370,16 @@
 				4DD80DA21D85B02A00E85AA0 /* kernel.h in Headers */,
 				4D1ED1B41D89E54C005E98E5 /* cli_visualize.h in Headers */,
 				4D16297B1D7F0C6E00A27F4E /* ccd.h in Headers */,
+				4D97E3481DA28FA300A9B56B /* job_queue.hpp in Headers */,
 				4DD688261D7F07AE00C06358 /* sml_AnalyzeXML.h in Headers */,
+				4D97E3251DA28BE600A9B56B /* Column.h in Headers */,
 				4DD6883E1D7F07AE00C06358 /* sml_StringOps.h in Headers */,
 				4DD688281D7F07AE00C06358 /* sml_ArgMap.h in Headers */,
 				4DD68AA11D7F082500C06358 /* mat.h in Headers */,
 				4DD688B71D7F07C600C06358 /* sml_AgentOutputFlusher.h in Headers */,
 				4DD6882C1D7F07AE00C06358 /* sml_EmbeddedConnection.h in Headers */,
 				4D1629801D7F0C6E00A27F4E /* polytope.h in Headers */,
+				4D97E3551DA4435D00A9B56B /* guard.hpp in Headers */,
 				4DD688F71D7F07D200C06358 /* portability.h in Headers */,
 				4D1ED17B1D89E54C005E98E5 /* cli_chunk.h in Headers */,
 				4DD80D281D85AFF800E85AA0 /* repair.h in Headers */,
@@ -2585,6 +2658,7 @@
 				4DD68A9E1D7F082500C06358 /* tag_select.cpp in Sources */,
 				4DD80D291D85AFF800E85AA0 /* unify.cpp in Sources */,
 				4D1ED17E1D89E54C005E98E5 /* cli_CommandLineInterface.cpp in Sources */,
+				4D97E3261DA28BE600A9B56B /* Database.cpp in Sources */,
 				4DD80CF01D85AFE300E85AA0 /* debug_stacktrace.cpp in Sources */,
 				4D1ED1A21D89E54C005E98E5 /* cli_rl.cpp in Sources */,
 				4DD68A8B1D7F082500C06358 /* filter.cpp in Sources */,
@@ -2625,6 +2699,7 @@
 				4DD688BE1D7F07C600C06358 /* sml_InputListener.cpp in Sources */,
 				4DD688C71D7F07C600C06358 /* sml_OldRunScheduler.cpp in Sources */,
 				4DD80D751D85B01F00E85AA0 /* smem_db.cpp in Sources */,
+				4D97E32D1DA28BE600A9B56B /* Transaction.cpp in Sources */,
 				4DD80DA31D85B02A00E85AA0 /* mem.cpp in Sources */,
 				4DD6883B1D7F07AE00C06358 /* sml_RemoteConnection.cpp in Sources */,
 				4DD688B41D7F07C600C06358 /* sml_AgentListener.cpp in Sources */,
@@ -2694,6 +2769,7 @@
 				4D1ED1811D89E54C005E98E5 /* cli_commandtofile.cpp in Sources */,
 				4D1ED18F1D89E54C005E98E5 /* cli_loadLibrary.cpp in Sources */,
 				4D1ED1881D89E54C005E98E5 /* cli_file_system_cmds.cpp in Sources */,
+				4D97E3281DA28BE600A9B56B /* Exception.cpp in Sources */,
 				4DD80D811D85B01F00E85AA0 /* smem_timers.cpp in Sources */,
 				4DD68A931D7F082500C06358 /* axis_relation.cpp in Sources */,
 				4DD68A8F1D7F082500C06358 /* filter_table.cpp in Sources */,
@@ -2716,6 +2792,7 @@
 				4D1ED1B01D89E54C005E98E5 /* cli_timers.cpp in Sources */,
 				4D1ED1B21D89E54C005E98E5 /* cli_version.cpp in Sources */,
 				4DD80D571D85B00E00E85AA0 /* output_manager.cpp in Sources */,
+				4D97E3471DA28FA300A9B56B /* job_queue.cpp in Sources */,
 				4DD68A871D7F082500C06358 /* common.cpp in Sources */,
 				4D1ED19D1D89E54C005E98E5 /* cli_pwatch.cpp in Sources */,
 				4DD687C71D7F079600C06358 /* sml_ClientIdentifier.cpp in Sources */,
@@ -2725,6 +2802,7 @@
 				4D1ED1A61D89E54C005E98E5 /* cli_soar.cpp in Sources */,
 				4D1ED1A41D89E54C005E98E5 /* cli_select.cpp in Sources */,
 				4DD689B11D7F080200C06358 /* episodic_memory.cpp in Sources */,
+				4D97E3511DA2A64D00A9B56B /* sqlite_job_queue.cpp in Sources */,
 				4DD80D5C1D85B00E00E85AA0 /* visualize_wm.cpp in Sources */,
 				4DD80D3C1D85B00200E85AA0 /* chunk_record.cpp in Sources */,
 				4DD68A9A1D7F082500C06358 /* monitor_object.cpp in Sources */,
@@ -2741,6 +2819,7 @@
 				4DD688C51D7F07C600C06358 /* sml_ListenerThread.cpp in Sources */,
 				4D1ED1B61D89E54C005E98E5 /* cli_watchwmes.cpp in Sources */,
 				4D1ED1B71D89E54C005E98E5 /* cli_wma.cpp in Sources */,
+				4D97E32B1DA28BE600A9B56B /* Statement.cpp in Sources */,
 				4DD68AAC1D7F082500C06358 /* sgnode.cpp in Sources */,
 				4D1629881D7F0C6E00A27F4E /* support.c in Sources */,
 				4DD688DB1D7F07C600C06358 /* sml_SystemListener.cpp in Sources */,
@@ -2765,6 +2844,7 @@
 				4DD688491D7F07AE00C06358 /* sml_TagResult.cpp in Sources */,
 				4DD688C21D7F07C600C06358 /* sml_KernelSML.cpp in Sources */,
 				4DD80D211D85AFF800E85AA0 /* ebc.cpp in Sources */,
+				4D97E3241DA28BE600A9B56B /* Column.cpp in Sources */,
 				4DD6882F1D7F07AE00C06358 /* sml_EmbeddedConnectionSynch.cpp in Sources */,
 				4DD687D71D7F079600C06358 /* sml_DeltaList.cpp in Sources */,
 				4D1ED1931D89E54C005E98E5 /* cli_numericindifferentmode.cpp in Sources */,
@@ -2791,12 +2871,12 @@
 				4DD68A981D7F082500C06358 /* distance.cpp in Sources */,
 				4DD68A7D1D7F082500C06358 /* command_table.cpp in Sources */,
 				4DD80DE21D85B03500E85AA0 /* production.cpp in Sources */,
-				4D97E30F1D9822CB00A9B56B /* smem_job_queue.cpp in Sources */,
 				4DD68A9C1D7F082500C06358 /* occlusion.cpp in Sources */,
 				4DD80D091D85AFEC00E85AA0 /* rete.cpp in Sources */,
 				4DD689001D7F07ED00C06358 /* sqlite3.c in Sources */,
 				4DD687DC1D7F079600C06358 /* sml_OutputDeltaList.cpp in Sources */,
 				4DD687C91D7F079600C06358 /* sml_ClientIntElement.cpp in Sources */,
+				4D97E3221DA28BE600A9B56B /* Backup.cpp in Sources */,
 				4DD68AA71D7F082500C06358 /* scene.cpp in Sources */,
 				4DD80D1E1D85AFF800E85AA0 /* constraints.cpp in Sources */,
 				4DD689E41D7F080300C06358 /* exploration.cpp in Sources */,
@@ -2971,7 +3051,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -3015,7 +3095,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
