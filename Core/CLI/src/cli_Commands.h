@@ -417,7 +417,7 @@ namespace cli
                 {
                     if (opt.CheckNumNonOptArgs(1, 1) && argv[1][0] == '?')
                     {
-                        return cli.DoSMem('?');
+                        return cli.DoEpMem('?');
                     }
                     return cli.SetError("Too many arguments, check syntax.");
                 }

@@ -46,6 +46,9 @@ class smem_param_container: public soar_module::param_container
 
         soar_module::int_set_param* base_incremental_threshes;
 
+        void print_settings(agent* thisAgent);
+        void print_summary(agent* thisAgent);
+
         smem_param_container(agent* new_agent);
 };
 

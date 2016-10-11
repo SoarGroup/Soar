@@ -36,36 +36,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
     if (!pOp)
     {
-        std::string lStr("Semantic memory is ");
-        lStr.append(thisAgent->SMem->settings->learning->get_value() ? "enabled." : "not enabled.");
-        PrintCLIMessage(lStr.c_str());
-        PrintCLIMessage("Use 'smem ?' to see SMem setting and 'help smem' to learn more about the smem command.");
+        thisAgent->SMem->settings->print_summary(thisAgent);
         return true;
     }
     else if (pOp == '?')
     {
-        // Print SMem Settings
-        PrintCLIMessage_Header("Semantic Memory Settings", 40);
-        PrintCLIMessage_Item("enabled:", thisAgent->SMem->settings->learning, 40);
-        PrintCLIMessage_Section("Storage", 40);
-        PrintCLIMessage_Item("database:", thisAgent->SMem->settings->database, 40);
-        PrintCLIMessage_Item("append:", thisAgent->SMem->settings->append_db, 40);
-        PrintCLIMessage_Item("path:", thisAgent->SMem->settings->path, 40);
-        PrintCLIMessage_Item("lazy-commit:", thisAgent->SMem->settings->lazy_commit, 40);
-        PrintCLIMessage_Section("Activation", 40);
-        PrintCLIMessage_Item("activation-mode:", thisAgent->SMem->settings->activation_mode, 40);
-        PrintCLIMessage_Item("activate-on-query:", thisAgent->SMem->settings->activate_on_query, 40);
-        PrintCLIMessage_Item("base-decay:", thisAgent->SMem->settings->base_decay, 40);
-        PrintCLIMessage_Item("base-update-policy:", thisAgent->SMem->settings->base_update, 40);
-        PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->SMem->settings->base_incremental_threshes, 40);
-        PrintCLIMessage_Item("thresh:", thisAgent->SMem->settings->thresh, 40);
-        PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("page-size:", thisAgent->SMem->settings->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", thisAgent->SMem->settings->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", thisAgent->SMem->settings->opt, 40);
-        PrintCLIMessage_Item("timers:", thisAgent->SMem->settings->timers, 40);
-        PrintCLIMessage("");
-
+        thisAgent->SMem->settings->print_settings(thisAgent);
         return true;
     }
     else if (pOp == 'a')

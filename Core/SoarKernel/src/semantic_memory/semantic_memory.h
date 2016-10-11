@@ -29,6 +29,7 @@ class SMem_Manager
         friend cli::CommandLineInterface;
         friend smem_statement_container;
         friend smem_path_param;
+        friend class smem_param_container;
         friend smem_db_lib_version_stat;
         friend smem_mem_usage_stat;
         friend smem_mem_high_stat;

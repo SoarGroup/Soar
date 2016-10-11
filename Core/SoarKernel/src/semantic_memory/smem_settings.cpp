@@ -6,10 +6,11 @@
  */
 
 #include "semantic_memory.h"
+
+#include "soar_module.h"
 #include "smem_db.h"
 #include "smem_settings.h"
 #include "smem_stats.h"
-
 #include "output_manager.h"
 
 smem_param_container::smem_param_container(agent* new_agent): soar_module::param_container(new_agent)
@@ -254,4 +255,79 @@ bool SMem_Manager::enabled()
 bool SMem_Manager::connected()
 {
     return (DB->get_status() == soar_module::connected);
+}
+
+void smem_param_container::print_settings(agent* thisAgent)
+{
+    std::string tempString;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 25);
+    outputManager->set_column_indent(1, 58);
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa(thisAgent, "-      Semantic Memory Sub-Commands and Options       -\n");
+    outputManager->printa(thisAgent, "=======================================================\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("enabled",learning->get_string(), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("database", database->get_string(), 55).c_str(), "Whether to store database in memory or file");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("append", append_db->get_string(), 55).c_str(), "Whether to append or overwrite database");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("path", path->get_string(), 55).c_str(), "Path of database file");
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [? | help]", "", 55).c_str(), "Print this help screen");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--enable | --disable ]", "", 55).c_str(), "Enable/disable semantic memory");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--get | --set] ","<option> [<value>]", 55).c_str(), "Print or set value of an SMem parameter");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --add","{ (id ^attr value)* }", 55).c_str(), "Add concepts to semantic memory");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --backup","<filename>", 55).c_str(), "Creates a backup of the semantic database on disk");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --init ","", 55).c_str(), "Reinitialize ALL memories");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --query ","{(<cue>*} [<num>]}", 55).c_str(), "Query for concepts in semantic store matching some cue");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --remove","{ (id [^attr [value]])* }", 55).c_str(), "Remove concepts from semantic memory");
+    outputManager->printa(thisAgent, "------------------------ Printing ---------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print","@", 55).c_str(), "Print semantic memory store");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print","<LTI>", 55).c_str(), "Print specific semantic memory");
+    outputManager->printa(thisAgent, "---------------------- Activation --------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --history","<LTI>", 55).c_str(), "Print activation history for some LTM");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("activation-mode", activation_mode->get_string(), 55).c_str(), "recency, frequency, base-level");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("activate-on-query", activate_on_query->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-decay", base_decay->get_string(), 55).c_str(), "Decay parameter for base-level activation computation");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-update-policy", base_update->get_string(), 55).c_str(), "stable, naive, incremental");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-incremental-threshes", base_incremental_threshes->get_string(), 55).c_str(), "integer > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("thresh", thresh->get_string(), 55).c_str(), "integer >= 0");
+    outputManager->printa(thisAgent, "------------- Database Optimization Settings ----------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("lazy-commit", lazy_commit->get_string(), 55).c_str(), "Delay writing semantic store until exit");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("optimization", opt->get_string(), 55).c_str(), "safety, performance");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("cache-size", cache_size->get_string(), 55).c_str(), "Number of memory pages used for SQLite cache");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("page-size", page_size->get_string(), 55).c_str(), "Size of each memory page used");
+    outputManager->printa(thisAgent, "----------------- Timers and Statistics ---------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("timers", timers->get_string(), 55).c_str(), "Timer granularity (off, one, two, three)");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --timers ","[<timer>]", 55).c_str(), "Print timer summary or specific statistic:");
+    outputManager->printa_sf(thisAgent, "%-%- (_total, smem_api, smem_hash, smem_init, smem_query)\n");
+    outputManager->printa_sf(thisAgent, "%-%- (smem_ncb_retrieval, smem_storage, three_activation)\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --stats","[<stat>]", 55).c_str(), "Print statistic summary or specific statistic:");
+    outputManager->printa_sf(thisAgent, "%-%- (act_updates, db-lib-version, edges, mem-usage)\n");
+    outputManager->printa_sf(thisAgent, "%-%- (mem-high, nodes, queries, retrieves, stores)\n");
+    outputManager->printa(thisAgent, "-------------------------------------------------------\n\n");
+    outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%- help smem\n");
+}
+
+void smem_param_container::print_summary(agent* thisAgent)
+{
+    std::string tempString;
+    Output_Manager* outputManager = &Output_Manager::Get_OM();
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 51);
+
+    outputManager->printa(thisAgent,    "====================================================\n");
+    outputManager->printa_sf(thisAgent, "              Semantic Memory Summary\n");
+    outputManager->printa(thisAgent,    "====================================================\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("enabled",learning->get_string(), 52).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("database", database->get_string(), 52).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("append", append_db->get_string(), 52).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("path", path->get_string(), 52).c_str());
+    outputManager->printa(thisAgent,    "----------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Nodes", std::to_string(thisAgent->SMem->statistics->nodes->get_value()), 52).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Edges", std::to_string(thisAgent->SMem->statistics->edges->get_value()), 52).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("Memory Usage", std::to_string(thisAgent->SMem->statistics->mem_usage->get_value()), 52).c_str(), "bytes");
+    outputManager->printa(thisAgent,    "----------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "For a full list of smem's sub-commands and settings:  smem ?");
 }
