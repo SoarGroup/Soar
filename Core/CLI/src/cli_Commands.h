@@ -1285,6 +1285,7 @@ namespace cli
                 {
                     {'a', "add",        OPTARG_NONE},
                     {'b', "backup",     OPTARG_NONE},
+                    {'c', "clear",      OPTARG_NONE},
                     {'d', "disable",    OPTARG_NONE},
                     {'d', "off",        OPTARG_NONE},
                     {'e', "enable",     OPTARG_NONE},
@@ -1370,7 +1371,7 @@ namespace cli
 
                         return cli.DoSMem(option, &(argv[2]), 0);
                     }
-
+                    case 'c':
                     case 'i':
                     case 'e':
                     case 'd':

@@ -50,6 +50,7 @@ class SMem_Manager
         bool enabled();
         void go(bool store_only);
         void clean_up_for_agent_deletion();
+        bool clear();
         void reinit();
         void reset_stats() { statistics->reset(); };
 

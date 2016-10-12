@@ -77,6 +77,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
         return result;
     }
+    else if (pOp == 'c')
+    {
+        if (thisAgent->SMem->clear())
+        {
+            PrintCLIMessage("Semantic memory system cleared.");
+            return true;
+        } else {
+            PrintCLIMessage("Semantic memory is not enabled. Could not clear.");
+            return false;
+        }
+    }
     else if (pOp == 'e')
     {
         bool result = thisAgent->SMem->settings->learning->set_string("on");

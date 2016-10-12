@@ -281,6 +281,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--get | --set] ","<option> [<value>]", 55).c_str(), "Print or set value of an SMem parameter");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --add","{ (id ^attr value)* }", 55).c_str(), "Add concepts to semantic memory");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --backup","<filename>", 55).c_str(), "Saves a copy of database");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --clear","", 55).c_str(), "Deletes all semantic knowledge");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --export","<filename> [<LTI>]", 55).c_str(), "Export database to text file");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --init ","", 55).c_str(), "Reinitialize semantic memory store");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem --query ","{(cue)* [<num>]}", 55).c_str(), "Query for concepts in semantic store matching cue");
