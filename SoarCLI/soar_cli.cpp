@@ -194,24 +194,24 @@ bool SoarCLI::initialize()
     cout << getcol(acc::Red) << "Launching the Soar Cognitive Architecture..." << endl << getcol(acc::Off);
     if (m_listen)
     {
-        cout << getcol(acc::Purple) << "...created Soar kernel (v" << VERSION_STRING() << ") in new thread " << getcol(acc::Off);
+        cout << getcol(acc::BBlue) << "...created Soar kernel (v" << VERSION_STRING() << ") in new thread " << getcol(acc::Off);
         m_kernel = Kernel::CreateKernelInNewThread(m_port);
         if (m_port == sml::Kernel::kUseAnyPort)
         {
-            cout << getcol(acc::Purple) << "using random port " << m_kernel->GetListenerPort() << endl;
+            cout << getcol(acc::BBlue) << "using random port " << m_kernel->GetListenerPort() << endl;
         } else {
-            cout << getcol(acc::Purple) << "using port " << m_port << endl;
+            cout << getcol(acc::BBlue) << "using port " << m_port << endl;
         }
     }
     else
     {
-        cout << getcol(acc::Purple) << "...created Soar kernel (v" << VERSION_STRING() << ") in current thread " << getcol(acc::Off);
+        cout << getcol(acc::BBlue) << "...created Soar kernel (v" << VERSION_STRING() << ") in current thread " << getcol(acc::Off);
         m_kernel = Kernel::CreateKernelInCurrentThread(true, m_port);
         if (m_port == sml::Kernel::kUseAnyPort)
         {
-            cout << getcol(acc::Purple) << "using random port " << m_kernel->GetListenerPort() << getcol(acc::Off) << endl;
+            cout << getcol(acc::BBlue) << "using random port " << m_kernel->GetListenerPort() << getcol(acc::Off) << endl;
         } else {
-            cout << getcol(acc::Purple) << "using port " << m_port << getcol(acc::Off) << endl;
+            cout << getcol(acc::BBlue) << "using port " << m_port << getcol(acc::Off) << endl;
         }
     }
 
@@ -384,7 +384,7 @@ bool SoarCLI::createagent(const char* agentname)
     m_currentAgent->SetOutputLinkChangeTracking(false);
 
     agents.push_back(m_currentAgent);
-    cout << getcol(acc::Purple) << "...created agent #" << agents.size() << " named '" << getcol(acc::Red) << agentname << getcol(acc::Purple) << "'" << getcol(acc::Off) << endl;
+    cout << getcol(acc::BBlue) << "...created agent #" << agents.size() << " named '" << getcol(acc::Red) << agentname << getcol(acc::BBlue) << "'" << getcol(acc::Off) << endl;
 //    agent_init_source(agentname);
     updateMultiAgent();
     return true;
