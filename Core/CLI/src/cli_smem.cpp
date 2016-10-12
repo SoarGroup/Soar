@@ -138,6 +138,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         thisAgent->SMem->reinit();
 
         PrintCLIMessage("Semantic memory system re-initialized.");
+        if (thisAgent->SMem->settings->append_db->get_value() == on)
+        {
+            PrintCLIMessage("Note: Since append mode is on, smem --init does not clear the database.\n"
+                            "      Use smem --clear to clear the contents.");
+        }
         return true;
     }
     else if (pOp == 'h')
