@@ -314,8 +314,8 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         uint64_t collision_count = 1;
         std::stringstream newLName;
 
-        thisAgent->outputManager->printa_sf(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
-        xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
+//        thisAgent->outputManager->printa_sf(thisAgent, "Warning: generated chunk/justification name %s already exists.  Will find unique name.\n", lName.str().c_str());
+//        xml_generate_warning(thisAgent, "Warning: generated chunk/justification name already exists.  Will find unique name.");
         do
         {
             newLName.str("");

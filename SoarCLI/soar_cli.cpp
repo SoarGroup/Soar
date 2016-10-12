@@ -86,6 +86,7 @@ int main(int argc, char** argv)
 
         for (j = sources.begin(); j != sources.end(); ++j)
         {
+            cout << cmd.getcol(acc::BBlue) << "Sourcing input file " << cmd.getcol(acc::IYellow)  << (*j) << cmd.getcol(acc::BBlue) << "..." << cmd.getcol(acc::Off) << endl;
             cmd.source((*j).c_str());
         }
 
