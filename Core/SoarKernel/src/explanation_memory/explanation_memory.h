@@ -22,10 +22,7 @@
 #include <string>
 
 typedef struct chunking_stats_struct {
-        uint64_t            lhs_unconnected;
-        uint64_t            rhs_unconnected;
         uint64_t            duplicates;
-        uint64_t            could_not_repair;
         uint64_t            justification_did_not_match;
         uint64_t            chunk_did_not_match;
         uint64_t            no_grounds;
@@ -34,7 +31,6 @@ typedef struct chunking_stats_struct {
         uint64_t            tested_local_negation;
         uint64_t            merged_conditions;
         uint64_t            chunks_attempted;
-        uint64_t            chunks_reverted;
         uint64_t            chunks_succeeded;
         uint64_t            justifications_attempted;
         uint64_t            justifications_succeeded;
@@ -43,6 +39,15 @@ typedef struct chunking_stats_struct {
         uint64_t            constraints_attached;
         uint64_t            constraints_collected;
         uint64_t            grounding_conditions_added;
+        uint64_t            lhs_unconnected;
+        uint64_t            rhs_unconnected;
+        uint64_t            repair_failed;
+        uint64_t            ungrounded_justifications;
+        uint64_t            chunks_repaired;
+        uint64_t            chunks_reverted;
+        uint64_t            justifications_repaired;
+        uint64_t            ungrounded_justifications_added;
+        uint64_t            ungrounded_justifications_ignored;
 } chunking_stats;
 
 
@@ -84,26 +89,32 @@ class Explanation_Memory
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
         void increment_stat_duplicates(production* duplicate_rule);
-        void increment_stat_grounded(int pNumConds);
-        void increment_stat_reverted();
-        void increment_stat_could_not_repair() { stats.could_not_repair++; };
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
-        void increment_stat_max_dupes() { stats.max_dupes++;  if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
-        void increment_stat_succeeded() { stats.chunks_succeeded++; };
+        void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
         void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
+        void increment_stat_chunks_succeeded() { stats.chunks_succeeded++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };
-        void increment_stat_lhs_unconnected() { stats.lhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.lhs_unconnected = true; };
-        void increment_stat_rhs_unconnected() { stats.rhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.rhs_unconnected = true; };
-        void increment_stat_justifications() { stats.justifications_succeeded++; };
+        void increment_stat_justifications_succeeded() { stats.justifications_succeeded++; };
         void increment_stat_instantations_backtraced() { stats.instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.instantations_backtraced++; };
         void increment_stat_seen_instantations_backtraced() { stats.seen_instantations_backtraced++; if (current_recording_chunk) current_recording_chunk->stats.seen_instantations_backtraced++; };
         void increment_stat_constraints_attached() { stats.constraints_attached++; if (current_recording_chunk) current_recording_chunk->stats.constraints_attached++; };
         void increment_stat_constraints_collected() { stats.constraints_collected++; if (current_recording_chunk) current_recording_chunk->stats.constraints_collected++; };
+        void increment_stat_grounding_conds_added(int pNumConds);
+        void increment_stat_lhs_unconnected() { stats.lhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.lhs_unconnected = true; };
+        void increment_stat_rhs_unconnected() { stats.rhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.rhs_unconnected = true; };
+        void increment_stat_could_not_repair() { stats.repair_failed++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
+        void increment_stat_ungrounded_justifications() { stats.ungrounded_justifications++; };
+        void increment_stat_chunks_repaired() { stats.chunks_repaired++; };
+        void increment_stat_chunks_reverted();
+        void increment_stat_justifications_repaired() { stats.justifications_repaired++; };
+        void increment_stat_justifications_ungrounded_added() { stats.ungrounded_justifications_added++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
+        void increment_stat_justifications_ungrounded_ignored() { stats.ungrounded_justifications_ignored++; };
+
 
         uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
         uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };

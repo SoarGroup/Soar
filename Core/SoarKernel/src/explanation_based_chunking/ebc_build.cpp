@@ -848,9 +848,9 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         assert(m_prod);
         thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
-            thisAgent->explanationMemory->increment_stat_justifications();
+            thisAgent->explanationMemory->increment_stat_justifications_succeeded();
         } else {
-            thisAgent->explanationMemory->increment_stat_succeeded();
+            thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
             {
                 thisAgent->stop_soar = true;
@@ -1070,9 +1070,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     if (!lChunkValidated)
     {
-        #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_could_not_repair();
-        #endif
         if (variablize)
         {
             /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
@@ -1083,18 +1080,26 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
                 print_current_built_rule("Adding the following justification instead:");
 
                 #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_reverted();
+                thisAgent->explanationMemory->increment_stat_chunks_reverted();
                 #endif
             }
-        } else {
+        } else if (ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS]){
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification);
 
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
-                    thisAgent->explanationMemory->cancel_chunk_record();
-                    #endif
+            thisAgent->explanationMemory->cancel_chunk_record();
+            #endif
             clean_up();
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
+            #endif
             return;
+        } else {
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
+            #endif
+            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
         }
     } else {
         m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);

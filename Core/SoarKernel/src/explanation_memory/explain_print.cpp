@@ -401,13 +401,29 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "\nConditions merged                        %- %u\n", stats.merged_conditions);
     outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Conditions added during repair             %-%u\n", stats.grounding_conditions_added);
+
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "          Partially Operational Conditions and Actions\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "LHS with conditions unconnected to goal    %-%u\n", stats.lhs_unconnected);
+    outputManager->printa_sf(thisAgent, "RHS with actions unconnected to goal       %-%u\n", stats.rhs_unconnected);
+
+    outputManager->printa_sf(thisAgent, "Repair attempted but failed                %-%u\n", stats.repair_failed);
+    outputManager->printa_sf(thisAgent, "Chunks reverted to justifications          %-%u\n", stats.chunks_reverted);
+
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "                Experimental Justification Repair\n");
+    outputManager->printa_sf(thisAgent, "=============================================================\n");
+    outputManager->printa_sf(thisAgent, "Justifications needing repair              %-%u\n", stats.rhs_unconnected);
+    outputManager->printa_sf(thisAgent, "Justifications repaired                    %-%u\n", stats.justifications_repaired);
+    outputManager->printa_sf(thisAgent, "Justification repair failed yet added      %-%u\n", stats.ungrounded_justifications_added);
+    outputManager->printa_sf(thisAgent, "Justification repair failed and ignored    %-%u\n", stats.ungrounded_justifications_ignored);
 
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "             Potential Generality Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "LHS that required repair                   %-%u\n", stats.lhs_unconnected);
-    outputManager->printa_sf(thisAgent, "RHS that required repair                   %-%u\n", stats.rhs_unconnected);
+    outputManager->printa_sf(thisAgent, "Chunks repaired                            %-%u\n", stats.chunks_repaired);
+    outputManager->printa_sf(thisAgent, "Conditions added during repair             %-%u\n", stats.grounding_conditions_added);
 
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
@@ -418,7 +434,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Duplicate of existing rule                 %-%u\n", stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Could not repair invalid rule              %-%u\n", stats.could_not_repair);
+    outputManager->printa_sf(thisAgent, "Could not repair invalid rule              %-%u\n", stats.repair_failed);
     outputManager->printa_sf(thisAgent, "Skipped because of max-chunks              %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because of max-dupes               %-%u\n", stats.max_dupes);
     outputManager->printa_sf(thisAgent, "Backtracing produced no conditions         %-%u\n", stats.no_grounds);
@@ -450,13 +466,14 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "===========================================================\n");
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "LHS required repair                        %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "RHS required repair                        %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Had LHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Had RHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
     if (current_discussed_chunk->stats.num_grounding_conditions_added > 0)
     {
         outputManager->printa_sf(thisAgent, "Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
     }
-    outputManager->printa_sf(thisAgent, "Was unrepairable chunk                     %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tried to repair but could not        %-%s\n", (current_discussed_chunk->stats.repair_failed ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Reverted to justification            %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "\n===========================================================\n");
     outputManager->printa_sf(thisAgent, "                      Work Performed\n");
     outputManager->printa_sf(thisAgent, "===========================================================\n");

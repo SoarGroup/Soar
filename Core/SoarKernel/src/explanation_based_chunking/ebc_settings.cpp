@@ -68,8 +68,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     unflagged_cmd = new soar_module::boolean_param("unflagged", on, new soar_module::f_predicate<boolean>());
     add(unflagged_cmd);
 
-    history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());
-    add(history_cmd);
+//    history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());
+//    add(history_cmd);
     stats_cmd = new soar_module::boolean_param("stats", on, new soar_module::f_predicate<boolean>());
     add(stats_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());

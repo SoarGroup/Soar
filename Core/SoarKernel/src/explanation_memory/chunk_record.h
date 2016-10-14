@@ -22,6 +22,7 @@ typedef struct chunk_stats_struct {
         bool                reverted;
         bool                lhs_unconnected;
         bool                rhs_unconnected;
+        bool                repair_failed;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;
