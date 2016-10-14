@@ -46,8 +46,8 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
     stats.reverted                          = false;
-    stats.lhs_repair                        = false;
-    stats.rhs_repair                        = false;
+    stats.lhs_unconnected                        = false;
+    stats.rhs_unconnected                        = false;
     stats.num_grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
     stats.instantations_backtraced          = 0;

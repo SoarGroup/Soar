@@ -20,8 +20,8 @@ typedef struct chunk_stats_struct {
         uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                reverted;
-        bool                lhs_repair;
-        bool                rhs_repair;
+        bool                lhs_unconnected;
+        bool                rhs_unconnected;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;

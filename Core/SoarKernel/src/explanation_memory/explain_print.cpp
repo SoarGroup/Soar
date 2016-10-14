@@ -406,8 +406,8 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "             Potential Generality Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "LHS that required repair                   %-%u\n", stats.lhs_repair);
-    outputManager->printa_sf(thisAgent, "RHS that required repair                   %-%u\n", stats.rhs_repair);
+    outputManager->printa_sf(thisAgent, "LHS that required repair                   %-%u\n", stats.lhs_unconnected);
+    outputManager->printa_sf(thisAgent, "RHS that required repair                   %-%u\n", stats.rhs_unconnected);
 
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
@@ -450,8 +450,8 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "===========================================================\n");
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "LHS required repair                        %-%s\n", (current_discussed_chunk->stats.lhs_repair ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "RHS required repair                        %-%s\n", (current_discussed_chunk->stats.rhs_repair ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "LHS required repair                        %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "RHS required repair                        %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
     if (current_discussed_chunk->stats.num_grounding_conditions_added > 0)
     {
         outputManager->printa_sf(thisAgent, "Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);

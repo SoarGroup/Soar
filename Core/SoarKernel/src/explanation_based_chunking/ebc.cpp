@@ -19,10 +19,13 @@
 #include "print.h"
 #include "rhs.h"
 #include "soar_instance.h"
+#include "soar_TraceNames.h"
 #include "test.h"
 #include "xml.h"
 
 #include <assert.h>
+
+using namespace soar_TraceNames;
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
@@ -344,4 +347,40 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
 
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
     return generated_name;
+}
+void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
+{
+    /* Generate a new symbol for the name of the new chunk or justification */
+    if (pForChunk)
+    {
+        chunks_this_d_cycle++;
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+
+        m_prod_type = CHUNK_PRODUCTION_TYPE;
+        m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM] != 0);
+    }
+    else
+    {
+        justifications_this_d_cycle++;
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+//        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+        m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+        m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_justifications_attempted();
+        #endif
+    }
+
+    if (m_should_print_name)
+    {
+        thisAgent->outputManager->start_fresh_line(thisAgent);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
+        xml_begin_tag(thisAgent, kTagLearning);
+        xml_begin_tag(thisAgent, kTagProduction);
+        xml_att_val(thisAgent, kProduction_Name, m_prod_name);
+        xml_end_tag(thisAgent, kTagProduction);
+        xml_end_tag(thisAgent, kTagLearning);
+    }
 }

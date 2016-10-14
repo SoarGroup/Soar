@@ -662,53 +662,6 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
 
 /* Before calling make_production, we must call this function to make sure
  * the production is valid. */
-bool Explanation_Based_Chunker::reorder_and_validate_chunk()
-{
-    /* This is called for justifications even though it does nothing because in the future
-     * we might want to fix a justification that has conditions unconnected to
-     * a state.  Chunks that have such variablized conditions seem to be able to
-     * corrupt the rete, but we don't know if justifications can as well.  While we
-     * could ground those conditions like we do with chunks to be safe, we're not doing
-     * that right now because it will introduce a high computational cost that may
-     * not be necessary.*/
-
-    if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
-    {
-        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
-
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms);
-
-        if (m_failure_type != ebc_success)
-        {
-            if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
-            {
-                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
-                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
-                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
-                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                unconnected_syms = new symbol_with_match_list();
-                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
-                {
-                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
-                    print_current_built_rule("Repaired rule:");
-                    return true;
-                } else {
-                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
-                    return false;
-                }
-            }
-
-            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-            return false;
-        }
-        delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-    }
-    return true;
-}
-
 /* --------------------------------------------------------------------
                        Make Clones of Results
 
@@ -874,42 +827,7 @@ void Explanation_Based_Chunker::revert_chunk_to_instantiation()
 
 }
 
-void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
-{
-    /* Generate a new symbol for the name of the new chunk or justification */
-    if (pForChunk)
-    {
-        chunks_this_d_cycle++;
-        m_prod_name = generate_chunk_name(m_inst, pForChunk);
 
-        m_prod_type = CHUNK_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM] != 0);
-    }
-    else
-    {
-        justifications_this_d_cycle++;
-        m_prod_name = generate_chunk_name(m_inst, pForChunk);
-//        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
-        m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-        m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-        m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-        #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_justifications_attempted();
-        #endif
-    }
-
-    if (m_should_print_name)
-    {
-        thisAgent->outputManager->start_fresh_line(thisAgent);
-        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
-        xml_begin_tag(thisAgent, kTagLearning);
-        xml_begin_tag(thisAgent, kTagProduction);
-        xml_att_val(thisAgent, kProduction_Name, m_prod_name);
-        xml_end_tag(thisAgent, kTagProduction);
-        xml_end_tag(thisAgent, kTagLearning);
-    }
-}
 
 void Explanation_Based_Chunker::add_chunk_to_rete()
 {
