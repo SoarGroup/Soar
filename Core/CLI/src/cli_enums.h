@@ -63,6 +63,7 @@ namespace cli
         PRINT_USER,
         PRINT_VARPRINT,
         PRINT_EXACT,
+        PRINT_FIRED,
         PRINT_NUM_OPTIONS, // must be last
     };
     typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
