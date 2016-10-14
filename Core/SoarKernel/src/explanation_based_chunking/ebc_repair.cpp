@@ -499,7 +499,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             return false;
         }
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-    } else {
+    }
+    else if (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] || ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS])
+    {
         symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
