@@ -16,34 +16,39 @@
 #include "Database.h"
 #include "Statement.h"
 
+namespace SMemExperimental
+{
+
 class statement_container
 {
 protected:
-    std::list<SQLite::Statement> structure;
+    std::list<std::string> structure;
     SQLite::Database& DB;
 
 public:
-    statement_container(SQLite::Database& database)
+    statement_container(SQLite::Database& database, std::function<void()> initializationCode = [](){})
     : DB(database)
-    {}
+    {
+        initializationCode();
+    }
 
 
     void add_structure(const std::string& new_structure)
     {
-        structure.push_back(SQLite::Statement(DB, new_structure));
+        structure.push_back(new_structure);
     }
 
     void createStructure()
     {
         for (auto& statement : structure)
         {
-            statement.reset();
-            statement.exec();
+            auto s = SQLite::Statement(DB, statement);
+            s.exec();
         }
     }
 };
 
-class smem_statement_container : public statement_container
+class smem_statement_container : public SMemExperimental::statement_container
 {
     public:
         SQLite::Statement begin;
@@ -128,5 +133,7 @@ class smem_statement_container : public statement_container
         void create_indices();
         void drop_tables();
 };
+
+} // End of namespace SMemExperimental
 
 #endif /* CORE_SOARKERNEL_SRC_SEMANTIC_MEMORY_SMEM_DB_H_ */

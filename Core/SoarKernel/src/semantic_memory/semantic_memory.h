@@ -36,7 +36,7 @@
 class SMem_Manager
 {
         friend cli::CommandLineInterface;
-        friend smem_statement_container;
+        friend SMemExperimental::smem_statement_container;
         friend smem_path_param;
         friend smem_db_lib_version_stat;
         friend smem_mem_usage_stat;
@@ -124,10 +124,10 @@ class SMem_Manager
         uint64_t                        smem_validation;
         int64_t                         smem_max_cycle;
 
-        SQLite::Database                DB;
-        smem_statement_container        SQL;
         smem_param_container*           settings;
         smem_stat_container*            statistics;
+        SQLite::Database                DB;
+        SMemExperimental::smem_statement_container        SQL;
 
         static const std::string            memoryDatabasePath;
 

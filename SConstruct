@@ -260,6 +260,7 @@ env.Replace(
         '#Core/SoarKernel/src/reinforcement_learning',
         '#Core/SoarKernel/src/semantic_memory',
         '#Core/SoarKernel/src/shared',
+        '#Core/SoarKernel/src/SQLiteCpp',
         '#Core/SoarKernel/src/soar_representation',
         '#Core/ElementXML/src',
         '#Core/KernelSML/src',

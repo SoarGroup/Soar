@@ -26,7 +26,7 @@ SQLite::Statement& SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        SQLite::bind(SQL.web_attr_all, 1, el->attr_hash);
+        SQLite::bind(SQL.web_attr_all, el->attr_hash);
         return SQL.web_attr_all;
     }
     else if (el->element_type == value_const_t)
@@ -454,7 +454,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                             smem_hash_id valueHash = q2->getColumn(2 - 1).getInt64();
                             SQL.hash_rev_type.bind(1, valueHash);
 
-                            if (SQL.hash_rev_type.executeStep())
+                            if (!SQL.hash_rev_type.executeStep())
                             {
                                 good_cand = false;
                             }

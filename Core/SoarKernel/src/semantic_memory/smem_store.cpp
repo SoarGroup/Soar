@@ -173,7 +173,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     else
     {
         SQLite::bind(SQL.act_lti_child_ct_get, pLTI_ID);
-        SQL.act_lti_child_ct_get.exec();
+        SQL.act_lti_child_ct_get.executeStep();
 
         existing_edges = static_cast<uint64_t>(SQL.act_lti_child_ct_get.getColumn(0).getInt());
 
@@ -311,7 +311,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     // update edge counter
     SQLite::bind(SQL.act_lti_child_ct_set, new_edges, pLTI_ID);
     SQL.act_lti_child_ct_set.exec();
-    SQL.act_lti_child_ct_get.reset();
+    SQL.act_lti_child_ct_set.reset();
 
     // now we can safely activate the lti
     if (activate)
@@ -354,6 +354,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL.wmes_constant_frequency_update.exec();
                     SQL.wmes_constant_frequency_update.reset();
                 }
+                SQL.wmes_constant_frequency_check.reset();
             }
         }
 
@@ -385,6 +386,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         SQL.wmes_lti_frequency_update.exec();
                         SQL.wmes_lti_frequency_update.reset();
                     }
+                    SQL.wmes_lti_frequency_check.reset();
                 }
             }
         }
@@ -408,6 +410,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL.attribute_frequency_update.exec();
                     SQL.attribute_frequency_update.reset();
                 }
+                SQL.attribute_frequency_check.reset();
             }
         }
 

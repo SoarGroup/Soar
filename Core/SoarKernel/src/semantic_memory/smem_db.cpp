@@ -16,6 +16,9 @@
 #include "agent.h"
 #include "print.h"
 
+namespace SMemExperimental
+{
+
 void smem_statement_container::create_tables()
 {
     add_structure("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
@@ -91,7 +94,23 @@ void smem_statement_container::drop_tables()
 }
 
 smem_statement_container::smem_statement_container(SMem_Manager* SMem)
-: statement_container(SMem->DB),
+: statement_container(SMem->DB, [this,SMem]() {
+    // Delete all entries from the tables in the database if append setting is off
+    if (SMem->settings->append_db->get_value() == off)
+    {
+        print_sysparam_trace(SMem->thisAgent, 0, "Erasing contents of semantic memory database. (append = off)\n");
+        drop_tables();
+    }
+
+    create_tables();
+    create_indices();
+
+    // Update the version number
+    add_structure("REPLACE INTO versions (system, version_number) VALUES ('smem_schema'," SMEM_SCHEMA_VERSION ")");
+
+    if (!DB.containsData())
+        createStructure();
+}),
 
 begin(DB, "BEGIN"),
 commit(DB, "COMMIT"),
@@ -168,20 +187,7 @@ vis_lti(DB, "SELECT lti_id, activation_value FROM smem_lti ORDER BY lti_id ASC")
 vis_lti_act(DB, "SELECT activation_value FROM smem_lti WHERE lti_id=?"),
 vis_value_const(DB, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)"),
 vis_value_lti(DB, "SELECT lti_id, tsh.symbol_type AS attr_type, tsh.s_id AS attr_hash, value_lti_id FROM smem_augmentations w, smem_symbols_type tsh WHERE (w.attribute_s_id=tsh.s_id) AND (value_lti_id<>" SMEM_AUGMENTATIONS_NULL_STR ")")
-{
-    // Delete all entries from the tables in the database if append setting is off
-    if (SMem->settings->append_db->get_value() == off)
-    {
-        print_sysparam_trace(SMem->thisAgent, 0, "Erasing contents of semantic memory database. (append = off)\n");
-        drop_tables();
-    }
-
-    create_tables();
-    create_indices();
-
-    // Update the version number
-    add_structure("REPLACE INTO versions (system, version_number) VALUES ('smem_schema'," SMEM_SCHEMA_VERSION ")");
-}
+{}
 
 smem_statement_container::smem_statement_container(smem_statement_container&& other)
 : statement_container(other.DB),
@@ -338,6 +344,8 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     return *this;
 }
 
+};
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Temporal Hash Functions (smem::hash)
@@ -356,7 +364,7 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
 
 smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
 {
-    SQL.hash_add_type.bind(symbol_type);
+    SQLite::bind(SQL.hash_add_type, symbol_type);
     SQL.hash_add_type.exec();
     SQL.hash_add_type.reset();
 
@@ -368,7 +376,7 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQL.hash_get_int.bind(0, val);
+    SQLite::bind(SQL.hash_get_int, val);
     if (SQL.hash_get_int.executeStep())
     {
         return_val = SQL.hash_get_int.getColumn(0).getInt();
@@ -395,7 +403,7 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQL.hash_get_float.bind(val);
+    SQLite::bind(SQL.hash_get_float, val);
     if (SQL.hash_get_float.executeStep())
     {
         return_val = SQL.hash_get_float.getColumn(0).getDouble();
@@ -422,7 +430,7 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQL.hash_get_str.bind(val);
+    SQLite::bind(SQL.hash_get_str, val);
     if (SQL.hash_get_str.executeStep())
     {
         return_val = SQL.hash_get_str.getColumn(0).getInt();
@@ -705,16 +713,13 @@ void SMem_Manager::init_db()
     smem_validation++;
 
     // setup common structures/queries
-    SQL = smem_statement_container(this);
-
-    if (tabula_rasa || (settings->append_db->get_value() == off))
-        SQL.createStructure();
+    SQL = SMemExperimental::smem_statement_container(this);
 
     // initialize persistent variables
     if (tabula_rasa || (settings->append_db->get_value() == off))
     {
-        SQL.begin.exec();
-        SQL.begin.reset();
+//        SQL.begin.exec();
+//        SQL.begin.reset();
 
         // max cycle
         smem_max_cycle = static_cast<int64_t>(1);
@@ -734,8 +739,8 @@ void SMem_Manager::init_db()
         // activation mode (from user parameter value)
         variable_create(var_act_mode, static_cast<int64_t>(settings->activation_mode->get_value()));
 
-        SQL.commit.exec();
-        SQL.commit.reset();
+//        SQL.commit.exec();
+//        SQL.commit.reset();
     }
     else
     {
@@ -766,8 +771,8 @@ void SMem_Manager::init_db()
     // if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
     if (settings->lazy_commit->get_value() == on)
     {
-        SQL.begin.exec();
-        SQL.begin.reset();
+//        SQL.begin.exec();
+//        SQL.begin.reset();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -830,8 +835,8 @@ void SMem_Manager::close()
         // if lazy, commit
         if (settings->lazy_commit->get_value() == on)
         {
-            SQL.commit.exec();
-            SQL.commit.reset();
+//            SQL.commit.exec();
+//            SQL.commit.reset();
         }
 
         // de-allocate common statements
@@ -857,8 +862,8 @@ bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 
         if (settings->lazy_commit->get_value() == on)
         {
-            SQL.commit.exec();
-            SQL.commit.reset();
+//            SQL.commit.exec();
+//            SQL.commit.reset();
         }
 
         try {
@@ -871,8 +876,8 @@ bool SMem_Manager::backup_db(const char* file_name, std::string* err)
 
         if (settings->lazy_commit->get_value() == on)
         {
-            SQL.begin.exec();
-            SQL.begin.reset();
+//            SQL.begin.exec();
+//            SQL.begin.reset();
         }
     }
     else
@@ -997,7 +1002,7 @@ uint64_t SMem_Manager::add_new_LTI()
         lti_id = ++lti_id_counter;
     }
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    SQLite::bind(SQL.lti_add, lti_id, 0, 0, 0, 0, 0,0);
+    SQLite::bind(SQL.lti_add, lti_id, 0, 0, 0, 0, 0);
     SQL.lti_add.exec();
     SQL.lti_add.reset();
 

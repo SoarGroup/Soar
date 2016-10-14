@@ -12,6 +12,6 @@ thread_local std::shared_ptr<SQLite::Database> sqlite_job_queue::db;
 
 sqlite_job_queue::sqlite_job_queue(std::string statementURL)
 : job_queue([this,statementURL]() {
-    db = std::shared_ptr<SQLite::Database>(new SQLite::Database(statementURL, SQLite::OPEN_READWRITE));
+    db = std::shared_ptr<SQLite::Database>(new SQLite::Database(statementURL, SQLite::OPEN_READWRITE | SQLite::OPEN_URI));
 })
 {}

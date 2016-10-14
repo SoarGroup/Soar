@@ -55,7 +55,7 @@ const std::string SMem_Manager::memoryDatabasePath = "file:smem_soar?mode=memory
 
 void SMem_Manager::recreateDB(std::string db_path)
 {
-    DB = SQLite::Database(db_path, SQLite::OPEN_READWRITE);
+    DB = SQLite::Database(db_path, SQLite::OPEN_READWRITE | SQLite::OPEN_URI);
 
     // reinitialize in-place
     static_assert(!std::has_virtual_destructor<sqlite_job_queue>::value, "Unsafe");
@@ -469,7 +469,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, nullptr, depth, wm_install);
+                    process_query(state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, nullptr, 1, depth, wm_install, true);
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
@@ -746,14 +746,14 @@ void SMem_Manager::reinit()
 
 SMem_Manager::SMem_Manager(agent* myAgent)
 : thisAgent(myAgent),
-DB(SMem_Manager::memoryDatabasePath, SQLite::OPEN_READWRITE),
+settings(new smem_param_container(myAgent)),
+statistics(new smem_stat_container(myAgent)),
+DB(SMem_Manager::memoryDatabasePath, SQLite::OPEN_READWRITE | SQLite::OPEN_URI),
 SQL(this),
 JobQueue(SMem_Manager::memoryDatabasePath)
 {
     thisAgent->SMem = this;
 
-    settings = new smem_param_container(thisAgent);
-    statistics = new smem_stat_container(thisAgent);
     timers = new smem_timer_container(thisAgent);
 
     smem_validation = 0;

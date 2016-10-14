@@ -26,8 +26,8 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     {
         reset_guard r(SQL.lti_access_get);
 
-        SQL.lti_access_get.bind(0, pLTI_ID);
-        SQL.lti_access_get.exec();
+        SQLite::bind(SQL.lti_access_get, pLTI_ID);
+        SQL.lti_access_get.executeStep();
 
         n = SQL.lti_access_get.getColumn(0).getInt();
         activations_first = SQL.lti_access_get.getColumn(2).getInt();
@@ -37,15 +37,16 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     reset_guard r(SQL.history_get);
 
     SQL.history_get.bind(1, pLTI_ID);
-    SQL.history_get.exec();
-
-    int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
-    t_k = static_cast<uint64_t>(time_now - SQL.history_get.getColumn(available_history - 1).getInt());
-
-    for (int i = 0; i < available_history; i++)
+    if (SQL.history_get.executeStep())
     {
-        sum += pow(static_cast<double>(time_now - SQL.history_get.getColumn(i).getInt()),
-                   static_cast<double>(-d));
+        int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
+        t_k = static_cast<uint64_t>(time_now - SQL.history_get.getColumn(available_history - 1).getInt());
+
+        for (int i = 0; i < available_history; i++)
+        {
+            sum += pow(static_cast<double>(time_now - SQL.history_get.getColumn(i).getInt()),
+                       static_cast<double>(-d));
+        }
     }
 
     // if available history was insufficient, approximate rest
@@ -123,7 +124,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         reset_guard r(SQL.lti_access_get);
 
         SQL.lti_access_get.bind(1, pLTI_ID);
-        SQL.lti_access_get.exec();
+        SQL.lti_access_get.executeStep();
 
         prev_access_n = SQL.lti_access_get.getColumn(0).getInt();
         prev_access_t = SQL.lti_access_get.getColumn(1).getInt();
@@ -189,7 +190,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         reset_guard r(SQL.act_lti_child_ct_get);
         SQLite::bind(SQL.act_lti_child_ct_get, pLTI_ID);
 
-        SQL.act_lti_child_ct_get.exec();
+        SQL.act_lti_child_ct_get.executeStep();
         num_edges = SQL.act_lti_child_ct_get.getColumn(0).getInt();
     }
 

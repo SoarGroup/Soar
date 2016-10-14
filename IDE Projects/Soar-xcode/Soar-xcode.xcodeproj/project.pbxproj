@@ -1116,7 +1116,7 @@
 		4DD80D611D85B01F00E85AA0 /* smem_activation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_activation.cpp; sourceTree = "<group>"; };
 		4DD80D621D85B01F00E85AA0 /* smem_cli_commands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_cli_commands.cpp; sourceTree = "<group>"; };
 		4DD80D631D85B01F00E85AA0 /* smem_db.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_db.cpp; sourceTree = "<group>"; };
-		4DD80D641D85B01F00E85AA0 /* smem_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = smem_db.h; sourceTree = "<group>"; };
+		4DD80D641D85B01F00E85AA0 /* smem_db.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = smem_db.h; sourceTree = "<group>"; };
 		4DD80D661D85B01F00E85AA0 /* smem_instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_instance.cpp; sourceTree = "<group>"; };
 		4DD80D671D85B01F00E85AA0 /* smem_math_query.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = smem_math_query.h; sourceTree = "<group>"; };
 		4DD80D681D85B01F00E85AA0 /* smem_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_print.cpp; sourceTree = "<group>"; };
@@ -1811,6 +1811,7 @@
 				4DD6894A1D7F080200C06358 /* parsing */,
 				4DD6894F1D7F080200C06358 /* reinforcement_learning */,
 				4DD689541D7F080200C06358 /* semantic_memory */,
+				4D97E3111DA28BE600A9B56B /* SQLiteCpp */,
 				4DD689661D7F080200C06358 /* shared */,
 				4DD689821D7F080200C06358 /* soar_representation */,
 			);
@@ -1986,7 +1987,6 @@
 		4DD689661D7F080200C06358 /* shared */ = {
 			isa = PBXGroup;
 			children = (
-				4D97E3111DA28BE600A9B56B /* SQLiteCpp */,
 				4DD80D831D85B02A00E85AA0 /* constants.h */,
 				4DD80D841D85B02A00E85AA0 /* enums.h */,
 				4DD80D851D85B02A00E85AA0 /* forward.h */,
@@ -2628,7 +2628,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "pushd \"$PROJECT_DIR/../../\"\n/usr/local/bin/scons --build=build-osx --out=out-osx --verbose sml_java debugger kernel cli tests\nexit $?\npopd";
+			shellScript = "pushd \"$PROJECT_DIR/../../\"\n# /usr/local/bin/scons --build=build-osx --out=out-osx --verbose sml_java debugger kernel cli tests\n# exit $?\npopd";
 		};
 /* End PBXShellScriptBuildPhase section */
 

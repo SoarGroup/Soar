@@ -434,7 +434,7 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
         // get lti info
         {
             SQLite::bind(act_q, c.first);
-            act_q.exec();
+            act_q.executeStep();
 
             //Look up activation history.
             std::list<uint64_t> access_history;

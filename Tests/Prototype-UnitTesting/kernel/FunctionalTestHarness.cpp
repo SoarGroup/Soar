@@ -150,8 +150,11 @@ void FunctionalTestHarness::tearDown(bool caught)
 	
 	halt_routine = nullptr;
 
-	kernel->DestroyAgent(agent);
+    if (agent != nullptr)
+        kernel->DestroyAgent(agent);
+
 	kernel->Shutdown();
+    
 	delete kernel;
 	kernel = nullptr;
 	agent = nullptr;
@@ -221,12 +224,15 @@ void FunctionalTestHarness::installRHS()
 
 void FunctionalTestHarness::removeRHS()
 {
-	remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("failed"));
-	remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("succeeded"));
-	
-	::rhs_function* halt_function = lookup_rhs_function(internal_agent, internal_agent->symbolManager->make_str_constant("halt"));
-	
-	halt_function->user_data = NULL;
-	halt_function->f = halt_routine;
+    if (internal_agent != nullptr)
+    {
+        remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("failed"));
+        remove_rhs_function(internal_agent, internal_agent->symbolManager->find_str_constant("succeeded"));
+        
+        ::rhs_function* halt_function = lookup_rhs_function(internal_agent, internal_agent->symbolManager->make_str_constant("halt"));
+        
+        halt_function->user_data = NULL;
+        halt_function->f = halt_routine;
+    }
 }
 

@@ -282,11 +282,7 @@ std::string Database::printTable(const std::string& tableName)
 
 void Database::backup(const std::string& file)
 {
-    sqlite3* backupDB;
-
-    guard dbCloseGuard([backupDB]() {
-        sqlite3_close(backupDB);
-    });
+    sqlite3* backupDB = nullptr;
 
     int sqlite_err = sqlite3_open_v2(file.c_str(), &backupDB, (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE), NULL);
     if (sqlite_err == SQLITE_OK)
@@ -299,10 +295,17 @@ void Database::backup(const std::string& file)
         }
 
         if (sqlite3_errcode(backupDB) != SQLITE_OK)
+        {
+            sqlite3_close(backupDB);
             throw SQLite::Exception(sqlite3_errmsg(backupDB));
+        }
     }
     else
+    {
+        sqlite3_close(backupDB);
         throw SQLite::Exception(sqlite3_errmsg(backupDB));
+    }
+    sqlite3_close(backupDB);
 }
 
 int64_t Database::getMemoryUsage()
