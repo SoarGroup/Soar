@@ -156,7 +156,7 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "=======================================================\n");
     outputManager->printa(thisAgent, "-           Output Sub-Commands and Options           -\n");
     outputManager->printa(thisAgent, "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output", "[? | help]", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output", "[? | help]", 55).c_str());
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("enabled",enabled->get_string(), 55).c_str(), "Globally turn off printing for agent");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Used for architecture debugging");
