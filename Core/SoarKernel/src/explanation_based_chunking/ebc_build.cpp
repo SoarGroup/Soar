@@ -678,32 +678,32 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms);
 
-//        if (m_failure_type != ebc_success)
-//        {
-//            if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
-//            {
-//                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
-//                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
-//                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
-//                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-//                unconnected_syms = new symbol_with_match_list();
-//                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-//                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
-//                {
-//                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-//                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
-//                    print_current_built_rule("Repaired rule:");
-//                    return true;
-//                } else {
-//                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-//                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
-//                    return false;
-//                }
-//            }
-//
-//            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-//            return false;
-//        }
+        if (m_failure_type != ebc_success)
+        {
+            if ((m_failure_type == ebc_failed_unconnected_conditions) || (m_failure_type == ebc_failed_reordering_rhs))
+            {
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
+                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
+                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
+                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                unconnected_syms = new symbol_with_match_list();
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                {
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
+                    print_current_built_rule("Repaired rule:");
+                    return true;
+                } else {
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
+                    return false;
+                }
+            }
+
+            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+            return false;
+        }
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
     }
     return true;
