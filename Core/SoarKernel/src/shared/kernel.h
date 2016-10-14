@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -74,7 +74,7 @@
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
-    //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
+//    #define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
     //#define DEBUG_MAC_STACKTRACE  /* Enables the printing of the call stack within debug messages.
                                     /* Tested on OSX (Mountain Lion).  Does not work on Windows. */
     //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */

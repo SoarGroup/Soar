@@ -37,6 +37,8 @@ class ebc_param_container: public soar_module::param_container
 //        soar_module::boolean_param* mechanism_variablize_rhs_funcs;
 //        soar_module::boolean_param* mechanism_constraints;
         soar_module::boolean_param* mechanism_OSK;
+        soar_module::boolean_param* mechanism_no_bad_justifications;
+        soar_module::boolean_param* mechanism_repair_justifications;
         soar_module::boolean_param* mechanism_repair_rhs;
         soar_module::boolean_param* mechanism_repair_lhs;
         soar_module::boolean_param* mechanism_merge;
