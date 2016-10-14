@@ -3,6 +3,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "production.h"
 #include "slot.h"
