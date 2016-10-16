@@ -139,6 +139,14 @@ enum ChunkingSettings {
     num_ebc_settings
  };
 
+enum IDSet_Mapping_Type {
+    IDS_direct,
+    IDS_literlize,
+    IDS_direct_mapping_exists,
+    IDS_literalization_exists,
+    IDS_literalize_mapping_exists
+};
+
 enum BTSourceType {
     BT_BaseInstantiation,
     BT_CDPS,

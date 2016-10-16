@@ -310,6 +310,7 @@ void Explanation_Memory::print_instantiation_explanation(instantiation_record* p
     } else {
         pInstRecord->print_for_wme_trace(printFooter);
     }
+    current_discussed_chunk->identity_analysis->print_instantiation_mappings(pInstRecord->instantiationID);
 }
 
 void Explanation_Memory::print_chunk_explanation()
@@ -574,6 +575,7 @@ void Explanation_Memory::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
     current_discussed_chunk->identity_analysis->print_identity_mappings();
+    current_discussed_chunk->identity_analysis->print_mappings();
 }
 
 void Explanation_Memory::print_constraints_enforced()

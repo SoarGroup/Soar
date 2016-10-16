@@ -16,13 +16,13 @@
 #include "test.h"
 #include "working_memory.h"
 
-identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map* pIdentitySetMappings)
+identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
 {
     thisAgent = myAgent;
-    original_ebc_mappings = new id_to_id_map();
     id_to_id_set_mappings = new id_to_idset_map();
-    (*original_ebc_mappings) = (*pIdentitySetMappings);
     identities_in_chunk = new id_set();
+    instantiation_mappings = new inst_identities_map();
+    original_ebc_mappings = NULL;
 }
 
 identity_record::~identity_record()
@@ -30,14 +30,17 @@ identity_record::~identity_record()
     if (original_ebc_mappings) delete original_ebc_mappings;
     if (id_to_id_set_mappings)
     {
-    for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
-    {
-        if (it->second->rule_variable) thisAgent->symbolManager->symbol_remove_ref(&it->second->rule_variable);
-        delete it->second;
-    }
-    delete id_to_id_set_mappings;
+        for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
+        {
+            if (it->second->rule_variable) thisAgent->symbolManager->symbol_remove_ref(&it->second->rule_variable);
+            delete it->second;
+        }
+        delete id_to_id_set_mappings;
     }
     if (identities_in_chunk) delete identities_in_chunk;
+
+    clear_mappings();
+    delete instantiation_mappings;
 }
 
 
@@ -75,10 +78,7 @@ void identity_record::generate_identity_sets(condition* lhs)
                 /* Identity points to a current identity set */
                 lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;
                 lNewIDSet->rule_variable = lIter->second->rule_variable;
-                if (lNewIDSet->rule_variable)
-                {
-                    thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
-                }
+                if (lNewIDSet->rule_variable) thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
             } else {
                 /* Identity points to an identity not in the chunk.  Create a new identity
@@ -182,6 +182,104 @@ void identity_record::print_identity_explanation(chunk_record* pChunkRecord)
 //    }
 //
 //    delete lInstPath;
+}
 
+void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
+                                           uint64_t pFromID,  uint64_t pToID,
+                                           Symbol*  pFromSym, Symbol*  pToSym)
+{
+    identity_mapping_list* lInstMappingList;
 
+    auto lIterInst = instantiation_mappings->find(pI_ID);
+    if (lIterInst == instantiation_mappings->end())
+    {
+        lInstMappingList = new identity_mapping_list();
+        (*instantiation_mappings)[pI_ID] = lInstMappingList;
+    } else {
+        lInstMappingList = lIterInst->second;
+    }
+    identity_mapping* lMapping = new identity_mapping();
+    lMapping->from_identity = pFromID;
+    lMapping->from_symbol = pFromSym;
+    if (pFromSym)
+    {
+        thisAgent->symbolManager->symbol_add_ref(pFromSym);
+    }
+    lMapping->to_identity = pToID;
+    lMapping->to_symbol = pToSym;
+    if (pToSym)
+    {
+        thisAgent->symbolManager->symbol_add_ref(pToSym);
+    }
+    lMapping->mappingType = pType;
+    lInstMappingList->push_back(lMapping);
+}
+
+void identity_record::print_mappings()
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
+    {
+        outputManager->printa_sf(thisAgent, "Identity set mappings for instantiation %u:\n", it->first);
+        print_mapping_list(it->second);
+    }
+}
+
+void identity_record::print_mapping_list(identity_mapping_list* pMapList)
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+    identity_mapping* lMapping;
+
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(1, 3);
+    outputManager->set_column_indent(2, 23);
+    outputManager->set_column_indent(3, 35);
+    outputManager->set_column_indent(4, 50);
+
+    for (auto it = pMapList->begin(); it != pMapList->end(); ++it)
+    {
+        lMapping = *it;
+        outputManager->printa_sf(thisAgent, "%-%u -> %u", lMapping->from_identity, lMapping->to_identity);
+        outputManager->printa_sf(thisAgent, "%-| %y -> %-%y", lMapping->from_symbol, lMapping->to_symbol);
+        outputManager->printa_sf(thisAgent, "%-| IDS_direct\n");
+    }
+}
+
+void identity_record::print_instantiation_mappings(uint64_t pI_ID)
+{
+    auto lIterInst = instantiation_mappings->find(pI_ID);
+    if (lIterInst == instantiation_mappings->end())
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Could not find identity set mappings for instantiation %u.\n", pI_ID);
+    } else {
+        thisAgent->outputManager->printa_sf(thisAgent, "Identity set mappings for instantiation %u:\n", pI_ID);
+        print_mapping_list(lIterInst->second);
+    }
+}
+
+void identity_record::clear_mappings()
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
+    {
+        outputManager->printa_sf(thisAgent, "Clearing set mappings for instantiation %u:\n", it->first);
+        identity_mapping* lMapping;
+        identity_mapping_list* lMapList = it->second;
+        for (auto it2 = lMapList->begin(); it2 != lMapList->end(); ++it2)
+        {
+            lMapping = *it2;
+            if (lMapping->from_symbol)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->from_symbol));
+            }
+            if (lMapping->to_symbol)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->to_symbol));
+            }
+            delete lMapping;
+        }
+        delete lMapList;
+    }
 }

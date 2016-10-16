@@ -10,6 +10,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
@@ -89,6 +90,7 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 //            dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %u = %u -> %u = %u.\n", iter->first, iter->second, iter->first, pNew_o_id );
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %y[%u] = %y[%u] -> %y[%u] = %y[%u].\n", get_ovar_for_o_id(iter->first), iter->first, get_ovar_for_o_id(iter->second), iter->second, get_ovar_for_o_id(iter->first), iter->first, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
             (*unification_map)[iter->first] = pNew_o_id;
+            thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, iter->first, pNew_o_id, get_ovar_for_o_id(iter->first), get_ovar_for_o_id(pNew_o_id));
         }
     }
 }
@@ -155,6 +157,8 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * literalize any tests with identity of parent in this trace */
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
                 (*unification_map)[newID] = 0;
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, newID, 0, get_ovar_for_o_id(newID), NULL);
+
                 update_unification_table(newID, 0);
             } else {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
@@ -171,6 +175,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * a different trace.  So, literalize the identity, that it is already remapped to.*/
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping);
                 (*unification_map)[existing_mapping] = 0;
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, existing_mapping, 0, get_ovar_for_o_id(existing_mapping), NULL);
                 update_unification_table(existing_mapping, 0, pOld_o_id);
             } else {
                 /* The existing identity we're unifying with is already unified with another identity from
@@ -179,12 +184,15 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %y[%u] -> %y[%u].\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
                 (*unification_map)[pNew_o_id] = existing_mapping;
                 (*unification_map)[newID] = existing_mapping;
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, pNew_o_id, existing_mapping, get_ovar_for_o_id(pNew_o_id), get_ovar_for_o_id(existing_mapping));
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, newID, existing_mapping, get_ovar_for_o_id(newID), get_ovar_for_o_id(existing_mapping));
                 update_unification_table(newID, existing_mapping);
                 update_unification_table(pNew_o_id, existing_mapping);
             }
         }
     } else {
         (*unification_map)[pOld_o_id] = newID;
+        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_direct, pOld_o_id, newID, get_ovar_for_o_id(pOld_o_id), get_ovar_for_o_id(newID));
         update_unification_table(pOld_o_id, newID);
     }
 

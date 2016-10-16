@@ -125,11 +125,11 @@ class Explanation_Based_Chunker
         /* Variables used by dependency analysis methods */
         cons*             grounds;
         cons*             locals;
-        cons*             positive_potentials;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
         bool                quiescence_t_flag;
+        uint64_t            m_current_bt_inst_id;
 
         /* Variables used by result building methods */
         bool                m_learning_on_for_instantiation;

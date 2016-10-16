@@ -10,8 +10,10 @@
 
 #include "kernel.h"
 
-#include "explanation_settings.h"
 #include "chunk_record.h"
+#include "explanation_settings.h"
+#include "explanation_memory.h"
+#include "identity_record.h"
 #include "stl_typedefs.h"
 
 #include <list>
@@ -83,6 +85,8 @@ class Explanation_Memory
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);
 
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL)
+                                { if (current_recording_chunk) current_recording_chunk->identity_analysis->add_identity_mapping(pI_ID, pType, pFromID, pToID, pFromSym, pToSym); }
         void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 
@@ -114,7 +118,6 @@ class Explanation_Memory
         void increment_stat_justifications_repaired() { stats.justifications_repaired++; };
         void increment_stat_justifications_ungrounded_added() { stats.ungrounded_justifications_added++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
         void increment_stat_justifications_ungrounded_ignored() { stats.ungrounded_justifications_ignored++; };
-
 
         uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
         uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };

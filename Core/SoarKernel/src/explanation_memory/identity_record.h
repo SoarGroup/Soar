@@ -19,23 +19,41 @@ typedef struct identity_set_struct {
         Symbol*     rule_variable;
 } identity_set_info;
 
+typedef struct identity_mapping_struct {
+        uint64_t            from_identity;
+        uint64_t            to_identity;
+        Symbol*             from_symbol;
+        Symbol*             to_symbol;
+        IDSet_Mapping_Type  mappingType;
+} identity_mapping;
+
 class identity_record
 {
         friend class Explanation_Memory;
 
     public:
-        identity_record(agent* myAgent, chunk_record* pChunkRecord, id_to_id_map* pIdentitySetMappings);
+        identity_record(agent* myAgent, chunk_record* pChunkRecord);
         ~identity_record();
 
+        void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }
         void    generate_identity_sets(condition* lhs);
         void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
         void    print_identity_explanation(chunk_record* pChunkRecord);
+
+        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL);
+        void    print_mappings();
+        void    print_instantiation_mappings(uint64_t pI_ID);
+
     private:
 
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
-        id_to_id_map*      original_ebc_mappings;
-        id_to_idset_map*   id_to_id_set_mappings;
+        id_to_id_map*           original_ebc_mappings;
+        id_to_idset_map*        id_to_id_set_mappings;
+        inst_identities_map*    instantiation_mappings;
+
+        void    print_mapping_list(identity_mapping_list* pMapList);
+        void    clear_mappings();
 
         void    print_identities_in_chunk();
         void    print_identity_mappings();

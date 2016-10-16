@@ -150,6 +150,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 
     condition* c;
     cons* grounds_to_print, *locals_to_print, *negateds_to_print;
+    uint64_t last_bt_inst_id = m_current_bt_inst_id;
+    m_current_bt_inst_id = inst->i_id;
 
     dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
 //    dprint(DT_BACKTRACE, "           RHS identities: (%y [o%u] ^%y [o%u] %y [o%u]),\n           Matched cond: %l\n",
@@ -205,6 +207,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
         #endif
         dprint(DT_BACKTRACE, "... already backtraced through.\n");
+        m_current_bt_inst_id = last_bt_inst_id;
         return;
     }
 
@@ -292,6 +295,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     free_list(thisAgent, grounds_to_print);
     free_list(thisAgent, locals_to_print);
     free_list(thisAgent, negateds_to_print);
+
+    m_current_bt_inst_id = last_bt_inst_id;
 }
 
 /* ---------------------------------------------------------------

@@ -746,7 +746,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
     grounds = NIL;
-    positive_potentials = NIL;
     locals = NIL;
 
 #ifdef BUILD_WITH_EXPLAINER
@@ -777,9 +776,8 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     trace_locals(grounds_level);
     outputManager->clear_print_test_format();
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
-        dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-        dprint(DT_BACKTRACE, "Potentials:\n%3", positive_potentials);
-        dprint(DT_BACKTRACE, "Locals:\n%3", locals);
+    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 //    while (true)
 //    {
 //        trace_locals(grounds_level);
@@ -792,9 +790,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
 //    dprint(DT_BACKTRACE, "Dependency analysis complete. Conditions compiled:\n%3", grounds);
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
-
-    free_list(thisAgent, positive_potentials);
-
 }
 
 void Explanation_Based_Chunker::deallocate_failed_chunk()

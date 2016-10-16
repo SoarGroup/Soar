@@ -40,7 +40,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     backtraced_instantiations   = new inst_set();
     backtraced_inst_records     = new inst_record_list();
 
-    identity_analysis           = NULL;
+    identity_analysis           = new identity_record(thisAgent, this);
 
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
@@ -193,9 +193,9 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         actions->push_back(new_action_record);
     }
 
-    dprint(DT_EXPLAIN, "(5) Recording identity mappings...\n");
+    dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-    identity_analysis = new identity_record(thisAgent, this, pIdentitySetMappings);
+    identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
     identity_analysis->generate_identity_sets(lhs);
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
