@@ -111,41 +111,33 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
-
     mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_DEALLOCATES].prefix =                  strdup("Delete  | ");
     mode_info[DT_DEALLOCATE_SYMBOLS].prefix =           strdup("DelSymbl| ");
     mode_info[DT_DEALLOCATES_TESTS].prefix =            strdup("DelTests| ");
     mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
-
     mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
-    mode_info[DT_CLI_LIBRARIES].prefix =                strdup("CLI Lib | ");
     mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
     mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
     mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
     mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
-
-
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
-
-    mode_info[DT_ADD_ADDITIONALS].prefix =              strdup("AddAddtn| ");
+    mode_info[DT_ADD_EXPLANATION_TRACE].prefix =        strdup("AddAddtn| ");
     mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
-    mode_info[DT_VM_MAPS].prefix =                      strdup("VM Maps | ");
     mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
-    mode_info[DT_IDENTITY_PROP].prefix =                strdup("ID Prop | ");
-    mode_info[DT_UNIFICATION].prefix =                  strdup("Unify   | ");
+    mode_info[DT_IDENTITY_GENERATION].prefix =          strdup("ID Prop | ");
+    mode_info[DT_ADD_IDENTITY_SET_MAPPING].prefix =     strdup("Unify   | ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
     mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
-    mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
@@ -160,8 +152,11 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
-    mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
+    mode_info[DT_UNUSED1].prefix =                      strdup("| ");
+    mode_info[DT_UNUSED2].prefix =                      strdup("| ");
+    mode_info[DT_UNUSED3].prefix =                      strdup("| ");
+    mode_info[DT_UNUSED4].prefix =                      strdup("| ");
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
@@ -192,24 +187,6 @@ bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, co
             symbol_matches_string(w->value, match_value));
 }
 
-bool wme_matches_bug(wme *w)
-{
-    if (wme_matches_string(w, "@P3", "default", "@D1") ||
-        wme_matches_string(w, "@P4", "default", "@D1") ||
-        wme_matches_string(w, "@D1", "name", "pantry") ||
-        wme_matches_string(w, "@P2", "1", "@P3") ||
-        wme_matches_string(w, "S1", "goal", "@G1") ||
-        wme_matches_string(w, "R6", "retrieved", "@G1") ||
-        wme_matches_string(w, "@P2", "1", "@P4"))
-    {
-        if ((wme_matches_string(w, "S1", "goal", "@G1")) || wme_matches_string(w, "R6", "retrieved", "@G1"))
-
-            dprint(DT_UNKNOWN_LEVEL, "(S1 ^ goal @G1) or (R6 ^retrieved @G1)found.\n");
-        return true;
-    }
-    return false;
-
-}
 bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
 {
 #ifdef DEBUG_CHECK_SYMBOL

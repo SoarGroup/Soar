@@ -41,7 +41,6 @@
 //#define DO_TOP_LEVEL_REF_CTS          /* Maintains refcounts on wme/pref at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
 #define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
 #define BUG_139_WORKAROUND
-#define DISCARD_CHUNK_VARNAMES true     /* Do not save variable names in RETE when learning chunks.  Saves memory. */
 
 /* -------- Compiler directives for potentially expensive statistics ---------------*/
 //#define NO_TIMING_STUFF             /* Eliminates all timing statistics. */

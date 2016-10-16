@@ -86,9 +86,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(bottom_level_only);
     interrupt_on_chunk = new soar_module::boolean_param("interrupt", setting_on(SETTING_EBC_INTERRUPT), new soar_module::f_predicate<boolean>());
     add(interrupt_on_chunk);
-    interrupt_on_failure = new soar_module::boolean_param("interrupt-on-failure", setting_on(SETTING_EBC_INTERRUPT_FAILURE), new soar_module::f_predicate<boolean>());
-    add(interrupt_on_failure);
-    interrupt_on_watched = new soar_module::boolean_param("interrupt-on-watched", setting_on(SETTING_EBC_INTERRUPT_WATCHED), new soar_module::f_predicate<boolean>());
+    interrupt_on_warning = new soar_module::boolean_param("warning-interrupt", setting_on(SETTING_EBC_INTERRUPT_WARNING), new soar_module::f_predicate<boolean>());
+    add(interrupt_on_warning);
+    interrupt_on_watched = new soar_module::boolean_param("explain-interrupt", setting_on(SETTING_EBC_INTERRUPT_WATCHED), new soar_module::f_predicate<boolean>());
     add(interrupt_on_watched);
 //    utility_mode = new soar_module::boolean_param("record-utility", setting_on(SETTING_EBC_UTILITY_MODE), new soar_module::f_predicate<boolean>());
 //    add(utility_mode);
@@ -102,9 +102,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
 //    add(mechanism_constraints);
     mechanism_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_OSK), new soar_module::f_predicate<boolean>());
     add(mechanism_OSK);
-    mechanism_repair_rhs = new soar_module::boolean_param("repair-rhs", setting_on(SETTING_EBC_REPAIR_RHS), new soar_module::f_predicate<boolean>());
+    mechanism_repair_rhs = new soar_module::boolean_param("rhs-repair", setting_on(SETTING_EBC_REPAIR_RHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_rhs);
-    mechanism_repair_lhs = new soar_module::boolean_param("repair-lhs", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
+    mechanism_repair_lhs = new soar_module::boolean_param("lhs-repair", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_lhs);
 
     mechanism_repair_justifications = new soar_module::boolean_param("repair-justifications", setting_on(SETTING_EBC_REPAIR_JUSTIFICATIONS), new soar_module::f_predicate<boolean>());
@@ -189,9 +189,9 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT] = pChangedParam->get_value();
     }
-    else if (pChangedParam == interrupt_on_failure)
+    else if (pChangedParam == interrupt_on_warning)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING] = pChangedParam->get_value();
     }
     else if (pChangedParam == interrupt_on_watched)
     {
@@ -323,7 +323,7 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     }
     bottom_level_only->set_value(pEBC_settings[SETTING_EBC_BOTTOM_ONLY] ? on : off);
     interrupt_on_chunk->set_value(pEBC_settings[SETTING_EBC_INTERRUPT] ? on : off);
-    interrupt_on_failure->set_value(pEBC_settings[SETTING_EBC_INTERRUPT_FAILURE] ? on : off);
+    interrupt_on_warning->set_value(pEBC_settings[SETTING_EBC_INTERRUPT_WARNING] ? on : off);
 //    utility_mode->set_value(pEBC_settings[SETTING_EBC_UTILITY_MODE] ? on : off);
 
 //    mechanism_identity_analysis->set_value(pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] ? on : off);

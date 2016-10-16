@@ -26,6 +26,7 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
+#include "debug.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -976,21 +977,24 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->GDS_evaluated_already = false;
     inst->prod_name = prod ? prod->name : thisAgent->symbolManager->soarSymbols.architecture_inst_symbol;
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-    dprint_header(DT_MILESTONES, PrintBefore,
-        "create_instantiation() for instance of %y (id=%u) begun.\n",
+    dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-//    if (inst->i_id == 4)
+//    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
+//        debug_trace_set(0, true);
+//        debug_trace_set(DT_DEBUG, true);
+//        debug_trace_set(DT_ADD_IDENTITY_SET_MAPPING, true);
+//        debug_trace_set(DT_UNIFY_SINGLETONS, true);
+////        debug_trace_set(DT_REPAIR, true);
 //        dprint(DT_DEBUG, "Found.\n");
+//    } else {
+//        thisAgent->outputManager->clear_output_modes();
 //    }
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,
-            "\n   In create_instantiation for instance of rule %y",
-            inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n   Creating instantiation of rule %y", inst->prod_name);
         char buf[256];
-        SNPRINTF(buf, 254, "in create_instantiation: %s",
-            inst->prod_name->to_string(true));
+        SNPRINTF(buf, 254, "Creating instantiation of rule %s", inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
     }
 
@@ -1708,10 +1712,10 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
 preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand)
 {
     slot* s;
-    wme* ap_wme;
+    wme* ap_wme, *ss_link_wme;
     instantiation* inst;
     preference* pref;
-    condition* cond;
+    condition* cond, *last_cond;
 
     /* --- find the acceptable preference wme we want to backtrace to --- */
     s = cand->slot;
@@ -1720,11 +1724,19 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
         {
             break;
         }
-    if (!ap_wme)
+    for (ss_link_wme = goal->id->impasse_wmes; ss_link_wme != NIL; ss_link_wme = ss_link_wme->next)
+    {
+        if (ss_link_wme->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
+        {
+            break;
+        }
+    }
+
+    if (!ap_wme || !ss_link_wme)
     {
         char msg[BUFFER_MSG_SIZE];
         strncpy(msg,
-                "decide.c: Internal error: couldn't find acceptable pref wme\n", BUFFER_MSG_SIZE);
+                "decide.c: Internal error: Couldn't find WMEs for architectural instantiation for impasse ^item!\n", BUFFER_MSG_SIZE);
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
@@ -1740,6 +1752,44 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
     cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
+    /* -- Fill in fake condition info -- */
+    cond->type = POSITIVE_CONDITION;
+    cond->test_for_acceptable_preference = true;
+    cond->bt.wme_ = ap_wme;
+    cond->inst = inst;
+#ifdef DO_TOP_LEVEL_REF_CTS
+    wme_add_ref(ap_wme);
+#else
+    if (goal->id->level > TOP_GOAL_LEVEL)
+    {
+        wme_add_ref(ap_wme);
+    }
+#endif
+    cond->bt.level = ap_wme->id->id->level;
+
+    last_cond = cond;
+    cond = make_condition(thisAgent);
+    cond->data.tests.id_test = make_test(thisAgent, goal, EQUALITY_TEST);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
+    cond->data.tests.attr_test = make_test(thisAgent, thisAgent->symbolManager->soarSymbols.superstate_symbol, EQUALITY_TEST);
+    cond->data.tests.value_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
+    cond->data.tests.value_test->identity = last_cond->data.tests.id_test->identity;
+    cond->next = last_cond;
+    /* -- Fill in fake condition info -- */
+    cond->type = POSITIVE_CONDITION;
+    cond->test_for_acceptable_preference = true;
+    cond->bt.wme_ = ss_link_wme;
+    cond->inst = inst;
+#ifdef DO_TOP_LEVEL_REF_CTS
+    wme_add_ref(ss_link_wme);
+#else
+    if (goal->id->level > TOP_GOAL_LEVEL)
+    {
+        wme_add_ref(ss_link_wme);
+    }
+#endif
+    cond->bt.level = goal->id->id->level;
+
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
@@ -1777,23 +1827,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
-    /* -- Fill in fake condition info -- */
-    cond->type = POSITIVE_CONDITION;
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
-
-    cond->test_for_acceptable_preference = true;
-    cond->bt.wme_ = ap_wme;
-    cond->inst = inst;
-#ifdef DO_TOP_LEVEL_REF_CTS
-    wme_add_ref(ap_wme);
-#else
-    if (inst->match_goal_level > TOP_GOAL_LEVEL)
-    {
-        wme_add_ref(ap_wme);
-    }
-#endif
-    cond->bt.level = ap_wme->id->id->level;
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);

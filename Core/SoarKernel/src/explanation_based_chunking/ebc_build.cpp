@@ -890,16 +890,21 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             thisAgent->explanationMemory->increment_stat_justification_did_not_match();
             thisAgent->explanationMemory->cancel_chunk_record();
             excise_production(thisAgent, m_prod, false);
-            if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+            if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Chunking failure:  Justification did not match working memory.";
+                thisAgent->reason_for_stopping = "Warning:  Justification did not match working memory.  Potential issue.";
             }
         } else {
             /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.*/
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
             assert(m_prod);
             thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+            if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Warning:  Chunk did not match working memory.  Potential issue.";
+            }
         }
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
@@ -1006,7 +1011,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
-        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Rule learned had no conditions.";
@@ -1021,7 +1026,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (variablize && !m_reliable)
     {
         variablize = false;
-        if (ebc_settings[SETTING_EBC_INTERRUPT_FAILURE] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
+        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";

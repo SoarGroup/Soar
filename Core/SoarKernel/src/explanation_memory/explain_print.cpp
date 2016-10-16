@@ -466,14 +466,17 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "===========================================================\n");
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Had LHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Had RHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Rule learned did not match WM              %-%s\n", (current_discussed_chunk->stats.did_not_match_wm ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Repaired unconnected identifiers           %-%s\n", ((current_discussed_chunk->stats.num_grounding_conditions_added > 0) ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "- LHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "- RHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
     if (current_discussed_chunk->stats.num_grounding_conditions_added > 0)
     {
-        outputManager->printa_sf(thisAgent, "Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
+        outputManager->printa_sf(thisAgent, "- Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
+    } else {
+        outputManager->printa_sf(thisAgent, "- Tried to repair but could not        %-%s\n", (current_discussed_chunk->stats.repair_failed ? "Yes" : "No"));
+        outputManager->printa_sf(thisAgent, "- Reverted to justification            %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
     }
-    outputManager->printa_sf(thisAgent, "Tried to repair but could not        %-%s\n", (current_discussed_chunk->stats.repair_failed ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Reverted to justification            %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "\n===========================================================\n");
     outputManager->printa_sf(thisAgent, "                      Work Performed\n");
     outputManager->printa_sf(thisAgent, "===========================================================\n");
@@ -500,7 +503,7 @@ void Explanation_Memory::print_chunk_list(short pNumToPrint)
     }
     if (pNumToPrint && ((*chunks).size() > pNumToPrint))
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d chunks.  Type 'explain --list' to see the other %d chunks.\n", pNumToPrint, ( (*chunks).size() - pNumToPrint));
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d chunks.  Type 'explain list' to see the other %d chunks.\n", pNumToPrint, ( (*chunks).size() - pNumToPrint));
     }
 }
 
@@ -557,7 +560,7 @@ void Explanation_Memory::print_rules_watched(short pNumToPrint)
     }
     if (lThereWasMore)
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain --watch' to see the other %d rules.\n", pNumToPrint, lNumLeftToPrint);
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain watch' to see the other %d rules.\n", pNumToPrint, lNumLeftToPrint);
     }
 }
 

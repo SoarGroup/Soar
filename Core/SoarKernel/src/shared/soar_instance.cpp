@@ -246,7 +246,7 @@ sml::AgentSML* Soar_Instance::Get_Agent_Info(char* pAgentName)
 
 void Soar_Instance::CLI_Debug_Print(const char* text)
 {
-    this->m_Output_Manager->debug_print(DT_CLI_LIBRARIES, text);
+    this->m_Output_Manager->debug_print(DT_DEBUG, text);
 }
 
 void configure_for_unit_tests()

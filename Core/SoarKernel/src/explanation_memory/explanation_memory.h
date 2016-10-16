@@ -89,8 +89,8 @@ class Explanation_Memory
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
         void increment_stat_duplicates(production* duplicate_rule);
-        void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; };
-        void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; };
+        void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true;};
+        void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
