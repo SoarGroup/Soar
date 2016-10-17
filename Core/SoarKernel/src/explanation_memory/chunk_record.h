@@ -35,6 +35,7 @@ typedef struct chunk_stats_struct {
 class chunk_record
 {
         friend class Explanation_Memory;
+        friend class instantiation_record;
 
     public:
         chunk_record(agent* myAgent, uint64_t pChunkID);

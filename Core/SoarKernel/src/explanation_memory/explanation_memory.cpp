@@ -29,6 +29,8 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
     settings = new Explainer_Parameters(thisAgent);
 
+    current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
     initialize_counters();
     m_enabled = false;
     m_justifications_enabled = false;
@@ -49,9 +51,6 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
 void Explanation_Memory::initialize_counters()
 {
-
-    current_discussed_chunk = NULL;
-
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;

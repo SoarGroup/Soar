@@ -52,7 +52,7 @@ class identity_record
         id_to_idset_map*        id_to_id_set_mappings;
         inst_identities_map*    instantiation_mappings;
 
-        void    print_mapping_list(identity_mapping_list* pMapList);
+        void    print_mapping_list(identity_mapping_list* pMapList, bool printHeader = false);
         void    clear_mappings();
 
         void    print_identities_in_chunk();

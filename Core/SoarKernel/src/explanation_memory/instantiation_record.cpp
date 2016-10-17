@@ -451,6 +451,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         }
         outputManager->printa(thisAgent, "   -->\n");
         thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
+        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(instantiationID);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
         }

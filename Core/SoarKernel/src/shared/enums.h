@@ -140,11 +140,11 @@ enum ChunkingSettings {
  };
 
 enum IDSet_Mapping_Type {
-    IDS_direct,
-    IDS_literlize,
-    IDS_direct_mapping_exists,
-    IDS_literalization_exists,
-    IDS_literalize_mapping_exists
+    IDS_no_existing_mapping,
+    IDS_transitive,
+    IDS_literalize_mappings_exist,
+    IDS_unified_with_existing_mappings,
+    IDS_unified_with_literalized_identity
 };
 
 enum BTSourceType {
