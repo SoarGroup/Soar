@@ -291,22 +291,46 @@ std::string get_stacktrace(const char* prefix)
 }
 #endif
 
+void debug_trace_off()
+{
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+    Output_Manager::Get_OM().set_output_params_global(false);
+    Output_Manager::Get_OM().clear_output_modes();
+
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (thisAgent)
+    {
+        thisAgent->output_settings->set_output_params_agent(false);
+    }
+}
+
+void debug_trace_on()
+{
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+    Output_Manager::Get_OM().set_output_params_global(true);
+    Output_Manager::Get_OM().set_output_mode(DT_DEBUG, true);
+
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (thisAgent)
+    {
+        thisAgent->output_settings->set_output_params_agent(true);
+    }
+}
+
 void debug_trace_set(int dt_num, bool pEnable)
 {
-    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-    if (!thisAgent || Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
-    {
-        return;
-    }
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
     if (dt_num < num_trace_modes)
     {
         if (dt_num == 0)
         {
-             Output_Manager::Get_OM().set_output_params_global(pEnable);
-             thisAgent->output_settings->set_output_params_agent(pEnable);
+
              if (pEnable)
              {
+                 debug_trace_on();
                  dprint(DT_DEBUG, "...testing debug trace output.\n");
+             } else {
+                 debug_trace_off();
              }
              return;
         } else {

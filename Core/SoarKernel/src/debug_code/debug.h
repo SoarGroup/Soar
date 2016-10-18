@@ -27,6 +27,8 @@ extern void debug_destroy_for_refcount(agent* delete_agent);
 
 extern void debug_test(int type = 1);
 extern void debug_trace_set(int dt_num, bool pEnable);
+extern void debug_trace_on();
+extern void debug_trace_off();
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 extern bool check_symbol(agent* thisAgent, Symbol* sym, const char* message = "ChkSym | ");
