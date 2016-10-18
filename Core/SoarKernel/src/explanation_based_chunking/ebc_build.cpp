@@ -973,6 +973,9 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         return;
     }
 
+    /* --- Assign a new instantiation ID --- */
+    m_chunk_new_i_id = get_new_inst_id();
+
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     #endif
@@ -989,8 +992,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* Determine which WMEs in the topstate were relevent to problem-solving */
     perform_dependency_analysis();
 
-    /* --- Assign a new instantiation ID --- */
-    m_chunk_new_i_id = get_new_inst_id();
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
     #endif

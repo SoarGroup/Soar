@@ -144,7 +144,8 @@ enum IDSet_Mapping_Type {
     IDS_transitive,
     IDS_literalize_mappings_exist,
     IDS_unified_with_existing_mappings,
-    IDS_unified_with_literalized_identity
+    IDS_unified_with_literalized_identity,
+    IDS_base_instantiation
 };
 
 enum BTSourceType {

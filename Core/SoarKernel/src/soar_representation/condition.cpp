@@ -332,13 +332,13 @@ int condition_count(condition* pCond)
     return cnt;
 }
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
             pTest = pTest->eq_test;
     }
-    if (pInstantiatedTest->type == CONJUNCTIVE_TEST)
+    if (pInstantiatedTest && pInstantiatedTest->type == CONJUNCTIVE_TEST)
     {
         pInstantiatedTest = pInstantiatedTest->eq_test;
     }
@@ -351,11 +351,13 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                 if (pID_Set_Map)
                 {
                     identity_set_info* lNewIDSet = new identity_set_info();
-                    if (pTest->data.referent->is_variable())
+                    if (pTest->identity)
                     {
                         lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
                         lNewIDSet->rule_variable = pTest->data.referent;
                         thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
+                        thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity_set_ID, lNewIDSet->rule_variable, lNewIDSet->rule_variable);
+
                     } else {
                         lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
                         lNewIDSet->rule_variable = NULL;
@@ -367,21 +369,21 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
+void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {
         if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pID_Set, pID_Set_Map);
+            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
             thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
             test id_test_without_goal_test = NULL;
             bool removed_goal_test, removed_impasse_test;
             id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
-            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart->data.tests.id_test, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart->data.tests.attr_test, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart->data.tests.value_test, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);
             deallocate_test(thisAgent, id_test_without_goal_test);
         }
     }

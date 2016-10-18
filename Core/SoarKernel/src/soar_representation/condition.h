@@ -117,7 +117,7 @@ int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);
 bool        canonical_cond_greater(condition* c1, condition* c2);
 
-void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
-void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
+void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
+void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
 
 #endif

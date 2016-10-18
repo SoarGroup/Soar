@@ -56,7 +56,7 @@ class chunk_record
 
         Symbol*                 name;
         uint64_t                chunkID;
-        instantiation_record*   chunkInstantiation;
+        instantiation*          chunkInstantiation;
         production*             original_production;
         production_record*      excised_production;
         uint64_t                time_formed;

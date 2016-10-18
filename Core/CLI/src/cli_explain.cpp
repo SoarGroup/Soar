@@ -95,6 +95,30 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
             }
             return true;
         }
+        else if (my_param == thisAgent->explanationMemory->settings->only_print_chunk_identities)
+        {
+            if (!pArg2)
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "The explainer is currently showing identity analysis %s.\n",
+                    thisAgent->explanationMemory->settings->only_print_chunk_identities->get_value() ?
+                        "only for identities that appear in the chunk" : "for all identities involved in problem-solving");
+
+            } else {
+                if (!my_param->validate_string(pArg2->c_str()) || (!my_param->set_string(pArg2->c_str())))
+                {
+                    return SetError("Invalid argument for explain command. Use 'explain ?' to see a list of valid sub-commands and settings.");
+                }
+                if (thisAgent->explanationMemory->settings->only_print_chunk_identities->get_value())
+                {
+                    thisAgent->explanationMemory->set_justifications_enabled(true);
+                    thisAgent->outputManager->printa_sf(thisAgent, "Will only print identities that appear in the chunk.\n");
+                } else {
+                    thisAgent->explanationMemory->set_justifications_enabled(false);
+                    thisAgent->outputManager->printa_sf(thisAgent, "Will print all identities involved in problem-solving.\n");
+                }
+            }
+            return true;
+        }
         else if (my_param == thisAgent->explanationMemory->settings->list_all)
         {
             thisAgent->explanationMemory->print_all_chunks();

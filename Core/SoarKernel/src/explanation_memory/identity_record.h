@@ -36,7 +36,8 @@ class identity_record
         ~identity_record();
 
         void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }
-        void    generate_identity_sets(condition* lhs);
+        void    generate_identity_sets(uint64_t pInstID, condition* lhs);
+        void    map_originals_to_sets();
         void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
         void    print_identity_explanation(chunk_record* pChunkRecord);
 

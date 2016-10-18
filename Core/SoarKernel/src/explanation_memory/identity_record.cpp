@@ -45,18 +45,16 @@ identity_record::~identity_record()
 
 
 //#include "output_manager.h"
-void identity_record::generate_identity_sets(condition* lhs)
+void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
 {
-    dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
-    condition_record* l_cond;
-    instantiation_record* l_inst;
-    inst_record_list* l_path;
-
     /* Generate identity sets and add mappings for all conditions in chunk */
-    add_identities_in_condition_list(thisAgent, lhs, identities_in_chunk, id_to_id_set_mappings);
-    //    print_identities_in_chunk();
-    //    print_identity_mappings();
-    //    print_original_ebc_mappings();
+
+    dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
+    add_identities_in_condition_list(thisAgent, lhs, pInstID, identities_in_chunk, id_to_id_set_mappings);
+}
+
+void identity_record::map_originals_to_sets()
+{
 
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     id_to_id_map::iterator iter;
@@ -69,8 +67,8 @@ void identity_record::generate_identity_sets(condition* lhs)
         if (iter->second != NULL_IDENTITY_SET)
         {
             lMapping = iter->first;
-            lIter = id_to_id_set_mappings->find(iter->first);
-            assert(lIter == id_to_id_set_mappings->end());
+//            lIter = id_to_id_set_mappings->find(iter->first);
+//            assert(lIter == id_to_id_set_mappings->end());
 
             lIter = id_to_id_set_mappings->find(iter->second);
             if (lIter != id_to_id_set_mappings->end())
@@ -221,9 +219,14 @@ void identity_record::print_mappings()
     bool printHeader = true;
     for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
     {
-        outputManager->printa_sf(thisAgent, "Identity set mappings for instantiation %u:\n", it->first);
-        print_mapping_list(it->second, printHeader);
-        printHeader = false;
+        if (it->second->size() == 0)
+        {
+            outputManager->printa_sf(thisAgent, "No identity set mappings for instantiation %u.\n", it->first);
+        } else {
+            outputManager->printa_sf(thisAgent, "Instantiation %u:\n", it->first);
+            print_mapping_list(it->second, printHeader);
+            printHeader = false;
+        }
     }
 }
 
@@ -231,6 +234,7 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
 {
     Output_Manager* outputManager = thisAgent->outputManager;
     identity_mapping* lMapping;
+    bool printOnlyChunkIdentities = thisAgent->explanationMemory->settings->only_print_chunk_identities->get_value();
 
     outputManager->reset_column_indents();
     outputManager->set_column_indent(1, 3);  // Variablization identity mapping
@@ -250,9 +254,12 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
     for (auto it = pMapList->begin(); it != pMapList->end(); ++it)
     {
         lMapping = *it;
+        auto lFindIter = id_to_id_set_mappings->find(lMapping->from_identity);
+
+        if (printOnlyChunkIdentities && !lFindIter->second->rule_variable) continue;
+
         outputManager->printa_sf(thisAgent, "%-%u -> %u", lMapping->from_identity, lMapping->to_identity);
 
-        auto lFindIter = id_to_id_set_mappings->find(lMapping->from_identity);
         if (lFindIter != id_to_id_set_mappings->end())
         {
             if (lFindIter->second->identity_set_ID)
@@ -265,29 +272,31 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             {
                 outputManager->printa_sf(thisAgent, "%-| %y", lFindIter->second->rule_variable);
             } else {
-                outputManager->printa_sf(thisAgent, "%-|", lFindIter->second->rule_variable);
+                outputManager->printa_sf(thisAgent, "%-|");
             }
         }
-        if (lMapping->from_symbol)
-        {
+        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
             outputManager->printa_sf(thisAgent, "%-| %y -> %y", lMapping->from_symbol, lMapping->to_symbol);
-        }
+        #endif
         switch (lMapping->mappingType)
         {
             case IDS_no_existing_mapping:
-                outputManager->printa_sf(thisAgent, "%-| First identity set mapping\n");
+                outputManager->printa_sf(thisAgent, "%-| New identity set\n");
                 break;
             case IDS_transitive:
-                outputManager->printa_sf(thisAgent, "%-| Transitive mapping\n");
+                outputManager->printa_sf(thisAgent, "%-| Identity set merge\n");
                 break;
             case IDS_literalize_mappings_exist:
                 outputManager->printa_sf(thisAgent, "%-| Literalized an existing identity set\n");
                 break;
             case IDS_unified_with_existing_mappings:
-                outputManager->printa_sf(thisAgent, "%-| Unified with existing identity set\n");
+                outputManager->printa_sf(thisAgent, "%-| Added to identity set\n");
                 break;
             case IDS_unified_with_literalized_identity:
-                outputManager->printa_sf(thisAgent, "%-| Unified with identity set mapped to null identity set\n");
+                outputManager->printa_sf(thisAgent, "%-| Added to identity set already literalized\n");
+                break;
+            case IDS_base_instantiation:
+                outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
                 break;
         }
     }
@@ -298,9 +307,9 @@ void identity_record::print_instantiation_mappings(uint64_t pI_ID)
     auto lIterInst = instantiation_mappings->find(pI_ID);
     if (lIterInst == instantiation_mappings->end())
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Could not find identity set mappings for instantiation %u.\n", pI_ID);
+        thisAgent->outputManager->printa_sf(thisAgent, "No identity set mappings for instantiation %u.\n", pI_ID);
     } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n-----------------------------\nIdentity Set Mappings History\n-----------------------------\n", pI_ID);
+        thisAgent->outputManager->printa_sf(thisAgent, "Identity Set Mappings:\n\n", pI_ID);
         print_mapping_list(lIterInst->second, true);
     }
 }
