@@ -2,8 +2,8 @@
 #define STL_TYPEDEFS_H_
 
 #include "kernel.h"
-#include "triples.h"
 #include "mempool_allocator.h"
+#include "stl_structs.h"
 
 #include <map>
 #include <string>
@@ -13,17 +13,6 @@
 #include <functional>
 #include <assert.h>
 #include <cmath>
-
-class Path_to_Goal_State;
-class condition_record;
-class action_record;
-class instantiation_record;
-typedef struct constraint_struct constraint;
-typedef struct attachment_struct attachment_point;
-typedef struct sym_identity_struct sym_identity_info;
-typedef struct aug_struct augmentation;
-typedef struct symbol_with_match_struct symbol_with_match;
-typedef struct identity_mapping_struct identity_mapping;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 

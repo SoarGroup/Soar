@@ -11,12 +11,6 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-typedef struct aug_struct
-{
-        Symbol* attr;
-        Symbol* value;
-} augmentation;
-
 class WM_Visualization_Map
 {
     public:

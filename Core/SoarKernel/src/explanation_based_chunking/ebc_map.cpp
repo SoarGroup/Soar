@@ -54,11 +54,12 @@ void Explanation_Based_Chunker::clear_variablization_maps()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_to_var_map map...\n");
     /* -- Clear grounding_id->variablization map -- */
-    for (id_to_sym_map::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
     {
-        thisAgent->symbolManager->symbol_remove_ref(&it->second);
+        thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
+        delete it->second;
     }
-    o_id_to_var_map->clear();
+    identity_to_var_map->clear();
 }
 
 

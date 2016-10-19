@@ -74,13 +74,13 @@
 
     #define dprint_variablization_table(mode) thisAgent->explanationBasedChunker->print_variablization_table (mode)
     #define dprint_tables(mode) thisAgent->explanationBasedChunker->print_tables (mode)
-    #define dprint_o_id_tables(mode) thisAgent->explanationBasedChunker->print_o_id_tables (mode)
+    #define dprint_o_id_tables(mode) thisAgent->explanationBasedChunker->print_identity_tables (mode)
     #define dprint_attachment_points(mode) thisAgent->explanationBasedChunker->print_attachment_points (mode)
     #define dprint_constraints(mode) thisAgent->explanationBasedChunker->print_constraints (mode)
     #define dprint_merge_map(mode) thisAgent->explanationBasedChunker->print_merge_map (mode)
-    #define dprint_ovar_to_o_id_map(mode) thisAgent->explanationBasedChunker->print_ovar_to_o_id_map (mode)
-    #define dprint_o_id_substitution_map(mode) thisAgent->explanationBasedChunker->print_o_id_substitution_map (mode)
-    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->explanationBasedChunker->print_o_id_to_ovar_debug_map (mode)
+    #define dprint_ovar_to_o_id_map(mode) thisAgent->explanationBasedChunker->print_instantiation_identities_map (mode)
+    #define dprint_o_id_substitution_map(mode) thisAgent->explanationBasedChunker->print_unification_map (mode)
+    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->explanationBasedChunker->print_identity_to_var_debug_map (mode)
 
 #endif
 

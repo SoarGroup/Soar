@@ -4,17 +4,6 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-typedef struct symbol_with_match_struct {
-        Symbol*     sym;
-        Symbol*     matched_sym;
-        uint64_t    identity;
-        symbol_with_match_struct() {
-            sym = NULL;
-            matched_sym = NULL;
-            identity = 0;
-        }
-} symbol_with_match;
-
 class Path_to_Goal_State
 {
     public:

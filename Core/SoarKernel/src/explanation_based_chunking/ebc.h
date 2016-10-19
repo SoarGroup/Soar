@@ -81,13 +81,13 @@ class Explanation_Based_Chunker
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
         void print_tables(TraceMode mode);
-        void print_o_id_tables(TraceMode mode);
+        void print_identity_tables(TraceMode mode);
         void print_attachment_points(TraceMode mode);
         void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
-        void print_ovar_to_o_id_map(TraceMode mode);
-        void print_o_id_substitution_map(TraceMode mode);
-        void print_o_id_to_ovar_debug_map(TraceMode mode);
+        void print_instantiation_identities_map(TraceMode mode);
+        void print_unification_map(TraceMode mode);
+        void print_identity_to_var_debug_map(TraceMode mode);
 
         void print_chunking_summary();
         void print_chunking_settings();
@@ -159,7 +159,7 @@ class Explanation_Based_Chunker
          *    them is temporary and cleared after use. -- */
 
         inst_to_id_map*            instantiation_identities;
-        id_to_sym_map*             o_id_to_var_map;
+        id_to_sym_id_map*          identity_to_var_map;
         id_to_sym_map*             id_to_rule_sym_debug_map;
 
         id_to_id_map*              unification_map;
@@ -248,13 +248,12 @@ class Explanation_Based_Chunker
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
-        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
         void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
-        Symbol* get_variablization(uint64_t index_id);
+        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable);
+        sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         /* Condition polishing methods */

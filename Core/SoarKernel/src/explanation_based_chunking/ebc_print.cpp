@@ -41,12 +41,12 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
     }
 }
 
-void Explanation_Based_Chunker::print_o_id_tables(TraceMode mode)
+void Explanation_Based_Chunker::print_identity_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
-    print_ovar_to_o_id_map(mode);
-    print_o_id_substitution_map(mode);
-    print_o_id_to_ovar_debug_map(mode);
+    print_instantiation_identities_map(mode);
+    print_unification_map(mode);
+    print_identity_to_var_debug_map(mode);
 
 }
 
@@ -81,7 +81,7 @@ void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
+void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -109,7 +109,7 @@ void Explanation_Based_Chunker::print_ovar_to_o_id_map(TraceMode mode)
 }
 
 
-void Explanation_Based_Chunker::print_o_id_substitution_map(TraceMode mode)
+void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -133,7 +133,7 @@ void Explanation_Based_Chunker::print_o_id_substitution_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Explanation_Based_Chunker::print_o_id_to_ovar_debug_map(TraceMode mode)
+void Explanation_Based_Chunker::print_identity_to_var_debug_map(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -196,13 +196,13 @@ void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "== Identity Set -> Variablization ==\n");
-    if (o_id_to_var_map->size() == 0)
+    if (identity_to_var_map->size() == 0)
     {
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
-    for (id_to_sym_map::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
+    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
     {
-        outputManager->printa_sf(thisAgent, "o%u -> %y\n", it->first, it->second);
+        outputManager->printa_sf(thisAgent, "%u -> %y (%u)\n", it->first, it->second->variable_sym, it->second->identity);
     }
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
@@ -211,7 +211,7 @@ void Explanation_Based_Chunker::print_tables(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     print_variablization_table(mode);
-    print_o_id_tables(mode);
+    print_identity_tables(mode);
 }
 
 void Explanation_Based_Chunker::print_chunking_summary()

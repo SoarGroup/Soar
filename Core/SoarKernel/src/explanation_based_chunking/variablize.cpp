@@ -20,15 +20,15 @@
 
 #include <assert.h>
 
-Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
+sym_identity_info* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
     if (index_id == 0)
     {
         return NULL;
     }
 
-    std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
-    if (iter != (*o_id_to_var_map).end())
+    auto iter = (*identity_to_var_map).find(index_id);
+    if (iter != (*identity_to_var_map).end())
     {
         return iter->second;
     }
@@ -40,13 +40,15 @@ Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     }
 }
 
-void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
-        Symbol* variable,
-        uint64_t pIdentity)
+sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable)
 {
-    assert(instantiated_sym && variable && pIdentity);
-    (*o_id_to_var_map)[pIdentity] = variable;
+    assert(variable && pIdentity);
+    sym_identity_info* lVarInfo = new sym_identity_info();
+    lVarInfo->variable_sym = variable;
+    lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
     thisAgent->symbolManager->symbol_add_ref(variable);
+    (*identity_to_var_map)[pIdentity] = lVarInfo;
+    return lVarInfo;
 }
 
 /* ============================================================================
@@ -64,62 +66,12 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
  *           For RL rules, identity may be NULL
  *
  * ========================================================================= */
-void Explanation_Based_Chunker::variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity)
-{
-    char prefix[2];
-    Symbol* var;
-    Symbol* var_info;
-
-    dprint(DT_LHS_VARIABLIZATION, "variablize_lhs_symbol variablizing %y(o%u)...\n", (*sym), pIdentity);
-
-    var_info = get_variablization(pIdentity);
-    if (var_info)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&(*sym));
-        *sym = var_info;
-        thisAgent->symbolManager->symbol_add_ref(var_info);
-        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y(%y)\n", (*sym), var_info);
-
-        return;
-
-    } else {
-
-        /* Create a new variable.  If constant is being variablized just used
-         * 'c' instead of first letter of id name.  We now don't use 'o' for
-         * non-operators and don't use 's' for non-states.  That makes things
-         * clearer in chunks because of standard naming conventions. --- */
-        if ((*sym)->is_sti())
-        {
-            char prefix_char = static_cast<char>(tolower((*sym)->id->name_letter));
-            if (((prefix_char == 's') || (prefix_char == 'S')) && !(*sym)->id->isa_goal)
-            {
-                prefix[0] = 'c';
-            } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !(*sym)->id->isa_operator) {
-                prefix[0] = 'c';
-            } else {
-                prefix[0] = prefix_char;
-            }
-        }
-        else
-        {
-            prefix[0] = 'c';
-        }
-        prefix[1] = 0;
-        var = thisAgent->symbolManager->generate_new_variable(prefix);
-
-        store_variablization((*sym), var, pIdentity);
-
-        thisAgent->symbolManager->symbol_remove_ref(&*sym);
-        *sym = var;
-        dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y\n", (*sym));
-    }
-}
 
 void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
 {
     char prefix[2];
     Symbol* var;
-    Symbol* found_variablization = NULL;
+    sym_identity_info* found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -148,7 +100,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
     {
         if (rs->referent->is_sti())
         {
-            /* I think this can only occur now when trying to variablize a locally promoted STI. */
+            /* I think this can only occur now when trying to variablize a locally promoted STI.*/
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
             return;
         }
@@ -161,19 +113,20 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         prefix[1] = 0;
         var = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
-        store_variablization(rs->referent, var, rs->o_id);
-        found_variablization = var;
+
+        found_variablization = store_variablization(rs->o_id, var);
     }
     if (found_variablization)
     {
-        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization);
+        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization->variable_sym);
         if (pShouldCachedMatchValue)
         {
-            add_matched_sym_for_rhs_var(found_variablization, rs->referent);
+            add_matched_sym_for_rhs_var(found_variablization->variable_sym, rs->referent);
         }
         thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
-        rs->referent = found_variablization;
-        thisAgent->symbolManager->symbol_add_ref(found_variablization);
+        rs->referent = found_variablization->variable_sym;
+        rs->o_id = found_variablization->identity;
+        thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
     }
     else
     {
@@ -193,44 +146,102 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
  *
  * ========================================================================= */
 
-void Explanation_Based_Chunker::variablize_equality_tests(test t)
+void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 {
     cons* c;
     test tt;
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", t);
-    assert(t);
+    char prefix[2];
+    Symbol* lNewVariable;
+    Symbol* lOldSym;
+    sym_identity_info* var_info;
 
-    if (t->type == CONJUNCTIVE_TEST)
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
+    assert(pTest && pTest->eq_test);
+    
+    if (pTest->eq_test->identity && !pTest->eq_test->data.referent->is_variable())
     {
+        dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+//        variablize_lhs_symbol(&(pTest->data.referent), pTest->identity);
 
-        dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+        var_info = get_variablization(pTest->eq_test->identity);
+        if (var_info)
         {
-            tt = reinterpret_cast<test>(c->first);
-            if (tt->type == EQUALITY_TEST)
+            thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
+            pTest->eq_test->data.referent = var_info->variable_sym;
+            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+            pTest->eq_test->identity = var_info->identity;
+            dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
+        } else {
+
+            /* Create a new variable.  If constant is being variablized just used
+             * 'c' instead of first letter of id name.  We now don'pTest use 'o' for
+             * non-operators and don't use 's' for non-states.  That makes things
+             * clearer in chunks because of standard naming conventions. --- */
+            lOldSym = pTest->eq_test->data.referent;
+            if (lOldSym->is_sti())
             {
-                dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %t\n", tt);
-                if (tt->identity && !tt->data.referent->is_variable())
+                char prefix_char = static_cast<char>(tolower(lOldSym->id->name_letter));
+                if (((prefix_char == 's') || (prefix_char == 'S')) && !lOldSym->id->isa_goal)
                 {
-                    variablize_lhs_symbol(&(tt->data.referent), tt->identity);
+                    prefix[0] = 'c';
+                } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lOldSym->id->isa_operator) {
+                    prefix[0] = 'c';
+                } else {
+                    prefix[0] = prefix_char;
                 }
-                dprint(DT_LHS_VARIABLIZATION, "Setting conjunctive test %t's eq_test to: %t\n", t, tt);
             }
-        }
+            else
+            {
+                prefix[0] = 'c';
+            }
+            prefix[1] = 0;
+            lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
 
-        dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
-        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
-    }
-    else
-    {
-        if ((t->type == EQUALITY_TEST) &&
-            (t->identity && !t->data.referent->is_variable()))
-        {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t's eq_test is: %t\n", t, t->eq_test);
-            variablize_lhs_symbol(&(t->data.referent), t->identity);
-            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's new eq_test is: %t\n", t, t->eq_test);
+            var_info = store_variablization(pTest->eq_test->identity, lNewVariable);
+
+            thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
+            pTest->eq_test->data.referent = var_info->variable_sym;
+            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+            pTest->eq_test->identity = var_info->identity;
+            dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
         }
+        dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+    } else {
+        /* Literalized identity, so set identity in chunk to 0 */
+        pTest->eq_test->identity = NULL_IDENTITY_SET;
     }
+
+//    if (t->type == CONJUNCTIVE_TEST)
+//    {
+//
+//        dprint(DT_LHS_VARIABLIZATION, "Iterating through conjunction list.\n");
+//        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+//        {
+//            tt = reinterpret_cast<test>(c->first);
+//            if (tt->type == EQUALITY_TEST)
+//            {
+//                dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test: %pTest\n", tt);
+//                if (tt->identity && !tt->data.referent->is_variable())
+//                {
+//                    variablize_lhs_symbol(&(tt->data.referent), tt->identity);
+//                }
+//                dprint(DT_LHS_VARIABLIZATION, "Setting conjunctive test %pTest's eq_test to: %pTest\n", pTest, tt);
+//            }
+//        }
+//
+//        dprint(DT_LHS_VARIABLIZATION, "Done iterating through conjunction list.\n");
+//        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
+//    }
+//    else
+//    {
+//        if ((pTest->type == EQUALITY_TEST) &&
+//            (t->identity && !pTest->data.referent->is_variable()))
+//        {
+//            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %pTest's eq_test is: %pTest\n", pTest, pTest->eq_test);
+//            variablize_lhs_symbol(&(pTest->data.referent), pTest->identity);
+//            dprint(DT_LHS_VARIABLIZATION, "Equality test %t's new eq_test is: %pTest\n", pTest, pTest->eq_test);
+//        }
+//    }
 }
 
 /* ============================================================================
@@ -244,9 +255,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test t)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    Symbol* found_variablization = NULL;
+    sym_identity_info* found_variablization = NULL;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t\n", t);
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity);
 
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
     {
@@ -254,23 +265,27 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-        found_variablization =  get_variablization(t->identity);
+    found_variablization =  get_variablization(t->identity);
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
         thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-        t->data.referent = found_variablization;
-        thisAgent->symbolManager->symbol_add_ref(found_variablization);
+        t->data.referent = found_variablization->variable_sym;
+        thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
+        t->identity = found_variablization->identity;
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", found_variablization->variable_sym, found_variablization->identity);
     }
     else
     {
+        /* Could be a literalized identity, so set identity in chunk to 0 */
+        t->identity = NULL_IDENTITY_SET;
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
-            "Ungrounded STI in in chunk.  Will delete during consolidation phase.\n" :
+            "Ungrounded STI in in relational test.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
         return false;
     }
 
-    dprint(DT_LHS_VARIABLIZATION, "Result: %t\n", t);
+    dprint(DT_LHS_VARIABLIZATION, "Result: %t [%u]\n", t, t->identity);
     dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 
     return true;

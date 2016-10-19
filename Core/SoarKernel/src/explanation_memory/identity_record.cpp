@@ -32,7 +32,7 @@ identity_record::~identity_record()
     {
         for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
         {
-            if (it->second->rule_variable) thisAgent->symbolManager->symbol_remove_ref(&it->second->rule_variable);
+            if (it->second->variable_sym) thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
             delete it->second;
         }
         delete id_to_id_set_mappings;
@@ -70,26 +70,26 @@ void identity_record::map_originals_to_sets()
             if (lIter != id_to_id_set_mappings->end())
             {
                 /* Identity points to a current identity set */
-                lNewIDSet->identity_set_ID = lIter->second->identity_set_ID;
-                lNewIDSet->rule_variable = lIter->second->rule_variable;
-                if (lNewIDSet->rule_variable) thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
+                lNewIDSet->identity = lIter->second->identity;
+                lNewIDSet->variable_sym = lIter->second->variable_sym;
+                if (lNewIDSet->variable_sym) thisAgent->symbolManager->symbol_add_ref(lNewIDSet->variable_sym);
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
             } else {
                 /* Identity points to an identity not in the chunk.  Create a new identity
                  * set and assign both identities to it. */
                 lNewIdSetID = thisAgent->explanationMemory->get_identity_set_counter();
-                lNewIDSet->identity_set_ID = lNewIdSetID;
-                lNewIDSet->rule_variable = NULL;
+                lNewIDSet->identity = lNewIdSetID;
+                lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
                 lNewIDSet = new sym_identity_info();
-                lNewIDSet->identity_set_ID = lNewIdSetID;
-                lNewIDSet->rule_variable = NULL;
+                lNewIDSet->identity = lNewIdSetID;
+                lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
             }
         } else {
             /* Identity maps to NULL identity set */
-            lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
-            lNewIDSet->rule_variable = NULL;
+            lNewIDSet->identity = NULL_IDENTITY_SET;
+            lNewIDSet->variable_sym = NULL;
             id_to_id_set_mappings->insert({iter->first, lNewIDSet});
         }
     }
@@ -172,7 +172,7 @@ void identity_record::print_mappings()
         "The following variable identities map to the null identity set and will not be\ngeneralized:");
     for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
     {
-        if (!it->second->identity_set_ID)
+        if (!it->second->identity)
         {
             thisAgent->outputManager->printa_sf(thisAgent, "%u ", it->first);
         }
@@ -226,21 +226,21 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         lMapping = *it;
         auto lFindIter = id_to_id_set_mappings->find(lMapping->from_identity);
 
-        if (printOnlyChunkIdentities && !lFindIter->second->rule_variable) continue;
+        if (printOnlyChunkIdentities && !lFindIter->second->variable_sym) continue;
 
         outputManager->printa_sf(thisAgent, "%-%u -> %u", lMapping->from_identity, lMapping->to_identity);
 
         if (lFindIter != id_to_id_set_mappings->end())
         {
-            if (lFindIter->second->identity_set_ID)
+            if (lFindIter->second->identity)
             {
-                outputManager->printa_sf(thisAgent, "%-| IdSet %u", lFindIter->second->identity_set_ID);
+                outputManager->printa_sf(thisAgent, "%-| IdSet %u", lFindIter->second->identity);
             } else {
                 outputManager->printa_sf(thisAgent, "%-| Null Set");
             }
-            if (lFindIter->second->rule_variable)
+            if (lFindIter->second->variable_sym)
             {
-                outputManager->printa_sf(thisAgent, "%-| %y", lFindIter->second->rule_variable);
+                outputManager->printa_sf(thisAgent, "%-| %y", lFindIter->second->variable_sym);
             } else {
                 outputManager->printa_sf(thisAgent, "%-|");
             }

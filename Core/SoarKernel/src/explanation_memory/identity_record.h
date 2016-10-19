@@ -14,19 +14,6 @@
 class chunk_record;
 class instantiation_record;
 
-typedef struct sym_identity_struct {
-        uint64_t    identity_set_ID;
-        Symbol*     rule_variable;
-} sym_identity_info;
-
-typedef struct identity_mapping_struct {
-        uint64_t            from_identity;
-        uint64_t            to_identity;
-        Symbol*             from_symbol;
-        Symbol*             to_symbol;
-        IDSet_Mapping_Type  mappingType;
-} identity_mapping;
-
 class identity_record
 {
         friend class Explanation_Memory;
