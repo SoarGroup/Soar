@@ -320,7 +320,7 @@ void chunk_record::print_for_explanation_trace()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
     outputManager->printa(thisAgent, "}\n\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiation->i_id);
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
     thisAgent->explanationMemory->print_footer(true);
 }
 

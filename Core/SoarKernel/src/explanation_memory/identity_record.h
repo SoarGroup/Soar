@@ -35,15 +35,15 @@ class identity_record
         identity_record(agent* myAgent, chunk_record* pChunkRecord);
         ~identity_record();
 
+        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL);
         void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }
         void    generate_identity_sets(uint64_t pInstID, condition* lhs);
         void    map_originals_to_sets();
-        void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
-        void    print_identity_explanation(chunk_record* pChunkRecord);
 
-        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL);
         void    print_mappings();
+        void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
         void    print_instantiation_mappings(uint64_t pI_ID);
+        void    print_identities_in_chunk();
 
     private:
 
@@ -53,12 +53,11 @@ class identity_record
         id_to_idset_map*        id_to_id_set_mappings;
         inst_identities_map*    instantiation_mappings;
 
-        void    print_mapping_list(identity_mapping_list* pMapList, bool printHeader = false);
         void    clear_mappings();
 
-        void    print_identities_in_chunk();
-        void    print_identity_mappings();
+        void    print_mapping_list(identity_mapping_list* pMapList, bool printHeader = false);
         void    print_original_ebc_mappings();
+
 };
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_IDENTITY_RECORD_H_ */

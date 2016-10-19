@@ -44,7 +44,6 @@ identity_record::~identity_record()
 }
 
 
-//#include "output_manager.h"
 void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
 {
     /* Generate identity sets and add mappings for all conditions in chunk */
@@ -67,9 +66,6 @@ void identity_record::map_originals_to_sets()
         if (iter->second != NULL_IDENTITY_SET)
         {
             lMapping = iter->first;
-//            lIter = id_to_id_set_mappings->find(iter->first);
-//            assert(lIter == id_to_id_set_mappings->end());
-
             lIter = id_to_id_set_mappings->find(iter->second);
             if (lIter != id_to_id_set_mappings->end())
             {
@@ -97,8 +93,6 @@ void identity_record::map_originals_to_sets()
             id_to_id_set_mappings->insert({iter->first, lNewIDSet});
         }
     }
-
-//    print_identity_mappings();
 }
 
 
@@ -110,43 +104,12 @@ void identity_record::print_identity_mappings_for_instantiation(instantiation_re
 
 void identity_record::print_identities_in_chunk()
 {
-    dprint_noprefix(DT_EXPLAIN_IDENTITIES, "\nIdentities in chunk (%u): ", identities_in_chunk->size());
+    thisAgent->outputManager->printa_sf(thisAgent, "\nVariable identities (%u): ", identities_in_chunk->size());
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
-        dprint_noprefix(DT_EXPLAIN_IDENTITIES, "%u ", (*it));
-    }
-}
-void identity_record::print_identity_mappings()
-{
-    thisAgent->outputManager->set_column_indent(0, 4);
-    thisAgent->outputManager->set_column_indent(1, 14);
-    thisAgent->outputManager->set_column_indent(2, 20);
-    thisAgent->outputManager->set_column_indent(3, 37);
-
-    thisAgent->outputManager->printa_sf(thisAgent, "%fHow the element identities in problem solving map to identity sets:\n\n");
-    thisAgent->outputManager->printa_sf(thisAgent, "Identity %- %- Identity Set %- Chunk Variable\n");
-    for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
-    {
-        if (it->second->identity_set_ID)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%-%u %--> %-    %u %-%y\n", it->first, it->second->identity_set_ID, it->second->rule_variable);
-        }
-    }
-    thisAgent->outputManager->printa(thisAgent, "\nThe following element identities in problem solving map to the null \n"
-        "identity set. Elements in conditions that test those identities will \n"
-        "not be generalized:\n\n");
-    thisAgent->outputManager->printa_sf(thisAgent, "%- ");
-    for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
-    {
-        if (!it->second->identity_set_ID)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u ", it->first);
-        }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u ", (*it));
     }
     thisAgent->outputManager->printa(thisAgent, "\n");
-
-    //print_original_ebc_mappings();
-
 }
 
 void identity_record::print_original_ebc_mappings()
@@ -154,32 +117,16 @@ void identity_record::print_original_ebc_mappings()
     thisAgent->outputManager->set_column_indent(0, 6);
     thisAgent->outputManager->set_column_indent(1, 26);
     thisAgent->outputManager->set_column_indent(2, 31);
+
+    thisAgent->outputManager->printa_sf(thisAgent, "\nOriginal EBC Mappings (%u):\n", original_ebc_mappings->size());
     thisAgent->outputManager->printa_sf(thisAgent, "ID %-Original %-Set %-Final\n\n");
 
-    dprint_noprefix(DT_EXPLAIN_IDENTITIES, "\nOriginal EBC Mappings (%u):\n", original_ebc_mappings->size());
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        dprint_noprefix(DT_EXPLAIN_IDENTITIES, "%u%-%y %-%u%-%y\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "%u%-%y %-%u%-%y\n",
             iter->first, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->first), iter->second, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->second));
     }
-}
-
-void identity_record::print_identity_explanation(chunk_record* pChunkRecord)
-{
-//    for (condition_record_list::iterator it = pChunkRecord->conditions->begin(); it != pChunkRecord->conditions->end(); it++)
-//    {
-//        l_cond = (*it);
-//        dprint(DT_EXPLAIN, "Adding identities in chunk cond %l: \n", l_cond);
-//    }
-//
-//    baseInstantiation->create_identity_paths(lInstPath);
-//    for (auto it = result_inst_records->begin(); it != result_inst_records->end(); it++)
-//    {
-//        (*it)->create_identity_paths(lInstPath);
-//    }
-//
-//    delete lInstPath;
 }
 
 void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
@@ -215,6 +162,23 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
 
 void identity_record::print_mappings()
 {
+    thisAgent->outputManager->set_column_indent(0, 4);
+    thisAgent->outputManager->set_column_indent(1, 14);
+    thisAgent->outputManager->set_column_indent(2, 20);
+    thisAgent->outputManager->set_column_indent(3, 37);
+
+    thisAgent->outputManager->printa(thisAgent,
+        "\n-== NULL Identity Set ==-\n\n"
+        "The following variable identities map to the null identity set and will not be\ngeneralized:");
+    for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
+    {
+        if (!it->second->identity_set_ID)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u ", it->first);
+        }
+    }
+    thisAgent->outputManager->printa_sf(thisAgent, "\n\n-== How variable identities map to identity sets ==-\n\n");
+
     Output_Manager* outputManager = thisAgent->outputManager;
     bool printHeader = true;
     for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
@@ -228,6 +192,12 @@ void identity_record::print_mappings()
             printHeader = false;
         }
     }
+
+    #ifndef SOAR_RELEASE_VERSION
+    thisAgent->outputManager->printa(thisAgent, "\n\n---------------------------\n\n");
+
+    print_original_ebc_mappings();
+    #endif
 }
 
 void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool printHeader)

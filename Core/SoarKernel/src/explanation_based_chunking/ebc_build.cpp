@@ -636,25 +636,25 @@ void Explanation_Based_Chunker::reorder_instantiated_conditions(condition* top_c
     for (c = top_cond; c != NIL; c = c->next)
     {
         if (c->counterpart)
-    {
+        {
             p = c->prev;
             n = c->next;
             if (!n)
-        {
+            {
                 c->counterpart->next = NULL;
                 *dest_inst_bottom = c->counterpart;
             } else {
                 c->counterpart->next = n->counterpart;
-        }
+            }
             if (!p)
-        {
+            {
                 c->counterpart->prev = NULL;
                 *dest_inst_top = c->counterpart;
             } else {
                 c->counterpart->prev = p->counterpart;
+            }
         }
-        }
-        }
+    }
     dprint(DT_MERGE, "Result:\n");
     dprint_noprefix(DT_MERGE, "%1", *dest_inst_top);
 }
