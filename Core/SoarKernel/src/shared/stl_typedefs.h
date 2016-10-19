@@ -20,7 +20,7 @@ class action_record;
 class instantiation_record;
 typedef struct constraint_struct constraint;
 typedef struct attachment_struct attachment_point;
-typedef struct identity_set_struct identity_set_info;
+typedef struct sym_identity_struct sym_identity_info;
 typedef struct aug_struct augmentation;
 typedef struct symbol_with_match_struct symbol_with_match;
 typedef struct identity_mapping_struct identity_mapping;
@@ -148,7 +148,7 @@ typedef std::unordered_set< augmentation* >                     augmentation_set
 typedef std::unordered_set< uint64_t >                          id_set;
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
-typedef std::unordered_map< uint64_t, identity_set_info* >      id_to_idset_map;
+typedef std::unordered_map< uint64_t, sym_identity_info* >      id_to_sym_id_map;
 typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
 
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;

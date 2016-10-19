@@ -14,10 +14,10 @@
 class chunk_record;
 class instantiation_record;
 
-typedef struct identity_set_struct {
+typedef struct sym_identity_struct {
         uint64_t    identity_set_ID;
         Symbol*     rule_variable;
-} identity_set_info;
+} sym_identity_info;
 
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
@@ -50,7 +50,7 @@ class identity_record
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
         id_to_id_map*           original_ebc_mappings;
-        id_to_idset_map*        id_to_id_set_mappings;
+        id_to_sym_id_map*        id_to_id_set_mappings;
         inst_identities_map*    instantiation_mappings;
 
         void    clear_mappings();

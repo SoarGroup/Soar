@@ -19,7 +19,7 @@
 identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
 {
     thisAgent = myAgent;
-    id_to_id_set_mappings = new id_to_idset_map();
+    id_to_id_set_mappings = new id_to_sym_id_map();
     identities_in_chunk = new id_set();
     instantiation_mappings = new inst_identities_map();
     original_ebc_mappings = NULL;
@@ -57,12 +57,12 @@ void identity_record::map_originals_to_sets()
 
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     id_to_id_map::iterator iter;
-    id_to_idset_map::iterator lIter;
-    identity_set_info* lNewIDSet;
+    id_to_sym_id_map::iterator lIter;
+    sym_identity_info* lNewIDSet;
     uint64_t lMapping, lNewIdSetID;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        lNewIDSet = new identity_set_info();
+        lNewIDSet = new sym_identity_info();
         if (iter->second != NULL_IDENTITY_SET)
         {
             lMapping = iter->first;
@@ -81,7 +81,7 @@ void identity_record::map_originals_to_sets()
                 lNewIDSet->identity_set_ID = lNewIdSetID;
                 lNewIDSet->rule_variable = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
-                lNewIDSet = new identity_set_info();
+                lNewIDSet = new sym_identity_info();
                 lNewIDSet->identity_set_ID = lNewIdSetID;
                 lNewIDSet->rule_variable = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});

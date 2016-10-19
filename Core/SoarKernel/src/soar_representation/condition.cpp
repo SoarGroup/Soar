@@ -332,7 +332,7 @@ int condition_count(condition* pCond)
     return cnt;
 }
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -350,7 +350,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
                 pID_Set->insert(pTest->identity);
                 if (pID_Set_Map)
                 {
-                    identity_set_info* lNewIDSet = new identity_set_info();
+                    sym_identity_info* lNewIDSet = new sym_identity_info();
                     if (pTest->identity)
                     {
                         lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
@@ -369,7 +369,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
+void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {
