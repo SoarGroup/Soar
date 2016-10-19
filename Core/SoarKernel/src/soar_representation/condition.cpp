@@ -348,22 +348,19 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
             if (pID_Set->find(pTest->identity) == pID_Set->end())
             {
                 pID_Set->insert(pTest->identity);
-                if (pID_Set_Map)
+                sym_identity_info* lNewIDSet = new sym_identity_info();
+                if (pTest->identity)
                 {
-                    sym_identity_info* lNewIDSet = new sym_identity_info();
-                    if (pTest->identity)
-                    {
-                        lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
-                        lNewIDSet->rule_variable = pTest->data.referent;
-                        thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
-                        thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity_set_ID, lNewIDSet->rule_variable, lNewIDSet->rule_variable);
+                    lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
+                    lNewIDSet->rule_variable = pTest->data.referent;
+                    thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
+                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity_set_ID, lNewIDSet->rule_variable, lNewIDSet->rule_variable);
 
-                    } else {
-                        lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
-                        lNewIDSet->rule_variable = NULL;
-                    }
-                    pID_Set_Map->insert({pTest->identity, lNewIDSet});
+                } else {
+                    lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
+                    lNewIDSet->rule_variable = NULL;
                 }
+                pID_Set_Map->insert({pTest->identity, lNewIDSet});
             }
         }
     }
