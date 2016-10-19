@@ -25,7 +25,6 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "repair.h"
 #include "rete.h"
 #include "rhs.h"
 #include "run_soar.h"
@@ -40,6 +39,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <ctype.h>
+#include <ebc_repair.h>
 
 using namespace soar_TraceNames;
 

@@ -14,6 +14,7 @@
  *
  * =======================================================================
  */
+#include <ebc_repair.h>
 #include "production_reorder.h"
 
 #include "agent.h"
@@ -25,7 +26,6 @@
 #include "preference.h"
 #include "print.h"
 #include "production.h"
-#include "repair.h"
 #include "rhs.h"
 #include "run_soar.h"
 #include "soar_TraceNames.h"

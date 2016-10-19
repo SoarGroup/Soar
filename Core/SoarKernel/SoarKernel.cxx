@@ -1,3 +1,9 @@
+#include <ebc_backtrace.cpp>
+#include <ebc_constraints.cpp>
+#include <ebc_map.cpp>
+#include <ebc_merge.cpp>
+#include <ebc_print.cpp>
+#include <ebc_unify.cpp>
 #include "src/debug_code/debug.cpp"
 #include "src/debug_code/debug_stacktrace.cpp"
 #include "src/decision_process/consistency.cpp"
@@ -7,17 +13,11 @@
 #include "src/decision_process/rete.cpp"
 #include "src/decision_process/run_soar.cpp"
 #include "src/episodic_memory/episodic_memory.cpp"
-#include "src/explanation_based_chunking/backtrace.cpp"
 #include "src/explanation_based_chunking/build.cpp"
-#include "src/explanation_based_chunking/constraints.cpp"
 #include "src/explanation_based_chunking/ebc.cpp"
 #include "src/explanation_based_chunking/ebc_settings.cpp"
 #include "src/explanation_based_chunking/explanation_trace.cpp"
-#include "src/explanation_based_chunking/map.cpp"
-#include "src/explanation_based_chunking/merge.cpp"
-#include "src/explanation_based_chunking/print.cpp"
 #include "src/explanation_based_chunking/repair.cpp"
-#include "src/explanation_based_chunking/unify.cpp"
 #include "src/explanation_based_chunking/variablize.cpp"
 #include "src/explanation_memory/action_record.cpp"
 #include "src/explanation_memory/chunk_record.cpp"

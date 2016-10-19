@@ -5,6 +5,7 @@
  * =======================================================================
  */
 
+#include <ebc_repair.h>
 #include "test.h"
 
 #include "agent.h"
@@ -15,7 +16,6 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
-#include "repair.h"
 #include "rete.h"
 #include "run_soar.h"
 #include "symbol.h"
