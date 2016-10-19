@@ -174,6 +174,13 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
 
     /* We can check here whether a condition is being added that has a promoted identifier in it*/
     //    bool promoted = ((thisID->id->level <= grounds_level) || ((thisID->id->isa_goal) && (cond->bt.level > grounds_level)));
+    uint64_t idLevel = thisID->id->level;
+    uint64_t btLevel = cond->bt.level;
+    uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
+    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
+        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
+//    else
+//        dprint(DT_DEBUG, "Levels: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
 
     #ifdef EBC_IDENTIFIER_LEVEL_DETERMINES_OPERATIONALITY
         isOperational =  (thisID->id->level <= grounds_level);
