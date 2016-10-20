@@ -45,6 +45,7 @@ typedef struct test_struct
         cons*        conjunct_list;      /* for conjunctive tests */
     } data;
     test_struct*     eq_test;
+    test_struct*     counterpart_test;
     tc_number        tc_num;
     uint64_t         identity;
 } test_info;
@@ -65,7 +66,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false);
 test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
 test copy_test_without_relationals(agent* thisAgent, test t);
 

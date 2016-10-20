@@ -51,6 +51,8 @@ class Explanation_Based_Chunker
                                           node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
+        void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
+        void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);

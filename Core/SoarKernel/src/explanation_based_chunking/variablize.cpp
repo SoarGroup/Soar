@@ -22,22 +22,9 @@
 
 sym_identity_info* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
-    if (index_id == 0)
-    {
-        return NULL;
-    }
-
+    if (index_id == 0) return NULL;
     auto iter = (*identity_to_var_map).find(index_id);
-    if (iter != (*identity_to_var_map).end())
-    {
-        return iter->second;
-    }
-    else
-    {
-        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %u in variablization table.\n", index_id);
-        dprint_variablization_table(DT_VARIABLIZATION_MANAGER);
-        return NULL;
-    }
+    if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
 }
 
 sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable)
@@ -46,6 +33,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     sym_identity_info* lVarInfo = new sym_identity_info();
     lVarInfo->variable_sym = variable;
     lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
+//    lVarInfo->identity = pIdentity;
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
     return lVarInfo;
@@ -170,6 +158,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
             pTest->eq_test->data.referent = var_info->variable_sym;
             thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
             pTest->eq_test->identity = var_info->identity;
+            pTest->eq_test->counterpart_test->identity = var_info->identity;
+            pTest->eq_test->counterpart_test->counterpart_test = NULL;
+            pTest->eq_test->counterpart_test = NULL;
             dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
         } else {
 
@@ -203,6 +194,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
             pTest->eq_test->data.referent = var_info->variable_sym;
             thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
             pTest->eq_test->identity = var_info->identity;
+            pTest->eq_test->counterpart_test->identity = var_info->identity;
+            pTest->eq_test->counterpart_test->counterpart_test = NULL;
+            pTest->eq_test->counterpart_test = NULL;
             dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
         }
         dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
@@ -273,6 +267,9 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         t->data.referent = found_variablization->variable_sym;
         thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
         t->identity = found_variablization->identity;
+        t->counterpart_test->identity = found_variablization->identity;
+        t->counterpart_test->counterpart_test = NULL;
+        t->counterpart_test = NULL;
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", found_variablization->variable_sym, found_variablization->identity);
     }
     else

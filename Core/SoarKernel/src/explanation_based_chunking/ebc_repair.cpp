@@ -469,6 +469,12 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
 
+        /* Fix m_inst's bottom and top pointers to match re-ordered variablized conditions*/
+        m_inst_top = m_vrblz_top->counterpart;
+        condition* c = m_vrblz_top;
+        while (c->next) c = c->next;
+        m_inst_bottom = c->counterpart;
+
         if (m_failure_type != ebc_success)
         {
             if (((m_failure_type == ebc_failed_unconnected_conditions) && ebc_settings[SETTING_EBC_REPAIR_LHS]) ||

@@ -598,7 +598,10 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         while (thisAgent->symbolManager->find_str_constant(new_name.c_str()) != NIL);
         new_name_symbol = thisAgent->symbolManager->make_str_constant(new_name.c_str());
-        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
+        /* --- Assign a new instantiation ID --- */
+        /* We need to set a chunk ID because variablization uses it to assign new identities */
+        thisAgent->explanationBasedChunker->set_new_chunk_id();
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
@@ -638,6 +641,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
 
         thisAgent->explanationBasedChunker->clear_variablization_maps();
+        thisAgent->explanationBasedChunker->clear_chunk_id();
         deallocate_condition_list(thisAgent, cond_top);
 
     return new_name_symbol;

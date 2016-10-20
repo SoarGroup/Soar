@@ -33,7 +33,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests)
 {
     cons* new_c;
 
@@ -42,12 +42,12 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
     if (static_cast<test>(new_c->first)->type == EQUALITY_TEST)
     {
         *pEq_test = static_cast<test>(new_c->first);
     }
-    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
     return new_c;
 }
 
@@ -55,7 +55,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests)
 {
 //    Symbol* referent;
     test new_ct;
@@ -86,9 +86,10 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                 {
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
+                t->eq_test->counterpart_test = new_ct;
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
             }
             break;
         default:
@@ -113,7 +114,12 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
             }
-
+            if (pLinkTests)
+            {
+                t->counterpart_test = new_ct;
+                /* This direction is also needed for RL */
+                new_ct->counterpart_test = t;
+            }
             break;
     }
     return new_ct;
@@ -250,8 +256,10 @@ void deallocate_test(agent* thisAgent, test t)
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
      *    which was all over the kernel.  We did not copy the test or increment the
-     *    refcount, so we don't need to decrease the refcount here. -- */
+     *    refcount, so we don't need to deallocate the test here. Counterpart test
+     *    is similar but is only used during chunking -- */
     t->eq_test = NULL;
+    t->counterpart_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
     dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test done.\n");
@@ -980,6 +988,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->tc_num = 0;
+    new_ct->counterpart_test = NULL;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

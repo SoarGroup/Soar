@@ -15,7 +15,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_CHUNKING_TESTS
         CPPUNIT_TEST(All_Test_Types);
-        CPPUNIT_TEST(Blocks_World_Hierarchical);
+//        CPPUNIT_TEST(Blocks_World_Hierarchical);
         CPPUNIT_TEST(BUNCPS_0);
         CPPUNIT_TEST(BUNCPS_1);
         CPPUNIT_TEST(BUNCPS_2);
