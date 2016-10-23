@@ -16,26 +16,25 @@
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
+    typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
-    typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
-    typedef std::list< symbol_with_match*, soar_module::soar_memory_pool_allocator< symbol_with_match* > >          symbol_with_match_list;
+    typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
+    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
     typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
-    typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
-    typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
-    typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
+    typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
+    typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
+    typedef std::list< matched_sym*, soar_module::soar_memory_pool_allocator< matched_sym* > >                      matched_symbol_list;
     typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > >                        preference_list;
     typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                        rl_rule_list;
-    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
+    typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
+    typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
     typedef std::list< test_triple*, soar_module::soar_memory_pool_allocator< test_triple* > >                      test_triple_list;
-    typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
-    typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
-    typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                    wme_set;
     typedef std::set< instantiation*, std::less< instantiation* >,
                       soar_module::soar_memory_pool_allocator< instantiation* > >                                   inst_set;
     typedef std::set< instantiation_record*, std::less< instantiation_record* >,
@@ -45,6 +44,7 @@
     typedef std::set< wma_d_cycle, std::less< wma_d_cycle >,
                       soar_module::soar_memory_pool_allocator< wma_d_cycle > >                                      wma_decay_cycle_set;
     typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                    wma_pooled_wme_set;
+    typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                    wme_set;
 
     typedef std::map< Symbol*, Symbol*, std::less< Symbol* >,
                       soar_module::soar_memory_pool_allocator< std::pair< Symbol*, Symbol* > > >                    rl_symbol_map;
@@ -88,23 +88,23 @@
     typedef std::list< condition_record* >                      condition_record_list;
     typedef std::list< condition* >                             condition_list;
     typedef std::list< constraint* >                            constraint_list;
+    typedef std::list< uint64_t >                               id_list;
     typedef std::list< identity_triple* >                       identity_triple_list;
+    typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
     typedef std::list< inst_record_list* >                      inst_path_list;
+    typedef std::list< matched_sym* >                           matched_symbol_list;
     typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
     typedef std::list< preference* >                            preference_list;
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< symbol_triple* >                         symbol_triple_list;
-    typedef std::list< symbol_with_match* >                     symbol_with_match_list;
     typedef std::list< Symbol* >                                symbol_list;
     typedef std::list< test_triple* >                           test_triple_list;
-    typedef std::list< uint64_t >                               id_list;
     typedef std::list< wme* >                                   wme_list;
-    typedef std::list< identity_mapping* >                      identity_mapping_list;
 
-    typedef std::set< Symbol* >                                 symbol_set;
     typedef std::set< instantiation* >                          inst_set;
     typedef std::set< instantiation_record* >                   inst_record_set;
+    typedef std::set< Symbol* >                                 symbol_set;
     typedef std::set< wma_decay_element* >                      wma_decay_set;
     typedef std::set< wma_d_cycle >                             wma_decay_cycle_set;
     typedef std::set< wme* >                                    wma_pooled_wme_set;

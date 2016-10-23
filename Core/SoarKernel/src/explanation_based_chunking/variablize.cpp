@@ -55,7 +55,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
  *
  * ========================================================================= */
 
-void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
+uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue)
 {
     char prefix[2];
     Symbol* var;
@@ -72,7 +72,8 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
             variablize_rhs_symbol(static_cast<char*>(c->first), pShouldCachedMatchValue);
             dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
         }
-        return;
+        /* Overall function does not have an identity */
+        return NULL_IDENTITY_SET;
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
@@ -90,7 +91,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         {
             /* I think this can only occur now when trying to variablize a locally promoted STI.*/
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
-            return;
+            return NULL_IDENTITY_SET;
         }
     }
     if (!found_variablization && rs->referent->is_sti())
@@ -115,6 +116,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         rs->referent = found_variablization->variable_sym;
         rs->o_id = found_variablization->identity;
         thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
+        return rs->o_id;
     }
     else
     {
@@ -122,6 +124,7 @@ void Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bool p
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
         dprint_variablization_table(DT_RHS_VARIABLIZATION);
     }
+    return NULL_IDENTITY_SET;
 }
 
 /* ============================================================================
@@ -497,7 +500,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     }
     if (preference_is_binary(result->type))
     {
-        iter = (*unification_map).find(result->o_ids.value);
+        iter = (*unification_map).find(result->o_ids.referent);
         if (iter != (*unification_map).end())
         {
             lO_id = iter->second;
@@ -514,14 +517,24 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     if (variablize)
     {
 
-        variablize_rhs_symbol(a->id, true);
-        variablize_rhs_symbol(a->attr);
-        variablize_rhs_symbol(a->value);
+        lO_id = variablize_rhs_symbol(a->id, true);
+        if (!result->rhs_funcs.id) result->o_ids.id = lO_id;
+
+        lO_id = variablize_rhs_symbol(a->attr);
+        if (!result->rhs_funcs.attr) result->o_ids.attr = lO_id;
+
+        lO_id = variablize_rhs_symbol(a->value);
+        if (!result->rhs_funcs.value) result->o_ids.value = lO_id;
+
         if (preference_is_binary(result->type))
         {
-            variablize_rhs_symbol(a->referent);
+            lO_id = variablize_rhs_symbol(a->referent);
+            result->o_ids.referent = lO_id;
         }
     }
+
+    /* Update the identities of the preferences.  We need to do this here because
+     * chunks create new identities after the LHS is completely done processing. */
 
     dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
 

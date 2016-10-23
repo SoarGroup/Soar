@@ -471,12 +471,6 @@ typedef struct EXPORT agent_struct
 
     char*               name;  /* name of this Soar agent */
 
-    /* Soar uses these to generate nicely formatted output strings */
-    char          current_line[1024];
-    int           current_line_index;
-
-    cons*             variables_set;
-
     multi_attribute*    multi_attributes;
 
     cons*                   soar_callbacks[NUMBER_OF_CALLBACKS];
@@ -532,16 +526,15 @@ typedef struct EXPORT agent_struct
     std::string* prediction;
 
     // BasicWeightedCue from JSoar for unit testing
-	class BasicWeightedCue
-	{
-	public:
-		const wme_struct* cue;
-		const long weight;
+    class BasicWeightedCue
+    {
+        public:
+            const wme_struct* cue;
+            const long weight;
 
-		BasicWeightedCue(wme_struct* c, long w) : cue(c), weight(w) {}
-	};
-	BasicWeightedCue* lastCue;
-
+            BasicWeightedCue(wme_struct* c, long w) : cue(c), weight(w) {}
+    };
+    BasicWeightedCue* lastCue;
 
     // dynamic RHS counters
     std::unordered_map< std::string, uint64_t >* dyn_counters;

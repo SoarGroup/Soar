@@ -1716,6 +1716,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     instantiation* inst;
     preference* pref;
     condition* cond, *last_cond;
+    uint64_t state_sym_identity, superop_sym_identity;
 
     /* --- find the acceptable preference wme we want to backtrace to --- */
     s = cand->slot;
@@ -1745,13 +1746,14 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
 
-    /* --- make the fake condition --- */
+    /* --- make the fake conditions --- */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
     cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
     cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
+    superop_sym_identity = cond->data.tests.value_test->identity;
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
     cond->test_for_acceptable_preference = true;
@@ -1771,6 +1773,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, goal, EQUALITY_TEST);
     cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
+    state_sym_identity = cond->data.tests.id_test->identity;
     cond->data.tests.attr_test = make_test(thisAgent, thisAgent->symbolManager->soarSymbols.superstate_symbol, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
     cond->data.tests.value_test->identity = last_cond->data.tests.id_test->identity;
@@ -1793,11 +1796,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
-                           cand->value, NIL,
-                           identity_triple(
-                               thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id),
-                               0,
-                               cond->data.tests.value_test->identity));
+                           cand->value, NIL, identity_triple(state_sym_identity, 0, superop_sym_identity));
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);

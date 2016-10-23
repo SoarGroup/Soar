@@ -79,7 +79,7 @@
 bool legal_to_execute_action(action* a, tc_number tc);
 
 bool reorder_action_list(agent* thisAgent, action** action_list,
-                         tc_number lhs_tc, symbol_with_match_list* ungrounded_syms,
+                         tc_number lhs_tc, matched_symbol_list* ungrounded_syms,
                          bool add_ungrounded)
 {
     cons* new_bound_vars;
@@ -162,7 +162,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                matched_sym* lNewUngroundedSym = new matched_sym();
                 lNewUngroundedSym->sym = lSym;
                 if (lSym->is_sti())
                 {
@@ -841,12 +841,12 @@ cons* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
-                             symbol_with_match_list* ungrounded_syms,
+                             matched_symbol_list* ungrounded_syms,
                              bool add_ungrounded)
 {
 
-    symbol_with_match_list* new_vars_from_value_slot = new symbol_with_match_list();
-    symbol_with_match_list* new_vars_from_id_slot = new symbol_with_match_list();
+    matched_symbol_list* new_vars_from_value_slot = new matched_symbol_list();
+    matched_symbol_list* new_vars_from_id_slot = new matched_symbol_list();
     condition* cond;
     bool found_goal_impasse_test;
 
@@ -921,8 +921,8 @@ cons* collect_root_variables(agent* thisAgent,
             {
                 if (add_ungrounded)
                 {
-                    symbol_with_match* lNewUngroundedSym = new symbol_with_match();
-                    symbol_with_match* lOldMatchedSym = (*it);
+                    matched_sym* lNewUngroundedSym = new matched_sym();
+                    matched_sym* lOldMatchedSym = (*it);
                     lNewUngroundedSym->sym = (*it)->sym;
                     lNewUngroundedSym->matched_sym = (*it)->matched_sym;
                     lNewUngroundedSym->identity = (*it)->identity;
@@ -1567,7 +1567,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms, bool add_ungrounded)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, matched_symbol_list* ungrounded_syms, bool add_ungrounded)
 {
     tc_number tc;
     cons* roots;

@@ -164,7 +164,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->output_settings                    = new AgentOutput_Info();
 
     thisAgent->current_tc_number = 0;
-    thisAgent->variables_set                      = NIL;
     thisAgent->all_wmes_in_rete                   = NIL;
     thisAgent->alpha_mem_id_counter               = 0;
     thisAgent->beta_node_id_counter               = 0;

@@ -63,7 +63,7 @@ typedef struct symbol_with_match_struct {
             matched_sym = NULL;
             identity = 0;
         }
-} symbol_with_match;
+} matched_sym;
 
 typedef struct aug_struct
 {

@@ -765,7 +765,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
     return;
 }
 
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
     Symbol* referent;
 
@@ -776,7 +776,7 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pS
             pSym->tc_num = tc;
             if (var_list)
             {
-                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                matched_sym* lNewUngroundedSym = new matched_sym();
                 lNewUngroundedSym->sym = pSym;
                 lNewUngroundedSym->identity = pIdentity;
                 lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;

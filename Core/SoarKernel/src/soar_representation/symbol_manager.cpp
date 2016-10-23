@@ -973,7 +973,9 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
             thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
-//            assert(false);
+            /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
+             * unit tests are leaking id's after soar init */
+            //std::cout << "Identifier refcount leak.\n";
         }
     }
     else if (lHashTable == MP_float_constant)

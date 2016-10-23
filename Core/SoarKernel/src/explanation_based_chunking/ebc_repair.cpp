@@ -16,10 +16,10 @@
 #include "explanation_memory.h"
 
 
-void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** unconnected_syms)
+void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** unconnected_syms)
 {
-    symbol_with_match_list* lSyms = *unconnected_syms;
-    symbol_with_match* lSym;
+    matched_symbol_list* lSyms = *unconnected_syms;
+    matched_sym* lSym;
 
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
@@ -153,7 +153,7 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     }
 }
 
-void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
+void Repair_Manager::add_path_to_goal_WMEs(matched_sym* pTargetSym)
 {
     dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->matched_sym);
@@ -350,9 +350,9 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
     }
 }
 
-void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, symbol_with_match_list* p_dangling_syms)
+void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, matched_symbol_list* p_dangling_syms)
 {
-    symbol_with_match* lDanglingSymInfo;
+    matched_sym* lDanglingSymInfo;
     wme* lWME;
     goal_stack_level targetLevel;
 
@@ -464,7 +464,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+        matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
@@ -484,7 +484,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                unconnected_syms = new symbol_with_match_list();
+                unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {
@@ -508,7 +508,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     }
     else if (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] || ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS])
     {
-        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+        matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS], ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]);
@@ -526,7 +526,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                unconnected_syms = new symbol_with_match_list();
+                unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
                 if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
                 {

@@ -250,7 +250,7 @@ class Explanation_Based_Chunker
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
-        void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
+        uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
