@@ -362,16 +362,23 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                     assert(!first_time);
                     std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
                     std::map<uint64_t,double>::iterator updates_it;
+                    double normalizing_sum = 0;
                     for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
                     {//We are looping through the update map and inserting those updates into the old edge weight map.
                         if (edge_weight_update_map_for_children.find(updates_it->first) == edge_weight_update_map_for_children.end())
                         {//If we don't have an update for that edge, we just decrease it.
-                            old_edge_weight_map_for_children[updates_it->first] = 0.9*old_edge_weight_map_for_children[updates_it->first];
+                            old_edge_weight_map_for_children[updates_it->first] = pow(0.9,total_touches)*old_edge_weight_map_for_children[updates_it->first];
+                            normalizing_sum += old_edge_weight_map_for_children[updates_it->first];
                         }
                         else
                         {//If we do have an update, we adjust.
                             old_edge_weight_map_for_children[updates_it->first] = old_edge_weight_map_for_children[updates_it->first] + edge_weight_update_map_for_children[updates_it->first];
+                            normalizing_sum += old_edge_weight_map_for_children[updates_it->first];
                         }
+                    }
+                    for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
+                    {
+                        old_edge_weight_map_for_children[updates_it->first] = old_edge_weight_map_for_children[updates_it->first]/normalizing_sum;
                     }
                     edge_weight_update_map_for_children.clear();
                     total_touches = 0;
@@ -395,31 +402,42 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 uint64_t child = (*edge_it)->lti_edge_id;
                 double touches = (*edge_it)->num_touches;
                 total_touches+=touches;
-                if (edge_weight_update_map_for_children.find(child) != edge_weight_update_map_for_children.end())
+                //This is where the updates are actually collected for touches from working memory.
+                for (int touch_ct = 1; touch_ct <= touches; ++touch_ct)
                 {
-                    edge_weight_update_map_for_children[child] = edge_weight_update_map_for_children[child] + (1.0-old_edge_weight_map_for_children[child])*-0.1*touches*pow(.9,touches-1.0);
-                }
-                else
-                {
-                    edge_weight_update_map_for_children[child] = 0.0 + (1.0 - old_edge_weight_map_for_children[child])*0.1*touches*pow(.9,touches-1.0);
+                    if (edge_weight_update_map_for_children.find(child) != edge_weight_update_map_for_children.end())
+                    {
+                        edge_weight_update_map_for_children[child] = edge_weight_update_map_for_children[child] + (1.0-old_edge_weight_map_for_children[child])*0.1*pow(.9,touch_ct-1.0);
+                    }
+                    else
+                    {
+                        edge_weight_update_map_for_children[child] = 0.0 + (1.0 - old_edge_weight_map_for_children[child])*0.1;
+                    }
                 }
                 previous_time = time;
             }
             std::map<uint64_t,double>::iterator final_updates_begin = old_edge_weight_map_for_children.begin();
             std::map<uint64_t,double>::iterator final_updates_it;
+            double normalizing_sum = 0;
             for (final_updates_it = final_updates_begin; final_updates_it != old_edge_weight_map_for_children.end(); ++final_updates_it)
             {//We are looping through the update map and inserting those updates into the old edge weight map.
                 if (edge_weight_update_map_for_children.find(final_updates_it->first) == edge_weight_update_map_for_children.end())
                 {//If we don't have an update for that edge, we just decrease it.
-                    old_edge_weight_map_for_children[final_updates_it->first] = 0.9*old_edge_weight_map_for_children[final_updates_it->first];
+                    old_edge_weight_map_for_children[final_updates_it->first] = pow(0.9,total_touches)*old_edge_weight_map_for_children[final_updates_it->first];
+                    normalizing_sum += old_edge_weight_map_for_children[final_updates_it->first];
                 }
                 else
                 {//If we do have an update, we adjust.
                     old_edge_weight_map_for_children[final_updates_it->first] = old_edge_weight_map_for_children[final_updates_it->first] + edge_weight_update_map_for_children[final_updates_it->first];
+                    normalizing_sum += old_edge_weight_map_for_children[final_updates_it->first];
                 }
             }
+            for (final_updates_it = final_updates_begin; final_updates_it != old_edge_weight_map_for_children.end(); ++final_updates_it)
+            {
+                old_edge_weight_map_for_children[final_updates_it->first] = old_edge_weight_map_for_children[final_updates_it->first]/normalizing_sum;
+            }
             edge_weight_update_map_for_children.clear();
-            //This is the poit at which the final timestamp's updates should be applied and then we should write those to the db and then we should clear out the malloc'd (new) updates.
+            //This is the point at which the final timestamp's updates should be applied and then we should write those to the db and then we should clear out the malloc'd (new) updates.
             //We use a new sqlite command that updates an existing edge with a new value for the edge weight. We loop over all edges in the old edge weight map for children for the vals.
             //After the loop of commits to the table, we then loop over thge original updates map attached to the agent to do the deletions (frees).
             std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
@@ -477,7 +495,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
      * path, so I have a queue of lists. */
     bool ever_added = false;
     uint64_t current_lti;
-    uint64_t depth_limit = 1;//settings->spreading_depth_limit->get_value();
+    uint64_t depth_limit = settings->spreading_depth_limit->get_value();
     uint64_t limit = settings->spreading_limit->get_value();
     uint64_t count = 0;
     std::list<std::pair<uint64_t, double>>* current_lti_list = new std::list<std::pair<uint64_t, double>>();
@@ -531,7 +549,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             //First, we make a new copy of the list for the next step of the traversal.
             std::list<std::pair<uint64_t,double>>* new_list = new std::list<std::pair<uint64_t,double>>();
             for (old_list_iterator = old_list_iterator_begin; old_list_iterator != old_list_iterator_end; ++old_list_iterator)
-            {//looping over the contends of the old list and copying.
+            {//looping over the contents of the old list and copying.
                 new_list->push_back((*old_list_iterator));
                 if (settings->spreading_loop_avoidance->get_value() == on)
                 {
