@@ -22,12 +22,12 @@ typedef struct saved_test_struct
     test the_test;
 } saved_test;
 
-extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc, symbol_with_match_list* ungrounded_syms);
-extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms = NULL);
+extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc, symbol_with_match_list* ungrounded_syms, bool add_ungrounded = false);
+extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms = NULL, bool add_ungrounded = false);
 extern void init_reorderer(agent* thisAgent);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */
-extern cons* collect_root_variables(agent* thisAgent, condition* cond_list, tc_number tc, bool allow_printing_warnings, symbol_with_match_list* ungrounded_syms = NULL);
+extern cons* collect_root_variables(agent* thisAgent, condition* cond_list, tc_number tc, bool allow_printing_warnings, symbol_with_match_list* ungrounded_syms = NULL, bool add_ungrounded = false);
 
 #endif
 

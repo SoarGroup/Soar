@@ -417,7 +417,7 @@ namespace cli
                 {
                     if (opt.CheckNumNonOptArgs(1, 1) && argv[1][0] == '?')
                     {
-                        return cli.DoSMem('?');
+                        return cli.DoEpMem('?');
                     }
                     return cli.SetError("Too many arguments, check syntax.");
                 }
@@ -1285,6 +1285,7 @@ namespace cli
                 {
                     {'a', "add",        OPTARG_NONE},
                     {'b', "backup",     OPTARG_NONE},
+                    {'c', "clear",      OPTARG_NONE},
                     {'d', "disable",    OPTARG_NONE},
                     {'d', "off",        OPTARG_NONE},
                     {'e', "enable",     OPTARG_NONE},
@@ -1371,7 +1372,7 @@ namespace cli
 
                         return cli.DoSMem(option, &(argv[2]), 0);
                     }
-
+                    case 'c':
                     case 'i':
                     case 'e':
                     case 'd':

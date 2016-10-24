@@ -3,7 +3,9 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "output_manager.h"
 #include "preference.h"
+#include "production.h"
 #include "slot.h"
 #include "symbol.h"
 #include "symbol_manager.h"
@@ -355,10 +357,6 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     goal_stack_level targetLevel;
 
 
-    #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationMemory->increment_stat_grounded(m_repair_WMEs.size());
-    #endif
-
     dprint(DT_REPAIR, "Repair rule started...\n");
     dprint(DT_REPAIR, "- Variablized cond: \n%1", m_vrblz_top);
     dprint(DT_REPAIR, "\n- Instantiated conds :\n%1", m_inst_top, NULL);
@@ -407,6 +405,10 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
         }
     }
 
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->increment_stat_grounding_conds_added(m_repair_WMEs.size());
+    #endif
+
     /* Create conditions based on set of wme's compiled */
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
     condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
@@ -448,5 +450,98 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     m_inst_bottom = prev_cond;
 
     dprint(DT_REPAIR, "Final variablized conditions: \n%1Final instantiated counterparts:\n%1", m_vrblz_top, m_inst_top);
+}
+
+bool Explanation_Based_Chunker::reorder_and_validate_chunk()
+{
+    /* This is called for justifications even though it does nothing because in the future
+     * we might want to fix a justification that has conditions unconnected to
+     * a state.  Chunks that have such variablized conditions seem to be able to
+     * corrupt the rete, but we don't know if justifications can as well.  While we
+     * could ground those conditions like we do with chunks to be safe, we're not doing
+     * that right now because it will introduce a high computational cost that may
+     * not be necessary.*/
+
+    if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
+    {
+        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+            unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
+
+        if (m_failure_type != ebc_success)
+        {
+            if (((m_failure_type == ebc_failed_unconnected_conditions) && ebc_settings[SETTING_EBC_REPAIR_LHS]) ||
+                ((m_failure_type == ebc_failed_reordering_rhs) && ebc_settings[SETTING_EBC_REPAIR_RHS]))
+            {
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
+                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
+                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
+                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                unconnected_syms = new symbol_with_match_list();
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                {
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
+                    print_current_built_rule("Repaired rule:");
+                    #ifdef BUILD_WITH_EXPLAINER
+                    thisAgent->explanationMemory->increment_stat_chunks_repaired();
+                    #endif
+                    return true;
+                }
+                #ifdef BUILD_WITH_EXPLAINER
+                thisAgent->explanationMemory->increment_stat_could_not_repair();
+                #endif
+            }
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
+            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+            return false;
+        }
+        delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+    }
+    else if (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] || ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS])
+    {
+        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+            unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS], ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]);
+
+        if (m_failure_type != ebc_success)
+        {
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationMemory->increment_stat_ungrounded_justifications();
+            #endif
+            if (!ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS] &&
+                (((m_failure_type == ebc_failed_unconnected_conditions) && ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]) ||
+                ((m_failure_type == ebc_failed_reordering_rhs) && ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS])))
+            {
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
+                Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
+                lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
+                delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                unconnected_syms = new symbol_with_match_list();
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                {
+                    delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
+                    print_current_built_rule("Repaired rule:");
+                    #ifdef BUILD_WITH_EXPLAINER
+                    thisAgent->explanationMemory->increment_stat_justifications_repaired();
+                    #endif
+                    return true;
+                }
+                #ifdef BUILD_WITH_EXPLAINER
+                thisAgent->explanationMemory->increment_stat_could_not_repair();
+                #endif
+            }
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
+            delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+            return false;
+        }
+        delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+    }
+    return true;
 }
 

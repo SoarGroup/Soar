@@ -29,6 +29,8 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
     settings = new Explainer_Parameters(thisAgent);
 
+    current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
     initialize_counters();
     m_enabled = false;
     m_justifications_enabled = false;
@@ -49,25 +51,21 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 
 void Explanation_Memory::initialize_counters()
 {
-
-    current_discussed_chunk = NULL;
-
     chunk_id_count = 1;
     condition_id_count = 1;
     action_id_count = 1;
     id_set_counter = 0;
 
     stats.duplicates = 0;
-    stats.could_not_repair = 0;
     stats.justification_did_not_match = 0;
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
     stats.max_chunks = 0;
+    stats.max_dupes = 0;
     stats.tested_local_negation = 0;
     stats.merged_conditions = 0;
     stats.chunks_attempted = 0;
     stats.chunks_succeeded = 0;
-    stats.chunks_reverted = 0;
     stats.justifications_attempted = 0;
     stats.justifications_succeeded = 0;
     stats.instantations_backtraced = 0;
@@ -75,8 +73,17 @@ void Explanation_Memory::initialize_counters()
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
     stats.grounding_conditions_added = 0;
-
+    stats.lhs_unconnected = 0;
+    stats.rhs_unconnected = 0;
+    stats.repair_failed = 0;
+    stats.ungrounded_justifications = 0;
+    stats.chunks_repaired = 0;
+    stats.chunks_reverted = 0;
+    stats.justifications_repaired = 0;
+    stats.ungrounded_justifications_added = 0;
+    stats.ungrounded_justifications_ignored = 0;
 }
+
 void Explanation_Memory::clear_explanations()
 {
     dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
@@ -621,7 +628,7 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
     }
 };
 
-void Explanation_Memory::increment_stat_grounded(int pNumConds)
+void Explanation_Memory::increment_stat_grounding_conds_added(int pNumConds)
 {
     increment_counter(stats.grounding_conditions_added);
     if (current_recording_chunk)
@@ -631,7 +638,7 @@ void Explanation_Memory::increment_stat_grounded(int pNumConds)
     }
 };
 
-void Explanation_Memory::increment_stat_reverted()
+void Explanation_Memory::increment_stat_chunks_reverted()
 {
     increment_counter(stats.chunks_reverted);
     if (current_recording_chunk)

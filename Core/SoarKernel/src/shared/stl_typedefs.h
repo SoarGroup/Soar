@@ -23,6 +23,7 @@ typedef struct attachment_struct attachment_point;
 typedef struct identity_set_struct identity_set_info;
 typedef struct aug_struct augmentation;
 typedef struct symbol_with_match_struct symbol_with_match;
+typedef struct identity_mapping_struct identity_mapping;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
@@ -42,6 +43,7 @@ typedef struct symbol_with_match_struct symbol_with_match;
     typedef std::list< test_triple*, soar_module::soar_memory_pool_allocator< test_triple* > >                      test_triple_list;
     typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
+    typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
     typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > >                    wme_set;
@@ -109,7 +111,7 @@ typedef struct symbol_with_match_struct symbol_with_match;
     typedef std::list< test_triple* >                           test_triple_list;
     typedef std::list< uint64_t >                               id_list;
     typedef std::list< wme* >                                   wme_list;
-
+    typedef std::list< identity_mapping* >                      identity_mapping_list;
 
     typedef std::set< Symbol* >                                 symbol_set;
     typedef std::set< instantiation* >                          inst_set;
@@ -147,6 +149,8 @@ typedef std::unordered_set< uint64_t >                          id_set;
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, identity_set_info* >      id_to_idset_map;
+typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
+
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
 typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;

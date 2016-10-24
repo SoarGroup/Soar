@@ -45,11 +45,9 @@ void Explanation_Based_Chunker::clear_attachment_map()
     for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
         // Don't print anything from condition b/c it could be deallocated when this is being cleared
-        dprint(DT_VM_MAPS, "Clearing %u -> %s of a condition in chunk.\n", it->first, field_to_string(it->second->field));
         thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
     }
     attachment_points->clear();
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing attachment data.\n");
 }
 
 void Explanation_Based_Chunker::clear_variablization_maps()
@@ -58,11 +56,9 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     /* -- Clear grounding_id->variablization map -- */
     for (id_to_sym_map::iterator it = (*o_id_to_var_map).begin(); it != (*o_id_to_var_map).end(); ++it)
     {
-        dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
         thisAgent->symbolManager->symbol_remove_ref(&it->second);
     }
     o_id_to_var_map->clear();
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager done clearing o_id_to_var_map data.\n");
 }
 
 
@@ -73,7 +69,6 @@ void Explanation_Based_Chunker::clear_o_id_to_ovar_debug_map()
     for (auto it = (*id_to_rule_sym_debug_map).begin(); it != (*id_to_rule_sym_debug_map).end(); ++it)
     {
         lSym = it->second;
-        dprint(DT_VM_MAPS, "Clearing %u -> %y\n", it->first, it->second);
         thisAgent->symbolManager->symbol_remove_ref(&lSym);
     }
     id_to_rule_sym_debug_map->clear();
@@ -101,16 +96,15 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
     iter_inst = instantiation_identities->find(pI_id);
     if (iter_inst != instantiation_identities->end())
     {
-        //    dprint(DT_VM_MAPS, "...Found.  Looking for symbol %y\n", orig_var);
         iter_sym = iter_inst->second.find(orig_var);
         if (iter_sym != iter_inst->second.end())
         {
-            dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
+            dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
             return iter_sym->second;
         }
     }
 
-//    dprint(DT_IDENTITY_PROP, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
+//    dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     return NULL_IDENTITY_SET;
 
 }
@@ -187,7 +181,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
             (*id_to_rule_sym_debug_map)[ovar_id_counter] = thisAgent->symbolManager->generate_new_variable("A");
         }
 #endif
-        dprint(DT_IDENTITY_PROP, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
+        dprint(DT_IDENTITY_GENERATION, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;
@@ -221,14 +215,11 @@ Symbol * Explanation_Based_Chunker::get_ovar_for_o_id(uint64_t o_id)
     if (o_id == 0) return NULL;
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL;
 
-//    dprint(DT_VM_MAPS, "...looking for ovar for o_id %u...", o_id);
     id_to_sym_map::iterator iter = id_to_rule_sym_debug_map->find(o_id);
     if (iter != id_to_rule_sym_debug_map->end())
     {
-//        dprint_noprefix(DT_IDENTITY_PROP, "found.  Returning %y\n", iter->second);
         return iter->second;
     }
-//    dprint_noprefix(DT_IDENTITY_PROP, "not found.  Returning NULL.\n");
     return NULL;
 #endif
 }

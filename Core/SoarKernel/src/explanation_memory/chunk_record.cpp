@@ -40,14 +40,16 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     backtraced_instantiations   = new inst_set();
     backtraced_inst_records     = new inst_record_list();
 
-    identity_analysis           = NULL;
+    identity_analysis           = new identity_record(thisAgent, this);
 
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
     stats.reverted                          = false;
-    stats.lhs_repair                        = false;
-    stats.rhs_repair                        = false;
+    stats.lhs_unconnected                   = false;
+    stats.rhs_unconnected                   = false;
+    stats.repair_failed                     = false;
+    stats.did_not_match_wm                  = false;
     stats.num_grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
     stats.instantations_backtraced          = 0;
@@ -112,6 +114,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     time_formed = thisAgent->d_cycle_count;
     match_level = pChunkInstantiation->match_goal_level;
+    chunkInstantiation = pChunkInstantiation;
 
     conditions         = new condition_record_list;
     actions            = new action_record_list;
@@ -128,7 +131,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         backtraced_inst_records->push_back(lNewInstRecord);
         dprint(DT_EXPLAIN, "%u (%y)\n", (*it)->i_id, (*it)->prod_name);
     }
-    dprint(DT_EXPLAIN, "(1) There are now %d instantiations records...\n", backtraced_inst_records->size());
+    dprint(DT_EXPLAIN, "There are now %d instantiations records...\n", backtraced_inst_records->size());
 
     for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
     {
@@ -175,8 +178,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         }
         lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
-        cond->inst = pChunkInstantiation;
-        cond->counterpart->inst = pChunkInstantiation;
+        cond->inst = chunkInstantiation;
+        cond->counterpart->inst = chunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 
@@ -191,10 +194,20 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         actions->push_back(new_action_record);
     }
 
-    dprint(DT_EXPLAIN, "(5) Recording identity mappings...\n");
+    dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-    identity_analysis = new identity_record(thisAgent, this, pIdentitySetMappings);
-    identity_analysis->generate_identity_sets(lhs);
+    identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
+    identity_analysis->generate_identity_sets(chunkInstantiation->i_id, lhs);
+    /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
+     * will have been added already.  Identities sets that don't appear in the chunk will be generated
+     * when mapping originals to sets */
+//    identity_analysis->generate_identity_sets(pBaseInstantiation->i_id, pBaseInstantiation->top_of_instantiated_conditions);
+//    for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
+//    {
+//        lChunkCondInst = *it;
+//        identity_analysis->generate_identity_sets(lChunkCondInst->i_id, lChunkCondInst->top_of_instantiated_conditions);
+//    }
+    identity_analysis->map_originals_to_sets();
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
@@ -306,7 +319,8 @@ void chunk_record::print_for_explanation_trace()
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
-    outputManager->printa(thisAgent, "}\n");
+    outputManager->printa(thisAgent, "}\n\n");
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiation->i_id);
     thisAgent->explanationMemory->print_footer(true);
 }
 

@@ -73,6 +73,15 @@ void Output_Manager::set_output_mode(int modeIndex, bool pEnabled)
     print_sf("Debug trace mode for '%s' is %s.\n", mode_info[modeIndex].prefix, (pEnabled ? "enabled" : "disabled"));
 }
 
+void Output_Manager::clear_output_modes()
+{
+
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        mode_info[i].enabled = false;
+    }
+}
+
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
 

@@ -41,7 +41,6 @@
 //#define DO_TOP_LEVEL_REF_CTS          /* Maintains refcounts on wme/pref at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
 #define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
 #define BUG_139_WORKAROUND
-#define DISCARD_CHUNK_VARNAMES true     /* Do not save variable names in RETE when learning chunks.  Saves memory. */
 
 /* -------- Compiler directives for potentially expensive statistics ---------------*/
 //#define NO_TIMING_STUFF             /* Eliminates all timing statistics. */
@@ -74,7 +73,7 @@
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
 
-    //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
+//    #define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
     //#define DEBUG_MAC_STACKTRACE  /* Enables the printing of the call stack within debug messages.
                                     /* Tested on OSX (Mountain Lion).  Does not work on Windows. */
     //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */

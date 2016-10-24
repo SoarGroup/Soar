@@ -1296,9 +1296,43 @@ uint64_t SMem_Manager::get_max_lti_id()
     return return_val;
 }
 
+void SMem_Manager::set_id_counter(uint64_t counter_value)
+{
+    lti_id_counter = counter_value-1;
+}
+
 uint64_t SMem_Manager::add_new_LTI()
 {
     uint64_t lti_id = ++lti_id_counter;
+//    if (lti_exists(lti_id))
+//    {/* The previous solution would be horrible in adversarial cases. It incremented,
+//      * then checked for existing id in a loop. If ids were manually assigned from
+//      * 2 to 1,000,000, this loop would have ~1,000,000 iterations. Now, instead, if
+//      * someone manually inserts an element with id 2 and id 1,000,000, on the
+//      * collision with 2, we'll skip straight to 1,000,001 instead of checking for
+//      * empty slots between. These numbers shouldn't be assumed to be meaningful
+//      * outside of self-consistency, so I think this is better.
+//      *
+//      * - scijones 2016
+//      */
+//        /*
+//         * As it turns out, the above solution can be bad too, so I've commented it out.
+//         * Basically, just setting one id to max int ruins things with the "new" solution.
+//         */
+//        uint64_t test_lti_id = get_max_lti_id();
+//        if (test_lti_id == 0)
+//        {//If for some reason the get_max_lti_id doesn't work, we use the old behavior.
+//            while (lti_exists(lti_id))
+//            {
+//                lti_id = ++lti_id_counter;
+//            }
+//        }
+//        else
+//        {
+//            lti_id_counter = test_lti_id + 1;
+//            lti_id = lti_id_counter;
+//        }
+//    }
     while (lti_exists(lti_id))
     {
         lti_id = ++lti_id_counter;

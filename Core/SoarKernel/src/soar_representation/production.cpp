@@ -352,7 +352,9 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                           symbol_with_match_list*  ungrounded_syms)
+                           symbol_with_match_list*  ungrounded_syms,
+                                     bool           add_ungrounded_lhs,
+                                     bool           add_ungrounded_rhs)
 {
     tc_number tc;
 
@@ -360,19 +362,19 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
-    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
+    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {
         /* If there are problems on the LHS, we need the ungrounded_syms
          * from them, before we return.  So we call, reorder_lhs too.
          * Note ungrounded_syms is null when not called for a chunk. */
-        if (ungrounded_syms)
+        if (add_ungrounded_lhs)
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
         }
         thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
-    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
+    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs))
     {
         thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;

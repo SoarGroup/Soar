@@ -13,7 +13,7 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
 {
     all = new soar_module::boolean_param("all", off, new soar_module::f_predicate<boolean>());
     include_justifications = new soar_module::boolean_param("justifications", off, new soar_module::f_predicate<boolean>());
-
+    only_print_chunk_identities = new soar_module::boolean_param("only-chunk-identities", on, new soar_module::f_predicate<boolean>());
     list_all = new soar_module::boolean_param("list", on, new soar_module::f_predicate<boolean>());
     record_chunk = new soar_module::boolean_param("record", on, new soar_module::f_predicate<boolean>());
     explain_chunk = new soar_module::boolean_param("chunk", on, new soar_module::f_predicate<boolean>());
@@ -31,6 +31,7 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
 
     add(all);
     add(include_justifications);
+    add(only_print_chunk_identities);
     add(list_all);
     add(record_chunk);
     add(explain_chunk);
@@ -70,6 +71,7 @@ void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "-------------- Supporting Analysis ----------------\n");
     outputManager->printa_sf(thisAgent, "constraints                %-%-%s\n", "Display extra transitive constraints required by problem-solving");
     outputManager->printa_sf(thisAgent, "identity                   %-%-%s\n", "Display identity to identity set mappings");
+    outputManager->printa_sf(thisAgent, "only-chunk-identities      %-%s%-%s\n", capitalizeOnOff(only_print_chunk_identities->get_value()), "Identity analysis only prints identities sets found in chunk");
     outputManager->printa_sf(thisAgent, "stats                      %-%-%s\n", "Display statistics about currently discussed chunk");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- explain <setting> [<value>]\n");

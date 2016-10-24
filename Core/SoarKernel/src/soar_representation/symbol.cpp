@@ -93,7 +93,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             return dest;
 
         case IDENTIFIER_SYMBOL_TYPE:
-            if (id->cached_print_str)
+            if (id->cached_print_str && !id->is_lti())
              {
                 if (!dest)
                  {
@@ -111,6 +111,10 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 lStr += " (@";
                 lStr.append(std::to_string(id->LTI_ID));
                 lStr += ')';
+                if (id->cached_print_str)
+                {
+                    free_memory_block_for_string(id->thisAgent, id->cached_print_str);
+                }
             }
             id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
             if (!dest)

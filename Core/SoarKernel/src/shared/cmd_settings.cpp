@@ -121,7 +121,7 @@ void load_param_container::print_settings(agent* thisAgent)
     outputManager->printa(thisAgent,    "============================================================\n");
     outputManager->printa(thisAgent,    "-               Load Sub-Commands and Options              -\n");
     outputManager->printa(thisAgent,    "============================================================\n");
-    outputManager->printa_sf(thisAgent, "load %-[? | help] %-%s\n");
+    outputManager->printa_sf(thisAgent, "load %-[? | help]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "load file %-[--all --disable] %-<filename>\n");
     outputManager->printa_sf(thisAgent, "load file %-[--verbose]     ]\n");
@@ -164,7 +164,9 @@ void save_param_container::print_settings(agent* thisAgent)
     outputManager->printa(thisAgent,    "======================================================\n");
     outputManager->printa(thisAgent,    "-            Save Sub-Commands and Options           -\n");
     outputManager->printa(thisAgent,    "======================================================\n");
-    outputManager->printa_sf(thisAgent, "save %-[? | help]\n");
+    outputManager->printa_sf(thisAgent, "save [? | help]\n");
+    outputManager->printa(thisAgent,    "------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "save chunks %-<filename>\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "save percepts %---open <filename>\n");
     outputManager->printa_sf(thisAgent, "save percepts %-[--close --flush]\n");

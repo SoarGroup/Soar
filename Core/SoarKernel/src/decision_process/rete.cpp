@@ -2792,9 +2792,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
-        if (!strcmp(temp->var->name, "<x4>"))
-            assert(true);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2803,7 +2801,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
+            dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
@@ -2829,7 +2827,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         temp = varnames_to_one_var(vn);
         t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     }
     else
     {
@@ -2840,7 +2838,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         {
             temp = static_cast<Symbol*>(c->first);
             t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
+            dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
     }
 }
@@ -4068,16 +4066,23 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             production_addition_result = REFRACTED_INST_MATCHED;
         }
     }
-    /* --- if not a chunk, store variable name information --- */
-  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
-        p->p_node->b.p.parents_nvn = NIL;
-        p->rhs_unbound_variables = NIL;
-        thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
-  } else {
-        p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
-        p->rhs_unbound_variables =
-            destructively_reverse_list(rhs_unbound_vars_for_new_prod);
-    }
+    
+    /* The following was used to discard var names.  Not currently compatible with EBC.  If we want to
+     * save memory and throw the chunk names out, we'll need to change explanation trace
+     * generation to handle a null nvn.  It might just be a matter of gensymm'ing symbols, but
+     * we might have to keep track of stuff to get the identities of the gensymmed vars consistent 
+     * across conditions and actions. */
+    //if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
+    //   p->p_node->b.p.parents_nvn = NIL;
+    //   p->rhs_unbound_variables = NIL;
+    //   thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
+    //} else {
+    //}
+    
+    /* --- Store variable name information --- */
+    p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
+    p->rhs_unbound_variables =
+        destructively_reverse_list(rhs_unbound_vars_for_new_prod);
 
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
@@ -6685,20 +6690,28 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
 #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find an existing justification to retract (BUG 139 WORKAROUND)\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
+            node->b.p.prod ? node->b.p.prod->name : NULL);
         xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
 #endif
         return;
     }
 #endif
 
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg,
-                "Internal error: can't find existing instantiation to retract\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
+    thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: Soar can't find an existing instantiation of %y to retract.\n",
+        node->b.p.prod ? node->b.p.prod->name : NULL);
+    xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
+
+    /* In certain agents that chunk, Soar is getting this error.  It also occurs when an agent reaches max-chunks (even before
+     * EBC). Bug 139 workaround just continues execution.  Perhaps that's ok because justifications are different.  I'm not sure.
+     * But until we figure out what's going on, I'm going to try doing the same thing and just print a warning, instead of aborting.  */
+//    {
+//        char msg[BUFFER_MSG_SIZE];
+//        strncpy(msg,
+//                "Internal error: can't find existing instantiation to retract\n", BUFFER_MSG_SIZE);
+//        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+//        abort_with_fatal_error(thisAgent, msg);
+//    }
 }
 
 /* ************************************************************************

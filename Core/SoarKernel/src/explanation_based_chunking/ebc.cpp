@@ -19,10 +19,13 @@
 #include "print.h"
 #include "rhs.h"
 #include "soar_instance.h"
+#include "soar_TraceNames.h"
 #include "test.h"
 #include "xml.h"
 
 #include <assert.h>
+
+using namespace soar_TraceNames;
 
 extern Symbol* find_goal_at_goal_stack_level(agent* thisAgent, goal_stack_level level);
 extern Symbol* find_impasse_wme_value(Symbol* id, Symbol* attr);
@@ -51,7 +54,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Initialize learning setting */
     m_learning_on_for_instantiation = ebc_settings[SETTING_EBC_LEARNING_ON];
-
+    total_dc = 0;
     max_chunks_reached = false;
     m_failure_type = ebc_success;
 
@@ -90,11 +93,9 @@ void Explanation_Based_Chunker::reinit()
     m_chunk_new_i_id                    = 0;
     ovar_id_counter                     = 0;
     backtrace_number                    = 0;
-    chunk_count                         = 0;
-    justification_count                 = 0;
+    chunk_naming_counter                = 0;
+    justification_naming_counter        = 0;
     grounds_tc                          = 0;
-    locals_tc                           = 0;
-    potentials_tc                       = 0;
     m_results_match_goal_level          = 0;
     m_results_tc                        = 0;
     m_reliable                          = false;
@@ -196,18 +197,34 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     std::string lImpasseName;
     std::stringstream lName;
     std::string rule_prefix;
-    uint64_t rule_number;
+    uint64_t rule_number, rule_naming_counter;
     chunkNameFormats chunkNameFormat = ebc_params->naming_style->get_value();
 
     if (pIsChunk)
     {
         rule_prefix = chunk_name_prefix;
         rule_number = chunks_this_d_cycle;
+        if (chunkNameFormat == numberedFormat)
+        {
+            increment_counter(chunk_naming_counter);
+            rule_naming_counter = chunk_naming_counter;
+        }
     } else {
         rule_prefix = justification_name_prefix;
         rule_number = justifications_this_d_cycle;
+        if (chunkNameFormat == numberedFormat)
+        {
+            increment_counter(justification_naming_counter);
+            rule_naming_counter = justification_naming_counter;
+        }
     }
-
+    if (thisAgent->d_cycle_count <= total_dc)
+    {
+        /* Must be after an init-soar, so just keep incrementing */
+        total_dc++;
+    } else {
+        total_dc = thisAgent->d_cycle_count;
+    }
     lowest_result_level = thisAgent->top_goal->id->level;
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
         if (p->id->id->level > lowest_result_level)
@@ -221,8 +238,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     {
         case numberedFormat:
         {
-            increment_counter(chunk_count);
-            return (thisAgent->symbolManager->generate_new_str_constant(rule_prefix.c_str(), &(chunk_count)));
+            return (thisAgent->symbolManager->generate_new_str_constant(rule_prefix.c_str(), &(rule_naming_counter)));
         }
         case ruleFormat:
         {
@@ -231,7 +247,6 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
             lImpasseName.erase();
             lName << rule_prefix;
 
-            increment_counter(chunk_count);
             if (goal)
             {
                 impasse_type = type_of_existing_impasse(thisAgent, goal);
@@ -289,7 +304,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                         }
                         catch(std::invalid_argument&) //or catch(...) to catch all exceptions
                         {
-                            std::cout << "Exception caugth!" << std::endl;
+                            std::cout << "Exception caught!" << std::endl;
                         }
                         lName << 'x' << (pNum + 1);
                     } else {
@@ -303,7 +318,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                 lName << "*" << lImpasseName;
             }
 
-            lName << "*t" << thisAgent->d_cycle_count << "-" << rule_number;
+            lName << "*t" << total_dc << "-" << rule_number;
         }
     }
     lImpasseName.erase();
@@ -313,19 +328,59 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     {
         uint64_t collision_count = 1;
         std::stringstream newLName;
+        std::string lFeedback;
 
-        thisAgent->outputManager->printa_sf(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
-        xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
         do
         {
             newLName.str("");
             newLName << lName.str() << "-" << collision_count++;
         }
         while (thisAgent->symbolManager->find_str_constant(newLName.str().c_str()));
+
+        thisAgent->outputManager->sprinta_sf(thisAgent, lFeedback, "Warning: generated %s name %s already exists.  Used %s instead.\n", rule_prefix.c_str(), lName.str().c_str(), newLName.str().c_str());
+        thisAgent->outputManager->printa(thisAgent, lFeedback.c_str());
+        xml_generate_warning(thisAgent, lFeedback.c_str());
+
         lName.str(newLName.str());
         newLName.str("");
     }
 
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
     return generated_name;
+}
+void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
+{
+    /* Generate a new symbol for the name of the new chunk or justification */
+    if (pForChunk)
+    {
+        chunks_this_d_cycle++;
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+
+        m_prod_type = CHUNK_PRODUCTION_TYPE;
+        m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM] != 0);
+    }
+    else
+    {
+        justifications_this_d_cycle++;
+        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+//        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+        m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+        m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+        m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_justifications_attempted();
+        #endif
+    }
+
+    if (m_should_print_name)
+    {
+        thisAgent->outputManager->start_fresh_line(thisAgent);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
+        xml_begin_tag(thisAgent, kTagLearning);
+        xml_begin_tag(thisAgent, kTagProduction);
+        xml_att_val(thisAgent, kProduction_Name, m_prod_name);
+        xml_end_tag(thisAgent, kTagProduction);
+        xml_end_tag(thisAgent, kTagLearning);
+    }
 }

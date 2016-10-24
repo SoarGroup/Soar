@@ -30,13 +30,12 @@ Symbol* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     std::unordered_map< uint64_t, Symbol* >::iterator iter = (*o_id_to_var_map).find(index_id);
     if (iter != (*o_id_to_var_map).end())
     {
-        dprint(DT_VM_MAPS, "...found %u in variablization table: %y\n", index_id, iter->second);
         return iter->second;
     }
     else
     {
-        dprint(DT_VM_MAPS, "...did not find %u in variablization table.\n", index_id);
-        dprint_variablization_table(DT_VM_MAPS);
+        dprint(DT_VARIABLIZATION_MANAGER, "...did not find %u in variablization table.\n", index_id);
+        dprint_variablization_table(DT_VARIABLIZATION_MANAGER);
         return NULL;
     }
 }
@@ -46,13 +45,8 @@ void Explanation_Based_Chunker::store_variablization(Symbol* instantiated_sym,
         uint64_t pIdentity)
 {
     assert(instantiated_sym && variable && pIdentity);
-    dprint(DT_LHS_VARIABLIZATION, "Storing variablization for %y(o%u) to %y.\n",
-           instantiated_sym, pIdentity, variable);
-
     (*o_id_to_var_map)[pIdentity] = variable;
     thisAgent->symbolManager->symbol_add_ref(variable);
-
-    dprint(DT_VM_MAPS, "Created o_id_to_var_map for %u to new variablization.\n", pIdentity);
 }
 
 /* ============================================================================

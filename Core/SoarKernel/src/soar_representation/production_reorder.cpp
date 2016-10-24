@@ -79,7 +79,8 @@
 bool legal_to_execute_action(action* a, tc_number tc);
 
 bool reorder_action_list(agent* thisAgent, action** action_list,
-                         tc_number lhs_tc, symbol_with_match_list* ungrounded_syms)
+                         tc_number lhs_tc, symbol_with_match_list* ungrounded_syms,
+                         bool add_ungrounded)
 {
     cons* new_bound_vars;
     action* remaining_actions;
@@ -157,7 +158,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
-            if (ungrounded_syms && rhs_value_is_symbol(lAction->id))
+            if (add_ungrounded && rhs_value_is_symbol(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
@@ -177,13 +178,13 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         thisAgent->outputManager->set_print_indents();
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational actions.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with with ungrounded action.";
         }
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_rhs_repaired();
+        thisAgent->explanationMemory->increment_stat_rhs_unconnected();
         #endif
         /* --- reconstruct list of all actions --- */
         if (last_action)
@@ -839,7 +840,8 @@ cons* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
                              bool allow_printing_warnings,
-                             symbol_with_match_list* ungrounded_syms)
+                             symbol_with_match_list* ungrounded_syms,
+                             bool add_ungrounded)
 {
 
     symbol_with_match_list* new_vars_from_value_slot = new symbol_with_match_list();
@@ -916,7 +918,7 @@ cons* collect_root_variables(agent* thisAgent,
             }
             if (! found_goal_impasse_test)
             {
-                if (ungrounded_syms)
+                if (add_ungrounded)
                 {
                     symbol_with_match* lNewUngroundedSym = new symbol_with_match();
                     symbol_with_match* lOldMatchedSym = (*it);
@@ -1557,16 +1559,23 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
     }
 }
 
-bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms)
+bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbol_with_match_list* ungrounded_syms, bool add_ungrounded)
 {
     tc_number tc;
     cons* roots;
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, ungrounded_syms);
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, ungrounded_syms, add_ungrounded);
 
-    if (ungrounded_syms && ungrounded_syms->size() > 0)
+    /* MToDo | Trying to move up here.  Was after ungrounded stuff */
+    if (roots)
+    {
+        /* Include only root "STATE" test in the LHS of a chunk.*/
+        remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
+    }
+
+    if (add_ungrounded && ungrounded_syms->size() > 0)
     {
         std::string unSymString;
         for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
@@ -1579,22 +1588,16 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational conditions.";
         }
         #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_lhs_repaired();
+        thisAgent->explanationMemory->increment_stat_lhs_unconnected();
         #endif
 
         return false;
-    }
-
-    /* SBH/MVP 6-24-94 Fix to include only root "STATE" test in the LHS of a chunk.*/
-    if (roots)
-    {
-        remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
     }
 
     if (!roots)
@@ -1620,7 +1623,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Created rule with no conditions that match a goal state.";
@@ -1637,7 +1640,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, symbo
     {
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_negative_relational_test_bindings, thisAgent->name_of_production_being_reordered);
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_negative_relational_test_bindings);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_FAILURE])
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Created rule with negative relational test bindings.";

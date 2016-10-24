@@ -52,7 +52,6 @@ class Explanation_Based_Chunker
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_justification_count() { return justification_count; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
         Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
@@ -105,10 +104,12 @@ class Explanation_Based_Chunker
         Output_Manager*     outputManager;
 
         /* Statistics on learning performed so far */
-        uint64_t            chunk_count;
-        uint64_t            justification_count;
+        uint64_t            chunk_naming_counter;
+        uint64_t            justification_naming_counter;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
+        uint64_t            total_dc;
+
         std::string*        chunk_history;
 
         /* String that every chunk name begins with */
@@ -124,13 +125,11 @@ class Explanation_Based_Chunker
         /* Variables used by dependency analysis methods */
         cons*             grounds;
         cons*             locals;
-        cons*             positive_potentials;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
-        tc_number           locals_tc;
-        tc_number           potentials_tc;
         tc_number           backtrace_number;
         bool                quiescence_t_flag;
+        uint64_t            m_current_bt_inst_id;
 
         /* Variables used by result building methods */
         bool                m_learning_on_for_instantiation;
@@ -164,9 +163,9 @@ class Explanation_Based_Chunker
         id_to_sym_map*             id_to_rule_sym_debug_map;
 
         id_to_id_map*              unification_map;
-        identity_triple*                local_singleton_superstate_identity;
+        identity_triple*           local_singleton_superstate_identity;
 
-        constraint_list*                constraints;
+        constraint_list*           constraints;
         attachment_points_map*     attachment_points;
 
         /* -- Table of previously seen conditions.  Used to determine whether to

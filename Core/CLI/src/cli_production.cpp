@@ -188,6 +188,7 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
         {'r', "rl",                OPTARG_NONE},
         {'T', "template",        OPTARG_NONE},
         {'u', "user",            OPTARG_NONE},
+        {'f', "fired",            OPTARG_NONE},
         {0, 0, OPTARG_NONE}
     };
 
@@ -226,6 +227,10 @@ bool CommandLineInterface::ParseFC(std::vector< std::string >& argv)
                 break;
             case 'd':
                 options.set(cli::PRINT_DEFAULTS);
+                hasOptions = true;
+                break;
+            case 'f':
+                options.set(cli::PRINT_FIRED);
                 hasOptions = true;
                 break;
             case 'j':
@@ -855,7 +860,7 @@ bool CommandLineInterface::DoFiringCounts(PrintBitset options, const int numberT
 
         if (firings.empty())
         {
-            return SetError("No productions of that type found.");
+            return SetError("No productions in memory of those type(s).");
         }
     }
 
@@ -865,23 +870,28 @@ bool CommandLineInterface::DoFiringCounts(PrintBitset options, const int numberT
 
     // print the list
     int i = 0;
+    bool onlyFired = options.test(PRINT_FIRED);
     for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = firings.rbegin();
             j != firings.rend() && (numberToList <= 0 || i < numberToList);
             ++j, ++i)
     {
-        if (m_RawOutput)
+        if (!onlyFired || (onlyFired && (j->second > 0)))
         {
-            m_Result << std::setw(6) << j->second << ":  " << j->first << "\n";
-        }
-        else
-        {
-            std::string temp;
-            AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);
-            AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(j->second, temp));
+            if (m_RawOutput)
+            {
+                m_Result << std::setw(6) << j->second << ":  " << j->first << "\n";
+            }
+            else
+            {
+                std::string temp;
+                AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);
+                AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(j->second, temp));
+            }
         }
     }
     return true;
 }
+
 bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction)
 {
     wme_trace_type wtt = 0;

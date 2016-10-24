@@ -36,44 +36,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
     if (!pOp)
     {
-        std::string lStr("Semantic memory is ");
-        lStr.append(thisAgent->SMem->settings->learning->get_value() ? "enabled." : "not enabled.");
-        PrintCLIMessage(lStr.c_str());
-        PrintCLIMessage("Use 'smem ?' to see SMem setting and 'help smem' to learn more about the smem command.");
+        thisAgent->SMem->settings->print_summary(thisAgent);
         return true;
     }
     else if (pOp == '?')
     {
-        // Print SMem Settings
-        PrintCLIMessage_Header("Semantic Memory Settings", 40);
-        PrintCLIMessage_Item("enabled:", thisAgent->SMem->settings->learning, 40);
-        PrintCLIMessage_Section("Storage", 40);
-        PrintCLIMessage_Item("database:", thisAgent->SMem->settings->database, 40);
-        PrintCLIMessage_Item("append:", thisAgent->SMem->settings->append_db, 40);
-        PrintCLIMessage_Item("path:", thisAgent->SMem->settings->path, 40);
-        PrintCLIMessage_Item("lazy-commit:", thisAgent->SMem->settings->lazy_commit, 40);
-        PrintCLIMessage_Section("Activation", 40);
-        PrintCLIMessage_Item("activation-mode:", thisAgent->SMem->settings->activation_mode, 40);
-        PrintCLIMessage_Item("activate-on-query:", thisAgent->SMem->settings->activate_on_query, 40);
-        PrintCLIMessage_Item("activate-on-add:", thisAgent->SMem->settings->activate_on_add, 40);
-        PrintCLIMessage_Item("base-decay:", thisAgent->SMem->settings->base_decay, 40);
-        PrintCLIMessage_Item("base-update-policy:", thisAgent->SMem->settings->base_update, 40);
-        PrintCLIMessage_Item("base-incremental-threshes:", thisAgent->SMem->settings->base_incremental_threshes, 40);
-        PrintCLIMessage_Item("thresh:", thisAgent->SMem->settings->thresh, 40);
-        PrintCLIMessage_Section("Performance", 40);
-        PrintCLIMessage_Item("page-size:", thisAgent->SMem->settings->page_size, 40);
-        PrintCLIMessage_Item("cache-size:", thisAgent->SMem->settings->cache_size, 40);
-        PrintCLIMessage_Item("optimization:", thisAgent->SMem->settings->opt, 40);
-        PrintCLIMessage_Item("timers:", thisAgent->SMem->settings->timers, 40);
-        PrintCLIMessage_Section("Spreading Activation", 40);
-        PrintCLIMessage_Item("spreading:", thisAgent->SMem->settings->spreading, 40);
-        PrintCLIMessage_Item("spreading-baseline:", thisAgent->SMem->settings->spreading_baseline, 40);
-        PrintCLIMessage_Item("spreading-continue-probability:", thisAgent->SMem->settings->spreading_continue_probability, 40);
-        PrintCLIMessage_Item("spreading-depth-limit:", thisAgent->SMem->settings->spreading_depth_limit, 40);
-        PrintCLIMessage_Item("spreading-limit:", thisAgent->SMem->settings->spreading_limit, 40);
-        PrintCLIMessage_Item("spreading-loop-avoidance:", thisAgent->SMem->settings->spreading_loop_avoidance, 40);
-        PrintCLIMessage("");
-
+        thisAgent->SMem->settings->print_settings(thisAgent);
         return true;
     }
     else if (pOp == 'a')
@@ -108,6 +76,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         }
 
         return result;
+    }
+    else if (pOp == 'c')
+    {
+        if (thisAgent->SMem->clear())
+        {
+            PrintCLIMessage("Semantic memory system cleared.");
+            return true;
+        } else {
+            PrintCLIMessage("Semantic memory is not enabled. Could not clear.");
+            return false;
+        }
     }
     else if (pOp == 'e')
     {
@@ -159,6 +138,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         thisAgent->SMem->reinit();
 
         PrintCLIMessage("Semantic memory system re-initialized.");
+        if (thisAgent->SMem->settings->append_db->get_value() == on)
+        {
+            PrintCLIMessage("Note: Since append mode is on, smem --init does not clear the database.\n"
+                            "      Use smem --clear to clear the contents.");
+        }
         return true;
     }
     else if (pOp == 'h')
@@ -289,7 +273,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
 
         smem_param_container::db_choices last_db_mode = thisAgent->SMem->settings->database->get_value();
         bool result = my_param->set_string(pArg2->c_str());
-
+        if (!strcmp(pArg1->c_str(), "initial-variable-id"))
+        {
+            uint64_t counter = 1;
+            from_c_string(counter, pArg2->c_str());
+            if (counter == 0)
+            {
+                return SetError("The id counter must be at least 1.\n");
+            }
+            thisAgent->SMem->set_id_counter(counter);
+            result = true;
+        }
         if (!result)
         {
             SetError("This parameter is protected while the semantic memory database is open.");
@@ -312,8 +306,7 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
                 {
                     PrintCLIMessage("Warning: Since append mode is off, starting/reinitializing,\n"
                                     "         Soar will erase the semantic memory database.\n");
-        }
-
+                }
             }
         }
         return result;

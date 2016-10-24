@@ -1,0 +1,19 @@
+source epmem_unit_common.soar
+
+sp {apply*init2
+    (state <s> ^operator.name init)
+-->
+    (<s> ^tests <tests>)
+    (<tests> ^test <t-10>)
+    (<t-10> ^id 10
+            ^name |combined positive-negative cues|
+            ^commands <c-10>
+            ^result <r-10>)
+    (<c-10> ^query <q-10>
+            ^neg-query <nq-10>)
+    (<q-10> ^1 2)
+    (<nq-10> ^100 1)
+    (<r-10> ^graph-match 1
+            ^match-cardinality 1
+            ^memory-id 92)
+}
