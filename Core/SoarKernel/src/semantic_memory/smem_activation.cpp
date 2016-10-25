@@ -354,6 +354,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             double total_touches = 0;
             std::list<smem_edge_update*>::iterator edge_begin_it = edge_updates->begin();
             std::list<smem_edge_update*>::iterator edge_it;
+            bool prohibited = false;
             for (edge_it = edge_begin_it; edge_it != edge_updates->end(); ++edge_it)
             {
                 time = (*edge_it)->update_time;
@@ -402,6 +403,14 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 uint64_t child = (*edge_it)->lti_edge_id;
                 double touches = (*edge_it)->num_touches;
                 total_touches+=touches;
+                /*SQL->prohibit_check->bind_int(1, child);
+                prohibited = SQL->prohibit_check->execute()==soar_module::row;
+                bool dirty = false;
+                if (prohibited)
+                {
+                    dirty = SQL->prohibit_check->column_int(1)==1;
+                }
+                SQL->prohibit_check->reinitialize();*/
                 //This is where the updates are actually collected for touches from working memory.
                 for (int touch_ct = 1; touch_ct <= touches; ++touch_ct)
                 {
