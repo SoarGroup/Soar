@@ -1558,9 +1558,9 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->o_ids.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
-    pref->o_ids.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
-    pref->o_ids.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
+    pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
 
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NULL;

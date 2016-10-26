@@ -118,7 +118,8 @@ typedef struct preference_struct
     Symbol*                         value;
     Symbol*                         referent;
 
-    identity_triple                 o_ids;              /* identities for symbol*/
+    identity_triple                 identities;         /* identities for a preferences in relation to instantiation that created*/
+    identity_triple                 clone_identities;   /* identities for a result preference in relation to chunk formed*/
     rhs_triple                      rhs_funcs;          /* identities of syms in rhs functions*/
     action*                         parent_action;      /* Action that created pref.  Used by the explainer */
 

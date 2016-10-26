@@ -350,7 +350,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
         if (bt_pref)
         {
-            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->o_ids, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
+            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
             if (cond->bt.CDPS)
             {
@@ -364,7 +364,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
                         print_preference(thisAgent, p);
                     }
 
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->o_ids, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
 
                     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
                     {

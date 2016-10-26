@@ -340,23 +340,23 @@ void action_record::viz_action(action* pAction)
     } else {
         thisAgent->visualizationManager->viz_record_start();
         thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id);
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start();
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr);
         thisAgent->visualizationManager->viz_table_element_end();
         if (pAction->referent)
         {
             thisAgent->visualizationManager->viz_table_element_start();
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->viz_table_element_end();
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent);
             thisAgent->visualizationManager->viz_table_element_end();
         } else {
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
             thisAgent->visualizationManager->viz_table_element_end();

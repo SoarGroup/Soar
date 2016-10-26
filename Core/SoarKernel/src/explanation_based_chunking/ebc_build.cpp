@@ -133,16 +133,16 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     /* --- add this preference to the result list --- */
     pref->next_result = m_results;
     m_results = pref;
-    if (pref->o_ids.id && linked_id)
+    if (pref->identities.id && linked_id)
     {
-        dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->o_ids.id, linked_id);
-        add_identity_unification(pref->o_ids.id, linked_id);
+        dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
+        add_identity_unification(pref->identities.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */
-    add_results_if_needed(pref->value, pref->o_ids.value);
+    add_results_if_needed(pref->value, pref->identities.value);
     if (preference_is_binary(pref->type))
     {
-        add_results_if_needed(pref->referent, pref->o_ids.referent);
+        add_results_if_needed(pref->referent, pref->identities.referent);
     }
 }
 
@@ -158,7 +158,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_i
     dprint(DT_EXTRA_RESULTS, "...iterating through input wmes...\n");
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
-        add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
+        add_results_if_needed(w->value, w->preference ? w->preference->identities.value : 0);
     }
     dprint(DT_EXTRA_RESULTS, "...iterating through slots...\n");
     for (s = id->id->slots; s != NIL; s = s->next)
@@ -171,7 +171,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_i
         dprint(DT_EXTRA_RESULTS, "...iterating through wmes of slot...\n");
         for (w = s->wmes; w != NIL; w = w->next)
         {
-            add_results_if_needed(w->value, w->preference ? w->preference->o_ids.value : 0);
+            add_results_if_needed(w->value, w->preference ? w->preference->identities.value : 0);
         }
     } /* end of for slots loop */
     dprint(DT_EXTRA_RESULTS, "...iterating through extra results looking for id...\n");
@@ -625,7 +625,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->o_ids, result_p->rhs_funcs, true);
+                            result_p->clone_identities, result_p->rhs_funcs, true);
         thisAgent->symbolManager->symbol_add_ref(p->id);
         thisAgent->symbolManager->symbol_add_ref(p->attr);
         thisAgent->symbolManager->symbol_add_ref(p->value);
@@ -709,7 +709,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             print_preference(thisAgent, pref);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
-        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->o_ids, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
+        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {

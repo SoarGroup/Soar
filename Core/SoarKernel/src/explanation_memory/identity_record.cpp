@@ -54,12 +54,12 @@ void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
 
 void identity_record::map_originals_to_sets()
 {
-
     /* Add mappings for other instantiations's identities based on original ebc_mappings */
     id_to_id_map::iterator iter;
     id_to_sym_id_map::iterator lIter;
     sym_identity_info* lNewIDSet;
     uint64_t lMapping, lNewIdSetID;
+    thisAgent->explanationMemory->reset_identity_set_counter();
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
         lNewIDSet = new sym_identity_info();

@@ -66,19 +66,23 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
 
     if (pUnify_identities)
     {
-        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
-        if (o_ids.attr) p->o_ids.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->o_ids.attr = 0;
-        if (o_ids.value) p->o_ids.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->o_ids.value = 0;
-        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
+        if (o_ids.id) p->identities.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->identities.id = 0;
+        if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
+        if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
+        if (o_ids.id) p->identities.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->identities.id = 0;
 
     }
     else
     {
-        p->o_ids.id = o_ids.id;
-        p->o_ids.attr = o_ids.attr;
-        p->o_ids.value = o_ids.value;
-        p->o_ids.referent = o_ids.referent;
+        p->identities.id = o_ids.id;
+        p->identities.attr = o_ids.attr;
+        p->identities.value = o_ids.value;
+        p->identities.referent = o_ids.referent;
     }
+    p->clone_identities.id = 0;
+    p->clone_identities.attr = 0;
+    p->clone_identities.value = 0;
+    p->clone_identities.referent = 0;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, rhs_funcs.id, pUnify_identities);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);
@@ -113,10 +117,14 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->attr);
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
-    p->o_ids.id = pPref->o_ids.id;
-    p->o_ids.attr = pPref->o_ids.attr;
-    p->o_ids.value = pPref->o_ids.value;
-    p->o_ids.referent = pPref->o_ids.referent;
+    p->identities.id = pPref->identities.id;
+    p->identities.attr = pPref->identities.attr;
+    p->identities.value = pPref->identities.value;
+    p->identities.referent = pPref->identities.referent;
+    p->clone_identities.id = pPref->clone_identities.id;
+    p->clone_identities.attr = pPref->clone_identities.attr;
+    p->clone_identities.value = pPref->clone_identities.value;
+    p->clone_identities.referent = pPref->clone_identities.referent;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);

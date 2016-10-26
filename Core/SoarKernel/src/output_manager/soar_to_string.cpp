@@ -426,18 +426,18 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue;
-        if (pref->o_ids.id) {
-            lID = "[" + std::to_string(pref->o_ids.id) + "]";
+        if (pref->identities.id) {
+            lID = "[" + std::to_string(pref->identities.id) + "]";
         } else {
             lID = pref->id->to_string(false);
         }
-        if (pref->o_ids.attr) {
-            lAttr = "[" + std::to_string(pref->o_ids.attr) + "]";
+        if (pref->identities.attr) {
+            lAttr = "[" + std::to_string(pref->identities.attr) + "]";
         } else {
             lAttr = pref->attr->to_string(false);
         }
-        if (pref->o_ids.value) {
-            lValue = "[" + std::to_string(pref->o_ids.value) + "]";
+        if (pref->identities.value) {
+            lValue = "[" + std::to_string(pref->identities.value) + "]";
         } else {
             lValue = pref->value->to_string(false);
         }

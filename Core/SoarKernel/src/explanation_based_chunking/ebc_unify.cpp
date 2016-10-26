@@ -48,10 +48,10 @@ void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rhs_value lRHS;
-    if (lPref->o_ids.id) lPref->o_ids.id = get_identity(lPref->o_ids.id);
-    if (lPref->o_ids.attr) lPref->o_ids.attr = get_identity(lPref->o_ids.attr);
-    if (lPref->o_ids.value) lPref->o_ids.value = get_identity(lPref->o_ids.value);
-    if (lPref->o_ids.referent) lPref->o_ids.referent = get_identity(lPref->o_ids.referent);
+    if (lPref->identities.id) lPref->identities.id = get_identity(lPref->identities.id);
+    if (lPref->identities.attr) lPref->identities.attr = get_identity(lPref->identities.attr);
+    if (lPref->identities.value) lPref->identities.value = get_identity(lPref->identities.value);
+    if (lPref->identities.referent) lPref->identities.referent = get_identity(lPref->identities.referent);
     if (lPref->rhs_funcs.id)
     {
         lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
