@@ -37,6 +37,11 @@ extern const int OPEN_CREATE;       // SQLITE_OPEN_CREATE
 /// Enable URI filename interpretation, parsed according to RFC 3986 (ex. "file:data.db?mode=ro&cache=private")
 extern const int OPEN_URI;          // SQLITE_OPEN_URI
 
+extern const int OPEN_FULLMUTEX;    // SQLITE_OPEN_FULLMUTEX
+extern const int OPEN_NOMUTEX;      // SQLITE_OPEN_NOMUTEX
+
+extern const int OPEN_SHAREDCACHE;  // SQLITE_OPEN_SHAREDCACHE
+
 extern const int OK;                ///< SQLITE_OK (used by inline check() bellow)
 
 extern const char*  VERSION;        ///< SQLITE_VERSION string from the sqlite3.h used at compile time
@@ -113,6 +118,11 @@ public:
              const int          aFlags          = SQLite::OPEN_READONLY,
              const int          aBusyTimeoutMs  = 0,
              const std::string& aVfs            = "");
+
+    void reconnect(const std::string& aFilename,
+                   const int          aFlags          = SQLite::OPEN_READONLY,
+                   const int          aBusyTimeoutMs  = 0,
+                   const std::string& aVfs            = "");
 
     /**
      * @brief Move semantics for Database

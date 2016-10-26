@@ -46,6 +46,7 @@ class SMem_Manager
         friend smem_db_predicate<smem_param_container::page_choices>;
         friend smem_db_predicate<smem_param_container::opt_choices>;
         friend smem_db_predicate<boolean>;
+        friend sqlite_job_queue;
 
 
     public:
@@ -104,7 +105,6 @@ class SMem_Manager
 
         // Multi-Threading
         void recreateDB(std::string path);
-        sqlite_job_queue JobQueue;
 
         std::mutex agent_jobqueue_boundary_mutex;
         struct query_result
@@ -128,8 +128,11 @@ class SMem_Manager
         smem_stat_container*            statistics;
         SQLite::Database                DB;
         SMemExperimental::smem_statement_container        SQL;
+        sqlite_job_queue JobQueue;
 
         static const std::string            memoryDatabasePath;
+        static const int                    sqlite3Flags;
+        static const int                    sqlite3Timeout;
 
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
@@ -196,7 +199,7 @@ class SMem_Manager
         bool                            process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery);
         void                            process_query(Symbol* state, Symbol* query, Symbol* negquery, Symbol* mathQuery, const id_set& prohibit, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full, std::list<uint64_t> *match_ids = nullptr, uint64_t number_to_retrieve = 1, uint64_t depth = 1, smem_install_type install_type = wm_install, bool synchronous = false);
         std::pair<bool, bool>*          processMathQuery(Symbol* mathQuery, smem_prioritized_weighted_cue* weighted_pq);
-        SQLite::Statement& setup_web_crawl(smem_weighted_cue_element* el);
+        sqlite_thread_guard setup_web_crawl(smem_weighted_cue_element* el);
 
 
 };

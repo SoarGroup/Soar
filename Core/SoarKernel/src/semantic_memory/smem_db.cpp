@@ -364,11 +364,18 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
 
 smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
 {
-    SQLite::bind(SQL.hash_add_type, symbol_type);
-    SQL.hash_add_type.exec();
-    SQL.hash_add_type.reset();
+    smem_hash_id rowID = 0;
 
-    return DB.getLastInsertRowid();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_add_type);
+
+        SQLite::bind(*sql, symbol_type);
+        sql->exec();
+
+        rowID = JobQueue.db.getLastInsertRowid();
+    })->wait();
+
+    return rowID;
 }
 
 smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
@@ -376,24 +383,30 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQLite::bind(SQL.hash_get_int, val);
-    if (SQL.hash_get_int.executeStep())
-    {
-        return_val = SQL.hash_get_int.getColumn(0).getInt();
-    }
-    SQL.hash_get_int.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_get_int);
 
-    // if fail and supposed to add
-    if (!return_val && add_on_fail)
-    {
-        // type first
-        return_val = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
+        SQLite::bind(*sql, val);
+        if (sql->executeStep())
+            return_val = sql->getColumn(0).getUInt64();
 
-        // then content
-        SQLite::bind(SQL.hash_add_int, return_val, val);
-        SQL.hash_add_int.exec();
-        SQL.hash_add_int.reset();
-    }
+        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+        sql->reset();
+
+        if (!return_val && add_on_fail)
+        {
+            JobQueue.post([&]() mutable {
+                // type first
+                return_val = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
+
+                // then content
+                auto sql = sqlite_thread_guard(SQL.hash_add_int);
+
+                SQLite::bind(*sql, return_val, val);
+                sql->exec();
+            })->wait();
+        }
+    })->wait();
 
     return return_val;
 }
@@ -403,24 +416,30 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQLite::bind(SQL.hash_get_float, val);
-    if (SQL.hash_get_float.executeStep())
-    {
-        return_val = SQL.hash_get_float.getColumn(0).getDouble();
-    }
-    SQL.hash_get_float.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_get_float);
 
-    // if fail and supposed to add
-    if (!return_val && add_on_fail)
-    {
-        // type first
-        return_val = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
+        SQLite::bind(*sql, val);
+        if (sql->executeStep())
+            return_val = sql->getColumn(0).getUInt64();
 
-        // then content
-        SQLite::bind(SQL.hash_add_float, return_val, val);
-        SQL.hash_add_float.exec();
-        SQL.hash_add_float.reset();
-    }
+        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+        sql->reset();
+
+        if (!return_val && add_on_fail)
+        {
+            JobQueue.post([&]() mutable {
+                // type first
+                return_val = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
+
+                // then content
+                auto sql = sqlite_thread_guard(SQL.hash_add_float);
+
+                SQLite::bind(*sql, return_val, val);
+                sql->exec();
+            })->wait();
+        }
+    })->wait();
 
     return return_val;
 }
@@ -430,24 +449,30 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
     smem_hash_id return_val = NIL;
 
     // search first
-    SQLite::bind(SQL.hash_get_str, val);
-    if (SQL.hash_get_str.executeStep())
-    {
-        return_val = SQL.hash_get_str.getColumn(0).getInt();
-    }
-    SQL.hash_get_str.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_get_str);
 
-    // if fail and supposed to add
-    if (!return_val && add_on_fail)
-    {
-        // type first
-        return_val = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
+        SQLite::bind(*sql, val);
+        if (sql->executeStep())
+            return_val = sql->getColumn(0).getUInt64();
 
-        // then content
-        SQLite::bind(SQL.hash_add_str, return_val, val);
-        SQL.hash_add_str.exec();
-        SQL.hash_add_str.reset();
-    }
+        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+        sql->reset();
+
+        if (!return_val && add_on_fail)
+        {
+            JobQueue.post([&]() mutable {
+                // type first
+                return_val = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
+
+                // then content
+                auto sql = sqlite_thread_guard(SQL.hash_add_str);
+
+                SQLite::bind(*sql, return_val, val);
+                sql->exec();
+            })->wait();
+        }
+    })->wait();
 
     return return_val;
 }
@@ -502,13 +527,13 @@ int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
 {
     int64_t return_val = NIL;
 
-    SQLite::bind(SQL.hash_rev_int, hash_value);
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_rev_int);
 
-    assert(SQL.hash_rev_int.executeStep());
-
-    return_val = SQL.hash_rev_int.getColumn(0).getInt64();
-
-    SQL.hash_rev_int.reset();
+        SQLite::bind(*sql, hash_value);
+        assert(sql->executeStep());
+        return_val = sql->getColumn(0).getInt64();
+    })->wait();
 
     return return_val;
 }
@@ -517,29 +542,29 @@ double SMem_Manager::rhash__float(smem_hash_id hash_value)
 {
     double return_val = NIL;
 
-    SQLite::bind(SQL.hash_rev_float, hash_value);
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_rev_float);
 
-    assert(SQL.hash_rev_float.executeStep());
-
-    return_val = SQL.hash_rev_float.getColumn(0).getDouble();
-
-    SQL.hash_rev_float.reset();
+        SQLite::bind(*sql, hash_value);
+        assert(sql->executeStep());
+        return_val = sql->getColumn(0).getDouble();
+    })->wait();
 
     return return_val;
 }
 
 void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
 {
-    SQLite::bind(SQL.hash_rev_str, hash_value);
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.hash_rev_str);
 
-    assert(SQL.hash_rev_str.executeStep());
-
-    dest = SQL.hash_rev_str.getColumn(0).getString();
-
-    SQL.hash_rev_str.reset();
+        SQLite::bind(*sql, hash_value);
+        assert(sql->executeStep());
+        dest = sql->getColumn(0).getString();
+    })->wait();
 }
 
- Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
+Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
 {
     Symbol* return_val = NULL;
     std::string dest;
@@ -783,36 +808,43 @@ void SMem_Manager::init_db()
 // gets an SMem variable from the database
 bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable_value)
 {
-    SQL.var_get.bind(variable_id);
-    guard g([this]() {
-        SQL.var_get.reset();
-    });
+    bool result = false;
 
-    if (SQL.var_get.executeStep())
-    {
-        *variable_value = SQL.var_get.getColumn(0).getInt();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.var_get);
+
+        SQLite::bind(*sql, variable_id);
+
+        if (sql->executeStep())
+        {
+            *variable_value = sql->getColumn(0).getInt64();
+            result = true;
+        }
+    })->wait();
+
+    return result;
 }
 
 // sets an existing SMem variable in the database
 void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_value)
 {
-    SQLite::bind(SQL.var_set, variable_value, variable_id);
-    SQL.var_set.exec();
-    SQL.var_set.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.var_set);
+
+        SQLite::bind(*sql, variable_value, variable_id);
+        sql->exec();
+    })->wait();
 }
 
 // creates a new SMem variable in the database
 void SMem_Manager::variable_create(smem_variable_key variable_id, int64_t variable_value)
 {
-    SQLite::bind(SQL.var_create, variable_id, variable_value);
-    SQL.var_create.exec();
-    SQL.var_create.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.var_create);
+
+        SQLite::bind(*sql, variable_id, variable_value);
+        sql->exec();
+    })->wait();
 }
 
 void SMem_Manager::store_globals_in_db()
@@ -966,15 +998,16 @@ uint64_t SMem_Manager::lti_exists(uint64_t pLTI_ID)
 
     if (connected())
     {
-        SQLite::bind(SQL.lti_id_exists, pLTI_ID);
+        JobQueue.post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL.lti_id_exists);
 
-        if (SQL.lti_id_exists.executeStep())
-        {
-            return_val = SQL.lti_id_exists.getColumn(0).getInt64();
-        }
+            SQLite::bind(*sql, pLTI_ID);
 
-        SQL.lti_id_exists.reset();
+            if (sql->executeStep())
+                return_val = sql->getColumn(0).getUInt64();
+        })->wait();
     }
+
     return return_val;
 }
 
@@ -984,13 +1017,14 @@ uint64_t SMem_Manager::get_max_lti_id()
 
     if (connected())
     {
-        if (SQL.lti_id_max.executeStep())
-        {
-            return_val = SQL.lti_id_max.getColumn(0).getInt64();
-        }
+        JobQueue.post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL.lti_id_max);
 
-        SQL.lti_id_max.reset();
+            if (sql->executeStep())
+                return_val = sql->getColumn(0).getUInt64();
+        })->wait();
     }
+
     return return_val;
 }
 
@@ -1001,12 +1035,16 @@ uint64_t SMem_Manager::add_new_LTI()
     {
         lti_id = ++lti_id_counter;
     }
-    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    SQLite::bind(SQL.lti_add, lti_id, 0, 0, 0, 0, 0);
-    SQL.lti_add.exec();
-    SQL.lti_add.reset();
 
-//    assert(lti_id_counter == smem_db->last_insert_rowid());
+    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.lti_add);
+
+        SQLite::bind(*sql, lti_id, 0, 0, 0, 0, 0);
+        sql->exec();
+
+    //    assert(lti_id_counter == smem_db->last_insert_rowid());
+    })->wait();
 
     statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 
@@ -1016,11 +1054,15 @@ uint64_t SMem_Manager::add_new_LTI()
 uint64_t SMem_Manager::add_specific_LTI(uint64_t lti_id)
 {
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    SQLite::bind(SQL.lti_add, lti_id, 0, 0, 0, 0, 0);
-    SQL.lti_add.exec();
-    SQL.lti_add.reset();
 
-//    assert(lti_id_counter == smem_db->last_insert_rowid());
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.lti_add);
+
+        SQLite::bind(*sql, lti_id, 0, 0, 0, 0, 0);
+        sql->exec();
+
+        //    assert(lti_id_counter == smem_db->last_insert_rowid());
+    })->wait();
 
     statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 

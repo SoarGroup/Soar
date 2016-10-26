@@ -52,10 +52,15 @@
 #include "smem_math_query.h"
 
 const std::string SMem_Manager::memoryDatabasePath = "file:smem_soar?mode=memory&cache=shared";
+const int SMem_Manager::sqlite3Flags =
+    SQLite::OPEN_READWRITE      |
+    SQLite::OPEN_URI            |
+    SQLite::OPEN_NOMUTEX;
+const int SMem_Manager::sqlite3Timeout = 20000;
 
 void SMem_Manager::recreateDB(std::string db_path)
 {
-    DB = SQLite::Database(db_path, SQLite::OPEN_READWRITE | SQLite::OPEN_URI);
+    DB.reconnect(db_path, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
 
     // reinitialize in-place
     static_assert(!std::has_virtual_destructor<sqlite_job_queue>::value, "Unsafe");
@@ -469,7 +474,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, nullptr, 1, depth, wm_install, true);
+                    process_query(state, query, negquery, math, prohibit_lti, cue_wmes, meta_wmes, retrieval_wmes, qry_full, nullptr, 1, depth, wm_install, settings->synchronous_db->get_value());
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
@@ -486,8 +491,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL.begin.exec();
-                        thisAgent->SMem->SQL.begin.reset();
+//                        thisAgent->SMem->SQL.begin.exec();
+//                        thisAgent->SMem->SQL.begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -504,8 +509,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL.commit.exec();
-                        thisAgent->SMem->SQL.commit.reset();
+//                        thisAgent->SMem->SQL.commit.exec();
+//                        thisAgent->SMem->SQL.commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -524,8 +529,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL.begin.exec();
-                        thisAgent->SMem->SQL.begin.reset();
+//                        thisAgent->SMem->SQL.begin.exec();
+//                        thisAgent->SMem->SQL.begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -542,8 +547,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-                        thisAgent->SMem->SQL.commit.exec();
-                        thisAgent->SMem->SQL.commit.reset();
+//                        thisAgent->SMem->SQL.commit.exec();
+//                        thisAgent->SMem->SQL.commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -748,7 +753,7 @@ SMem_Manager::SMem_Manager(agent* myAgent)
 : thisAgent(myAgent),
 settings(new smem_param_container(myAgent)),
 statistics(new smem_stat_container(myAgent)),
-DB(SMem_Manager::memoryDatabasePath, SQLite::OPEN_READWRITE | SQLite::OPEN_URI),
+DB(SMem_Manager::memoryDatabasePath, sqlite3Flags, sqlite3Timeout),
 SQL(this),
 JobQueue(SMem_Manager::memoryDatabasePath)
 {
@@ -757,7 +762,6 @@ JobQueue(SMem_Manager::memoryDatabasePath)
     timers = new smem_timer_container(thisAgent);
 
     smem_validation = 0;
-
 };
 
 void SMem_Manager::clean_up_for_agent_deletion()

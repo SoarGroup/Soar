@@ -17,6 +17,8 @@
 
 #include <sqlite3.h>
 
+#include <condition_variable>
+
 namespace SQLite
 {
 
@@ -272,7 +274,6 @@ void Statement::bind(const char* apName)
     const int ret = sqlite3_bind_null(mStmtPtr, index);
     check(ret);
 }
-
 
 // Execute a step of the query to fetch one row of results
 bool Statement::executeStep()

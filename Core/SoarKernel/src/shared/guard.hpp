@@ -11,6 +11,7 @@
 
 #include <functional>
 #include "Statement.h"
+#include "job_queue.hpp"
 
 class guard
 {
@@ -29,5 +30,15 @@ public:
     reset_guard(SQLite::Statement& s) : to_reset(s) {}
     ~reset_guard() { to_reset.reset(); }
 };
+
+class wait_guard
+{
+    std::shared_ptr<job_queue::job> job;
+
+public:
+    wait_guard(std::shared_ptr<job_queue::job> j) : job(j) {}
+    ~wait_guard() { job->wait(); }
+};
+
 
 #endif /* guard_hpp */

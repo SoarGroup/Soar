@@ -24,36 +24,41 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
 
     if (n == 0)
     {
-        reset_guard r(SQL.lti_access_get);
+        JobQueue.post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL.lti_access_get);
 
-        SQLite::bind(SQL.lti_access_get, pLTI_ID);
-        SQL.lti_access_get.executeStep();
+            SQLite::bind(*sql, pLTI_ID);
+            sql->executeStep();
 
-        n = SQL.lti_access_get.getColumn(0).getInt();
-        activations_first = SQL.lti_access_get.getColumn(2).getInt();
+            n = sql->getColumn(0).getInt();
+            activations_first = sql->getColumn(2).getInt();
+        })->wait();
     }
 
     // get all history
-    reset_guard r(SQL.history_get);
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.history_get);
 
-    SQL.history_get.bind(1, pLTI_ID);
-    if (SQL.history_get.executeStep())
-    {
-        int available_history = static_cast<int>((SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n));
-        t_k = static_cast<uint64_t>(time_now - SQL.history_get.getColumn(available_history - 1).getInt());
+        SQLite::bind(*sql, pLTI_ID);
 
-        for (int i = 0; i < available_history; i++)
+        if (sql->executeStep())
         {
-            sum += pow(static_cast<double>(time_now - SQL.history_get.getColumn(i).getInt()),
-                       static_cast<double>(-d));
+            uint64_t available_history = (SMEM_ACT_HISTORY_ENTRIES < n) ? (SMEM_ACT_HISTORY_ENTRIES) : (n);
+            t_k = uint64_t(time_now - sql->getColumn(int(available_history - 1)).getInt64());
+
+            for (uint64_t i = 0; i < available_history; i++)
+            {
+                sum += pow(double(time_now - sql->getColumn(int(i)).getInt64()),
+                           double(-d));
+            }
         }
-    }
+    })->wait();
 
     // if available history was insufficient, approximate rest
     if (n > SMEM_ACT_HISTORY_ENTRIES)
     {
-        double apx_numerator = (static_cast<double>(n - SMEM_ACT_HISTORY_ENTRIES) * (pow(static_cast<double>(t_n), 1.0 - d) - pow(static_cast<double>(t_k), 1.0 - d)));
-        double apx_denominator = ((1.0 - d) * static_cast<double>(t_n - t_k));
+        double apx_numerator = (double(n - SMEM_ACT_HISTORY_ENTRIES) * (pow(double(t_n), 1.0 - d) - pow(double(t_k), 1.0 - d)));
+        double apx_denominator = ((1.0 - d) * double(t_n - t_k));
 
         sum += (apx_numerator / apx_denominator);
     }
@@ -90,18 +95,14 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
                     if (time_diff > 0)
                     {
-                        std::list< uint64_t > to_update;
+                        JobQueue.post([&]() {
+                            auto sql = sqlite_thread_guard(SQL.lti_get_t);
 
-                        reset_guard r(SQL.lti_get_t);
-                        SQL.lti_get_t.bind(1, time_diff);
+                            SQLite::bind(*sql, time_diff);
 
-                        while (SQL.lti_get_t.executeStep())
-                            to_update.push_back(SQL.lti_get_t.getColumn(0).getInt());
-
-                        for (std::list< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
-                        {
-                            lti_activate((*it), false);
-                        }
+                            while (sql->executeStep())
+                                lti_activate(sql->getColumn(0).getInt64(), false);
+                        })->wait();
                     }
                 }
             }
@@ -119,31 +120,48 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     uint64_t prev_access_t = 0;
     uint64_t prev_access_1 = 0;
 
-    {
-        // get old (potentially useful below)
-        reset_guard r(SQL.lti_access_get);
+    // get old (potentially useful below)
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.lti_access_get);
 
-        SQL.lti_access_get.bind(1, pLTI_ID);
-        SQL.lti_access_get.executeStep();
+        SQLite::bind(*sql, pLTI_ID);
+        sql->executeStep();
 
-        prev_access_n = SQL.lti_access_get.getColumn(0).getInt();
-        prev_access_t = SQL.lti_access_get.getColumn(1).getInt();
-        prev_access_1 = SQL.lti_access_get.getColumn(2).getInt();
+        prev_access_n = sql->getColumn(0).getUInt64();
+        prev_access_t = sql->getColumn(1).getUInt64();
+        prev_access_1 = sql->getColumn(2).getUInt64();
+
+        // DID: SQLITE_LOCKED
+        //
+        // You will get SQLITE_LOCKED if you do not include this.
+        // There is a read-write conflict between this thread
+        // and the thread the add_access job is called on
+        // which will be unable to be resolved until this
+        // statement goes out of scope, except that it won't
+        // because it is waiting on that job to finish.  Aka
+        // you get an infinite loop if you try to use
+        // unlock_notify and you get SQLITE_LOCKED if you don't.
+        //
+        // TL;DR: reset any statements before writes to prevent
+        // read-write, write-read, write-write conflicts.
+        sql->reset();
 
         // set new
         if (add_access)
         {
-            reset_guard r(SQL.lti_access_set);
+            JobQueue.post([&]() {
+                auto sql = sqlite_thread_guard(SQL.lti_access_set);
 
-            SQLite::bind(SQL.lti_access_set,
-                 prev_access_n + 1,
-                 time_now,
-                 ((prev_access_n == 0) ? (time_now) : (prev_access_1)),
-                 pLTI_ID);
+                SQLite::bind(*sql,
+                             prev_access_n + 1,
+                             time_now,
+                             ((prev_access_n == 0) ? (time_now) : (prev_access_1)),
+                             pLTI_ID);
 
-            SQL.lti_access_set.exec();
+                sql->exec();
+            })->wait();
         }
-    }
+    })->wait();
 
     // get new activation value (depends upon bias)
     double new_activation = 0.0;
@@ -162,10 +180,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                reset_guard r(SQL.history_add);
+                JobQueue.post([&]() {
+                    auto sql = sqlite_thread_guard(SQL.history_add);
 
-                SQLite::bind(SQL.history_add, pLTI_ID, time_now);
-                SQL.history_add.exec();
+                    SQLite::bind(*sql, pLTI_ID, time_now);
+                    sql->exec();
+                })->wait();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);;
@@ -174,10 +194,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                reset_guard r(SQL.history_push);
+                JobQueue.post([&]() {
+                    auto sql = sqlite_thread_guard(SQL.history_push);
 
-                SQLite::bind(SQL.history_push, time_now, pLTI_ID);
-                SQL.history_push.exec();
+                    SQLite::bind(*sql, time_now, pLTI_ID);
+                    sql->exec();
+                })->wait();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
@@ -187,30 +209,36 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
-        reset_guard r(SQL.act_lti_child_ct_get);
-        SQLite::bind(SQL.act_lti_child_ct_get, pLTI_ID);
+        JobQueue.post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL.act_lti_child_ct_get);
 
-        SQL.act_lti_child_ct_get.executeStep();
-        num_edges = SQL.act_lti_child_ct_get.getColumn(0).getInt();
+            SQLite::bind(*sql, pLTI_ID);
+
+            sql->executeStep();
+            num_edges = sql->getColumn(0).getUInt64();
+        })->wait();
     }
 
     // only if augmentation count is less than threshold do we associate with edges
     if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()))
     {
         // activation_value=? WHERE lti=?
-        reset_guard r(SQL.act_set);
+        JobQueue.post([&]() {
+            auto sql = sqlite_thread_guard(SQL.act_set);
 
-        SQLite::bind(SQL.act_set, new_activation, pLTI_ID);
-        SQL.act_set.exec();
+            SQLite::bind(*sql, new_activation, pLTI_ID);
+            sql->exec();
+        })->wait();
     }
 
     // always associate activation with lti
-    {
-        // activation_value=? WHERE lti=?
-        reset_guard r(SQL.act_lti_set);
-        SQLite::bind(SQL.act_lti_set, new_activation, pLTI_ID);
-        SQL.act_lti_set.exec();
-    }
+    // activation_value=? WHERE lti=?
+    JobQueue.post([&]() {
+        auto sql = sqlite_thread_guard(SQL.act_lti_set);
+
+        SQLite::bind(*sql, new_activation, pLTI_ID);
+        sql->exec();
+    })->wait();
 
     ////////////////////////////////////////////////////////////////////////////
     timers->act->stop();

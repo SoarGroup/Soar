@@ -28,6 +28,9 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     append_db = new soar_module::boolean_param("append", on, new soar_module::f_predicate<boolean>());
     add(append_db);
 
+    synchronous_db = new soar_module::boolean_param("synchronous", on, new soar_module::f_predicate<boolean>());
+    add(synchronous_db);
+
     // path
     path = new smem_path_param("path", "", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>(), thisAgent);
     add(path);
@@ -226,5 +229,5 @@ bool SMem_Manager::enabled()
 
 bool SMem_Manager::connected()
 {
-    return true;
+    return DB.containsData();
 }

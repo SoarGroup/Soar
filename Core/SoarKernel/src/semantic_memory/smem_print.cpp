@@ -101,68 +101,72 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
         new_ltm->lti_id = parent_lti->lti_id;
         new_ltm->slots = new ltm_slot_map();
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_lti
-        SQLite::bind(SQL.web_expand, parent_lti->lti_id);
-        while (SQL.web_expand.executeStep())
-        {
-            Symbol* attr = rhash_(static_cast<byte>(SQL.web_expand.getColumn(0).getInt64()), static_cast<smem_hash_id>(SQL.web_expand.getColumn(1).getInt64()));
-            //thisAgent->symbolManager->symbol_remove_ref(&attr);
-            if (new_ltm->slots->find(attr) == new_ltm->slots->end())
-            {
-                (*(new_ltm->slots))[attr] = new ltm_slot();
-            }
-            ltm_value* new_value = new ltm_value();
+        JobQueue.post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL.web_expand);
 
-            if (SQL.web_expand.getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
+            SQLite::bind(*sql, parent_lti->lti_id);
+            while (sql->executeStep())
             {
-                new_lti = new smem_vis_lti;
-                new_lti->lti_id = SQL.web_expand.getColumn(4).getInt64();
-                new_lti->level = (parent_lti->level + 1);
-                thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
-                new_value->val_lti.val_type = value_lti_t;
-                new_value->val_const.val_type = value_lti_t;
-                new_value->val_lti.val_value = new ltm_object();
-                new_value->val_lti.val_value->lti_id = new_lti->lti_id;
-                // prevent looping
+                Symbol* attr = rhash_(static_cast<byte>(sql->getColumn(0).getInt64()), static_cast<smem_hash_id>(sql->getColumn(1).getUInt64()));
+                //thisAgent->symbolManager->symbol_remove_ref(&attr);
+                if (new_ltm->slots->find(attr) == new_ltm->slots->end())
                 {
-                    cl_p = close_list.find(new_lti->lti_id);
-                    if (cl_p == close_list.end())
-                    {
-                        close_list.insert(std::make_pair(new_lti->lti_id, new_lti));
+                    (*(new_ltm->slots))[attr] = new ltm_slot();
+                }
+                ltm_value* new_value = new ltm_value();
 
-                        if ((depth == 0) || (new_lti->level < depth))
+                if (sql->getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
+                {
+                    new_lti = new smem_vis_lti;
+                    new_lti->lti_id = sql->getColumn(4).getUInt64();
+                    new_lti->level = (parent_lti->level + 1);
+                    thisAgent->SMem->get_lti_name(new_lti->lti_id, new_lti->lti_name);
+                    new_value->val_lti.val_type = value_lti_t;
+                    new_value->val_const.val_type = value_lti_t;
+                    new_value->val_lti.val_value = new ltm_object();
+                    new_value->val_lti.val_value->lti_id = new_lti->lti_id;
+                    // prevent looping
+                    {
+                        cl_p = close_list.find(new_lti->lti_id);
+                        if (cl_p == close_list.end())
                         {
-                            bfs.push(new_lti);
+                            close_list.insert(std::make_pair(new_lti->lti_id, new_lti));
+
+                            if ((depth == 0) || (new_lti->level < depth))
+                            {
+                                bfs.push(new_lti);
+                            }
+                        }
+                        else
+                        {
+                            delete new_lti;
+                            new_lti = NULL;
                         }
                     }
-                    else
-                    {
-                        delete new_lti;
-                        new_lti = NULL;
-                    }
                 }
+                else
+                {
+                    new_value->val_const.val_type = value_const_t;
+                    new_value->val_lti.val_type = value_const_t;
+                    new_value->val_const.val_value  = rhash_(sql->getColumn(2).getInt64(),sql->getColumn(3).getInt64());
+                    //thisAgent->symbolManager->symbol_remove_ref(&(new_value->val_const.val_value));
+                }
+                new_ltm->slots->at(attr)->push_back(new_value);
             }
-            else
-            {
-                new_value->val_const.val_type = value_const_t;
-                new_value->val_lti.val_type = value_const_t;
-                new_value->val_const.val_value  = rhash_(SQL.web_expand.getColumn(2).getInt64(),SQL.web_expand.getColumn(3).getInt64());
-                //thisAgent->symbolManager->symbol_remove_ref(&(new_value->val_const.val_value));
-            }
-            new_ltm->slots->at(attr)->push_back(new_value);
-        }
-        store_set->insert(new_ltm);
-        SQL.web_expand.reset();
+            store_set->insert(new_ltm);
+        })->wait();
     }
 }
 
 void SMem_Manager::create_full_store_set(ltm_set* store_set)
 {
     //This makes a set that contains the entire contents of smem.
-    while (SQL.vis_lti.executeStep())
-    {
-        create_store_set(store_set, SQL.vis_lti.getColumn(0).getInt64(), 1);
-    }
-    SQL.vis_lti.reset();
+    JobQueue.post([&]() {
+        auto sql = sqlite_thread_guard(SQL.vis_lti);
+
+        while (sql->executeStep())
+            create_store_set(store_set, sql->getColumn(0).getInt64(), 1);
+    })->wait();
 }
 
 void SMem_Manager::clear_store_set(ltm_set* store_set)
@@ -221,88 +225,28 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
 
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    SQLite::bind(SQL.web_expand, pLTI_ID);
-    while (SQL.web_expand.executeStep())
-    {
-        // get attribute
-        switch (SQL.web_expand.getColumn(0).getInt64())
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.web_expand);
+
+        SQLite::bind(*sql, pLTI_ID);
+        while (sql->executeStep())
         {
-            case STR_CONSTANT_SYMBOL_TYPE:
-            {
-                rhash__str(SQL.web_expand.getColumn(1).getInt64(), temp_str);
-
-                if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
-                {
-                    temp_str.insert(0, "|");
-                    temp_str += '|';
-                    break;
-                }
-
-                soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
-                    strlen(temp_str.c_str()),
-                    &possible_id,
-                    &possible_var,
-                    &possible_sc,
-                    &possible_ic,
-                    &possible_fc,
-                    &is_rereadable);
-
-                bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
-
-                if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                    (!is_rereadable) ||
-                    has_angle_bracket)
-                {
-                    /* BUGBUG if in context where id's could occur, should check
-                     possible_id flag here also */
-                    temp_str.insert(0, "|");
-                    temp_str += '|';
-                }
-                break;
-            }
-            case INT_CONSTANT_SYMBOL_TYPE:
-                temp_int = rhash__int(SQL.web_expand.getColumn(1).getInt64());
-                to_string(temp_int, temp_str);
-                break;
-
-            case FLOAT_CONSTANT_SYMBOL_TYPE:
-                temp_double = rhash__float(SQL.web_expand.getColumn(1).getInt64());
-                to_string(temp_double, temp_str);
-                break;
-
-            default:
-                temp_str.clear();
-                break;
-        }
-
-        // identifier vs. constant
-        if (SQL.web_expand.getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
-        {
-            temp_lti_id = static_cast<uint64_t>(SQL.web_expand.getColumn(4).getInt64());
-            temp_str2.clear();
-            get_lti_name(temp_lti_id, temp_str2);
-
-            /* The following line prints the children indented.  It seems redundant when printing the
-             * smem store, but perhaps it's useful for printing something rooted in an lti? */
-            next.insert(temp_lti_id);
-        }
-        else
-        {
-            switch (SQL.web_expand.getColumn(2).getInt64())
+            // get attribute
+            switch (sql->getColumn(0).getInt64())
             {
                 case STR_CONSTANT_SYMBOL_TYPE:
                 {
-                    rhash__str(SQL.web_expand.getColumn(3).getInt64(), temp_str2);
+                    rhash__str(sql->getColumn(1).getInt64(), temp_str);
 
-                    if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
+                    if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
                     {
-                        temp_str2.insert(0, "|");
-                        temp_str2 += '|';
+                        temp_str.insert(0, "|");
+                        temp_str += '|';
                         break;
                     }
 
-                    soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
-                        temp_str2.length(),
+                    soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
+                        strlen(temp_str.c_str()),
                         &possible_id,
                         &possible_var,
                         &possible_sc,
@@ -310,7 +254,7 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
                         &possible_fc,
                         &is_rereadable);
 
-                    bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
+                    bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
 
                     if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
                         (!is_rereadable) ||
@@ -318,30 +262,93 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
                     {
                         /* BUGBUG if in context where id's could occur, should check
                          possible_id flag here also */
-                        temp_str2.insert(0, "|");
-                        temp_str2 += '|';
+                        temp_str.insert(0, "|");
+                        temp_str += '|';
                     }
                     break;
                 }
                 case INT_CONSTANT_SYMBOL_TYPE:
-                    temp_int = rhash__int(SQL.web_expand.getColumn(3).getInt64());
-                    to_string(temp_int, temp_str2);
+                    temp_int = rhash__int(sql->getColumn(1).getInt64());
+                    to_string(temp_int, temp_str);
                     break;
 
                 case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    temp_double = rhash__float(SQL.web_expand.getColumn(3).getInt64());
-                    to_string(temp_double, temp_str2);
+                    temp_double = rhash__float(sql->getColumn(1).getInt64());
+                    to_string(temp_double, temp_str);
                     break;
 
                 default:
-                    temp_str2.clear();
+                    temp_str.clear();
                     break;
             }
-        }
 
-        augmentations[ temp_str ].push_back(temp_str2);
-    }
-    SQL.web_expand.reset();
+            // identifier vs. constant
+            if (sql->getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
+            {
+                temp_lti_id = static_cast<uint64_t>(sql->getColumn(4).getInt64());
+                temp_str2.clear();
+                get_lti_name(temp_lti_id, temp_str2);
+
+                /* The following line prints the children indented.  It seems redundant when printing the
+                 * smem store, but perhaps it's useful for printing something rooted in an lti? */
+                next.insert(temp_lti_id);
+            }
+            else
+            {
+                switch (sql->getColumn(2).getInt64())
+                {
+                    case STR_CONSTANT_SYMBOL_TYPE:
+                    {
+                        rhash__str(sql->getColumn(3).getInt64(), temp_str2);
+
+                        if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
+                        {
+                            temp_str2.insert(0, "|");
+                            temp_str2 += '|';
+                            break;
+                        }
+
+                        soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
+                            temp_str2.length(),
+                            &possible_id,
+                            &possible_var,
+                            &possible_sc,
+                            &possible_ic,
+                            &possible_fc,
+                            &is_rereadable);
+
+                        bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
+
+                        if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+                            (!is_rereadable) ||
+                            has_angle_bracket)
+                        {
+                            /* BUGBUG if in context where id's could occur, should check
+                             possible_id flag here also */
+                            temp_str2.insert(0, "|");
+                            temp_str2 += '|';
+                        }
+                        break;
+                    }
+                    case INT_CONSTANT_SYMBOL_TYPE:
+                        temp_int = rhash__int(sql->getColumn(3).getInt64());
+                        to_string(temp_int, temp_str2);
+                        break;
+
+                    case FLOAT_CONSTANT_SYMBOL_TYPE:
+                        temp_double = rhash__float(sql->getColumn(3).getInt64());
+                        to_string(temp_double, temp_str2);
+                        break;
+
+                    default:
+                        temp_str2.clear();
+                        break;
+                }
+            }
+
+            augmentations[ temp_str ].push_back(temp_str2);
+        }
+    })->wait();
 
     // output augmentations nicely
     {
@@ -392,11 +399,12 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    while (SQL.vis_lti.executeStep())
-    {
-        print_smem_object(SQL.vis_lti.getColumn(0).getInt64(), 1, return_val);
-    }
-    SQL.vis_lti.reset();
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.vis_lti);
+
+        while (sql->executeStep())
+            print_smem_object(sql->getColumn(0).getInt64(), 1, return_val);
+    })->wait();
 }
 
 void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::string* return_val, bool history)
@@ -410,9 +418,9 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
     id_set next;
     id_set::iterator next_it;
 
-    SQLite::Statement& act_q = SQL.vis_lti_act;
-    SQLite::Statement& hist_q = SQL.history_get;
-    SQLite::Statement& lti_access_q = SQL.lti_access_get;
+    auto act_q = sqlite_thread_guard(SQL.vis_lti_act);
+    auto hist_q = sqlite_thread_guard(SQL.history_get);
+    auto lti_access_q = sqlite_thread_guard(SQL.lti_access_get);
     unsigned int i;
 
 
@@ -433,40 +441,40 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
 
         // get lti info
         {
-            SQLite::bind(act_q, c.first);
-            act_q.executeStep();
+            SQLite::bind(*act_q, c.first);
+            act_q->executeStep();
 
             //Look up activation history.
             std::list<uint64_t> access_history;
             if (history)
             {
-                SQLite::bind(lti_access_q, c.first);
-                lti_access_q.exec();
-                uint64_t n = lti_access_q.getColumn(0).getInt64();
-                lti_access_q.reset();
-                SQLite::bind(hist_q, c.first);
-                hist_q.exec();
+                SQLite::bind(*lti_access_q, c.first);
+                lti_access_q->exec();
+                uint64_t n = lti_access_q->getColumn(0).getInt64();
+                lti_access_q->reset();
+                SQLite::bind(*hist_q, c.first);
+                hist_q->exec();
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
-                    if (hist_q.getColumn(i).getInt64() != 0)
+                    if (hist_q->getColumn(i).getInt64() != 0)
                     {
-                        access_history.push_back(hist_q.getColumn(i).getInt64());
+                        access_history.push_back(hist_q->getColumn(i).getInt64());
                     }
                 }
-                hist_q.reset();
+                hist_q->reset();
             }
 
             if (history && !access_history.empty())
             {
-                next = print_LTM(c.first, act_q.getColumn(0).getDouble(), return_val, &(access_history));
+                next = print_LTM(c.first, act_q->getColumn(0).getDouble(), return_val, &(access_history));
             }
             else
             {
-                next = print_LTM(c.first, act_q.getColumn(0).getDouble(), return_val);
+                next = print_LTM(c.first, act_q->getColumn(0).getDouble(), return_val);
             }
 
             // done with lookup
-            act_q.reset();
+            act_q->reset();
 
             // consider further depth
             if (c.second < depth)

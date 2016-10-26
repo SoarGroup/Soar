@@ -37,24 +37,23 @@ public:
         friend class job_queue;
 
         job();
-        job(std::function<void(void*)> e, void* a, std::function<void()> c);
+        job(std::function<void()> e, std::function<void()> c);
 
     public:
-        std::function<void(void*)> execution;
+        std::function<void()> execution;
         std::function<void()> completionCallback;
-
-        void* argument;
 
         std::atomic<bool> complete;
 
         job& operator=(const job& b);
+
+        void wait();
     };
     
     job_queue(std::function<void ()> threadInitializer = [](){});
     ~job_queue();
 
     std::shared_ptr<job> post(std::function<void()> e, std::function<void()> c = []{});
-    std::shared_ptr<job> post(std::function<void(void*)> e, void* argument = nullptr, std::function<void()> c = []{});
 };
 
 #endif /* job_queue_hpp */

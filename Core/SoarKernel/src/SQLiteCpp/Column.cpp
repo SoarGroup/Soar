@@ -70,6 +70,12 @@ long long Column::getInt64() const noexcept // nothrow
     return sqlite3_column_int64(mStmtPtr, mIndex);
 }
 
+// Return the 64bits unsigned integer value of the column specified by its index starting at 0
+unsigned long long Column::getUInt64() const noexcept // nothrow
+{
+    return static_cast<unsigned>(sqlite3_column_int64(mStmtPtr, mIndex));
+}
+
 // Return the double value of the column specified by its index starting at 0
 double Column::getDouble() const noexcept // nothrow
 {

@@ -309,44 +309,47 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     Symbol* attr_sym;
     Symbol* value_sym;
 
-    // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    SQLite::bind(SQL.web_expand, pLTI_ID);
-
     std::set<Symbol*> children;
 
-    while (SQL.web_expand.executeStep())
-    {
-        // make the identifier symbol irrespective of value type
-        attr_sym = rhash_(static_cast<byte>(SQL.web_expand.getColumn(0).getInt()), static_cast<smem_hash_id>(SQL.web_expand.getColumn(1).getInt64()));
+    // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
+    JobQueue.post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL.web_expand);
 
-        // identifier vs. constant
-        if (SQL.web_expand.getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
+        SQLite::bind(*sql, pLTI_ID);
+
+        while (sql->executeStep())
         {
-            dprint(DT_SMEM_INSTANCE, "Child LTI augmentation found.  Getting STI for lti_id %u...", static_cast<uint64_t>(SQL.web_expand.getColumn(4).getInt64()));
-            value_sym = get_current_iSTI_for_LTI(static_cast<uint64_t>(SQL.web_expand.getColumn(4).getInt64()), sti->id->level, 'L');
-            dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
-            if (depth > 1)
+            // make the identifier symbol irrespective of value type
+            attr_sym = rhash_(static_cast<byte>(sql->getColumn(0).getInt()), static_cast<smem_hash_id>(sql->getColumn(1).getUInt64()));
+
+            // identifier vs. constant
+            if (sql->getColumn(4).getInt64() != SMEM_AUGMENTATIONS_NULL)
             {
-                dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
-                children.insert(value_sym);
+                dprint(DT_SMEM_INSTANCE, "Child LTI augmentation found.  Getting STI for lti_id %u...", static_cast<uint64_t>(sql->getColumn(4).getInt64()));
+                value_sym = get_current_iSTI_for_LTI(sql->getColumn(4).getUInt64(), sti->id->level, 'L');
+                dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
+                if (depth > 1)
+                {
+                    dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
+                    children.insert(value_sym);
+                }
             }
-        }
-        else
-        {
-            dprint(DT_SMEM_INSTANCE, "Child constant augmentation found.  Getting constant for value hash %d %u...", static_cast<byte>(SQL.web_expand.getColumn(2).getInt64()), static_cast<smem_hash_id>(SQL.web_expand.getColumn(3).getInt64()));
-            value_sym = rhash_(static_cast<byte>(SQL.web_expand.getColumn(2).getInt64()), static_cast<smem_hash_id>(SQL.web_expand.getColumn(3).getInt64()));
-            dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
-        }
+            else
+            {
+                dprint(DT_SMEM_INSTANCE, "Child constant augmentation found.  Getting constant for value hash %d %u...", static_cast<byte>(sql->getColumn(2).getInt64()), static_cast<smem_hash_id>(sql->getColumn(3).getUInt64()));
+                value_sym = rhash_(static_cast<byte>(sql->getColumn(2).getInt64()), static_cast<smem_hash_id>(sql->getColumn(3).getUInt64()));
+                dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
+            }
 
-        // add wme
-        add_triple_to_recall_buffer(retrieval_wmes, sti, attr_sym, value_sym);
+            // add wme
+            add_triple_to_recall_buffer(retrieval_wmes, sti, attr_sym, value_sym);
 
-        // deal with ref counts - attribute/values are always created in this function
-        // (thus an extra ref count is set before adding a wme)
-        thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
-        thisAgent->symbolManager->symbol_remove_ref(&value_sym);
-    }
-    SQL.web_expand.reset();
+            // deal with ref counts - attribute/values are always created in this function
+            // (thus an extra ref count is set before adding a wme)
+            thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&value_sym);
+        }
+    })->wait();
 
     //Attempt to find children for the case of depth.
     std::set<Symbol*>::iterator iterator;

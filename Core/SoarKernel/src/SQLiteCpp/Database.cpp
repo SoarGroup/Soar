@@ -33,6 +33,11 @@ const int   OPEN_READWRITE  = SQLITE_OPEN_READWRITE;
 const int   OPEN_CREATE     = SQLITE_OPEN_CREATE;
 const int   OPEN_URI        = SQLITE_OPEN_URI;
 
+const int   OPEN_FULLMUTEX  = SQLITE_OPEN_FULLMUTEX;
+const int   OPEN_NOMUTEX    = SQLITE_OPEN_NOMUTEX;
+
+const int   OPEN_SHAREDCACHE   = SQLITE_OPEN_SHAREDCACHE;
+
 const int   OK              = SQLITE_OK;
 
 const char* VERSION         = SQLITE_VERSION;
@@ -81,6 +86,29 @@ Database::Database(const std::string& aFilename,
     mpSQLite(NULL),
     mFilename(aFilename)
 {
+    const int ret = sqlite3_open_v2(aFilename.c_str(), &mpSQLite, aFlags, aVfs.empty() ? NULL : aVfs.c_str());
+    if (SQLITE_OK != ret)
+    {
+        const SQLite::Exception exception(mpSQLite, ret); // must create before closing
+        sqlite3_close(mpSQLite); // close is required even in case of error on opening
+        throw exception;
+    }
+
+    if (aBusyTimeoutMs > 0)
+    {
+        setBusyTimeout(aBusyTimeoutMs);
+    }
+}
+
+// Open the provided database UTF-8 filename with SQLite::OPEN_xxx provided flags.
+void Database::reconnect(const std::string& aFilename,
+                         const int          aFlags         /* = SQLite::OPEN_READONLY*/,
+                         const int          aBusyTimeoutMs /* = 0 */,
+                         const std::string& aVfs           /* = "" */)
+{
+    mpSQLite = nullptr;
+    mFilename = aFilename;
+
     const int ret = sqlite3_open_v2(aFilename.c_str(), &mpSQLite, aFlags, aVfs.empty() ? NULL : aVfs.c_str());
     if (SQLITE_OK != ret)
     {

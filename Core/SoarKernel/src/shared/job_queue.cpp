@@ -10,17 +10,22 @@
 
 job_queue::job::job() {}
 
-job_queue::job::job(std::function<void(void*)> e, void* a, std::function<void()> c)
+job_queue::job::job(std::function<void()> e, std::function<void()> c)
 : execution(e),
 completionCallback(c)
+{}
+
+void job_queue::job::wait()
 {
-    argument = a;
+    while (!this->complete)
+    {
+        std::this_thread::yield();
+    }
 }
 
 job_queue::job& job_queue::job::operator=(const job& b)
 {
     this->execution = b.execution;
-    this->argument = b.argument;
     this->complete = b.complete.load();
 
     return *this;
@@ -32,7 +37,9 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
     unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
 
     if (concurentThreadsSupported == 0)
-    concurentThreadsSupported = 1;
+        concurentThreadsSupported = 1;
+
+    threadInitializer();
 
     std::function<void()> jobProcessor = [this,threadInitializer]()
     {
@@ -58,7 +65,7 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
                 continue;
             }
 
-            job->execution(job->argument);
+            job->execution();
             job->complete = true;
             job->completionCallback();
         }
@@ -96,14 +103,9 @@ job_queue::~job_queue()
 
 std::shared_ptr<job_queue::job> job_queue::post(std::function<void()> e, std::function<void()> c)
 {
-    return post([e](void*){ e(); }, nullptr, c);
-}
-
-std::shared_ptr<job_queue::job> job_queue::post(std::function<void(void*)> e, void* argument, std::function<void()> c)
-{
     std::lock_guard<std::mutex> lock(mutex);
 
-    std::shared_ptr<job> job(new class job(e, argument, c));
+    std::shared_ptr<job> job(new class job(e, c));
     jobQueue.push_back(job);
     
     return job;

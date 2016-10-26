@@ -7,11 +7,12 @@
 //
 
 #include "sqlite_job_queue.hpp"
+#include "semantic_memory.h"
 
-thread_local std::shared_ptr<SQLite::Database> sqlite_job_queue::db;
+thread_local SQLite::Database sqlite_job_queue::db(":memory:");
 
 sqlite_job_queue::sqlite_job_queue(std::string statementURL)
 : job_queue([this,statementURL]() {
-    db = std::shared_ptr<SQLite::Database>(new SQLite::Database(statementURL, SQLite::OPEN_READWRITE | SQLite::OPEN_URI));
+    sqlite_job_queue::db.reconnect(statementURL, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
 })
 {}

@@ -19,27 +19,30 @@
 
 #include <thread>
 
-SQLite::Statement& SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
+sqlite_thread_guard SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
 {
     // first, point to correct query and setup
     // query-specific parameters
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        SQLite::bind(SQL.web_attr_all, el->attr_hash);
-        return SQL.web_attr_all;
+        auto sql = sqlite_thread_guard(SQL.web_attr_all);
+        SQLite::bind(*sql, el->attr_hash);
+        return sql;
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        SQLite::bind(SQL.web_const_all, el->attr_hash, el->value_hash);
-        return SQL.web_const_all;
+        auto sql = sqlite_thread_guard(SQL.web_const_all);
+        SQLite::bind(*sql, el->attr_hash, el->value_hash);
+        return sql;
     }
     else //if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        SQLite::bind(SQL.web_lti_all, el->attr_hash, el->value_lti);
-        return SQL.web_lti_all;
+        auto sql = sqlite_thread_guard(SQL.web_lti_all);
+        SQLite::bind(*sql, el->attr_hash, el->value_lti);
+        return sql;
     }
 }
 
@@ -53,7 +56,7 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
     uint64_t value_lti;
     smem_cue_element_type element_type;
 
-    SQLite::Statement* q = &SQL.wmes_constant_frequency_get;
+    sqlite_thread_guard* q = nullptr;
 
     // we only have to do hard work if
     attr_hash = hash(w->attr, false);
@@ -67,8 +70,8 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
             if (value_hash != NIL)
             {
-                q = &SQL.wmes_constant_frequency_get;
-                SQLite::bind(*q, attr_hash, value_hash);
+                q = new sqlite_thread_guard(SQL.wmes_constant_frequency_get);
+                SQLite::bind(**q, attr_hash, value_hash);
             }
             else if (pos_cue)
             {
@@ -97,15 +100,15 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
             if (value_lti == NIL)
             {
-                q = &SQL.attribute_frequency_get;
-                SQLite::bind(*q, attr_hash);
+                q = new sqlite_thread_guard(SQL.attribute_frequency_get);
+                SQLite::bind(**q, attr_hash);
 
                 element_type = attr_t;
             }
             else
             {
-                q = &SQL.wmes_lti_frequency_get;
-                SQLite::bind(*q, attr_hash, value_lti);
+                q = new sqlite_thread_guard(SQL.wmes_lti_frequency_get);
+                SQLite::bind(**q, attr_hash, value_lti);
 
                 element_type = value_lti_t;
             }
@@ -113,11 +116,11 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
         if (good_wme)
         {
-            if (q->executeStep())
+            if ((*q)->executeStep())
             {
                 new_cue_element = new smem_weighted_cue_element;
 
-                new_cue_element->weight = q->getColumn(0).getInt64();
+                new_cue_element->weight = (*q)->getColumn(0).getInt64();
                 new_cue_element->attr_hash = attr_hash;
                 new_cue_element->value_hash = value_hash;
                 new_cue_element->value_lti = value_lti;
@@ -137,8 +140,6 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
                     good_wme = false;
                 }
             }
-
-            q->reset();
         }
     }
     else
@@ -148,6 +149,8 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
             good_wme = false;
         }
     }
+
+    delete q;
 
     //If we brought in a math query and didn't use it
     if (!good_wme && mathQuery != NIL)
@@ -333,47 +336,46 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         // confirmation walk
         if (settings->base_update->get_value() == smem_param_container::bupt_naive)
         {
-            SQLite::Statement& q = setup_web_crawl((*cand_set));
+            auto q = setup_web_crawl((*cand_set));
 
             // queue up distinct lti's to update
             // - set because queries could contain wilds
             // - not in loop because the effects of activation may actually
             //   alter the resultset of the query (isolation???)
             std::set< uint64_t > to_update;
-            while (q.executeStep())
+            while (q->executeStep())
             {
-                to_update.insert(q.getColumn(0).getInt64());
+                to_update.insert(q->getColumn(0).getInt64());
             }
 
             for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
             {
                 lti_activate((*it), false);
             }
-
-            q.reset();
         }
     }
 
     // setup first query, which is sorted on activation already
-    SQLite::Statement& q = setup_web_crawl((*cand_set));
+    auto q = setup_web_crawl((*cand_set));
     thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
 
     // this becomes the minimal set to walk (till match or fail)
-    if (q.executeStep())
+    if (q->executeStep())
     {
         smem_prioritized_activated_lti_queue plentiful_parents;
         bool more_rows = true;
         bool use_db = false;
         bool has_feature = false;
 
-        while (more_rows && (q.getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
+        while (more_rows && (q->getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
         {
-            SQLite::bind(SQL.act_lti_get, q.getColumn(0).getInt64());
-            SQL.act_lti_get.exec();
-            plentiful_parents.push(std::make_pair<double, uint64_t>(SQL.act_lti_get.getColumn(0).getDouble(), q.getColumn(0).getInt64()));
-            SQL.act_lti_get.reset();
+            auto sql = sqlite_thread_guard(SQL.act_lti_get);
 
-            more_rows = q.executeStep();
+            SQLite::bind(*sql, q->getColumn(0).getInt64());
+            sql->exec();
+            plentiful_parents.push(std::make_pair<double, uint64_t>(sql->getColumn(0).getDouble(), q->getColumn(0).getInt64()));
+
+            more_rows = q->executeStep();
         }
         bool first_element = false;
         while ((match_ids->size() < number_to_retrieve || needFullSearch) && ((more_rows) || (!plentiful_parents.empty())))
@@ -392,13 +394,13 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                 }
                 else
                 {
-                    use_db = q.getColumn(1).getDouble() >  plentiful_parents.top().first;
+                    use_db = q->getColumn(1).getDouble() >  plentiful_parents.top().first;
                 }
 
                 if (use_db)
                 {
-                    cand = q.getColumn(0).getInt64();
-                    more_rows = q.executeStep();
+                    cand = q->getColumn(0).getInt64();
+                    more_rows = q->executeStep();
                 }
                 else
                 {
@@ -422,45 +424,46 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                         continue;
                     }
 
-                    SQLite::Statement* q2 = nullptr;
+                    sqlite_thread_guard* q2 = nullptr;
                     if ((*next_element)->element_type == attr_t)
                     {
                         // parent=? AND attribute_s_id=?
-                        q2 = &SQL.web_attr_child;
+                        q2 = new sqlite_thread_guard(SQL.web_attr_child);
                     }
                     else if ((*next_element)->element_type == value_const_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                        q2 = &SQL.web_const_child;
-                        q2->bind(3, (*next_element)->value_hash);
+                        q2 = new sqlite_thread_guard(SQL.web_const_child);
+                        (*q2)->bind(3, (*next_element)->value_hash);
                     }
                     else if ((*next_element)->element_type == value_lti_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_lti_id=?
-                        q2 = &SQL.web_lti_child;
-                        q2->bind(3, (*next_element)->value_lti);
+                        q2 = new sqlite_thread_guard(SQL.web_lti_child);
+                        (*q2)->bind(3, (*next_element)->value_lti);
                     }
 
                     // all require own id, attribute
-                    q2->bind(1, cand);
-                    q2->bind(2, (*next_element)->attr_hash);
+                    (*q2)->bind(1, cand);
+                    (*q2)->bind(2, (*next_element)->attr_hash);
 
-                    has_feature = q2->executeStep();
+                    has_feature = (*q2)->executeStep();
                     bool mathQueryMet = false;
                     if ((*next_element)->mathElement != NIL && has_feature)
                     {
                         do
                         {
-                            smem_hash_id valueHash = q2->getColumn(2 - 1).getInt64();
-                            SQL.hash_rev_type.bind(1, valueHash);
+                            smem_hash_id valueHash = (*q2)->getColumn(2 - 1).getInt64();
+                            auto sql = sqlite_thread_guard(SQL.hash_rev_type);
+                            sql->bind(1, valueHash);
 
-                            if (!SQL.hash_rev_type.executeStep())
+                            if (!sql->executeStep())
                             {
                                 good_cand = false;
                             }
                             else
                             {
-                                switch (SQL.hash_rev_type.getColumn(1 - 1).getInt64())
+                                switch (sql->getColumn(1 - 1).getInt64())
                                 {
                                     case FLOAT_CONSTANT_SYMBOL_TYPE:
                                         mathQueryMet |= (*next_element)->mathElement->valueIsAcceptable(rhash__float(valueHash));
@@ -470,17 +473,18 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                                         break;
                                 }
                             }
-                            SQL.hash_rev_type.reset();
                         }
-                        while (q2->executeStep());
+                        while ((*q2)->executeStep());
                         good_cand = mathQueryMet;
                     }
                     else
                     {
                         good_cand = (((*next_element)->pos_element) ? (has_feature) : (!has_feature));
                     }
+
+                    delete q2;
+
                     //In CSoar this needs to happen before the break, or the query might not be ready next time
-                    q2->reset();
                     if (!good_cand)
                     {
                         break;
@@ -516,7 +520,6 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
             }
         }
     }
-    q.reset();
 
     // clean weighted cue
     for (next_element = weighted_cue.begin(); next_element != weighted_cue.end(); next_element++)
@@ -630,15 +633,12 @@ void SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery,
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
-        auto job = SMem_Manager::JobQueue.post([=]() {
+        auto job = SMem_Manager::JobQueue.post([&]() {
             process_query_SQL(weighted_cue, needFullSearch, prohibit, state, query, negquery, match_ids, number_to_retrieve, depth);
         });
 
         if (synchronous)
-        {
-            while (!job->complete)
-                std::this_thread::yield();
-        }
+            job->wait();
     }
 
     ////////////////////////////////////////////////////////////////////////////
