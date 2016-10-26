@@ -1056,7 +1056,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 //For now, I'm not going to deal with the Petrov approximation and leave this value incorrectly
                 //truncated so that old activations are just completely ignored.
                 //In theory, BLA corresponds to log-odds, so I guess we're dealing with odds for the above value.
-                double wma_multiplicative_factor = 1;//pre_logd_wma/(1.0+pre_logd_wma);
+                double wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);//1;//pre_logd_wma/(1.0+pre_logd_wma);
                 {
                     raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
                 }
