@@ -1037,7 +1037,7 @@ uint64_t SMem_Manager::add_new_LTI()
     }
 
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    JobQueue.post([&]() mutable {
+    JobQueue.post([=]() mutable {
         auto sql = sqlite_thread_guard(SQL.lti_add);
 
         SQLite::bind(*sql, lti_id, 0, 0, 0, 0, 0);

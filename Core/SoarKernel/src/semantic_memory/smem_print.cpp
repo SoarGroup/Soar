@@ -449,11 +449,11 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
             if (history)
             {
                 SQLite::bind(*lti_access_q, c.first);
-                lti_access_q->exec();
+                lti_access_q->executeStep();
                 uint64_t n = lti_access_q->getColumn(0).getInt64();
                 lti_access_q->reset();
                 SQLite::bind(*hist_q, c.first);
-                hist_q->exec();
+                hist_q->executeStep();
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
                     if (hist_q->getColumn(i).getInt64() != 0)

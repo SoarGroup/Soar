@@ -372,7 +372,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
             auto sql = sqlite_thread_guard(SQL.act_lti_get);
 
             SQLite::bind(*sql, q->getColumn(0).getInt64());
-            sql->exec();
+            sql->executeStep();
             plentiful_parents.push(std::make_pair<double, uint64_t>(sql->getColumn(0).getDouble(), q->getColumn(0).getInt64()));
 
             more_rows = q->executeStep();

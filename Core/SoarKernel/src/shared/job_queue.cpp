@@ -12,7 +12,8 @@ job_queue::job::job() {}
 
 job_queue::job::job(std::function<void()> e, std::function<void()> c)
 : execution(e),
-completionCallback(c)
+completionCallback(c),
+complete(false)
 {}
 
 void job_queue::job::wait()

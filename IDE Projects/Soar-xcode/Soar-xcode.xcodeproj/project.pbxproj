@@ -26,7 +26,6 @@
 		4D1629871D7F0C6E00A27F4E /* polytope.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1629771D7F0C6E00A27F4E /* polytope.c */; };
 		4D1629881D7F0C6E00A27F4E /* support.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1629781D7F0C6E00A27F4E /* support.c */; };
 		4D1629891D7F0C6E00A27F4E /* vec3.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1629791D7F0C6E00A27F4E /* vec3.c */; };
-		4D1A6AC41B6BC42F00B4D0B1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1A6AC31B6BC42F00B4D0B1 /* main.cpp */; };
 		4D1A6AC81B6BC9C900B4D0B1 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D1ED1751D89E54C005E98E5 /* cli_addwme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1321D89E54C005E98E5 /* cli_addwme.cpp */; };
 		4D1ED1761D89E54C005E98E5 /* cli_alias.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1331D89E54C005E98E5 /* cli_alias.cpp */; };
@@ -103,6 +102,7 @@
 		4D1ED1C31D89E5A5005E98E5 /* output_settings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1C11D89E5A5005E98E5 /* output_settings.h */; };
 		4D2C7C9C1B692FC100F675FE /* ChunkingTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C7C981B692A5800F675FE /* ChunkingTests.cpp */; };
 		4D2C7C9D1B692FC300F675FE /* ChunkingTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C7C981B692A5800F675FE /* ChunkingTests.cpp */; };
+		4D35682F1DC3997D000B329A /* soar_cli.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D35682D1DC3997D000B329A /* soar_cli.cpp */; };
 		4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4749C61B32121100FB48D7 /* BasicTests.cpp */; };
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
 		4D5B5CC01B41A31000990756 /* SimpleListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */; };
@@ -661,7 +661,6 @@
 		4D1629781D7F0C6E00A27F4E /* support.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = support.c; sourceTree = "<group>"; };
 		4D1629791D7F0C6E00A27F4E /* vec3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec3.c; sourceTree = "<group>"; };
 		4D1A6AC11B6BC42F00B4D0B1 /* SoarRunner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SoarRunner; sourceTree = BUILT_PRODUCTS_DIR; };
-		4D1A6AC31B6BC42F00B4D0B1 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		4D1ED1321D89E54C005E98E5 /* cli_addwme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_addwme.cpp; sourceTree = "<group>"; };
 		4D1ED1331D89E54C005E98E5 /* cli_alias.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_alias.cpp; sourceTree = "<group>"; };
 		4D1ED1341D89E54C005E98E5 /* cli_Aliases.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Aliases.h; sourceTree = "<group>"; };
@@ -737,6 +736,9 @@
 		4D1ED1C11D89E5A5005E98E5 /* output_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = output_settings.h; sourceTree = "<group>"; };
 		4D2C7C981B692A5800F675FE /* ChunkingTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ChunkingTests.cpp; sourceTree = "<group>"; };
 		4D2C7C991B692A5800F675FE /* ChunkingTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ChunkingTests.hpp; sourceTree = "<group>"; };
+		4D35682C1DC3997D000B329A /* ansi_colors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ansi_colors.h; sourceTree = "<group>"; };
+		4D35682D1DC3997D000B329A /* soar_cli.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = soar_cli.cpp; sourceTree = "<group>"; };
+		4D35682E1DC3997D000B329A /* soar_cli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = soar_cli.h; sourceTree = "<group>"; };
 		4D4749C61B32121100FB48D7 /* BasicTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BasicTests.cpp; sourceTree = "<group>"; };
 		4D4749C71B32121100FB48D7 /* BasicTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BasicTests.hpp; sourceTree = "<group>"; };
 		4D4A6FFB1B39FAAF00EE6177 /* SMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SMemFunctionalTests.cpp; sourceTree = "<group>"; };
@@ -1299,9 +1301,12 @@
 		4D1A6AC21B6BC42F00B4D0B1 /* SoarRunner */ = {
 			isa = PBXGroup;
 			children = (
-				4D1A6AC31B6BC42F00B4D0B1 /* main.cpp */,
+				4D35682C1DC3997D000B329A /* ansi_colors.h */,
+				4D35682D1DC3997D000B329A /* soar_cli.cpp */,
+				4D35682E1DC3997D000B329A /* soar_cli.h */,
 			);
-			path = SoarRunner;
+			name = SoarRunner;
+			path = ../../SoarCLI;
 			sourceTree = "<group>";
 		};
 		4D4A6FF91B39E19A00EE6177 /* epmem */ = {
@@ -2637,7 +2642,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4D1A6AC41B6BC42F00B4D0B1 /* main.cpp in Sources */,
+				4D35682F1DC3997D000B329A /* soar_cli.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
