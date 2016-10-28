@@ -74,8 +74,8 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
             sum += (n - small_n)*pow(static_cast<double>(t_n),static_cast<double>(-d));
         }
     }
-
-    return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : -8);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
+    return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
+    //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : -8);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
 }
 
 // activates a new or existing long-term identifier
