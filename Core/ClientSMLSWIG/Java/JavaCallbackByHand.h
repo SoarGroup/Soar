@@ -126,6 +126,7 @@ public:
         jobject         m_KernelObject ;        // The Java kernel object (either this or agent is set usually)
         jobject         m_HandlerObject ;       // The object that contains the method we will call
         std::string m_HandlerMethod ;   // The name of the method we will call
+        std::string m_HandlerMethodSignature ; // The signature of the method being called (param + return val types)
         jobject         m_CallbackData ;        // Arbitrary Java object which we'll pass back in the call.
         int                     m_CallbackID ;          // Unique ID for this callback (we use this during unregistering)
         jmethodID       m_Mid;
@@ -134,7 +135,7 @@ private:
         JNIEnv*         m_JavaEnv ;                     // The JNI environment (private so we're forced to use the accessor function)
 
 public:
-        JavaCallbackData(JavaVM* pVM, JNIEnv* pEnv, jobject agentObject, jobject kernelObject, jobject handlerObject, char const* handlerMethod, jobject callbackData)
+        JavaCallbackData(JavaVM* pVM, JNIEnv* pEnv, jobject agentObject, jobject kernelObject, jobject handlerObject, char const* handlerMethod, char const* handlerMethodSignature, jobject callbackData)
         {
                 m_JavaVM                = pVM ;
                 m_JavaEnv               = pEnv ;
@@ -142,6 +143,7 @@ public:
                 m_KernelObject  = kernelObject ;
                 m_HandlerObject = handlerObject ;
                 m_HandlerMethod = handlerMethod ;
+                m_HandlerMethodSignature = handlerMethodSignature ;
                 m_CallbackData = callbackData ;
                 m_CallbackID   = 0 ;
 
@@ -151,7 +153,7 @@ public:
                 // The method name is passed in by the user (and needs to match exactly, including case).
                 // The method should be owned by the m_HandlerObject that the user also passed in.
                 // Any slip here and you get a NoSuchMethod exception and my Java VM shuts down.
-                m_Mid = pEnv->GetMethodID(cls, m_HandlerMethod.c_str(), "(ILjava/lang/Object;Lsml/Kernel;I)V") ;
+                m_Mid = pEnv->GetMethodID(cls, m_HandlerMethod.c_str(), m_HandlerMethodSignature.c_str()) ;
 
         }
 
@@ -205,7 +207,7 @@ bool IsValidCallbackData(JavaCallbackData* pJavaData) {
 
 // Collect the Java values into a single object which we'll register with our local event handler.
 // When this handler is called we'll unpack the Java data and make a callback to the Java process.
-static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, char const* pMethodName, jobject jarg6)
+static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2, jobject jarg3, jobject jarg4, char const* pMethodName, char const* pMethodSignature, jobject jarg6)
 {
         // The trick here is we collect up all of the Java information and store that as the callback data
         // for our local handler.  When our handler is called we'll unpack the data and make the Java callback.
@@ -232,7 +234,7 @@ static JavaCallbackData* CreateJavaCallbackData(bool storeAgent, JNIEnv *jenv, j
                 return 0 ;
         }
 
-        JavaCallbackData* pJavaData = new JavaCallbackData(pvm, jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, jglobal6) ;
+        JavaCallbackData* pJavaData = new JavaCallbackData(pvm, jenv, storeAgent ? jglobal3 : 0, storeAgent ? 0 : jglobal3, jglobal4, pMethodName, pMethodSignature, jglobal6) ;
 
         // Save the callback data so we can free it later
         callbackdatas.push_back(pJavaData);
@@ -292,7 +294,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv,
         sml::smlRunEventId arg2 = (sml::smlRunEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "runEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "runEventHandler", "(ILjava/lang/Object;Lsml/Agent;I)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
@@ -365,7 +367,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForOutputNotification(JNI
         sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, 0, jarg3, jarg4, "outputNotificationHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, 0, jarg3, jarg4, "outputNotificationHandler", "(Ljava/lang/Object;Lsml/Agent;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForOutputNotification(&OutputNotificationHandler, pJavaData) ;
@@ -451,7 +453,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv
         sml::smlProductionEventId arg2 = (sml::smlProductionEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "productionEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "productionEventHandler", "(ILjava/lang/Object;Lsml/Agent;Ljava/lang/String;Ljava/lang/String;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
@@ -535,7 +537,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForPrintEvent(JNIEnv *jen
         sml::smlPrintEventId arg2 = (sml::smlPrintEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "printEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "printEventHandler", "(ILjava/lang/Object;Lsml/Agent;Ljava/lang/String;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForPrintEvent(arg2, &PrintEventHandler, pJavaData, (jarg7 != JNI_FALSE)) ;
@@ -653,7 +655,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForXMLEvent(JNIEnv *jenv,
         sml::smlXMLEventId arg2 = (sml::smlXMLEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "xmlEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "xmlEventHandler", "(ILjava/lang/Object;Lsml/Agent;Lsml/ClientXML;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForXMLEvent(arg2, &XMLEventHandler, pJavaData) ;
@@ -794,7 +796,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1AddOutputHandler(JNIEnv *jenv, jc
         const char *pAttributeName = jenv->GetStringUTFChars(jarg2, 0);
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, 0, jarg3, jarg4, "outputEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, 0, jarg3, jarg4, "outputEventHandler", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lsml/WMElement;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->AddOutputHandler(pAttributeName, &OutputEventHandler, pJavaData) ;
@@ -871,7 +873,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *j
         sml::smlSystemEventId arg2 = (sml::smlSystemEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "systemEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "systemEventHandler", "(ILjava/lang/Object;Lsml/Kernel;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
@@ -949,7 +951,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForUpdateEvent(JNIEnv *j
         sml::smlUpdateEventId arg2 = (sml::smlUpdateEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "updateEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "updateEventHandler", "(ILjava/lang/Object;Lsml/Kernel;I)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForUpdateEvent(arg2, &UpdateEventHandler, pJavaData) ;
@@ -1067,7 +1069,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForStringEvent(JNIEnv *j
         sml::smlStringEventId arg2 = (sml::smlStringEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "stringEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "stringEventHandler", "(ILjava/lang/Object;Lsml/Kernel;Ljava/lang/String;)Ljava/lang/String;", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForStringEvent(arg2, &StringEventHandler, pJavaData) ;
@@ -1259,7 +1261,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1AddRhsFunction(JNIEnv *jenv, jcl
         const char *pFunctionName = jenv->GetStringUTFChars(jarg2, 0);
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "rhsFunctionHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "rhsFunctionHandler", "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->AddRhsFunction(pFunctionName, &RhsEventHandler, pJavaData) ;
@@ -1302,7 +1304,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForClientMessageEvent(JN
         const char *pFunctionName = jenv->GetStringUTFChars(jarg2, 0);
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "clientMessageHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(false, jenv, jcls, jarg1, 0, jarg3, jarg4, "clientMessageHandler", "(ILjava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForClientMessageEvent(pFunctionName, &ClientMessageHandler, pJavaData) ;
@@ -1390,7 +1392,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForAgentEvent(JNIEnv *je
         sml::smlAgentEventId arg2 = (sml::smlAgentEventId)jarg2;
 
         // Create the information we'll need to make a Java call back later
-        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "agentEventHandler", jarg6) ;
+        JavaCallbackData* pJavaData = CreateJavaCallbackData(true, jenv, jcls, jarg1, jarg2, jarg3, jarg4, "agentEventHandler", "(ILjava/lang/Object;Ljava/lang/String;)V", jarg6) ;
 
         // Register our handler.  When this is called we'll call back to the Java method.
         pJavaData->m_CallbackID = arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
