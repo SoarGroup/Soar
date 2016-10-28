@@ -308,7 +308,7 @@ bool Statement::executeStep()
 // Execute a one-step query with no expected result
 int Statement::exec()
 {
-    if (false == mbDone)
+    if (!mbDone)
     {
         const int ret = sqlite3_step(mStmtPtr);
         if (SQLITE_DONE == ret) // the statement has finished executing successfully

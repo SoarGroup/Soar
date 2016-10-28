@@ -442,18 +442,18 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
         // get lti info
         {
             SQLite::bind(*act_q, c.first);
-            act_q->executeStep();
+            assert(act_q->executeStep());
 
             //Look up activation history.
             std::list<uint64_t> access_history;
             if (history)
             {
                 SQLite::bind(*lti_access_q, c.first);
-                lti_access_q->executeStep();
+                assert(lti_access_q->executeStep());
                 uint64_t n = lti_access_q->getColumn(0).getInt64();
                 lti_access_q->reset();
                 SQLite::bind(*hist_q, c.first);
-                hist_q->executeStep();
+                assert(hist_q->executeStep());
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
                     if (hist_q->getColumn(i).getInt64() != 0)

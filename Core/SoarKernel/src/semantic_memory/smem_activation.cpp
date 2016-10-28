@@ -28,7 +28,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
             auto sql = sqlite_thread_guard(SQL.lti_access_get);
 
             SQLite::bind(*sql, pLTI_ID);
-            sql->executeStep();
+            assert(sql->executeStep());
 
             n = sql->getColumn(0).getInt();
             activations_first = sql->getColumn(2).getInt();
@@ -125,7 +125,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         auto sql = sqlite_thread_guard(SQL.lti_access_get);
 
         SQLite::bind(*sql, pLTI_ID);
-        sql->executeStep();
+        assert(sql->executeStep());
 
         prev_access_n = sql->getColumn(0).getUInt64();
         prev_access_t = sql->getColumn(1).getUInt64();
@@ -214,7 +214,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
             SQLite::bind(*sql, pLTI_ID);
 
-            sql->executeStep();
+            assert(sql->executeStep());
             num_edges = sql->getColumn(0).getUInt64();
         })->wait();
     }

@@ -179,7 +179,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             auto sql = sqlite_thread_guard(SQL.act_lti_child_ct_get);
 
             SQLite::bind(*sql, pLTI_ID);
-            sql->executeStep();
+            assert(sql->executeStep());
 
             existing_edges = static_cast<uint64_t>(sql->getColumn(0).getInt());
         });
