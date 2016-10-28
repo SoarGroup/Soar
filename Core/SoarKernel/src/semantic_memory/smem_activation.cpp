@@ -37,6 +37,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     SQL->history_get->bind_int(1, pLTI_ID);
     SQL->history_get->execute();
     bool prohibited = false;
+    bool recent = false;
     double small_n = 0;
     {
         while (SQL->history_get->column_int(available_history) != 0)
@@ -48,6 +49,11 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         for (int i = 0; i < available_history; i++)
         {
             small_n+=SQL->history_get->column_double(i+10);
+            int64_t time_diff = (time_now - SQL->history_get->column_int(i));
+            if (time_diff < 2)
+            {
+                recent = true;
+            }
             sum += SQL->history_get->column_double(i+10)*pow(static_cast<double>(time_now - SQL->history_get->column_int(i)),
                        static_cast<double>(-d));
         }
@@ -69,7 +75,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         }
     }
 
-    return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
+    return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : -8);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
 }
 
 // activates a new or existing long-term identifier
@@ -258,7 +264,6 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + (add_access ? touches : 0), prev_access_1);
         }
     }
-
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
@@ -307,10 +312,13 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         double offset = settings->spreading_baseline->get_value()/baseline_denom;
         modified_spread = (spread == 0 || spread < offset) ? 0.0 : (log(spread) - log(offset));
         spread = ((spread < offset) ? 0.0 : spread);
+        //if (new_activation == SMEM_ACT_LOW)
+        //    bool test = true;
         SQL->act_lti_fake_set->bind_double(1, new_activation);
         SQL->act_lti_fake_set->bind_double(2, spread);
         SQL->act_lti_fake_set->bind_double(3, new_base + modified_spread);
         SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
+        SQL->act_lti_fake_set->execute(soar_module::op_reinit);
     }
     else
     {
@@ -981,7 +989,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
             if (addition)
             {
 
-                if (updated_candidates.find(*candidate) == updated_candidates.end())
+                if (spreaded_to->find(*candidate) == spreaded_to->end())//(updated_candidates.find(*candidate) == updated_candidates.end())
                 {
                     (*spreaded_to)[*candidate] = 1;
                     SQL->act_lti_get->bind_int(1,*candidate);
@@ -1062,7 +1070,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());
-                additional = raw_prob;//(log(raw_prob)-log(offset));
+                additional = (raw_prob > offset ? raw_prob : offset+offset*.1);//(log(raw_prob)-log(offset));//This is a hack to prevent bad values for low wma spread.
                 spread+=additional;//Now, we've adjusted the activation according to this new addition.
 
                 SQL->act_lti_child_ct_get->bind_int(1, *candidate);

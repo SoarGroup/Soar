@@ -609,7 +609,7 @@ void SMem_Manager::clear_result(Symbol* state)
         pref = state->id->smem_info->smem_wmes->back();
         state->id->smem_info->smem_wmes->pop_back();
 
-        if (pref->in_tm)
+        if (pref->in_tm && pref->slot)
         {
             remove_preference_from_tm(thisAgent, pref);
         }
