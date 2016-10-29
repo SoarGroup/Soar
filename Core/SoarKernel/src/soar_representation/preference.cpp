@@ -79,10 +79,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
         p->identities.value = o_ids.value;
         p->identities.referent = o_ids.referent;
     }
-    p->clone_identities.id = 0;
-    p->clone_identities.attr = 0;
-    p->clone_identities.value = 0;
-    p->clone_identities.referent = 0;
+    p->clone_identities.id = p->identities.id;
+    p->clone_identities.attr = p->identities.attr;
+    p->clone_identities.value = p->identities.value;
+    p->clone_identities.referent = p->identities.referent;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, rhs_funcs.id, pUnify_identities);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);

@@ -516,24 +516,19 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
 
     if (variablize)
     {
-
         lO_id = variablize_rhs_symbol(a->id, true);
-//        if (!result->rhs_funcs.id) result->clone_identities.id = lO_id;
-        if (!result->rhs_funcs.id) result->identities.id = lO_id;
+        if (!result->rhs_funcs.id) result->clone_identities.id = lO_id;
 
         lO_id = variablize_rhs_symbol(a->attr);
-//        if (!result->rhs_funcs.attr) result->clone_identities.attr = lO_id;
-        if (!result->rhs_funcs.attr) result->identities.attr = lO_id;
+        if (!result->rhs_funcs.attr) result->clone_identities.attr = lO_id;
 
         lO_id = variablize_rhs_symbol(a->value);
-//        if (!result->rhs_funcs.value) result->clone_identities.value = lO_id;
-        if (!result->rhs_funcs.value) result->identities.value = lO_id;
+        if (!result->rhs_funcs.value) result->clone_identities.value = lO_id;
 
         if (preference_is_binary(result->type))
         {
             lO_id = variablize_rhs_symbol(a->referent);
             result->clone_identities.referent = lO_id;
-            result->identities.referent = lO_id;
         }
     }
 

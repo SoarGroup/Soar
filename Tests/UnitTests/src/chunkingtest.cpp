@@ -24,6 +24,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_5);
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
+        CPPUNIT_TEST(Chunk_Operator_Tie_Impasse);
         CPPUNIT_TEST(Chunk_RL_Proposal);
         CPPUNIT_TEST(Chunked_Justification_with_extras);
         CPPUNIT_TEST(Conflated_Constants);
@@ -96,6 +97,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void STI_Variablization_Same_Type();
         void All_Test_Types();
         void Conflated_Constants();
+        void Chunk_Operator_Tie_Impasse();
         void Ungrounded_Relational_Constraint();
         void Vrblzd_Constraint_on_Ungrounded();
         void Simple_Literalization();
@@ -642,4 +644,8 @@ void ChunkTest::Unify_Children_Results()
 void ChunkTest::Blocks_World_Hierarchical()
 {
     build_and_check_chunk("Blocks_World_Hierarchical.soar", 23, 16);
+}
+void ChunkTest::Chunk_Operator_Tie_Impasse()
+{
+    build_and_check_chunk("Chunk_Operator_Tie_Impasse.soar", 6, 2);
 }

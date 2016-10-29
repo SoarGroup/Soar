@@ -928,6 +928,12 @@ cons* collect_root_variables(agent* thisAgent,
                     lNewUngroundedSym->identity = (*it)->identity;
                     dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->matched_sym, lNewUngroundedSym->sym, lNewUngroundedSym->identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
+                } else {
+                    std::string errorStr;
+                    thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
+                           thisAgent->name_of_production_being_reordered, (*it)->sym);
+                    thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
+                    xml_generate_warning(thisAgent, errorStr.c_str());
                 }
             }
         }
