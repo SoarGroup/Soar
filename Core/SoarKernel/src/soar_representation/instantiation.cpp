@@ -1215,7 +1215,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, inst->match_goal_level);
 
     if (!thisAgent->system_halted)
     {

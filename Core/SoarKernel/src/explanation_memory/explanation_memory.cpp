@@ -32,7 +32,7 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
     initialize_counters();
-    m_enabled = false;
+    m_all_enabled = false;
     m_justifications_enabled = false;
     num_rules_watched = 0;
 
@@ -157,7 +157,7 @@ void Explanation_Memory::re_init()
 void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 {
     bool lShouldRecord = false;
-    if ((!m_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
+    if ((!m_all_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
     {
         dprint(DT_EXPLAIN, "Explainer ignoring this chunk because it is not being watched.\n");
         current_recording_chunk = NULL;

@@ -200,7 +200,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
            /* --- remove it from the list of pref's from that instantiation --- */
            remove_from_dll(pref->inst->preferences_generated, pref,
                inst_next, inst_prev);
-           if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
+           if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
            {
                /* We erase some stuff and stash this preference in inst->preferences_cached
                 * This is needed in case preferences are retracted for an instantiation that is

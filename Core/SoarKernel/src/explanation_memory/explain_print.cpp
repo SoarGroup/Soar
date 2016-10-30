@@ -331,12 +331,12 @@ void Explanation_Memory::print_explain_summary()
     outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
     outputManager->printa(thisAgent,    "                       Explainer Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
-    if (!m_enabled)
+    if (!m_all_enabled)
     {
         /* Print last 10 rules watched*/
         outputManager->printa_sf(thisAgent, "Rules watched:");

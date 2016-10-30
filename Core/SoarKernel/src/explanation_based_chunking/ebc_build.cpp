@@ -960,7 +960,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         clean_up();
         return;
     }
-    dprint(DT_MILESTONES, "Dependency analysis complete.  Building rule %y\n", m_prod_name);
+    dprint(DT_MILESTONES, "Dependency analysis complete.  Building chunk %u based on firing of %y (i%u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "Unified m_inst_top: \n%1", m_inst_top);
     dprint(DT_VARIABLIZATION_MANAGER, "Unified m_vrblz_top: \n%1", m_vrblz_top);
 

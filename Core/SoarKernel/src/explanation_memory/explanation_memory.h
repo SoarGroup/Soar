@@ -65,9 +65,10 @@ class Explanation_Memory
 
         Explainer_Parameters*   settings;
 
-        bool                    enabled() { return (m_enabled || (num_rules_watched > 0)); }
-        void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
-        bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
+        bool                    is_any_enabled() { return (m_all_enabled || (num_rules_watched > 0)); }
+        bool                    is_all_enabled() { return m_all_enabled; }
+        void                    set_all_enabled(bool pEnabled) { m_all_enabled = pEnabled; }
+        bool                    isRecordingChunk() { return (m_all_enabled || current_recording_chunk); }
 
         bool                    isRecordingJustifications() { return m_justifications_enabled; };
         void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
@@ -153,7 +154,7 @@ class Explanation_Memory
         agent*                  thisAgent;
         Output_Manager*         outputManager;
 
-        bool                    m_enabled;
+        bool                    m_all_enabled;
         bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;
