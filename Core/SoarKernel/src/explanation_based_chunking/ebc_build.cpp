@@ -790,7 +790,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
         } else {
             thisAgent->explanationMemory->increment_stat_chunks_succeeded();
-            if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
+            if (ebc_settings[SETTING_EBC_INTERRUPT])
             {
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Soar learned new rule.";
