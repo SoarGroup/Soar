@@ -52,8 +52,8 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
 void Explanation_Memory::initialize_counters()
 {
     chunk_id_count = 1;
-    condition_id_count = 1;
-    action_id_count = 1;
+    condition_id_count = 0;
+    action_id_count = 0;
     id_set_counter = 0;
 
     stats.duplicates = 0;
