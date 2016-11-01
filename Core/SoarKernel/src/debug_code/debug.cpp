@@ -153,7 +153,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
-    mode_info[DT_UNUSED1].prefix =                      strdup("| ");
+    mode_info[DT_DEALLOCATE_INSTANTIATION].prefix =     strdup("Del Inst| ");
     mode_info[DT_UNUSED2].prefix =                      strdup("| ");
     mode_info[DT_UNUSED3].prefix =                      strdup("| ");
     mode_info[DT_UNUSED4].prefix =                      strdup("| ");

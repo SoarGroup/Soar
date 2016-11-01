@@ -78,8 +78,9 @@ enum TraceMode
     DT_UNKNOWN_LEVEL = 42,
     DT_RETE_PNODE_ADD = 43,
 
+    DT_DEALLOCATE_INSTANTIATION = 44,
+
     // Not used
-    DT_UNUSED1 = 44,
     DT_UNUSED2 = 45,
     DT_UNUSED3 = 46,
     DT_UNUSED4 = 47,

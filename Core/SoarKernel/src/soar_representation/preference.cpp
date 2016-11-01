@@ -237,6 +237,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
                pref->next_result = NULL;
                return;
            }
+           dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.", pref->inst->i_id, pref->inst->prod_name);
            possibly_deallocate_instantiation(thisAgent, pref->inst);
        }
     /* --- dereference component symbols --- */

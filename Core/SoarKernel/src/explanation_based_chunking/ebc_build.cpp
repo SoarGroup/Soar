@@ -841,8 +841,10 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Warning:  Justification did not match working memory.  Potential issue.";
             }
+            m_chunk_inst->in_ms = false;
         } else {
-            /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.*/
+            /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.
+             * Another possible cause is a variablization issue */
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
             assert(m_prod);
             thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
@@ -852,7 +854,6 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
                 thisAgent->reason_for_stopping = "Warning:  Chunk did not match working memory.  Potential issue.";
             }
         }
-        m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
@@ -881,6 +882,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     local_timer.start();
     #endif
+
+//    dprint(DT_DEBUG, "Chunk number %u\n", chunk_count);
+//    if (this->chunk_count == 6)
+//    {
+//        dprint(DT_DEBUG, "Chunk found.\n");
+//    }
 
     get_results_for_instantiation();
     if (!m_results) {
@@ -921,6 +928,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID for this chunk --- */
     set_new_chunk_id();
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Only chunk id.", m_chunk_new_i_id, m_inst->prod_name);
 //    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
 //    if (m_chunk_new_i_id == 9)
 //    {
@@ -1095,6 +1103,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Chunk formed.", m_inst->i_id, m_inst->prod_name);
 
     add_chunk_to_rete();
 
