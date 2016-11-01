@@ -615,24 +615,17 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
    makes these clones and fills in chunk_inst->preferences_generated.
 -------------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::make_clones_of_results()
+void Explanation_Based_Chunker::make_clones_of_results(bool pForChunk)
 {
     preference* p, *result_p;
-    identity_triple* lIdentityTriple;
 
     m_chunk_inst->preferences_generated = NIL;
     for (result_p = m_results; result_p != NIL; result_p = result_p->next_result)
     {
-        if (result_p->id->is_variable())
-        {
-            lIdentityTriple = &(result_p->clone_identities);
-        } else {
-            lIdentityTriple = &(result_p->identities);
-        }
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            (*lIdentityTriple), result_p->rhs_funcs, true);
+                            pForChunk ? result_p->clone_identities : result_p->identities, result_p->rhs_funcs, true);
         thisAgent->symbolManager->symbol_add_ref(p->id);
         thisAgent->symbolManager->symbol_add_ref(p->attr);
         thisAgent->symbolManager->symbol_add_ref(p->value);
@@ -1041,6 +1034,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         {
             /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
             revert_chunk_to_instantiation();
+            variablize = false;     // Needed to determine which identities are used when creating cloned preference identities
             m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
             if (m_prod)
             {
@@ -1099,7 +1093,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_chunk_inst->explain_depth                     = 0;
     m_chunk_inst->explain_tc_num                    = 0;
 
-    make_clones_of_results();
+    make_clones_of_results(variablize);
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
