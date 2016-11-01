@@ -618,14 +618,21 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
 void Explanation_Based_Chunker::make_clones_of_results()
 {
     preference* p, *result_p;
+    identity_triple* lIdentityTriple;
 
     m_chunk_inst->preferences_generated = NIL;
     for (result_p = m_results; result_p != NIL; result_p = result_p->next_result)
     {
+        if (result_p->id->is_variable())
+        {
+            lIdentityTriple = &(result_p->clone_identities);
+        } else {
+            lIdentityTriple = &(result_p->identities);
+        }
         /* --- copy the preference --- */
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            result_p->clone_identities, result_p->rhs_funcs, true);
+                            (*lIdentityTriple), result_p->rhs_funcs, true);
         thisAgent->symbolManager->symbol_add_ref(p->id);
         thisAgent->symbolManager->symbol_add_ref(p->attr);
         thisAgent->symbolManager->symbol_add_ref(p->value);
@@ -875,11 +882,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     local_timer.start();
     #endif
 
-//    dprint(DT_DEBUG, "Chunk number %u\n", chunk_count);
-//    if (this->chunk_count == 6)
-//    {
-//        dprint(DT_DEBUG, "Chunk found.\n");
-//    }
     get_results_for_instantiation();
     if (!m_results) {
         m_extra_results = NULL;
@@ -919,7 +921,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID for this chunk --- */
     set_new_chunk_id();
-
+//    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
+//    if (m_chunk_new_i_id == 9)
+//    {
+//        dprint(DT_DEBUG, "Chunk found.\n");
+//    }
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     #endif
