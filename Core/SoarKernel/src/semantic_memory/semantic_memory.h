@@ -126,9 +126,9 @@ class SMem_Manager
 
         smem_param_container*           settings;
         smem_stat_container*            statistics;
-        SQLite::Database                DB;
-        SMemExperimental::smem_statement_container        SQL;
-        sqlite_job_queue JobQueue;
+        std::shared_ptr<SQLite::Database>                               DB;
+        std::unique_ptr<SMemExperimental::smem_statement_container>     SQL;
+        std::shared_ptr<sqlite_job_queue>                               JobQueue;
 
         static const std::string            memoryDatabasePath;
         static const int                    sqlite3Flags;

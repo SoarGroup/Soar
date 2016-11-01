@@ -15,12 +15,16 @@
 #include "Assertion.h"
 #include "Exception.h"
 
+#include <sstream>
 #include <sqlite3.h>
 
 #include <condition_variable>
 
 namespace SQLite
 {
+
+std::mutex Statement::d_queryStackMutex;
+std::stack<Statement*> Statement::d_queryStack;
 
 // Compile and register the SQL query for the provided SQLite Database Connection
 Statement::Statement(Database &aDatabase, const char* apQuery) :
@@ -80,6 +84,15 @@ Statement& Statement::operator=(Statement&& other)
 Statement::~Statement() noexcept // nothrow
 {
     // the finalization will be done by the destructor of the last shared pointer
+
+#ifdef lockDebug
+    d_queryStackMutex.lock();
+
+    if (!d_queryStack.empty() && d_queryStack.top() == this)
+        d_queryStack.pop();
+
+    d_queryStackMutex.unlock();
+#endif
 }
 
 // Reset the statement to make it ready for a new execution (see also #clearBindings() bellow)
@@ -89,6 +102,15 @@ void Statement::reset()
     mbDone = false;
     const int ret = sqlite3_reset(mStmtPtr);
     check(ret);
+
+#ifdef lockDebug
+    d_queryStackMutex.lock();
+
+    if (!d_queryStack.empty() && d_queryStack.top() == this)
+        d_queryStack.pop();
+
+    d_queryStackMutex.unlock();
+#endif
 }
 
 // Clears away all the bindings of a prepared statement (can be associated with #reset() above).
@@ -305,6 +327,25 @@ bool Statement::executeStep()
     return mbOk; // true only if one row is accessible by getColumn(N)
 }
 
+std::string Statement::queryStackToString()
+{
+    std::ostringstream oss;
+
+    Statement* s = nullptr;
+
+    d_queryStackMutex.lock();
+    while (!d_queryStack.empty())
+    {
+        s = d_queryStack.top();
+        d_queryStack.pop();
+
+        oss << &(*s) << ":" << s->getQuery() << std::endl;
+    }
+    d_queryStackMutex.unlock();
+
+    return oss.str();
+}
+
 // Execute a one-step query with no expected result
 int Statement::exec()
 {
@@ -322,6 +363,15 @@ int Statement::exec()
             mbDone = false;
             throw SQLite::Exception("exec() does not expect results. Use executeStep.");
         }
+#ifdef lockDebug
+        else if (SQLITE_LOCKED == ret)
+        {
+            mbOk = false;
+            mbDone = false;
+            std::string errorMessage = std::string(sqlite3_errmsg(mStmtPtr.mpSQLite)) + ". Query stack: " + queryStackToString();
+            throw std::runtime_error(errorMessage);
+        }
+#endif
         else
         {
             mbOk = false;
@@ -333,6 +383,12 @@ int Statement::exec()
     {
         throw SQLite::Exception("Statement need to be reseted.");
     }
+
+#ifdef lockDebug
+    d_queryStackMutex.lock();
+    d_queryStack.push(this);
+    d_queryStackMutex.unlock();
+#endif
 
     // Return the number of rows modified by those SQL statements (INSERT, UPDATE or DELETE)
     return sqlite3_changes(mStmtPtr);

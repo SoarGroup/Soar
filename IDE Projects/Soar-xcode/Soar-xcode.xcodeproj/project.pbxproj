@@ -105,6 +105,7 @@
 		4D35682F1DC3997D000B329A /* soar_cli.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D35682D1DC3997D000B329A /* soar_cli.cpp */; };
 		4D4749C91B3212CA00FB48D7 /* BasicTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D4749C61B32121100FB48D7 /* BasicTests.cpp */; };
 		4D510A831B2B47E30009AABC /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
+		4D53D6041DC8EC4800DB5965 /* stacktrace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D53D6031DC8EC4800DB5965 /* stacktrace.h */; };
 		4D5B5CC01B41A31000990756 /* SimpleListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */; };
 		4D5B5CC11B41A31000990756 /* SimpleListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */; };
 		4D659A621B39A7FD00638059 /* EpMemFunctionalTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */; };
@@ -453,7 +454,6 @@
 		4DD80D561D85B00E00E85AA0 /* output_db.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D4B1D85B00E00E85AA0 /* output_db.h */; };
 		4DD80D571D85B00E00E85AA0 /* output_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D4C1D85B00E00E85AA0 /* output_manager.cpp */; };
 		4DD80D581D85B00E00E85AA0 /* output_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D4D1D85B00E00E85AA0 /* output_manager.h */; };
-		4DD80D591D85B00E00E85AA0 /* output_settings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D4E1D85B00E00E85AA0 /* output_settings.h */; };
 		4DD80D5A1D85B00E00E85AA0 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D4F1D85B00E00E85AA0 /* print.cpp */; };
 		4DD80D5B1D85B00E00E85AA0 /* soar_to_string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D501D85B00E00E85AA0 /* soar_to_string.cpp */; };
 		4DD80D5C1D85B00E00E85AA0 /* visualize_wm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D511D85B00E00E85AA0 /* visualize_wm.cpp */; };
@@ -745,6 +745,7 @@
 		4D4A6FFC1B39FAAF00EE6177 /* SMemFunctionalTests.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SMemFunctionalTests.hpp; sourceTree = "<group>"; };
 		4D5105C11B2B41A80009AABC /* libSoar.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSoar.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D510A581B2B471B0009AABC /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D53D6031DC8EC4800DB5965 /* stacktrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stacktrace.h; sourceTree = "<group>"; };
 		4D5B5CBE1B41A30F00990756 /* SimpleListener.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SimpleListener.cpp; sourceTree = "<group>"; };
 		4D5B5CBF1B41A30F00990756 /* SimpleListener.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SimpleListener.hpp; sourceTree = "<group>"; };
 		4D659A5C1B39A50100638059 /* EpMemFunctionalTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EpMemFunctionalTests.cpp; sourceTree = "<group>"; };
@@ -1788,6 +1789,7 @@
 				4DD688EE1D7F07D100C06358 /* soar_TraceNames.h */,
 				4DD688EF1D7F07D100C06358 /* soarversion.h */,
 				4DD688F01D7F07D100C06358 /* tokenizer.h */,
+				4D53D6031DC8EC4800DB5965 /* stacktrace.h */,
 			);
 			name = shared;
 			path = ../../Core/shared;
@@ -2230,6 +2232,7 @@
 				4DD6882A1D7F07AE00C06358 /* sml_Connection.h in Headers */,
 				4DD80D3B1D85B00200E85AA0 /* action_record.h in Headers */,
 				4DD80D791D85B01F00E85AA0 /* smem_math_query.h in Headers */,
+				4D53D6041DC8EC4800DB5965 /* stacktrace.h in Headers */,
 				4DD688B91D7F07C600C06358 /* sml_AgentSML.h in Headers */,
 				4DD68AA31D7F082500C06358 /* platform_specific.h in Headers */,
 				4DD6885A1D7F07AE00C06358 /* sock_NamedPipe.h in Headers */,
@@ -2371,7 +2374,6 @@
 				4DD6887E1D7F07BA00C06358 /* ParseXML.h in Headers */,
 				4DD687BE1D7F079600C06358 /* sml_ClientAgent.h in Headers */,
 				4DD80D481D85B00200E85AA0 /* production_record.h in Headers */,
-				4DD80D591D85B00E00E85AA0 /* output_settings.h in Headers */,
 				4DD80DA21D85B02A00E85AA0 /* kernel.h in Headers */,
 				4D1ED1B41D89E54C005E98E5 /* cli_visualize.h in Headers */,
 				4D16297B1D7F0C6E00A27F4E /* ccd.h in Headers */,
@@ -2536,7 +2538,7 @@
 		4D5105B91B2B41A80009AABC /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "University of Michigan – Soar Group";
 				TargetAttributes = {
 					4D1A6AC01B6BC42F00B4D0B1 = {

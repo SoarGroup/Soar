@@ -109,7 +109,7 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
 that smem_update_schema_one_to_two can convert.  It tests for the existence of a table name to determine if this is the old version. */
 bool SMem_Manager::is_version_one_db()
 {
-    return DB.execAndGet("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'").getInt64() != 0;
+    return DB->execAndGet("SELECT count(type) FROM sqlite_master WHERE type='table' AND name='smem7_signature'").getInt64() != 0;
 }
 
 smem_path_param::smem_path_param(const char* new_name, const char* new_value, soar_module::predicate<const char*>* new_val_pred, soar_module::predicate<const char*>* new_prot_pred, agent* new_agent): soar_module::string_param(new_name, new_value, new_val_pred, new_prot_pred), thisAgent(new_agent) {}
@@ -142,10 +142,10 @@ void smem_path_param::set_value(const char* new_value)
     if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
     {
         std::string schema_version;
-        if (thisAgent->SMem->DB.containsData())
+        if (thisAgent->SMem->DB->containsData())
         {
             // Check if table exists already
-            thisAgent->SMem->DB.exec("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
+            thisAgent->SMem->DB->exec("CREATE TABLE IF NOT EXISTS versions (system TEXT PRIMARY KEY,version_number TEXT)");
             if (thisAgent->SMem->is_version_one_db())
             {
                 thisAgent->outputManager->printa(thisAgent, "...You have selected a database with an old version.\n"
@@ -212,14 +212,14 @@ smem_mem_usage_stat::smem_mem_usage_stat(agent* new_agent, const char* new_name,
 
 int64_t smem_mem_usage_stat::get_value()
 {
-    return thisAgent->SMem->DB.getMemoryUsage();
+    return thisAgent->SMem->DB->getMemoryUsage();
 }
 
 smem_mem_high_stat::smem_mem_high_stat(agent* new_agent, const char* new_name, int64_t new_value, soar_module::predicate<int64_t>* new_prot_pred): soar_module::integer_stat(new_name, new_value, new_prot_pred), thisAgent(new_agent) {}
 
 int64_t smem_mem_high_stat::get_value()
 {
-    return thisAgent->SMem->DB.getMemoryHighwater();
+    return thisAgent->SMem->DB->getMemoryHighwater();
 }
 
 bool SMem_Manager::enabled()
@@ -229,5 +229,5 @@ bool SMem_Manager::enabled()
 
 bool SMem_Manager::connected()
 {
-    return DB.containsData();
+    return DB != nullptr;
 }

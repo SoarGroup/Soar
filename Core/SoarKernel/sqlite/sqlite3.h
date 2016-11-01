@@ -2176,7 +2176,7 @@ SQLITE_API void sqlite3_interrupt(sqlite3*);
 ** memory allocation fails, then SQLITE_NOMEM is returned.
 **
 ** ^These routines do not parse the SQL statements thus
-** will not detect syntactically incorrect SQL.
+** will not detect syntactically incorrect SQL->
 **
 ** ^(If SQLite has not been initialized using [sqlite3_initialize()] prior 
 ** to invoking sqlite3_complete16() then sqlite3_initialize() is invoked
@@ -3327,7 +3327,7 @@ typedef struct sqlite3_stmt sqlite3_stmt;
 ** large, default limits.  Databases managed by external sources can
 ** be given much smaller limits designed to prevent a denial of service
 ** attack.  Developers might also want to use the [sqlite3_set_authorizer()]
-** interface to further control untrusted SQL.  The size of the database
+** interface to further control untrusted SQL->  The size of the database
 ** created by an untrusted script can be contained using the
 ** [max_page_count] [PRAGMA].
 **
@@ -7737,7 +7737,7 @@ SQLITE_API void *sqlite3_wal_hook(
 ** configured by this function.
 **
 ** ^The [wal_autocheckpoint pragma] can be used to invoke this interface
-** from SQL.
+** from SQL->
 **
 ** ^Checkpoints initiated by this mechanism are
 ** [sqlite3_wal_checkpoint_v2|PASSIVE].
@@ -7862,7 +7862,7 @@ SQLITE_API int sqlite3_wal_checkpoint(sqlite3 *db, const char *zDb);
 ** [sqlite3_errcode()] and [sqlite3_errmsg()].
 **
 ** ^The [PRAGMA wal_checkpoint] command can be used to invoke this interface
-** from SQL.
+** from SQL->
 */
 SQLITE_API int sqlite3_wal_checkpoint_v2(
   sqlite3 *db,                    /* Database handle */

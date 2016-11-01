@@ -428,18 +428,18 @@ public:
     void backup(const std::string& file);
 
     /**
-     * @brief Get the current memory usage of the DB.
+     * @brief Get the current memory usage of the DB->
      *
-     *  This will return the current memory usage of the DB.
+     *  This will return the current memory usage of the DB->
      *
      * @return the memory usage of the DB
      */
     int64_t getMemoryUsage();
 
     /**
-     * @brief Get the current memory usage of the DB.
+     * @brief Get the current memory usage of the DB->
      *
-     *  This will return the current memory usage of the DB.
+     *  This will return the current memory usage of the DB->
      *
      * @return the memory usage of the DB
      */

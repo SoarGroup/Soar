@@ -23,10 +23,10 @@ class statement_container
 {
 protected:
     std::list<std::string> structure;
-    SQLite::Database& DB;
+    std::shared_ptr<SQLite::Database> DB;
 
 public:
-    statement_container(SQLite::Database& database, std::function<void()> initializationCode = [](){})
+    statement_container(std::shared_ptr<SQLite::Database> database, std::function<void()> initializationCode = [](){})
     : DB(database)
     {
         initializationCode();
@@ -42,7 +42,7 @@ public:
     {
         for (auto& statement : structure)
         {
-            auto s = SQLite::Statement(DB, statement);
+            auto s = SQLite::Statement(*DB, statement);
             s.exec();
         }
     }

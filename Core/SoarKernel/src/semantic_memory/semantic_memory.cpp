@@ -60,12 +60,8 @@ const int SMem_Manager::sqlite3Timeout = 20000;
 
 void SMem_Manager::recreateDB(std::string db_path)
 {
-    DB.reconnect(db_path, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
-
-    // reinitialize in-place
-    static_assert(!std::has_virtual_destructor<sqlite_job_queue>::value, "Unsafe");
-    JobQueue.~sqlite_job_queue();
-    new (&JobQueue) sqlite_job_queue(db_path);
+    DB = std::make_shared<SQLite::Database>(db_path, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
+    JobQueue = std::make_shared<sqlite_job_queue>(db_path);
 }
 
 wme_list* SMem_Manager::get_direct_augs_of_id(Symbol* id, tc_number tc)
@@ -491,8 +487,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-//                        thisAgent->SMem->SQL.begin.exec();
-//                        thisAgent->SMem->SQL.begin.reset();
+//                        thisAgent->SMem->SQL->begin.exec();
+//                        thisAgent->SMem->SQL->begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -509,8 +505,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-//                        thisAgent->SMem->SQL.commit.exec();
-//                        thisAgent->SMem->SQL.commit.reset();
+//                        thisAgent->SMem->SQL->commit.exec();
+//                        thisAgent->SMem->SQL->commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -529,8 +525,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // start transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-//                        thisAgent->SMem->SQL.begin.exec();
-//                        thisAgent->SMem->SQL.begin.reset();
+//                        thisAgent->SMem->SQL->begin.exec();
+//                        thisAgent->SMem->SQL->begin.reset();
                     }
 
                     for (sym_p = store.begin(); sym_p != store.end(); sym_p++)
@@ -547,8 +543,8 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     // commit transaction (if not lazy)
                     if (thisAgent->SMem->settings->lazy_commit->get_value() == off)
                     {
-//                        thisAgent->SMem->SQL.commit.exec();
-//                        thisAgent->SMem->SQL.commit.reset();
+//                        thisAgent->SMem->SQL->commit.exec();
+//                        thisAgent->SMem->SQL->commit.reset();
                     }
 
                     ////////////////////////////////////////////////////////////////////////////
@@ -752,10 +748,7 @@ void SMem_Manager::reinit()
 SMem_Manager::SMem_Manager(agent* myAgent)
 : thisAgent(myAgent),
 settings(new smem_param_container(myAgent)),
-statistics(new smem_stat_container(myAgent)),
-DB(SMem_Manager::memoryDatabasePath, sqlite3Flags, sqlite3Timeout),
-SQL(this),
-JobQueue(SMem_Manager::memoryDatabasePath)
+statistics(new smem_stat_container(myAgent))
 {
     thisAgent->SMem = this;
 

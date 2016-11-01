@@ -12,33 +12,34 @@
 
 #include <sqlite3.h>
 
+#include "stacktrace.h"
 
 namespace SQLite
 {
 
 Exception::Exception(const std::string& aErrorMessage) :
-    std::runtime_error(aErrorMessage),
+    std::runtime_error(aErrorMessage + "\n\n" + stacktrace()),
     mErrcode(-1), // 0 would be SQLITE_OK, which doesn't make sense
     mExtendedErrcode(-1)
 {
 }
 
 Exception::Exception(const std::string& aErrorMessage, int ret) :
-    std::runtime_error(aErrorMessage),
+    std::runtime_error(aErrorMessage + "\n\n" + stacktrace()),
     mErrcode(ret),
     mExtendedErrcode(-1)
 {
 }
 
 Exception::Exception(sqlite3* apSQLite) :
-    std::runtime_error(sqlite3_errmsg(apSQLite)),
+    std::runtime_error(std::string(sqlite3_errmsg(apSQLite)) + "\n\n" + stacktrace()),
     mErrcode(sqlite3_errcode(apSQLite)),
     mExtendedErrcode(sqlite3_extended_errcode(apSQLite))
 {
 }
 
 Exception::Exception(sqlite3* apSQLite, int ret) :
-    std::runtime_error(sqlite3_errmsg(apSQLite)),
+    std::runtime_error(std::string(sqlite3_errmsg(apSQLite)) + "\n\n" + stacktrace()),
     mErrcode(ret),
     mExtendedErrcode(sqlite3_extended_errcode(apSQLite))
 {

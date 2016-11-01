@@ -312,8 +312,8 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     std::set<Symbol*> children;
 
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    JobQueue.post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL.web_expand);
+    JobQueue->post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL->web_expand);
 
         SQLite::bind(*sql, pLTI_ID);
 

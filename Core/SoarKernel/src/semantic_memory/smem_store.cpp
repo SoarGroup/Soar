@@ -99,11 +99,11 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
     // pairs first, accumulate distinct attributes and pair count
     uint64_t pair_count = 0;
 
-    JobQueue.post([&]() mutable {
+    JobQueue->post([&]() mutable {
         uint64_t child_attr = 0;
         std::set<uint64_t> distinct_attr;
 
-        auto sql = sqlite_thread_guard(SQL.web_all);
+        auto sql = sqlite_thread_guard(SQL->web_all);
         SQLite::bind(*sql, pLTI_ID);
         while (sql->executeStep())
         {
@@ -116,14 +116,14 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
             if (sql->getColumn(1).getInt() != SMEM_AUGMENTATIONS_NULL)
             {
                 // adjust in opposite direction ( adjust, attribute, const )
-                auto wlfu = sqlite_thread_guard(SQL.wmes_lti_frequency_update);
+                auto wlfu = sqlite_thread_guard(SQL->wmes_lti_frequency_update);
                 SQLite::bind(*wlfu, -1, child_attr, sql->getColumn(1).getInt());
                 wlfu->exec();
             }
             else
             {
                 // adjust in opposite direction ( adjust, attribute, lti )
-                auto wlfu = sqlite_thread_guard(SQL.wmes_lti_frequency_update);
+                auto wlfu = sqlite_thread_guard(SQL->wmes_lti_frequency_update);
                 SQLite::bind(*wlfu, -1, child_attr, sql->getColumn(2).getInt());
                 wlfu->exec();
             }
@@ -133,7 +133,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
         for (std::set<uint64_t>::iterator a = distinct_attr.begin(); a != distinct_attr.end(); a++)
         {
             // adjust in opposite direction ( adjust, attribute )
-            auto afu = sqlite_thread_guard(SQL.attribute_frequency_update);
+            auto afu = sqlite_thread_guard(SQL->attribute_frequency_update);
             SQLite::bind(*afu, -1, *a);
             afu->exec();
         }
@@ -144,8 +144,8 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
     statistics->edges->set_value(statistics->edges->get_value() - pair_count);
 
     // disconnect
-    JobQueue.post([=]() {
-        auto wt = sqlite_thread_guard(SQL.web_truncate);
+    JobQueue->post([=]() {
+        auto wt = sqlite_thread_guard(SQL->web_truncate);
         SQLite::bind(*wt, pLTI_ID);
         wt->exec();
     })->wait();
@@ -175,14 +175,16 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
     else
     {
-        JobQueue.post([&]() mutable {
-            auto sql = sqlite_thread_guard(SQL.act_lti_child_ct_get);
+        JobQueue->post([=,&existing_edges]() mutable {
+            auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
 
             SQLite::bind(*sql, pLTI_ID);
-            assert(sql->executeStep());
 
-            existing_edges = static_cast<uint64_t>(sql->getColumn(0).getInt());
-        });
+            if (!sql->executeStep())
+                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
+            existing_edges = static_cast<uint64_t>(sql->getColumn(0).getUInt64());
+        })->wait();
     }
 
     // get new edges
@@ -209,8 +211,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             {
                 // lti_id, attribute_s_id
                 assert(attr_hash);
-                JobQueue.post([&]() mutable {
-                    auto sql = sqlite_thread_guard(SQL.web_attr_child);
+                JobQueue->post([&]() mutable {
+                    auto sql = sqlite_thread_guard(SQL->web_attr_child);
                     SQLite::bind(*sql, pLTI_ID, attr_hash);
 
                     if (!sql->executeStep())
@@ -233,8 +235,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         // lti_id, attribute_s_id, val_const
                         assert(pLTI_ID && attr_hash && value_hash);
 
-                        JobQueue.post([&]() mutable {
-                            auto sql = sqlite_thread_guard(SQL.web_const_child);
+                        JobQueue->post([&]() mutable {
+                            auto sql = sqlite_thread_guard(SQL->web_const_child);
                             SQLite::bind(*sql, pLTI_ID, attr_hash, value_hash);
 
                             if (!sql->executeStep())
@@ -266,8 +268,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         // lti_id, attribute_s_id, val_lti
                         assert(pLTI_ID && attr_hash && value_lti);
-                        JobQueue.post([&]() mutable {
-                            auto sql = sqlite_thread_guard(SQL.web_lti_child);
+                        JobQueue->post([&]() mutable {
+                            auto sql = sqlite_thread_guard(SQL->web_lti_child);
                             SQLite::bind(*sql, pLTI_ID, attr_hash, value_lti);
 
                             if (!sql->executeStep())
@@ -310,8 +312,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             if (after_above)
             {
                 // update smem_augmentations to inf
-                JobQueue.post([&]() {
-                    auto sql = sqlite_thread_guard(SQL.act_set);
+                JobQueue->post([&]() {
+                    auto sql = sqlite_thread_guard(SQL->act_set);
                     SQLite::bind(*sql, web_act, pLTI_ID);
                     sql->exec();
                 })->wait();
@@ -320,8 +322,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
 
     // update edge counter
-    JobQueue.post([&]() {
-        auto sql = sqlite_thread_guard(SQL.act_lti_child_ct_set);
+    JobQueue->post([&]() {
+        auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_set);
         SQLite::bind(*sql, new_edges, pLTI_ID);
         sql->exec();
     })->wait();
@@ -342,29 +344,29 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     for (std::set< std::pair< smem_hash_id, smem_hash_id > >::iterator p = const_new.begin(); p != const_new.end(); p++)
     {
         // insert
-        JobQueue.post([=]() {
+        JobQueue->post([=]() {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-            auto sql = sqlite_thread_guard(SQL.web_add);
+            auto sql = sqlite_thread_guard(SQL->web_add);
             SQLite::bind(*sql, pLTI_ID, p->first, p->second, SMEM_AUGMENTATIONS_NULL, web_act);
             sql->exec();
         })->wait();
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        JobQueue.post([=]() {
-            auto sql = sqlite_thread_guard(SQL.wmes_constant_frequency_check);
+        JobQueue->post([=]() {
+            auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
             SQLite::bind(*sql, p->first, p->second);
 
             if (!sql->executeStep())
             {
-                auto sql = sqlite_thread_guard(SQL.wmes_constant_frequency_add);
+                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_add);
                 SQLite::bind(*sql, p->first, p->second);
                 sql->exec();
             }
             else
             {
                 // adjust count (adjustment, attribute_s_id, val)
-                auto sql = sqlite_thread_guard(SQL.wmes_constant_frequency_update);
+                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_update);
                 SQLite::bind(*sql, 1, p->first, p->second);
                 sql->exec();
             }
@@ -375,28 +377,28 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     for (std::set< std::pair< smem_hash_id, uint64_t > >::iterator p = lti_new.begin(); p != lti_new.end(); p++)
     {
         // insert
-        JobQueue.post([=]() {
+        JobQueue->post([=]() {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-            auto sql = sqlite_thread_guard(SQL.web_add);
+            auto sql = sqlite_thread_guard(SQL->web_add);
             SQLite::bind(*sql, pLTI_ID, p->first, SMEM_AUGMENTATIONS_NULL, p->second, web_act);
             sql->exec();
         })->wait();
 
         // update counter
-        JobQueue.post([=]() {
+        JobQueue->post([=]() {
             // check if counter exists (and add if does not): attribute_s_id, val
-            auto sql = sqlite_thread_guard(SQL.wmes_lti_frequency_check);
+            auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_check);
             SQLite::bind(*sql, p->first, p->second);
             if (!sql->executeStep())
             {
-                auto sql = sqlite_thread_guard(SQL.wmes_lti_frequency_add);
+                auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_add);
                 SQLite::bind(*sql, p->first, p->second);
                 sql->exec();
             }
             else
             {
                 // adjust count (adjustment, attribute_s_id, lti)
-                auto sql = sqlite_thread_guard(SQL.wmes_lti_frequency_update);
+                auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_update);
                 SQLite::bind(*sql, 1, p->first, p->second);
                 sql->exec();
             }
@@ -407,19 +409,19 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     for (std::set< smem_hash_id >::iterator a = attr_new.begin(); a != attr_new.end(); a++)
     {
         // check if counter exists (and add if does not): attribute_s_id
-        JobQueue.post([=]() {
-            auto sql = sqlite_thread_guard(SQL.attribute_frequency_check);
+        JobQueue->post([=]() {
+            auto sql = sqlite_thread_guard(SQL->attribute_frequency_check);
             SQLite::bind(*sql, *a);
             if (!sql->executeStep())
             {
-                auto sql = sqlite_thread_guard(SQL.attribute_frequency_add);
+                auto sql = sqlite_thread_guard(SQL->attribute_frequency_add);
                 SQLite::bind(*sql, *a);
                 sql->exec();
             }
             else
             {
                 // adjust count (adjustment, attribute_s_id)
-                auto sql = sqlite_thread_guard(SQL.attribute_frequency_update);
+                auto sql = sqlite_thread_guard(SQL->attribute_frequency_update);
                 SQLite::bind(*sql, 1, *a);
                 sql->exec();
             }

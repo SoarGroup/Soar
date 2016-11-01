@@ -101,8 +101,8 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
         new_ltm->lti_id = parent_lti->lti_id;
         new_ltm->slots = new ltm_slot_map();
         // get direct children: attr_type, attr_hash, value_type, value_hash, value_lti
-        JobQueue.post([&]() mutable {
-            auto sql = sqlite_thread_guard(SQL.web_expand);
+        JobQueue->post([&]() mutable {
+            auto sql = sqlite_thread_guard(SQL->web_expand);
 
             SQLite::bind(*sql, parent_lti->lti_id);
             while (sql->executeStep())
@@ -161,8 +161,8 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
 void SMem_Manager::create_full_store_set(ltm_set* store_set)
 {
     //This makes a set that contains the entire contents of smem.
-    JobQueue.post([&]() {
-        auto sql = sqlite_thread_guard(SQL.vis_lti);
+    JobQueue->post([&]() {
+        auto sql = sqlite_thread_guard(SQL->vis_lti);
 
         while (sql->executeStep())
             create_store_set(store_set, sql->getColumn(0).getInt64(), 1);
@@ -225,8 +225,8 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
     bool possible_id, possible_ic, possible_fc, possible_sc, possible_var, is_rereadable;
 
     // get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
-    JobQueue.post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL.web_expand);
+    JobQueue->post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL->web_expand);
 
         SQLite::bind(*sql, pLTI_ID);
         while (sql->executeStep())
@@ -399,8 +399,8 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    JobQueue.post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL.vis_lti);
+    JobQueue->post([&]() mutable {
+        auto sql = sqlite_thread_guard(SQL->vis_lti);
 
         while (sql->executeStep())
             print_smem_object(sql->getColumn(0).getInt64(), 1, return_val);
@@ -418,9 +418,9 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
     id_set next;
     id_set::iterator next_it;
 
-    auto act_q = sqlite_thread_guard(SQL.vis_lti_act);
-    auto hist_q = sqlite_thread_guard(SQL.history_get);
-    auto lti_access_q = sqlite_thread_guard(SQL.lti_access_get);
+    auto act_q = sqlite_thread_guard(SQL->vis_lti_act);
+    auto hist_q = sqlite_thread_guard(SQL->history_get);
+    auto lti_access_q = sqlite_thread_guard(SQL->lti_access_get);
     unsigned int i;
 
 
@@ -442,18 +442,26 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
         // get lti info
         {
             SQLite::bind(*act_q, c.first);
-            assert(act_q->executeStep());
+
+            if (!act_q->executeStep())
+                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
             //Look up activation history.
             std::list<uint64_t> access_history;
             if (history)
             {
                 SQLite::bind(*lti_access_q, c.first);
-                assert(lti_access_q->executeStep());
+
+                if (!lti_access_q->executeStep())
+                    throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
                 uint64_t n = lti_access_q->getColumn(0).getInt64();
                 lti_access_q->reset();
                 SQLite::bind(*hist_q, c.first);
-                assert(hist_q->executeStep());
+
+                if (!hist_q->executeStep())
+                    throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
                 for (int i = 0; i < n && i < 10; ++i) //10 because of the length of the history record kept for smem.
                 {
                     if (hist_q->getColumn(i).getInt64() != 0)

@@ -14,11 +14,14 @@
 
 #include <string>
 #include <map>
+#include <mutex>
+#include <stack>
 
 // Forward declarations to avoid inclusion of <sqlite3.h> in a header
 struct sqlite3;
 struct sqlite3_stmt;
 
+#define lockDebug 1
 
 namespace SQLite
 {
@@ -50,6 +53,10 @@ extern const int OK; ///< SQLITE_OK
 class Statement
 {
     friend class Column; // For access to Statement::Ptr inner class
+
+    static std::string queryStackToString();
+    static std::mutex d_queryStackMutex;
+    static std::stack<Statement*> d_queryStack;
 
 public:
     /**
@@ -615,7 +622,7 @@ private:
     {
         if (false == mbOk)
         {
-            throw SQLite::Exception("No row to get a column from. executeStep() was not called, or returned false.");
+            throw SQLite::Exception("No row to get a column from. executeStep() was not called, or returned false: " + getQuery());
         }
     }
 

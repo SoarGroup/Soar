@@ -26,21 +26,21 @@ sqlite_thread_guard SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        auto sql = sqlite_thread_guard(SQL.web_attr_all);
+        auto sql = sqlite_thread_guard(SQL->web_attr_all);
         SQLite::bind(*sql, el->attr_hash);
         return sql;
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        auto sql = sqlite_thread_guard(SQL.web_const_all);
+        auto sql = sqlite_thread_guard(SQL->web_const_all);
         SQLite::bind(*sql, el->attr_hash, el->value_hash);
         return sql;
     }
     else //if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        auto sql = sqlite_thread_guard(SQL.web_lti_all);
+        auto sql = sqlite_thread_guard(SQL->web_lti_all);
         SQLite::bind(*sql, el->attr_hash, el->value_lti);
         return sql;
     }
@@ -70,7 +70,7 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
             if (value_hash != NIL)
             {
-                q = new sqlite_thread_guard(SQL.wmes_constant_frequency_get);
+                q = new sqlite_thread_guard(SQL->wmes_constant_frequency_get);
                 SQLite::bind(**q, attr_hash, value_hash);
             }
             else if (pos_cue)
@@ -100,14 +100,14 @@ bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weight
 
             if (value_lti == NIL)
             {
-                q = new sqlite_thread_guard(SQL.attribute_frequency_get);
+                q = new sqlite_thread_guard(SQL->attribute_frequency_get);
                 SQLite::bind(**q, attr_hash);
 
                 element_type = attr_t;
             }
             else
             {
-                q = new sqlite_thread_guard(SQL.wmes_lti_frequency_get);
+                q = new sqlite_thread_guard(SQL->wmes_lti_frequency_get);
                 SQLite::bind(**q, attr_hash, value_lti);
 
                 element_type = value_lti_t;
@@ -369,10 +369,13 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
 
         while (more_rows && (q->getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
         {
-            auto sql = sqlite_thread_guard(SQL.act_lti_get);
+            auto sql = sqlite_thread_guard(SQL->act_lti_get);
 
             SQLite::bind(*sql, q->getColumn(0).getInt64());
-            assert(sql->executeStep());
+
+            if (!sql->executeStep())
+                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
             plentiful_parents.push(std::make_pair<double, uint64_t>(sql->getColumn(0).getDouble(), q->getColumn(0).getInt64()));
 
             more_rows = q->executeStep();
@@ -428,18 +431,18 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                     if ((*next_element)->element_type == attr_t)
                     {
                         // parent=? AND attribute_s_id=?
-                        q2 = new sqlite_thread_guard(SQL.web_attr_child);
+                        q2 = new sqlite_thread_guard(SQL->web_attr_child);
                     }
                     else if ((*next_element)->element_type == value_const_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_constant_s_id=?
-                        q2 = new sqlite_thread_guard(SQL.web_const_child);
+                        q2 = new sqlite_thread_guard(SQL->web_const_child);
                         (*q2)->bind(3, (*next_element)->value_hash);
                     }
                     else if ((*next_element)->element_type == value_lti_t)
                     {
                         // parent=? AND attribute_s_id=? AND value_lti_id=?
-                        q2 = new sqlite_thread_guard(SQL.web_lti_child);
+                        q2 = new sqlite_thread_guard(SQL->web_lti_child);
                         (*q2)->bind(3, (*next_element)->value_lti);
                     }
 
@@ -454,7 +457,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                         do
                         {
                             smem_hash_id valueHash = (*q2)->getColumn(2 - 1).getInt64();
-                            auto sql = sqlite_thread_guard(SQL.hash_rev_type);
+                            auto sql = sqlite_thread_guard(SQL->hash_rev_type);
                             sql->bind(1, valueHash);
 
                             if (!sql->executeStep())
@@ -633,7 +636,7 @@ void SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery,
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
-        auto job = SMem_Manager::JobQueue.post([&]() {
+        auto job = SMem_Manager::JobQueue->post([&]() {
             process_query_SQL(weighted_cue, needFullSearch, prohibit, state, query, negquery, match_ids, number_to_retrieve, depth);
         });
 
