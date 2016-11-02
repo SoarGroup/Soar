@@ -22,55 +22,55 @@
 namespace SQLite
 {
 
-/// implementation detail for variadic bind.
-namespace detail {
-template<class F, class ...Args, std::size_t ... I>
-inline void invoke_with_index(F&& f, std::integer_sequence<std::size_t, I...>, const Args& ...args)
-{
-   std::initializer_list<int> l{ (f(I+1, args), 0)... };
-    (void)l;
-}
-
-/// implementation detail for variadic bind.
-template<class F, class ...Args>
-inline void invoke_with_index(F&& f, const Args& ... args)
-{
-    invoke_with_index(std::forward<F>(f), std::index_sequence_for<Args...>(), args...);
-}
-
-} // namespace detail
-/// @endcond
-
-/**
- * \brief Convenience function for calling Statement::bind(...) once for each argument given.
- *
- * This takes care of incrementing the index between each calls to bind.
- *
- * This feature requires a c++14 capable compiler.
- *
- * \code{.cpp}
- * SQLite::Statement stm("SELECT * FROM MyTable WHERE colA>? && colB=? && colC<?");
- * bind(stm,a,b,c);
- * //...is equivalent to
- * stm.bind(1,a);
- * stm.bind(2,b);
- * stm.bind(3,c);
- * \endcode
- * @param s statement
- * @param args one or more args to bind.
- */
-template<class ...Args>
-void bind(SQLite::Statement& s, const Args& ... args)
-{
-    static_assert(sizeof...(args) > 0, "please invoke bind with one or more args");
-
-    auto f=[&s](int index, const auto& value)
-    {
-        s.bind(index, value);
-    };
-
-    detail::invoke_with_index(f, args...);
-}
+///// implementation detail for variadic bind.
+//namespace detail {
+//template<class F, class ...Args, std::size_t ... I>
+//inline void invoke_with_index(F&& f, std::integer_sequence<std::size_t, I...>, const Args& ...args)
+//{
+//   std::initializer_list<int> l{ (f(I+1, args), 0)... };
+//    (void)l;
+//}
+//
+///// implementation detail for variadic bind.
+//template<class F, class ...Args>
+//inline void invoke_with_index(F&& f, const Args& ... args)
+//{
+//    invoke_with_index(std::forward<F>(f), std::index_sequence_for<Args...>(), args...);
+//}
+//
+//} // namespace detail
+///// @endcond
+//
+///**
+// * \brief Convenience function for calling Statement::bind(...) once for each argument given.
+// *
+// * This takes care of incrementing the index between each calls to bind.
+// *
+// * This feature requires a c++14 capable compiler.
+// *
+// * \code{.cpp}
+// * SQLite::Statement stm("SELECT * FROM MyTable WHERE colA>? && colB=? && colC<?");
+// * bind(stm,a,b,c);
+// * //...is equivalent to
+// * stm.bind(1,a);
+// * stm.bind(2,b);
+// * stm.bind(3,c);
+// * \endcode
+// * @param s statement
+// * @param args one or more args to bind.
+// */
+//template<class ...Args>
+//void bind(SQLite::Statement& s, const Args& ... args)
+//{
+//    static_assert(sizeof...(args) > 0, "please invoke bind with one or more args");
+//
+//    auto f=[&s](int index, const auto& value)
+//    {
+//        s.bind(index, value);
+//    };
+//
+//    detail::invoke_with_index(f, args...);
+//}
 
 }  // namespace SQLite
 

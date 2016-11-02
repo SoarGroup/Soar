@@ -315,7 +315,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->web_expand);
 
-        SQLite::bind(*sql, pLTI_ID);
+        sql->bind(1, pLTI_ID);
 
         while (sql->executeStep())
         {

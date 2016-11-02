@@ -369,7 +369,8 @@ smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_add_type);
 
-        SQLite::bind(*sql, symbol_type);
+        sql->bind(1, symbol_type);
+
         sql->exec();
 
         rowID = JobQueue->db.getLastInsertRowid();
@@ -386,7 +387,8 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_get_int);
 
-        SQLite::bind(*sql, val);
+        sql->bind(1, val);
+
         if (sql->executeStep())
             return_val = sql->getColumn(0).getUInt64();
 
@@ -402,7 +404,9 @@ smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
                 // then content
                 auto sql = sqlite_thread_guard(SQL->hash_add_int);
 
-                SQLite::bind(*sql, return_val, val);
+                sql->bind(1, return_val);
+                sql->bind(2, val);
+
                 sql->exec();
             })->wait();
         }
@@ -419,7 +423,8 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_get_float);
 
-        SQLite::bind(*sql, val);
+        sql->bind(1, val);
+
         if (sql->executeStep())
             return_val = sql->getColumn(0).getUInt64();
 
@@ -435,7 +440,9 @@ smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
                 // then content
                 auto sql = sqlite_thread_guard(SQL->hash_add_float);
 
-                SQLite::bind(*sql, return_val, val);
+                sql->bind(1, return_val);
+                sql->bind(2, val);
+
                 sql->exec();
             })->wait();
         }
@@ -452,7 +459,8 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_get_str);
 
-        SQLite::bind(*sql, val);
+        sql->bind(1, val);
+
         if (sql->executeStep())
             return_val = sql->getColumn(0).getUInt64();
 
@@ -468,7 +476,9 @@ smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
                 // then content
                 auto sql = sqlite_thread_guard(SQL->hash_add_str);
 
-                SQLite::bind(*sql, return_val, val);
+                sql->bind(1, return_val);
+                sql->bind(2, val);
+
                 sql->exec();
             })->wait();
         }
@@ -530,7 +540,7 @@ int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_rev_int);
 
-        SQLite::bind(*sql, hash_value);
+        sql->bind(1, hash_value);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -548,7 +558,7 @@ double SMem_Manager::rhash__float(smem_hash_id hash_value)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_rev_float);
 
-        SQLite::bind(*sql, hash_value);
+        sql->bind(1, hash_value);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -564,7 +574,7 @@ void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->hash_rev_str);
 
-        SQLite::bind(*sql, hash_value);
+        sql->bind(1, hash_value);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -823,7 +833,7 @@ bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->var_get);
 
-        SQLite::bind(*sql, variable_id);
+        sql->bind(1, variable_id);
 
         if (sql->executeStep())
         {
@@ -838,10 +848,12 @@ bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable
 // sets an existing SMem variable in the database
 void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_value)
 {
-    JobQueue->post([&]() mutable {
+    JobQueue->post([=]() {
         auto sql = sqlite_thread_guard(SQL->var_set);
 
-        SQLite::bind(*sql, variable_value, variable_id);
+        sql->bind(1, variable_value);
+        sql->bind(2, variable_id);
+
         sql->exec();
     })->wait();
 }
@@ -852,7 +864,9 @@ void SMem_Manager::variable_create(smem_variable_key variable_id, int64_t variab
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->var_create);
 
-        SQLite::bind(*sql, variable_id, variable_value);
+        sql->bind(1, variable_id);
+        sql->bind(2, variable_value);
+
         sql->exec();
     })->wait();
 }
@@ -1011,7 +1025,7 @@ uint64_t SMem_Manager::lti_exists(uint64_t pLTI_ID)
         JobQueue->post([&]() mutable {
             auto sql = sqlite_thread_guard(SQL->lti_id_exists);
 
-            SQLite::bind(*sql, pLTI_ID);
+            sql->bind(1, pLTI_ID);
 
             if (sql->executeStep())
                 return_val = sql->getColumn(0).getUInt64();
@@ -1050,7 +1064,13 @@ uint64_t SMem_Manager::add_new_LTI()
     JobQueue->post([=]() mutable {
         auto sql = sqlite_thread_guard(SQL->lti_add);
 
-        SQLite::bind(*sql, lti_id, 0, 0, 0, 0, 0);
+        sql->bind(1, lti_id);
+        sql->bind(2, 0);
+        sql->bind(3, 0);
+        sql->bind(4, 0);
+        sql->bind(5, 0);
+        sql->bind(6, 0);
+
         sql->exec();
 
     //    assert(lti_id_counter == smem_db->last_insert_rowid());
@@ -1068,7 +1088,13 @@ uint64_t SMem_Manager::add_specific_LTI(uint64_t lti_id)
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->lti_add);
 
-        SQLite::bind(*sql, lti_id, 0, 0, 0, 0, 0);
+        sql->bind(1, lti_id);
+        sql->bind(2, 0);
+        sql->bind(3, 0);
+        sql->bind(4, 0);
+        sql->bind(5, 0);
+        sql->bind(6, 0);
+
         sql->exec();
 
         //    assert(lti_id_counter == smem_db->last_insert_rowid());

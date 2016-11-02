@@ -38,7 +38,6 @@ public:
 
         job();
         job(std::function<void()> e, std::function<void()> c);
-
     public:
         std::function<void()> execution;
         std::function<void()> completionCallback;
@@ -48,6 +47,8 @@ public:
         job& operator=(const job& b);
 
         void wait();
+
+        std::exception_ptr exception;
     };
     
     job_queue(std::function<void ()> threadInitializer = [](){});

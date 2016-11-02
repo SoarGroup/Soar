@@ -104,7 +104,8 @@ void SMem_Manager::create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_
         JobQueue->post([&]() mutable {
             auto sql = sqlite_thread_guard(SQL->web_expand);
 
-            SQLite::bind(*sql, parent_lti->lti_id);
+            sql->bind(1, parent_lti->lti_id);
+
             while (sql->executeStep())
             {
                 Symbol* attr = rhash_(static_cast<byte>(sql->getColumn(0).getInt64()), static_cast<smem_hash_id>(sql->getColumn(1).getUInt64()));
@@ -228,7 +229,8 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->web_expand);
 
-        SQLite::bind(*sql, pLTI_ID);
+        sql->bind(1, pLTI_ID);
+
         while (sql->executeStep())
         {
             // get attribute
@@ -399,7 +401,7 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
 
 void SMem_Manager::print_store(std::string* return_val)
 {
-    JobQueue->post([&]() mutable {
+    JobQueue->post([=]() mutable {
         auto sql = sqlite_thread_guard(SQL->vis_lti);
 
         while (sql->executeStep())
@@ -441,7 +443,7 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
 
         // get lti info
         {
-            SQLite::bind(*act_q, c.first);
+            act_q->bind(1, c.first);
 
             if (!act_q->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -450,14 +452,15 @@ void SMem_Manager::print_smem_object(uint64_t pLTI_ID, uint64_t depth, std::stri
             std::list<uint64_t> access_history;
             if (history)
             {
-                SQLite::bind(*lti_access_q, c.first);
+                lti_access_q->bind(1, c.first);
 
                 if (!lti_access_q->executeStep())
                     throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
                 uint64_t n = lti_access_q->getColumn(0).getInt64();
                 lti_access_q->reset();
-                SQLite::bind(*hist_q, c.first);
+
+                hist_q->bind(1, c.first);
 
                 if (!hist_q->executeStep())
                     throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);

@@ -56,7 +56,7 @@ const int SMem_Manager::sqlite3Flags =
     SQLite::OPEN_READWRITE      |
     SQLite::OPEN_URI            |
     SQLite::OPEN_NOMUTEX;
-const int SMem_Manager::sqlite3Timeout = 20000;
+const int SMem_Manager::sqlite3Timeout = 1000;
 
 void SMem_Manager::recreateDB(std::string db_path)
 {
@@ -763,7 +763,20 @@ void SMem_Manager::clean_up_for_agent_deletion()
      * deletion code that may need params, stats or timers to exist */
     // cleanup exploration
 
+    try {
     close();
+    } catch (...) {
+        std::exception_ptr e = std::current_exception();
+
+        try
+        {
+            if (e)
+                std::rethrow_exception(e);
+        } catch (std::exception& e)
+        {
+            std::cerr << "Exception thrown while cleaning up for agent deletion.  Database might be in inconsistent state:" << e.what() << std::endl;
+        }
+    }
     delete settings;
     delete statistics;
     delete timers;

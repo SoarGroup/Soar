@@ -27,7 +27,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         JobQueue->post([&]() mutable {
             auto sql = sqlite_thread_guard(SQL->lti_access_get);
 
-            SQLite::bind(*sql, pLTI_ID);
+            sql->bind(1, pLTI_ID);
 
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -41,7 +41,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->history_get);
 
-        SQLite::bind(*sql, pLTI_ID);
+        sql->bind(1, pLTI_ID);
 
         if (sql->executeStep())
         {
@@ -100,7 +100,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                         JobQueue->post([=]() {
                             auto sql = sqlite_thread_guard(SQL->lti_get_t);
 
-                            SQLite::bind(*sql, time_diff);
+                            sql->bind(1, time_diff);
 
                             std::vector<uint64_t> ltis;
                             while (sql->executeStep())
@@ -132,7 +132,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     JobQueue->post([&]() mutable {
         auto sql = sqlite_thread_guard(SQL->lti_access_get);
 
-        SQLite::bind(*sql, pLTI_ID);
+        sql->bind(1, pLTI_ID);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -162,11 +162,10 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
             JobQueue->post([&]() {
                 auto sql = sqlite_thread_guard(SQL->lti_access_set);
 
-                SQLite::bind(*sql,
-                             prev_access_n + 1,
-                             time_now,
-                             ((prev_access_n == 0) ? (time_now) : (prev_access_1)),
-                             pLTI_ID);
+                sql->bind(1, prev_access_n + 1);
+                sql->bind(2, time_now);
+                sql->bind(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
+                sql->bind(4, pLTI_ID);
 
                 sql->exec();
             })->wait();
@@ -193,7 +192,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                 JobQueue->post([=]() {
                     auto sql = sqlite_thread_guard(SQL->history_add);
 
-                    SQLite::bind(*sql, pLTI_ID, time_now);
+                    sql->bind(1, pLTI_ID);
+                    sql->bind(2, time_now);
+
                     sql->exec();
                 })->wait();
             }
@@ -207,7 +208,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                 JobQueue->post([=]() {
                     auto sql = sqlite_thread_guard(SQL->history_push);
 
-                    SQLite::bind(*sql, time_now, pLTI_ID);
+                    sql->bind(1, time_now);
+                    sql->bind(2, pLTI_ID);
+
                     sql->exec();
                 })->wait();
             }
@@ -222,7 +225,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         JobQueue->post([=,&num_edges]() mutable {
             auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
 
-            SQLite::bind(*sql, pLTI_ID);
+            sql->bind(1, pLTI_ID);
 
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
@@ -238,7 +241,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         JobQueue->post([=]() {
             auto sql = sqlite_thread_guard(SQL->act_set);
 
-            SQLite::bind(*sql, new_activation, pLTI_ID);
+            sql->bind(1, new_activation);
+            sql->bind(2, pLTI_ID);
+
             sql->exec();
         })->wait();
     }
@@ -248,7 +253,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     JobQueue->post([=]() {
         auto sql = sqlite_thread_guard(SQL->act_lti_set);
 
-        SQLite::bind(*sql, new_activation, pLTI_ID);
+        sql->bind(1, new_activation);
+        sql->bind(2, pLTI_ID);
+
         sql->exec();
     })->wait();
 

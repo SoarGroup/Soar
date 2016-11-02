@@ -229,5 +229,5 @@ bool SMem_Manager::enabled()
 
 bool SMem_Manager::connected()
 {
-    return DB != nullptr;
+    return DB != nullptr && SQL != nullptr && JobQueue != nullptr;
 }

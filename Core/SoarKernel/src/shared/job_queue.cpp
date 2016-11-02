@@ -8,12 +8,15 @@
 
 #include "job_queue.hpp"
 
+#include <iostream>
+
 job_queue::job::job() {}
 
 job_queue::job::job(std::function<void()> e, std::function<void()> c)
 : execution(e),
 completionCallback(c),
-complete(false)
+complete(false),
+exception(nullptr)
 {}
 
 void job_queue::job::wait()
@@ -22,6 +25,9 @@ void job_queue::job::wait()
     {
         std::this_thread::yield();
     }
+
+    if (exception != nullptr)
+        std::rethrow_exception(exception);
 }
 
 job_queue::job& job_queue::job::operator=(const job& b)
@@ -66,7 +72,13 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
                 continue;
             }
 
-            job->execution();
+            try {
+                job->execution();
+            }
+            catch(...) {
+                job->exception = std::current_exception();
+            }
+
             job->complete = true;
             job->completionCallback();
         }
