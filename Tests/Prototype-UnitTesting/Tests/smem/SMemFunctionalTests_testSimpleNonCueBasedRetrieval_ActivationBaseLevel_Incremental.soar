@@ -1,9 +1,9 @@
-smem --set learning on
 smem --set activation-mode base-level
 smem --set activate-on-query on
 
 smem --set base-incremental-threshes 2
 smem --set base-update-policy incremental
+smem --set learning on
 
 # Add some data with multiple levels
 smem --add {
@@ -21,7 +21,8 @@ sp {propose*first-query
             -^second
             -^third
             -^fourth
-            -^fifth)
+            -^fifth
+            -^sixth)
 --> 
   (<s> ^operator.name first-query)
 }
@@ -69,7 +70,7 @@ sp {apply*third-query
 -->
   (<sc> ^query <first-query> -)
   (<sc> ^query <second-query>)
-  (<second-query> ^name foo)
+  (<second-query> ^name <c>)
   (<s> ^third done)
   (<s> ^second done -)
 }
@@ -94,26 +95,46 @@ sp {apply*fourth-query
   (<s> ^third done -)
 }
 
-sp {propose*fifth-step
-  (state <s> ^superstate nil
-             ^fourth done
-            -^third)
--->
-  (<s> ^operator.name fifth-step)
+sp {propose*fifth-query
+  (state <s> ^superstate nil 
+  			 ^fourth done
+  			-^fifth)
+--> 
+  (<s> ^operator.name fifth-query)
 }
 
-sp {apply*fifth-step
-  (state <s> ^operator.name fifth-step
-             ^fourth done
+sp {apply*fifth-query
+  (state <s> ^operator.name fifth-query
+             ^smem.command <sc>)
+  (<sc> ^query <first-query>)
+-->
+  (<sc> ^query <first-query> -)
+  (<sc> ^query <second-query>)
+  (<second-query> ^name <d>)
+  (<s> ^fifth done)
+  (<s> ^fourth done -)
+}
+
+sp {propose*sixth-step
+  (state <s> ^superstate nil
+             ^fifth done
+            -^fourth)
+-->
+  (<s> ^operator.name sixth-step)
+}
+
+sp {apply*sixth-step
+  (state <s> ^operator.name sixth-step
+             ^fifth done
              ^smem.result.retrieved <result>)
 -->
-  (<s> ^fourth <result>)
-  (<s> ^fourth done -)
+  (<s> ^fifth <result>)
+  (<s> ^fifth done -)
 }
 
 sp {success
   (state <s> ^smem.result.retrieved <lti>
-             ^fourth <result>)
+             ^fifth <result>)
   (<result> ^name foo)
 -->
   (write |Success!|)
