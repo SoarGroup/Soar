@@ -16,6 +16,8 @@
 #include "Database.h"
 #include "Statement.h"
 
+#include <memory>
+
 namespace SMemExperimental
 {
 
