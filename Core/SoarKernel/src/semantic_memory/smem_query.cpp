@@ -19,33 +19,34 @@
 
 #include <thread>
 
-sqlite_thread_guard SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
+std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_web_crawl(smem_weighted_cue_element* el)
 {
     // first, point to correct query and setup
     // query-specific parameters
+    std::shared_ptr<sqlite_thread_guard> sql;
+
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        auto sql = sqlite_thread_guard(SQL->web_attr_all);
-        sql->bind(1, el->attr_hash);
-        return sql;
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all);
+        (*sql)->bind(1, el->attr_hash);
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        auto sql = sqlite_thread_guard(SQL->web_const_all);
-        sql->bind(1, el->attr_hash);
-        sql->bind(2, el->value_hash);
-        return sql;
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_const_all);
+        (*sql)->bind(1, el->attr_hash);
+        (*sql)->bind(2, el->value_hash);
     }
     else //if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        auto sql = sqlite_thread_guard(SQL->web_lti_all);
-        sql->bind(1, el->attr_hash);
-        sql->bind(2, el->value_lti);
-        return sql;
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_lti_all);
+        (*sql)->bind(1, el->attr_hash);
+        (*sql)->bind(2, el->value_lti);
     }
+
+    return sql;
 }
 
 bool SMem_Manager::process_cue_wme(wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq, MathQuery* mathQuery)
@@ -347,9 +348,9 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
             // - not in loop because the effects of activation may actually
             //   alter the resultset of the query (isolation???)
             std::set< uint64_t > to_update;
-            while (q->executeStep())
+            while ((*q)->executeStep())
             {
-                to_update.insert(q->getColumn(0).getInt64());
+                to_update.insert((*q)->getColumn(0).getInt64());
             }
 
             for (std::set< uint64_t >::iterator it = to_update.begin(); it != to_update.end(); it++)
@@ -364,25 +365,25 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
     thisAgent->lastCue = new agent::BasicWeightedCue((*cand_set)->cue_element, (*cand_set)->weight);
 
     // this becomes the minimal set to walk (till match or fail)
-    if (q->executeStep())
+    if ((*q)->executeStep())
     {
         smem_prioritized_activated_lti_queue plentiful_parents;
         bool more_rows = true;
         bool use_db = false;
         bool has_feature = false;
 
-        while (more_rows && (q->getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
+        while (more_rows && ((*q)->getColumn(1).getDouble() == static_cast<double>(SMEM_ACT_MAX)))
         {
             auto sql = sqlite_thread_guard(SQL->act_lti_get);
 
-            sql->bind(1, q->getColumn(0).getInt64());
+            sql->bind(1, (*q)->getColumn(0).getInt64());
 
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
-            plentiful_parents.push(std::make_pair<double, uint64_t>(sql->getColumn(0).getDouble(), q->getColumn(0).getInt64()));
+            plentiful_parents.push(std::make_pair<double, uint64_t>(sql->getColumn(0).getDouble(), (*q)->getColumn(0).getInt64()));
 
-            more_rows = q->executeStep();
+            more_rows = (*q)->executeStep();
         }
         bool first_element = false;
         while ((match_ids->size() < number_to_retrieve || needFullSearch) && ((more_rows) || (!plentiful_parents.empty())))
@@ -401,13 +402,13 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                 }
                 else
                 {
-                    use_db = q->getColumn(1).getDouble() >  plentiful_parents.top().first;
+                    use_db = (*q)->getColumn(1).getDouble() >  plentiful_parents.top().first;
                 }
 
                 if (use_db)
                 {
-                    cand = q->getColumn(0).getInt64();
-                    more_rows = q->executeStep();
+                    cand = (*q)->getColumn(0).getInt64();
+                    more_rows = (*q)->executeStep();
                 }
                 else
                 {

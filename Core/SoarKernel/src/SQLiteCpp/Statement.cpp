@@ -135,7 +135,7 @@ void Statement::bind(const int aIndex, const unsigned aValue)
 }
 
 // Bind a 32bits unsigned int value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement
-void Statement::bind(const int aIndex, const unsigned long long aValue)
+void Statement::bind(const int aIndex, const uint64_t aValue)
 {
     const int ret = sqlite3_bind_int64(mStmtPtr, aIndex, aValue);
     check(ret);

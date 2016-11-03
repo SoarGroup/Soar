@@ -89,6 +89,10 @@ public:
      */
     Statement(Database& aDatabase, const Statement& aQuery);
 
+    // prevent default copy constructor
+    Statement(const Statement&) = delete;
+    Statement& operator=(const Statement&) = delete;
+
     /**
      * @brief Move semantics for Statement
      *
@@ -144,7 +148,7 @@ public:
     /**
      * @brief Bind a 64bits uint value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
-    void bind(const int aIndex, const unsigned long long aValue);
+    void bind(const int aIndex, const uint64_t      aValue);
     /**
      * @brief Bind a double (64bits float) value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
@@ -597,11 +601,6 @@ private:
     };
 
 private:
-    /// @{ Statement must be non-copyable
-    Statement(const Statement&);
-    Statement& operator=(const Statement&);
-    /// @}
-
     /**
      * @brief Check if a return code equals SQLITE_OK, else throw a SQLite::Exception with the SQLite error message
      *
