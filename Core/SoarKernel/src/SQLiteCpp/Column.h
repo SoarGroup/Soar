@@ -89,9 +89,9 @@ public:
     /// Return the 32bits unsigned integer value of the column (note that SQLite3 does not support unsigned 64bits).
     unsigned    getUInt() const noexcept; // nothrow
     /// Return the 64bits integer value of the column (note that SQLite3 does not support unsigned 64bits).
-    long long   getInt64() const noexcept; // nothrow
+    int64_t   getInt64() const noexcept; // nothrow
     /// Return the 64bits unsigned integer value of the column (note that SQLite3 does not support unsigned 64bits).
-    unsigned long long getUInt64() const noexcept; // nothrow
+    uint64_t getUInt64() const noexcept; // nothrow
     /// Return the double (64bits float) value of the column
     double      getDouble() const noexcept; // nothrow
     /**
@@ -198,7 +198,7 @@ public:
 #endif
 
     /// Inline cast operator to 64bits integer
-    inline operator long long() const
+    inline operator int64_t() const
     {
         return getInt64();
     }

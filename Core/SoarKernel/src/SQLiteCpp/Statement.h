@@ -143,7 +143,7 @@ public:
     /**
      * @brief Bind a 64bits int value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
-    void bind(const int aIndex, const long long     aValue);
+    void bind(const int aIndex, const int64_t     aValue);
 
     /**
      * @brief Bind a 64bits uint value to a parameter "?", "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
@@ -211,12 +211,12 @@ public:
     /**
      * @brief Bind a 64bits int value to a named parameter "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
-    void bind(const char* apName, const long long       aValue);
+    void bind(const char* apName, const int64_t       aValue);
 
     /**
      * @brief Bind a 64bits uint value to a named parameter "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
-    void bind(const char* apName, const unsigned long long aValue);
+    void bind(const char* apName, const uint64_t aValue);
 
     /**
      * @brief Bind a double (64bits float) value to a named parameter "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
@@ -287,7 +287,7 @@ public:
     /**
      * @brief Bind a 64bits int value to a named parameter "?NNN", ":VVV", "@VVV" or "$VVV" in the SQL prepared statement (aIndex >= 1)
      */
-    inline void bind(const std::string& aName, const long long      aValue)
+    inline void bind(const std::string& aName, const int64_t      aValue)
     {
         bind(aName.c_str(), aValue);
     }
