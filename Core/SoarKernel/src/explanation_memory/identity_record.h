@@ -37,7 +37,7 @@ class identity_record
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
         id_to_id_map*           original_ebc_mappings;
-        id_to_sym_id_map*        id_to_id_set_mappings;
+        id_to_sym_id_map*       id_to_id_set_mappings;
         inst_identities_map*    instantiation_mappings;
 
         void    clear_mappings();

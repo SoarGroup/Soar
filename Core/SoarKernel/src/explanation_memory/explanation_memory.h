@@ -172,6 +172,10 @@ class Explanation_Memory
         condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
+        uint64_t                add_production_id_if_necessary(production* pProd);
+        void                    excise_production_id(uint64_t pId);
+        production*             get_production(uint64_t pId);
+
         void                    discuss_chunk(chunk_record* pChunkRecord);
         void                    clear_chunk_from_instantiations();
         void                    print_chunk_list(short pNumToPrint = 0);
@@ -213,7 +217,8 @@ class Explanation_Memory
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
-        std::set< production_record* >*                         all_excised_productions;
+        std::set< production_record* >*                         cached_production;
+        std::unordered_map< uint64_t, production* >*            production_id_map;
 
 };
 

@@ -51,6 +51,7 @@ class Explanation_Based_Chunker
                                           node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
+        uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
         void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
@@ -121,6 +122,7 @@ class Explanation_Based_Chunker
         /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
+        uint64_t prod_id_counter;
 
         tc_number tc_num_found;
 

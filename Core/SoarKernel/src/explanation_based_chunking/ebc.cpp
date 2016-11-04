@@ -90,6 +90,7 @@ void Explanation_Based_Chunker::reinit()
     clear_data();
 
     inst_id_counter                     = 0;
+    prod_id_counter                     = 0;
     m_chunk_new_i_id                    = 0;
     ovar_id_counter                     = 0;
     backtrace_number                    = 0;

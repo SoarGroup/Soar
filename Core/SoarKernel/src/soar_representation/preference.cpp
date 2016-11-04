@@ -188,11 +188,12 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
         {
             preference* lNewPref = shallow_copy_preference(thisAgent, pref);
+            dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
             insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
         }
         /* --- remove it from the list of pref's from that instantiation --- */
         remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.", pref->inst->i_id, pref->inst->prod_name);
+        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* The following code re-uses the preference instead of copying it.  It worked
@@ -244,7 +245,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     //            pref->next_result = NULL;
     //            return;
     //        }
-    //        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.", prefInst->i_id, prefInst->prod_name);
+    //        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", prefInst->i_id, prefInst->prod_name);
     //        possibly_deallocate_instantiation(thisAgent, prefInst);
     //    }
     /* --- dereference component symbols --- */

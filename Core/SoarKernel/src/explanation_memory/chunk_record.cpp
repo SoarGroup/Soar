@@ -25,7 +25,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     name                        = NULL;
     chunkID                     = pChunkID;
     chunkInstantiation          = NULL;
-    original_production         = NULL;
+    original_productionID       = 0;
     excised_production          = NULL;
     time_formed                 = 0;
     match_level                 = 0;
@@ -88,11 +88,12 @@ void chunk_record::excise_chunk_record()
 
 chunk_record::~chunk_record()
 {
-    dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
+    dprint(DT_EXPLAIN, "Deleting chunk record %y (c %u)\n", name, chunkID);
 //    production_remove_ref(thisAgent, original_production);
-    if (original_production)
+    production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
+    if (originalProduction)
     {
-        original_production->save_for_justification_explanation = false;
+        originalProduction->save_for_justification_explanation = false;
     }
     if (name) thisAgent->symbolManager->symbol_remove_ref(&name);
     if (conditions) delete conditions;
@@ -109,8 +110,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 {
     name = pProduction->name;
     thisAgent->symbolManager->symbol_add_ref(name);
-    original_production = pProduction;
-    original_production->save_for_justification_explanation = true;
+    original_productionID = thisAgent->explanationMemory->add_production_id_if_necessary(pProduction);
+    pProduction->save_for_justification_explanation = true;
 
     time_formed = thisAgent->d_cycle_count;
     match_level = pChunkInstantiation->match_goal_level;
@@ -318,7 +319,7 @@ void chunk_record::print_for_explanation_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
     thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
     thisAgent->explanationMemory->print_footer(true);
@@ -402,7 +403,7 @@ void chunk_record::print_for_wme_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n");
     thisAgent->explanationMemory->print_footer(true);
 }
@@ -459,7 +460,7 @@ void chunk_record::visualize()
             visualizer->viz_endl();
         }
         visualizer->viz_seperator();
-        action_record::viz_action_list(thisAgent, actions, original_production);
+        action_record::viz_action_list(thisAgent, actions, thisAgent->explanationMemory->get_production(original_productionID));
         visualizer->viz_object_end(viz_chunk_record);
     }
 

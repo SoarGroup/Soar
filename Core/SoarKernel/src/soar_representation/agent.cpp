@@ -307,10 +307,8 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    delete delete_agent->explanationMemory;
     delete delete_agent->explanationBasedChunker;
     delete delete_agent->visualizationManager;
-    delete_agent->explanationMemory = NULL;
     delete_agent->explanationBasedChunker = NULL;
     delete_agent->visualizationManager = NULL;
     #ifndef NO_SVS
@@ -346,6 +344,11 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
 
     excise_all_productions(delete_agent, false);
+
+    /* This must happen after production excision */
+    delete delete_agent->explanationMemory;
+    delete_agent->explanationMemory = NULL;
+
     delete_agent->symbolManager->release_predefined_symbols();
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
 
@@ -410,10 +413,6 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->SMem->reinit();
 
     thisAgent->explanationBasedChunker->reinit();
-    #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationMemory->re_init();
-    #endif
-
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->WM->wma_params->activation->set_value(off);
 
@@ -437,6 +436,10 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->active_level = 0; /* Signal that everything should be retracted */
     thisAgent->FIRING_TYPE = IE_PRODS;
     do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
+
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->re_init();
+    #endif
 
     thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();

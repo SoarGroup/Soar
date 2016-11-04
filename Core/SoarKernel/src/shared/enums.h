@@ -55,6 +55,7 @@ enum TraceMode
     DT_EXPLAIN_UPDATE = 25,
     DT_EXPLAIN_CONDS = 26,
     DT_EXPLAIN_IDENTITIES = 27,
+    DT_EXPLAIN_CACHE = 45,
 
     // Other Soar modules
     DT_EPMEM_CMD = 28,
@@ -81,7 +82,6 @@ enum TraceMode
     DT_DEALLOCATE_INSTANTIATION = 44,
 
     // Not used
-    DT_UNUSED2 = 45,
     DT_UNUSED3 = 46,
     DT_UNUSED4 = 47,
     num_trace_modes

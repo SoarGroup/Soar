@@ -21,6 +21,7 @@ class production_record
 
         condition*  get_lhs() { return lhs_conds; }
         action*     get_rhs() { return rhs_actions; }
+        bool        was_generated() { return (lhs_conds != NULL); }
 
     private:
         agent*      thisAgent;

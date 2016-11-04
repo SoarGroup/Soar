@@ -21,28 +21,26 @@
 
 instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 {
-    thisAgent           = myAgent;
+    thisAgent               = myAgent;
+    instantiationID         = pInst->i_id;
+    cached_inst             = pInst;
+    original_productionID   = pInst->prod ? pInst->prod->p_id : 0;
+    excised_production      = NULL;
+    creating_chunk          = 0;
+    match_level             = pInst->match_goal_level;
+    terminal                = false;
+    path_to_base            = NULL;
+    lhs_identities          = NULL;
 
-    instantiationID     = pInst->i_id;
-    cached_inst         = pInst;
-    production_name     = pInst->prod_name;
+    conditions              = new condition_record_list;
+    actions                 = new action_record_list;
+
+    production_name         = pInst->prod_name;
     thisAgent->symbolManager->symbol_add_ref(production_name);
-    original_production = pInst->prod;
-    excised_production  = NULL;
-
-    creating_chunk      = 0;
-
-    match_level         = pInst->match_goal_level;
-    terminal            = false;
-    path_to_base        = NULL;
-    lhs_identities      = NULL;
-
-    conditions          = new condition_record_list;
-    actions             = new action_record_list;
 
     if (pInst->prod)
     {
-        original_production->save_for_justification_explanation = true;
+        pInst->prod->save_for_justification_explanation = true;
     }
 //    if (pInst->i_id == 4)
 //    {
@@ -70,9 +68,10 @@ instantiation_record::~instantiation_record()
     delete conditions;
     delete actions;
     dprint(DT_EXPLAIN, "Done deleting instantiation record i%u (%y)\n", instantiationID, production_name);
-    if (original_production)
+    production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
+    if (originalProduction)
     {
-        original_production->save_for_justification_explanation = false;
+        originalProduction->save_for_justification_explanation = false;
     }
     if (path_to_base)
     {
@@ -226,7 +225,8 @@ id_set* instantiation_record::get_lhs_identities()
     if (lhs_identities) return lhs_identities;
     lhs_identities = new id_set();
     condition* top, *bottom;
-    if (!original_production || !original_production->p_node)
+    production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
+    if (!originalProduction || !originalProduction->p_node)
     {
         if (excised_production)
         {
@@ -236,7 +236,7 @@ id_set* instantiation_record::get_lhs_identities()
             thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
         }
     } else {
-        p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, NULL);
+        p_node_to_conditions_and_rhs(thisAgent, originalProduction->p_node, NIL, NIL, &top, &bottom, NULL);
     }
     return lhs_identities;
 }
@@ -314,7 +314,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), rhs);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
         }
@@ -338,12 +338,13 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
         test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         bool removed_goal_test, removed_impasse_test;
+        production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
          * because we don't want to cache the explanation trace's original symbols every time we create an instantiation.
          * We used to and it's very inefficient.  We also can't use the ebChunker's identity lookup table because that
          * is only for debugging and does not get built for releases. */
-        if (!original_production || !original_production->p_node)
+        if (!originalProduction || !originalProduction->p_node)
         {
             if (excised_production)
             {
@@ -363,7 +364,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                 return;
             }
         } else {
-            p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
+            p_node_to_conditions_and_rhs(thisAgent, originalProduction->p_node, NIL, NIL, &top, &bottom, &rhs);
         }
         current_cond = top;
         if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -450,14 +451,14 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             outputManager->printa(thisAgent, "     }\n");
         }
         outputManager->printa(thisAgent, "   -->\n");
-        thisAgent->explanationMemory->print_instantiation_actions(actions, original_production, rhs);
+        thisAgent->explanationMemory->print_instantiation_actions(actions, originalProduction, rhs);
         outputManager->printa(thisAgent, "\n");
         thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(instantiationID);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
         }
 
-        if (original_production && original_production->p_node)
+        if (original_productionID && originalProduction->p_node)
         {
             deallocate_condition_list(thisAgent, top);
         }
@@ -526,7 +527,7 @@ void instantiation_record::viz_wm_instantiation()
             thisAgent->visualizationManager->viz_endl();
         }
         thisAgent->visualizationManager->viz_seperator();
-        action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
+        action_record::viz_action_list(thisAgent, actions, thisAgent->explanationMemory->get_production(original_productionID), rhs, excised_production);
         thisAgent->visualizationManager->viz_object_end(viz_inst_record);
     }
 }
@@ -550,8 +551,9 @@ void instantiation_record::viz_et_instantiation()
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
         test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         bool removed_goal_test, removed_impasse_test;
+        production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
-        if (!original_production || !original_production->p_node)
+        if (!originalProduction || !originalProduction->p_node)
         {
             if (excised_production)
             {
@@ -566,7 +568,7 @@ void instantiation_record::viz_et_instantiation()
                 return;
             }
         } else {
-            p_node_to_conditions_and_rhs(thisAgent, original_production->p_node, NIL, NIL, &top, &bottom, &rhs);
+            p_node_to_conditions_and_rhs(thisAgent, originalProduction->p_node, NIL, NIL, &top, &bottom, &rhs);
         }
         current_cond = top;
         if (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -632,9 +634,9 @@ void instantiation_record::viz_et_instantiation()
 //            dprint(DT_DEBUG, "Found.\n");
 //        }
 
-        action_record::viz_action_list(thisAgent, actions, original_production, rhs, excised_production);
+        action_record::viz_action_list(thisAgent, actions, originalProduction, rhs, excised_production);
 
-        if (original_production && original_production->p_node)
+        if (originalProduction && originalProduction->p_node)
         {
             deallocate_condition_list(thisAgent, top);
         }

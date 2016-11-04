@@ -4097,15 +4097,15 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
    its existing instantiations as pending retractions.
 --------------------------------------------------------------------- */
 
-void excise_production_from_rete(agent* thisAgent, production* p)
+void excise_production_from_rete(agent* thisAgent, production* pProd)
 {
     rete_node* p_node, *parent;
     ms_change* msc;
 
-    soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
+    soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(pProd));
 
-    p_node = p->p_node;
-    p->p_node = NIL;      /* mark production as not being in the rete anymore */
+    p_node = pProd->p_node;
+    pProd->p_node = NIL;      /* mark production as not being in the rete anymore */
     parent = p_node->parent;
 
     /* --- deallocate the variable name information --- */
@@ -8056,6 +8056,10 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->p_node = NIL;
             prod->interrupt = false;
             prod->interrupt_break = false;
+            prod->duplicate_chunks_this_cycle = 0;
+            prod->last_duplicate_dc = 0;
+            prod->explain_its_chunks = false;
+            prod->save_for_justification_explanation = false;
 
             sym = reteload_symbol_from_index(thisAgent, f);
             thisAgent->symbolManager->symbol_add_ref(sym);

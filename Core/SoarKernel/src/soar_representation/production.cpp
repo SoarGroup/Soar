@@ -383,6 +383,9 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     return true;
 }
 
+/* Note:  The rete load command will create a production without calling this.  Changes made here may
+ *        need to be also made in the RETE load code */
+
 production* make_production(agent*          thisAgent,
                             ProductionType  type,
                             Symbol*         name,
@@ -440,6 +443,7 @@ production* make_production(agent*          thisAgent,
     p->save_for_justification_explanation = false;
     p->duplicate_chunks_this_cycle = 0;
     p->last_duplicate_dc = 0;
+    p->p_id = thisAgent->explanationBasedChunker->get_new_prod_id();
 
     // Soar-RL stuff
     p->rl_update_count = 0.0;
@@ -466,7 +470,7 @@ production* make_production(agent*          thisAgent,
     return p;
 }
 
-void deallocate_production(agent* thisAgent, production* prod)
+void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer)
 {
     if (prod->instantiations)
     {
@@ -475,6 +479,13 @@ void deallocate_production(agent* thisAgent, production* prod)
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
+    #ifdef BUILD_WITH_EXPLAINER
+    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
+    {
+        dprint(DT_EXPLAIN_CACHE, "Deallocate production saving production first for %y.\n", prod->name);
+        thisAgent->explanationMemory->save_excised_production(prod);
+    }
+    #endif
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
@@ -500,12 +511,15 @@ void deallocate_production(agent* thisAgent, production* prod)
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
-#ifdef BUILD_WITH_EXPLAINER
-    if (prod->save_for_justification_explanation && thisAgent->explanationMemory)
+    /* When excising, the explainer needs to save the production before we excise it from
+     * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
+    #ifdef BUILD_WITH_EXPLAINER
+    if (prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
+        dprint(DT_EXPLAIN_CACHE, "Excise production saving production first for %y.\n", prod->name);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
-#endif
+    #endif
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);
@@ -534,7 +548,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         excise_production_from_rete(thisAgent, prod);
     }
     prod->name->sc->production = NIL;
-    production_remove_ref(thisAgent, prod);
+    production_remove_ref(thisAgent, prod, false);
     dprint_header(DT_DEALLOCATES, PrintAfter, "");
 }
 
