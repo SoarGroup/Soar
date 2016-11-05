@@ -157,7 +157,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             {
                 destString += test_type_to_string(t->type);
             }
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case CONJUNCTIVE_TEST:
             destString += "{ ";
@@ -179,7 +179,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         case SMEM_LINK_NOT_TEST:
             destString += test_type_to_string(t->type);
             destString += ' ';
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
@@ -191,7 +191,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             destString += "<< ";
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
             {
-                destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+                destString += static_cast<symbol_struct*>(c->first)->to_string(true);
                 destString += ' ';
             }
             destString += ">>";
@@ -309,7 +309,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         {
             if (rsym->referent)
             {
-                destString += rsym->referent->to_string(false);
+                destString += rsym->referent->to_string(true);
             } else {
                 destString += '#';
             }
@@ -328,7 +328,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
-                destString += sym->to_string(false);
+                destString += sym->to_string(true);
             } else {
                 destString += "[RETE-loc]";
             }
@@ -429,17 +429,17 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         if (pref->identities.id) {
             lID = "[" + std::to_string(pref->identities.id) + "]";
         } else {
-            lID = pref->id->to_string(false);
+            lID = pref->id->to_string(true);
         }
         if (pref->identities.attr) {
             lAttr = "[" + std::to_string(pref->identities.attr) + "]";
         } else {
-            lAttr = pref->attr->to_string(false);
+            lAttr = pref->attr->to_string(true);
         }
         if (pref->identities.value) {
             lValue = "[" + std::to_string(pref->identities.value) + "]";
         } else {
-            lValue = pref->value->to_string(false);
+            lValue = pref->value->to_string(true);
         }
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));
