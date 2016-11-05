@@ -24,7 +24,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
     thisAgent               = myAgent;
     instantiationID         = pInst->i_id;
     cached_inst             = pInst;
-    original_productionID   = pInst->prod ? pInst->prod->p_id : 0;
+    original_productionID   = pInst->prod ? thisAgent->explanationMemory->add_production_id_if_necessary(pInst->prod) : 0;
     excised_production      = NULL;
     creating_chunk          = 0;
     match_level             = pInst->match_goal_level;

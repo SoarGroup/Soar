@@ -367,7 +367,7 @@ void Explanation_Memory::excise_production_id(uint64_t pId)
 {
     assert(pId);
     auto iter = production_id_map->find(pId);
-    if (iter != production_id_map->end()) (*production_id_map)[pId] = NULL;
+    if (iter == production_id_map->end()) (*production_id_map)[pId] = NULL;
 }
 
 production* Explanation_Memory::get_production(uint64_t pId)
@@ -383,7 +383,7 @@ uint64_t Explanation_Memory::add_production_id_if_necessary(production* pProd)
     assert(pProd);
 
     auto iter = production_id_map->find(pProd->p_id);
-    if (iter != production_id_map->end())
+    if (iter == production_id_map->end())
     {
         production_id_map->insert({pProd->p_id, pProd});
     }
