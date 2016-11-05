@@ -269,7 +269,9 @@ inline const char* capitalizYesNo(bool isEnabled) { return isEnabled ? "[ YES | 
 inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {
     std::string return_string = left_string;
-    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    int sepLength = pWidth - strlen(left_string) - right_string.length();
+    if (sepLength <= 0) sepLength = 1;
+    return_string.append(sepLength, ' ');
     return_string += right_string;
     return return_string;
 }
