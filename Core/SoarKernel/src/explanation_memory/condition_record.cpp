@@ -317,12 +317,10 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
  *        sign would be outside the brackets of the nested records for the conjunct. */
 void condition_record::visualize_for_wm_trace()
 {
-
-    bool removed_goal_test, removed_impasse_test;
     test id_test_without_goal_test ;
 
     thisAgent->visualizationManager->viz_record_start();
-    id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, false, true);
     viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false);
     deallocate_test(thisAgent, id_test_without_goal_test);
     viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false);
@@ -332,11 +330,10 @@ void condition_record::visualize_for_wm_trace()
 
 void condition_record::visualize_for_chunk()
 {
-    bool removed_goal_test, removed_impasse_test;
     test id_test_without_goal_test ;
 
     thisAgent->visualizationManager->viz_record_start();
-    id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, false, true);
     viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace);
     deallocate_test(thisAgent, id_test_without_goal_test);
     viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace);
@@ -346,10 +343,8 @@ void condition_record::visualize_for_chunk()
 
 void condition_record::visualize_for_explanation_trace(condition* pCond)
 {
-    bool removed_goal_test, removed_impasse_test;
-
-    test id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, pCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
-    test id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, condition_tests.id, &removed_goal_test, &removed_impasse_test);
+    test id_test_without_goal_test = copy_test(thisAgent, pCond->data.tests.id_test, false, false, false, true);
+    test id_test_without_goal_test2 = copy_test(thisAgent, condition_tests.id, false, false, false, true);
 
     thisAgent->visualizationManager->viz_record_start();
     viz_combo_test(id_test_without_goal_test, id_test_without_goal_test2, conditionID, true, false, false, false, true);

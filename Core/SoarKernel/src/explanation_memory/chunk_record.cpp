@@ -300,7 +300,7 @@ void chunk_record::print_for_explanation_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");

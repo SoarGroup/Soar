@@ -1553,12 +1553,7 @@ bool check_negative_relational_test_bindings(agent* thisAgent, condition* cond_l
 void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top, cons* roots)
 {
     condition* cond;
-    bool a, b;
     test temp;
-
-    a = false;
-    b = false;
-
     for (cond = *lhs_top; cond != NIL; cond = cond->next)
     {
         if ((cond->type == POSITIVE_CONDITION) &&
@@ -1567,7 +1562,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
         {
             temp = cond->data.tests.id_test;
             cond->data.tests.id_test =
-                copy_test_removing_goal_impasse_tests(thisAgent, temp, &a, &b);
+                copy_test(thisAgent, temp, false, false, false, true);
             deallocate_test(thisAgent, temp);
         }
     }

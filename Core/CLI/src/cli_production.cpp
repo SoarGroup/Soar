@@ -1329,7 +1329,6 @@ bool actions_are_equal_with_bindings(agent* thisAgent, action* a1, action* a2, c
 bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, cons** bindings)
 {
     cons* c1, *c2;
-    bool goal_test, impasse_test;
 
     /* DJP 4/3/96 -- The problem here is that sometimes test2 was being copied      */
     /*               and sometimes it wasn't.  If it was copied, the copy was never */
@@ -1351,9 +1350,7 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, cons**
     if ((!test_includes_goal_or_impasse_id_test(t1, true, false)) &&
             test_includes_goal_or_impasse_id_test(test2, true, false))
     {
-        goal_test = false;
-        impasse_test = false;
-        t2 = copy_test_removing_goal_impasse_tests(thisAgent, test2, &goal_test, &impasse_test);
+        t2 = copy_test(thisAgent, test2, false, false, false, true);
     }
     else
     {

@@ -256,8 +256,6 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         action* rhs;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
         test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
-
 
         outputManager->set_column_indent(0, 7);
         outputManager->set_column_indent(1, 57);
@@ -287,7 +285,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
 
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
@@ -337,7 +335,6 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         action* rhs;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
         test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
         production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
@@ -403,8 +400,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, print_cond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
-            id_test_without_goal_test2 = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test = copy_test(thisAgent, print_cond->data.tests.id_test, false, false, false, true);
+            id_test_without_goal_test2 = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
             outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,

@@ -90,41 +90,6 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     return cond;
 }
 
-condition* copy_condition_without_relational_constraints(agent* thisAgent,
-        condition* cond)
-{
-    condition* New;
-
-    if (!cond)
-    {
-        return NIL;
-    }
-    New = make_condition(thisAgent);
-    New->type = cond->type;
-
-    switch (cond->type)
-    {
-        case POSITIVE_CONDITION:
-            New->bt = cond->bt;
-            New->data.tests.id_test = copy_test_without_relationals(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test_without_relationals(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test_without_relationals(thisAgent, cond->data.tests.value_test);
-            New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-            break;
-        case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test);
-            New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-            break;
-        case CONJUNCTIVE_NEGATION_CONDITION:
-            copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom));
-            break;
-    }
-    return New;
-}
-
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
@@ -377,8 +342,7 @@ void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t
         } else {
             thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
             test id_test_without_goal_test = NULL;
-            bool removed_goal_test, removed_impasse_test;
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->data.tests.id_test, false, false, false, true);
             add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);

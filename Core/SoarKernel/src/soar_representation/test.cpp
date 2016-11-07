@@ -55,7 +55,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
 //    Symbol* referent;
     test new_ct;
@@ -68,7 +68,17 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
     switch (t->type)
     {
         case GOAL_ID_TEST:
+            if (remove_state_impasse)
+            {
+                if (removed_goal) *removed_goal = true;
+                return NULL;
+            }
         case IMPASSE_ID_TEST:
+            if (remove_state_impasse)
+            {
+                if (removed_impasse) *removed_impasse = true;
+                return NULL;
+            }
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
@@ -87,6 +97,24 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
                 t->eq_test->counterpart_test = new_ct;
+            } else if (remove_state_impasse)
+            {
+                new_ct = NULL;
+                test temp;
+                cons* c;
+                 for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                 {
+                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts,
+                                      pLinkTests, remove_state_impasse, removed_goal, removed_impasse);
+                     if (temp)
+                     {
+                         add_test(thisAgent, &new_ct, temp);
+                     }
+                 }
+                 if (new_ct->type == CONJUNCTIVE_TEST)
+                 {
+                     new_ct->data.conjunct_list = destructively_reverse_list(new_ct->data.conjunct_list);
+                 }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
                 new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
@@ -123,90 +151,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             break;
     }
     return new_ct;
-}
-
-/* ----------------------------------------------------------------
-   Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to false
-   before calling this routine; it sets them to true if it finds a goal
-   or impasse test.
----------------------------------------------------------------- */
-test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t,
-        bool* removed_goal,
-        bool* removed_impasse)
-{
-    cons* c;
-    test new_t, temp;
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-            return copy_test(thisAgent, t);
-            break;
-        case GOAL_ID_TEST:
-            *removed_goal = true;
-            return NULL;
-        case IMPASSE_ID_TEST:
-            *removed_impasse = true;
-            return NULL;
-        case CONJUNCTIVE_TEST:
-            new_t = NULL;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                temp = copy_test_removing_goal_impasse_tests(thisAgent, static_cast<test>(c->first),
-                        removed_goal,
-                        removed_impasse);
-                if (temp)
-                {
-                    add_test(thisAgent, &new_t, temp);
-                }
-            }
-            if (new_t->type == CONJUNCTIVE_TEST)
-            {
-                new_t->data.conjunct_list =
-                    destructively_reverse_list(new_t->data.conjunct_list);
-            }
-            return new_t;
-
-        default:  /* relational tests other than equality */
-            return copy_test(thisAgent, t);
-    }
-}
-
-test copy_test_without_relationals(agent* thisAgent, test t)
-{
-    cons* c;
-    test new_t, temp;
-
-    switch (t->type)
-    {
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case SMEM_LINK_UNARY_TEST:
-        case SMEM_LINK_UNARY_NOT_TEST:
-        case EQUALITY_TEST:
-            return copy_test(thisAgent, t);
-            break;
-        case CONJUNCTIVE_TEST:
-            new_t = NULL;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                temp = copy_test_without_relationals(thisAgent, static_cast<test>(c->first));
-                if (temp)
-                {
-                    add_test(thisAgent, &new_t, temp);
-                }
-            }
-            if (new_t->type == CONJUNCTIVE_TEST)
-            {
-                new_t->data.conjunct_list =
-                    destructively_reverse_list(new_t->data.conjunct_list);
-            }
-            return new_t;
-
-        default:  /* relational tests other than equality */
-            return NULL;
-    }
 }
 
 /* ----------------------------------------------------------------
