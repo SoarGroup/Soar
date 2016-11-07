@@ -1,0 +1,68 @@
+smem --set learning on
+chunk flagged
+
+smem --add {
+(<r6> ^handle stack ^foo bar)
+}
+
+#default rule
+sp {all*elaborate*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*handle*to-retrieve
+(state <s> ^superstate nil)
+-->
+(<s> ^retrieve-handle stack)
+}
+
+
+#cause impasse chunk and retrieve
+sp {chunk-retrieve*impasse
+   (state <s> ^superstate <ss>
+              ^choices none
+              ^attribute state
+              ^impasse no-change)
+   (<ss> ^retrieve-handle <handle>)
+-->
+   (force-learn <s>)
+   (<s> ^name chunk-retrieve
+        ^linkstate <ss>
+        ^handle <handle>)
+}
+
+sp {chunk-retrieve*propose*retrieve
+(state <s> ^name chunk-retrieve)
+-->
+(<s> ^operator <o> + =)
+(<o> ^name retrieve)
+}
+
+sp {retrieve*smem-command
+(state <s> ^name retrieve
+	   	  ^superstate.handle <ph>
+	   	   ^smem.command <sc>)
+-->
+	(<sc> ^query <q> ^depth 10)
+    (<q> ^handle <ph>)
+}
+
+sp {retrieve*elaborate*smem-result
+(state <s> ^name retrieve
+          ^superstate.superstate <ss> #swap with below to not HALT
+#	   	   ^superstate <ss> 
+	   	   ^smem.result.retrieved <r>)
+-->
+    (<ss> ^result <r>)
+    (interrupt)
+}
+
+#sp {chunk-retrieve*elaborate*result
+#(state <s> ^name chunk-retrieve
+#	   	   ^superstate <ss>
+#	   	   ^result <r>)
+#-->
+#(<ss> ^result <r>)
+#}

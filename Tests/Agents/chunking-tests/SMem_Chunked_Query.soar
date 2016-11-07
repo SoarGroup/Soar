@@ -1,9 +1,9 @@
 # Tests:
 # - 
 
-srand 23
 chunk always
 smem --set learning on
+srand 7
 
 smem --add {
     (@1 ^handle goal ^procedural @2 ^predicate @5)

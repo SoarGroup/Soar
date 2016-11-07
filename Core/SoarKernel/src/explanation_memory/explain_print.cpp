@@ -429,6 +429,8 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Used negated reasoning about substate      %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "Chunk learned did not match WM             %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Justification learned did not match WM     %-%u\n", stats.justification_did_not_match);
 
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
@@ -438,8 +440,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Skipped because of max-chunks              %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because of max-dupes               %-%u\n", stats.max_dupes);
     outputManager->printa_sf(thisAgent, "Backtracing produced no conditions         %-%u\n", stats.no_grounds);
-    outputManager->printa_sf(thisAgent, "Chunk formed did not match WM              %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
 }
 
 
