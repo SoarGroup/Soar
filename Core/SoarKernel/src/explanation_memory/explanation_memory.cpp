@@ -351,7 +351,10 @@ chunk_record* Explanation_Memory::get_chunk_record(Symbol* pChunkName)
 {
     assert(pChunkName);
     auto iter_chunk = chunks->find(pChunkName);
-    if (iter_chunk != chunks->end()) return(iter_chunk->second);
+    if (iter_chunk != chunks->end())
+    {
+        return(iter_chunk->second);
+    }
     return NULL;
 }
 
@@ -359,7 +362,10 @@ instantiation_record* Explanation_Memory::get_instantiation(instantiation* pInst
 {
     assert(pInst);
     auto iter_inst = instantiations->find(pInst->i_id);
-    if (iter_inst != instantiations->end()) return(iter_inst->second);
+    if (iter_inst != instantiations->end())
+    {
+        return(iter_inst->second);
+    }
     return NULL;
 }
 
@@ -367,14 +373,20 @@ void Explanation_Memory::excise_production_id(uint64_t pId)
 {
     assert(pId);
     auto iter = production_id_map->find(pId);
-    if (iter == production_id_map->end()) (*production_id_map)[pId] = NULL;
+    if (iter != production_id_map->end())
+    {
+        (*production_id_map)[pId] = NULL;
+    }
 }
 
 production* Explanation_Memory::get_production(uint64_t pId)
 {
     if (!pId) return NULL;
     auto iter = production_id_map->find(pId);
-    if (iter != production_id_map->end()) return iter->second;
+    if (iter != production_id_map->end())
+    {
+        return iter->second;
+    }
     return NULL;
 }
 
