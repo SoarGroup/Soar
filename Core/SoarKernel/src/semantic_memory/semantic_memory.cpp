@@ -144,7 +144,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     symbol_list prohibit;
     symbol_list store;
 
-    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store_new, cmd_store } path;
+    enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store_new, cmd_store, cmd_prohibit } path;
 
     unsigned int time_slot = ((store_only) ? (1) : (0));
     uint64_t wme_count;
@@ -290,7 +290,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_query)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
+                                ((path == blank_slate || path == cmd_prohibit) || (path == cmd_query)) &&
                                 (query == NIL))
 
                         {
@@ -305,7 +305,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_negquery)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
+                                ((path == blank_slate || path == cmd_prohibit) || (path == cmd_query)) &&
                                 (negquery == NIL))
 
                         {
@@ -320,11 +320,18 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_prohibit)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
+                                ((path == blank_slate || path == cmd_prohibit) || (path == cmd_query)) &&
                                 ((*w_p)->value->id->LTI_ID != NIL))
                         {
                             prohibit.push_back((*w_p)->value);
-                            path = cmd_query;
+                            if (path == blank_slate || path == cmd_prohibit)
+                            {
+                                path = cmd_prohibit;
+                            }
+                            else
+                            {
+                                path = cmd_query;
+                            }
                         }
                         else
                         {
@@ -334,7 +341,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_math_query)
                     {
                         if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                                ((path == blank_slate) || (path == cmd_query)) &&
+                                ((path == blank_slate || path == cmd_prohibit) || (path == cmd_query)) &&
                                 (math == NIL))
                         {
                             math = (*w_p)->value;
@@ -534,6 +541,33 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     ////////////////////////////////////////////////////////////////////////////
                     thisAgent->SMem->timers->storage->stop();
                     ////////////////////////////////////////////////////////////////////////////
+                }
+                else if (path == cmd_prohibit)
+                {
+                     dprint(DT_SMEM_INSTANCE, "SMem Manager responding to prohibit command.\n");
+                    id_set prohibit_lti;
+                    symbol_list::iterator sym_p;
+
+                    for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
+                    {
+                        prohibit_lti.insert((*sym_p)->id->LTI_ID);
+                    }
+
+                    /*
+                     * This allows prohibits to modify BLA without a query present.
+                     */
+                    id_set::iterator prohibited_lti_p;
+                    for (prohibited_lti_p = prohibit_lti.begin(); prohibited_lti_p != prohibit_lti.end(); ++prohibited_lti_p)
+                    {
+                        SQL->prohibit_check->bind_int(1, *prohibited_lti_p);
+                        if (SQL->prohibit_check->execute() == soar_module::row)
+                        {
+                            SQL->prohibit_set->bind_int(1, *prohibited_lti_p);
+                            SQL->prohibit_set->execute(soar_module::op_reinit);
+                        }
+                        SQL->prohibit_check->reinitialize();
+                    }
+
                 }
             }
             else
