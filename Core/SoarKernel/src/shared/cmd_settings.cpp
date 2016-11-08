@@ -233,7 +233,7 @@ void production_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "                %-[--chunks --nochunks ]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production firing-counts %-[--all --chunks --default --rl]  [n]\n");
-    outputManager->printa_sf(thisAgent, "                         %-[--task --templates --user    ]\n");
+    outputManager->printa_sf(thisAgent, "                         %-[--task --templates --user --fired]\n");
     outputManager->printa_sf(thisAgent, "production firing-counts %-<prod-name>\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production matches %-[--names --count  ]  <prod-name>\n");
