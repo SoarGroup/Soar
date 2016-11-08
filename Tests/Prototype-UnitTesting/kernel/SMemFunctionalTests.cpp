@@ -372,7 +372,7 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental");
 
-	agent->RunSelf(7);
+	agent->RunSelf(6);
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
 
@@ -382,14 +382,14 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.705);
-	highEndExpectations.push_back(0.706);
+	lowEndExpectations.push_back(0.791);
+	highEndExpectations.push_back(0.792);
 
 	lowEndExpectations.push_back(0.0);
 	highEndExpectations.push_back(0.0);
 
-	lowEndExpectations.push_back(0.455);
-	highEndExpectations.push_back(0.456);
+	lowEndExpectations.push_back(-0.550);
+	highEndExpectations.push_back(-0.549);
 
 	// This is the expected output from print @ modified from CSoar to look like JSoar outputs it (reverse string attributes)
 //	std::string expected = R"raw(
