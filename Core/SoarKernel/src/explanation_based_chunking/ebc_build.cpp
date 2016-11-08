@@ -483,7 +483,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
+        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true, true);
         c_vrblz->inst = ground->inst;
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 

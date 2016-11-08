@@ -102,10 +102,10 @@ typedef struct condition_struct
 
 condition*  make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
 uint32_t    hash_condition(agent* thisAgent, condition* cond);
-condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false);
+condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
 void        copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
-                         bool pCopyInstantiation = false, bool pLinkTests = false);
+                         bool pCopyInstantiation = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
 void        deallocate_condition(agent* thisAgent, condition*& cond);
 void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
