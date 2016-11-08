@@ -504,6 +504,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
                     king_id = cand;
                     first_element = true;
                     prohibit.insert(cand);
+                    match_ids->push_back(cand);
                 }
                 if (good_cand && first_element)
                 {
