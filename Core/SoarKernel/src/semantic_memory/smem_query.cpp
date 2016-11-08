@@ -370,7 +370,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
     for (prohibited_lti_p = prohibit->begin(); prohibited_lti_p != prohibit->end(); ++prohibited_lti_p)
     {
         SQL->prohibit_check->bind_int(1, *prohibited_lti_p);
-        if (SQL->prohibit_check->execute() == soar_module::row)
+        if (SQL->prohibit_check->execute() != soar_module::row)
         {
             SQL->prohibit_set->bind_int(1, *prohibited_lti_p);
             SQL->prohibit_set->execute(soar_module::op_reinit);

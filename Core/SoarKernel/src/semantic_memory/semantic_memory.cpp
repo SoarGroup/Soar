@@ -541,33 +541,35 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     ////////////////////////////////////////////////////////////////////////////
                     thisAgent->SMem->timers->storage->stop();
                     ////////////////////////////////////////////////////////////////////////////
+                    /*
+                     *     prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=1,dirty=1 WHERE lti_id=?");
+    add(prohibit_set);
+
+    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
+    add(prohibit_add);
+
+    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id,dirty FROM smem_prohibited WHERE lti_id=? AND prohibited=1");
+    add(prohibit_check);
+                     */
                 }
                 else if (path == cmd_prohibit)
                 {
-                     dprint(DT_SMEM_INSTANCE, "SMem Manager responding to prohibit command.\n");
-                    id_set prohibit_lti;
+                    dprint(DT_SMEM_INSTANCE, "SMem Manager responding to prohibit command.\n");
                     symbol_list::iterator sym_p;
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
-                        prohibit_lti.insert((*sym_p)->id->LTI_ID);
-                    }
-
-                    /*
-                     * This allows prohibits to modify BLA without a query present.
-                     */
-                    id_set::iterator prohibited_lti_p;
-                    for (prohibited_lti_p = prohibit_lti.begin(); prohibited_lti_p != prohibit_lti.end(); ++prohibited_lti_p)
-                    {
-                        SQL->prohibit_check->bind_int(1, *prohibited_lti_p);
-                        if (SQL->prohibit_check->execute() == soar_module::row)
+                        SQL->prohibit_check->bind_int(1, (*sym_p)->id->LTI_ID);
+                        if (SQL->prohibit_check->execute() != soar_module::row)
                         {
-                            SQL->prohibit_set->bind_int(1, *prohibited_lti_p);
+                            SQL->prohibit_set->bind_int(1, (*sym_p)->id->LTI_ID);
                             SQL->prohibit_set->execute(soar_module::op_reinit);
                         }
                         SQL->prohibit_check->reinitialize();
                     }
-
+                    /*
+                     * This allows prohibits to modify BLA without a query present.
+                     */
                 }
             }
             else
