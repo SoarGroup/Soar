@@ -49,7 +49,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     sub_command = argv->front();
     if (sub_command[0] == 't')
     {
-        if (numArgs < 2)
+        if (numArgs < 1)
         {
             return (SetError("You must submit a command that you'd like timed."));
         }
