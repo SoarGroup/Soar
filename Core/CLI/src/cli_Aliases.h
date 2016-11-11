@@ -85,7 +85,7 @@ namespace cli
                 t.evaluate("production-find production find");
                 t.evaluate("firing-counts production firing-counts");
                 t.evaluate("matches production matches");
-                t.evaluate("memories memory-usage");
+                t.evaluate("memories production memory-usage");
                 t.evaluate("multi-attributes production optimize-attribute");
                 t.evaluate("pwatch production watch");
 
