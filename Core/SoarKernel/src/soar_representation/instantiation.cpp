@@ -1432,6 +1432,11 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
+//    for (instantiation* linst = thisAgent->newly_created_instantiations; linst != NIL; linst = linst->next)
+//    {
+//        if (linst == inst)
+//            remove_from_dll(thisAgent->newly_created_instantiations, inst, next, prev);
+//    }
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
     dprint(DT_DEALLOCATE_INSTANTIATION, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);

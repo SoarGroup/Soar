@@ -244,6 +244,9 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             } else {
                 outputManager->printa_sf(thisAgent, "%-|");
             }
+        } else {
+            outputManager->printa_sf(thisAgent, "%-| %-|");
+
         }
         #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
             outputManager->printa_sf(thisAgent, "%-| %y -> %y", lMapping->from_symbol, lMapping->to_symbol);

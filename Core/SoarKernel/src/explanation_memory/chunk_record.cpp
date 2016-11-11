@@ -25,6 +25,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     name                        = NULL;
     chunkID                     = pChunkID;
     chunkInstantiation          = NULL;
+    chunkInstantiationID        = 0;
     original_productionID       = 0;
     excised_production          = NULL;
     time_formed                 = 0;
@@ -116,6 +117,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     time_formed = thisAgent->d_cycle_count;
     match_level = pChunkInstantiation->match_goal_level;
     chunkInstantiation = pChunkInstantiation;
+    chunkInstantiationID = pChunkInstantiation->i_id;
 
     conditions         = new condition_record_list;
     actions            = new action_record_list;
@@ -198,7 +200,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
     identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
-    identity_analysis->generate_identity_sets(chunkInstantiation->i_id, lhs);
+    identity_analysis->generate_identity_sets(chunkInstantiationID, lhs);
     /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
      * will have been added already.  Identities sets that don't appear in the chunk will be generated
      * when mapping originals to sets */
@@ -322,6 +324,8 @@ void chunk_record::print_for_explanation_trace()
     thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
     thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
+    outputManager->printa(thisAgent, "\n");
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiationID);
     thisAgent->explanationMemory->print_footer(true);
 }
 
