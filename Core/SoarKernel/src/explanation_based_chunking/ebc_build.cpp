@@ -1003,11 +1003,15 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
          * points to the instantiated conditions, not the variablized ones that we would be throwing
          * out. */
         copy_condition_list(thisAgent, m_inst_top, &m_saved_justification_top, &m_saved_justification_bottom, false, false, true, true);
-
         thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-        variablize_condition_list(m_vrblz_top);
-        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
-//        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
+    }
+
+    variablize_condition_list(m_vrblz_top, variablize);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
+    //        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
+    if (variablize)
+    {
+
         merge_conditions(m_vrblz_top);
     }
 

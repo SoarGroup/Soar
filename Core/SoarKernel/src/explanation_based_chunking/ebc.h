@@ -75,7 +75,7 @@ class Explanation_Based_Chunker
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
-        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
+        void        variablize_condition_list   (condition* top_cond, bool variablize, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
@@ -253,9 +253,9 @@ class Explanation_Based_Chunker
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
         uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
-        void variablize_equality_tests(test t);
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void variablize_equality_tests(test t, bool pVariablize = true);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
         sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable);
         sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
