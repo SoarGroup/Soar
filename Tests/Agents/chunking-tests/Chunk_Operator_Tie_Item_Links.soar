@@ -1,0 +1,49 @@
+# Tests:
+# -
+
+srand 23
+chunk always
+
+sp {init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test a b)
+}
+
+sp {propose
+    (state <s> ^superstate nil
+               ^test <foo>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name <foo>)
+}
+
+
+sp {elab*test*items
+    (state <s> ^item  <o1>
+               ^item <o2>)
+    (<o1> ^name a)
+    (<o2> ^name b)
+-->
+    (<s> ^items tested)
+}
+
+sp {elab*test*directly
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o1> +
+          ^operator <o2> +)
+    (<o1> ^name a)
+    (<o2> ^name b)
+-->
+    (<s> ^directly tested)
+}
+
+sp {make-chunk-for-propose
+    (state <s> ^superstate <ss>
+               ^items tested
+               ^directly tested)
+-->
+    (<ss> ^result true)
+    (interrupt)
+}
+

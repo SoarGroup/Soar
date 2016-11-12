@@ -30,6 +30,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(BUNCPS_6_Four_Level);
         CPPUNIT_TEST(BUNCPS_7_with_Constraints);
         CPPUNIT_TEST(Chunk_Operator_Tie_Impasse);
+        CPPUNIT_TEST(Chunk_Operator_Tie_Item_Links);
         CPPUNIT_TEST(Chunk_RL_Proposal);
         CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
         CPPUNIT_TEST(Chunked_Justification_with_extras);
@@ -109,6 +110,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void All_Test_Types();
         void Conflated_Constants();
         void Chunk_Operator_Tie_Impasse();
+        void Chunk_Operator_Tie_Item_Links();
         void Ungrounded_Relational_Constraint();
         void Vrblzd_Constraint_on_Ungrounded();
         void Simple_Literalization();
@@ -669,6 +671,10 @@ void ChunkTest::Demo_Blocks_World_Hierarchical()
 void ChunkTest::Chunk_Operator_Tie_Impasse()
 {
     build_and_check_chunk("Chunk_Operator_Tie_Impasse.soar", 6, 2);
+}
+void ChunkTest::Chunk_Operator_Tie_Item_Links()
+{
+    build_and_check_chunk("Chunk_Operator_Tie_Item_Links.soar", 6, 1);
 }
 void ChunkTest::SMem_Chunked_Query2()
 {

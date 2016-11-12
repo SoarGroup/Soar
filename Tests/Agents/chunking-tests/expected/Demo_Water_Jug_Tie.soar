@@ -1,6 +1,6 @@
 sp {answer*apply*create-preferences*equal*Tie*t19-2
     (state <s1> ^last-operator pour)
-    (state <s2> ^operator <o1> +)
+    (<s1> ^operator <o1> +)
     (<o1> ^name { << fill empty >> <c1> })
     -->
     (<s1> ^operator <o1> =)
@@ -8,7 +8,7 @@ sp {answer*apply*create-preferences*equal*Tie*t19-2
 
 sp {answer*apply*create-preferences*worst*Tie*t18-1
     (state <s1> ^last-operator pour)
-    (state <s2> ^operator <o1> +)
+    (<s1> ^operator <o1> +)
     (<o1> ^name pour)
     -->
     (<s1> ^operator <o1> <)
@@ -17,7 +17,7 @@ sp {answer*apply*create-preferences*worst*Tie*t18-1
 
 sp {answer*apply*create-preferences*worst*Tie*t12-2
     (state <s1> ^last-operator { << empty fill >> <c1> })
-    (state <s2> ^operator <o1> +)
+    (<s1> ^operator <o1> +)
     (<o1> ^name { << fill empty >> <c2> })
     -->
     (<s1> ^operator <o1> <)
@@ -25,9 +25,9 @@ sp {answer*apply*create-preferences*worst*Tie*t12-2
 }
 
 sp {answer*apply*create-preferences*best*Tie*t11-1
-    (state <s2> ^operator <o1> +)
+    (state <s1> ^operator <o1> +)
     (<o1> ^name pour)
-    (state <s1> ^last-operator { << empty fill >> <c1> })
+    (<s1> ^last-operator { << empty fill >> <c1> })
     -->
     (<s1> ^operator <o1> >)
     (<s1> ^operator <o1> =)
@@ -35,7 +35,7 @@ sp {answer*apply*create-preferences*best*Tie*t11-1
 
 sp {answer*apply*create-preferences*equal*Tie*t5-1
     (state <s1> ^last-operator none)
-    (state <s2> ^operator <o1> +)
+    (<s1> ^operator <o1> +)
     -->
     (<s1> ^operator <o1> =)
 }

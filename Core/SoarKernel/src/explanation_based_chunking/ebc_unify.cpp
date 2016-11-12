@@ -306,8 +306,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
 {
     if (pCond->bt.wme_->id->id->isa_goal)
     {
-        if (pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol &&
-            (!pCond->test_for_acceptable_preference))
+        if (pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
         {
             if (!local_singleton_superstate_identity)
             {
@@ -332,7 +331,11 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
                     add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                 }
             }
+        } else {
+            dprint(DT_UNIFY_SINGLETONS, "Not a superstate WME: %l\n", pCond);
         }
+    } else {
+        dprint(DT_UNIFY_SINGLETONS, "Identifier not a goal: %l\n", pCond);
     }
 }
 
