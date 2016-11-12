@@ -38,6 +38,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         CPPUNIT_TEST(Demo_Blocks_World_Hierarchical);
         CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead);
+        CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation);
         CPPUNIT_TEST(Demo_Eight_Puzzle);
         CPPUNIT_TEST(Demo_RL_Unit);
         CPPUNIT_TEST(Demo_Water_Jug_Hierarchy);
@@ -173,6 +174,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void SMem_Chunked_Query2();
         void Demo_Arithmetic();
         void Demo_Blocks_World_Look_Ahead();
+        void Demo_Blocks_World_Look_Ahead_State_Evaluation();
         void Demo_Eight_Puzzle();
         void Demo_RL_Unit();
         void Demo_Water_Jug_Hierarchy();
@@ -689,6 +691,11 @@ void ChunkTest::Demo_Arithmetic()
 void ChunkTest::Demo_Blocks_World_Look_Ahead()
 {
     build_and_check_chunk("Demo_Blocks_World_Look_Ahead.soar", 37, 3);
+}
+
+void ChunkTest::Demo_Blocks_World_Look_Ahead_State_Evaluation()
+{
+    build_and_check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation.soar", 37, 13);
 }
 
 void ChunkTest::Demo_Eight_Puzzle()
