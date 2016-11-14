@@ -36,7 +36,7 @@ print "   kernel cli sml_java debugger headers"
 print "Settings available:"
 print "   --dbg, --opt, --static, --out, --build, --scu, --no-scu, --verbose"
 print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
-print "   --no-svs --no-kernel-scu --no-cli-scu"
+print "   --no-svs --no-scu-kernel --no-scu-cli"
 print "================================================================================"
 
 def execute(cmd):
