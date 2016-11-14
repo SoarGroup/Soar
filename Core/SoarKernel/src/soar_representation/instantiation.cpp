@@ -1269,11 +1269,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         level = inst->match_goal_level;
 
-        /* The following cleans up some temporary structures used by
-         * explanation-based learning, most notably the identity->rule variable
-         * mapping that are only used for debugging in a non-release build. */
-        thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
-
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
         {
@@ -1446,15 +1441,18 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         ++riter;
 
         dprint(DT_DEALLOCATE_INSTANTIATION, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
-        deallocate_condition_list(thisAgent,
-                                  temp->top_of_instantiated_conditions);
+        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
+
+        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+        /* Setting deallocate_condition_list()'s pCleanUpIdentity argument to true
+         * will build up a set of identities to clean up.  We call this to actually
+         * remove entries from the debug symbol map */
+        thisAgent->explanationBasedChunker->cleanup_debug_mappings();
+        #endif
+
         if (temp->prod)
         {
             dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
-            if (temp->i_id == 10)
-            {
-                dprint(DT_DEALLOCATE_INSTANTIATION, "Found.\n");
-            }
             production_remove_ref(thisAgent, temp->prod, true);
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);

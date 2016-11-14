@@ -73,7 +73,7 @@ double get_number_from_symbol(Symbol* sym)
 
 
 
-char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
+char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t dest_size)
 {
 
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
@@ -106,7 +106,7 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
              }
             lStr.push_back(id->name_letter);
             lStr.append(std::to_string(id->name_number));
-            if (id->is_lti())
+            if (showLTILink && id->is_lti())
             {
                 lStr += " (@";
                 lStr.append(std::to_string(id->LTI_ID));

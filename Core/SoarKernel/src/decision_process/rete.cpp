@@ -896,14 +896,14 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
 #ifdef DEBUG_WATERFALL
-    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod_name);
+    Output_Manager::Get_OM().print_sf("\nMatch goal level for retraction: %y", msc->inst->prod_name);
 #endif
 
     if (msc->inst->match_goal)
     {
         /* If there is a goal, just return the goal */
 #ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", msc->inst->match_goal);
+        Output_Manager::Get_OM().print_sf(" is [%y]", msc->inst->match_goal);
 #endif
         return  msc->inst->match_goal;
 
@@ -912,7 +912,7 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
     {
 
 #ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(" is NIL (nil goal retraction)");
+        Output_Manager::Get_OM().print_sf(" is NIL (nil goal retraction)");
 #endif
         return NIL;
 
@@ -6214,7 +6214,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 #ifdef DEBUG_WATERFALL
-    print("\n    Level of goal is  %d", static_cast<int64_t>(msc->level));
+    thisAgent->outputManager->printa_sf(thisAgent, "\n    Level of goal is  %d", static_cast<int64_t>(msc->level));
 #endif
 
     prod_type = IE_PRODS;
@@ -6597,7 +6597,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->level = msc->goal->id->level;
 
 #ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf("\n    Level of retraction is: %d", msc->level);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n    Level of retraction is: %d", msc->level);
 #endif
 
         if (msc->goal->id->link_count == 0)
@@ -6639,23 +6639,23 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
 #ifdef DEBUG_WATERFALL
         thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
-        thisAgent->outputManager->printa_sf(" is active at level %d\n", msc->level);
+        thisAgent->outputManager->printa_sf(thisAgent, " is active at level %d\n", msc->level);
 
         {
             ms_change* assertion;
-            thisAgent->outputManager->printa_sf("\n Retractions list:\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "\n Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;
                     assertion;
                     assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                    assertion->p_node->b.p.prod->name);
-                thisAgent->outputManager->printa_sf(" at level %d\n", assertion->level);
+                thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
             }
 
             if (thisAgent->nil_goal_retractions)
             {
-                thisAgent->outputManager->printa_sf("\nCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "\nCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions;
                         assertion;
@@ -6663,10 +6663,10 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                        assertion->p_node->b.p.prod->name);
-                    thisAgent->outputManager->printa_sf(" at level %d\n", assertion->level);
+                    thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
                     if (assertion->goal)
                     {
-                        thisAgent->outputManager->printa_sf("This assertion has non-NIL goal pointer.\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "This assertion has non-NIL goal pointer.\n");
                     }
                 }
             }

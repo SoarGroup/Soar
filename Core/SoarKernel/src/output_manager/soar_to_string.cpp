@@ -35,9 +35,9 @@ bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destSt
 {
     assert(thisAgent && w);
 
-    sprinta_sf(thisAgent, destString, "(t%u(r%u): %y(l%d) ^%y %y(l%d)%s",
-        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_sti() ? w->value->id->level : 0,
-        (w->acceptable ? " +)" : ")"));
+    sprinta_sf(thisAgent, destString, "(t%u: %y(lvl %d) ^%y %y(lvl %d)%s (rc %u)",
+        w->timetag, w->id, static_cast<int64_t>(w->id->id->level), w->attr, w->value, w->value->is_sti() ? static_cast<int64_t>(w->value->id->level) : 0,
+        (w->acceptable ? " +)" : ")"), w->reference_count);
 
     /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
      * Return value used to determine whether to print newline*/

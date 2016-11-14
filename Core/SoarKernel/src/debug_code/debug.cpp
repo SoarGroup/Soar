@@ -142,7 +142,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
-    mode_info[DT_REPAIR].prefix =                       strdup("Grnd LTI| ");
+    mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
     mode_info[DT_EXPLAIN_PATHS].prefix =                strdup("EIDPaths| ");
     mode_info[DT_EXPLAIN_ADD_INST].prefix =             strdup("EAddInst| ");
@@ -363,12 +363,11 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = thisAgent->symbolManager->find_identifier('V', 30);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('L', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "%y found.\n", sym);
-                condition* dummy = make_condition(thisAgent);
-
+                dprint(DT_DEBUG, "%y found with refcount of %u.\n", sym, sym->reference_count);
+//                condition* dummy = make_condition(thisAgent);
 //                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");

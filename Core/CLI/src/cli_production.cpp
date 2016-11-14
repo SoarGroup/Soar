@@ -996,11 +996,11 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
         {
             // Arbitrary buffer and size
             char attributeName[1024];
-            maList->symbol->to_string(true, attributeName, 1024);
+            maList->symbol->to_string(true, false, attributeName, 1024);
 
             if (m_RawOutput)
             {
-                m_Result  << maList->value << "\t" << maList->symbol->to_string(true, attributeName, 1024) << std::endl;
+                m_Result  << maList->value << "\t" << maList->symbol->to_string(true, false, attributeName, 1024) << std::endl;
 
             }
             else

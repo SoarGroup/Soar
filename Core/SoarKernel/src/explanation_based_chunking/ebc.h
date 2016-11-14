@@ -98,7 +98,9 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void cleanup_after_instantiation_creation(uint64_t pI_id);
-        void cleanup_for_instantiation_deallocation(uint64_t pI_id);
+        void cleanup_identity_for_debug_mappings(uint64_t pIdentity) {identities_to_clean_up->insert(pIdentity);};
+        void cleanup_debug_mappings();
+
         void clear_variablization_maps();
 
     private:
@@ -162,9 +164,13 @@ class Explanation_Based_Chunker
          *    formation and variablization.  The data stored within
          *    them is temporary and cleared after use. -- */
 
-        inst_to_id_map*            instantiation_identities;
+        sym_to_id_map*             instantiation_identities;
         id_to_sym_id_map*          identity_to_var_map;
+
+        /* The following are used to print out the original variables when
+         * compiled without SOAR_RELEASE_VERSION enabled */
         id_to_sym_map*             id_to_rule_sym_debug_map;
+        id_set*                    identities_to_clean_up;
 
         id_to_id_map*              unification_map;
         identity_triple*           local_singleton_superstate_identity;
@@ -172,8 +178,8 @@ class Explanation_Based_Chunker
         constraint_list*           constraints;
         attachment_points_map*     attachment_points;
 
-        /* -- Table of previously seen conditions.  Used to determine whether to
-         *    merge or eliminate positive conditions on the LHS of a chunk. -- */
+        /* Table of previously seen conditions.  Used to determine whether to
+         * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
         /* Used by repair manager if it needs to find original matched value for

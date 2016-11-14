@@ -41,7 +41,7 @@ void Explanation_Based_Chunker::clear_singletons()
 
 void Explanation_Based_Chunker::clear_attachment_map()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing attachment map...\n");
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing attachment map...\n");
     for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
         // Don't print anything from condition b/c it could be deallocated when this is being cleared
@@ -52,7 +52,7 @@ void Explanation_Based_Chunker::clear_attachment_map()
 
 void Explanation_Based_Chunker::clear_variablization_maps()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing o_id_to_var_map map...\n");
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing o_id_to_var_map map...\n");
     /* -- Clear grounding_id->variablization map -- */
     for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
     {
@@ -66,7 +66,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
 void Explanation_Based_Chunker::clear_o_id_to_ovar_debug_map()
 {
     Symbol* lSym;
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing id_to_rule_sym_debug_map...\n");
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing id_to_rule_sym_debug_map...\n");
     for (auto it = (*id_to_rule_sym_debug_map).begin(); it != (*id_to_rule_sym_debug_map).end(); ++it)
     {
         lSym = it->second;
@@ -84,7 +84,7 @@ void Explanation_Based_Chunker::clear_o_id_substitution_map()
 
 void Explanation_Based_Chunker::clear_rulesym_to_identity_map()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager clearing instantiation_identities...\n");
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing instantiation_identities...\n");
     instantiation_identities->clear();
 }
 
@@ -92,20 +92,13 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
 {
     assert(orig_var && pI_id);
 
-    inst_to_id_map::iterator iter_inst;
-    sym_to_id_map::iterator iter_sym;
-    iter_inst = instantiation_identities->find(pI_id);
-    if (iter_inst != instantiation_identities->end())
+    auto iter_sym = instantiation_identities->find(orig_var);
+    if (iter_sym != instantiation_identities->end())
     {
-        iter_sym = iter_inst->second.find(orig_var);
-        if (iter_sym != iter_inst->second.end())
-        {
-            dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
-            return iter_sym->second;
-        }
+        dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
+        return iter_sym->second;
     }
 
-//    dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id did not find mapping for %y in instantiation %u.\n", orig_var, pI_id);
     return NULL_IDENTITY_SET;
 
 }
@@ -113,50 +106,35 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
 /* Why would we need to do this after instantiation creation? */
 void Explanation_Based_Chunker::cleanup_after_instantiation_creation(uint64_t pI_id)
 {
-    /* Since we're cleaning up instantiation identities to symbol mappings after inst
-     * creation, then the inst_identity list won't be here to clear out debug symbols
-     * when the instantiation is deallocated.  So the debug symbol table will grow
-     * with each chunk/justification attempted.  Originally, these were just for debugging
-     * but they're nice for the explainer.  We should save them to the instantiation and
-     * have the explainer copy them as needed.*/
-
-    if (instantiation_identities->size() == 0) return;
     dprint(DT_EBC_CLEANUP, "Cleaning up after creating instantiation %u\n", pI_id);
-    instantiation_identities->erase(pI_id);
+    instantiation_identities->clear();
 }
 
-void Explanation_Based_Chunker::cleanup_for_instantiation_deallocation(uint64_t pI_id)
+void Explanation_Based_Chunker::cleanup_debug_mappings()
 {
-    #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    dprint(DT_EBC_CLEANUP, "Cleaning up debug symbol mappings of size %d.\n", identities_to_clean_up->size());
+    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
 
-        if ((instantiation_identities->size() == 0) || (id_to_rule_sym_debug_map->size() == 0)) return;
+    Symbol* lSym;
+    uint64_t lID;
 
-        // I don't think this function can get this far any more until we get smarter cleanup
-
-        dprint(DT_EBC_CLEANUP, "Cleaning up for deallocation of instantiation %u\n", pI_id);
-        //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
-
-        inst_to_id_map::iterator iter_inst;
-        sym_to_id_map::iterator iter_sym;
-        Symbol* lSym;
-
-        iter_inst = instantiation_identities->find(pI_id);
-
-        if (iter_inst != instantiation_identities->end())
+    for (auto iter = identities_to_clean_up->begin(); iter != identities_to_clean_up->end(); iter++)
+    {
+        lID = *iter;
+        dprint(DT_EBC_CLEANUP, "Cleaning up identity %u from debug symbol mappings...", lID);
+        auto iter2 = id_to_rule_sym_debug_map->find(lID);
+        if (iter2 != id_to_rule_sym_debug_map->end())
         {
-            assert(false);
-            for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
-            {
-                lSym = iter_sym->first;
-                id_to_rule_sym_debug_map->erase(iter_sym->second);
-                thisAgent->symbolManager->symbol_remove_ref(&(lSym));
-            }
+            lSym = iter2->second;
+            dprint_noprefix(DT_EBC_CLEANUP, "found.  Removing ref for %y.\n", lSym);
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            id_to_rule_sym_debug_map->erase(lID);
+        } else {
+            dprint_noprefix(DT_EBC_CLEANUP, "not found.\n");
         }
-        instantiation_identities->erase(pI_id);
-        //    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
-        dprint(DT_EBC_CLEANUP, "Done cleaning up for deallocation of instantiation %u\n-------\n", pI_id);
-
-    #endif
+    }
+    dprint(DT_EBC_CLEANUP, "Done cleaning up debug symbol mappings.  Now is size %d.\n", identities_to_clean_up->size());
+    identities_to_clean_up->clear();
 }
 
 uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_t pI_id)
@@ -169,19 +147,20 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
     if (!existing_o_id)
     {
         increment_counter(ovar_id_counter);
-        (*instantiation_identities)[pI_id][orig_var] = ovar_id_counter;
-#ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-        /* We add a refcount for debug map because we may create a dummy variable for architectural
-         * instantiations, which needs to create a refcount.  So we create them from both and clean
-         * up on instantiation deallocation. */
-        if (orig_var->is_variable())
-        {
-            (*id_to_rule_sym_debug_map)[ovar_id_counter] = orig_var;
-            thisAgent->symbolManager->symbol_add_ref(orig_var);
-        } else {
-            (*id_to_rule_sym_debug_map)[ovar_id_counter] = thisAgent->symbolManager->generate_new_variable("A");
-        }
-#endif
+        (*instantiation_identities)[orig_var] = ovar_id_counter;
+        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+            /* We add a refcount for debug map because we may create a dummy variable for architectural
+             * instantiations, which needs to create a refcount.  So we create them from both and clean
+             * up on instantiation deallocation. */
+            if (orig_var->is_variable())
+            {
+                (*id_to_rule_sym_debug_map)[ovar_id_counter] = orig_var;
+                thisAgent->symbolManager->symbol_add_ref(orig_var);
+                dprint(DT_EBC_CLEANUP, "Adding ref for %y (%u) for debug symbol mappings...", orig_var, ovar_id_counter);
+            } else {
+                (*id_to_rule_sym_debug_map)[ovar_id_counter] = thisAgent->symbolManager->generate_new_variable("A");
+            }
+        #endif
         dprint(DT_IDENTITY_GENERATION, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {

@@ -43,8 +43,9 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Create data structures used for EBC */
     identity_to_var_map = new id_to_sym_id_map();
-    instantiation_identities = new inst_to_id_map();
+    instantiation_identities = new sym_to_id_map();
     id_to_rule_sym_debug_map = new id_to_sym_map();
+    identities_to_clean_up = new id_set();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();

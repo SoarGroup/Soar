@@ -15,10 +15,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_CHUNKING_TESTS
         /* The following two tests will sporadically fail when run as a unit test.  No idea why. */
-        // CPPUNIT_TEST(SMem_Chunked_Query);
-        // CPPUNIT_TEST(SMem_Chunked_Query2);
+         CPPUNIT_TEST(SMem_Chunked_Query);
+         CPPUNIT_TEST(SMem_Chunked_Query2);
         /* The following test fails on jenkins, but doesn't fail on my machine or my VMs.  Not sure why. */
-        //CPPUNIT_TEST(SMem_Chunk_Direct);
+        CPPUNIT_TEST(SMem_Chunk_Direct);
 
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
@@ -215,10 +215,16 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
             throw CPPUnit_Assert_Failure(outStringStream.str());
         }
         /* This can be uncommented to check for symbol refcount leaks.  Must comment out
-         * configure_for_unit_tests() below so that it will abort if there is a leak.  If
-         * debug output is printing, make sure SOAR_RELEASE_MODE is defined in kernel.h */
-        //pAgent->ExecuteCommandLineXML("init-soar", &response);
-        //CPPUNIT_ASSERT_MESSAGE("init-soar", pAgent->GetLastCommandLineResult());
+         * configure_for_unit_tests() below so that it will abort if there is a leak and
+         * enable assert(false) in SymbolManager.cpp.  If debug output is printing, make
+         * sure SOAR_RELEASE_MODE is defined in kernel.h. */
+        sml::ClientAnalyzedXML response1, response2, response3;
+        pAgent->ExecuteCommandLineXML("init-soar", &response1);
+        CPPUNIT_ASSERT_MESSAGE(response1.GetResultString(), pAgent->GetLastCommandLineResult());
+        pAgent->ExecuteCommandLineXML("run 100", &response2);
+        CPPUNIT_ASSERT_MESSAGE(response2.GetResultString(), pAgent->GetLastCommandLineResult());
+        pAgent->ExecuteCommandLineXML("init-soar", &response3);
+        CPPUNIT_ASSERT_MESSAGE(response3.GetResultString(), pAgent->GetLastCommandLineResult());
     }
 }
 
@@ -232,14 +238,19 @@ void ChunkTest::setUp()
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
-    configure_for_unit_tests();
+//    configure_for_unit_tests();
 
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
 
+    sml::ClientAnalyzedXML response;
+    pAgent->ExecuteCommandLineXML("output console off", &response);
+    CPPUNIT_ASSERT_MESSAGE("output console off", pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLineXML("output callbacks on", &response);
+    CPPUNIT_ASSERT_MESSAGE("output callbacks on", pAgent->GetLastCommandLineResult());
+
     succeeded = false;
     pKernel->AddRhsFunction("succeeded", Handlers::MySuccessHandler,  &succeeded) ;
-
 
 }
 

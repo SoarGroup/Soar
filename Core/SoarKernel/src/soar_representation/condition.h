@@ -107,7 +107,7 @@ void        copy_condition_list(agent* thisAgent, condition* top_cond, condition
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
                          bool pCopyInstantiation = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
 void        deallocate_condition(agent* thisAgent, condition*& cond);
-void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
+void        deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity = false);
 
 void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list);
 void        unmark_variables_and_free_list(agent* thisAgent, cons* var_list);

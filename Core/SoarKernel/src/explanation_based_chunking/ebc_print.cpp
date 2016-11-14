@@ -93,16 +93,11 @@ void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mod
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    inst_to_id_map::iterator iter_inst;
     sym_to_id_map::iterator iter_sym;
 
-    for (iter_inst = instantiation_identities->begin(); iter_inst != instantiation_identities->end(); ++iter_inst)
+    for (auto iter_sym = instantiation_identities->begin(); iter_sym != instantiation_identities->end(); ++iter_sym)
     {
-        outputManager->printa_sf(thisAgent, "Identities for i%u: \n", iter_inst->first);
-        for (iter_sym = iter_inst->second.begin(); iter_sym != iter_inst->second.end(); ++iter_sym)
-        {
-            outputManager->printa_sf(thisAgent, "   %y = o%u\n", iter_sym->first, iter_sym->second);
-        }
+        outputManager->printa_sf(thisAgent, "   %y = o%u\n", iter_sym->first, iter_sym->second);
     }
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");

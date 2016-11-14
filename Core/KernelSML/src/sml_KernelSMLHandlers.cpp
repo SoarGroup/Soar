@@ -837,7 +837,7 @@ bool KernelSML::HandleGetInputLink(AgentSML* pAgentSML, char const* /*pCommandNa
 
     // Turn the id symbol into an actual string
     char buf[ MAX_LEXEME_LENGTH ];
-    char* id = sym->to_string(true, buf, MAX_LEXEME_LENGTH);
+    char* id = sym->to_string(true, false, buf, MAX_LEXEME_LENGTH);
 
     if (id)
     {

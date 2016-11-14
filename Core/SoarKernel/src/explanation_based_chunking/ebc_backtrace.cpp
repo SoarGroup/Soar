@@ -61,9 +61,9 @@ using namespace soar_TraceNames;
 void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
     dprint(DT_BACKTRACE, "--> Ground condition added: %l.\n", cond);
-    if ((cond)->bt.wme_->grounds_tc != grounds_tc)
+    if ((cond)->bt.wme_->tc != grounds_tc)
     {
-        (cond)->bt.wme_->grounds_tc = grounds_tc;
+        (cond)->bt.wme_->tc = grounds_tc;
         cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     }
     if (cond->bt.wme_->chunker_bt_last_ground_cond != cond)
@@ -238,7 +238,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
-                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
+                if (c->bt.wme_->tc != grounds_tc)   /* First time we've seen something matching this wme*/
                 {
                     add_to_grounds(c);
                 }

@@ -101,7 +101,11 @@ class Symbol_Manager {
         #ifdef DEBUG_REFCOUNT_DB
             //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
         #else
-            //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
+//            dprint(DT_REFCOUNT_ADDS, "ADD-REF %y -> %u\n", x, (x)->reference_count + 1);
+            if (is_DT_mode_enabled(DT_REFCOUNT_ADDS))
+            {
+                std::cout << "ADD-REF " << x->to_string() << "->" <<  (x->reference_count + 1) << "\n";
+            }
         #endif
 
         #ifdef DEBUG_TRACE_REFCOUNT_FOR

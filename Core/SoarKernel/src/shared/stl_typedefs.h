@@ -147,8 +147,6 @@ typedef std::unordered_map< Symbol*, Symbol* >                  sym_to_sym_map;
 typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
 
-typedef std::unordered_map< uint64_t, sym_to_id_map >           inst_to_id_map;
-
 /*------ SMem stl typedefs ------*/
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem

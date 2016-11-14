@@ -44,6 +44,59 @@ identity_record::~identity_record()
 }
 
 
+void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+{
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+            pTest = pTest->eq_test;
+    }
+    if (pInstantiatedTest && pInstantiatedTest->type == CONJUNCTIVE_TEST)
+    {
+        pInstantiatedTest = pInstantiatedTest->eq_test;
+    }
+    if (test_has_referent(pTest)) {
+        if (pTest->identity)
+        {
+            if (pID_Set->find(pTest->identity) == pID_Set->end())
+            {
+                pID_Set->insert(pTest->identity);
+                sym_identity_info* lNewIDSet = new sym_identity_info();
+                if (pTest->identity)
+                {
+                    lNewIDSet->identity = thisAgent->explanationMemory->get_identity_set_counter();
+                    lNewIDSet->variable_sym = pTest->data.referent;
+                    thisAgent->symbolManager->symbol_add_ref(lNewIDSet->variable_sym);
+                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity, lNewIDSet->variable_sym, lNewIDSet->variable_sym);
+
+                } else {
+                    lNewIDSet->identity = NULL_IDENTITY_SET;
+                    lNewIDSet->variable_sym = NULL;
+                }
+                pID_Set_Map->insert({pTest->identity, lNewIDSet});
+            }
+        }
+    }
+}
+
+void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+{
+    for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
+    {
+        if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
+        } else {
+            thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
+            test id_test_without_goal_test = NULL;
+            id_test_without_goal_test = copy_test(thisAgent, lCond->data.tests.id_test, false, false, false, true);
+            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);
+            deallocate_test(thisAgent, id_test_without_goal_test);
+        }
+    }
+}
+
 void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
 {
     /* Generate identity sets and add mappings for all conditions in chunk */
@@ -226,7 +279,10 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         lMapping = *it;
         auto lFindIter = id_to_id_set_mappings->find(lMapping->from_identity);
 
-        if (printOnlyChunkIdentities && !lFindIter->second->variable_sym) continue;
+        if (printOnlyChunkIdentities &&
+            (lFindIter != id_to_id_set_mappings->end()) &&
+            !lFindIter->second->variable_sym)
+            continue;
 
         outputManager->printa_sf(thisAgent, "%-%u -> %u", lMapping->from_identity, lMapping->to_identity);
 

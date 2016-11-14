@@ -1221,7 +1221,7 @@ void add_values_of_attribute_path(agent* thisAgent,
         }
         else
         {
-            ch = object->to_string(true, NULL, 0);
+            ch = object->to_string(true, false, NULL, 0);
             add_to_growable_string(thisAgent, result, ch);
         }
         (*count)++;

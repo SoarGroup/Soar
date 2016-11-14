@@ -157,7 +157,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test(agent* thisAgent, test t)
+void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
 {
     cons* c, *next_c;
 
@@ -185,17 +185,26 @@ void deallocate_test(agent* thisAgent, test t)
                 next_c = c->rest;
                 test tt;
                 tt = static_cast<test>(c->first);
-                deallocate_test(thisAgent, static_cast<test>(c->first));
+                deallocate_test(thisAgent, static_cast<test>(c->first), pCleanUpIdentity);
                 free_cons(thisAgent, c);
                 c = next_c;
             }
             break;
         default: /* relational tests other than equality */
-#ifdef DEBUG_REFCOUNT_DB
+            #ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-#else
+            #else
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-#endif
+            #endif
+            #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+            /* The following cleans up the identity->rule variable
+             * mapping that is only used for debugging in a non-release build. */
+            if (pCleanUpIdentity && t->identity)
+            {
+                thisAgent->explanationBasedChunker->cleanup_identity_for_debug_mappings(t->identity);
+            }
+            #endif
+
             break;
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests

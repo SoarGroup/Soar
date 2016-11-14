@@ -399,8 +399,8 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
 
     // Establish defaults
-    thisAgent->bottom_goal->to_string(true, id, PREFERENCES_BUFFER_SIZE);
-    thisAgent->symbolManager->soarSymbols.operator_symbol->to_string(true, attr, PREFERENCES_BUFFER_SIZE);
+    thisAgent->bottom_goal->to_string(true, false, id, PREFERENCES_BUFFER_SIZE);
+    thisAgent->symbolManager->soarSymbols.operator_symbol->to_string(true, false, attr, PREFERENCES_BUFFER_SIZE);
 
     // Override defaults
     if (idString)

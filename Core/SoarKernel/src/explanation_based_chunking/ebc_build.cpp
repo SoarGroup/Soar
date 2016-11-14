@@ -1006,12 +1006,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
     }
 
-    variablize_condition_list(m_vrblz_top, variablize);
+    //variablize_condition_list(m_vrblz_top, variablize);
     dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
     //        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
     if (variablize)
     {
-
+        variablize_condition_list(m_vrblz_top, variablize);
         merge_conditions(m_vrblz_top);
     }
 
@@ -1101,7 +1101,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Chunk formed.\n", m_inst->i_id, m_inst->prod_name);
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Chunk formed.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     add_chunk_to_rete();
 
