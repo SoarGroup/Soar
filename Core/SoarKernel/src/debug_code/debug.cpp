@@ -155,7 +155,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
     mode_info[DT_DEALLOCATE_INSTANTIATION].prefix =     strdup("Del Inst| ");
     mode_info[DT_EXPLAIN_CACHE].prefix =                strdup("ExpCache| ");
-    mode_info[DT_UNUSED3].prefix =                      strdup("| ");
+    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
     mode_info[DT_UNUSED4].prefix =                      strdup("| ");
 
 #ifndef SOAR_RELEASE_VERSION

@@ -832,10 +832,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     goal_stack_level lowest_level_so_far;
     token* tok;
 
-#ifdef DEBUG_WATERFALL
-    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal for assertion: %y", msc->p_node->b.p.prod->name);
-#endif
-
+    dprint(DT_WATERFALL, "Match goal for assertion: %y", msc->p_node->b.p.prod->name);
 
     lowest_goal_wme = NIL;
     lowest_level_so_far = -1;
@@ -876,12 +873,11 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 
     if (lowest_goal_wme)
     {
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", lowest_goal_wme->id);
-#endif
+        dprint_noprefix(DT_WATERFALL, " is [%y]\n", lowest_goal_wme->id);
         return lowest_goal_wme->id;
     }
     {
+        dprint_noprefix(DT_WATERFALL, " has no lowest_goal_wme!\n");
         char msg[BUFFER_MSG_SIZE];
         thisAgent->outputManager->printa_sf(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
@@ -895,25 +891,19 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
-#ifdef DEBUG_WATERFALL
-    Output_Manager::Get_OM().print_sf("\nMatch goal level for retraction: %y", msc->inst->prod_name);
-#endif
+    dprint(DT_WATERFALL, "Match goal level for retraction: %y", msc->inst->prod_name);
 
     if (msc->inst->match_goal)
     {
         /* If there is a goal, just return the goal */
-#ifdef DEBUG_WATERFALL
-        Output_Manager::Get_OM().print_sf(" is [%y]", msc->inst->match_goal);
-#endif
+        dprint_noprefix(DT_WATERFALL, " is [%y]", msc->inst->match_goal);
         return  msc->inst->match_goal;
 
     }
     else
     {
 
-#ifdef DEBUG_WATERFALL
-        Output_Manager::Get_OM().print_sf(" is NIL (nil goal retraction)");
-#endif
+        dprint_noprefix(DT_WATERFALL, " is NIL (nil goal retraction)");
         return NIL;
 
     }
@@ -924,11 +914,11 @@ void print_assertion(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion exists but has no p_node");
     }
 }
 
@@ -937,11 +927,11 @@ void print_retraction(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction exists but has no p_node");
     }
 }
 
@@ -4012,10 +4002,8 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc's, regardless of the mode */
         msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, "\n %y is a refracted instantiation",
-                           refracted_inst->prod_name);
-#endif
+
+        dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
@@ -6170,17 +6158,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
 
         thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-#ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative retraction: %y", node->b.p.prod->name);
-#endif
+        dprint(DT_RETE_PNODE_ADD, "Removing tentative retraction: %y\n", node->b.p.prod->name);
         activation_exit_sanity_check();
         return;
     }
 
     /* --- no match found, so add new assertion --- */
-#ifdef DEBUG_RETE_PNODES
-    thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative assertion: %y", node->b.p.prod->name);
-#endif
+    dprint(DT_RETE_PNODE_ADD, "Adding tentative assertion: %y\n", node->b.p.prod->name);
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
     msc->tok = tok;
@@ -6213,9 +6197,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
-#ifdef DEBUG_WATERFALL
-    thisAgent->outputManager->printa_sf(thisAgent, "\n    Level of goal is  %d", static_cast<int64_t>(msc->level));
-#endif
+
+    dprint(DT_WATERFALL, "    Level of goal is  %d\n", static_cast<int64_t>(msc->level));
 
     prod_type = IE_PRODS;
 
@@ -6438,7 +6421,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
@@ -6458,7 +6441,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
@@ -6550,9 +6533,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-#ifdef DEBUG_RETE_PNODES
-            thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative assertion: %y", node->b.p.prod->name);
-#endif
+            dprint(DT_RETE_PNODE_ADD, "Removing tentative assertion: %y", node->b.p.prod->name);
             activation_exit_sanity_check();
             return;
         }
@@ -6568,9 +6549,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (inst)
     {
         /* --- add that instantiation to tentative_retractions --- */
-#ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative retraction: %y", node->b.p.prod->name);
-#endif
+        dprint(DT_RETE_PNODE_ADD, "Adding tentative retraction: %y", node->b.p.prod->name);
         /* MToDo | Tried commenting out the following two lines in an effort to
          *         fix a problem where Soar can't find an instantiation to
          *         retract.  It was matching based on the rete_token and rete_wme,
@@ -6596,9 +6575,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->goal = find_goal_for_match_set_change_retraction(msc);
         msc->level = msc->goal->id->level;
 
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, "\n    Level of retraction is: %d", msc->level);
-#endif
+        dprint(DT_WATERFALL, "    Level of retraction is: %d\n", msc->level);
 
         if (msc->goal->id->link_count == 0)
         {
@@ -6637,13 +6614,13 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                   msc, next_in_level, prev_in_level);
         }
 
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
-        thisAgent->outputManager->printa_sf(thisAgent, " is active at level %d\n", msc->level);
+        dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
+
+        #ifdef DEBUG_WATERFALL
 
         {
             ms_change* assertion;
-            thisAgent->outputManager->printa_sf(thisAgent, "\n Retractions list:\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%f Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;
                     assertion;
                     assertion = assertion->next)
@@ -6655,7 +6632,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (thisAgent->nil_goal_retractions)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "\nCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "%fCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions;
                         assertion;
@@ -6671,7 +6648,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 }
             }
         }
-#endif
+        #endif
 
         activation_exit_sanity_check();
         return;
@@ -6680,7 +6657,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n%y: ", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%f%y: ", node->b.p.prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -6690,7 +6667,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
 #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
             node->b.p.prod ? node->b.p.prod->name : NULL);
         xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
 #endif
@@ -6698,7 +6675,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     }
 #endif
 
-    thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: Soar can't find an existing instantiation of %y to retract.\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.\n",
         node->b.p.prod ? node->b.p.prod->name : NULL);
     xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
 

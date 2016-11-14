@@ -69,6 +69,7 @@ enum TraceMode
     DT_ID_LEAKING = 34,
     DT_DEALLOCATES = 35,
     DT_DEALLOCATE_SYMBOLS = 36,
+    DT_DEALLOCATE_INSTANTIATION = 44,
     DT_DEALLOCATES_TESTS = 37,
     DT_REFCOUNT_ADDS = 38,
     DT_REFCOUNT_REMS = 39,
@@ -78,11 +79,9 @@ enum TraceMode
     DT_LINKS = 41,
     DT_UNKNOWN_LEVEL = 42,
     DT_RETE_PNODE_ADD = 43,
-
-    DT_DEALLOCATE_INSTANTIATION = 44,
+    DT_WATERFALL = 46,
 
     // Not used
-    DT_UNUSED3 = 46,
     DT_UNUSED4 = 47,
     num_trace_modes
 };
