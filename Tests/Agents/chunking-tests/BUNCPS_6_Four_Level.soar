@@ -65,5 +65,5 @@ sp {propose*stop
               ^superstate nil)
 -->
 #    (success)
-    (halt)
+    (interrupt)
 }

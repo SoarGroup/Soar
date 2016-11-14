@@ -80,6 +80,6 @@ sp {success
    (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
    (exec succeeded)
-   (halt)
+   (interrupt)
 }
 

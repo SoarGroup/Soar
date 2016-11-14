@@ -8,7 +8,7 @@ sp {apply*test-failed
     (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
     (write (crlf) |Too deep.  Stopping.|)
-    (halt)
+    (interrupt)
 }
 
 sp {init-superstate

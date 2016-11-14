@@ -743,7 +743,7 @@ sp {top-goal*halt*failure
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << prohibit-failure failure exhaustion-failure >> <a*1> } <eb>)
     -->
-    (halt)
+    (interrupt)
 }
 
 sp {top-goal*halt*success
@@ -751,7 +751,7 @@ sp {top-goal*halt*success
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << required-success success >> <a*1> } <eb>)
     -->
-    (halt)
+    (interrupt)
 }
 
 sp {eight*apply*operator*add-tile-cell

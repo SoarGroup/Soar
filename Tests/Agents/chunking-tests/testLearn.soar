@@ -43,7 +43,7 @@ sp {done
    (state <s> ^superstate nil
               ^result jig)
 -->
-   (halt)
+   (interrupt)
 }
 
 

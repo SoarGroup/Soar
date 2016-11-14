@@ -171,7 +171,7 @@ sp {water-jug*detect*goal*achieved
     (<j> ^volume 3 ^contents 1)
     -->
     (write (crlf) |The problem has been solved.|)
-    (write (crlf) |The problem has been solved.|)(halt)
+    (write (crlf) |The problem has been solved.|)(interrupt)
 }
 
 sp {water-jug*elaborate*empty

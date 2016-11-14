@@ -62,7 +62,7 @@ sp {propose*stop
    (state <s> ^result)
 -->
 #    (success)
-    (halt)
+    (interrupt)
 }
 
 #run

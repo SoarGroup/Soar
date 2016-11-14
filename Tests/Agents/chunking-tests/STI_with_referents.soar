@@ -43,5 +43,5 @@ sp {propose*stop
     (state <s> ^operator.name winner)
 -->
  #    (success)
-    (halt)
+    (interrupt)
 }

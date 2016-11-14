@@ -145,5 +145,5 @@ sp {success
 -->
     (write (crlf) |Test finished.|)
     (exec succeeded)
-    (halt)
+    (interrupt)
 }

@@ -743,7 +743,7 @@ sp {top-goal*halt*failure
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << prohibit-failure failure exhaustion-failure >> <a*1> } <eb>)
     -->
-    (halt)
+    (interrupt)
 }
 
 sp {top-goal*halt*success
@@ -751,7 +751,7 @@ sp {top-goal*halt*success
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << required-success success >> <a*1> } <eb>)
     -->
-    (halt)
+    (interrupt)
 }
 
 sp {default*select*reject*conflict
@@ -782,7 +782,7 @@ sp {default*top-goal*halt*operator*failure
     -->
     (write (crlf) |No operator can be selected for top goal.|)
     (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)
-    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)(halt)
+    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)(interrupt)
 }
 
 sp {top-ps*apply*wait*random
@@ -959,7 +959,7 @@ sp {halt
     (<r*2> ^value 1)
     -->
     (write (crlf) |TASK: Finished Stacking the Blocks.|)
-    (write (crlf) |TASK: Finished Stacking the Blocks.|)(halt)
+    (write (crlf) |TASK: Finished Stacking the Blocks.|)(interrupt)
 }
 
 sp {P11*all-blocks-in-desired-position*three-blocks

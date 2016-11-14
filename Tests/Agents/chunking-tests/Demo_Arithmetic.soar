@@ -7,7 +7,7 @@ sp {arithmetic*apply*stop-arithmetic
     (<op> ^name stop-arithmetic)
     -->
     (write Finished)
-    (write Finished)(halt)
+    (write Finished)(interrupt)
 }
 
 sp {arithmetic*propose*stop-arithmetic
@@ -826,7 +826,7 @@ sp {arithmetic*elaborate*state*compare-results*not-equal
           ^bottom-number <bn> ^top-number <tn> ^operation-symbol <os>)
     -->
     (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))
-    (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))(halt)
+    (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))(interrupt)
 }
 
 sp {arithmetic*elaborate*state*compute-answer*sub
