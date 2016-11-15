@@ -97,9 +97,8 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
 {
     // adjust attr, attr/value counts
     // pairs first, accumulate distinct attributes and pair count
-    uint64_t pair_count = 0;
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<uint64_t()> count([this,pLTI_ID] {
+        uint64_t pair_count = 0;
         uint64_t child_attr = 0;
         std::set<uint64_t> distinct_attr;
 
@@ -142,18 +141,23 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID)
             afu->bind(2, *a);
             afu->exec();
         }
-    })->wait();
 
+        return pair_count;
+    });
+
+    uint64_t pair_count = JobQueue->post(count).get();
 
     // update local statistic
     statistics->edges->set_value(statistics->edges->get_value() - pair_count);
 
     // disconnect
-    JobQueue->post([=]() {
+    std::packaged_task<void()> disconnect([this,pLTI_ID]{
         auto wt = sqlite_thread_guard(SQL->web_truncate);
         wt->bind(1, pLTI_ID);
         wt->exec();
-    })->wait();
+    });
+
+    JobQueue->post(disconnect).wait();
 }
 
 /* This function now requires that all LTI IDs are set up beforehand */
@@ -180,7 +184,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
     else
     {
-        JobQueue->post([=,&existing_edges]() mutable {
+        std::packaged_task<uint64_t()> edges([this,pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
 
             sql->bind(1, pLTI_ID);
@@ -188,8 +192,10 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
-            existing_edges = static_cast<uint64_t>(sql->getColumn(0).getUInt64());
-        })->wait();
+            return sql->getColumn(0).getUInt64();
+        });
+
+        existing_edges = JobQueue->post(edges).get();
     }
 
     // get new edges
@@ -216,14 +222,17 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             {
                 // lti_id, attribute_s_id
                 assert(attr_hash);
-                JobQueue->post([&]() mutable {
+
+                std::packaged_task<bool()> attr([this,pLTI_ID,attr_hash]() {
                     auto sql = sqlite_thread_guard(SQL->web_attr_child);
                     sql->bind(1, pLTI_ID);
                     sql->bind(2, attr_hash);
 
-                    if (!sql->executeStep())
-                        attr_new.insert(attr_hash);
-                })->wait();
+                    return sql->executeStep();
+                });
+
+                if (!JobQueue->post(attr).get())
+                    attr_new.insert(attr_hash);
             }
 
             for (v = s->second->begin(); v != s->second->end(); v++)
@@ -241,15 +250,17 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         // lti_id, attribute_s_id, val_const
                         assert(pLTI_ID && attr_hash && value_hash);
 
-                        JobQueue->post([&]() mutable {
+                        std::packaged_task<bool()> const_child([this,pLTI_ID,attr_hash,value_hash] {
                             auto sql = sqlite_thread_guard(SQL->web_const_child);
                             sql->bind(1, pLTI_ID);
                             sql->bind(2, attr_hash);
                             sql->bind(3, value_hash);
 
-                            if (!sql->executeStep())
-                                const_new.insert(std::make_pair(attr_hash, value_hash));
-                        })->wait();
+                            return sql->executeStep();
+                        });
+
+                        if (!JobQueue->post(const_child).get())
+                            const_new.insert(std::make_pair(attr_hash, value_hash));
                     }
 
                     // provide trace output
@@ -276,15 +287,18 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     {
                         // lti_id, attribute_s_id, val_lti
                         assert(pLTI_ID && attr_hash && value_lti);
-                        JobQueue->post([&]() mutable {
+
+                        std::packaged_task<bool()> lti_child([this,pLTI_ID,attr_hash,value_lti] {
                             auto sql = sqlite_thread_guard(SQL->web_lti_child);
                             sql->bind(1, pLTI_ID);
                             sql->bind(2, attr_hash);
                             sql->bind(3, value_lti);
 
-                            if (!sql->executeStep())
-                                lti_new.insert(std::make_pair(attr_hash, value_lti));
-                        })->wait();
+                            return sql->executeStep();
+                        });
+
+                        if (!JobQueue->post(lti_child).get())
+                            lti_new.insert(std::make_pair(attr_hash, value_lti));
                     }
 
                     // provide trace output
@@ -322,23 +336,27 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             if (after_above)
             {
                 // update smem_augmentations to inf
-                JobQueue->post([&]() {
+                std::packaged_task<void()> update([this,web_act,pLTI_ID] {
                     auto sql = sqlite_thread_guard(SQL->act_set);
                     sql->bind(1, web_act);
                     sql->bind(2, pLTI_ID);
                     sql->exec();
-                })->wait();
+                });
+
+                JobQueue->post(update).wait();
             }
         }
     }
 
     // update edge counter
-    JobQueue->post([&]() {
+    std::packaged_task<void()> updateEdgeCounter([this,new_edges,pLTI_ID] {
         auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_set);
         sql->bind(1, new_edges);
         sql->bind(2, pLTI_ID);
         sql->exec();
-    })->wait();
+    });
+
+    JobQueue->post(updateEdgeCounter).wait();
 
     // now we can safely activate the lti
     if (activate)
@@ -356,7 +374,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     for (std::set< std::pair< smem_hash_id, smem_hash_id > >::iterator p = const_new.begin(); p != const_new.end(); p++)
     {
         // insert
-        JobQueue->post([=]() {
+        std::packaged_task<void()> insert([this,pLTI_ID,p,web_act] {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
             auto sql = sqlite_thread_guard(SQL->web_add);
 
@@ -367,16 +385,23 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             sql->bind(5, web_act);
 
             sql->exec();
-        })->wait();
+        });
+
+        JobQueue->post(insert).wait();
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        JobQueue->post([=]() {
-            auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
-            sql->bind(1, p->first);
-            sql->bind(2, p->second);
+        std::packaged_task<void()> check_and_add([this,p] {
+            bool result;
 
-            if (!sql->executeStep())
+            {
+                auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
+                sql->bind(1, p->first);
+                sql->bind(2, p->second);
+                result = sql->executeStep();
+            }
+
+            if (!result)
             {
                 auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_add);
                 sql->bind(1, p->first);
@@ -392,14 +417,16 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 sql->bind(3, p->second);
                 sql->exec();
             }
-        })->wait();
+        });
+
+        JobQueue->post(check_and_add).wait();
     }
 
     // attr/lti pairs
     for (std::set< std::pair< smem_hash_id, uint64_t > >::iterator p = lti_new.begin(); p != lti_new.end(); p++)
     {
         // insert
-        JobQueue->post([=]() {
+        std::packaged_task<void()> add([this,pLTI_ID,p,web_act] {
             // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
             auto sql = sqlite_thread_guard(SQL->web_add);
             sql->bind(1, pLTI_ID);
@@ -408,15 +435,23 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             sql->bind(4, p->second);
             sql->bind(5, web_act);
             sql->exec();
-        })->wait();
+        });
+
+        JobQueue->post(add).wait();
 
         // update counter
-        JobQueue->post([=]() {
-            // check if counter exists (and add if does not): attribute_s_id, val
-            auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_check);
-            sql->bind(1, p->first);
-            sql->bind(2, p->second);
-            if (!sql->executeStep())
+        // check if counter exists (and add if does not): attribute_s_id, val
+        std::packaged_task<void()> check_and_add([this,p] {
+            bool result;
+
+            {
+                auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_check);
+                sql->bind(1, p->first);
+                sql->bind(2, p->second);
+                result = sql->executeStep();
+            }
+
+            if (!result)
             {
                 auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_add);
                 sql->bind(1, p->first);
@@ -432,17 +467,24 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 sql->bind(3, p->second);
                 sql->exec();
             }
-        })->wait();
+        });
+
+        JobQueue->post(check_and_add).wait();
     }
 
     // update attribute count
     for (std::set< smem_hash_id >::iterator a = attr_new.begin(); a != attr_new.end(); a++)
     {
         // check if counter exists (and add if does not): attribute_s_id
-        JobQueue->post([=]() {
-            auto sql = sqlite_thread_guard(SQL->attribute_frequency_check);
-            sql->bind(1, *a);
-            if (!sql->executeStep())
+        std::packaged_task<void()> check_and_add([this,a] {
+            bool result;
+            {
+                auto sql = sqlite_thread_guard(SQL->attribute_frequency_check);
+                sql->bind(1, *a);
+                result = sql->executeStep();
+            }
+
+            if (!result)
             {
                 auto sql = sqlite_thread_guard(SQL->attribute_frequency_add);
                 sql->bind(1, *a);
@@ -456,7 +498,9 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 sql->bind(2, *a);
                 sql->exec();
             }
-        })->wait();
+        });
+
+        JobQueue->post(check_and_add).wait();
     }
 
     // update local edge count

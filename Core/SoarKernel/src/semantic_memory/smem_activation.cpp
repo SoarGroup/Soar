@@ -22,26 +22,28 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     uint64_t t_k;
     uint64_t t_n = (time_now - activations_first);
 
+    std::packaged_task<uint64_t()> pt_getActivationsTotal([this,pLTI_ID]{
+        auto sql = sqlite_thread_guard(SQL->lti_access_get);
+
+        sql->bind(1, pLTI_ID);
+
+        if (!sql->executeStep())
+            throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+
+        return sql->getColumn(0).getUInt64();
+//        activations_first = sql->getColumn(2).getInt();
+    });
+
     if (n == 0)
-    {
-        JobQueue->post([&]() mutable {
-            auto sql = sqlite_thread_guard(SQL->lti_access_get);
+        n = JobQueue->post(pt_getActivationsTotal).get();
 
-            sql->bind(1, pLTI_ID);
-
-            if (!sql->executeStep())
-                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
-
-            n = sql->getColumn(0).getInt();
-            activations_first = sql->getColumn(2).getInt();
-        })->wait();
-    }
-
-    // get all history
-    JobQueue->post([&]() mutable {
+    std::packaged_task<std::tuple<uint64_t,double>()> pt_getAllHistory([this,pLTI_ID,time_now,d,n]{
         auto sql = sqlite_thread_guard(SQL->history_get);
 
         sql->bind(1, pLTI_ID);
+
+        uint64_t t_k = 0;
+        double sum = 0;
 
         if (sql->executeStep())
         {
@@ -54,7 +56,14 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
                            double(-d));
             }
         }
-    })->wait();
+
+        return std::make_tuple(t_k, sum);
+    });
+
+    // get all history
+    auto t = JobQueue->post(pt_getAllHistory).get();
+    t_k = std::get<0>(t);
+    sum = std::get<1>(t);
 
     // if available history was insufficient, approximate rest
     if (n > SMEM_ACT_HISTORY_ENTRIES)
@@ -97,7 +106,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
                     if (time_diff > 0)
                     {
-                        JobQueue->post([=]() {
+                        std::packaged_task<void()> pt_activateLTIs([this,time_diff]{
                             auto sql = sqlite_thread_guard(SQL->lti_get_t);
 
                             sql->bind(1, time_diff);
@@ -110,7 +119,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
                             for (uint64_t lti : ltis)
                                 lti_activate(lti, false);
-                        })->wait();
+                        });
+
+                        JobQueue->post(pt_activateLTIs).wait();
                     }
                 }
             }
@@ -129,48 +140,58 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     uint64_t prev_access_1 = 0;
 
     // get old (potentially useful below)
-    JobQueue->post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL->lti_access_get);
+    typedef std::tuple<uint64_t,uint64_t,uint64_t> prev_tuple;
+    std::packaged_task<prev_tuple()> prev([this,pLTI_ID,time_now,add_access]
+    {
+        prev_tuple result = std::make_tuple(0,0,0);
 
-        sql->bind(1, pLTI_ID);
+        {
+            auto sql = sqlite_thread_guard(SQL->lti_access_get);
 
-        if (!sql->executeStep())
-            throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
+            sql->bind(1, pLTI_ID);
 
-        prev_access_n = sql->getColumn(0).getUInt64();
-        prev_access_t = sql->getColumn(1).getUInt64();
-        prev_access_1 = sql->getColumn(2).getUInt64();
+            if (!sql->executeStep())
+                throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
-        // DID: SQLITE_LOCKED
-        //
-        // You will get SQLITE_LOCKED if you do not include this.
-        // There is a read-write conflict between this thread
-        // and the thread the add_access job is called on
-        // which will be unable to be resolved until this
-        // statement goes out of scope, except that it won't
-        // because it is waiting on that job to finish.  Aka
-        // you get an infinite loop if you try to use
-        // unlock_notify and you get SQLITE_LOCKED if you don't.
-        //
-        // TL;DR: reset any statements before writes to prevent
-        // read-write, write-read, write-write conflicts.
-        sql->reset();
+            result = std::make_tuple(sql->getColumn(0).getUInt64(), /* prev_access_n */
+                                     sql->getColumn(1).getUInt64(), /* prev_access_t */
+                                     sql->getColumn(2).getUInt64()  /* prev_access_1 */);
 
-        // set new
+            // DID: SQLITE_LOCKED
+            //
+            // You will get SQLITE_LOCKED if you do not include this.
+            // There is a read-write conflict between this thread
+            // and the thread the add_access job is called on
+            // which will be unable to be resolved until this
+            // statement goes out of scope, except that it won't
+            // because it is waiting on that job to finish.  Aka
+            // you get an infinite loop if you try to use
+            // unlock_notify and you get SQLITE_LOCKED if you don't.
+            //
+            // TL;DR: reset any statements before writes to prevent
+            // read-write, write-read, write-write conflicts.
+            //sql->reset();
+        }
+
         if (add_access)
         {
-            JobQueue->post([&]() {
-                auto sql = sqlite_thread_guard(SQL->lti_access_set);
+            auto sql = sqlite_thread_guard(SQL->lti_access_set);
 
-                sql->bind(1, prev_access_n + 1);
-                sql->bind(2, time_now);
-                sql->bind(3, ((prev_access_n == 0) ? (time_now) : (prev_access_1)));
-                sql->bind(4, pLTI_ID);
+            sql->bind(1, std::get<0>(result) + 1);
+            sql->bind(2, time_now);
+            sql->bind(3, ((std::get<0>(result) == 0) ? (time_now) : (std::get<2>(result))));
+            sql->bind(4, pLTI_ID);
 
-                sql->exec();
-            })->wait();
+            sql->exec();
         }
-    })->wait();
+
+        return result;
+    });
+
+    auto prev_t = JobQueue->post(prev).get();
+    prev_access_n = std::get<0>(prev_t);
+    prev_access_t = std::get<1>(prev_t);
+    prev_access_1 = std::get<2>(prev_t);
 
     // get new activation value (depends upon bias)
     double new_activation = 0.0;
@@ -189,14 +210,16 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                JobQueue->post([=]() {
+                std::packaged_task<void()> add([this,pLTI_ID,time_now] {
                     auto sql = sqlite_thread_guard(SQL->history_add);
 
                     sql->bind(1, pLTI_ID);
                     sql->bind(2, time_now);
 
                     sql->exec();
-                })->wait();
+                });
+
+                JobQueue->post(add).wait();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);;
@@ -205,14 +228,16 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         {
             if (add_access)
             {
-                JobQueue->post([=]() {
+                std::packaged_task<void()> push([this,pLTI_ID,time_now] {
                     auto sql = sqlite_thread_guard(SQL->history_push);
 
                     sql->bind(1, time_now);
                     sql->bind(2, pLTI_ID);
 
                     sql->exec();
-                })->wait();
+                });
+
+                JobQueue->post(push).wait();
             }
 
             new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
@@ -222,42 +247,48 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     // get number of augmentations (if not supplied)
     if (num_edges == SMEM_ACT_MAX)
     {
-        JobQueue->post([=,&num_edges]() mutable {
+        std::packaged_task<uint64_t()> edges([this,pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
 
             sql->bind(1, pLTI_ID);
 
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
-            
-            num_edges = sql->getColumn(0).getUInt64();
-        })->wait();
+
+            return sql->getColumn(0).getUInt64();
+        });
+
+        num_edges = JobQueue->post(edges).get();
     }
 
     // only if augmentation count is less than threshold do we associate with edges
     if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()))
     {
         // activation_value=? WHERE lti=?
-        JobQueue->post([=]() {
+        std::packaged_task<void()> set([this,new_activation,pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->act_set);
 
             sql->bind(1, new_activation);
             sql->bind(2, pLTI_ID);
 
             sql->exec();
-        })->wait();
+        });
+
+        JobQueue->post(set).wait();
     }
 
     // always associate activation with lti
     // activation_value=? WHERE lti=?
-    JobQueue->post([=]() {
+    std::packaged_task<void()> set([this,new_activation,pLTI_ID] {
         auto sql = sqlite_thread_guard(SQL->act_lti_set);
 
         sql->bind(1, new_activation);
         sql->bind(2, pLTI_ID);
 
         sql->exec();
-    })->wait();
+    });
+
+    JobQueue->post(set).wait();
 
     ////////////////////////////////////////////////////////////////////////////
     timers->act->stop();

@@ -364,127 +364,131 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
 
 smem_hash_id SMem_Manager::hash_add_type(byte symbol_type)
 {
-    smem_hash_id rowID = 0;
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<smem_hash_id()> add([this,symbol_type] {
         auto sql = sqlite_thread_guard(SQL->hash_add_type);
 
         sql->bind(1, symbol_type);
 
         sql->exec();
 
-        rowID = JobQueue->db.getLastInsertRowid();
-    })->wait();
+        return JobQueue->db.getLastInsertRowid();
+    });
 
-    return rowID;
+    return JobQueue->post(add).get();
 }
 
 smem_hash_id SMem_Manager::hash_int(int64_t val, bool add_on_fail)
 {
-    smem_hash_id return_val = NIL;
+    std::packaged_task<smem_hash_id()> hash([this,val,add_on_fail] {
+        uint64_t result = 0;
 
-    // search first
-    JobQueue->post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL->hash_get_int);
-
-        sql->bind(1, val);
-
-        if (sql->executeStep())
-            return_val = sql->getColumn(0).getUInt64();
-
-        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
-        sql->reset();
-
-        if (!return_val && add_on_fail)
+        // search first
         {
-            JobQueue->post([&]() mutable {
-                // type first
-                return_val = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
+            auto sql = sqlite_thread_guard(SQL->hash_get_int);
 
-                // then content
-                auto sql = sqlite_thread_guard(SQL->hash_add_int);
+            sql->bind(1, val);
 
-                sql->bind(1, return_val);
-                sql->bind(2, val);
+            if (sql->executeStep())
+                result = sql->getColumn(0).getUInt64();
 
-                sql->exec();
-            })->wait();
+            // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+            //sql->reset();
         }
-    })->wait();
 
-    return return_val;
+        if (!result && add_on_fail)
+        {
+            // type first
+            result = hash_add_type(INT_CONSTANT_SYMBOL_TYPE);
+
+            // then content
+            auto sql = sqlite_thread_guard(SQL->hash_add_int);
+
+            sql->bind(1, result);
+            sql->bind(2, val);
+
+            sql->exec();
+        }
+
+        return result;
+    });
+
+    return JobQueue->post(hash).get();
 }
 
 smem_hash_id SMem_Manager::hash_float(double val, bool add_on_fail)
 {
-    smem_hash_id return_val = NIL;
+    std::packaged_task<smem_hash_id()> hash([this,val,add_on_fail] {
+        uint64_t result = 0;
 
-    // search first
-    JobQueue->post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL->hash_get_float);
-
-        sql->bind(1, val);
-
-        if (sql->executeStep())
-            return_val = sql->getColumn(0).getUInt64();
-
-        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
-        sql->reset();
-
-        if (!return_val && add_on_fail)
+        // search first
         {
-            JobQueue->post([&]() mutable {
-                // type first
-                return_val = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
+            auto sql = sqlite_thread_guard(SQL->hash_get_float);
 
-                // then content
-                auto sql = sqlite_thread_guard(SQL->hash_add_float);
+            sql->bind(1, val);
 
-                sql->bind(1, return_val);
-                sql->bind(2, val);
+            if (sql->executeStep())
+                result = sql->getColumn(0).getUInt64();
 
-                sql->exec();
-            })->wait();
+            // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+            //sql->reset();
         }
-    })->wait();
 
-    return return_val;
+        if (!result && add_on_fail)
+        {
+            // type first
+            result = hash_add_type(FLOAT_CONSTANT_SYMBOL_TYPE);
+
+            // then content
+            auto sql = sqlite_thread_guard(SQL->hash_add_float);
+
+            sql->bind(1, result);
+            sql->bind(2, val);
+
+            sql->exec();
+        }
+        
+        return result;
+    });
+    
+    return JobQueue->post(hash).get();
 }
 
 smem_hash_id SMem_Manager::hash_str(char* val, bool add_on_fail)
 {
-    smem_hash_id return_val = NIL;
+    std::packaged_task<smem_hash_id()> hash([this,val,add_on_fail] {
+        uint64_t result = 0;
 
-    // search first
-    JobQueue->post([&]() mutable {
-        auto sql = sqlite_thread_guard(SQL->hash_get_str);
-
-        sql->bind(1, val);
-
-        if (sql->executeStep())
-            return_val = sql->getColumn(0).getUInt64();
-
-        // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
-        sql->reset();
-
-        if (!return_val && add_on_fail)
+        // search first
         {
-            JobQueue->post([&]() mutable {
-                // type first
-                return_val = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
+            auto sql = sqlite_thread_guard(SQL->hash_get_str);
 
-                // then content
-                auto sql = sqlite_thread_guard(SQL->hash_add_str);
+            sql->bind(1, val);
 
-                sql->bind(1, return_val);
-                sql->bind(2, val);
+            if (sql->executeStep())
+                result = sql->getColumn(0).getUInt64();
 
-                sql->exec();
-            })->wait();
+            // See DID: SQLITE_LOCKED (search for 'DID: SQLITE_LOCKED')
+            //sql->reset();
         }
-    })->wait();
 
-    return return_val;
+        if (!result && add_on_fail)
+        {
+            // type first
+            result = hash_add_type(STR_CONSTANT_SYMBOL_TYPE);
+
+            // then content
+            auto sql = sqlite_thread_guard(SQL->hash_add_str);
+
+            sql->bind(1, result);
+            sql->bind(2, val);
+
+            sql->exec();
+        }
+        
+        return result;
+    });
+    
+    return JobQueue->post(hash).get();
 }
 
 // returns a temporally unique integer representing a symbol constant
@@ -535,9 +539,7 @@ smem_hash_id SMem_Manager::hash(Symbol* sym, bool add_on_fail)
 
 int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
 {
-    int64_t return_val = NIL;
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<int64_t()> rhash([this,hash_value]{
         auto sql = sqlite_thread_guard(SQL->hash_rev_int);
 
         sql->bind(1, hash_value);
@@ -545,42 +547,42 @@ int64_t SMem_Manager::rhash__int(smem_hash_id hash_value)
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
-        return_val = sql->getColumn(0).getInt64();
-    })->wait();
+        return sql->getColumn(0).getInt64();
+    });
 
-    return return_val;
+    return JobQueue->post(rhash).get();
 }
 
 double SMem_Manager::rhash__float(smem_hash_id hash_value)
 {
-    double return_val = NIL;
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<double()> rhash([this,hash_value]{
         auto sql = sqlite_thread_guard(SQL->hash_rev_float);
 
         sql->bind(1, hash_value);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
-        
-        return_val = sql->getColumn(0).getDouble();
-    })->wait();
 
-    return return_val;
+        return sql->getColumn(0).getDouble();
+    });
+
+    return JobQueue->post(rhash).get();
 }
 
-void SMem_Manager::rhash__str(smem_hash_id hash_value, std::string& dest)
+std::string SMem_Manager::rhash__str(smem_hash_id hash_value)
 {
-    JobQueue->post([&]() mutable {
+    std::packaged_task<std::string()> rhash([this,hash_value]{
         auto sql = sqlite_thread_guard(SQL->hash_rev_str);
 
         sql->bind(1, hash_value);
 
         if (!sql->executeStep())
             throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
-        
-        dest = sql->getColumn(0).getString();
-    })->wait();
+
+        return sql->getColumn(0).getString();
+    });
+
+    return JobQueue->post(rhash).get();
 }
 
 Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
@@ -591,8 +593,7 @@ Symbol* SMem_Manager::rhash_(byte symbol_type, smem_hash_id hash_value)
     switch (symbol_type)
     {
         case STR_CONSTANT_SYMBOL_TYPE:
-            rhash__str(hash_value, dest);
-            return_val = thisAgent->symbolManager->make_str_constant(const_cast<char*>(dest.c_str()));
+            return_val = thisAgent->symbolManager->make_str_constant(rhash__str(hash_value).c_str());
             break;
 
         case INT_CONSTANT_SYMBOL_TYPE:
@@ -828,9 +829,7 @@ void SMem_Manager::init_db()
 // gets an SMem variable from the database
 bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable_value)
 {
-    bool result = false;
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<bool()> get([this,variable_id,variable_value] () mutable -> bool {
         auto sql = sqlite_thread_guard(SQL->var_get);
 
         sql->bind(1, variable_id);
@@ -838,37 +837,43 @@ bool SMem_Manager::variable_get(smem_variable_key variable_id, int64_t* variable
         if (sql->executeStep())
         {
             *variable_value = sql->getColumn(0).getInt64();
-            result = true;
+            return true;
         }
-    })->wait();
 
-    return result;
+        return false;
+    });
+
+    return JobQueue->post(get).get();
 }
 
 // sets an existing SMem variable in the database
 void SMem_Manager::variable_set(smem_variable_key variable_id, int64_t variable_value)
 {
-    JobQueue->post([=]() {
+    std::packaged_task<void()> set([this,variable_id,variable_value] {
         auto sql = sqlite_thread_guard(SQL->var_set);
 
         sql->bind(1, variable_value);
         sql->bind(2, variable_id);
 
         sql->exec();
-    })->wait();
+    });
+
+    JobQueue->post(set).wait();
 }
 
 // creates a new SMem variable in the database
 void SMem_Manager::variable_create(smem_variable_key variable_id, int64_t variable_value)
 {
-    JobQueue->post([&]() mutable {
+    std::packaged_task<void()> create([this,variable_id,variable_value] {
         auto sql = sqlite_thread_guard(SQL->var_create);
 
         sql->bind(1, variable_id);
         sql->bind(2, variable_value);
 
         sql->exec();
-    })->wait();
+    });
+
+    JobQueue->post(create).wait();
 }
 
 void SMem_Manager::store_globals_in_db()
@@ -1018,38 +1023,38 @@ void SMem_Manager::update_schema_one_to_two()
 
 uint64_t SMem_Manager::lti_exists(uint64_t pLTI_ID)
 {
-    uint64_t return_val = NIL;
+    std::packaged_task<uint64_t()> exists([this,pLTI_ID] () -> uint64_t {
+        auto sql = sqlite_thread_guard(SQL->lti_id_exists);
+
+        sql->bind(1, pLTI_ID);
+
+        if (sql->executeStep())
+            return sql->getColumn(0).getUInt64();
+
+        return NIL;
+    });
 
     if (connected())
-    {
-        JobQueue->post([&]() mutable {
-            auto sql = sqlite_thread_guard(SQL->lti_id_exists);
+        return JobQueue->post(exists).get();
 
-            sql->bind(1, pLTI_ID);
-
-            if (sql->executeStep())
-                return_val = sql->getColumn(0).getUInt64();
-        })->wait();
-    }
-
-    return return_val;
+    return NIL;
 }
 
 uint64_t SMem_Manager::get_max_lti_id()
 {
-    uint64_t return_val = 0;
+    std::packaged_task<uint64_t()> max_lti([this] () -> uint64_t {
+        auto sql = sqlite_thread_guard(SQL->lti_id_max);
+
+        if (sql->executeStep())
+            return sql->getColumn(0).getUInt64();
+
+        return 0;
+    });
 
     if (connected())
-    {
-        JobQueue->post([&]() mutable {
-            auto sql = sqlite_thread_guard(SQL->lti_id_max);
-
-            if (sql->executeStep())
-                return_val = sql->getColumn(0).getUInt64();
-        })->wait();
-    }
-
-    return return_val;
+        return JobQueue->post(max_lti).get();
+    
+    return 0;
 }
 
 uint64_t SMem_Manager::add_new_LTI()
@@ -1060,32 +1065,13 @@ uint64_t SMem_Manager::add_new_LTI()
         lti_id = ++lti_id_counter;
     }
 
-    // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-    JobQueue->post([=]() mutable {
-        auto sql = sqlite_thread_guard(SQL->lti_add);
-
-        sql->bind(1, lti_id);
-        sql->bind(2, 0);
-        sql->bind(3, 0);
-        sql->bind(4, 0);
-        sql->bind(5, 0);
-        sql->bind(6, 0);
-
-        sql->exec();
-
-    //    assert(lti_id_counter == smem_db->last_insert_rowid());
-    })->wait();
-
-    statistics->nodes->set_value(statistics->nodes->get_value() + 1);
-
-    return lti_id_counter;
+    return add_specific_LTI(lti_id);
 }
 
 uint64_t SMem_Manager::add_specific_LTI(uint64_t lti_id)
 {
     // add lti_id, total_augmentations, activation_value, activations_total, activations_last, activations_first
-
-    JobQueue->post([&]() mutable {
+    std::packaged_task<void()> add([this,lti_id] {
         auto sql = sqlite_thread_guard(SQL->lti_add);
 
         sql->bind(1, lti_id);
@@ -1098,7 +1084,9 @@ uint64_t SMem_Manager::add_specific_LTI(uint64_t lti_id)
         sql->exec();
 
         //    assert(lti_id_counter == smem_db->last_insert_rowid());
-    })->wait();
+    });
+
+    JobQueue->post(add).wait();
 
     statistics->nodes->set_value(statistics->nodes->get_value() + 1);
 

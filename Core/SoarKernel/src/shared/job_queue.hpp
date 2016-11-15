@@ -15,7 +15,8 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <list>
+#include <deque>
+#include <future>
 
 class job_queue
 {
@@ -23,12 +24,13 @@ public:
     class job;
 private:
     std::atomic<bool> killThreads;
+    std::vector<std::thread> threads;
+
 
     std::mutex mutex;
+    std::condition_variable condition;
 
-    std::vector<std::thread*> threads;
-
-    std::list<std::shared_ptr<job>> jobQueue;
+    std::deque<std::function<void()>> jobQueue;
 
 public:
     class job
@@ -51,10 +53,21 @@ public:
         std::exception_ptr exception;
     };
     
-    job_queue(std::function<void ()> threadInitializer = [](){});
+    explicit job_queue(std::function<void ()> threadInitializer = [](){});
     ~job_queue();
 
-    std::shared_ptr<job> post(std::function<void()> e, std::function<void()> c = []{});
+    template<class returnType>
+    std::future<returnType> post(std::packaged_task<returnType()>& pt)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+
+        auto rt = pt.get_future();
+        jobQueue.push_back([&pt]{pt();});
+
+        condition.notify_one();
+        
+        return rt;
+    }
 };
 
 #endif /* job_queue_hpp */

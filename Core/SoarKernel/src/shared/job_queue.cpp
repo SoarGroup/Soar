@@ -9,6 +9,11 @@
 #include "job_queue.hpp"
 
 #include <iostream>
+#include <functional>
+#include <type_traits>
+#include <utility>
+#include <thread>
+#include <future>
 
 job_queue::job::job() {}
 
@@ -54,72 +59,35 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
 
         while (!killThreads)
         {
-            std::shared_ptr<job> job;
+            std::function<void()> task;
 
-            try {
-                std::lock_guard<std::mutex> lock(mutex);
-
-                if (jobQueue.size() > 0)
-                {
-                    job = jobQueue.front();
-                    jobQueue.pop_front();
-                }
-            } catch(...) {}
-
-            if (job == nullptr)
             {
-                std::this_thread::yield();
-                continue;
+                std::unique_lock<std::mutex> lock(mutex);
+                if (jobQueue.empty())
+                {
+                    condition.wait(lock);
+                    continue;
+                }
+
+                task = std::move(jobQueue.front());
+                jobQueue.pop_front();
             }
 
-            try {
-                job->execution();
-            }
-            catch(...) {
-                job->exception = std::current_exception();
-            }
-
-            job->complete = true;
-            job->completionCallback();
+            task();
         }
     };
 
     for (unsigned i = 0;i < concurentThreadsSupported;++i)
-        threads.push_back(new std::thread(jobProcessor));
+        threads.emplace_back(jobProcessor);
 }
 
 job_queue::~job_queue()
 {
     killThreads = true;
+    condition.notify_all();
 
-    bool killed = false;
-    while (!killed)
-    {
-        std::this_thread::yield();
+    for (auto& t : threads)
+        t.join();
 
-        killed = true;
-        for (auto& threadPtr : threads)
-        {
-            if (!threadPtr->joinable())
-            {
-                killed = false;
-                break;
-            }
-        }
-    }
-
-    for (auto& threadPtr : threads)
-    {
-        threadPtr->join();
-    }
-}
-
-std::shared_ptr<job_queue::job> job_queue::post(std::function<void()> e, std::function<void()> c)
-{
-    std::lock_guard<std::mutex> lock(mutex);
-
-    std::shared_ptr<job> job(new class job(e, c));
-    jobQueue.push_back(job);
-    
-    return job;
+    threads.clear();
 }

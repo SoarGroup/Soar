@@ -641,12 +641,13 @@ void SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negquery,
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
-        auto job = SMem_Manager::JobQueue->post([&]() {
+        std::packaged_task<void()> processQuery([=] {
             process_query_SQL(weighted_cue, needFullSearch, prohibit, state, query, negquery, match_ids, number_to_retrieve, depth);
         });
 
+        auto task = JobQueue->post(processQuery);
         if (synchronous)
-            job->wait();
+            task.wait();
     }
 
     ////////////////////////////////////////////////////////////////////////////
