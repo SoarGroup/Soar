@@ -43,7 +43,7 @@ job_queue::job& job_queue::job::operator=(const job& b)
     return *this;
 }
 
-job_queue::job_queue(std::function<void ()> threadInitializer)
+job_queue::job_queue(std::function<void ()> threadInitializer, std::function<void ()> threadDestructor)
 : killThreads(false)
 {
     unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
@@ -53,7 +53,7 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
 
     threadInitializer();
 
-    std::function<void()> jobProcessor = [this,threadInitializer]()
+    std::function<void()> jobProcessor = [this,threadInitializer,threadDestructor]()
     {
         threadInitializer();
 
@@ -75,6 +75,8 @@ job_queue::job_queue(std::function<void ()> threadInitializer)
 
             task();
         }
+
+        threadDestructor();
     };
 
     for (unsigned i = 0;i < concurentThreadsSupported;++i)

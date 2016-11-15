@@ -55,11 +55,15 @@ const std::string SMem_Manager::memoryDatabasePath = "file:smem_soar?mode=memory
 const int SMem_Manager::sqlite3Flags =
     SQLite::OPEN_READWRITE      |
     SQLite::OPEN_URI            |
-    SQLite::OPEN_NOMUTEX;
+    SQLite::OPEN_NOMUTEX        |
+    SQLite::OPEN_CREATE;
 const int SMem_Manager::sqlite3Timeout = 1000;
 
 void SMem_Manager::recreateDB(std::string db_path)
 {
+    if (db_path != memoryDatabasePath)
+        db_path = "file:" + db_path + "?cache=shared";
+
     DB = std::make_shared<SQLite::Database>(db_path, SMem_Manager::sqlite3Flags, SMem_Manager::sqlite3Timeout);
     JobQueue = std::make_shared<sqlite_job_queue>(db_path);
 }

@@ -124,6 +124,8 @@ public:
                    const int          aBusyTimeoutMs  = 0,
                    const std::string& aVfs            = "");
 
+    void disconnect();
+
     /**
      * @brief Move semantics for Database
      *

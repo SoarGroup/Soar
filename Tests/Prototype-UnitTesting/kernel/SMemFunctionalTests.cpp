@@ -475,7 +475,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	agent->ExecuteCommandLine("smem --set append-database on");
 	agent->ExecuteCommandLine("smem --init");
 
-	std::string actualResult = agent->ExecuteCommandLine("print @");
+	std::string actualResult = agent->ExecuteCommandLine("print @1");
 
 	std::string expectedResult = "(@1 ^complete true ^factor @2 ^number 2 [+0.000])\n(@2 ^multiplicity 1 ^value 2 [+0.000])\n(@3 ^complete true ^factor @4 ^number 3 [+0.000])\n(@4 ^multiplicity 1 ^value 3 [+0.000])\n(@5 ^complete true ^factor @6 ^number 4 [+0.000])\n(@6 ^multiplicity 2 ^value 2 [+0.000])\n";
 

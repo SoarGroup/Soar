@@ -53,7 +53,7 @@ public:
         std::exception_ptr exception;
     };
     
-    explicit job_queue(std::function<void ()> threadInitializer = [](){});
+    explicit job_queue(std::function<void ()> threadInitializer = [](){}, std::function<void ()> threadDestructor = [](){});
     ~job_queue();
 
     template<class returnType>

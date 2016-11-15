@@ -106,6 +106,9 @@ void Database::reconnect(const std::string& aFilename,
                          const int          aBusyTimeoutMs /* = 0 */,
                          const std::string& aVfs           /* = "" */)
 {
+    if (mpSQLite != nullptr)
+        disconnect();
+
     mpSQLite = nullptr;
     mFilename = aFilename;
 
@@ -142,9 +145,11 @@ Database& Database::operator=(Database&& other)
     return *this;
 }
 
-// Close the SQLite database connection.
-Database::~Database() noexcept // nothrow
+void Database::disconnect()
 {
+    if (mpSQLite == nullptr)
+        return;
+
     const int ret = sqlite3_close(mpSQLite);
 
     // Avoid unreferenced variable warning when build in release mode
@@ -153,6 +158,24 @@ Database::~Database() noexcept // nothrow
     // Only case of error is SQLITE_BUSY: "database is locked" (some statements are not finalized)
     // Never throw an exception in a destructor :
     SQLITECPP_ASSERT(SQLITE_OK == ret, "database is locked");  // See SQLITECPP_ENABLE_ASSERT_HANDLER
+    mpSQLite = nullptr;
+}
+
+// Close the SQLite database connection.
+Database::~Database() noexcept // nothrow
+{
+    if (mpSQLite == nullptr)
+        return;
+
+    const int ret = sqlite3_close(mpSQLite);
+
+    // Avoid unreferenced variable warning when build in release mode
+    (void) ret;
+
+    // Only case of error is SQLITE_BUSY: "database is locked" (some statements are not finalized)
+    // Never throw an exception in a destructor :
+    SQLITECPP_ASSERT(SQLITE_OK == ret, "database is locked");  // See SQLITECPP_ENABLE_ASSERT_HANDLER
+    mpSQLite = nullptr;
 }
 
 /**

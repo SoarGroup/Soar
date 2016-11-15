@@ -139,7 +139,7 @@ void smem_path_param::set_value(const char* new_value)
     // If the database is on file, make sure the database contents use the current schema
     // If it does not, switch to memory-based database
 
-    if (strcmp(db_path, ":memory:")) // Only worry about database version if writing to disk
+    if (SMem_Manager::memoryDatabasePath == db_path) // Only worry about database version if writing to disk
     {
         std::string schema_version;
         if (thisAgent->SMem->DB->containsData())
