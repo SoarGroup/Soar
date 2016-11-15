@@ -207,7 +207,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
-    dprint_header(DT_REORDERER, PrintAfter, "Final action list:\n%2", *action_list);
+    dprint_header(DT_REORDERER, PrintAfter, "Reordering %s.  Final action list:\n%2", result_flag ? "succeeded" : "failed", *action_list);
     return result_flag;
 }
 
@@ -655,7 +655,8 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint_noprefix(DT_REORDERER, "Counterparts %9", conds_list);
+    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
+    dprint_noprefix(DT_REORDERER, "%9", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     dprint_header(DT_REORDERER, PrintAfter, "= end restore saved tests =\n");
@@ -940,10 +941,13 @@ cons* collect_root_variables(agent* thisAgent,
     }
 
     cons* returnList = NULL;
+    dprint(DT_REORDERER, "Found the following root symbols:  ");
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
+        dprint_noprefix(DT_REORDERER, "%y ", (*it)->sym);
         push(thisAgent, (*it)->sym, returnList);
     }
+    dprint_noprefix(DT_REORDERER, "\n");
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
     return returnList;
 }

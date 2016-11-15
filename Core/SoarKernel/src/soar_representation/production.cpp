@@ -362,6 +362,13 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
+    dprint_header(DT_REORDERER, PrintBefore, "Reordering and validating:\n");
+    dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
+    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
+    dprint_noprefix(DT_REORDERER, "%9", *lhs_top);
+    dprint_noprefix(DT_REORDERER, "Actions:\n");
+    dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
+
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {
         /* If there are problems on the LHS, we need the ungrounded_syms
