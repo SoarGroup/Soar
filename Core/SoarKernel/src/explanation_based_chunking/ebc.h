@@ -19,7 +19,7 @@
 #include <cstdlib>
 
 /* This can be used to turn off chunking dprints except for a particular chunk */
-#define DEBUG_ONLY_CHUNK_ID 13
+//#define DEBUG_ONLY_CHUNK_ID 13
 
 tc_number get_new_tc_number(agent* thisAgent);
 

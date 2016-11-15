@@ -2444,7 +2444,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
 
     thisAgent->name_of_production_being_reordered = name->sc->name;
-    if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true))
+    if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true, NULL, NULL))
     {
         abort_parse_production(thisAgent, name, &documentation, &lhs, &rhs);
         return NIL;

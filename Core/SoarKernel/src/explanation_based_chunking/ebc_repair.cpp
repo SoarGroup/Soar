@@ -464,7 +464,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     {
         matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
 
         /* Fix m_inst's bottom and top pointers to match re-ordered variablized conditions*/
@@ -484,7 +484,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom, unconnected_syms, false, false))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
@@ -508,7 +508,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     {
         matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS], ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]);
 
         if (m_failure_type != ebc_success)
@@ -526,7 +526,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                 unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom, unconnected_syms, false, false))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);

@@ -1,0 +1,64 @@
+# Tests variable name conflation that can occur during bottom-up chunking.
+
+srand 23
+chunk only
+
+sp {init*state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^attr1 foo ^attr2 bar)
+}
+
+sp {turn-learning-on
+(state <s> ^superstate.superstate nil)
+-->
+    (force-learn <s>)
+    (<s> ^name learn-state)
+}
+
+sp {elab-state-3
+(state <s> ^superstate.superstate.superstate nil)
+-->
+    (<s> ^name just-state)
+}
+
+sp {make-justification-level3
+    (state <s> ^name just-state
+               ^superstate <ss>)
+    (<ss> ^superstate <ts>)
+    (<ts> {<< attr1 attr2 >> <attr>} <a>)
+    -->
+    (<ss> ^<attr> <a> +)
+}
+
+sp {make-chunk-apply-level2
+    (state <s> ^name learn-state
+               ^superstate <ts>
+               ^attr1 <x>
+               ^attr2 <y>
+               ^operator)
+    -->
+    (<ts> ^top-resulta <y>
+          ^top-resultb <x>)
+}
+
+sp {make-justification-level3
+(state <s>  ^superstate <ss>)
+    (<ts> ^superstate nil
+          ^attr2 <y>)
+    (<ss> ^operator <o1>
+          ^superstate <ts>)
+    (<o1> ^name <x>
+          ^aug <y>)
+-->
+    (<ss> ^result3a <x>
+          ^result3b <y>)
+}
+
+sp {propose*stop
+   (state <s> ^top-resulta <a> 
+              ^superstate nil)
+-->
+#    (success)
+    (interrupt)
+}
