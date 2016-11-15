@@ -86,9 +86,6 @@ class Output_Manager
         OM_Parameters*                            m_params;
         OM_DB*                                    m_db;
 
-        /* -- Array for each trace output mode.  Contains prefix strings and whether enabled -- */
-        trace_mode_info mode_info[num_trace_modes];
-
         /* -- Global toggles for database, standard out -- */
         bool db_mode, stdout_mode;
 
@@ -124,11 +121,18 @@ class Output_Manager
 
     public:
 
+        /* -- Array for each trace output mode.  Contains prefix strings and whether enabled -- */
+        trace_mode_info mode_info[num_trace_modes], saved_mode_info[num_trace_modes];
+
         uint64_t settings[num_output_sysparams];
 
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
+        void copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes]);
+        void cache_output_modes();
+        void restore_output_modes();
+        void print_output_modes(trace_mode_info mode_info_to_print[num_trace_modes]);
         void clear_output_modes();
 
         bool is_trace_enabled(TraceMode mode) { return mode_info[mode].enabled; }

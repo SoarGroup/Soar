@@ -294,19 +294,22 @@ std::string get_stacktrace(const char* prefix)
 void debug_trace_off()
 {
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
-    Output_Manager::Get_OM().set_output_params_global(false);
+//    Output_Manager::Get_OM().cache_output_modes();
+//    Output_Manager::Get_OM().set_output_params_global(false);
     Output_Manager::Get_OM().clear_output_modes();
 
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
-        thisAgent->output_settings->set_output_params_agent(false);
+        thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
+//        thisAgent->output_settings->set_output_params_agent(false);
     }
 }
 
 void debug_trace_on()
 {
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+    Output_Manager::Get_OM().restore_output_modes();
     Output_Manager::Get_OM().set_output_params_global(true);
     Output_Manager::Get_OM().set_output_mode(DT_DEBUG, true);
 
@@ -314,6 +317,7 @@ void debug_trace_on()
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(true);
+        thisAgent->outputManager->printa(thisAgent, "Debug trace settings restored.\n");
     }
 }
 

@@ -18,6 +18,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "decide.h"
+#include "debug.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
@@ -921,7 +922,15 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID for this chunk --- */
     set_new_chunk_id();
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Only chunk id.\n", m_chunk_new_i_id, m_inst->prod_name);
+#ifdef DEBUG_ONLY_CHUNK_ID
+        if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+        {
+            dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_new_i_id);
+            debug_trace_on();
+        }
+#endif
+
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
 //    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
 //    if (m_chunk_new_i_id == 9)
 //    {
@@ -1161,6 +1170,13 @@ void Explanation_Based_Chunker::clean_up ()
     clear_o_id_substitution_map();
     clear_attachment_map();
     clear_singletons();
+    #ifdef DEBUG_ONLY_CHUNK_ID
+            if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+            {
+                dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_new_i_id);
+                debug_trace_off();
+            }
+    #endif
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     local_timer.stop();
