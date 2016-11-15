@@ -909,34 +909,6 @@ Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
     }
 }
 
-void print_assertion(agent* thisAgent, ms_change* msc)
-{
-
-    if (msc->p_node)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion: %y", msc->p_node->b.p.prod->name);
-    }
-    else
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion exists but has no p_node");
-    }
-}
-
-void print_retraction(agent* thisAgent, ms_change* msc)
-{
-
-    if (msc->p_node)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction: %y", msc->p_node->b.p.prod->name);
-    }
-    else
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction exists but has no p_node");
-    }
-}
-
-
-
 bool any_assertions_or_retractions_ready(agent* thisAgent)
 {
 
@@ -1675,6 +1647,8 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
             _epmem_process_ids(thisAgent);
         }
     }
+
+    dprint(DT_RETE_PNODE_ADD, "Removing WME from RETE: %w\n", w);
 
     /* --- remove w from all_wmes_in_rete --- */
     remove_from_dll(thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
@@ -6503,6 +6477,8 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         if ((msc->tok == tok) && (msc->w == w))
         {
+            dprint(DT_RETE_PNODE_ADD, "Removing tentative assertion: %y", node->b.p.prod->name);
+
             /* --- match found in tentative_assertions, so remove it --- */
             remove_from_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
 
@@ -6519,6 +6495,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
+                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_o_assertions\n");
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
@@ -6527,13 +6504,13 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
+                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_i_assertions\n");
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
             }
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-            dprint(DT_RETE_PNODE_ADD, "Removing tentative assertion: %y", node->b.p.prod->name);
             activation_exit_sanity_check();
             return;
         }
