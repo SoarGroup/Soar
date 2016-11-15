@@ -391,9 +391,9 @@ void chunk_record::print_for_wme_trace()
                         lInstRecord->production_name);
                 } else if (lCond->type == POSITIVE_CONDITION)
                 {
-                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space\n" : "%-Soar Architecture\n");
                 } else {
-                    outputManager->printa_sf(thisAgent, "%-N/A%-");
+                    outputManager->printa_sf(thisAgent, "%-N/A\n");
                 }
             } else {
                 outputManager->printa(thisAgent, "\n");
