@@ -25,7 +25,8 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     name                        = NULL;
     chunkID                     = pChunkID;
     chunkInstantiation          = NULL;
-    original_production         = NULL;
+    chunkInstantiationID        = 0;
+    original_productionID       = 0;
     excised_production          = NULL;
     time_formed                 = 0;
     match_level                 = 0;
@@ -88,11 +89,12 @@ void chunk_record::excise_chunk_record()
 
 chunk_record::~chunk_record()
 {
-    dprint(DT_EXPLAIN, "Deleting chunk record c%u\n", chunkID);
+    dprint(DT_EXPLAIN, "Deleting chunk record %y (c %u)\n", name, chunkID);
 //    production_remove_ref(thisAgent, original_production);
-    if (original_production)
+    production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
+    if (originalProduction)
     {
-        original_production->save_for_justification_explanation = false;
+        originalProduction->save_for_justification_explanation = false;
     }
     if (name) thisAgent->symbolManager->symbol_remove_ref(&name);
     if (conditions) delete conditions;
@@ -109,12 +111,13 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 {
     name = pProduction->name;
     thisAgent->symbolManager->symbol_add_ref(name);
-    original_production = pProduction;
-    original_production->save_for_justification_explanation = true;
+    original_productionID = thisAgent->explanationMemory->add_production_id_if_necessary(pProduction);
+    pProduction->save_for_justification_explanation = true;
 
     time_formed = thisAgent->d_cycle_count;
     match_level = pChunkInstantiation->match_goal_level;
     chunkInstantiation = pChunkInstantiation;
+    chunkInstantiationID = pChunkInstantiation->i_id;
 
     conditions         = new condition_record_list;
     actions            = new action_record_list;
@@ -197,7 +200,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
     identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
-    identity_analysis->generate_identity_sets(chunkInstantiation->i_id, lhs);
+    identity_analysis->generate_identity_sets(chunkInstantiationID, lhs);
     /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
      * will have been added already.  Identities sets that don't appear in the chunk will be generated
      * when mapping originals to sets */
@@ -299,7 +302,7 @@ void chunk_record::print_for_explanation_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->condition_tests.id, &removed_goal_test, &removed_impasse_test);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
@@ -318,9 +321,11 @@ void chunk_record::print_for_explanation_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiation->i_id);
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
+    outputManager->printa(thisAgent, "\n");
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiationID);
     thisAgent->explanationMemory->print_footer(true);
 }
 
@@ -386,9 +391,9 @@ void chunk_record::print_for_wme_trace()
                         lInstRecord->production_name);
                 } else if (lCond->type == POSITIVE_CONDITION)
                 {
-                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space\n" : "%-Soar Architecture\n");
                 } else {
-                    outputManager->printa_sf(thisAgent, "%-N/A%-");
+                    outputManager->printa_sf(thisAgent, "%-N/A\n");
                 }
             } else {
                 outputManager->printa(thisAgent, "\n");
@@ -402,7 +407,7 @@ void chunk_record::print_for_wme_trace()
     outputManager->printa(thisAgent, "      -->\n");
 
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
-    thisAgent->explanationMemory->print_chunk_actions(actions, original_production, excised_production);
+    thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n");
     thisAgent->explanationMemory->print_footer(true);
 }
@@ -459,7 +464,7 @@ void chunk_record::visualize()
             visualizer->viz_endl();
         }
         visualizer->viz_seperator();
-        action_record::viz_action_list(thisAgent, actions, original_production);
+        action_record::viz_action_list(thisAgent, actions, thisAgent->explanationMemory->get_production(original_productionID));
         visualizer->viz_object_end(viz_chunk_record);
     }
 

@@ -57,7 +57,8 @@ class chunk_record
         Symbol*                 name;
         uint64_t                chunkID;
         instantiation*          chunkInstantiation;
-        production*             original_production;
+        uint64_t                chunkInstantiationID;
+        uint64_t                original_productionID;
         production_record*      excised_production;
         uint64_t                time_formed;
         goal_stack_level        match_level;

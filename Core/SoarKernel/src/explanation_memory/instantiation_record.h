@@ -46,10 +46,10 @@ class instantiation_record
 
     private:
 
-        agent* thisAgent;
+        agent*                  thisAgent;
         uint64_t                instantiationID;
         Symbol*                 production_name;
-        production*             original_production;
+        uint64_t                original_productionID;
         production_record*      excised_production;
         uint64_t                creating_chunk;
 

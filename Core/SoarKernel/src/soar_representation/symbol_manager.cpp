@@ -967,20 +967,23 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (identifier_hash_table->count != 0)
         {
-            dprint(DT_DEBUG, "%d short-term identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+//            dprint(DT_DEBUG, "%d short-term identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
             do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
             thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
-//            assert(false);
+            /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
+             * unit tests are leaking id's after soar init */
+            //std::cout << "Identifier refcount leak.\n";
         }
     }
     else if (lHashTable == MP_float_constant)
     {
         if (float_constant_hash_table->count != 0)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d floating numbers identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            thisAgent->outputManager->printa_sf(thisAgent, "%d floating numbers identifiers still exist.  Forcing deletion.\n", float_constant_hash_table->count);
             //print_internal_symbols();
             free_hash_table(thisAgent, float_constant_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_float_constant);
@@ -992,7 +995,7 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (int_constant_hash_table->count != 0)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d integer identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            thisAgent->outputManager->printa_sf(thisAgent, "%d integer identifiers still exist.  Forcing deletion.\n", int_constant_hash_table->count);
             //print_internal_symbols();
             free_hash_table(thisAgent, int_constant_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_int_constant);
@@ -1004,7 +1007,7 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (str_constant_hash_table->count != 0)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d string identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            thisAgent->outputManager->printa_sf(thisAgent, "%d string identifiers still exist.  Forcing deletion.\n", str_constant_hash_table->count);
             //print_internal_symbols();
             free_hash_table(thisAgent, str_constant_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_str_constant);
@@ -1016,7 +1019,7 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (variable_hash_table->count != 0)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d variable identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            thisAgent->outputManager->printa_sf(thisAgent, "%d variable identifiers still exist.  Forcing deletion.\n", variable_hash_table->count);
             //print_internal_symbols();
             free_hash_table(thisAgent, variable_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_variable);

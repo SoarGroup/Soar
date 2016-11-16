@@ -86,9 +86,6 @@ class Output_Manager
         OM_Parameters*                            m_params;
         OM_DB*                                    m_db;
 
-        /* -- Array for each trace output mode.  Contains prefix strings and whether enabled -- */
-        trace_mode_info mode_info[num_trace_modes];
-
         /* -- Global toggles for database, standard out -- */
         bool db_mode, stdout_mode;
 
@@ -107,6 +104,7 @@ class Output_Manager
         void condition_to_string(agent* thisAgent, condition* cond, std::string &destString);
         void condition_cons_to_string(agent* thisAgent, cons* c, std::string &destString);
         void condition_list_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
+        void condition_list_counterparts_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
         void cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
         void cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, std::string &destString);
         void cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
@@ -123,11 +121,18 @@ class Output_Manager
 
     public:
 
+        /* -- Array for each trace output mode.  Contains prefix strings and whether enabled -- */
+        trace_mode_info mode_info[num_trace_modes], saved_mode_info[num_trace_modes];
+
         uint64_t settings[num_output_sysparams];
 
         void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
+        void copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes]);
+        void cache_output_modes();
+        void restore_output_modes();
+        void print_output_modes(trace_mode_info mode_info_to_print[num_trace_modes]);
         void clear_output_modes();
 
         bool is_trace_enabled(TraceMode mode) { return mode_info[mode].enabled; }
@@ -263,12 +268,14 @@ class Output_Manager
 };
 
 inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
-inline const char* capitalizYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
+inline const char* capitalizeYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
 
 inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {
     std::string return_string = left_string;
-    return_string.append(pWidth - strlen(left_string) - right_string.length(), ' ');
+    int sepLength = pWidth - strlen(left_string) - right_string.length();
+    if (sepLength <= 0) sepLength = 1;
+    return_string.append(sepLength, ' ');
     return_string += right_string;
     return return_string;
 }
@@ -303,8 +310,8 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %4   condition action lists (2 args: cond, action)
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
- *
+ *       %7   instantiation
  *       %8   Working Memory
- *
+ *       %9   condition lists's counterparts
    ------------------------------------*/
 #endif /* OUTPUT_MANAGER_H_ */

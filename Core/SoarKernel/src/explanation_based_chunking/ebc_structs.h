@@ -12,21 +12,6 @@
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
 #define LOG_2_CHUNK_COND_HASH_TABLE_SIZE 10
 
-typedef struct constraint_struct
-{
-    test eq_test;
-    test constraint_test;
-    constraint_struct(test new_eq, test new_constraint) : eq_test(new_eq), constraint_test(new_constraint) {}
-} constraint;
-
-typedef struct attachment_struct
-{
-        condition* cond;
-        WME_Field field;
-        attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
-
-} attachment_point;
-
 typedef struct chunk_cond_struct
 {
     condition* cond;                /* points to the original condition */

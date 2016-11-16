@@ -36,7 +36,7 @@ sp {apply*query*success
    (<ss> ^result <res>)
    (write (crlf) |Query successful: | <res> )
 }
-# This should not produce a chunk
+
 sp {apply*query*success2
    (state <s> ^operator.name query-lti
               ^query-result <res>
@@ -44,4 +44,5 @@ sp {apply*query*success2
 -->
    (<res> ^foo bar)
    (write (crlf) |Augmentation result successful: | <res> )
+   (interrupt)
 }

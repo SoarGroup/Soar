@@ -149,8 +149,8 @@ int compare_attr2(const void* e1, const void* e2)
     p2 = (wme**) e2;
 
     // passing null thisAgent is OK as long as dest is guaranteed != 0
-    (*p1)->attr->to_string(true, s1, output_string_size + 10);
-    (*p2)->attr->to_string(true, s2, output_string_size + 10);
+    (*p1)->attr->to_string(true, false, s1, output_string_size + 10);
+    (*p2)->attr->to_string(true, false, s2, output_string_size + 10);
 
     return strcmp(s1, s2);
 }

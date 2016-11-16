@@ -142,7 +142,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
-    mode_info[DT_REPAIR].prefix =                       strdup("Grnd LTI| ");
+    mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
     mode_info[DT_EXPLAIN_PATHS].prefix =                strdup("EIDPaths| ");
     mode_info[DT_EXPLAIN_ADD_INST].prefix =             strdup("EAddInst| ");
@@ -153,9 +153,9 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
-    mode_info[DT_UNUSED1].prefix =                      strdup("| ");
-    mode_info[DT_UNUSED2].prefix =                      strdup("| ");
-    mode_info[DT_UNUSED3].prefix =                      strdup("| ");
+    mode_info[DT_DEALLOCATE_INSTANTIATION].prefix =     strdup("Del Inst| ");
+    mode_info[DT_EXPLAIN_CACHE].prefix =                strdup("ExpCache| ");
+    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
     mode_info[DT_UNUSED4].prefix =                      strdup("| ");
 
 #ifndef SOAR_RELEASE_VERSION
@@ -294,19 +294,22 @@ std::string get_stacktrace(const char* prefix)
 void debug_trace_off()
 {
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
-    Output_Manager::Get_OM().set_output_params_global(false);
+//    Output_Manager::Get_OM().cache_output_modes();
+//    Output_Manager::Get_OM().set_output_params_global(false);
     Output_Manager::Get_OM().clear_output_modes();
 
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
-        thisAgent->output_settings->set_output_params_agent(false);
+        thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
+//        thisAgent->output_settings->set_output_params_agent(false);
     }
 }
 
 void debug_trace_on()
 {
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+    Output_Manager::Get_OM().restore_output_modes();
     Output_Manager::Get_OM().set_output_params_global(true);
     Output_Manager::Get_OM().set_output_mode(DT_DEBUG, true);
 
@@ -314,6 +317,7 @@ void debug_trace_on()
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(true);
+        thisAgent->outputManager->printa(thisAgent, "Debug trace settings restored.\n");
     }
 }
 
@@ -363,12 +367,11 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = thisAgent->symbolManager->find_identifier('V', 30);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('L', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "%y found.\n", sym);
-                condition* dummy = make_condition(thisAgent);
-
+                dprint(DT_DEBUG, "%y found with refcount of %u.\n", sym, sym->reference_count);
+//                condition* dummy = make_condition(thisAgent);
 //                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");

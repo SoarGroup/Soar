@@ -42,9 +42,10 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
 
     /* Create data structures used for EBC */
-    o_id_to_var_map = new id_to_sym_map();
-    instantiation_identities = new inst_to_id_map();
+    identity_to_var_map = new id_to_sym_id_map();
+    instantiation_identities = new sym_to_id_map();
     id_to_rule_sym_debug_map = new id_to_sym_map();
+    identities_to_clean_up = new id_set();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
@@ -70,7 +71,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 Explanation_Based_Chunker::~Explanation_Based_Chunker()
 {
     clear_data();
-    delete o_id_to_var_map;
+    delete identity_to_var_map;
     delete constraints;
     delete attachment_points;
     delete cond_merge_map;
@@ -90,6 +91,7 @@ void Explanation_Based_Chunker::reinit()
     clear_data();
 
     inst_id_counter                     = 0;
+    prod_id_counter                     = 0;
     m_chunk_new_i_id                    = 0;
     ovar_id_counter                     = 0;
     backtrace_number                    = 0;

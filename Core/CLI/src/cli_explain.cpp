@@ -55,7 +55,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
         {
             if (!pArg2)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "The explainer is%scurrently recording all rules formed.\n", thisAgent->explanationMemory->enabled() ? " " : " not ");
+                thisAgent->outputManager->printa_sf(thisAgent, "The explainer is%scurrently recording all rules formed.\n", thisAgent->explanationMemory->is_all_enabled() ? " " : " not ");
 
             } else {
                 if (!my_param->validate_string(pArg2->c_str()) || (!my_param->set_string(pArg2->c_str())))
@@ -64,10 +64,10 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
                 }
                 if (thisAgent->explanationMemory->settings->all->get_value())
                 {
-                    thisAgent->explanationMemory->set_enabled(true);
+                    thisAgent->explanationMemory->set_all_enabled(true);
                     thisAgent->outputManager->printa_sf(thisAgent, "Will monitor all chunks created.\n");
                 } else {
-                    thisAgent->explanationMemory->set_enabled(false);
+                    thisAgent->explanationMemory->set_all_enabled(false);
                     thisAgent->outputManager->printa_sf(thisAgent, "Will only monitor specific chunks.\n");
                 }
             }

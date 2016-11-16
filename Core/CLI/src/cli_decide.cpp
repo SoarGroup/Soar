@@ -741,16 +741,26 @@ bool CommandLineInterface::DoSelect(const std::string* pOp)
 
 bool CommandLineInterface::DoSRand(uint32_t* pSeed)
 {
+    std::ostringstream lFeedback;
     if (pSeed)
     {
         SoarSeedRNG(*pSeed);
-        m_Result << "Random number generator seed set to " << (*pSeed);
+        lFeedback << "Random number generator seed set to " << (*pSeed);
 
     }
     else
     {
         SoarSeedRNG();
-        m_Result << "Random number generator seed set to new random value.";
+        lFeedback << "Random number generator seed set to new random value.";
+    }
+
+    if (m_RawOutput)
+    {
+        m_Result << lFeedback.str().c_str() << "\n";
+    }
+    else
+    {
+        AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, lFeedback.str().c_str());
     }
 
     return true;

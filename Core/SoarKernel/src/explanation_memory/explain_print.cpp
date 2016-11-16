@@ -239,15 +239,15 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
             print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->o_ids.id, false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->o_ids.attr, false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->o_ids.value, false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, false);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
         }
 //        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
 //        outputManager->printa(thisAgent, " ^");
@@ -276,26 +276,26 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->o_ids.id, true);
+        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, true);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->o_ids.attr, true);
+        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, true);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->o_ids.value, true);
+        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, true);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, true);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->o_ids.id, false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->o_ids.attr, false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->o_ids.value, false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->o_ids.referent, false);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }
@@ -331,12 +331,12 @@ void Explanation_Memory::print_explain_summary()
     outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
     outputManager->printa(thisAgent,    "                       Explainer Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
     outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
-    if (!m_enabled)
+    if (!m_all_enabled)
     {
         /* Print last 10 rules watched*/
         outputManager->printa_sf(thisAgent, "Rules watched:");
@@ -429,6 +429,8 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "Used negated reasoning about substate      %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "Chunk learned did not match WM             %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Justification learned did not match WM     %-%u\n", stats.justification_did_not_match);
 
     outputManager->printa_sf(thisAgent, "=============================================================\n");
     outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
@@ -438,8 +440,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Skipped because of max-chunks              %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because of max-dupes               %-%u\n", stats.max_dupes);
     outputManager->printa_sf(thisAgent, "Backtracing produced no conditions         %-%u\n", stats.no_grounds);
-    outputManager->printa_sf(thisAgent, "Chunk formed did not match WM              %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification formed did not match WM      %-%u\n", stats.justification_did_not_match);
 }
 
 
@@ -573,7 +573,6 @@ void Explanation_Memory::print_condition_explanation(uint64_t pCondID)
 void Explanation_Memory::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
-//    current_discussed_chunk->identity_analysis->print_identity_mappings();
     outputManager->printa_sf(thisAgent, "=========================================================================\n");
     outputManager->printa_sf(thisAgent, "-             Variablization Identity to Identity Set Mappings          -\n");
     outputManager->printa_sf(thisAgent, "=========================================================================\n");

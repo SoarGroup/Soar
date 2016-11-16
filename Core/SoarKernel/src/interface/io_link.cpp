@@ -431,7 +431,7 @@ void update_for_top_state_wme_addition(agent* thisAgent, wme* w)
     char link_name[LINK_NAME_SIZE];
 
     /* --- check whether the attribute is an output function --- */
-    w->attr->to_string(false, link_name, LINK_NAME_SIZE);
+    w->attr->to_string(false, false, link_name, LINK_NAME_SIZE);
     cb = soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, link_name);
     if (!cb)
     {
@@ -543,7 +543,7 @@ void inform_output_module_of_wm_changes(agent* thisAgent,
         {
             char id[100];
 
-            w->id->to_string(false, id, 100);
+            w->id->to_string(false, false, id, 100);
             if (!strcmp(id, "I3"))
             {
                 thisAgent->outputManager->printa_sf(thisAgent,  "--> Added to I3, but doesn't register as an OL change!");

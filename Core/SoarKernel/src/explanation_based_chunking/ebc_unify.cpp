@@ -26,26 +26,14 @@
 bool Explanation_Based_Chunker::in_null_identity_set(test t)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity);
-    if (iter != (*unification_map).end())
-    {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found variablization unification %u -> %u\n",
-            t->identity, iter->second);
-
-        return (iter->second == NULL_IDENTITY_SET);
-    }
+    if (iter != (*unification_map).end()) return (iter->second == NULL_IDENTITY_SET);
     return (t->identity == NULL_IDENTITY_SET);
 }
 
 uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
-    if (iter != (*unification_map).end())
-    {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found variablization unification %u -> %u\n",
-            pID, iter->second);
-
-       return iter->second;
-    }
+    if (iter != (*unification_map).end()) return iter->second;
     return pID;
 }
 
@@ -60,10 +48,10 @@ void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rhs_value lRHS;
-    if (lPref->o_ids.id) lPref->o_ids.id = get_identity(lPref->o_ids.id);
-    if (lPref->o_ids.attr) lPref->o_ids.attr = get_identity(lPref->o_ids.attr);
-    if (lPref->o_ids.value) lPref->o_ids.value = get_identity(lPref->o_ids.value);
-    if (lPref->o_ids.referent) lPref->o_ids.referent = get_identity(lPref->o_ids.referent);
+    if (lPref->identities.id) lPref->identities.id = get_identity(lPref->identities.id);
+    if (lPref->identities.attr) lPref->identities.attr = get_identity(lPref->identities.attr);
+    if (lPref->identities.value) lPref->identities.value = get_identity(lPref->identities.value);
+    if (lPref->identities.referent) lPref->identities.referent = get_identity(lPref->identities.referent);
     if (lPref->rhs_funcs.id)
     {
         lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
@@ -97,6 +85,11 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 
 void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
+    /* MToDo | Remove */
+    //if (m_current_bt_inst_id == 22)
+    //{
+    //    dprint(DT_DEBUG, "Found for inst 22 %u -> %u.\n", pOld_o_id, pNew_o_id);
+    //}
     assert(pOld_o_id);
     if (pOld_o_id == pNew_o_id)
     {
@@ -182,12 +175,15 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * a different trace.  So, unify the identity that it is already remapped to with identity
                  * of the parent in this trace */
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %y[%u] -> %y[%u].\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
-                (*unification_map)[pNew_o_id] = existing_mapping;
                 (*unification_map)[newID] = existing_mapping;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping, get_ovar_for_o_id(pNew_o_id), get_ovar_for_o_id(existing_mapping));
                 thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping, get_ovar_for_o_id(newID), get_ovar_for_o_id(existing_mapping));
                 update_unification_table(newID, existing_mapping);
-                update_unification_table(pNew_o_id, existing_mapping);
+                if (pNew_o_id != newID)
+                {
+                    (*unification_map)[pNew_o_id] = existing_mapping;
+                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping, get_ovar_for_o_id(pNew_o_id), get_ovar_for_o_id(existing_mapping));
+                    update_unification_table(pNew_o_id, existing_mapping);
+                }
             }
         }
     } else {
@@ -319,23 +315,27 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
                     pCond->data.tests.attr_test->eq_test->identity, pCond->data.tests.value_test->eq_test->identity);
             } else {
                 dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
-                if (pCond->data.tests.id_test->eq_test->identity || local_singleton_superstate_identity->id)
-                {
-                    dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
-                    add_identity_unification(pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
-                }
-                if (pCond->data.tests.attr_test->eq_test->identity || local_singleton_superstate_identity->attr)
-                {
-                    dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
-                    add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
-                }
+//                if (pCond->data.tests.id_test->eq_test->identity || local_singleton_superstate_identity->id)
+//                {
+//                    dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+//                    add_identity_unification(pCond->data.tests.id_test->eq_test->identity, local_singleton_superstate_identity->id);
+//                }
+//                if (pCond->data.tests.attr_test->eq_test->identity || local_singleton_superstate_identity->attr)
+//                {
+//                    dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+//                    add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, local_singleton_superstate_identity->attr);
+//                }
                 if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity->value)
                 {
                     dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                     add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity->value);
                 }
             }
+        } else {
+            dprint(DT_UNIFY_SINGLETONS, "Not a superstate WME: %l\n", pCond);
         }
+    } else {
+        dprint(DT_UNIFY_SINGLETONS, "Identifier not a goal: %l\n", pCond);
     }
 }
 
@@ -347,23 +347,46 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     /* Thought we might need to check if this is a proposal, but this seems to already skip unifying proposals. */
     if (pCond->bt.wme_->id->id->isa_goal)
     {
-        if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
-            (pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol))
+        if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
+            (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
         {
             condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
             assert(last_cond);
             dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
             dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
-            if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+            //            if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+            //            {
+            //                dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            //                add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            //            }
+            //            if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
+            //            {
+            //                dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            //                add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            //            }
+            if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
             {
-                dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
-                add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             }
-            if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
-            {
-                dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
-                add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
-            }
+        } else if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+            (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_operator) &&
+            (!pCond->test_for_acceptable_preference))
+        {
+            condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
+            assert(last_cond);
+            dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
+            dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
+            //                    if (pCond->data.tests.id_test->eq_test->identity || last_cond->data.tests.id_test->eq_test->identity)
+            //                    {
+            //                        dprint(DT_UNIFY_SINGLETONS, "...unifying identity element %u -> %u\n", pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            //                        add_identity_unification(pCond->data.tests.id_test->eq_test->identity, last_cond->data.tests.id_test->eq_test->identity);
+            //                    }
+            //                    if (pCond->data.tests.attr_test->eq_test->identity || last_cond->data.tests.attr_test->eq_test->identity)
+            //                    {
+            //                        dprint(DT_UNIFY_SINGLETONS, "...unifying attr element %u -> %u\n", pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            //                        add_identity_unification(pCond->data.tests.attr_test->eq_test->identity, last_cond->data.tests.attr_test->eq_test->identity);
+            //                    }
             if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
             {
                 dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
@@ -371,5 +394,6 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
             }
         }
     }
+
 }
 

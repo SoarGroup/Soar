@@ -269,7 +269,7 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
         chunk_in_states->set_value(ebc_always);
-        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s\n", chunk_in_states->get_string());
     }
     else if (pChangedParam == never_cmd)
     {
@@ -279,7 +279,7 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
         chunk_in_states->set_value(ebc_never);
-        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s\n", chunk_in_states->get_string());
     }
     else if (pChangedParam == flagged_cmd)
     {
@@ -289,7 +289,7 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
         chunk_in_states->set_value(ebc_only);
-        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s\n", chunk_in_states->get_string());
     }
     else if (pChangedParam == unflagged_cmd)
     {
@@ -299,7 +299,7 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
         chunk_in_states->set_value(ebc_except);
-        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s", chunk_in_states->get_string());
+        thisAgent->outputManager->printa_sf(thisAgent, "Learns rules in states: %s\n", chunk_in_states->get_string());
     }
 }
 

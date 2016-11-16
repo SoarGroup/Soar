@@ -1,0 +1,14 @@
+sp {answer*carry-borrow*apply*new-column*OpNoChange*t41-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name carry-borrow)
+    (<s1> ^arithmetic-problem <p1>)
+    (<p1> ^current-column <c1>)
+    (<c1> ^next-column nil)
+    -->
+    (<c1> ^next-column <n1> +)
+    (<c1> ^next-column nil -)
+    (<n1> ^digit1 0 +)
+    (<n1> ^digit2 0 +)
+    (<n1> ^column t +)
+    (<n1> ^next-column nil +)
+}

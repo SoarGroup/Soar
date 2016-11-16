@@ -1,0 +1,91 @@
+# Tests:
+# -
+
+srand 23
+chunk always
+
+sp {init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test a b c)
+}
+
+sp {propose
+    (state <s> ^superstate nil
+               ^test <foo>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name <foo>)
+}
+sp {elab*substate*proposals1
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o1> +
+          ^operator <o2> +
+          ^operator <o3> +)
+    (<o1> ^name a)
+    (<o2> ^name b)
+    (<o3> ^name c)
+-->
+    (<s> ^chosen1a true)
+}
+
+sp {elab*substate*proposals2
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o1> +
+          ^operator <o2> +)
+    (<o1> ^name a)
+    (<o2> ^name c)
+-->
+    (<s> ^chosen1b <o2>)
+}
+
+sp {make-chunk-for-propose
+    (state <s> ^superstate <ss>
+               ^chosen1a true
+               ^chosen1b <o>)
+-->
+    (<ss> ^choose <o>)
+}
+
+sp {propose*chosen
+    (state <s> ^superstate nil
+               ^operator <foo> +
+               ^choose <foo>)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name choose)
+}
+
+sp {elab*substate*chosen
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>
+          ^operator <o1> +
+          ^operator <o2> +
+          ^operator <o3> +)
+    (<o> ^name choose)
+    (<o1> ^name a)
+    (<o2> ^name b)
+    (<o3> ^name c)
+-->
+    (<s> ^chosen2a true)
+}
+
+sp {elab*substate*chosen2
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>
+          ^operator <o1> +)
+    (<o1> ^name b)
+    (<o> ^name choose)
+-->
+    (<s> ^chosen2b true)
+}
+
+sp {make-chunk-for-chosen
+    (state <s> ^superstate <ss>
+               ^chosen2a true
+               ^chosen2b true)
+-->
+    (<ss> ^test complete)
+    (interrupt)
+}
+

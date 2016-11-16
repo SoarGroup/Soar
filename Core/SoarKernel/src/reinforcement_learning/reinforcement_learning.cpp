@@ -598,17 +598,20 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         while (thisAgent->symbolManager->find_str_constant(new_name.c_str()) != NIL);
         new_name_symbol = thisAgent->symbolManager->make_str_constant(new_name.c_str());
-        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
+        /* --- Assign a new instantiation ID --- */
+        /* We need to set a chunk ID because variablization uses it to assign new identities */
+        thisAgent->explanationBasedChunker->set_new_chunk_id();
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
+        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top, true);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
+        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false, NULL, NULL))
         {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
@@ -638,6 +641,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
 
         thisAgent->explanationBasedChunker->clear_variablization_maps();
+        thisAgent->explanationBasedChunker->clear_chunk_id();
         deallocate_condition_list(thisAgent, cond_top);
 
     return new_name_symbol;

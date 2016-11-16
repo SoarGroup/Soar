@@ -36,9 +36,15 @@ namespace cli
                 cli::Options opt;
                 std::string subCommandArg;
                 bool backwardCompatibleReplacement = false;
+
                 /* Store original argv for CTF and CLOG.  Both sub-commands are still
-                 * using their original parsing.  No time to rewrite right now. */
+                 * using their original parsing.  Ideally, we would integrate the logic. */
                 std::vector< std::string > argv_orig = argv;
+                bool hadError = false;
+                bool commandHandled = cli.DoRedirectedOutputCommand(argv_orig, hadError);
+                if (commandHandled) {
+                    if (hadError) return cli.AppendError(GetSyntax()); else return true;
+                }
 
                 OptionsData optionsData[] =
                 {
@@ -54,6 +60,8 @@ namespace cli
 
                 for (;;)
                 {
+                    /* Ignore bad options in CTF command because they could be options for
+                     * command to be executed, which can be anything */
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
                         cli.SetError(opt.GetError().c_str());

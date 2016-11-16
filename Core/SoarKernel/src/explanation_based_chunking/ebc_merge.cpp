@@ -189,6 +189,8 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
     dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %i conditions! (%i - %i)\n" : "No decrease in number of conditions. [%i = (%i - %i)]\n"), cond_diff, old_num_conds, new_num_conds);
 
+//    dprint_noprefix(DT_MERGE, "Counterparts:\n%1", top_cond->counterpart);
+
     clear_merge_map();
     dprint_header(DT_MERGE, PrintBoth, "= Done Merging Conditions =\n");
 }

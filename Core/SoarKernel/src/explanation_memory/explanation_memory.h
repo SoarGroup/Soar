@@ -65,9 +65,10 @@ class Explanation_Memory
 
         Explainer_Parameters*   settings;
 
-        bool                    enabled() { return (m_enabled || (num_rules_watched > 0)); }
-        void                    set_enabled(bool pEnabled) { m_enabled = pEnabled; }
-        bool                    isRecordingChunk() { return (m_enabled || current_recording_chunk); }
+        bool                    is_any_enabled() { return (m_all_enabled || (num_rules_watched > 0)); }
+        bool                    is_all_enabled() { return m_all_enabled; }
+        void                    set_all_enabled(bool pEnabled) { m_all_enabled = pEnabled; }
+        bool                    isRecordingChunk() { return (m_all_enabled || current_recording_chunk); }
 
         bool                    isRecordingJustifications() { return m_justifications_enabled; };
         void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
@@ -153,7 +154,7 @@ class Explanation_Memory
         agent*                  thisAgent;
         Output_Manager*         outputManager;
 
-        bool                    m_enabled;
+        bool                    m_all_enabled;
         bool                    m_justifications_enabled;
         bool                    print_explanation_trace;
         uint64_t                last_printed_id;
@@ -170,6 +171,10 @@ class Explanation_Memory
         instantiation_record*   get_instantiation(instantiation* pInst);
         condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
+
+        uint64_t                add_production_id_if_necessary(production* pProd);
+        void                    excise_production_id(uint64_t pId);
+        production*             get_production(uint64_t pId);
 
         void                    discuss_chunk(chunk_record* pChunkRecord);
         void                    clear_chunk_from_instantiations();
@@ -212,7 +217,8 @@ class Explanation_Memory
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
-        std::set< production_record* >*                         all_excised_productions;
+        std::set< production_record* >*                         cached_production;
+        std::unordered_map< uint64_t, production* >*            production_id_map;
 
 };
 

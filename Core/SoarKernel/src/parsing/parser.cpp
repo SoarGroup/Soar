@@ -1903,7 +1903,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
                      correctly before we print */
             thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
             thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
-            id->to_string(true, szPrintId, 256);
+            id->to_string(true, false, szPrintId, 256);
             thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
             deallocate_action_list(thisAgent, prev_a);
@@ -1925,7 +1925,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
                      correctly before we print */
             thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
             thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
-            id->to_string(true, szPrintId, 256);
+            id->to_string(true, false, szPrintId, 256);
             thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
 
         }
@@ -2444,7 +2444,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     dprint(DT_PARSER, "Parse OK.  Making production.\n");
 
     thisAgent->name_of_production_being_reordered = name->sc->name;
-    if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true))
+    if (!reorder_and_validate_lhs_and_rhs(thisAgent, &lhs_top, &rhs, true, NULL, NULL))
     {
         abort_parse_production(thisAgent, name, &documentation, &lhs, &rhs);
         return NIL;

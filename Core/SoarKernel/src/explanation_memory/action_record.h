@@ -39,7 +39,7 @@ class action_record
         preference*             original_pref;          // Only used when building explain records
 
     private:
-        agent* thisAgent;
+        agent*                  thisAgent;
         preference*             instantiated_pref;
         action*                 variablized_action;
         id_set*                 identities_used;

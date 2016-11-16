@@ -55,7 +55,6 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_identity_effective = true;
         db_mode = false;
         stdout_mode = true;
-        debug_set_mode_info(mode_info, true);
     } else {
         m_print_actual = true;
         m_print_identity = false;
@@ -63,7 +62,6 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_identity_effective = false;
         db_mode = false;
         stdout_mode = false;
-        debug_set_mode_info(mode_info, false);
     }
 }
 
@@ -75,10 +73,35 @@ void Output_Manager::set_output_mode(int modeIndex, bool pEnabled)
 
 void Output_Manager::clear_output_modes()
 {
-
     for (int i = 0; i < num_trace_modes; i++)
     {
         mode_info[i].enabled = false;
+    }
+}
+
+void Output_Manager::copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes])
+{
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        mode_info_dest[i].enabled = mode_info_src[i].enabled;
+    }
+}
+
+void Output_Manager::cache_output_modes()
+{
+    copy_output_modes(mode_info, saved_mode_info);
+}
+
+void Output_Manager::restore_output_modes()
+{
+    copy_output_modes(saved_mode_info, mode_info);
+}
+
+void Output_Manager::print_output_modes(trace_mode_info mode_info_to_print[num_trace_modes])
+{
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        print_sf("%s: %s\n", mode_info_to_print[i].prefix, (mode_info_to_print[i].enabled ? "enabled" : "disabled"));
     }
 }
 
@@ -109,8 +132,10 @@ Output_Manager::Output_Manager()
     initialize_debug_trace(mode_info);
     #ifndef SOAR_RELEASE_VERSION
         set_output_params_global(true);
+        debug_set_mode_info(mode_info, true);
     #else
         set_output_params_global(false);
+        debug_set_mode_info(mode_info, false);
     #endif
 
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best

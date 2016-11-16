@@ -26,14 +26,14 @@ sp {apply*test-done
 -->
     (write (crlf) |Chunk produced. Test completed.|)
     (exec succeeded)
-    (halt)
+    (interrupt)
 }
 
 sp {apply*test-failed
     (state <s> ^superstate.superstate.superstate.superstate nil)
 -->
     (write (crlf) |Chunk not produced.  Test failed.|)
-    (halt)
+    (interrupt)
 }
 
 sp {propose*test

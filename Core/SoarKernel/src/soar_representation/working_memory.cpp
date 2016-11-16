@@ -116,7 +116,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->reference_count = 0;
     w->preference = NIL;
     w->output_link = NIL;
-    w->grounds_tc = 0;
+    w->tc = 0;
     w->chunker_bt_last_ground_cond = NULL;
 
     w->next = NIL;

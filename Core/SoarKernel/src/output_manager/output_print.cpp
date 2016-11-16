@@ -561,6 +561,16 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
+                    case '9':
+                    {
+                        condition* temp = va_arg(args, condition *);
+                        if (temp)
+                        {
+                            condition_list_counterparts_to_string(thisAgent, temp, destString);
+                        }
+                    }
+                    break;
+
                     case '2':
                     {
                         action* temp = va_arg(args, action *);

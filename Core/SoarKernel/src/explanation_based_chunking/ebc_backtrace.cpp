@@ -61,9 +61,9 @@ using namespace soar_TraceNames;
 void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 {
     dprint(DT_BACKTRACE, "--> Ground condition added: %l.\n", cond);
-    if ((cond)->bt.wme_->grounds_tc != grounds_tc)
+    if ((cond)->bt.wme_->tc != grounds_tc)
     {
-        (cond)->bt.wme_->grounds_tc = grounds_tc;
+        (cond)->bt.wme_->tc = grounds_tc;
         cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     }
     if (cond->bt.wme_->chunker_bt_last_ground_cond != cond)
@@ -76,7 +76,6 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
 void Explanation_Based_Chunker::add_to_locals(condition* cond)
 {
     dprint(DT_BACKTRACE, "--> Local condition added: %l.\n", cond);
-    add_local_singleton_unification_if_needed(cond);
     push(thisAgent, (cond), locals);
 }
 
@@ -136,6 +135,14 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     assert(thisID->id->is_sti());
     assert(thisID->id->level <= cond->bt.level);
 
+    uint64_t idLevel = thisID->id->level;
+    uint64_t btLevel = cond->bt.level;
+    uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
+    /* MToDo | Remove */
+    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
+        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
+//    else
+//        dprint(DT_DEBUG, "Levels: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
     return  (thisID->id->level <= grounds_level);
 }
 
@@ -231,7 +238,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
-                if (c->bt.wme_->grounds_tc != grounds_tc)   /* First time we've seen something matching this wme*/
+                if (c->bt.wme_->tc != grounds_tc)   /* First time we've seen something matching this wme*/
                 {
                     add_to_grounds(c);
                 }
@@ -242,6 +249,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 }
             } else {
                 add_to_locals(c);
+                add_local_singleton_unification_if_needed(c);
             }
         }
         else
@@ -342,7 +350,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
         if (bt_pref)
         {
-            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->o_ids, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
+            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
             if (cond->bt.CDPS)
             {
@@ -356,7 +364,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
                         print_preference(thisAgent, p);
                     }
 
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->o_ids, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
 
                     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
                     {

@@ -32,7 +32,7 @@ sp {default*top-goal*halt*operator*failure
     -->
     (write (crlf) |No operator can be selected for top goal.|)
     (write (crlf) |Soar must halt.|)
-    (halt)
+    (interrupt)
 }
 
 sp {top-ps*apply*wait*random
@@ -554,7 +554,7 @@ sp {P11*halt*all-blocks-in-desired-position
     (<i*1> ^name A)
     -->
     (write (crlf) |Goal Achieved.|)
-    (halt)
+    (interrupt)
 }
 
 sp {P2*elaborate*table*clear

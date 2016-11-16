@@ -48,7 +48,7 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
         if(thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->validate_string(pAttr->c_str()))
         {
             thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->set_string(pAttr->c_str());
-            tempStringStream << "Learns rules in states: " << pAttr->c_str();
+            tempStringStream << "Learns rules in states: " << pAttr->c_str() << "\n";
             PrintCLIMessage(&tempStringStream);
             thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, NULL);
             return true;

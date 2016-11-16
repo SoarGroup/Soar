@@ -19,6 +19,7 @@ namespace cli
                 soar::tokenizer t;
                 t.set_handler(this);
                 
+                // Traditional Soar aliases
                 t.evaluate("? help");
                 t.evaluate("a alias");
                 t.evaluate("aw wm add");
@@ -55,6 +56,16 @@ namespace cli
                 t.evaluate("w trace");
                 t.evaluate("wmes print -depth 0 -internal");
 
+                // New chunking and explain aliases
+                t.evaluate("cs chunk stats");
+                t.evaluate("c explain chunk");
+                t.evaluate("ef explain formation");
+                t.evaluate("ei explain identities");
+                t.evaluate("es explain stats");
+                t.evaluate("i explain instantiation");
+                t.evaluate("wt explain wm-trace");
+                t.evaluate("et explain explanation-trace");
+
                 // Backward compatibility aliases
                 t.evaluate("unalias alias -r");
                 t.evaluate("indifferent-selection decide indifferent-selection");
@@ -74,7 +85,7 @@ namespace cli
                 t.evaluate("production-find production find");
                 t.evaluate("firing-counts production firing-counts");
                 t.evaluate("matches production matches");
-                t.evaluate("memories memory-usage");
+                t.evaluate("memories production memory-usage");
                 t.evaluate("multi-attributes production optimize-attribute");
                 t.evaluate("pwatch production watch");
 
@@ -107,17 +118,12 @@ namespace cli
                 t.evaluate("chunk-name-format chunk naming-style");
                 t.evaluate("max-chunks chunk max-chunks");
 
-                t.evaluate("clog output output log");
+                t.evaluate("clog output log");
                 t.evaluate("command-to-file output command-to-file");
                 t.evaluate("default-wme-depth output print-depth");
                 t.evaluate("echo-commands output echo-commands");
                 t.evaluate("verbose output verbose");
                 t.evaluate("warnings output warnings");
-
-                t.evaluate("c explain chunk");
-                t.evaluate("i explain instantiation");
-                t.evaluate("wt explain wm-trace");
-                t.evaluate("et explain explanation-trace");
 
                 t.evaluate("watch trace");
 

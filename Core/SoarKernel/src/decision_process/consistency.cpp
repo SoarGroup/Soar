@@ -27,6 +27,7 @@
 #include "preference.h"
 #include "print.h"
 #include "output_manager.h"
+#include "print.h"
 #include "production.h"
 #include "rete.h"
 #include "run_soar.h"
@@ -442,6 +443,31 @@ bool minor_quiescence_at_goal(agent* thisAgent, Symbol* goal)
     }
 }
 
+void print_assertion(agent* thisAgent, ms_change* msc)
+{
+
+    if (msc->p_node)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion: %y", msc->p_node->b.p.prod->name);
+    }
+    else
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion exists but has no p_node");
+    }
+}
+
+void print_retraction(agent* thisAgent, ms_change* msc)
+{
+
+    if (msc->p_node)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction: %y", msc->p_node->b.p.prod->name);
+    }
+    else
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction exists but has no p_node");
+    }
+}
 /* ---------------------------------------------------------------------- */
 /* Find the highest goal of activity among the current assertions and
  * retractions */
@@ -471,11 +497,11 @@ Symbol* highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, bool n
         thisAgent->outputManager->printa_sf(thisAgent,  "In highest_active_goal_propose:\n");
         if (goal->id->ms_i_assertions)
         {
-            print_assertion(goal->id->ms_i_assertions);
+            print_assertion(thisAgent, goal->id->ms_i_assertions);
         }
         if (goal->id->ms_retractions)
         {
-            print_retraction(goal->id->ms_retractions);
+            print_retraction(thisAgent, goal->id->ms_retractions);
         }
 #endif
 
@@ -525,15 +551,15 @@ Symbol* highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, bool non
         thisAgent->outputManager->printa_sf(thisAgent,  "In highest_active_goal_apply :\n");
         if (goal->id->ms_i_assertions)
         {
-            print_assertion(goal->id->ms_i_assertions);
+            print_assertion(thisAgent, goal->id->ms_i_assertions);
         }
         if (goal->id->ms_o_assertions)
         {
-            print_assertion(goal->id->ms_o_assertions);
+            print_assertion(thisAgent, goal->id->ms_o_assertions);
         }
         if (goal->id->ms_retractions)
         {
-            print_retraction(goal->id->ms_retractions);
+            print_retraction(thisAgent, goal->id->ms_retractions);
         }
 #endif
 

@@ -45,8 +45,7 @@ void deallocate_condition(agent* thisAgent, condition*& cond)
     cond = NULL;
 }
 
-void deallocate_condition_list(agent* thisAgent,
-                               condition*& cond_list)
+void deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity)
 {
     condition* c;
 
@@ -56,14 +55,15 @@ void deallocate_condition_list(agent* thisAgent,
         cond_list = cond_list->next;
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            deallocate_condition_list(thisAgent, c->data.ncc.top);
+            deallocate_condition_list(thisAgent, c->data.ncc.top, pCleanUpIdentity);
         }
         else     /* positive and negative conditions */
         {
             dprint(DT_DEALLOCATES, "Deallocating condition: %l\n", c);
-            deallocate_test(thisAgent, c->data.tests.id_test);
-            deallocate_test(thisAgent, c->data.tests.attr_test);
-            deallocate_test(thisAgent, c->data.tests.value_test);
+
+            deallocate_test(thisAgent, c->data.tests.id_test, pCleanUpIdentity);
+            deallocate_test(thisAgent, c->data.tests.attr_test, pCleanUpIdentity);
+            deallocate_test(thisAgent, c->data.tests.value_test, pCleanUpIdentity);
         }
         thisAgent->memoryManager->free_with_pool(MP_condition, c);
     }
@@ -90,46 +90,11 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     return cond;
 }
 
-condition* copy_condition_without_relational_constraints(agent* thisAgent,
-        condition* cond)
-{
-    condition* New;
-
-    if (!cond)
-    {
-        return NIL;
-    }
-    New = make_condition(thisAgent);
-    New->type = cond->type;
-
-    switch (cond->type)
-    {
-        case POSITIVE_CONDITION:
-            New->bt = cond->bt;
-            New->data.tests.id_test = copy_test_without_relationals(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test_without_relationals(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test_without_relationals(thisAgent, cond->data.tests.value_test);
-            New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-            break;
-        case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test);
-            New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-            break;
-        case CONJUNCTIVE_NEGATION_CONDITION:
-            copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                                &(New->data.ncc.bottom));
-            break;
-    }
-    return New;
-}
-
 /* ----------------------------------------------------------------
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests, bool pStripGoalImpasseTests)
 {
     condition* New;
 
@@ -145,20 +110,20 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     {
         case POSITIVE_CONDITION:
             New->bt = cond->bt;
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false);
+                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false, pLinkTests, false);  // I don't think we'd want to strip state tests from NCCs
             break;
     }
     return New;
@@ -175,14 +140,16 @@ void copy_condition_list(agent* thisAgent,
                          condition** dest_bottom,
                          bool pUnify_variablization_identity,
                          bool pStripLiteralConjuncts,
-                         bool pCopyInstantiation)
+                         bool pCopyInstantiation,
+                         bool pLinkTests,
+                         bool pStripGoalImpasseTests)
 {
     condition* New, *prev;
 
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
         if (pCopyInstantiation)
         {
             New->inst = top_cond->inst;
@@ -330,61 +297,4 @@ int condition_count(condition* pCond)
         pCond = pCond->next;
     }
     return cnt;
-}
-
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-            pTest = pTest->eq_test;
-    }
-    if (pInstantiatedTest && pInstantiatedTest->type == CONJUNCTIVE_TEST)
-    {
-        pInstantiatedTest = pInstantiatedTest->eq_test;
-    }
-    if (test_has_referent(pTest)) {
-        if (pTest->identity)
-        {
-            if (pID_Set->find(pTest->identity) == pID_Set->end())
-            {
-                pID_Set->insert(pTest->identity);
-                if (pID_Set_Map)
-                {
-                    identity_set_info* lNewIDSet = new identity_set_info();
-                    if (pTest->identity)
-                    {
-                        lNewIDSet->identity_set_ID = thisAgent->explanationMemory->get_identity_set_counter();
-                        lNewIDSet->rule_variable = pTest->data.referent;
-                        thisAgent->symbolManager->symbol_add_ref(lNewIDSet->rule_variable);
-                        thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity_set_ID, lNewIDSet->rule_variable, lNewIDSet->rule_variable);
-
-                    } else {
-                        lNewIDSet->identity_set_ID = NULL_IDENTITY_SET;
-                        lNewIDSet->rule_variable = NULL;
-                    }
-                    pID_Set_Map->insert({pTest->identity, lNewIDSet});
-                }
-            }
-        }
-    }
-}
-
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map)
-{
-    for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
-    {
-        if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
-        } else {
-            thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
-            test id_test_without_goal_test = NULL;
-            bool removed_goal_test, removed_impasse_test;
-            id_test_without_goal_test = copy_test_removing_goal_impasse_tests(thisAgent, lCond->data.tests.id_test, &removed_goal_test, &removed_impasse_test);
-            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            deallocate_test(thisAgent, id_test_without_goal_test);
-        }
-    }
 }

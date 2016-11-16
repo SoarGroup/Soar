@@ -69,7 +69,7 @@ sp {propose*stop
    (state <s> ^superstate.superstate.superstate.superstate.superstate nil)
 -->
 #    (success)
-    (halt)
+    (interrupt)
 }
 
 #run

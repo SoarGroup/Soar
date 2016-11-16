@@ -27,6 +27,36 @@
 using namespace cli;
 using namespace sml;
 
+bool CommandLineInterface::DoRedirectedOutputCommand(std::vector<std::string>& argv, bool& had_error)
+{
+    if (argv.size() < 3) return false;
+
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    soar_module::param* my_param = thisAgent->outputManager->m_params->get(argv.at(1).c_str());
+
+    if (!my_param)
+    {
+        return false;
+    }
+    else if (my_param == thisAgent->outputManager->m_params->clog)
+    {
+        argv.erase(argv.begin());
+        had_error = !ParseClog(argv);
+        return true;
+    }
+    else if (my_param == thisAgent->outputManager->m_params->ctf)
+    {
+        argv.erase(argv.begin());
+        had_error = !ParseCTF(argv);
+        if (!had_error)
+        {
+            thisAgent->outputManager->printa(thisAgent, "Output of command successfully written to file.\n");
+        }
+        return true;
+    }
+    return false;
+}
+
 bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
@@ -35,9 +65,6 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
     if (!pArg1)
     {
         thisAgent->outputManager->m_params->print_output_summary(thisAgent);
-
-//        PrintCLIMessage("The 'output' commands contains settings and sub-commands to control what Soar prints and where it prints it.\n"
-//            "Use 'output ?' to see an overview of the command or 'help output' to read the manual page.");
         return true;
     }
 
@@ -46,15 +73,6 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
     if (!my_param)
     {
         return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
-    }
-    else if (my_param == thisAgent->outputManager->m_params->clog)
-    {
-//        argv.erase(argv.begin());
-        return ParseClog(argv);
-    }
-    else if (my_param == thisAgent->outputManager->m_params->ctf)
-    {
-        return ParseCTF(argv);
     }
     else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
     {

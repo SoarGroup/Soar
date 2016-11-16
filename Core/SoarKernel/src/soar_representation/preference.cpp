@@ -66,19 +66,22 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
 
     if (pUnify_identities)
     {
-        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
-        if (o_ids.attr) p->o_ids.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->o_ids.attr = 0;
-        if (o_ids.value) p->o_ids.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->o_ids.value = 0;
-        if (o_ids.id) p->o_ids.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->o_ids.id = 0;
-
+        if (o_ids.id) p->identities.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->identities.id = 0;
+        if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
+        if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
+        if (o_ids.referent) p->identities.referent = thisAgent->explanationBasedChunker->get_identity(o_ids.referent); else p->identities.referent = 0;
     }
     else
     {
-        p->o_ids.id = o_ids.id;
-        p->o_ids.attr = o_ids.attr;
-        p->o_ids.value = o_ids.value;
-        p->o_ids.referent = o_ids.referent;
+        p->identities.id = o_ids.id;
+        p->identities.attr = o_ids.attr;
+        p->identities.value = o_ids.value;
+        p->identities.referent = o_ids.referent;
     }
+    p->clone_identities.id = p->identities.id;
+    p->clone_identities.attr = p->identities.attr;
+    p->clone_identities.value = p->identities.value;
+    p->clone_identities.referent = p->identities.referent;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, rhs_funcs.id, pUnify_identities);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);
@@ -113,10 +116,14 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->attr);
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
-    p->o_ids.id = pPref->o_ids.id;
-    p->o_ids.attr = pPref->o_ids.attr;
-    p->o_ids.value = pPref->o_ids.value;
-    p->o_ids.referent = pPref->o_ids.referent;
+    p->identities.id = pPref->identities.id;
+    p->identities.attr = pPref->identities.attr;
+    p->identities.value = pPref->identities.value;
+    p->identities.referent = pPref->identities.referent;
+    p->clone_identities.id = pPref->clone_identities.id;
+    p->clone_identities.attr = pPref->clone_identities.attr;
+    p->clone_identities.value = pPref->clone_identities.value;
+    p->clone_identities.referent = pPref->clone_identities.referent;
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
@@ -169,68 +176,78 @@ void deallocate_preference(agent* thisAgent, preference* pref)
 
     /* --- remove it from the list of pref's for its match goal --- */
     if (pref->on_goal_list)
-        remove_from_dll(pref->inst->match_goal->id->preferences_from_goal,
-                        pref, all_of_goal_next, all_of_goal_prev);
+        remove_from_dll(pref->inst->match_goal->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
 
-    /* While debugging a refcount issue, I tried copying the preference instead of re-using.  It worked but turned
-     * out to not be the original problem and was unnecessary. Since copying is more expensive, sticking with re-use
-     * and keeping this alternate here in case re-use method has issues */
+
+    if (pref->inst)
+    {
+        /* The following caches the preference if there's a chance that it will be
+         * needed for an explanation of an instantiation.  (Might be able to avoid
+         * some of this caching.  At one point we passed in a pDoNotCache flag.  */
+        //if (!pDoNotCache && (pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
+        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
+        {
+            preference* lNewPref = shallow_copy_preference(thisAgent, pref);
+            dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
+            insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
+        }
+        /* --- remove it from the list of pref's from that instantiation --- */
+        remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
+        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
+        possibly_deallocate_instantiation(thisAgent, pref->inst);
+    }
+    /* The following code re-uses the preference instead of copying it.  It worked
+     * but there were certain cases where instantiations weren't being deallocated
+     * (arithmetic agent, chunk always, interrupt on, allow-local-negations off,
+     * explain all, explain just, init after it interrupts). Couldn't quite sort
+     * out why but reverting to copying version resolved it. Since copying is more
+     * expensive, keeping the re-use code in case we have time to figure it out later. */
     //    if (pref->inst)
     //    {
-    //        if (!pDoNotCache && (pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
-    //        {
-    //            preference* lNewPref = shallow_copy_preference(thisAgent, pref);
-    //            insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
-    //        }
     //        /* --- remove it from the list of pref's from that instantiation --- */
     //        remove_from_dll(pref->inst->preferences_generated, pref,
     //            inst_next, inst_prev);
-    //        possibly_deallocate_instantiation(thisAgent, pref->inst);
+    //        instantiation* prefInst = pref->inst;
+    //        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
+    //        {
+    //            /* We erase some stuff and stash this preference in inst->preferences_cached
+    //             * This is needed in case preferences are retracted for an instantiation that is
+    //             * part of an explanation */
+    //            insert_at_head_of_dll(pref->inst->preferences_cached, pref, inst_next, inst_prev);
+    //            if (pref->wma_o_set)
+    //            {
+    //                wma_remove_pref_o_set(thisAgent, pref);
+    //            }
+    //            pref->wma_o_set = NULL;
+    //            /* Don't want this information or have the other things cleaned up.  This will
+    //             * also force the preference to be cleaned up when the instantiation gets
+    //             * deallocated.  (b/c pref->inst is null, so it won't go into this part) */
+    //            pref->inst = NULL;
+    //            pref->in_tm = false;
+    //            pref->on_goal_list = false;
+    //            pref->reference_count = 0;
+    //            pref->slot = NULL;
+    //            pref->total_preferences_for_candidate = 1;
+    //            pref->rl_contribution = false;
+    //            pref->rl_rho = 0;
+    //
+    //            /* Don't want to copy links to other preferences, except inst_next/prev b/c we're using that
+    //             * to link cached preferences */
+    //            pref->next_clone = NULL;
+    //            pref->prev_clone = NULL;
+    //            pref->next = NULL;
+    //            pref->prev = NULL;
+    //            pref->all_of_slot_next = NULL;
+    //            pref->all_of_slot_prev = NULL;
+    //            pref->all_of_goal_next = NULL;
+    //            pref->all_of_goal_prev = NULL;
+    //            pref->next_candidate = NULL;
+    //            pref->next_result = NULL;
+    //            return;
+    //        }
+    //        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", prefInst->i_id, prefInst->prod_name);
+    //        possibly_deallocate_instantiation(thisAgent, prefInst);
     //    }
-    if (pref->inst)
-       {
-           /* --- remove it from the list of pref's from that instantiation --- */
-           remove_from_dll(pref->inst->preferences_generated, pref,
-               inst_next, inst_prev);
-           if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
-           {
-               /* We erase some stuff and stash this preference in inst->preferences_cached
-                * This is needed in case preferences are retracted for an instantiation that is
-                * part of an explanation */
-               insert_at_head_of_dll(pref->inst->preferences_cached, pref, inst_next, inst_prev);
-               if (pref->wma_o_set)
-               {
-                   wma_remove_pref_o_set(thisAgent, pref);
-               }
-               pref->wma_o_set = NULL;
-               /* Don't want this information or have the other things cleaned up.  This will
-                * also force the preference to be cleaned up when the instantiation gets
-                * deallocated.  (b/c pref->inst is null, so it won't go into this part) */
-               pref->inst = NULL;
-               pref->in_tm = false;
-               pref->on_goal_list = false;
-               pref->reference_count = 0;
-               pref->slot = NULL;
-               pref->total_preferences_for_candidate = 1;
-               pref->rl_contribution = false;
-               pref->rl_rho = 0;
-
-               /* Don't want to copy links to other preferences, except inst_next/prev b/c we're using that
-                * to link cached preferences */
-               pref->next_clone = NULL;
-               pref->prev_clone = NULL;
-               pref->next = NULL;
-               pref->prev = NULL;
-               pref->all_of_slot_next = NULL;
-               pref->all_of_slot_prev = NULL;
-               pref->all_of_goal_next = NULL;
-               pref->all_of_goal_prev = NULL;
-               pref->next_candidate = NULL;
-               pref->next_result = NULL;
-               return;
-           }
-           possibly_deallocate_instantiation(thisAgent, pref->inst);
-       }
     /* --- dereference component symbols --- */
     thisAgent->symbolManager->symbol_remove_ref(&pref->id);
     thisAgent->symbolManager->symbol_remove_ref(&pref->attr);

@@ -33,7 +33,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests)
 {
     cons* new_c;
 
@@ -42,12 +42,12 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
     if (static_cast<test>(new_c->first)->type == EQUALITY_TEST)
     {
         *pEq_test = static_cast<test>(new_c->first);
     }
-    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
     return new_c;
 }
 
@@ -55,7 +55,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
 //    Symbol* referent;
     test new_ct;
@@ -68,7 +68,17 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
     switch (t->type)
     {
         case GOAL_ID_TEST:
+            if (remove_state_impasse)
+            {
+                if (removed_goal) *removed_goal = true;
+                return NULL;
+            }
         case IMPASSE_ID_TEST:
+            if (remove_state_impasse)
+            {
+                if (removed_impasse) *removed_impasse = true;
+                return NULL;
+            }
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
             new_ct = make_test(thisAgent, NIL, t->type);
@@ -86,9 +96,28 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                 {
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
+                t->eq_test->counterpart_test = new_ct;
+            } else if (remove_state_impasse)
+            {
+                new_ct = NULL;
+                test temp;
+                cons* c;
+                 for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                 {
+                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts,
+                                      pLinkTests, remove_state_impasse, removed_goal, removed_impasse);
+                     if (temp)
+                     {
+                         add_test(thisAgent, &new_ct, temp);
+                     }
+                 }
+                 if (new_ct->type == CONJUNCTIVE_TEST)
+                 {
+                     new_ct->data.conjunct_list = destructively_reverse_list(new_ct->data.conjunct_list);
+                 }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
             }
             break;
         default:
@@ -113,101 +142,22 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
             }
-
+            if (pLinkTests)
+            {
+                t->counterpart_test = new_ct;
+                /* This direction is also needed for RL */
+                new_ct->counterpart_test = t;
+            }
             break;
     }
     return new_ct;
 }
 
 /* ----------------------------------------------------------------
-   Same as copy_test(), only it doesn't include goal or impasse tests
-   in the new copy.  The caller should initialize the two flags to false
-   before calling this routine; it sets them to true if it finds a goal
-   or impasse test.
----------------------------------------------------------------- */
-test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t,
-        bool* removed_goal,
-        bool* removed_impasse)
-{
-    cons* c;
-    test new_t, temp;
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-            return copy_test(thisAgent, t);
-            break;
-        case GOAL_ID_TEST:
-            *removed_goal = true;
-            return NULL;
-        case IMPASSE_ID_TEST:
-            *removed_impasse = true;
-            return NULL;
-        case CONJUNCTIVE_TEST:
-            new_t = NULL;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                temp = copy_test_removing_goal_impasse_tests(thisAgent, static_cast<test>(c->first),
-                        removed_goal,
-                        removed_impasse);
-                if (temp)
-                {
-                    add_test(thisAgent, &new_t, temp);
-                }
-            }
-            if (new_t->type == CONJUNCTIVE_TEST)
-            {
-                new_t->data.conjunct_list =
-                    destructively_reverse_list(new_t->data.conjunct_list);
-            }
-            return new_t;
-
-        default:  /* relational tests other than equality */
-            return copy_test(thisAgent, t);
-    }
-}
-
-test copy_test_without_relationals(agent* thisAgent, test t)
-{
-    cons* c;
-    test new_t, temp;
-
-    switch (t->type)
-    {
-        case GOAL_ID_TEST:
-        case IMPASSE_ID_TEST:
-        case SMEM_LINK_UNARY_TEST:
-        case SMEM_LINK_UNARY_NOT_TEST:
-        case EQUALITY_TEST:
-            return copy_test(thisAgent, t);
-            break;
-        case CONJUNCTIVE_TEST:
-            new_t = NULL;
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                temp = copy_test_without_relationals(thisAgent, static_cast<test>(c->first));
-                if (temp)
-                {
-                    add_test(thisAgent, &new_t, temp);
-                }
-            }
-            if (new_t->type == CONJUNCTIVE_TEST)
-            {
-                new_t->data.conjunct_list =
-                    destructively_reverse_list(new_t->data.conjunct_list);
-            }
-            return new_t;
-
-        default:  /* relational tests other than equality */
-            return NULL;
-    }
-}
-
-/* ----------------------------------------------------------------
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test(agent* thisAgent, test t)
+void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
 {
     cons* c, *next_c;
 
@@ -235,23 +185,34 @@ void deallocate_test(agent* thisAgent, test t)
                 next_c = c->rest;
                 test tt;
                 tt = static_cast<test>(c->first);
-                deallocate_test(thisAgent, static_cast<test>(c->first));
+                deallocate_test(thisAgent, static_cast<test>(c->first), pCleanUpIdentity);
                 free_cons(thisAgent, c);
                 c = next_c;
             }
             break;
         default: /* relational tests other than equality */
-#ifdef DEBUG_REFCOUNT_DB
+            #ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-#else
+            #else
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-#endif
+            #endif
+            #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+            /* The following cleans up the identity->rule variable
+             * mapping that is only used for debugging in a non-release build. */
+            if (pCleanUpIdentity && t->identity)
+            {
+                thisAgent->explanationBasedChunker->cleanup_identity_for_debug_mappings(t->identity);
+            }
+            #endif
+
             break;
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
      *    which was all over the kernel.  We did not copy the test or increment the
-     *    refcount, so we don't need to decrease the refcount here. -- */
+     *    refcount, so we don't need to deallocate the test here. Counterpart test
+     *    is similar but is only used during chunking -- */
     t->eq_test = NULL;
+    t->counterpart_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
     dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test done.\n");
@@ -757,7 +718,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
     return;
 }
 
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, symbol_with_match_list* var_list)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
     Symbol* referent;
 
@@ -768,7 +729,7 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pS
             pSym->tc_num = tc;
             if (var_list)
             {
-                symbol_with_match* lNewUngroundedSym = new symbol_with_match();
+                matched_sym* lNewUngroundedSym = new matched_sym();
                 lNewUngroundedSym->sym = pSym;
                 lNewUngroundedSym->identity = pIdentity;
                 lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;
@@ -980,6 +941,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->tc_num = 0;
+    new_ct->counterpart_test = NULL;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

@@ -28,6 +28,7 @@ typedef struct production_struct
     bool                            explain_its_chunks;
     bool                            save_for_justification_explanation;
     byte                            interrupt;
+    uint64_t                        p_id;
 
     struct
     {
@@ -158,16 +159,19 @@ bool reorder_and_validate_lhs_and_rhs(agent*                    thisAgent,
                                       condition**               lhs_top,
                                       action**                  rhs_top,
                                       bool                      reorder_nccs,
-                                      symbol_with_match_list*   ungrounded_syms = NULL,
+                                      condition**               lhs_inst_top,
+                                      condition**               lhs_inst_bottom,
+                                      matched_symbol_list*      ungrounded_syms = NULL,
                                       bool                      add_ungrounded_lhs = false,
-                                      bool                      add_ungrounded_rhs = false);
+                                      bool                      add_ungrounded_rhs = false
+);
 
 production* make_production(agent* thisAgent, ProductionType type,
                                    Symbol* name, char* original_rule_name,
                                    condition** lhs_top, action** rhs_top,
                                    bool reorder_nccs, preference* results);
 
-void deallocate_production(agent* thisAgent, production* prod);
+void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer);
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign = true);
 void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
@@ -180,13 +184,9 @@ inline void production_add_ref(production* p)
     (p)->reference_count++;
 }
 
-inline void production_remove_ref(agent* thisAgent, production* p)
+inline void production_remove_ref(agent* thisAgent, production* p, bool cacheProdForExplainer)
 {
-    (p)->reference_count--;
-    if ((p)->reference_count == 0)
-    {
-        deallocate_production(thisAgent, p);
-    }
+    if (--(p->reference_count) == 0) deallocate_production(thisAgent, p, cacheProdForExplainer);
 }
 
 #endif

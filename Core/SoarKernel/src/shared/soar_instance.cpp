@@ -8,6 +8,7 @@
 #include "soar_instance.h"
 
 #include "agent.h"
+#include "debug.h"
 #include "dprint.h"
 #include "memory_manager.h"
 #include "output_manager.h"
@@ -254,6 +255,8 @@ void configure_for_unit_tests()
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     Soar_Instance::Get_Soar_Instance().configure_for_unit_tests();
     Output_Manager::Get_OM().set_output_params_global(false);
+    debug_set_mode_info(Output_Manager::Get_OM().mode_info, false);
+
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(false);

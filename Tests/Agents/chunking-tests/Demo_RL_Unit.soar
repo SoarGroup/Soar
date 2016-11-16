@@ -1,0 +1,271 @@
+srand 23
+chunk always
+
+sp {apply*two-two
+    (state <s> ^operator <op>)
+    (<op> ^name two-two)
+    -->
+    (<s> ^phase two - ^phase three +)
+}
+
+sp {two*propose*two-two
+    (state <s> ^phase two ^name two)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name two-two +)
+}
+
+sp {apply*two-three
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name two-three)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^case two - ^case three +)
+}
+
+sp {two*propose*two-three
+    (state <s> ^phase three ^name two)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name two-three + ^rl alpha +)
+}
+
+sp {apply*two-one
+    (state <s> ^operator <op>)
+    (<op> ^name two-one)
+    -->
+    (<s> ^phase two +)
+}
+
+sp {two*propose*two-one
+    (state <s> ^name two -^phase <p*1>)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name two-one + ^rl alpha +)
+}
+
+sp {rl-unit*propose*two
+    (state <s> ^case two ^name rl-unit)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name two +)
+}
+
+sp {apply*three-two
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name three-two)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^case three - ^case four +)
+}
+
+sp {three*propose*three-two
+    (state <s> ^phase two ^name three)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name three-two + ^rl alpha +)
+}
+
+sp {apply*three-one-one
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name three-one-one)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^phase two +)
+}
+
+sp {three-one*propose*three-one-one
+    (state <s> ^name three-one)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name three-one-one +)
+}
+
+sp {three*propose*three-one
+    (state <s> ^name three -^phase <p*1>)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name three-one + ^rl alpha +)
+}
+
+sp {rl-unit*propose*three
+    (state <s> ^case three ^name rl-unit)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name three +)
+}
+
+sp {apply*one-two
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name one-two)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^case one - ^case two +)
+}
+
+sp {one*propose*one-two
+    (state <s> ^phase two ^name one)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name one-two + ^rl alpha +)
+}
+
+sp {apply*one-one
+    (state <s> ^operator <op>)
+    (<op> ^name one-one)
+    -->
+    (<s> ^phase two +)
+}
+
+sp {one*propose*one-one
+    (state <s> ^name one -^phase <p*1>)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name one-one + ^rl alpha +)
+}
+
+sp {rl-unit*propose*one
+    (state <s> ^case one ^name rl-unit)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name one +)
+}
+
+sp {apply*initialize-rl-unit
+    (state <s> ^operator <op>)
+    (<op> ^name initialize-rl-unit)
+    -->
+    (<s> ^name rl-unit + ^case one + ^max-cases five +)
+}
+
+sp {propose*initialize-rl-unit
+    (state <s> ^superstate nil -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-rl-unit + ^rl alpha +)
+}
+
+sp {apply*four-two
+    (state <s> ^operator <op>)
+    (<op> ^name four-two)
+    -->
+    (<s> ^phase two - ^phase three +)
+}
+
+sp {four*propose*four-two
+    (state <s> ^phase two ^name four)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name four-two +)
+}
+
+sp {apply*four-three-one
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name four-three-one)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^phase three - ^phase four +)
+}
+
+sp {four-three*propose*four-three-one
+    (state <s> ^name four-three)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name four-three-one +)
+}
+
+sp {four*propose*four-three
+    (state <s> ^phase three ^name four)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name four-three +)
+}
+
+sp {apply*four-one
+    (state <s> ^operator <op>)
+    (<op> ^name four-one)
+    -->
+    (<s> ^phase two +)
+}
+
+sp {four*propose*four-one
+    (state <s> ^name four -^phase <p*1>)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name four-one + ^rl alpha +)
+}
+
+sp {apply*four-four
+    (state <s> ^operator <op> ^superstate <ss>)
+    (<op> ^name four-four)
+    (<ss> ^operator <ss-op>)
+    -->
+    (<ss> ^case four - ^case five +)
+}
+
+sp {four*propose*four-four
+    (state <s> ^phase four ^name four)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name four-four + ^rl alpha +)
+}
+
+sp {rl-unit*propose*four
+    (state <s> ^case four ^name rl-unit)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name four +)
+}
+
+sp {apply*done
+    (state <s> ^operator <op>)
+    (<op> ^name done)
+    -->
+    (interrupt)
+}
+
+sp {rl-unit*propose*done
+    (state <s> ^name rl-unit ^case <max> ^max-cases <max>)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name done +)
+}
+
+sp {elaborate*top-state*top-state
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+sp {reward
+    (state <s> ^reward-link <rl>)
+    -->
+    (<rl> ^reward <r*1> +)
+    (<r*1> ^value 100 +)
+}
+
+sp {elaborate*state*top-state
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^top-state <ts>)
+    -->
+    (<s> ^top-state <ts> +)
+}
+
+sp {elaborate*state*name
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^name <name> +)
+}
+
+sp {value*function
+   :template
+    (state <s> ^operator <op> +)
+    (<op> ^rl <num> ^name <op-name>)
+    -->
+    (<s> ^operator <op> = 0)
+}
+
+
+

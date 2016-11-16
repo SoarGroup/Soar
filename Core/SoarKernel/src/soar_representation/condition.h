@@ -102,13 +102,12 @@ typedef struct condition_struct
 
 condition*  make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
 uint32_t    hash_condition(agent* thisAgent, condition* cond);
-condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
-condition*  copy_condition_without_relational_constraints(agent* thisAgent, condition* cond);
+condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
 void        copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
-                         bool pCopyInstantiation = false);
+                         bool pCopyInstantiation = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
 void        deallocate_condition(agent* thisAgent, condition*& cond);
-void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
+void        deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity = false);
 
 void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list);
 void        unmark_variables_and_free_list(agent* thisAgent, cons* var_list);
@@ -117,7 +116,7 @@ int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);
 bool        canonical_cond_greater(condition* c1, condition* c2);
 
-void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
-void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_idset_map* pID_Set_Map = NULL);
+void        add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map);
+void        add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map);
 
 #endif

@@ -35,9 +35,9 @@ bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destSt
 {
     assert(thisAgent && w);
 
-    sprinta_sf(thisAgent, destString, "(t%u(r%u): %y(l%d) ^%y %y(l%d)%s",
-        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_sti() ? w->value->id->level : 0,
-        (w->acceptable ? " +)" : ")"));
+    sprinta_sf(thisAgent, destString, "(t%u: %y(lvl %d) ^%y %y(lvl %d)%s (rc %u)",
+        w->timetag, w->id, static_cast<int64_t>(w->id->id->level), w->attr, w->value, w->value->is_sti() ? static_cast<int64_t>(w->value->id->level) : 0,
+        (w->acceptable ? " +)" : ")"), w->reference_count);
 
     /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
      * Return value used to determine whether to print newline*/
@@ -157,7 +157,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             {
                 destString += test_type_to_string(t->type);
             }
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case CONJUNCTIVE_TEST:
             destString += "{ ";
@@ -179,7 +179,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         case SMEM_LINK_NOT_TEST:
             destString += test_type_to_string(t->type);
             destString += ' ';
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
@@ -191,7 +191,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             destString += "<< ";
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
             {
-                destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+                destString += static_cast<symbol_struct*>(c->first)->to_string(true);
                 destString += ' ';
             }
             destString += ">>";
@@ -256,6 +256,20 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
+void Output_Manager::condition_list_counterparts_to_string(agent* thisAgent, condition* top_cond, std::string &destString)
+{
+
+    condition* cond;
+    int64_t count = 0;
+
+    for (cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        assert(cond != cond->next);
+        sprinta_sf(thisAgent, destString, "%s%i: %l\n", m_pre_string, ++count, cond->counterpart);
+    }
+    return;
+}
+
 void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size)
 {
     std::string lStr;
@@ -295,7 +309,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         {
             if (rsym->referent)
             {
-                destString += rsym->referent->to_string(false);
+                destString += rsym->referent->to_string(true);
             } else {
                 destString += '#';
             }
@@ -314,7 +328,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
-                destString += sym->to_string(false);
+                destString += sym->to_string(true);
             } else {
                 destString += "[RETE-loc]";
             }
@@ -412,20 +426,20 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue;
-        if (pref->o_ids.id) {
-            lID = "[" + std::to_string(pref->o_ids.id) + "]";
+        if (pref->identities.id) {
+            lID = "[" + std::to_string(pref->identities.id) + "]";
         } else {
-            lID = pref->id->to_string(false);
+            lID = pref->id->to_string(true);
         }
-        if (pref->o_ids.attr) {
-            lAttr = "[" + std::to_string(pref->o_ids.attr) + "]";
+        if (pref->identities.attr) {
+            lAttr = "[" + std::to_string(pref->identities.attr) + "]";
         } else {
-            lAttr = pref->attr->to_string(false);
+            lAttr = pref->attr->to_string(true);
         }
-        if (pref->o_ids.value) {
-            lValue = "[" + std::to_string(pref->o_ids.value) + "]";
+        if (pref->identities.value) {
+            lValue = "[" + std::to_string(pref->identities.value) + "]";
         } else {
-            lValue = pref->value->to_string(false);
+            lValue = pref->value->to_string(true);
         }
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));

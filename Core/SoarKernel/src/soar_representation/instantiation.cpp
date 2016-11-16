@@ -979,6 +979,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
 //        debug_trace_set(0, true);
@@ -992,7 +993,7 @@ void create_instantiation(agent* thisAgent, production* prod,
 //    }
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n   Creating instantiation of rule %y", inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\n   Creating instantiation of rule %y\n", inst->prod_name);
         char buf[256];
         SNPRINTF(buf, 254, "Creating instantiation of rule %s", inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -1215,7 +1216,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished.\n", inst->prod_name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, inst->match_goal_level);
 
     if (!thisAgent->system_halted)
     {
@@ -1260,19 +1261,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-
-        dprint(DT_DEALLOCATES, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INSTANTIATION, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 //        if (inst->i_id == 23)
 //        {
 //            dprint(DT_DEBUG, "Found.\n");
 //        }
 
         level = inst->match_goal_level;
-
-        /* The following cleans up some temporary structures used by
-         * explanation-based learning, most notably the identity->rule variable
-         * mapping that are only used for debugging in a non-release build. */
-        thisAgent->explanationBasedChunker->cleanup_for_instantiation_deallocation(inst->i_id);
 
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
                     cond->next)
@@ -1400,6 +1395,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         while (inst->preferences_cached)
         {
             next_pref = inst->preferences_cached->inst_next;
+            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", inst->i_id, inst->prod_name, inst->preferences_cached);
             deallocate_preference(thisAgent, inst->preferences_cached);
             inst->preferences_cached = next_pref;
         }
@@ -1431,21 +1427,37 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
+//    for (instantiation* linst = thisAgent->newly_created_instantiations; linst != NIL; linst = linst->next)
+//    {
+//        if (linst == inst)
+//            remove_from_dll(thisAgent->newly_created_instantiations, inst, next, prev);
+//    }
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
     while (riter != inst_list.rend())
     {
         instantiation* temp = *riter;
         ++riter;
 
-        deallocate_condition_list(thisAgent,
-                                  temp->top_of_instantiated_conditions);
+        dprint(DT_DEALLOCATE_INSTANTIATION, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
+        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
+
+        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+        /* Setting deallocate_condition_list()'s pCleanUpIdentity argument to true
+         * will build up a set of identities to clean up.  We call this to actually
+         * remove entries from the debug symbol map */
+        thisAgent->explanationBasedChunker->cleanup_debug_mappings();
+        #endif
+
         if (temp->prod)
         {
-            production_remove_ref(thisAgent, temp->prod);
+            dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
+            production_remove_ref(thisAgent, temp->prod, true);
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Done removing instantiation's instantiation list.\n");
     inst = NULL;
 }
 
@@ -1546,6 +1558,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
     /* --- mark as no longer in MS, and possibly deallocate  --- */
     inst->in_ms = false;
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
@@ -1558,9 +1571,9 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->o_ids.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
-    pref->o_ids.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
-    pref->o_ids.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
+    pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
 
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NULL;
@@ -1645,6 +1658,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     thisAgent->SMem->clear_instance_mappings();
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;
@@ -1716,6 +1730,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     instantiation* inst;
     preference* pref;
     condition* cond, *last_cond;
+    uint64_t state_sym_identity, superop_sym_identity;
 
     /* --- find the acceptable preference wme we want to backtrace to --- */
     s = cand->slot;
@@ -1745,13 +1760,14 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
 
-    /* --- make the fake condition --- */
+    /* --- make the fake conditions --- */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
     cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
     cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
+    superop_sym_identity = cond->data.tests.value_test->identity;
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
     cond->test_for_acceptable_preference = true;
@@ -1771,6 +1787,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, goal, EQUALITY_TEST);
     cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
+    state_sym_identity = cond->data.tests.id_test->identity;
     cond->data.tests.attr_test = make_test(thisAgent, thisAgent->symbolManager->soarSymbols.superstate_symbol, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
     cond->data.tests.value_test->identity = last_cond->data.tests.id_test->identity;
@@ -1793,11 +1810,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
-                           cand->value, NIL,
-                           identity_triple(
-                               thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id),
-                               0,
-                               cond->data.tests.value_test->identity));
+                           cand->value, NIL, identity_triple(state_sym_identity, 0, superop_sym_identity));
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
@@ -1829,6 +1842,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
+
+    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);

@@ -29,7 +29,9 @@
 #include "sml_RunScheduler.h"
 
 #include "agent.h"
+#include "ebc.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
@@ -55,9 +57,7 @@
 //    #include <cxxabi.h>
 #endif
 
-//#include <exception>
-//#include <sstream>
-//#include <cstring>
+void debug_trace_off();
 
 // TODO: this is twice declared; here and output_manager.h
 // TODO: this isn't good enough. Arbitrary length should be acceptable.
@@ -194,6 +194,10 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         /* Returning true.  Otherwise, Soar will exit if the file could not be found. */
         return true;
     }
+    pSoarAgent->outputManager->cache_output_modes();
+    #ifdef DEBUG_ONLY_CHUNK_ID
+        debug_trace_off();
+    #endif
 
     // Return true if we got an agent constructed.
     return true ;
@@ -837,7 +841,7 @@ bool KernelSML::HandleGetInputLink(AgentSML* pAgentSML, char const* /*pCommandNa
 
     // Turn the id symbol into an actual string
     char buf[ MAX_LEXEME_LENGTH ];
-    char* id = sym->to_string(true, buf, MAX_LEXEME_LENGTH);
+    char* id = sym->to_string(true, false, buf, MAX_LEXEME_LENGTH);
 
     if (id)
     {

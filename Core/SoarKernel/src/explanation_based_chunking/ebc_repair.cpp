@@ -16,10 +16,10 @@
 #include "explanation_memory.h"
 
 
-void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** unconnected_syms)
+void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** unconnected_syms)
 {
-    symbol_with_match_list* lSyms = *unconnected_syms;
-    symbol_with_match* lSym;
+    matched_symbol_list* lSyms = *unconnected_syms;
+    matched_sym* lSym;
 
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
@@ -28,10 +28,6 @@ void delete_ungrounded_symbol_list(agent* thisAgent, symbol_with_match_list** un
         {
             lSym->sym->tc_num = 0;
         }
-//        if (lSym->matched_sym)
-//        {
-//            thisAgent->symbolManager->symbol_remove_ref(&lSym->matched_sym);
-//        }
         delete lSym;
     }
     delete (*unconnected_syms);
@@ -54,7 +50,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     {
         g = g->id->lower_goal;
     }
-    dprint(DT_REPAIR, "...goal %y found for level %d.\n", g, static_cast<int64_t>(pNonOperationalSym->id->level));
+    dprint(DT_REPAIR, "...%y's goal found: %y at level %d.\n", pNonOperationalSym, g, static_cast<int64_t>(pNonOperationalSym->id->level));
 
     lNewPath = new Path_to_Goal_State(g);
 //    if (g == pNonOperationalSym)
@@ -80,6 +76,8 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
             {
                 for (wme* w = s->wmes; w != NIL; w = w->next)
                 {
+                    dprint(DT_REPAIR, "   ...considering WME: (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
+
                     if (w->preference && w->value->is_sti() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
@@ -90,7 +88,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
                             final_path = new wme_list();
                             (*final_path) = *(lNewPath->get_path());
                         } else {
-                            dprint(DT_REPAIR, "      - Adding wme (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
+                            dprint(DT_REPAIR, "      - Adding WME (%y ^%y %y) %s\n", w->id, w->attr, w->value, w->preference ? "Preference" : "NO Preference");
                             ids_to_walk.push_back(lNewPath);
                         }
                     }
@@ -153,7 +151,7 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     }
 }
 
-void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
+void Repair_Manager::add_path_to_goal_WMEs(matched_sym* pTargetSym, tc_number cond_tc)
 {
     dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->matched_sym);
@@ -161,8 +159,13 @@ void Repair_Manager::add_path_to_goal_WMEs(symbol_with_match* pTargetSym)
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
     {
         wme* lWME = (*it);
-        m_repair_WMEs.insert(lWME);
         dprint(DT_REPAIR, "......adding to repair wme set: (%y ^%y %y)\n", lWME->id, lWME->attr, lWME->value);
+        if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->matched_sym))
+        {
+            dprint(DT_REPAIR, "   ...WME exists in conditions already.  Skipping.\n");
+            continue;
+        }
+        m_repair_WMEs.insert(lWME);
     }
 }
 
@@ -199,26 +202,18 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
          * 'c' instead of first letter of id name.  We now don't use 'o' for
          * non-operators and don't use 's' for non-states.  That makes things
          * clearer in chunks because of standard naming conventions. --- */
-        if (lMatchedSym->is_sti())
-        {
-            char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
-            if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
-            {
-                prefix[0] = 'c';
-            } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lMatchedSym->id->isa_operator) {
-                prefix[0] = 'c';
-            } else {
-                prefix[0] = prefix_char;
-            }
-        }
-        else
+        char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
+        if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
         {
             prefix[0] = 'c';
+        } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lMatchedSym->id->isa_operator) {
+            prefix[0] = 'c';
+        } else {
+            prefix[0] = prefix_char;
         }
         prefix[1] = 0;
         lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
         lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
-
     }
     else
     {
@@ -287,7 +282,7 @@ void Repair_Manager::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pId
     assert(!pVar->is_variable() || pIdentity);
 }
 
-void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc)
+void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCondList, tc_number tc)
 {
     assert(pCondList);
     condition* lCond;
@@ -298,16 +293,15 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
     {
         if (lCond->type == POSITIVE_CONDITION)
         {
+            assert(lCond->bt.wme_);
+            /* Mark the wme so that we don't add a duplicate */
+            lCond->bt.wme_->tc = tc;
             if (lCond->data.tests.id_test->eq_test->data.referent->is_sti())
             {
                 if (lCond->data.tests.id_test->eq_test->data.referent->id->isa_goal)
                 {
                     dprint(DT_REPAIR, "Marking state found %y in id element with tc_num %u\n", lCond->data.tests.id_test->eq_test->data.referent, tc);
                     lCond->data.tests.id_test->eq_test->data.referent->tc_num = tc;
-                    if (lCond->counterpart && lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_variable())
-                    {
-                        add_variablization(lCond->data.tests.id_test->eq_test->data.referent, lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
-                    }
                 }
             } else {
                 if (lCond->counterpart &&
@@ -316,11 +310,15 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 {
                     dprint(DT_REPAIR, "Marking state found %y in id element counterpart with tc_num %u\n", lCond->counterpart->data.tests.id_test->eq_test->data.referent, tc);
                     lCond->counterpart->data.tests.id_test->eq_test->data.referent->tc_num = tc;
-                    if (lCond->data.tests.id_test->eq_test->data.referent->is_variable())
-                    {
-                        add_variablization(lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
-                    }
                 }
+            }
+            if (lCond->counterpart && lCond->counterpart->data.tests.id_test->eq_test->data.referent->is_variable())
+            {
+                add_variablization(lCond->data.tests.id_test->eq_test->data.referent, lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
+            }
+            if (lCond->data.tests.id_test->eq_test->data.referent->is_variable())
+            {
+                add_variablization(lCond->counterpart->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->data.referent, lCond->data.tests.id_test->eq_test->identity);
             }
             if (lCond->data.tests.value_test->eq_test->data.referent->is_sti())
             {
@@ -328,10 +326,6 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 {
                     dprint(DT_REPAIR, "Marking state found %y in value element with tc_num %u\n", lCond->data.tests.value_test->eq_test->data.referent, tc);
                     lCond->data.tests.value_test->eq_test->data.referent->tc_num = tc;
-                    if (lCond->counterpart && lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_variable())
-                    {
-                        add_variablization(lCond->data.tests.value_test->eq_test->data.referent, lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
-                    }
                 }
             } else {
                 if (lCond->counterpart &&
@@ -340,19 +334,23 @@ void Repair_Manager::mark_states_in_cond_list(condition* pCondList, tc_number tc
                 {
                     dprint(DT_REPAIR, "Marking state found %y in value element counterpart with tc_num %u\n", lCond->counterpart->data.tests.value_test->eq_test->data.referent, tc);
                     lCond->counterpart->data.tests.value_test->eq_test->data.referent->tc_num = tc;
-                    if (lCond->data.tests.value_test->eq_test->data.referent->is_variable())
-                    {
-                        add_variablization(lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
-                    }
                 }
+            }
+            if (lCond->counterpart && lCond->counterpart->data.tests.value_test->eq_test->data.referent->is_variable())
+            {
+                add_variablization(lCond->data.tests.value_test->eq_test->data.referent, lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
+            }
+            if (lCond->data.tests.value_test->eq_test->data.referent->is_variable())
+            {
+                add_variablization(lCond->counterpart->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->data.referent, lCond->data.tests.value_test->eq_test->identity);
             }
         }
     }
 }
 
-void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, symbol_with_match_list* p_dangling_syms)
+void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, matched_symbol_list* p_dangling_syms)
 {
-    symbol_with_match* lDanglingSymInfo;
+    matched_sym* lDanglingSymInfo;
     wme* lWME;
     goal_stack_level targetLevel;
 
@@ -387,7 +385,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     tc = get_new_tc_number(thisAgent);
 
     dprint(DT_REPAIR, "Step 2: Marking states currently in conditions: \n");
-    mark_states_in_cond_list(m_vrblz_top, tc);
+    mark_states_WMEs_and_store_variablizations(m_vrblz_top, tc);
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NULL);
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
@@ -401,7 +399,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
          * added the state links above */
         if (!lDanglingSymInfo->matched_sym->is_state())
         {
-            add_path_to_goal_WMEs(lDanglingSymInfo);
+            add_path_to_goal_WMEs(lDanglingSymInfo, tc);
         }
     }
 
@@ -464,10 +462,16 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 
     if (m_prod_type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+        matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
+
+        /* Fix m_inst's bottom and top pointers to match re-ordered variablized conditions*/
+        m_inst_top = m_vrblz_top->counterpart;
+        condition* c = m_vrblz_top;
+        while (c->next) c = c->next;
+        m_inst_bottom = c->counterpart;
 
         if (m_failure_type != ebc_success)
         {
@@ -478,9 +482,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                unconnected_syms = new symbol_with_match_list();
+                unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom, unconnected_syms, false, false))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
@@ -502,9 +506,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
     }
     else if (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] || ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS])
     {
-        symbol_with_match_list* unconnected_syms = new symbol_with_match_list();
+        matched_symbol_list* unconnected_syms = new matched_symbol_list();
 
-        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false,
+        reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS], ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]);
 
         if (m_failure_type != ebc_success)
@@ -520,9 +524,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
                 lRepairManager->repair_rule(m_vrblz_top, m_inst_top, m_inst_bottom, unconnected_syms);
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                unconnected_syms = new symbol_with_match_list();
+                unconnected_syms = new matched_symbol_list();
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
-                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms))
+                if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom, unconnected_syms, false, false))
                 {
                     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
