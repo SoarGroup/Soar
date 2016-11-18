@@ -1,6 +1,5 @@
 chunk always
 srand 7
-
 sp {evaluate-operator*elaborate*evaluation*failure*no-operators
     :default
     (state <goal-nc> ^quiescence t ^impasse no-change ^attribute state
@@ -199,23 +198,23 @@ sp {evaluate-operator*elaborate*state*eval*desired
 
 sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
     :default
-    (state <s> ^default-state-copy yes ^problem-space <p> ^duplicates <d*1>
-          ^duplicate-of <d*2>)
-    (<p> -^dont-copy-anything <d*3> ^all-attributes-at-level two
+    (state <s> ^default-state-copy yes ^problem-space <p> ^duplicates <d>
+          ^duplicate-of <d*1>)
+    (<p> -^dont-copy-anything <d*2> ^all-attributes-at-level two
           -^one-level-attributes <att> -^dont-copy <att>)
-    (<d*2> ^{ <> tried-tied-operator <att> } <id>)
-    (<d*1> ^<id> <new-id>)
+    (<d> ^<new-id> { <> tried-tied-operator <att> } ^<id> <new-id>)
+    (<d*1> ^<att> <id>)
     -->
     (<s> ^<att> <new-id> +)
 }
 
 sp {evaluate-operator*elaborate*state*add-duplicate-to-state
     :default
-    (state <s> ^default-state-copy yes ^duplicates <d*1> ^duplicate-of <d*2>
+    (state <s> ^default-state-copy yes ^duplicates <d> ^duplicate-of <d*1>
           ^problem-space <p*1>)
     (<p*1> ^two-level-attributes <att>)
-    (<d*2> ^<att> <id>)
-    (<d*1> ^<id> <new-id>)
+    (<d> ^<new-id> <att> ^<id> <new-id>)
+    (<d*1> ^<att> <id>)
     -->
     (<s> ^<att> <new-id> +)
 }
@@ -223,7 +222,7 @@ sp {evaluate-operator*elaborate*state*add-duplicate-to-state
 sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
     :default
     (state <s> ^default-state-copy yes ^duplicates <d>)
-    (<d> ^<id> <new-id> ^<sub-val> <new-val>)
+    (<d> ^<id> { <=> <d> <new-id> } ^<sub-val> <new-val>)
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
     -->
     (<new-id> ^<sub-att> <new-val> +)
@@ -233,7 +232,7 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
     :default
     (state <s> ^default-state-copy yes ^duplicates <d> ^problem-space <p*1>)
     (<p*1> ^no-local-negations <nln>)
-    (<d> ^<id> <new-id>)
+    (<d> ^<id> { <=> <d> <new-id> })
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
     -->
     (<new-id> ^<sub-att> <sub-val> +)
@@ -244,7 +243,7 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate
     (state <s> ^default-state-copy yes ^duplicates <d>)
    -{ (<s> ^problem-space <p*1>)
       (<p*1> ^no-local-negations <nln>)}
-    (<d> ^<id> <new-id> -^<sub-val> <s*1>)
+    (<d> ^<id> { <=> <d> <new-id> } -^<sub-val> <s*1>)
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
    -{ (<s> ^problem-space <p*2>)
       (<p*2> ^dont-copy <sub-att>)}
@@ -261,7 +260,7 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
     (<ss>
           ^{ <> duplicate-of <> tried-tied-operator <> problem-space <> impasse <> attribute <> choices <> quiescence <> operator <> superstate <att> } <id>)
     -->
-    (<d> ^<id> <new-id> +)
+    (<d> ^<id> <new-id> + ^<new-id> <att> +)
 }
 
 sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
@@ -271,7 +270,7 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
     (<p*1> ^two-level-attributes <att>)
     (<d*1> ^<att> <id>)
     -->
-    (<d> ^<id> <new-id> +)
+    (<d> ^<id> <new-id> + ^<new-id> <att> +)
 }
 
 sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
@@ -750,7 +749,7 @@ sp {top-goal*halt*failure
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << prohibit-failure failure exhaustion-failure >> <a*1> } <eb>)
     -->
-    (interrupt)
+    (halt)
 }
 
 sp {top-goal*halt*success
@@ -758,7 +757,7 @@ sp {top-goal*halt*success
     (state <s> ^superstate nil ^desired <eb> ^name <name>
           ^{ << required-success success >> <a*1> } <eb>)
     -->
-    (interrupt)
+    (halt)
 }
 
 sp {default*select*reject*conflict
@@ -789,7 +788,7 @@ sp {default*top-goal*halt*operator*failure
     -->
     (write (crlf) |No operator can be selected for top goal.|)
     (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)
-    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)(interrupt)
+    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)(halt)
 }
 
 sp {top-ps*apply*wait*random
@@ -929,8 +928,8 @@ sp {blocks-world*elaborate*problem-space
     (<s> ^problem-space <p> +)
     (<p> ^name move-blocks + ^default-state-copy yes + ^dont-copy top-state +
            ^dont-copy clear + ^dont-copy inplace-object +
-           ^dont-copy moveable + ^two-level-attributes desired +
-           ^two-level-attributes ontop + ^one-level-attributes object +)
+           ^dont-copy moveable + ^two-level-attributes ontop +
+           ^one-level-attributes object +)
 }
 
 sp {elaborate*block*moveable
@@ -977,7 +976,6 @@ sp {P11*halt*all-blocks-in-desired-position
     -->
     (<s> ^success <ds> +)
     (write (crlf) |TASK: Finished Stacking the Blocks.|)
-    (interrupt)
 }
 
 sp {P2*elaborate*table*clear

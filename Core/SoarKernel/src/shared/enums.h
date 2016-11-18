@@ -150,7 +150,7 @@ enum IDSet_Mapping_Type {
 
 enum BTSourceType {
     BT_BaseInstantiation,
-    BT_CDPS,
+    BT_OSK,
     BT_ExtraResults,
     BT_Normal
 };

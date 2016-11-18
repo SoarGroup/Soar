@@ -44,8 +44,7 @@ typedef struct bt_info_struct
     wme* wme_;                      /* the actual wme that was matched */
     goal_stack_level level;         /* level (at firing time) of the id of the wme */
     preference* trace;              /* preference for BT, or NIL */
-    cons* CDPS;            /* list of substate evaluation prefs to backtrace through,
-                              i.e. the context dependent preference set. */
+    cons* OSK_prefs;                /* list of operator prefs that contributed to operator selected */
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */

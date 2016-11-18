@@ -97,7 +97,7 @@ typedef struct gds_struct
         match goal, with the pref. supported by the highest goal at the
         head of the list.
 
-      CDPS: a dll of preferences in the context-dependent preference set,
+      OSK: a dll of preferences in the context-dependent preference set,
         which is the set of all preferences that contributed to an operator's
         selection.  This is used to allow Soar to backtrace through evaluation
         rules in substates.  The rules that determine which preferences are
@@ -139,10 +139,10 @@ extern void create_gds_for_goal(agent* thisAgent, Symbol* goal);
 extern void remove_operator_if_necessary(agent* thisAgent, slot* s, wme* w);
 
 extern int GDS_PrintCmd(/****ClientData****/ int clientData,
-        /****Tcl_Interp****/ void* interp,
-        int argc, char* argv[]);
+                        /****Tcl_Interp****/ void* interp,
+                        int argc, char* argv[]);
 
-void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value = true);
+void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value = true);
 void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, preference* candidates);
 extern byte run_preference_semantics(agent* thisAgent, slot* s, preference** result_candidates, bool consistency = false, bool predict = false);
 

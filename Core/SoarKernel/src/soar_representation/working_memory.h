@@ -185,10 +185,10 @@ inline Symbol* get_wme_element(wme* w, WME_Field f)
       output_link:  this is used only for top-state output links.
          It points to an output_link structure used by the I/O routines.
 
-      grounds_tc, potentials_tc, locals_tc:  used by the chunker to indicate
-         whether this wme is in the grounds, potentials, and/or locals sets
+      tc:  used by EBC when determining whether a wme is in the grounds,
+           or locals
 
-      chunker_bt_pref: used by the chunker; set to cond->bt.trace when
+      chunker_bt_pref: used by EBC; set to cond->bt.trace when
          a wme is added to either the potentials or locals set
 
       These are the additions to the WME structure that will be used

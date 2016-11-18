@@ -10,7 +10,6 @@
 
 typedef struct action_struct action;
 typedef struct agent_struct agent;
-typedef struct backtrace_struct backtrace_str;
 typedef struct chunk_cond_struct chunk_cond;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;

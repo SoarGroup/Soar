@@ -35,16 +35,4 @@ typedef struct chunk_cond_set_struct
     chunk_cond* table[CHUNK_COND_HASH_TABLE_SIZE];  /* hash table buckets */
 } chunk_cond_set;
 
-typedef struct backtrace_struct
-{
-    int result;                    /* 1 when this is a result of the chunk */
-    condition* trace_cond;         /* The (local) condition being traced */
-    char       prod_name[BUFFER_PROD_NAME_SIZE];         /* The production's name */
-    condition* grounds;            /* The list of conds for the LHS of chunk */
-    condition* potentials;         /* The list of conds which aren't linked */
-    condition* locals;             /* Conds in the subgoal -- need to BT */
-    condition* negated;            /* Negated conditions (sub/super) */
-    struct backtrace_struct* next_backtrace; /* Pointer to next in this list */
-} backtrace_str;
-
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_STRUCTS_H_ */

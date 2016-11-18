@@ -117,15 +117,8 @@ namespace sml
             bool IsTagLocals() const ;
             bool IsTagGrounds() const ;
             bool IsTagNegated() const ;
-            bool IsTagNot() const ;
-            bool IsTagNots() const ;
-            bool IsTagPotentials() const ;
-            bool IsTagGroundedPotentials() const ;
-            bool IsTagUngroundedPotentials() const ;
-            bool IsTagUngroundedPotential() const ;
             bool IsTagBacktrace() const ;
-            bool IsTagAddToPotentials() const ;
-            bool IsTagCDPSPreference() const ;
+            bool IsTagOSKPreference() const ;
             bool IsTagBacktraceResult() const ;
             bool IsTagLocalNegation() const ;
             
