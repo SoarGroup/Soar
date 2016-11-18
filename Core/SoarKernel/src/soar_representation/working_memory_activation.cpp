@@ -25,6 +25,8 @@
 #include "slot.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "semantic_memory.h"
+#include "smem_timers.h"
 
 #include <set>
 #include <cmath>
@@ -589,11 +591,13 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             temp_el->num_references += num_references;
             thisAgent->WM->wma_touched_elements->insert(w);
         }
+        thisAgent->SMem->timers->spreading_wma_1->start();
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
             if (w->value->id && w->value->id->LTI_ID)
             {
-                thisAgent->SMem->invalidate_from_lti(w->id->id->LTI_ID);
+                //thisAgent->SMem->invalidate_from_lti(w->id->id->LTI_ID);//This is a HUGE time sink.
+                thisAgent->SMem->add_to_invalidate_from_lti_table(w->id->id->LTI_ID);
                 /*for (int i = 1; i < 11; i++)
                 {//A changing edge weight is treated as an invalidation of cases that could have used that edge.
                     thisAgent->SMem->SQL->trajectory_invalidate_from_lti->bind_int(i,w->id->id->LTI_ID);
@@ -614,6 +618,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
                 list_ptr_for_parent->push_back(new_update);
             }
         }
+        thisAgent->SMem->timers->spreading_wma_1->stop();
     }
     // i-supported, non-architectural WME
     else if (!o_only && (w->preference) && (w->preference->reference_count))
@@ -699,6 +704,7 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
             temp_el->just_removed = true;
             if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
             {
+                thisAgent->SMem->timers->spreading_wma_2->start();
                 auto wmas = thisAgent->SMem->smem_wmas->equal_range(w->id->id->LTI_ID);
                 for (auto wma = wmas.first; wma != wmas.second; ++wma)
                 {
@@ -708,6 +714,7 @@ void wma_deactivate_element(agent* thisAgent, wme* w)
                         break;
                     }
                 }
+                thisAgent->SMem->timers->spreading_wma_2->stop();
             }
         }
     }

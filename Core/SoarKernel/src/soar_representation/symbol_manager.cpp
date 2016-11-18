@@ -675,6 +675,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_depth_retrieved = make_str_constant("depth-retrieved");
     soarSymbols.smem_sym_status = make_str_constant("status");
     soarSymbols.smem_sym_success = make_str_constant("success");
+    soarSymbols.smem_sym_act = make_str_constant("activation");
     soarSymbols.smem_sym_failure = make_str_constant("failure");
     soarSymbols.smem_sym_bad_cmd = make_str_constant("bad-cmd");
     soarSymbols.smem_sym_depth = make_str_constant("depth");
@@ -783,6 +784,7 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.smem_sym_depth_retrieved));
     symbol_remove_ref(&(soarSymbols.smem_sym_status));
     symbol_remove_ref(&(soarSymbols.smem_sym_success));
+    symbol_remove_ref(&(soarSymbols.smem_sym_act));
     symbol_remove_ref(&(soarSymbols.smem_sym_failure));
     symbol_remove_ref(&(soarSymbols.smem_sym_bad_cmd));
     symbol_remove_ref(&(soarSymbols.smem_sym_depth));

@@ -130,6 +130,9 @@ class smem_statement_container: public soar_module::sqlite_statement_container
         soar_module::sqlite_statement* trajectory_find_invalid;
         soar_module::sqlite_statement* trajectory_get;
         soar_module::sqlite_statement* trajectory_invalidate_from_lti;
+        soar_module::sqlite_statement* trajectory_invalidate_from_lti_add;
+        soar_module::sqlite_statement* trajectory_invalidate_from_lti_clear;
+        soar_module::sqlite_statement* trajectory_invalidate_from_lti_table;
         soar_module::sqlite_statement* trajectory_invalidate_edge;
         soar_module::sqlite_statement* trajectory_size_debug_cmd;
         soar_module::sqlite_statement* likelihood_cond_count_remove;

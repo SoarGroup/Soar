@@ -481,6 +481,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
         }
     }
 
+    double cand_act = 0.0;
     // only search if the cue was valid
     if (good_cue && !weighted_cue.empty())
     {
@@ -500,6 +501,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
 
         if (settings->spreading->get_value() == on)
         {
+            timers->spreading->start();
             q = setup_cheap_web_crawl(*cand_set);
             std::set<uint64_t> to_update;
             int num_answers = 0;
@@ -509,6 +511,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
                 to_update.insert(q->column_int(0));
             }
             q->reinitialize();
+            timers->spreading->stop();
             if (num_answers >= 400)
             {
                 calc_spread(&to_update, true, &cand_set);
@@ -606,11 +609,13 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
                     if (use_db)
                     {
                         cand = q->column_int(0);
+                        cand_act = q->column_double(1);
                         more_rows = (q->execute() == soar_module::row);
                     }
                     else
                     {
                         cand = plentiful_parents.top().second;
+                        cand_act = plentiful_parents.top().first;
                         plentiful_parents.pop();
                     }
                 }
@@ -748,6 +753,10 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
         if (king_id != NIL)
         {
             // success!
+            //Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
+            //add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
+            //thisAgent->symbolManager->symbol_remove_ref(&act_sym);
+
             add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
             if (negquery)
             {

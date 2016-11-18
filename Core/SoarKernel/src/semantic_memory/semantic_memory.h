@@ -94,6 +94,8 @@ class SMem_Manager
 
         /* Where working memory activation needs to give smem information on edgeweights */
         void        invalidate_from_lti(uint64_t invalid_parent);
+        void        add_to_invalidate_from_lti_table(uint64_t invalid_parent);
+        void        batch_invalidate_from_lti();
 
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
         std::map<uint64_t, uint64_t>* smem_in_wmem;

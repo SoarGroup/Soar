@@ -42,6 +42,7 @@ void smem_statement_container::create_tables()
     add_structure("CREATE TABLE smem_committed_spread (lti_id INTEGER, num_appearances_i_j REAL, num_appearances REAL, lti_source INTEGER, PRIMARY KEY (lti_source, lti_id)) WITHOUT ROWID");
     add_structure("CREATE TABLE smem_current_spread_activations (lti_id INTEGER PRIMARY KEY, activation_base_level REAL, activation_spread REAL, activation_value REAL)");
     add_structure("CREATE TABLE smem_to_delete (lti_id INTEGER PRIMARY KEY)");
+    add_structure("CREATE TABLE smem_invalid_parents (lti_id INTEGER PRIMARY KEY) WITHOUT ROWID");
     // adding an ascii table just to make lti queries easier when inspecting database
     {
         add_structure("INSERT OR IGNORE INTO smem_ascii (ascii_num, ascii_chr) VALUES (65,'A')");
@@ -483,6 +484,15 @@ smem_statement_container::smem_statement_container(agent* new_agent): soar_modul
     //invalidating trajectories containing some lti and don't have null afterwards
     trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
     add(trajectory_invalidate_from_lti);
+
+    trajectory_invalidate_from_lti_add = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_invalid_parents (lti_id) VALUES (?)");
+    add(trajectory_invalidate_from_lti_add);
+
+    trajectory_invalidate_from_lti_clear = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_invalid_parents");
+    add(trajectory_invalidate_from_lti_clear);
+
+    trajectory_invalidate_from_lti_table = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE rowid in (SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON smem_likelihood_trajectories.lti_id=smem_invalid_parents.lti_id WHERE lti1!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti1=smem_invalid_parents.lti_id WHERE lti2!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti2=smem_invalid_parents.lti_id WHERE lti3!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti3=smem_invalid_parents.lti_id WHERE lti4!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti4=smem_invalid_parents.lti_id WHERE lti5!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti5=smem_invalid_parents.lti_id WHERE lti6!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti6=smem_invalid_parents.lti_id WHERE lti7!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti7=smem_invalid_parents.lti_id WHERE lti8!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti8=smem_invalid_parents.lti_id WHERE lti9!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti9=smem_invalid_parents.lti_id WHERE lti10!=0)");
+    add(trajectory_invalidate_from_lti_table);
 
     //invalidating trajectories containing some lti followed by a particular different lti
     trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=? AND lti1!=0) OR (lti1=? AND lti2=? AND lti2!=0) OR (lti2=? AND lti3=? AND lti3!=0) OR (lti3=? AND lti4=? AND lti4!=0) OR (lti4=? AND lti5=? AND lti5!=0) OR (lti5=? AND lti6=? AND lti6!=0) OR (lti6=? AND lti7=? AND lti7!=0) OR (lti7=? AND lti8=? AND lti8!=0) OR (lti8=? AND lti9=? AND lti9!=0) OR (lti9=? AND lti10=? AND lti10!=0)");
