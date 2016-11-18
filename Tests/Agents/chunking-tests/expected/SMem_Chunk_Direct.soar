@@ -1,11 +1,12 @@
 sp {answer*apply*sub-op*make-chunk*StateNoChange*t4-1
-    (state <s1> ^superstate nil)
-    (<s1> ^result1 <l1>)
+    (state <s1> ^superstate nil ^result1 <l1>)
     (<l1> ^next <l2>)
     (<l2> -^value <v*1>)
     -->
     (<s1> ^result <l3> +)
-    (<l3> ^result1 <l4> +)
+    (<l3> ^result1 <l4> + ^result2 <l1> +)
     (<l4> ^value bar +)
-    (<l3> ^result2 <l1> +)
 }
+
+
+

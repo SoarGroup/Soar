@@ -2,6 +2,12 @@ sp {answer*retrieve*elaborate*smem-result*t5-1
     (state <s1> ^retrieve-handle stack)
     -->
     (<s1> ^result <l1> +)
-    (<l1> ^foo bar +)
-    (<l1> ^handle stack +)
+    (<l1> ^foo bar + ^handle stack +)
+}
+
+sp {answer*retrieve*elaborate*smem-result*t5-1b
+    (state <s1> ^retrieve-handle stack)
+    -->
+    (<s1> ^result <l1> +)
+    (<l1> ^handle stack + ^foo bar +)
 }

@@ -15,10 +15,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_CHUNKING_TESTS
 //        /* The following two tests will sporadically fail when run as a unit test.  No idea why. */
-//         CPPUNIT_TEST(SMem_Chunked_Query);
-//         CPPUNIT_TEST(SMem_Chunked_Query2);
+         CPPUNIT_TEST(SMem_Chunked_Query);
+         CPPUNIT_TEST(SMem_Chunked_Query2);
 //        /* The following test fails on jenkins, but doesn't fail on my machine or my VMs.  Not sure why. */
-//        CPPUNIT_TEST(SMem_Chunk_Direct);
+        CPPUNIT_TEST(SMem_Chunk_Direct);
 
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
@@ -106,6 +106,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
         void source(const std::string& path);
         void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
+        void build_and_check_chunk_clean(const std::string& path, int64_t decisions, int64_t expected_chunks);
         void STI_Variablization();
         void STI_Variablization_Same_Type();
         void All_Test_Types();
@@ -200,10 +201,13 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
     source(path.c_str());
     pAgent->RunSelf(decisions, sml::sml_DECISION);
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
-//    CPPUNIT_ASSERT(succeeded);
+    //    CPPUNIT_ASSERT(succeeded);
+
     {
         sml::ClientAnalyzedXML response;
         pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+
         int sourced, excised, ignored;
         ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
         if (ignored != expected_chunks)
@@ -214,17 +218,83 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
             outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
             throw CPPUnit_Assert_Failure(outStringStream.str());
         }
-        /* This can be uncommented to check for symbol refcount leaks.  Must comment out
-         * configure_for_unit_tests() below so that it will abort if there is a leak and
-         * enable assert(false) in SymbolManager.cpp.  If debug output is printing, make
-         * sure SOAR_RELEASE_MODE is defined in kernel.h. */
-        sml::ClientAnalyzedXML response1, response2, response3;
-        pAgent->ExecuteCommandLineXML("init-soar", &response1);
-        CPPUNIT_ASSERT_MESSAGE(response1.GetResultString(), pAgent->GetLastCommandLineResult());
-        pAgent->ExecuteCommandLineXML("run 100", &response2);
-        CPPUNIT_ASSERT_MESSAGE(response2.GetResultString(), pAgent->GetLastCommandLineResult());
-        pAgent->ExecuteCommandLineXML("init-soar", &response3);
-        CPPUNIT_ASSERT_MESSAGE(response3.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    /* This can be uncommented to check for symbol refcount leaks.  Must comment out
+     * configure_for_unit_tests() below so that it will abort if there is a leak and
+     * enable assert(false) in SymbolManager.cpp.  If debug output is printing, make
+     * sure SOAR_RELEASE_MODE is defined in kernel.h. */
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("run 100", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+}
+
+void ChunkTest::build_and_check_chunk_clean(const std::string& path, int64_t decisions, int64_t expected_chunks)
+{
+    source(path.c_str());
+    pAgent->RunSelf(decisions, sml::sml_DECISION);
+    CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("output command-to-file unit_test_chunks.soar print -fc", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    tearDown();
+    setUp();
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("source unit_test_chunks.soar", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+
+        int sourced, excised, ignored;
+        ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
+        if (ignored != expected_chunks)
+        {
+            sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
+            excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
+            std::ostringstream outStringStream("");
+            outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
+
+            sml::ClientAnalyzedXML response2;
+            pAgent->ExecuteCommandLineXML("output command-to-file failed.soar print -f", &response);
+
+            throw CPPUnit_Assert_Failure(outStringStream.str());
+        }
+    }
+    /* This can be uncommented to check for symbol refcount leaks.  Must comment out
+     * configure_for_unit_tests() below so that it will abort if there is a leak and
+     * enable assert(false) in SymbolManager.cpp.  If debug output is printing, make
+     * sure SOAR_RELEASE_MODE is defined in kernel.h. */
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("run 100", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
     }
 }
 
@@ -238,7 +308,7 @@ void ChunkTest::setUp()
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
-//    configure_for_unit_tests();
+    configure_for_unit_tests();
 
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
@@ -660,14 +730,14 @@ void ChunkTest::Faux_Operator()
 }
 void ChunkTest::SMem_Chunk_Direct()
 {
-    build_and_check_chunk("SMem_Chunk_Direct.soar", 8, 1);
+    build_and_check_chunk_clean("SMem_Chunk_Direct.soar", 8, 1);
 }
 void ChunkTest::SMem_Chunked_Query()
 {
     /* Re-ordered doesn't seem to reorder these rules the same on different platforms, so
      * it's not detecting them as duplicates.  Setting expected to ignore to 0 until we
      * re-do the re-orderer or come up with a different solution. */
-    build_and_check_chunk("SMem_Chunked_Query.soar", 8, 1);
+    build_and_check_chunk_clean("SMem_Chunked_Query.soar", 8, 1);
 }
 void ChunkTest::Result_On_Operator()
 {
@@ -691,7 +761,7 @@ void ChunkTest::Chunk_Operator_Tie_Item_Links()
 }
 void ChunkTest::SMem_Chunked_Query2()
 {
-    build_and_check_chunk("SMem_Chunked_Query2.soar", 8, 1);
+    build_and_check_chunk_clean("SMem_Chunked_Query2.soar", 8, 1);
 }
 
 void ChunkTest::Demo_Arithmetic()
@@ -701,17 +771,17 @@ void ChunkTest::Demo_Arithmetic()
 
 void ChunkTest::Demo_Blocks_World_Look_Ahead()
 {
-    build_and_check_chunk("Demo_Blocks_World_Look_Ahead.soar", 37, 3);
+    build_and_check_chunk_clean("Demo_Blocks_World_Look_Ahead.soar", 37, 6);
 }
 
 void ChunkTest::Demo_Blocks_World_Look_Ahead_State_Evaluation()
 {
-    build_and_check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation.soar", 37, 13);
+    build_and_check_chunk_clean("Demo_Blocks_World_Look_Ahead_State_Evaluation.soar", 37, 14);
 }
 
 void ChunkTest::Demo_Eight_Puzzle()
 {
-    build_and_check_chunk("Demo_Eight_Puzzle.soar", 20, 6);
+    build_and_check_chunk_clean("Demo_Eight_Puzzle.soar", 20, 6);
 }
 
 void ChunkTest::Demo_RL_Unit()
@@ -726,7 +796,7 @@ void ChunkTest::Demo_Water_Jug_Hierarchy()
 
 void ChunkTest::Demo_Water_Jug_Look_Ahead()
 {
-    build_and_check_chunk("Demo_Water_Jug_Look_Ahead.soar", 600, 16);
+    build_and_check_chunk_clean("Demo_Water_Jug_Look_Ahead.soar", 600, 16);
 }
 
 void ChunkTest::Demo_Water_Jug_Tie()
