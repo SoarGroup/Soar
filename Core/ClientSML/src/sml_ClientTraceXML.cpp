@@ -298,8 +298,6 @@ bool ClientTraceXML::IsTagActionSideMarker() const
 /*
 1) the backtrace for each of the results
 2) a trace of the "locals"
-3) a trace of the grounded potentials
-4) a trace of the ungrounded potentials
 
 <local>
 <backtrace prod_name="my*name" already-backtraced="true">
@@ -307,10 +305,6 @@ bool ClientTraceXML::IsTagActionSideMarker() const
       <wme></wme>
       ...
    </grounds>
-   <potentials>
-      <wme></wme>
-      ...
-   </potentials>
    <locals>
       <wme></wme>
       ...
@@ -319,10 +313,6 @@ bool ClientTraceXML::IsTagActionSideMarker() const
       <condition></condition>
       ...
    </negated>
-   <nots>
-      <not symbol1="s1" symbol2="s2"></not>
-      ...
-   </nots>
 </backtrace>
 </local>
 
@@ -338,38 +328,12 @@ The not tags get printed as "s1 <> s2" in the text trace.
       <preference></preference>
       <backtrace>...</backtrace>
     </osk-preference>
-    -OR-
-    <add-to-potentials></add-to-potentials>
   </local>
   <local>...</local>
   ...
 </locals>
 
-There might be a osk-preference or an add-to-potentials, but not both.
-Also, if there is no backtrace child of local, then the print trace outputs "...no trace, can't BT".
-Add-to-potentials is an empty tag just to mark when the text trace prints " --> make it a potential."
-
-*** trace grounded potentials (#3) ***
-
-<grounded-potentials>
-   <wme></wme>
-   ...
-</grounded-potentials>
-
-*** trace ungrounded potentials (#4) ***
-
-<ungrounded-potentials>
-   <ungrounded-potential>
-      <wme></wme>
-      <backtrace>...</backtrace>
-      <osk-preference>
-         <preference></preference>
-         <backtrace>...</backtrace>
-      <osk-preference>
-   </ungrounded-potential>
-   <ungrounded-potential>...</ungrounded-potential>
-   ...
-</ungrounded-potentials>
+If there is no backtrace child of local, then the print trace outputs "...no trace, can't BT".
 */
 
 bool ClientTraceXML::IsTagLocal() const
@@ -388,37 +352,9 @@ bool ClientTraceXML::IsTagNegated() const
 {
     return IsTag(sml_Names::kTagNegated) ;
 }
-bool ClientTraceXML::IsTagNot() const
-{
-    return IsTag(sml_Names::kTagNot) ;
-}
-bool ClientTraceXML::IsTagNots() const
-{
-    return IsTag(sml_Names::kTagNots) ;
-}
-bool ClientTraceXML::IsTagPotentials() const
-{
-    return IsTag(sml_Names::kTagPotentials) ;
-}
-bool ClientTraceXML::IsTagGroundedPotentials() const
-{
-    return IsTag(sml_Names::kTagGroundedPotentials) ;
-}
-bool ClientTraceXML::IsTagUngroundedPotentials() const
-{
-    return IsTag(sml_Names::kTagUngroundedPotentials) ;
-}
-bool ClientTraceXML::IsTagUngroundedPotential() const
-{
-    return IsTag(sml_Names::kTagUngroundedPotential) ;
-}
 bool ClientTraceXML::IsTagBacktrace() const
 {
     return IsTag(sml_Names::kTagBacktrace) ;
-}
-bool ClientTraceXML::IsTagAddToPotentials() const
-{
-    return IsTag(sml_Names::kTagAddToPotentials) ;
 }
 bool ClientTraceXML::IsTagOSKPreference() const
 {
@@ -432,7 +368,6 @@ bool ClientTraceXML::IsTagLocalNegation() const
 {
     return IsTag(sml_Names::kTagLocalNegation) ;
 }
-
 char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const
 {
     return GetAttribute(sml_Names::kBacktracedAlready) ;

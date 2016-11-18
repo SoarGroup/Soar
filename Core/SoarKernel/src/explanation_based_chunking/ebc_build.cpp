@@ -297,10 +297,9 @@ action* Explanation_Based_Chunker::copy_action_list(action* actions)
    chunk_cond_set, but doesn't deallocate it.
 -------------------------------------------------------------------- */
 
-/* set of all negated conditions we encounter
-                                during backtracing--these are all potentials
-                                and (some of them) are added to the grounds
-                                in one pass at the end of the backtracing */
+/* set of all negated conditions we encounter during backtracing--these are
+ * all potentials and (some of them) are added to the grounds in one pass at
+ * the end of the backtracing */
 
 void Explanation_Based_Chunker::init_chunk_cond_set(chunk_cond_set* set)
 {
@@ -723,15 +722,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
     dprint(DT_BACKTRACE, "Locals:\n%3", locals);
-//    while (true)
-//    {
-//        trace_locals(grounds_level);
-//        trace_grounded_potentials();
-//        if (! trace_ungrounded_potentials(grounds_level))
-//        {
-//            break;
-//        }
-//    }
 
 //    dprint(DT_BACKTRACE, "Dependency analysis complete. Conditions compiled:\n%3", grounds);
 //    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
@@ -754,7 +744,7 @@ void Explanation_Based_Chunker::revert_chunk_to_instantiation()
     set_up_rule_name(false);
 
     /* Clean up */
-    /* Note:  We could decrease chunks_this_d_cycle but probably safer not to in case
+    /* Note:  We could decrease chunks_this_d_cycle but choosing not to in case
      *        something can happen where you get massive number of failed chunks */
     deallocate_failed_chunk();
     m_vrblz_top = m_saved_justification_top;

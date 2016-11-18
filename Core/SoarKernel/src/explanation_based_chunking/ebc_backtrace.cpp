@@ -40,12 +40,11 @@ using namespace soar_TraceNames;
 
                             Backtracing
 
-   Four sets of conditions are maintained during backtracing:  locals,
-   grounds, positive potentials, and negateds.  Negateds are really
-   potentials, but we keep them separately throughout backtracing, and
-   ground them at the very end.  Note that this means during backtracing,
-   the grounds, positive potentials, and locals are all instantiated
-   top-level positive conditions, so they all have a bt.wme_ on them.
+   Three sets of conditions are maintained during backtracing:  locals,
+   grounds and negateds.  Negateds are kept separately throughout backtracing,
+   and ground at the very end.  Note that this means during backtracing,
+   the grounds and locals are all instantiated top-level positive conditions,
+   so they all have a bt.wme_ on them.
 
    In order to avoid backtracing through the same instantiation twice,
    we mark each instantiation as we BT it, by setting
@@ -255,7 +254,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         else
         {
             dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
-            /* --- negative or nc cond's are either grounds or potentials --- */
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -264,7 +262,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
     }
 
-    /* --- scan through conditions, collect grounds, potentials, & locals --- */
+    /* --- scan through conditions, collect grounds and locals --- */
     grounds_to_print = NIL;
     locals_to_print = NIL;
     negateds_to_print = NIL;
@@ -290,10 +288,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         /* mvp done */
 
-        xml_begin_tag(thisAgent, kTagNots);
-        xml_begin_tag(thisAgent, kTagNot);
-        xml_end_tag(thisAgent, kTagNot);
-        xml_end_tag(thisAgent, kTagNots);
         xml_end_tag(thisAgent, kTagBacktrace);
     }
 

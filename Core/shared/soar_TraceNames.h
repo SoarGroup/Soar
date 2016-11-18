@@ -140,23 +140,15 @@ namespace soar_TraceNames
     //backtrace stuff
     static char const* const kTagBacktrace              = "backtrace" ;
     static char const* const kTagGrounds                = "grounds" ;
-    static char const* const kTagPotentials             = "potentials" ;
     static char const* const kTagLocals                 = "locals" ;
     static char const* const kTagLocal                  = "local";
     static char const* const kTagBacktraceResult        = "result";
     static char const* const kTagOSKPreference          = "osk-preference";
-    static char const* const kTagAddToPotentials        = "add-to-potentials";
     static char const* const kTagNegated                = "negated" ;
-    static char const* const kTagNots                   = "nots" ;
-    static char const* const kTagNot                    = "not" ;
-    static char const* const kTagGroundedPotentials     = "grounded-potentials";
-    static char const* const kTagUngroundedPotentials   = "ungrounded-potentials";
-    static char const* const kTagUngroundedPotential    = "ungrounded-potential";
     static char const* const kBacktracedAlready         = "already-backtraced";
     static char const* const kBacktraceSymbol1          = "symbol1";
     static char const* const kBacktraceSymbol2          = "symbol2";
-    
-    static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
+    static char const* const kTagLocalNegation          = "local-negation";
     
     // numeric indifference stuff
     static char const* const kTagCandidate      = "candidate";

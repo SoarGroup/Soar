@@ -189,23 +189,15 @@ namespace sml
             //backtrace stuff
             static char const* const kTagBacktrace;
             static char const* const kTagGrounds;
-            static char const* const kTagPotentials;
             static char const* const kTagLocals;
             static char const* const kTagLocal;
             static char const* const kTagBacktraceResult;
             static char const* const kTagOSKPreference;
-            static char const* const kTagAddToPotentials;
             static char const* const kTagNegated;
-            static char const* const kTagNots;
-            static char const* const kTagNot;
-            static char const* const kTagGroundedPotentials;
-            static char const* const kTagUngroundedPotentials;
-            static char const* const kTagUngroundedPotential;
             static char const* const kBacktracedAlready;
             static char const* const kBacktraceSymbol1;
             static char const* const kBacktraceSymbol2;
-            
-            static char const* const kTagLocalNegation; // SBW 5/07
+            static char const* const kTagLocalNegation;
             
             // numeric indifference stuff
             static char const* const kTagCandidate;
