@@ -334,10 +334,10 @@ The not tags get printed as "s1 <> s2" in the text trace.
   <local>
     <wme></wme>
     <backtrace>...</backtrace>
-    <cdps-preference>
+    <osk-preference>
       <preference></preference>
       <backtrace>...</backtrace>
-    </cdps-preference>
+    </osk-preference>
     -OR-
     <add-to-potentials></add-to-potentials>
   </local>
@@ -345,7 +345,7 @@ The not tags get printed as "s1 <> s2" in the text trace.
   ...
 </locals>
 
-There might be a cdps-preference or an add-to-potentials, but not both.
+There might be a osk-preference or an add-to-potentials, but not both.
 Also, if there is no backtrace child of local, then the print trace outputs "...no trace, can't BT".
 Add-to-potentials is an empty tag just to mark when the text trace prints " --> make it a potential."
 
@@ -362,10 +362,10 @@ Add-to-potentials is an empty tag just to mark when the text trace prints " --> 
    <ungrounded-potential>
       <wme></wme>
       <backtrace>...</backtrace>
-      <cdps-preference>
+      <osk-preference>
          <preference></preference>
          <backtrace>...</backtrace>
-      <cdps-preference>
+      <osk-preference>
    </ungrounded-potential>
    <ungrounded-potential>...</ungrounded-potential>
    ...
@@ -420,9 +420,9 @@ bool ClientTraceXML::IsTagAddToPotentials() const
 {
     return IsTag(sml_Names::kTagAddToPotentials) ;
 }
-bool ClientTraceXML::IsTagCDPSPreference() const
+bool ClientTraceXML::IsTagOSKPreference() const
 {
-    return IsTag(sml_Names::kTagCDPSPreference) ;
+    return IsTag(sml_Names::kTagOSKPreference) ;
 }
 bool ClientTraceXML::IsTagBacktraceResult() const
 {

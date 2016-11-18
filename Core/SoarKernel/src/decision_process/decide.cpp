@@ -1014,31 +1014,31 @@ void do_buffered_link_changes(agent* thisAgent)
 }
 
 /* ------------------------------------------------------------------
-                  Add a preference to a slot's CDPS
+                  Add a preference to a slot's OSK prefs
    This function adds a preference to a slots's context dependent
    preference set, checking to first see whether the pref is already
-   there. If an operator The slot's CDPS is copied to conditions' bt structs in
-   create_instatiation.  Those copies of the CDPS are used to
+   there. If an operator The slot's OSK prefs is copied to conditions' bt structs in
+   create_instatiation.  Those copies of the OSK prefs are used to
    backtrace through all relevant local evaluation rules that led to the
    selection of the operator that produced a result.
 ------------------------------------------------------------------ */
 
-void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
+void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value)
 {
 
     bool already_exists = false;
-    cons* CDPS;
+    cons* lOSK_pref;
     preference* p;
 
 //    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
 //    {
-//        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
+//        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
 //        print_preference(thisAgent, pref);
 //    }
 
-    for (CDPS = s->CDPS; CDPS != NIL; CDPS = CDPS->rest)
+    for (lOSK_pref = s->OSK_prefs; lOSK_pref != NIL; lOSK_pref = lOSK_pref->rest)
     {
-        p = static_cast<preference*>(CDPS->first);
+        p = static_cast<preference*>(lOSK_pref->first);
         if (p == pref)
         {
             already_exists = true;
@@ -1082,7 +1082,7 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     }
     if (!already_exists)
     {
-        push(thisAgent, pref, s->CDPS);
+        push(thisAgent, pref, s->OSK_prefs);
         preference_add_ref(pref);
     }
 //    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -1225,24 +1225,24 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
     preference* p, *p2, *cand, *prev_cand;
-    bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst = false;
+    bool match_found, not_all_indifferent, some_numeric, add_OSK, some_not_worst = false;
     preference* candidates;
     Symbol* value;
 
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
-     * We can ignore the CDPS when:
+     * We can ignore OSK prefs when:
      * - Run_preference_semantics is called for a consistency check (don't want side effects)
      * - For non-context slots (only makes sense for operators)
      * - For context-slots at the top level (will never be backtraced through)
      * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
 
-    do_CDPS = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
+    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
 
     /* Empty the context-dependent preference set in the slot */
 
-    if (do_CDPS && s->CDPS)
+    if (add_OSK && s->OSK_prefs)
     {
-        clear_CDPS(thisAgent, s);
+        clear_OSK_prefs(thisAgent, s);
     }
 
     /* If the slot has no preferences at all, things are trivial --- */
@@ -1354,13 +1354,13 @@ byte run_preference_semantics(agent* thisAgent,
 
         rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
 
-        /* Print a message that we're adding the require preference to the CDPS
+        /* Print a message that we're adding the require preference to the OSK prefs
          * even though we really aren't.  Requires aren't actually handled by
-         * the CDPS mechanism since they are already backtraced through. */
+         * the OSK prefs mechanism since they are already backtraced through. */
 
 //        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
 //        {
-//            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
+//            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
 //            print_preference(thisAgent, candidates);
 //        }
 
@@ -1412,19 +1412,19 @@ byte run_preference_semantics(agent* thisAgent,
     }
 
     /* If there are reject or prohibit preferences, then
-     * add all reject and prohibit preferences to CDPS */
+     * add all reject and prohibit preferences to OSK prefs */
 
-    if (do_CDPS)
+    if (add_OSK)
     {
         if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE])
         {
             for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_CDPS(thisAgent, s, p);
+                add_to_OSK(thisAgent, s, p);
             }
             for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_CDPS(thisAgent, s, p);
+                add_to_OSK(thisAgent, s, p);
             }
         }
     }
@@ -1440,9 +1440,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1550,16 +1550,16 @@ byte run_preference_semantics(agent* thisAgent,
                 cand = cand->next_candidate;
             }
             *result_candidates = candidates;
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
             return CONFLICT_IMPASSE_TYPE;
         }
 
         /* Otherwise, delete conflicted candidates from candidate list.
-         * Also add better preferences to CDPS for every item in the candidate
-         * list and delete acceptable preferences from the CDPS for those that
+         * Also add better preferences to OSK prefs for every item in the candidate
+         * list and delete acceptable preferences from the OSK prefs for those that
          * don't make the candidate list.*/
 
         prev_cand = NIL;
@@ -1581,21 +1581,21 @@ byte run_preference_semantics(agent* thisAgent,
             }
             else
             {
-                if (do_CDPS)
+                if (add_OSK)
                 {
-                    /* Add better/worse preferences to CDPS */
+                    /* Add better/worse preferences to OSK prefs */
                     for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                     for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->referent == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1617,9 +1617,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1642,18 +1642,18 @@ byte run_preference_semantics(agent* thisAgent,
             p->value->decider_flag = BEST_DECIDER_FLAG;
         }
 
-        /* Reduce candidates list to only those with best preference flag and add pref to CDPS */
+        /* Reduce candidates list to only those with best preference flag and add pref to OSK prefs */
         prev_cand = NIL;
         for (cand = candidates; cand != NIL; cand = cand->next_candidate)
             if (cand->value->decider_flag == BEST_DECIDER_FLAG)
             {
-                if (do_CDPS)
+                if (add_OSK)
                 {
                     for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1685,9 +1685,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1710,10 +1710,10 @@ byte run_preference_semantics(agent* thisAgent,
             p->value->decider_flag = WORST_DECIDER_FLAG;
         }
 
-        /* Because we only want to add worst preferences to the CDPS if they actually have an impact
+        /* Because we only want to add worst preferences to the OSK prefs if they actually have an impact
         * on the candidate list, we must first see if there's at least one non-worst candidate. */
 
-        if (do_CDPS)
+        if (add_OSK)
         {
             some_not_worst = false;
             for (cand = candidates; cand != NIL; cand = cand->next_candidate)
@@ -1742,14 +1742,14 @@ byte run_preference_semantics(agent* thisAgent,
             }
             else
             {
-                if (do_CDPS && some_not_worst)
+                if (add_OSK && some_not_worst)
                 {
-                    /* Add this worst preference to CDPS */
+                    /* Add this worst preference to OSK prefs */
                     for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1773,9 +1773,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1869,22 +1869,22 @@ byte run_preference_semantics(agent* thisAgent,
             }
             (*result_candidates)->next_candidate = NIL;
 
-            if (do_CDPS)
+            if (add_OSK)
             {
 
-                /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
+                /* Add all indifferent preferences associated with the chosen candidate to the OSK prefs.*/
 
                 if (some_numeric)
                 {
 
                     /* Note that numeric indifferent preferences are never considered duplicates, so we
-                    * pass an extra argument to add_to_cdps so that it does not check for duplicates.*/
+                    * pass an extra argument to add_to_OSK so that it does not check for duplicates.*/
 
                     for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == (*result_candidates)->value)
                         {
-                            add_to_CDPS(thisAgent, s, p, false);
+                            add_to_OSK(thisAgent, s, p, false);
                         }
                     }
 
@@ -1897,7 +1897,7 @@ byte run_preference_semantics(agent* thisAgent,
                             if ((p->referent->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
                                     (p->value->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG))
                             {
-                                add_to_CDPS(thisAgent, s, p);
+                                add_to_OSK(thisAgent, s, p);
                             }
                         }
                     }
@@ -1906,20 +1906,20 @@ byte run_preference_semantics(agent* thisAgent,
                 {
 
                     /* This decision was non-numeric, so add all non-numeric preferences associated with the
-                     * chosen candidate to the CDPS.*/
+                     * chosen candidate to the OSK prefs.*/
 
                     for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == (*result_candidates)->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                     for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value))
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1935,9 +1935,9 @@ byte run_preference_semantics(agent* thisAgent,
     /* Candidates are not all indifferent, so we have a tie. */
 
     *result_candidates = candidates;
-    if (do_CDPS && s->CDPS)
+    if (add_OSK && s->OSK_prefs)
     {
-        clear_CDPS(thisAgent, s);
+        clear_OSK_prefs(thisAgent, s);
     }
     return TIE_IMPASSE_TYPE;
 }

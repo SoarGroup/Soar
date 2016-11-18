@@ -50,7 +50,7 @@ void                deallocate_instantiation(agent* thisAgent, instantiation*& i
 
 goal_stack_level    get_match_goal(condition* top_cond);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
-void                build_CDPS(agent* thisAgent, instantiation* inst);
+void                copy_OSK(agent* thisAgent, instantiation* inst);
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)

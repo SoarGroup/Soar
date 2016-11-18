@@ -78,57 +78,39 @@ void init_instantiation_pool(agent* thisAgent)
 /* --------------------------------------------------------------------------
                  Build context-dependent preference set
 
-  This function will copy the CDPS from a slot to the backtrace info for the
-  corresponding condition.  The copied CDPS will later be backtraced through.
+  This function will copy the OSK prefs from a slot to the backtrace info for the
+  corresponding condition.  The copied OSK prefs will later be backtraced through.
 
-  Note: Until prohibits are included explicitly as part of the CDPS, we will
+  Note: Until prohibits are included explicitly as part of the OSK prefs, we will
   just copy them directly from the prohibits list so that there is no
-  additional overhead.  Once the CDPS is on by default, we can eliminate the
-  second half of the big else (and not call this function at all if the
-  sysparam is not set.
+  additional overhead.
 
  --------------------------------------------------------------------------*/
 
-void build_CDPS(agent* thisAgent, instantiation* inst)
+void copy_OSK(agent* thisAgent, instantiation* inst)
 {
     condition* cond;
     preference* pref, *new_pref;
-    cons* CDPS;
-//    ::list* last_cdps = NULL;
+    cons* l_OSK_prefs;
 
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
     {
-        cond->bt.CDPS = NIL;
+        cond->bt.OSK_prefs = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
             if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
             {
-                if (cond->bt.trace->slot->CDPS)
+                if (cond->bt.trace->slot->OSK_prefs)
                 {
-//                    if ((last_cdps) && (last_cdps != cond->bt.trace->slot->CDPS))
-//                    {
-//                        dprint(DT_DEBUG, "Last CDPS:\n");
-//                        for (CDPS = last_cdps; CDPS != NIL; CDPS = CDPS->rest)
-//                        {
-//                            dprint_noprefix(DT_DEBUG, "%l\n", static_cast<preference*>(CDPS->first));
-//                        }
-//                        dprint(DT_DEBUG, "Current CDPS:\n");
-//                        for (CDPS = cond->bt.trace->slot->CDPS; CDPS != NIL; CDPS = CDPS->rest)
-//                        {
-//                            dprint_noprefix(DT_DEBUG, "%l\n", static_cast<preference*>(CDPS->first));
-//                        }
-//                        assert(false);
-//                    }
-//                    last_cdps = cond->bt.trace->slot->CDPS;
-                    for (CDPS = cond->bt.trace->slot->CDPS; CDPS != NIL; CDPS = CDPS->rest)
+                    for (l_OSK_prefs = cond->bt.trace->slot->OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
                     {
                         new_pref = NIL;
-                        pref = static_cast<preference*>(CDPS->first);
+                        pref = static_cast<preference*>(l_OSK_prefs->first);
                         if (pref->inst->match_goal_level == inst->match_goal_level
                                 && pref->in_tm)
                         {
-                            push(thisAgent, pref, cond->bt.CDPS);
+                            push(thisAgent, pref, cond->bt.OSK_prefs);
                             preference_add_ref(pref);
                         }
                         else
@@ -138,7 +120,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
                             {
                                 if (new_pref->in_tm)
                                 {
-                                    push(thisAgent, new_pref, cond->bt.CDPS);
+                                    push(thisAgent, new_pref, cond->bt.OSK_prefs);
                                     preference_add_ref(new_pref);
                                 }
                             }
@@ -154,7 +136,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
                     new_pref = NIL;
                     if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm)
                     {
-                        push(thisAgent, pref, cond->bt.CDPS);
+                        push(thisAgent, pref, cond->bt.OSK_prefs);
                         preference_add_ref(pref);
                     }
                     else
@@ -164,7 +146,7 @@ void build_CDPS(agent* thisAgent, instantiation* inst)
                         {
                             if (new_pref->in_tm)
                             {
-                                push(thisAgent, new_pref, cond->bt.CDPS);
+                                push(thisAgent, new_pref, cond->bt.OSK_prefs);
                                 preference_add_ref(new_pref);
                             }
                         }
@@ -1039,8 +1021,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
 
     /* --- initialize rhs_variable_bindings array with names of variables
-     (if there are any stored on the production -- for chunks there won't
-     be any) --- */
+     (if there are any stored on the production -- for chunks there won't be any) --- */
     index = 0;
     cell = thisAgent->rhs_variable_bindings;
     for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
@@ -1050,7 +1031,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
     thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
 
-    /* 7.1/8 merge: Not sure about this.  This code in 704, but not in either 7.1 or 703/soar8 */
     /* --- Before executing the RHS actions, tell the user that the -- */
     /* --- phase has changed to output by printing the arrow --- */
     if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
@@ -1073,10 +1053,8 @@ void create_instantiation(agent* thisAgent, production* prod,
             dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
             if (a2)
             {
-//                dprint(DT_RHS_VARIABLIZATION, "Executing action:\n%a\n[%a]\n", a, a2);
                 pref = execute_action(thisAgent, a, tok, w, a2, inst->top_of_instantiated_conditions);
             } else {
-//                dprint(DT_RHS_VARIABLIZATION, "Executing action:\n%a\n", a);
                 pref = execute_action(thisAgent, a, tok, w, NULL, inst->top_of_instantiated_conditions);
             }
         }
@@ -1137,13 +1115,9 @@ void create_instantiation(agent* thisAgent, production* prod,
                 /* REW: end   09.15.96 */
             }
 
-            /* TEMPORARY HACK (Ideally this should be doable through
-             the external kernel interface but for now using a
-             couple of global STL lists to get this information
-             from the rhs function to this preference adding code)
+            /* These STL lists get information from the deep-copy rhs function so that 
+             * we can generateto the preferences for the wme's copied */
 
-             Getting the next pref from the set of possible prefs
-             added by the deep copy rhs function */
             if (thisAgent->WM->glbDeepCopyWMEs != 0)
             {
                 wme* tempwme = thisAgent->WM->glbDeepCopyWMEs;
@@ -1160,7 +1134,7 @@ void create_instantiation(agent* thisAgent, production* prod,
                     tempwme->value->id->level = glbDeepCopyWMELevel;
                 }
 
-//                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL, tempwme->preference->o_ids, tempwme->preference->rhs_funcs);
+                /* Could generate identitites for deep-copied items here */
                 pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
                 thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
                 deallocate_wme(thisAgent, tempwme);
@@ -1204,7 +1178,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
 
     /* Copy any context-dependent preferences for conditions of this instantiation */
-    build_CDPS(thisAgent, inst);
+    copy_OSK(thisAgent, inst);
 
     thisAgent->production_being_fired = NIL;
 
@@ -1275,10 +1249,10 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             if (cond->type == POSITIVE_CONDITION)
             {
 
-                if (cond->bt.CDPS)
+                if (cond->bt.OSK_prefs)
                 {
-                    c_old = c = cond->bt.CDPS;
-                    cond->bt.CDPS = NIL;
+                    c_old = c = cond->bt.OSK_prefs;
+                    cond->bt.OSK_prefs = NIL;
                     for (; c != NIL; c = c->rest)
                     {
                         pref = static_cast<preference*>(c->first);
@@ -1627,7 +1601,7 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
         }
     }
 
-    cond->bt.CDPS = NULL;
+    cond->bt.OSK_prefs = NULL;
     prev_cond = cond;
 }
 

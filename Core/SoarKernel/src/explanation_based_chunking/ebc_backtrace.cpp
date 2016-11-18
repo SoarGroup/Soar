@@ -318,7 +318,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 {
 
     /* mvp 5-17-94 */
-    cons* c, *CDPS;
+    cons* c, *l_OSK_prefs;
     condition* cond;
     preference* bt_pref, *p;
 
@@ -352,23 +352,23 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         {
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
-            if (cond->bt.CDPS)
+            if (cond->bt.OSK_prefs)
             {
-                for (CDPS = cond->bt.CDPS; CDPS != NIL; CDPS = CDPS->rest)
+                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
                 {
-                    p = static_cast<preference_struct*>(CDPS->first);
+                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
                     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
                     {
-                        thisAgent->outputManager->printa(thisAgent, "     Backtracing through CDPS preference: ");
-                        xml_begin_tag(thisAgent, kTagCDPSPreference);
+                        thisAgent->outputManager->printa(thisAgent, "     Backtracing through OSK preference: ");
+                        xml_begin_tag(thisAgent, kTagOSKPreference);
                         print_preference(thisAgent, p);
                     }
 
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_CDPS);
+                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
 
                     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
                     {
-                        xml_end_tag(thisAgent, kTagCDPSPreference);
+                        xml_end_tag(thisAgent, kTagOSKPreference);
                     }
                 }
             }
