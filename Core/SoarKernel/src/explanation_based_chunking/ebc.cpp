@@ -54,11 +54,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
-    m_learning_on_for_instantiation = ebc_settings[SETTING_EBC_LEARNING_ON];
     total_dc = 0;
-    max_chunks_reached = false;
-    m_failure_type = ebc_success;
-
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
@@ -115,7 +111,11 @@ void Explanation_Based_Chunker::reinit()
     m_saved_justification_bottom        = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
+    local_singleton_superstate_identity = NULL;
     m_failure_type                      = ebc_success;
+    m_rule_type                         = ebc_no_rule;
+    m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
+    max_chunks_reached                  = false;
 
 //    chunk_history += "Soar re-initialization performed.\n";
 }
@@ -189,7 +189,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     return true;
 }
 
-Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool pIsChunk)
+Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
 {
     Symbol* generated_name;
     Symbol* goal;
@@ -202,7 +202,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     uint64_t rule_number, rule_naming_counter;
     chunkNameFormats chunkNameFormat = ebc_params->naming_style->get_value();
 
-    if (pIsChunk)
+    if (m_rule_type == ebc_chunk)
     {
         rule_prefix = chunk_name_prefix;
         rule_number = chunks_this_d_cycle;
@@ -228,7 +228,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
         total_dc = thisAgent->d_cycle_count;
     }
     lowest_result_level = thisAgent->top_goal->id->level;
-    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+    for (p = m_inst->preferences_generated; p != NIL; p = p->inst_next)
         if (p->id->id->level > lowest_result_level)
         {
             lowest_result_level = p->id->id->level;
@@ -285,12 +285,12 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                 }
             }
 
-            if (inst->prod)
+            if (m_inst->prod)
             {
                 std::string:: size_type pos1, pos2, pos3;
                 std::string numberString;
-                std::string sourceString = inst->prod_name->sc->name;
-                std::string targetString = inst->prod->original_rule_name;
+                std::string sourceString = m_inst->prod_name->sc->name;
+                std::string targetString = m_inst->prod->original_rule_name;
                 int pNum(0);
 
                 pos1 = sourceString.find(rule_prefix);
@@ -313,7 +313,7 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
                         lName << "x2";
                     }
                 }
-                lName << "*" << inst->prod->original_rule_name;
+                lName << "*" << m_inst->prod->original_rule_name;
             }
             if (!lImpasseName.empty())
             {
@@ -350,13 +350,13 @@ Symbol* Explanation_Based_Chunker::generate_chunk_name(instantiation* inst, bool
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
     return generated_name;
 }
-void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
+void Explanation_Based_Chunker::set_up_rule_name()
 {
     /* Generate a new symbol for the name of the new chunk or justification */
-    if (pForChunk)
+    if (m_rule_type == ebc_chunk)
     {
         chunks_this_d_cycle++;
-        m_prod_name = generate_chunk_name(m_inst, pForChunk);
+        m_prod_name = generate_name_for_new_rule();
 
         m_prod_type = CHUNK_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
@@ -365,8 +365,7 @@ void Explanation_Based_Chunker::set_up_rule_name(bool pForChunk)
     else
     {
         justifications_this_d_cycle++;
-        m_prod_name = generate_chunk_name(m_inst, pForChunk);
-//        m_prod_name = generate_new_str_constant(thisAgent, "justification-", &justification_count);
+        m_prod_name = generate_name_for_new_rule();
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);

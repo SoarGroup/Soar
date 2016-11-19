@@ -86,6 +86,13 @@ enum TraceMode
     num_trace_modes
 };
 
+enum LearnedRuleType {
+    ebc_no_rule,
+    ebc_chunk,
+    ebc_justification,
+    ebc_template
+};
+
 enum Decider_settings {
     DECIDER_MAX_GP,
     DECIDER_MAX_DC_TIME,

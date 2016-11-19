@@ -72,11 +72,12 @@ class Explanation_Based_Chunker
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
+        void set_rule_type(LearnedRuleType pRuleType) {m_rule_type = pRuleType; };
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
-        void        variablize_condition_list   (condition* top_cond, bool variablize, bool pInNegativeCondition = false);
+        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
@@ -130,8 +131,8 @@ class Explanation_Based_Chunker
         tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
-        cons*             grounds;
-        cons*             locals;
+        cons*               grounds;
+        cons*               locals;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
@@ -140,6 +141,7 @@ class Explanation_Based_Chunker
 
         /* Variables used by result building methods */
         bool                m_learning_on_for_instantiation;
+        LearnedRuleType     m_rule_type;
         instantiation*      m_inst;
         preference*         m_results;
         goal_stack_level    m_results_match_goal_level;
@@ -193,8 +195,8 @@ class Explanation_Based_Chunker
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
                                                         uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
-        Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
-        void            set_up_rule_name(bool pForChunk);
+        Symbol*         generate_name_for_new_rule();
+        void            set_up_rule_name();
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
@@ -206,7 +208,7 @@ class Explanation_Based_Chunker
         void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
-        void            make_clones_of_results(bool pForChunk);
+        void            make_clones_of_results();
         void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
@@ -214,7 +216,7 @@ class Explanation_Based_Chunker
         void            deallocate_failed_chunk();
         void            clean_up();
         void            save_conditions_for_reversal();
-        void            revert_chunk_to_instantiation();
+        void            revert_chunk_to_justification();
         void            add_chunk_to_rete();
 
         /* Dependency analysis methods */
@@ -257,12 +259,12 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        action* variablize_result_into_actions(preference* result, bool variablize);
-        action* variablize_results_into_actions(preference* result, bool variablize);
+        action* variablize_result_into_actions(preference* result);
+        action* variablize_results_into_actions(preference* result);
         uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
-        void variablize_equality_tests(test t, bool pVariablize = true);
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
+        void variablize_equality_tests(test t);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable);
         sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
