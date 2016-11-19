@@ -14,12 +14,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST_SUITE(ChunkTest);   // The name of this class
 
 #ifdef DO_CHUNKING_TESTS
-//        /* The following two tests will sporadically fail when run as a unit test.  No idea why. */
-         CPPUNIT_TEST(SMem_Chunked_Query);
-         CPPUNIT_TEST(SMem_Chunked_Query2);
-//        /* The following test fails on jenkins, but doesn't fail on my machine or my VMs.  Not sure why. */
-        CPPUNIT_TEST(SMem_Chunk_Direct);
 
+        CPPUNIT_TEST(SMem_Chunked_Query);
+        CPPUNIT_TEST(SMem_Chunked_Query2);
+        CPPUNIT_TEST(SMem_Chunk_Direct);
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
         CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
@@ -47,6 +45,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Faux_Operator);
         CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
+        CPPUNIT_TEST(Justifications_Get_New_Identities);
         CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_BT_Constraints);
         CPPUNIT_TEST(Literalization_with_BT_Constraints2);
@@ -182,6 +181,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Demo_Water_Jug_Look_Ahead();
         void Demo_Water_Jug_Tie();
         void Chunk_Superstate_Operator_Preference();
+        void Justifications_Get_New_Identities();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -807,4 +807,9 @@ void ChunkTest::Demo_Water_Jug_Tie()
 void ChunkTest::Chunk_Superstate_Operator_Preference()
 {
     build_and_check_chunk("Chunk_Superstate_Operator_Preference.soar", 3, 1);
+}
+
+void ChunkTest::Justifications_Get_New_Identities()
+{
+    build_and_check_chunk_clean("Justifications_Get_New_Identities.soar", 4, 1);
 }

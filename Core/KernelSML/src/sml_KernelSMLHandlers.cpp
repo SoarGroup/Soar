@@ -181,18 +181,21 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         this->m_pRunScheduler->ScheduleAgentToRun(pAgentSML, true);
     }
 
-    /* -- Load user settings for this agent.  Checks current working
-     *    directory, dll path and the SOAR_HOME environment variable -- */
-    std::string lFileName("settings.soar");
-    std::string directory = searchForFile(lFileName);
-    if (!directory.empty())
+    if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
     {
-        directory.insert(0, "source ");
-        std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
-    } else {
-        pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
-        /* Returning true.  Otherwise, Soar will exit if the file could not be found. */
-        return true;
+        /* -- Load user settings for this agent.  Checks current working
+         *    directory, dll path and the SOAR_HOME environment variable -- */
+        std::string lFileName("settings.soar");
+        std::string directory = searchForFile(lFileName);
+        if (!directory.empty())
+        {
+            directory.insert(0, "source ");
+            std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
+        } else {
+            pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
+            /* Returning true.  Otherwise, Soar will exit if the file could not be found. */
+            return true;
+        }
     }
     pSoarAgent->outputManager->cache_output_modes();
     #ifdef DEBUG_ONLY_CHUNK_ID

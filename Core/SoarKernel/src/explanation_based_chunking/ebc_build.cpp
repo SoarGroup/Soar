@@ -1017,11 +1017,14 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
     m_rhs = variablize_results_into_actions(m_results, variablize);
+
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top, m_rhs after merge, variablize: \n%1-->\n%2", m_vrblz_top, m_rhs);
+
     /* m_rhs has identities here for rhs functions*/
     add_goal_or_impasse_tests();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top, m_rhs after merge and variablizing: \n%1-->\n%2", m_vrblz_top, m_rhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_inst_top after add_goal_test\n%1", m_inst_top, NULL);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top, m_rhs after merge, variablize and add goal tests: \n%1-->\n%2", m_vrblz_top, m_rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_inst_top after merge, variablize and add goal tests\n%1", m_inst_top, NULL);
     //dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top->counterparts after add_goal_test\n%1", m_vrblz_top->counterpart, NULL);
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;

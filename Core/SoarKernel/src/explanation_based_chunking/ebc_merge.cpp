@@ -113,7 +113,7 @@ inline void delete_instantiated_condition(agent* thisAgent, condition* c)
 
 void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
 {
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || !ebc_settings[SETTING_EBC_MERGE]) return;
 
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
