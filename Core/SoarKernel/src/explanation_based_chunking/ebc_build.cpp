@@ -623,9 +623,12 @@ void Explanation_Based_Chunker::make_clones_of_results()
     for (result_p = m_results; result_p != NIL; result_p = result_p->next_result)
     {
         /* --- copy the preference --- */
+//        p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
+//                            result_p->value, result_p->referent,
+//                            (m_rule_type == ebc_chunk) ? result_p->clone_identities : result_p->identities, result_p->rhs_funcs, true);
         p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
                             result_p->value, result_p->referent,
-                            (m_rule_type == ebc_chunk) ? result_p->clone_identities : result_p->identities, result_p->rhs_funcs, true);
+                            result_p->clone_identities, result_p->rhs_funcs, true);
         thisAgent->symbolManager->symbol_add_ref(p->id);
         thisAgent->symbolManager->symbol_add_ref(p->attr);
         thisAgent->symbolManager->symbol_add_ref(p->value);
@@ -995,24 +998,24 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
     #endif
 
-    if (m_rule_type == ebc_chunk)
-    {
+//    if (m_rule_type == ebc_chunk)
+//    {
         /* Save conditions and results in case we need to make a justification because chunking fails.
          * Note that we copy the instantiated condition list because we want the counterpart links to
          * points to the instantiated conditions, not the variablized ones that we would be throwing
          * out. */
         copy_condition_list(thisAgent, m_inst_top, &m_saved_justification_top, &m_saved_justification_bottom, false, false, true, true);
         thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-    }
+//    }
 
     //variablize_condition_list(m_vrblz_top, variablize);
     dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
     //        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
-    if (m_rule_type == ebc_chunk)
-    {
+//    if (m_rule_type == ebc_chunk)
+//    {
         variablize_condition_list(m_vrblz_top);
         merge_conditions(m_vrblz_top);
-    }
+//    }
 
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
