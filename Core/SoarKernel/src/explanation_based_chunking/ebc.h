@@ -168,7 +168,7 @@ class Explanation_Based_Chunker
          *    them is temporary and cleared after use. -- */
 
         sym_to_id_map*             instantiation_identities;
-        id_to_element_map*         identity_to_var_map;
+        id_to_sym_id_map*          identity_to_var_map;
 
         /* The following are used to print out the original variables when
          * compiled without SOAR_RELEASE_VERSION enabled */
@@ -265,8 +265,8 @@ class Explanation_Based_Chunker
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        chunk_element* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
-        chunk_element* get_variablization(uint64_t index_id);
+        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
+        sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         /* Condition polishing methods */

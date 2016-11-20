@@ -21,19 +21,19 @@
 
 #include <assert.h>
 
-chunk_element* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
+sym_identity_info* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
     if (index_id == 0) return NULL;
     auto iter = (*identity_to_var_map).find(index_id);
     if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
 }
 
-chunk_element* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
+sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
 {
     assert(pIdentity);
-    chunk_element* lVarInfo = new chunk_element();
+    sym_identity_info* lVarInfo = new sym_identity_info();
     lVarInfo->variable_sym = variable;
-    lVarInfo->instantiated_sym = pMatched_sym;
+    variable->var->instantiated_sym = pMatched_sym;
     lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
@@ -63,7 +63,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
 {
     char prefix[2];
     Symbol* var;
-    chunk_element* found_variablization = NULL;
+    sym_identity_info* found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -102,15 +102,10 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
     {
         /* -- First time we've encountered an unbound rhs var. -- */
         dprint(DT_RHS_VARIABLIZATION, "...is new unbound variable.\n");
-        if (m_rule_type != ebc_justification)
-        {
-            prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
-            prefix[1] = 0;
-            var = thisAgent->symbolManager->generate_new_variable(prefix);
-            dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
-        } else {
-            var = rs->referent;
-        }
+        prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
+        prefix[1] = 0;
+        var = thisAgent->symbolManager->generate_new_variable(prefix);
+        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%u].\n", rs->referent, var, rs->o_id);
 
         found_variablization = store_variablization(rs->o_id, var, rs->referent);
     }
@@ -121,12 +116,11 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
         {
             add_matched_sym_for_rhs_var(found_variablization->variable_sym, rs->referent);
         }
-        if (m_rule_type != ebc_justification)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
-            rs->referent = found_variablization->variable_sym;
-            thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
-        }
+
+        thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
+        rs->referent = found_variablization->variable_sym;
+        thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
+
         rs->o_id = found_variablization->identity;
         return rs->o_id;
     }
@@ -156,7 +150,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-    chunk_element* var_info;
+    sym_identity_info* var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
     assert(pTest && pTest->eq_test);
@@ -168,54 +162,46 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
         var_info = get_variablization(pTest->eq_test->identity);
         if (var_info)
         {
-            if (m_rule_type != ebc_justification)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
-                pTest->eq_test->data.referent = var_info->variable_sym;
-                thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
-            }
+            thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
+            pTest->eq_test->data.referent = var_info->variable_sym;
+            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+
             pTest->eq_test->identity = var_info->identity;
             pTest->eq_test->counterpart_test->identity = var_info->identity;
             pTest->eq_test->counterpart_test->counterpart_test = NULL;
             pTest->eq_test->counterpart_test = NULL;
             dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
         } else {
-            if (m_rule_type != ebc_justification)
+            /* Create a new variable.  If constant is being variablized just used
+             * 'c' instead of first letter of id name.  We now avoid using 'o' for
+             * non-operators and 's' for non-states.  That makes things
+             * clearer in chunks because of standard naming conventions. --- */
+            lOldSym = pTest->eq_test->data.referent;
+            if (lOldSym->is_sti())
             {
-                /* Create a new variable.  If constant is being variablized just used
-                 * 'c' instead of first letter of id name.  We now avoid using 'o' for
-                 * non-operators and 's' for non-states.  That makes things
-                 * clearer in chunks because of standard naming conventions. --- */
-                lOldSym = pTest->eq_test->data.referent;
-                if (lOldSym->is_sti())
-                {
-                    char prefix_char = static_cast<char>(tolower(lOldSym->id->name_letter));
-                    if (((prefix_char == 's') || (prefix_char == 'S')) && !lOldSym->id->isa_goal)
-                    {
-                        prefix[0] = 'c';
-                    } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lOldSym->id->isa_operator) {
-                        prefix[0] = 'c';
-                    } else {
-                        prefix[0] = prefix_char;
-                    }
-                }
-                else
+                char prefix_char = static_cast<char>(tolower(lOldSym->id->name_letter));
+                if (((prefix_char == 's') || (prefix_char == 'S')) && !lOldSym->id->isa_goal)
                 {
                     prefix[0] = 'c';
+                } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lOldSym->id->isa_operator) {
+                    prefix[0] = 'c';
+                } else {
+                    prefix[0] = prefix_char;
                 }
-                prefix[1] = 0;
-                lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
-            } else {
-                lNewVariable = pTest->eq_test->data.referent;
             }
+            else
+            {
+                prefix[0] = 'c';
+            }
+            prefix[1] = 0;
+            lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
+
             var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
 
-            if (m_rule_type != ebc_justification)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
-                pTest->eq_test->data.referent = var_info->variable_sym;
-                thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
-            }
+            thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
+            pTest->eq_test->data.referent = var_info->variable_sym;
+            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+
             pTest->eq_test->identity = var_info->identity;
             pTest->eq_test->counterpart_test->identity = var_info->identity;
             pTest->eq_test->counterpart_test->counterpart_test = NULL;
@@ -240,7 +226,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    chunk_element* found_variablization = NULL;
+    sym_identity_info* found_variablization = NULL;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity);
 
@@ -254,12 +240,10 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
-        if (m_rule_type != ebc_justification)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-            t->data.referent = found_variablization->variable_sym;
-            thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
-        }
+        thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
+        t->data.referent = found_variablization->variable_sym;
+        thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
+
         t->identity = found_variablization->identity;
         t->counterpart_test->identity = found_variablization->identity;
         t->counterpart_test->counterpart_test = NULL;
@@ -505,23 +489,20 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
     dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-//    if (m_rule_type != ebc_justification)
-//    {
-        lO_id = variablize_rhs_symbol(a->id, true);
-        if (!result->rhs_funcs.id) result->clone_identities.id = lO_id;
+    lO_id = variablize_rhs_symbol(a->id, true);
+    if (!result->rhs_funcs.id) result->clone_identities.id = lO_id;
 
-        lO_id = variablize_rhs_symbol(a->attr);
-        if (!result->rhs_funcs.attr) result->clone_identities.attr = lO_id;
+    lO_id = variablize_rhs_symbol(a->attr);
+    if (!result->rhs_funcs.attr) result->clone_identities.attr = lO_id;
 
-        lO_id = variablize_rhs_symbol(a->value);
-        if (!result->rhs_funcs.value) result->clone_identities.value = lO_id;
+    lO_id = variablize_rhs_symbol(a->value);
+    if (!result->rhs_funcs.value) result->clone_identities.value = lO_id;
 
-        if (preference_is_binary(result->type))
-        {
-            lO_id = variablize_rhs_symbol(a->referent);
-            result->clone_identities.referent = lO_id;
-        }
-//    }
+    if (preference_is_binary(result->type))
+    {
+        lO_id = variablize_rhs_symbol(a->referent);
+        result->clone_identities.referent = lO_id;
+    }
 
     dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
 

@@ -365,7 +365,10 @@ Symbol* Symbol_Manager::make_variable(const char* name)
     sym->tc_num = 0;
     sym->name = make_memory_block_for_string(thisAgent, name);
     sym->gensym_number = 0;
+    sym->current_binding_value = NULL;
+    sym->instantiated_sym = NULL;
     sym->rete_binding_locations = NULL;
+
     sym->fc = NULL;
     sym->ic = NULL;
     sym->sc = NULL;
