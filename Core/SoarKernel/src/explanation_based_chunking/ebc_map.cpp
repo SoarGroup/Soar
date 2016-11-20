@@ -57,6 +57,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
     {
         thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
+        thisAgent->symbolManager->symbol_remove_ref(&it->second->instantiated_sym);
         delete it->second;
     }
     identity_to_var_map->clear();

@@ -1008,13 +1008,15 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 //    }
 
-    //variablize_condition_list(m_vrblz_top, variablize);
+    variablize_condition_list(m_vrblz_top);
     dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
-    //        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
+    merge_conditions(m_vrblz_top);
+
 //    if (m_rule_type == ebc_chunk)
 //    {
-        variablize_condition_list(m_vrblz_top);
-        merge_conditions(m_vrblz_top);
+//        variablize_condition_list(m_vrblz_top);
+//        merge_conditions(m_vrblz_top);
 //    }
 
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);

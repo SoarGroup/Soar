@@ -32,7 +32,7 @@ typedef struct saved_test_struct saved_test;
 typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
 typedef struct symbol_struct Symbol;
-typedef struct symbol_with_match_struct matched_sym;
+typedef struct chunk_element_struct chunk_element;
 typedef struct test_struct test_info;
 typedef struct trace_mode_info_struct trace_mode_info;
 

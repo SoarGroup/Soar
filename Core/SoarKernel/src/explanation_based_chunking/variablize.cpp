@@ -21,18 +21,19 @@
 
 #include <assert.h>
 
-sym_identity_info* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
+chunk_element* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
     if (index_id == 0) return NULL;
     auto iter = (*identity_to_var_map).find(index_id);
     if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
 }
 
-sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable)
+chunk_element* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
 {
     assert(pIdentity);
-    sym_identity_info* lVarInfo = new sym_identity_info();
+    chunk_element* lVarInfo = new chunk_element();
     lVarInfo->variable_sym = variable;
+    lVarInfo->instantiated_sym = pMatched_sym;
     lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
@@ -62,7 +63,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
 {
     char prefix[2];
     Symbol* var;
-    sym_identity_info* found_variablization = NULL;
+    chunk_element* found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -111,7 +112,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
             var = rs->referent;
         }
 
-        found_variablization = store_variablization(rs->o_id, var);
+        found_variablization = store_variablization(rs->o_id, var, rs->referent);
     }
     if (found_variablization)
     {
@@ -155,7 +156,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-    sym_identity_info* var_info;
+    chunk_element* var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
     assert(pTest && pTest->eq_test);
@@ -207,7 +208,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
             } else {
                 lNewVariable = pTest->eq_test->data.referent;
             }
-            var_info = store_variablization(pTest->eq_test->identity, lNewVariable);
+            var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
 
             if (m_rule_type != ebc_justification)
             {
@@ -239,7 +240,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    sym_identity_info* found_variablization = NULL;
+    chunk_element* found_variablization = NULL;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity);
 

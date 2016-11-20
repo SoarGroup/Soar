@@ -19,14 +19,14 @@
 void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** unconnected_syms)
 {
     matched_symbol_list* lSyms = *unconnected_syms;
-    matched_sym* lSym;
+    chunk_element* lSym;
 
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
         lSym = (*it);
-        if (lSym->sym)
+        if (lSym->variable_sym)
         {
-            lSym->sym->tc_num = 0;
+            lSym->variable_sym->tc_num = 0;
         }
         delete lSym;
     }
@@ -151,16 +151,16 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     }
 }
 
-void Repair_Manager::add_path_to_goal_WMEs(matched_sym* pTargetSym, tc_number cond_tc)
+void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc)
 {
-    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->matched_sym, pTargetSym->sym, pTargetSym->identity);
-    wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->matched_sym);
+    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->instantiated_sym, pTargetSym->variable_sym, pTargetSym->identity);
+    wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->instantiated_sym);
     dprint(DT_REPAIR, "...search complete.  Adding %d WMEs to repair wme path...\n", l_WMEPath->size());
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
     {
         wme* lWME = (*it);
         dprint(DT_REPAIR, "......adding to repair wme set: (%y ^%y %y)\n", lWME->id, lWME->attr, lWME->value);
-        if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->matched_sym))
+        if ((lWME->tc == cond_tc) && (lWME->value != pTargetSym->instantiated_sym))
         {
             dprint(DT_REPAIR, "   ...WME exists in conditions already.  Skipping.\n");
             continue;
@@ -350,7 +350,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
 
 void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, matched_symbol_list* p_dangling_syms)
 {
-    matched_sym* lDanglingSymInfo;
+    chunk_element* lDanglingSymInfo;
     wme* lWME;
     goal_stack_level targetLevel;
 
@@ -369,16 +369,16 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
-        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %i...\n", lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym,
-            lDanglingSymInfo->identity, static_cast<int64_t>(lDanglingSymInfo->matched_sym->id->level));
-        if(lDanglingSymInfo->matched_sym->id->level < targetLevel)
+        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %i...\n", lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym,
+            lDanglingSymInfo->identity, static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level));
+        if(lDanglingSymInfo->instantiated_sym->id->level < targetLevel)
         {
-            targetLevel = lDanglingSymInfo->matched_sym->id->level;
+            targetLevel = lDanglingSymInfo->instantiated_sym->id->level;
         } else {
             dprint(DT_REPAIR, "...symbol is at Lower level %i than current target level of %i...\n",
-                static_cast<int64_t>(lDanglingSymInfo->matched_sym->id->level), static_cast<int64_t>(targetLevel));
+                static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level), static_cast<int64_t>(targetLevel));
         }
-        add_variablization(lDanglingSymInfo->matched_sym, lDanglingSymInfo->sym, lDanglingSymInfo->identity, "dangling symbol");
+        add_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->identity, "dangling symbol");
     }
 
     tc_number tc;
@@ -397,7 +397,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
         lDanglingSymInfo = *it;
         /* If dangling symbol is a state, then we will have picked it up when we
          * added the state links above */
-        if (!lDanglingSymInfo->matched_sym->is_state())
+        if (!lDanglingSymInfo->instantiated_sym->is_state())
         {
             add_path_to_goal_WMEs(lDanglingSymInfo, tc);
         }

@@ -162,16 +162,16 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                matched_sym* lNewUngroundedSym = new matched_sym();
-                lNewUngroundedSym->sym = lSym;
+                chunk_element* lNewUngroundedSym = new chunk_element();
+                lNewUngroundedSym->variable_sym = lSym;
                 if (lSym->is_sti())
                 {
-                    lNewUngroundedSym->matched_sym = lSym;
+                    lNewUngroundedSym->instantiated_sym = lSym;
                 } else {
-                    lNewUngroundedSym->matched_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
+                    lNewUngroundedSym->instantiated_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
-                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->sym, lNewUngroundedSym->matched_sym, lNewUngroundedSym->identity);
+                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
                 ungrounded_syms->push_back(lNewUngroundedSym);
             }
         }
@@ -896,7 +896,7 @@ cons* collect_root_variables(agent* thisAgent,
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_value_slot);
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        (*it)->sym->tc_num = 0;
+        (*it)->variable_sym->tc_num = 0;
     }
 
     /* --- make sure each root var has some condition with goal/impasse --- */
@@ -911,7 +911,7 @@ cons* collect_root_variables(agent* thisAgent,
                 {
                     continue;
                 }
-                if (cond->data.tests.id_test->eq_test->data.referent == (*it)->sym)
+                if (cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym)
                     if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
                     {
                         found_goal_impasse_test = true;
@@ -922,17 +922,17 @@ cons* collect_root_variables(agent* thisAgent,
             {
                 if (add_ungrounded)
                 {
-                    matched_sym* lNewUngroundedSym = new matched_sym();
-                    matched_sym* lOldMatchedSym = (*it);
-                    lNewUngroundedSym->sym = (*it)->sym;
-                    lNewUngroundedSym->matched_sym = (*it)->matched_sym;
+                    chunk_element* lNewUngroundedSym = new chunk_element();
+                    chunk_element* lOldMatchedSym = (*it);
+                    lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+                    lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
                     lNewUngroundedSym->identity = (*it)->identity;
-                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->matched_sym, lNewUngroundedSym->sym, lNewUngroundedSym->identity);
+                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 } else {
                     std::string errorStr;
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                           thisAgent->name_of_production_being_reordered, (*it)->sym);
+                           thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
                     xml_generate_warning(thisAgent, errorStr.c_str());
                 }
@@ -944,8 +944,8 @@ cons* collect_root_variables(agent* thisAgent,
     dprint(DT_REORDERER, "Found the following root symbols:  ");
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        dprint_noprefix(DT_REORDERER, "%y ", (*it)->sym);
-        push(thisAgent, (*it)->sym, returnList);
+        dprint_noprefix(DT_REORDERER, "%y ", (*it)->variable_sym);
+        push(thisAgent, (*it)->variable_sym, returnList);
     }
     dprint_noprefix(DT_REORDERER, "\n");
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
@@ -1592,7 +1592,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
     {
         std::string unSymString;
         for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
-            unSymString += (*it)->sym->to_string(true);
+            unSymString += (*it)->variable_sym->to_string(true);
             if (++it != ungrounded_syms->end())
             {
                 unSymString += ", ";

@@ -729,10 +729,10 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pS
             pSym->tc_num = tc;
             if (var_list)
             {
-                matched_sym* lNewUngroundedSym = new matched_sym();
-                lNewUngroundedSym->sym = pSym;
+                chunk_element* lNewUngroundedSym = new chunk_element();
+                lNewUngroundedSym->variable_sym = pSym;
                 lNewUngroundedSym->identity = pIdentity;
-                lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;
+                lNewUngroundedSym->instantiated_sym = pSymCounterpart ? pSymCounterpart : pSym;
                 var_list->push_back(lNewUngroundedSym);
             }
         }

@@ -25,7 +25,7 @@
     typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
     typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
     typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
-    typedef std::list< matched_sym*, soar_module::soar_memory_pool_allocator< matched_sym* > >                      matched_symbol_list;
+    typedef std::list< chunk_element*, soar_module::soar_memory_pool_allocator< chunk_element* > >                      matched_symbol_list;
     typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > >                        preference_list;
     typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                        rl_rule_list;
     typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
@@ -93,7 +93,7 @@
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
     typedef std::list< inst_record_list* >                      inst_path_list;
-    typedef std::list< matched_sym* >                           matched_symbol_list;
+    typedef std::list< chunk_element* >                           matched_symbol_list;
     typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
     typedef std::list< preference* >                            preference_list;
     typedef std::list< production* >                            rl_rule_list;
@@ -138,6 +138,7 @@ typedef std::unordered_set< uint64_t >                          id_set;
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, sym_identity_info* >      id_to_sym_id_map;
+typedef std::unordered_map< uint64_t, chunk_element* >          id_to_element_map;
 typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
 
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;

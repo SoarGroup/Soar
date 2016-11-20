@@ -52,7 +52,7 @@ class Repair_Manager
         condition*  make_condition_from_wme(wme* lWME);
         void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
         void        variablize_connecting_sti(test pTest);
-        void        add_path_to_goal_WMEs(matched_sym* pTargetSym, tc_number cond_tc);
+        void        add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc);
         void        add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC);
 
 

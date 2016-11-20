@@ -176,7 +176,16 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
         }
         else
         {
-            // Search previous conditions for identical NC or NCC
+            /* Search previous conditions for identical NC or NCC.
+             *
+             * I think identical NCCs might be impossible since collecting the grounds uses a
+             * hash table to avoid adding the same NCC twice.
+             *
+             * We might be able to handle NCs with positive conditions if somehow store a flag
+             * that indicates the type of the condition in the merge map.  Would need to use a
+             * more complex data structure.
+             */
+
         }
         last_cond = cond;
         cond = next_cond;

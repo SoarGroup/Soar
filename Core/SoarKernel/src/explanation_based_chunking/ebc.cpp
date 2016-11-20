@@ -42,7 +42,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     ebc_params = new ebc_param_container(thisAgent, ebc_settings, max_chunks, max_dupes);
 
     /* Create data structures used for EBC */
-    identity_to_var_map = new id_to_sym_id_map();
+    identity_to_var_map = new id_to_element_map();
     instantiation_identities = new sym_to_id_map();
     id_to_rule_sym_debug_map = new id_to_sym_map();
     identities_to_clean_up = new id_set();
