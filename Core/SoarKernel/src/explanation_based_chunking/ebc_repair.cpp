@@ -450,6 +450,14 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, condition*& m_inst_top
     dprint(DT_REPAIR, "Final variablized conditions: \n%1Final instantiated counterparts:\n%1", m_vrblz_top, m_inst_top);
 }
 
+void Explanation_Based_Chunker::set_instantiated_conds_to_counterparts()
+{
+    m_inst_top = m_vrblz_top->counterpart;
+    condition* c = m_vrblz_top;
+    while (c->next) c = c->next;
+    m_inst_bottom = c->counterpart;
+}
+
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     /* This is called for justifications even though it does nothing because in the future
@@ -467,11 +475,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
         reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, &m_inst_top, &m_inst_bottom,
             unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_LHS]);
 
-        /* Fix m_inst's bottom and top pointers to match re-ordered variablized conditions*/
-        m_inst_top = m_vrblz_top->counterpart;
-        condition* c = m_vrblz_top;
-        while (c->next) c = c->next;
-        m_inst_bottom = c->counterpart;
+        set_instantiated_conds_to_counterparts();
 
         if (m_failure_type != ebc_success)
         {

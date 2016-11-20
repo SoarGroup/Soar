@@ -517,3 +517,60 @@ action* Explanation_Based_Chunker::variablize_results_into_actions(preference* r
     return returnAction;
 }
 
+void Explanation_Based_Chunker::reinstantiate_test (test pTest)
+{
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            reinstantiate_test(pTest);
+        }
+    }
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable())
+    {
+        Symbol* oldSym = pTest->data.referent;
+        pTest->data.referent = pTest->data.referent->var->instantiated_sym;
+        thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
+        thisAgent->symbolManager->symbol_remove_ref(&oldSym);
+    }
+}
+
+void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
+{
+    dprint(DT_LHS_VARIABLIZATION, "Reversing variablizing all other LHS tests via lookup only:\n");
+    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
+            if (m_rule_type == ebc_justification)
+            {
+                reinstantiate_test(cond->data.tests.id_test);
+                reinstantiate_test(cond->data.tests.attr_test);
+                reinstantiate_test(cond->data.tests.value_test);
+            }
+            reinstantiate_test(cond->data.tests.id_test);
+            reinstantiate_test(cond->data.tests.attr_test);
+            reinstantiate_test(cond->data.tests.value_test);
+        }
+        else
+        {
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
+            dprint_noprefix(DT_LHS_VARIABLIZATION, "%1", cond->data.ncc.top);
+            reinstantiate_condition_list(cond->data.ncc.top);
+        }
+    }
+    set_instantiated_conds_to_counterparts();
+    dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done Reversing variablizing of LHS condition list.\n");
+
+}
+
+void Explanation_Based_Chunker::reinstantiate_action(action* pAction)
+{
+
+}
+
+void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
+{
+
+}

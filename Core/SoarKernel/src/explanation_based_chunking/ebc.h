@@ -212,6 +212,7 @@ class Explanation_Based_Chunker
         void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
+        void            set_instantiated_conds_to_counterparts();
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
         void            clean_up();
@@ -268,6 +269,11 @@ class Explanation_Based_Chunker
         sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
         sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
+
+        void reinstantiate_test(test pTest);
+        void reinstantiate_condition_list(condition* top_cond);
+        void reinstantiate_action(action* pAction);
+        void reinstantiate_actions(action* pActionList);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
