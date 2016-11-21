@@ -523,10 +523,12 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
     {
         for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
-            reinstantiate_test(pTest);
+            reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable())
+    /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
+     * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->data.referent->var->instantiated_sym)
     {
         Symbol* oldSym = pTest->data.referent;
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
@@ -535,42 +537,138 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
+void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pDeallocateCounterparts)
 {
-    dprint(DT_LHS_VARIABLIZATION, "Reversing variablizing all other LHS tests via lookup only:\n");
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of all LHS Condition list:\n");
+    condition* last_cond, *lCond, *last_counterpart;
+    last_cond = NULL;
+    deallocate_condition_list(thisAgent, m_inst_top);
+    for (condition* cond = m_vrblz_top; cond != NIL; cond = cond->next)
     {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        dprint(DT_REINSTANTIATE, "Reversing variablization of condition: %l\n", cond);
+//        last_counterpart = cond->counterpart;
+//        deallocate_condition(thisAgent, last_counterpart);
+        cond->counterpart = NULL;
+        if (m_rule_type == ebc_justification)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            if (m_rule_type == ebc_justification)
+            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
                 reinstantiate_test(cond->data.tests.id_test);
                 reinstantiate_test(cond->data.tests.attr_test);
                 reinstantiate_test(cond->data.tests.value_test);
+            } else {
+                for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)
+                {
+                    reinstantiate_test(ncond->data.tests.id_test);
+                    reinstantiate_test(ncond->data.tests.attr_test);
+                    reinstantiate_test(ncond->data.tests.value_test);
+                }
+//                reinstantiate_condition_list(cond->data.ncc.top, false);
+//                last_counterpart->data.ncc.top = NULL;
             }
-            reinstantiate_test(cond->data.tests.id_test);
-            reinstantiate_test(cond->data.tests.attr_test);
-            reinstantiate_test(cond->data.tests.value_test);
+            lCond = copy_condition(thisAgent, cond, false, false, true);
+            cond->counterpart = lCond;
+            lCond->counterpart = cond;
+        } else {
+            lCond = copy_condition(thisAgent, cond, false, false, true);
+            cond->counterpart = lCond;
+            lCond->counterpart = cond;
+            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+            {
+                reinstantiate_test(lCond->data.tests.id_test);
+                reinstantiate_test(lCond->data.tests.attr_test);
+                reinstantiate_test(lCond->data.tests.value_test);
+            } else {
+                for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)
+                {
+                    reinstantiate_test(ncond->data.tests.id_test);
+                    reinstantiate_test(ncond->data.tests.attr_test);
+                    reinstantiate_test(ncond->data.tests.value_test);
+                }
+//                reinstantiate_condition_list(lCond->data.ncc.top, false);
+//                last_counterpart->data.ncc.top = NULL;
+            }
         }
-        else
+
+
+        if (last_cond)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
-            dprint_noprefix(DT_LHS_VARIABLIZATION, "%1", cond->data.ncc.top);
-            reinstantiate_condition_list(cond->data.ncc.top);
+            last_cond->next = lCond;
+            lCond->prev = last_cond;
         }
+        last_cond = lCond;
     }
-    set_instantiated_conds_to_counterparts();
-    dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done Reversing variablizing of LHS condition list.\n");
+    dprint_header(DT_REINSTANTIATE, PrintAfter, "Done reversing variablization of LHS condition list.\n");
 
 }
 
-void Explanation_Based_Chunker::reinstantiate_action(action* pAction)
+void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 {
+
+    Symbol* var;
+
+    if (rhs_value_is_funcall(pRhs_val))
+    {
+        cons* fl = rhs_value_to_funcall_list(pRhs_val);
+        cons* c;
+
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            dprint(DT_REINSTANTIATE, "Reversing variablization of RHS value %r\n", static_cast<char*>(c->first));
+            reinstantiate_rhs_symbol(static_cast<char*>(c->first));
+            dprint(DT_REINSTANTIATE, "... RHS value is now %r\n", static_cast<char*>(c->first));
+        }
+    }
+
+    rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
+
+    dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y (%y/o%u).\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
+
+    if (rs->referent->is_variable())
+    {
+        Symbol* oldSym = rs->referent;
+        rs->referent = rs->referent->var->instantiated_sym;
+        thisAgent->symbolManager->symbol_add_ref(rs->referent);
+        thisAgent->symbolManager->symbol_remove_ref(&oldSym);
+    }
 
 }
 
 void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 {
-
+    for (action* lAction = pActionList; lAction != NULL; lAction = lAction->next)
+    {
+        if (lAction->type == MAKE_ACTION)
+        {
+            reinstantiate_rhs_symbol(lAction->id);
+            reinstantiate_rhs_symbol(lAction->attr);
+            reinstantiate_rhs_symbol(lAction->value);
+            if (lAction->referent)
+            {
+                reinstantiate_rhs_symbol(lAction->referent);
+            }
+        }
+    }
 }
+
+void Explanation_Based_Chunker::reinstantiate_current_rule()
+{
+    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_inst_top before reinstantiation: \n%1", m_inst_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top counterparts: \n%1", m_vrblz_top->counterpart);
+
+    reinstantiate_condition_list(m_vrblz_top);
+    set_instantiated_conds_to_counterparts();
+
+    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_inst_top after reinstantiation: \n%1", m_inst_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top counterparts: \n%9", m_vrblz_top);
+
+    if (m_rule_type == ebc_justification)
+    {
+        dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
+        reinstantiate_actions(m_rhs);
+        dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
+    }
+}
+

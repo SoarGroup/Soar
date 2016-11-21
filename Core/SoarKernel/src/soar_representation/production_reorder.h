@@ -19,6 +19,7 @@ typedef struct saved_test_struct
 {
     struct saved_test_struct* next;
     Symbol* var;
+    uint64_t var_identity;
     test the_test;
 } saved_test;
 

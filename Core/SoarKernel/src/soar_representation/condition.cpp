@@ -104,7 +104,6 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     }
     New = make_condition(thisAgent);
     New->type = cond->type;
-    New->counterpart = cond->counterpart;
 
     switch (cond->type)
     {
@@ -125,6 +124,13 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
                 &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false, pLinkTests, false);  // I don't think we'd want to strip state tests from NCCs
             break;
+    }
+    if (pLinkTests)
+    {
+        New->counterpart = cond;
+        cond->counterpart = New;
+    } else {
+        New->counterpart = cond->counterpart;
     }
     return New;
 }

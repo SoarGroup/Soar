@@ -299,6 +299,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
+    uint64_t sym_identity = NULL_IDENTITY_SET;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
@@ -341,6 +342,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                         continue;
                     }
                     sym = subtest->data.referent;
+                    sym_identity = subtest->identity;
                     dprint(DT_REORDERER, "...found equality symbol on %y.  Setting as index.\n", sym);
                 }
             }
@@ -379,6 +381,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     old_sts = saved;
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
+                    saved->var_identity = sym_identity;
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -426,6 +429,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
+            saved->var_identity = NULL_IDENTITY_SET;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -563,6 +567,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
+                        st->the_test->identity = st->var_identity;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;

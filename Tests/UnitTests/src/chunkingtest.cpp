@@ -734,9 +734,6 @@ void ChunkTest::SMem_Chunk_Direct()
 }
 void ChunkTest::SMem_Chunked_Query()
 {
-    /* Re-ordered doesn't seem to reorder these rules the same on different platforms, so
-     * it's not detecting them as duplicates.  Setting expected to ignore to 0 until we
-     * re-do the re-orderer or come up with a different solution. */
     build_and_check_chunk_clean("SMem_Chunked_Query.soar", 8, 1);
 }
 void ChunkTest::Result_On_Operator()
@@ -806,7 +803,7 @@ void ChunkTest::Demo_Water_Jug_Tie()
 
 void ChunkTest::Chunk_Superstate_Operator_Preference()
 {
-    build_and_check_chunk("Chunk_Superstate_Operator_Preference.soar", 3, 1);
+    build_and_check_chunk_clean("Chunk_Superstate_Operator_Preference.soar", 3, 1);
 }
 
 void ChunkTest::Justifications_Get_New_Identities()

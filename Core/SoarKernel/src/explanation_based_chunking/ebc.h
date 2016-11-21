@@ -19,7 +19,8 @@
 #include <cstdlib>
 
 /* This can be used to turn off chunking dprints except for a particular chunk */
-//#define DEBUG_ONLY_CHUNK_ID 13
+//#define DEBUG_ONLY_CHUNK_ID 64
+//#define DEBUG_ONLY_CHUNK_ID_LAST 65
 
 tc_number get_new_tc_number(agent* thisAgent);
 
@@ -271,9 +272,10 @@ class Explanation_Based_Chunker
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         void reinstantiate_test(test pTest);
-        void reinstantiate_condition_list(condition* top_cond);
-        void reinstantiate_action(action* pAction);
+        void reinstantiate_rhs_symbol(rhs_value pRhs_val);
+        void reinstantiate_condition_list(condition* top_cond, bool pDeallocateCounterparts = true);
         void reinstantiate_actions(action* pActionList);
+        void reinstantiate_current_rule();
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

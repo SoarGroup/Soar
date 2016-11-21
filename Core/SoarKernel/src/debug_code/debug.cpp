@@ -52,58 +52,6 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
         mode_info[No_Mode].enabled =                        true;
         mode_info[DT_DEBUG].enabled =                       true;
 
-    //    mode_info[DT_ID_LEAKING].enabled =                  true;
-//        mode_info[DT_DEALLOCATES].enabled =                 true;
-//        mode_info[DT_DEALLOCATE_SYMBOLS].enabled =          true;
-    //    mode_info[DT_REFCOUNT_ADDS].enabled =               true;
-    //    mode_info[DT_REFCOUNT_REMS].enabled =               true;
-    //
-    //    mode_info[DT_SOAR_INSTANCE].enabled =               true;
-    //    mode_info[DT_CLI_LIBRARIES].enabled =               true;
-    //    mode_info[DT_PARSER].enabled =                      true;
-    //    mode_info[DT_GDS].enabled =                         true;
-    //    mode_info[DT_EPMEM_CMD].enabled =                   true;
-    //
-//        mode_info[DT_PRINT_INSTANTIATIONS].enabled =        true;
-//        mode_info[DT_MILESTONES].enabled =                  true;
-    //
-    //    mode_info[DT_ADD_ADDITIONALS].enabled =             true;
-//        mode_info[DT_VARIABLIZATION_MANAGER].enabled =      true;
-    //    mode_info[DT_VM_MAPS].enabled =                     true;
-    //    mode_info[DT_BACKTRACE].enabled =                   true;
-    //    mode_info[DT_IDENTITY_PROP].enabled =               true;
-    //    mode_info[DT_UNIFICATION].enabled =                 true;
-    //    mode_info[DT_CONSTRAINTS].enabled =                 true;
-//        mode_info[DT_LHS_VARIABLIZATION].enabled =          true;
-//        mode_info[DT_RHS_VARIABLIZATION].enabled =          true;
-    //    mode_info[DT_RL_VARIABLIZATION].enabled =           true;
-    //    mode_info[DT_NCC_VARIABLIZATION].enabled =          true;
-    //    mode_info[DT_UNGROUNDED_STI].enabled =              true;
-//        mode_info[DT_REORDERER].enabled =                   true;
-    //    mode_info[DT_MERGE].enabled =                       true;
-    //    mode_info[DT_BUILD_CHUNK_CONDS].enabled =           true;
-    //    mode_info[DT_EBC_CLEANUP].enabled =                 true;
-    //    mode_info[DT_RHS_VALUE].enabled =                   true;
-    //    mode_info[DT_REV_BT].enabled =                      true;
-    //
-    //    mode_info[DT_WME_CHANGES].enabled =                 true;
-    //    mode_info[DT_DEALLOCATES_TESTS].enabled =           true;
-    //    mode_info[DT_LINKS].enabled =                       true;
-    //    mode_info[DT_UNKNOWN_LEVEL].enabled =               true;
-    //    mode_info[DT_RETE_PNODE_ADD].enabled =              true;
-//        mode_info[DT_REPAIR].enabled =                      true;
-
-    //    mode_info[DT_EXPLAIN].enabled =                     true;
-    //    mode_info[DT_EXPLAIN_DEP].enabled =                 true;
-    //    mode_info[DT_EXPLAIN_ADD_INST].enabled =            true;
-    //    mode_info[DT_EXPLAIN_CONNECT].enabled =             true;
-    //    mode_info[DT_EXPLAIN_PATHS].enabled =               true;
-    //    mode_info[DT_EXPLAIN_CONDS].enabled =               true;
-        //    mode_info[DT_EXPLAIN_IDENTITIES].enabled =               true;
-        //    mode_info[DT_UNIFY_SINGLETONS].enabled =               true;
-//            mode_info[DT_EXTRA_RESULTS].enabled =               true;
- //            mode_info[DT_PARSER_PROMOTE].enabled =               true;
-       //
     }
 }
 
@@ -156,7 +104,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_DEALLOCATE_INSTANTIATION].prefix =     strdup("Del Inst| ");
     mode_info[DT_EXPLAIN_CACHE].prefix =                strdup("ExpCache| ");
     mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
-    mode_info[DT_UNUSED4].prefix =                      strdup("| ");
+    mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
@@ -294,15 +242,12 @@ std::string get_stacktrace(const char* prefix)
 void debug_trace_off()
 {
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
-//    Output_Manager::Get_OM().cache_output_modes();
-//    Output_Manager::Get_OM().set_output_params_global(false);
     Output_Manager::Get_OM().clear_output_modes();
 
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
         thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
-//        thisAgent->output_settings->set_output_params_agent(false);
     }
 }
 
@@ -311,7 +256,6 @@ void debug_trace_on()
     if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
     Output_Manager::Get_OM().restore_output_modes();
     Output_Manager::Get_OM().set_output_params_global(true);
-    Output_Manager::Get_OM().set_output_mode(DT_DEBUG, true);
 
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
