@@ -99,7 +99,7 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     thisAgent->symbolManager->symbol_add_ref(attr);
     s->wmes = NIL;
     s->all_preferences = NIL;
-    s->CDPS = NIL;
+    s->OSK_prefs = NIL;
 
     /* JC: This is the same as all_preferences
      *  except they are indexed by type.
@@ -177,18 +177,17 @@ void mark_slot_for_possible_removal(agent* thisAgent, slot* s)
     push(thisAgent, s, thisAgent->slots_for_possible_removal);
 }
 
-/* MMA 8-2012: Clear out and deallocate the CDPS. */
-void clear_CDPS(agent* thisAgent, slot* s)
+void clear_OSK_prefs(agent* thisAgent, slot* s)
 {
 
-    list* cond_current, *cond_old;
+    cons* cond_current, *cond_old;
     preference* pref;
 
-    /* The CDPS should never exist on a top-level slot, so we do
+    /* The OSK prefs should never exist on a top-level slot, so we do
      * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
 
-    cond_old = cond_current = s->CDPS;
-    s->CDPS = NIL;
+    cond_old = cond_current = s->OSK_prefs;
+    s->OSK_prefs = NIL;
     for (; cond_current != NIL; cond_current = cond_current->rest)
     {
         pref = static_cast<preference*>(cond_current->first);
@@ -221,9 +220,9 @@ void remove_garbage_slots(agent* thisAgent)
         /* --- deallocate the slot --- */
         dprint(DT_DEALLOCATES, "Deallocating slot %y ^%y.\n", s->id, s->attr);
         /* MMA 9-2012 */
-        if (s->CDPS && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
+        if (s->OSK_prefs && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
         {
-            clear_CDPS(thisAgent, s);
+            clear_OSK_prefs(thisAgent, s);
         }
         /* MMA 9-2012 end */
 

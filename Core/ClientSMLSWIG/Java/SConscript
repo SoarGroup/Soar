@@ -13,8 +13,17 @@ def ConfigureJNI(env):
     base = os.environ.get('JAVA_HOME')
     if not base:
         if sys.platform == 'darwin':
-            # Apple's OS X has its own special java base directory
-            base = os.popen('/System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/java_home').read().rstrip()
+            # Apple's OS X has its own special java base directory, which has 
+            # /urs/libexec/java_home will give us 
+            try:
+                p = subprocess.Popen(['/usr/libexec/java_home'], stdout = subprocess.PIPE)
+                base = p.stdout.readline().split()[-1]
+                p.wait()
+            except OSError:
+                print >>sys.stderr, 'Error running /usr/libexec/java_home to get java home'
+                Exit(1)
+            if (not os.path.exists(base)):
+                base = '/System/Library/Frameworks/JavaVM.framework'
         else:
             # Search for the java compiler
             p = env.WhereIs('javac')
@@ -26,16 +35,17 @@ def ConfigureJNI(env):
             base = os.path.split(jcdir)[0]
 
     if sys.platform == 'darwin':
-        if os.path.exists(os.path.join(base, 'Headers')):
-            # JDK 6
-            headers = [os.path.join(base, 'Headers')]
-            libs = [os.path.join(base, 'Libraries')]
-        else:
+        print 'Looking for Mac headers at ', os.path.join(base, 'include')
+        if os.path.exists(os.path.join(base, 'include')):
             # JDK 7+
             headers = [os.path.join(base, 'include')]
             headers.append(os.path.join(base, 'include/darwin'))
             print headers
             libs = [os.path.join(base, 'lib')]
+        else:
+            # JDK 6
+            headers = [os.path.join(base, 'Headers')]
+            libs = [os.path.join(base, 'Libraries')]
     else:
         headers = [os.path.join(base, 'include')]
         libs = [os.path.join(base, 'lib')]

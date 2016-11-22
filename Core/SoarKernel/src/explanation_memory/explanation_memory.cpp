@@ -15,8 +15,8 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900
@@ -27,8 +27,13 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     thisAgent = myAgent;
     outputManager = &Output_Manager::Get_OM();
 
+    settings = new Explainer_Parameters(thisAgent);
+
+    current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
     initialize_counters();
-    enabled = false;
+    m_all_enabled = false;
+    m_justifications_enabled = false;
     num_rules_watched = 0;
 
     print_explanation_trace = true;
@@ -40,31 +45,27 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
-    all_excised_productions = new std::set< production_record* >();
-
+    production_id_map = new std::unordered_map< uint64_t, production* >();
+    cached_production = new std::set< production_record* >();
 }
 
 void Explanation_Memory::initialize_counters()
 {
-
-    current_discussed_chunk = NULL;
-
     chunk_id_count = 1;
-    condition_id_count = 1;
-    action_id_count = 1;
+    condition_id_count = 0;
+    action_id_count = 0;
     id_set_counter = 0;
 
     stats.duplicates = 0;
-    stats.unorderable = 0;
     stats.justification_did_not_match = 0;
     stats.chunk_did_not_match = 0;
     stats.no_grounds = 0;
     stats.max_chunks = 0;
+    stats.max_dupes = 0;
     stats.tested_local_negation = 0;
     stats.merged_conditions = 0;
     stats.chunks_attempted = 0;
     stats.chunks_succeeded = 0;
-    stats.chunks_reverted = 0;
     stats.justifications_attempted = 0;
     stats.justifications_succeeded = 0;
     stats.instantations_backtraced = 0;
@@ -72,11 +73,20 @@ void Explanation_Memory::initialize_counters()
     stats.constraints_attached = 0;
     stats.constraints_collected = 0;
     stats.grounding_conditions_added = 0;
-
+    stats.lhs_unconnected = 0;
+    stats.rhs_unconnected = 0;
+    stats.repair_failed = 0;
+    stats.ungrounded_justifications = 0;
+    stats.chunks_repaired = 0;
+    stats.chunks_reverted = 0;
+    stats.justifications_repaired = 0;
+    stats.ungrounded_justifications_added = 0;
+    stats.ungrounded_justifications_ignored = 0;
 }
+
 void Explanation_Memory::clear_explanations()
 {
-    dprint(DT_EXPLAIN, "Explanation logger clearing chunk records...\n");
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d chunk records...\n", chunks->size());
     Symbol* lSym;
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
@@ -87,34 +97,37 @@ void Explanation_Memory::clear_explanations()
     chunks->clear();
     chunks_by_ID->clear();
 
-    dprint(DT_EXPLAIN, "Explanation logger clearing instantiation records...\n");
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d instantiation records...\n", instantiations->size());
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
         delete it->second;
     }
     instantiations->clear();
 
-    dprint(DT_EXPLAIN, "Explanation logger clearing condition records...\n");
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d condition records...\n", all_conditions->size());
     for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
         delete it->second;
     }
     all_conditions->clear();
 
-    dprint(DT_EXPLAIN, "Explanation logger clearing action records...\n");
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d action records...\n", all_actions->size());
     for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
         delete it->second;
     }
     all_actions->clear();
 
-    dprint(DT_EXPLAIN, "Explanation logger clearing cached productions...\n");
-    for (std::set< production_record* >::iterator it = (*all_excised_productions).begin(); it != (*all_excised_productions).end(); ++it)
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d cached productions...\n", cached_production->size());
+    for (std::set< production_record* >::iterator it = (*cached_production).begin(); it != (*cached_production).end(); ++it)
     {
         delete (*it);
     }
-    all_excised_productions->clear();
-    dprint(DT_EXPLAIN, "Explanation logger done clear_explanations...\n");
+    cached_production->clear();
+
+    production_id_map->clear();
+
+    dprint(DT_EXPLAIN, "Explanation logger done clearing explanation records...\n");
 }
 
 Explanation_Memory::~Explanation_Memory()
@@ -130,24 +143,24 @@ Explanation_Memory::~Explanation_Memory()
     delete all_conditions;
     delete all_actions;
     delete instantiations;
+    delete production_id_map;
     dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
 }
 
 void Explanation_Memory::re_init()
 {
-    dprint(DT_EXPLAIN, "Re-intializing explanation logger.\n");
+    dprint(DT_EXPLAIN_CACHE, "Re-initializing explanation logger.\n");
     clear_explanations();
     initialize_counters();
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
-    dprint(DT_EXPLAIN, "Done re-intializing explanation logger.\n");
-
+    dprint(DT_EXPLAIN_CACHE, "Done re-initializing explanation logger: %d %d %d %d %d %d\n", chunks->size(), chunks_by_ID->size(), all_conditions->size(), all_actions->size(), instantiations->size(), production_id_map->size());
 }
 
 void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 {
     bool lShouldRecord = false;
-    if ((!enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
+    if ((!m_all_enabled) && (!pBaseInstantiation->prod || !pBaseInstantiation->prod->explain_its_chunks))
     {
         dprint(DT_EXPLAIN, "Explainer ignoring this chunk because it is not being watched.\n");
         current_recording_chunk = NULL;
@@ -331,45 +344,63 @@ action_record* Explanation_Memory::add_result(preference* pPref, action* pAction
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
     all_actions->insert({lActionRecord->actionID, lActionRecord});
-
     return lActionRecord;
 }
 
 chunk_record* Explanation_Memory::get_chunk_record(Symbol* pChunkName)
 {
     assert(pChunkName);
-
-    std::unordered_map< Symbol *, chunk_record* >::iterator iter_chunk;
-
-//    dprint(DT_EXPLAIN, "...Looking  for chunk %y...", pChunkName);
-    iter_chunk = chunks->find(pChunkName);
+    auto iter_chunk = chunks->find(pChunkName);
     if (iter_chunk != chunks->end())
     {
-//        dprint(DT_EXPLAIN, "...found chunk record.\n");
         return(iter_chunk->second);
     }
-//    dprint(DT_EXPLAIN, "...not found..\n");
     return NULL;
 }
 
 instantiation_record* Explanation_Memory::get_instantiation(instantiation* pInst)
 {
     assert(pInst);
-
-    /* See if we already have an instantiation record */
-    std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
-
-//    dprint(DT_EXPLAIN, "...Looking  for instantiation id %u...", pInst->i_id);
-    iter_inst = instantiations->find(pInst->i_id);
+    auto iter_inst = instantiations->find(pInst->i_id);
     if (iter_inst != instantiations->end())
     {
-//        dprint(DT_EXPLAIN, "...found existing ebc logger record.\n");
         return(iter_inst->second);
     }
-//    dprint(DT_EXPLAIN, "...not found..\n");
     return NULL;
 }
 
+void Explanation_Memory::excise_production_id(uint64_t pId)
+{
+    assert(pId);
+    auto iter = production_id_map->find(pId);
+    if (iter != production_id_map->end())
+    {
+        (*production_id_map)[pId] = NULL;
+    }
+}
+
+production* Explanation_Memory::get_production(uint64_t pId)
+{
+    if (!pId) return NULL;
+    auto iter = production_id_map->find(pId);
+    if (iter != production_id_map->end())
+    {
+        return iter->second;
+    }
+    return NULL;
+}
+
+uint64_t Explanation_Memory::add_production_id_if_necessary(production* pProd)
+{
+    assert(pProd);
+
+    auto iter = production_id_map->find(pProd->p_id);
+    if (iter == production_id_map->end())
+    {
+        production_id_map->insert({pProd->p_id, pProd});
+    }
+    return pProd->p_id;
+}
 
 bool Explanation_Memory::toggle_production_watch(production* pProduction)
 {
@@ -404,33 +435,39 @@ bool Explanation_Memory::watch_rule(const std::string* pStringParameter)
 bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
 {
     Symbol* sym;
+    uint64_t lObjectID = 0;
 
-    sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
-    if (sym && sym->sc->production)
+    if (from_string(lObjectID, pStringParameter->c_str()))
     {
-        /* Print chunk record if we can find it */
-        chunk_record* lFoundChunk = get_chunk_record(sym);
-        if (lFoundChunk)
+        if (!print_chunk_explanation_for_id(lObjectID))
         {
-                    discuss_chunk(lFoundChunk);
-                    return true;
+            outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
         }
+    } else {
 
-        outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
-        return false;
+        sym = thisAgent->symbolManager->find_str_constant(pStringParameter->c_str());
+        if (sym && sym->sc->production)
+        {
+            /* Print chunk record if we can find it */
+            chunk_record* lFoundChunk = get_chunk_record(sym);
+            if (lFoundChunk)
+            {
+                discuss_chunk(lFoundChunk);
+                return true;
+            }
+
+            outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+            return false;
+        }
     }
-
-    /* String has never been seen by Soar or is not a rule name */
-    outputManager->printa_sf(thisAgent, "Could not find a chunk named %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
     return false;
-
 }
 
 void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.\n  - Note that future explain commands are now relative to the problem-solving that led to that chunk.\n\n", pChunkRecord->name);
+        outputManager->printa_sf(thisAgent, "Now explaining %y.\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -445,34 +482,16 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 
 void Explanation_Memory::save_excised_production(production* pProd)
 {
-    dprint(DT_EXPLAIN, "Explanation logger adding production record for excised production: %y\n", pProd->name);
+    dprint(DT_EXPLAIN_CACHE, "Saving excised production: %y\n", pProd->name);
     production_record* lProductionRecord = new production_record(thisAgent, pProd);
-    all_excised_productions->insert(lProductionRecord);
-
-    dprint(DT_EXPLAIN, "...searching %d chunks for excised rule %y...\n", chunks->size(), pProd->name);
-    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    if (lProductionRecord->was_generated())
     {
-        chunk_record* pChunk = it->second;
-        if (it->second->original_production == pProd)
-        {
-            dprint(DT_EXPLAIN, "Found chunk %u (%y)...\n", it->second->chunkID, it->second->name);
-            it->second->original_production = NULL;
-            it->second->excised_production = lProductionRecord;
-        }
+        cached_production->insert(lProductionRecord);
+        excise_production_id(pProd->p_id);
+    } else {
+        delete lProductionRecord;
     }
-
-    dprint(DT_EXPLAIN, "...searching %d instantiations for excised rule %y...\n", instantiations->size(), pProd->name);
-    for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
-    {
-        instantiation_record* pInst = it->second;
-        if (it->second->original_production == pProd)
-        {
-            dprint(DT_EXPLAIN, "Found instantiations i%u...\n", it->second->instantiationID);
-            it->second->original_production = NULL;
-            it->second->excised_production = lProductionRecord;
-        }
-    }
-    dprint(DT_EXPLAIN, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
+    dprint(DT_EXPLAIN_CACHE, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
 }
 
 bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
@@ -538,42 +557,56 @@ bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionI
     return true;
 }
 
-bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDString)
 {
-    /* First argument must be an object type.  Current valid types are 'chunk',
-     * and 'instantiation' */
     bool lSuccess = false;
     uint64_t lObjectID = 0;
-    char lFirstChar = pObjectTypeString->at(0);
-    if (lFirstChar == 'c')
+    if (!from_string(lObjectID, pObjectIDString->c_str()))
     {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
-        }
-            lSuccess = print_chunk_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'i')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
-        }
-            lSuccess = print_instantiation_explanation_for_id(lObjectID);
-        } else if (lFirstChar == 'l')
-    {
-        if (!from_string(lObjectID, pObjectIDString->c_str()))
-        {
-            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
-        }
-        lSuccess = print_condition_explanation_for_id(lObjectID);
-    } else
-    {
-        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
-        return false;
+        outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
     }
-
+    lSuccess = print_instantiation_explanation_for_id(lObjectID);
     return lSuccess;
 }
+
+//bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
+//{
+//    /* First argument must be an object type.  Current valid types are 'chunk',
+//     * and 'instantiation' */
+//    bool lSuccess = false;
+//    uint64_t lObjectID = 0;
+//    char lFirstChar = pObjectTypeString->at(0);
+//    if (lFirstChar == 'c')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
+//        }
+//            lSuccess = print_chunk_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'i')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
+//        }
+//            lSuccess = print_instantiation_explanation_for_id(lObjectID);
+//        }
+//    else if (lFirstChar == 'l')
+//    {
+//        if (!from_string(lObjectID, pObjectIDString->c_str()))
+//        {
+//            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
+//        }
+//        lSuccess = print_condition_explanation_for_id(lObjectID);
+//    } else
+//    {
+//        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
+//        return false;
+//    }
+//
+//    return lSuccess;
+//}
 
 
 bool Explanation_Memory::current_discussed_chunk_exists()
@@ -596,7 +629,7 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
     }
 };
 
-void Explanation_Memory::increment_stat_grounded(int pNumConds)
+void Explanation_Memory::increment_stat_grounding_conds_added(int pNumConds)
 {
     increment_counter(stats.grounding_conditions_added);
     if (current_recording_chunk)
@@ -606,7 +639,7 @@ void Explanation_Memory::increment_stat_grounded(int pNumConds)
     }
 };
 
-void Explanation_Memory::increment_stat_reverted()
+void Explanation_Memory::increment_stat_chunks_reverted()
 {
     increment_counter(stats.chunks_reverted);
     if (current_recording_chunk)
@@ -659,7 +692,7 @@ void Explanation_Memory::visualize_instantiation_graph()
 
 void Explanation_Memory::visualize_contributors()
 {
-    bool old_Simple_Setting = thisAgent->visualizationManager->is_simple_inst_enabled();
+    bool old_Simple_Setting = (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name);
     thisAgent->visualizationManager->viz_graph_start();
     current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)

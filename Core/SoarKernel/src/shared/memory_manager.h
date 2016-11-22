@@ -231,6 +231,7 @@ class Memory_Manager
         {
             memory_pool* lThisPool = &(memory_pools[mempool_index]);
             fill_with_garbage((item), lThisPool->item_size);
+//            fill_with_zeroes((item), lThisPool->item_size);
         #if MEM_POOLS_ENABLED
             *(void**)(item) = lThisPool->free_list;
             lThisPool->free_list = (void*)(item);
@@ -251,6 +252,7 @@ class Memory_Manager
         inline void free_with_pool_ptr(memory_pool* pThisPool, T* item)
         {
             fill_with_garbage((item), pThisPool->item_size);
+//            fill_with_zeroes((item), pThisPool->item_size);
         #if MEM_POOLS_ENABLED
             *(void**)(item) = pThisPool->free_list;
             pThisPool->free_list = (void*)(item);

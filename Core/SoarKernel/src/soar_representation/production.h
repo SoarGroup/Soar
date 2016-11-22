@@ -17,7 +17,7 @@ typedef struct production_struct
     char*                           filename;                   /* name of source file, or NIL. */
     SupportType                     declared_support;
     action*                         action_list;                /* RHS actions */
-    ::list*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
+    cons*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     uint64_t                        reference_count;
@@ -28,6 +28,7 @@ typedef struct production_struct
     bool                            explain_its_chunks;
     bool                            save_for_justification_explanation;
     byte                            interrupt;
+    uint64_t                        p_id;
 
     struct
     {
@@ -114,16 +115,16 @@ void init_production_utilities(agent* thisAgent);
 tc_number get_new_tc_number(agent* thisAgent);
 
 void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc,
-                      ::list** id_list, ::list** var_list);
+                      cons** id_list, cons** var_list);
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                    ::list** id_list, ::list** var_list);
+                    cons** id_list, cons** var_list);
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                      ::list** id_list, ::list** var_list);
+                      cons** id_list, cons** var_list);
 bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc);
 bool action_is_in_tc(action* a, tc_number tc);
 
 void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
-        tc_number tc, list** var_list);
+        tc_number tc, cons** var_list);
 
 
 /* -------------------------------------------------------------------
@@ -154,19 +155,24 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
     say.  Normally deallocate_production() should be invoked only via
     the production_remove_ref() macro.
 ------------------------------------------------------------------- */
-bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
-                                                       condition**   lhs_top,
-                                                       action**      rhs_top,
-                                                       bool          reorder_nccs,
-                                            symbol_with_match_list*  ungrounded_syms = NULL);
+bool reorder_and_validate_lhs_and_rhs(agent*                    thisAgent,
+                                      condition**               lhs_top,
+                                      action**                  rhs_top,
+                                      bool                      reorder_nccs,
+                                      condition**               lhs_inst_top,
+                                      condition**               lhs_inst_bottom,
+                                      matched_symbol_list*      ungrounded_syms = NULL,
+                                      bool                      add_ungrounded_lhs = false,
+                                      bool                      add_ungrounded_rhs = false
+);
 
 production* make_production(agent* thisAgent, ProductionType type,
                                    Symbol* name, char* original_rule_name,
                                    condition** lhs_top, action** rhs_top,
                                    bool reorder_nccs, preference* results);
 
-void deallocate_production(agent* thisAgent, production* prod);
-void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign);
+void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer);
+void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign = true);
 void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign);
@@ -178,13 +184,9 @@ inline void production_add_ref(production* p)
     (p)->reference_count++;
 }
 
-inline void production_remove_ref(agent* thisAgent, production* p)
+inline void production_remove_ref(agent* thisAgent, production* p, bool cacheProdForExplainer)
 {
-    (p)->reference_count--;
-    if ((p)->reference_count == 0)
-    {
-        deallocate_production(thisAgent, p);
-    }
+    if (--(p->reference_count) == 0) deallocate_production(thisAgent, p, cacheProdForExplainer);
 }
 
 #endif

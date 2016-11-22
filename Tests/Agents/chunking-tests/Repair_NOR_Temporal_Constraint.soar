@@ -20,10 +20,22 @@ sp {init2
     (<s> ^step 2)
 }
 
+sp {done
+    (state <s> ^superstate nil ^result ^result2)
+-->
+    (interrupt)
+}
+
+sp {propose*top-op
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name top-op )
+}
 
 sp {propose*query-lti
     (state <s> ^superstate <ss>)
-    (<ss> ^superstate nil)
+    (<ss> ^superstate nil ^operator.name top-op)
 -->
     (<s> ^operator <o>)
     (<o> ^name query-lti)

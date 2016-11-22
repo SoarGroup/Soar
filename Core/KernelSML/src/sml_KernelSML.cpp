@@ -592,7 +592,8 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
     
     return true ;
 }
-
+//#define DEBUG
+//#include "dprint.h"
 /*************************************************************
 * @brief    Takes an incoming SML message and responds with
 *           an appropriate response message.
@@ -616,6 +617,7 @@ soarxml::ElementXML* KernelSML::ProcessIncomingSML(Connection* pConnection, soar
 #ifdef DEBUG
     // For debugging, it's helpful to be able to look at the incoming message as an XML string
     char* pIncomingXML = pIncomingMsg->GenerateXMLString(true) ;
+//    dprint(DT_DEBUG, "Processing incoming message %s", pIncomingXML);
 #endif
     
     soarxml::ElementXML* pResponse = pConnection->CreateSMLResponse(pIncomingMsg) ;

@@ -155,41 +155,32 @@ void abort_with_fatal_error_noagent(const char* msg)
 =================================================================== */
 
 
-void set_sysparam(agent* thisAgent, int param_number, int64_t new_value)
+void set_trace_setting(agent* thisAgent, int param_number, int64_t new_value)
 {
     if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER))
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad sysparam #: %d\n", param_number);
+        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: tried to set bad trace param #: %d\n", param_number);
         return;
     }
-    thisAgent->sysparams[param_number] = new_value;
+    thisAgent->trace_settings[param_number] = new_value;
 
     soar_invoke_callbacks(thisAgent,
                           SYSTEM_PARAMETER_CHANGED_CALLBACK,
                           reinterpret_cast<soar_call_data>(param_number));
 }
 
-void init_sysparams(agent* thisAgent)
+void init_trace_settings(agent* thisAgent)
 {
     int i;
 
     for (i = 0; i < HIGHEST_SYSPARAM_NUMBER + 1; i++)
     {
-        thisAgent->sysparams[i] = 0;
+        thisAgent->trace_settings[i] = 0;
     }
 
     /* --- set all params to zero, except the following: --- */
-    thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] = true;
-    thisAgent->sysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] = false;
-    thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE; /* RPM 6/05 Changed from timetag to none */
-    thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] = false;
-    thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] = false;
-    thisAgent->sysparams[TRACE_LOADING_SYSPARAM] = true; /* KJC 8/96 */
-
-    thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
-    thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = false;
-    thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = false;
-    thisAgent->sysparams[TIMERS_ENABLED] = true;
+    thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM] = true;
+    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE; /* RPM 6/05 Changed from timetag to none */
 }
 
 /* ===================================================================
@@ -308,7 +299,7 @@ void reset_timers(agent* thisAgent)
     thisAgent->timers_kernel.reset();
     thisAgent->timers_phase.reset();
 #ifdef DETAILED_TIMER_STATS
-    thisAgent->timers_gds.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
     thisAgent->timers_gds.reset();
 #endif
 
@@ -366,30 +357,33 @@ bool reinitialize_soar(agent* thisAgent)
     int64_t cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
     int64_t cur_TRACE_WM_CHANGES_SYSPARAM;
     int64_t cur_TRACE_GDS_SYSPARAM;
+    int64_t cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM;
 
     thisAgent->did_PE = false;    /* RCHONG:  10.11 */
 
     soar_invoke_callbacks(thisAgent, BEFORE_INIT_SOAR_CALLBACK, 0);
 
     /* Stash trace state: */
-    cur_TRACE_CONTEXT_DECISIONS_SYSPARAM        = thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM];
-    cur_TRACE_PHASES_SYSPARAM                   = thisAgent->sysparams[TRACE_PHASES_SYSPARAM];
-    cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM = thisAgent->sysparams[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM];
-    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM    = thisAgent->sysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM];
-    cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM   = thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM];
-    cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM      = thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM];
-    cur_TRACE_WM_CHANGES_SYSPARAM               = thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM];
-    cur_TRACE_GDS_SYSPARAM                      = thisAgent->sysparams[TRACE_GDS_SYSPARAM];
+    cur_TRACE_CONTEXT_DECISIONS_SYSPARAM        = thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM];
+    cur_TRACE_PHASES_SYSPARAM                   = thisAgent->trace_settings[TRACE_PHASES_SYSPARAM];
+    cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM = thisAgent->trace_settings[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM];
+    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM    = thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM];
+    cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM   = thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM];
+    cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM      = thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM];
+    cur_TRACE_WM_CHANGES_SYSPARAM               = thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM];
+    cur_TRACE_GDS_SYSPARAM                      = thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM];
+    cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM        = thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM];
 
     /* Temporarily disable tracing: */
-    set_sysparam(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        false);
-    set_sysparam(thisAgent, TRACE_PHASES_SYSPARAM,                   false);
-    set_sysparam(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, false);
-    set_sysparam(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    false);
-    set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
-    set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      false);
-    set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
-    set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      false);
+    set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        false);
+    set_trace_setting(thisAgent, TRACE_PHASES_SYSPARAM,                   false);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, false);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    false);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      false);
+    set_trace_setting(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
+    set_trace_setting(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      false);
+    set_trace_setting(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        false);
 
     bool ok = reinitialize_agent(thisAgent);
 
@@ -403,14 +397,15 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->go_type = GO_DECISION;
 
     /* Restore trace state: */
-    set_sysparam(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        cur_TRACE_CONTEXT_DECISIONS_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_PHASES_SYSPARAM,                   cur_TRACE_PHASES_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
-    set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        cur_TRACE_CONTEXT_DECISIONS_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_PHASES_SYSPARAM,                   cur_TRACE_PHASES_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
+    set_trace_setting(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM);
 
     soar_invoke_callbacks(thisAgent, AFTER_INIT_SOAR_CALLBACK, 0);
 
@@ -474,7 +469,7 @@ void do_one_top_level_phase(agent* thisAgent)
 
         case INPUT_PHASE:
 
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- Input Phase --- \n", 0);
             }
@@ -524,7 +519,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
             }  /* END if (input_cycle_flag==true) AGR REW1 this line and 1 previous line */
 
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- END Input Phase --- \n", 1);
             }
@@ -554,7 +549,7 @@ void do_one_top_level_phase(agent* thisAgent)
              */
             if (thisAgent->e_cycles_this_d_cycle < 1)
             {
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
                 {
                     print_phase(thisAgent, "\n--- Proposal Phase ---\n", 0);
                 }
@@ -645,7 +640,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 * reset phase to DECISION
                 */
                 thisAgent->current_phase = PROPOSE_PHASE;
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
                 {
                     print_phase(thisAgent, "\n--- END Proposal Phase ---\n", 1);
                 }
@@ -749,7 +744,7 @@ void do_one_top_level_phase(agent* thisAgent)
             if (thisAgent->e_cycles_this_d_cycle < 1)
             {
 
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
                 {
                     print_phase(thisAgent, "\n--- Application Phase ---\n", 0);
                 }
@@ -835,7 +830,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 * Set phase back to APPLY, do print_phase, callbacks and reset phase to OUTPUT
                 */
                 thisAgent->current_phase = APPLY_PHASE;
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
                 {
                     print_phase(thisAgent, "\n--- END Application Phase ---\n", 1);
                 }
@@ -857,7 +852,7 @@ void do_one_top_level_phase(agent* thisAgent)
         /////////////////////////////////////////////////////////////////////////////////
         case OUTPUT_PHASE:
 
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- Output Phase ---\n", 0);
             }
@@ -1044,7 +1039,7 @@ void do_one_top_level_phase(agent* thisAgent)
                 }
             }
 
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- END Output Phase ---\n", 1);
             }
@@ -1058,7 +1053,7 @@ void do_one_top_level_phase(agent* thisAgent)
         case DECISION_PHASE:
             /* not yet cleaned up for 8.6.0 release */
 
-            if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
             {
                 print_phase(thisAgent, "\n--- Decision Phase ---\n", 0);
             }
@@ -1093,7 +1088,7 @@ void do_one_top_level_phase(agent* thisAgent)
                                   AFTER_DECISION_PHASE_CALLBACK,
                                   reinterpret_cast<soar_call_data>(DECISION_PHASE));
 
-            if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM])
             {
                 thisAgent->outputManager->printa(thisAgent, "\n");
                 print_lowest_slot_in_context_stack(thisAgent);
@@ -1109,7 +1104,7 @@ void do_one_top_level_phase(agent* thisAgent)
             }
 
             {
-                if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+                if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
                 {
                     print_phase(thisAgent, "\n--- END Decision Phase ---\n", 1);
                 }
@@ -1498,7 +1493,7 @@ void init_agent_memory(agent* thisAgent)
     thisAgent->io_header_output = get_new_io_identifier(thisAgent, 'I');
 
     create_top_goal(thisAgent);
-    if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent, "\n");
         print_lowest_slot_in_context_stack(thisAgent);

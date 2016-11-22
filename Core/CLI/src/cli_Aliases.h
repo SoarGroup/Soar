@@ -19,63 +19,114 @@ namespace cli
                 soar::tokenizer t;
                 t.set_handler(this);
                 
+                // Traditional Soar aliases
                 t.evaluate("? help");
                 t.evaluate("a alias");
-                t.evaluate("aw add-wme");
+                t.evaluate("aw wm add");
                 t.evaluate("chdir cd");
-                t.evaluate("ctf command-to-file");
+                t.evaluate("ctf output command-to-file");
                 t.evaluate("d run -d");
                 t.evaluate("dir ls");
                 t.evaluate("e run -e");
-                t.evaluate("ex excise");
-                t.evaluate("fc firing-counts");
-                t.evaluate("gds_print gds-print");
-                t.evaluate("h help");
-                t.evaluate("inds indifferent-selection");
-                t.evaluate("init init-soar");
-                t.evaluate("interrupt stop-soar");
-                t.evaluate("is init-soar");
+                t.evaluate("ex production excise");
+                t.evaluate("fc production firing-counts");
+                t.evaluate("gds_print print --gds");
+                t.evaluate("inds decide indifferent-selection");
+                t.evaluate("init soar init");
+                t.evaluate("interrupt soar stop");
+                t.evaluate("is soar init");
                 t.evaluate("man help");
                 t.evaluate("p print");
                 t.evaluate("pc print --chunks");
-                t.evaluate("pr preferences");
                 t.evaluate("ps print --stack");
-                t.evaluate("pw pwatch");
+                t.evaluate("pw production watch");
                 t.evaluate("quit exit");
                 t.evaluate("r run");
-                t.evaluate("rn rete-net");
-                t.evaluate("rw remove-wme");
+                t.evaluate("rn load rete-network");
+                t.evaluate("rw wm remove");
                 t.evaluate("s run 1");
-                t.evaluate("set-default-depth soar print-depth");
-                t.evaluate("ss stop-soar");
+                t.evaluate("set-default-depth output print-depth");
+                t.evaluate("ss soar stop");
                 t.evaluate("st stats");
                 t.evaluate("step run -d");
-                t.evaluate("stop stop-soar");
+                t.evaluate("stop soar stop");
                 t.evaluate("topd pwd");
-                t.evaluate("un unalias");
+                t.evaluate("un alias -r");
                 t.evaluate("varprint print -v -d 100");
-                t.evaluate("w watch");
+                t.evaluate("w trace");
                 t.evaluate("wmes print -depth 0 -internal");
-                t.evaluate("wmes print -i");
+
+                // New chunking and explain aliases
+                t.evaluate("cs chunk stats");
+                t.evaluate("c explain chunk");
+                t.evaluate("ef explain formation");
+                t.evaluate("ei explain identities");
+                t.evaluate("es explain stats");
+                t.evaluate("i explain instantiation");
+                t.evaluate("wt explain wm-trace");
+                t.evaluate("et explain explanation-trace");
 
                 // Backward compatibility aliases
-                t.evaluate("chunk-name-format chunk naming-style");
-                t.evaluate("default-wme-depth output print-depth");
-                t.evaluate("echo-commands output echo-commands");
-                t.evaluate("gp-max soar max-gp");
+                t.evaluate("unalias alias -r");
+                t.evaluate("indifferent-selection decide indifferent-selection");
+                t.evaluate("numeric-indifferent-mode decide numeric-indifferent-mode");
+                t.evaluate("predict decide predict");
+                t.evaluate("select decide select");
+                t.evaluate("srand decide srand");
+
+                t.evaluate("replay-input load percepts");
+                t.evaluate("rete-net load rete-network");
+                t.evaluate("load-library load library");
+                t.evaluate("source load file");
+                t.evaluate("capture-input save percepts");
+
+                t.evaluate("pbreak production break");
+                t.evaluate("excise production excise");
+                t.evaluate("production-find production find");
+                t.evaluate("firing-counts production firing-counts");
+                t.evaluate("matches production matches");
+                t.evaluate("memories production memory-usage");
+                t.evaluate("multi-attributes production optimize-attribute");
+                t.evaluate("pwatch production watch");
+
+                t.evaluate("add-wme wm add");
+                t.evaluate("wma wm activation");
+                t.evaluate("remove-wme wm remove");
+                t.evaluate("watch-wmes wm watch");
+
+                t.evaluate("allocate debug allocate");
                 t.evaluate("internal-symbols debug internal-symbols");
-                t.evaluate("max-chunks chunk max-chunks");
+                t.evaluate("port debug port");
+                t.evaluate("time debug time");
+
+                t.evaluate("init-soar soar init");
+                t.evaluate("stop-soar soar stop");
+                t.evaluate("gp-max soar max-gp");
                 t.evaluate("max-dc-time soar max-dc-time");
                 t.evaluate("max-elaborations soar max-elaborations");
                 t.evaluate("max-goal-depth soar max-goal-depth");
                 t.evaluate("max-memory-usage soar max-memory-usage");
                 t.evaluate("max-nil-output-cycles soar max-nil-output-cycles");
-                t.evaluate("port debug port");
-                t.evaluate("set-stop-phase echo \"set-stop-phase replaced by 'soar stop-phase <phase>'\"");
+                t.evaluate("set-stop-phase soar stop-phase");
                 t.evaluate("soarnews soar");
-                t.evaluate("verbose output verbose");
+                t.evaluate("cli soar tcl");
+                t.evaluate("tcl soar tcl");
+                t.evaluate("timers soar timers");
+                t.evaluate("version soar version");
                 t.evaluate("waitsnc soar wait-snc");
+
+                t.evaluate("chunk-name-format chunk naming-style");
+                t.evaluate("max-chunks chunk max-chunks");
+
+                t.evaluate("clog output log");
+                t.evaluate("command-to-file output command-to-file");
+                t.evaluate("default-wme-depth output print-depth");
+                t.evaluate("echo-commands output echo-commands");
+                t.evaluate("verbose output verbose");
                 t.evaluate("warnings output warnings");
+
+                t.evaluate("watch trace");
+
             }
             
             virtual ~Aliases() {}

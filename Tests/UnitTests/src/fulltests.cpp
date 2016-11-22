@@ -1439,7 +1439,8 @@ TEST_DEFINITION(testStopSoarVsInterrupt)
         CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
     }
 
-    m_pAgent->ExecuteCommandLine("ex -a"); // side effect: init-soar
+    m_pAgent->ExecuteCommandLine("ex -a");
+    m_pAgent->ExecuteCommandLine("soar init");
     CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 
     loadProductions("test_agents/testinterrupt.soar");

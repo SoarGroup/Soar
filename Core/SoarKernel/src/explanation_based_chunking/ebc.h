@@ -18,7 +18,8 @@
 #include <unordered_map>
 #include <cstdlib>
 
-#define BUILD_WITH_EXPLAINER
+/* This can be used to turn off chunking dprints except for a particular chunk */
+//#define DEBUG_ONLY_CHUNK_ID 13
 
 tc_number get_new_tc_number(agent* thisAgent);
 
@@ -38,8 +39,8 @@ class Explanation_Based_Chunker
         bool                    max_chunks_reached;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-        ::list*     chunk_free_problem_spaces;
-        ::list*     chunky_problem_spaces;   /* AGR MVL1 */
+        cons*     chunk_free_problem_spaces;
+        cons*     chunky_problem_spaces;   /* AGR MVL1 */
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
@@ -51,8 +52,10 @@ class Explanation_Based_Chunker
                                           node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
+        uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
+        void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
+        void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_justification_count() { return justification_count; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
         Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
@@ -60,6 +63,8 @@ class Explanation_Based_Chunker
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
         void unify_identity(test t);
+        void unify_preference_identities(preference* lPref);
+        uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
 
@@ -71,7 +76,7 @@ class Explanation_Based_Chunker
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
-        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
+        void        variablize_condition_list   (condition* top_cond, bool variablize, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
@@ -80,13 +85,13 @@ class Explanation_Based_Chunker
         /* Debug printing methods */
         void print_variablization_table(TraceMode mode);
         void print_tables(TraceMode mode);
-        void print_o_id_tables(TraceMode mode);
+        void print_identity_tables(TraceMode mode);
         void print_attachment_points(TraceMode mode);
         void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
-        void print_ovar_to_o_id_map(TraceMode mode);
-        void print_o_id_substitution_map(TraceMode mode);
-        void print_o_id_to_ovar_debug_map(TraceMode mode);
+        void print_instantiation_identities_map(TraceMode mode);
+        void print_unification_map(TraceMode mode);
+        void print_identity_to_var_debug_map(TraceMode mode);
 
         void print_chunking_summary();
         void print_chunking_settings();
@@ -94,7 +99,9 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void cleanup_after_instantiation_creation(uint64_t pI_id);
-        void cleanup_for_instantiation_deallocation(uint64_t pI_id);
+        void cleanup_identity_for_debug_mappings(uint64_t pIdentity) {identities_to_clean_up->insert(pIdentity);};
+        void cleanup_debug_mappings();
+
         void clear_variablization_maps();
 
     private:
@@ -103,10 +110,12 @@ class Explanation_Based_Chunker
         Output_Manager*     outputManager;
 
         /* Statistics on learning performed so far */
-        uint64_t            chunk_count;
-        uint64_t            justification_count;
+        uint64_t            chunk_naming_counter;
+        uint64_t            justification_naming_counter;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
+        uint64_t            total_dc;
+
         std::string*        chunk_history;
 
         /* String that every chunk name begins with */
@@ -116,19 +125,18 @@ class Explanation_Based_Chunker
         /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
+        uint64_t prod_id_counter;
 
         tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
-        ::list*             grounds;
-        ::list*             locals;
-        ::list*             positive_potentials;
+        cons*             grounds;
+        cons*             locals;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
-        tc_number           locals_tc;
-        tc_number           potentials_tc;
         tc_number           backtrace_number;
         bool                quiescence_t_flag;
+        uint64_t            m_current_bt_inst_id;
 
         /* Variables used by result building methods */
         bool                m_learning_on_for_instantiation;
@@ -157,25 +165,27 @@ class Explanation_Based_Chunker
          *    formation and variablization.  The data stored within
          *    them is temporary and cleared after use. -- */
 
-        inst_to_id_map*            instantiation_identities;
-        id_to_sym_map*             o_id_to_var_map;
+        sym_to_id_map*             instantiation_identities;
+        id_to_sym_id_map*          identity_to_var_map;
+
+        /* The following are used to print out the original variables when
+         * compiled without SOAR_RELEASE_VERSION enabled */
         id_to_sym_map*             id_to_rule_sym_debug_map;
+        id_set*                    identities_to_clean_up;
 
         id_to_id_map*              unification_map;
-        identity_triple*                local_singleton_superstate_identity;
+        identity_triple*           local_singleton_superstate_identity;
 
-        constraint_list*                constraints;
+        constraint_list*           constraints;
         attachment_points_map*     attachment_points;
 
-        /* -- Table of previously seen conditions.  Used to determine whether to
-         *    merge or eliminate positive conditions on the LHS of a chunk. -- */
+        /* Table of previously seen conditions.  Used to determine whether to
+         * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
         /* Used by repair manager if it needs to find original matched value for
          * variablized rhs item. */
         sym_to_sym_map*            rhs_var_to_match_map;
-
-        bool learning_is_on_for_instantiation() { return m_learning_on_for_instantiation; };
 
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
@@ -196,7 +206,7 @@ class Explanation_Based_Chunker
         void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
-        void            make_clones_of_results();
+        void            make_clones_of_results(bool pForChunk);
         void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
@@ -249,13 +259,12 @@ class Explanation_Based_Chunker
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result, bool variablize);
         action* variablize_results_into_actions(preference* result, bool variablize);
-        void variablize_lhs_symbol(Symbol** sym, uint64_t pIdentity);
-        void variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
-        void variablize_equality_tests(test t);
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void store_variablization(Symbol* instantiated_sym, Symbol* variable, uint64_t pIdentity);
-        Symbol* get_variablization(uint64_t index_id);
+        uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
+        void variablize_equality_tests(test t, bool pVariablize = true);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
+        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable);
+        sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         /* Condition polishing methods */

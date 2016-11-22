@@ -11,122 +11,20 @@
 #include "kernel.h"
 
 #include "symbol.h"
+#include "symbols_predefined.h"
 
-typedef struct predefined_sym_struct {
-        /* ---------------- Predefined Symbols -------------------------
-           Certain symbols are used so frequently that we create them at
-           system startup time and never deallocate them.
-           ------------------------------------------------------------- */
+#include <iostream>
+#include <string>
+bool is_DT_mode_enabled(TraceMode mode);
 
-        Symbol*             attribute_symbol;
-        Symbol*             choices_symbol;
-        Symbol*             conflict_symbol;
-        Symbol*             constraint_failure_symbol;
-        Symbol*             goal_symbol;
-        Symbol*             impasse_symbol;
-        Symbol*             io_symbol;
-        Symbol*             item_symbol;
-        Symbol*             non_numeric_symbol;
-        Symbol*             multiple_symbol;
-        Symbol*             name_symbol;
-        Symbol*             nil_symbol;
-        Symbol*             no_change_symbol;
-        Symbol*             none_symbol;
-        Symbol*             o_context_variable;
-        Symbol*             object_symbol;
-        Symbol*             operator_symbol;
-        Symbol*             problem_space_symbol;
-        Symbol*             quiescence_symbol;
-        Symbol*             s_context_variable;
-        Symbol*             so_context_variable;
-        Symbol*             ss_context_variable;
-        Symbol*             sso_context_variable;
-        Symbol*             sss_context_variable;
-        Symbol*             state_symbol;
-        Symbol*             superstate_symbol;
-        Symbol*             t_symbol;
-        Symbol*             tie_symbol;
-        Symbol*             to_context_variable;
-        Symbol*             ts_context_variable;
-        Symbol*             type_symbol;
-
-        Symbol*             item_count_symbol; // SBW 5/07
-        Symbol*             non_numeric_count_symbol; // NLD 11/11
-
-        Symbol*             fake_instantiation_symbol;
-        Symbol*             architecture_inst_symbol;
-        Symbol*             sti_symbol;
-
-        /* RPM 9/06 begin */
-        Symbol*             input_link_symbol;
-        Symbol*             output_link_symbol;
-        /* RPM 9/06 end */
-
-        Symbol*             rl_sym_reward_link;
-        Symbol*             rl_sym_reward;
-        Symbol*             rl_sym_value;
-
-        Symbol*             epmem_sym;
-        Symbol*             epmem_sym_cmd;
-        Symbol*             epmem_sym_result;
-
-        Symbol*             epmem_sym_retrieved;
-        Symbol*             epmem_sym_status;
-        Symbol*             epmem_sym_match_score;
-        Symbol*             epmem_sym_cue_size;
-        Symbol*             epmem_sym_normalized_match_score;
-        Symbol*             epmem_sym_match_cardinality;
-        Symbol*             epmem_sym_memory_id;
-        Symbol*             epmem_sym_present_id;
-        Symbol*             epmem_sym_no_memory;
-        Symbol*             epmem_sym_graph_match;
-        Symbol*             epmem_sym_graph_match_mapping;
-        Symbol*             epmem_sym_graph_match_mapping_node;
-        Symbol*             epmem_sym_graph_match_mapping_cue;
-        Symbol*             epmem_sym_success;
-        Symbol*             epmem_sym_failure;
-        Symbol*             epmem_sym_bad_cmd;
-
-        Symbol*             epmem_sym_retrieve;
-        Symbol*             epmem_sym_next;
-        Symbol*             epmem_sym_prev;
-        Symbol*             epmem_sym_query;
-        Symbol*             epmem_sym_negquery;
-        Symbol*             epmem_sym_before;
-        Symbol*             epmem_sym_after;
-        Symbol*             epmem_sym_prohibit;
-        Symbol*             yes;
-        Symbol*             no;
-
-        Symbol*             smem_sym;
-        Symbol*             smem_sym_cmd;
-        Symbol*             smem_sym_result;
-
-        Symbol*             smem_sym_retrieved;
-        Symbol*             smem_sym_depth_retrieved;
-        Symbol*             smem_sym_status;
-        Symbol*             smem_sym_success;
-        Symbol*             smem_sym_failure;
-        Symbol*             smem_sym_bad_cmd;
-
-        Symbol*             smem_sym_retrieve;
-        Symbol*             smem_sym_query;
-        Symbol*             smem_sym_negquery;
-        Symbol*             smem_sym_prohibit;
-        Symbol*             smem_sym_store;
-        Symbol*             smem_sym_math_query;
-        Symbol*             smem_sym_depth;
-        Symbol*             smem_sym_store_new;
-        Symbol*             smem_sym_overwrite;;
-
-        Symbol*             smem_sym_math_query_less;
-        Symbol*             smem_sym_math_query_greater;
-        Symbol*             smem_sym_math_query_less_or_equal;
-        Symbol*             smem_sym_math_query_greater_or_equal;
-        Symbol*             smem_sym_math_query_max;
-        Symbol*             smem_sym_math_query_min;
-
-} predefined_symbols;
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
+    /* -- Reference count functions for symbols
+     *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
+     *      If DEBUG_REFCOUNT_DB is defined, an alternate version of the function is used
+     *      that sends a bunch of trace information to the debug database for deeper analysis of possible
+     *      bugs. -- */
+    std::string get_stacktrace(const char* prefix);
+#endif
 
 class EXPORT_INTERNAL Symbol_Manager {
 
@@ -152,8 +50,8 @@ class EXPORT_INTERNAL Symbol_Manager {
         Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL);
         Symbol* generate_new_str_constant(const char* prefix, uint64_t* counter);
 
-        void deallocate_symbol_list_removing_references(::cons*& sym_list);
-        ::cons* copy_symbol_list_adding_references(::cons* sym_list);
+        void deallocate_symbol_list_removing_references(cons*& sym_list);
+        cons* copy_symbol_list_adding_references(cons* sym_list);
 
         Symbol* find_variable(const char* name);
         Symbol* find_identifier(char name_letter, uint64_t name_number);
@@ -164,6 +62,8 @@ class EXPORT_INTERNAL Symbol_Manager {
         bool remove_if_sti(agent* thisAgent, void* item, void* userdata);
         bool reset_id_counters();
         void reset_id_and_variable_tc_numbers();
+        void reset_hash_table(MemoryPoolType lHashTable);
+
         uint64_t* get_id_counter(uint64_t name_letter ) { return &id_counter[name_letter]; }
 
         /* --------------------------------------------------------------------
@@ -186,23 +86,9 @@ class EXPORT_INTERNAL Symbol_Manager {
         void reset_variable_generator(condition* conds_with_vars_to_avoid, action* actions_with_vars_to_avoid);
         Symbol* generate_new_variable(const char* prefix);
 
-        /* -- Reference count functions for symbols
-         *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
-         *      If DEBUG_TRACE_REFCOUNT_INVENTORY is defined, an alternate version of the function is used
-         *      that sends a bunch of trace information to the debug database for deeper analysis of possible
-         *      bugs. -- */
-
-        #ifdef DEBUG_TRACE_REFCOUNT_FOR
-        #include <string>
-        #include <iostream>
-        #include "enums.h"
-        std::string get_stacktrace(const char* prefix);
-        extern bool is_DT_mode_enabled(TraceMode mode);
-        #endif
-
         //-- symbol_add_ref -----------------
 
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
         #define symbol_add_ref(sym) \
             ({debug_store_refcount(sym, true); \
                 symbol_add_ref_func(sym); })
@@ -212,10 +98,14 @@ class EXPORT_INTERNAL Symbol_Manager {
         inline void symbol_add_ref(Symbol* x)
         #endif
         {
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
             //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
         #else
-            //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
+//            dprint(DT_REFCOUNT_ADDS, "ADD-REF %y -> %u\n", x, (x)->reference_count + 1);
+            if (is_DT_mode_enabled(DT_REFCOUNT_ADDS))
+            {
+                std::cout << "ADD-REF " << x->to_string() << "->" <<  (x->reference_count + 1) << "\n";
+            }
         #endif
 
         #ifdef DEBUG_TRACE_REFCOUNT_FOR
@@ -226,7 +116,7 @@ class EXPORT_INTERNAL Symbol_Manager {
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
-                    std::cout << "++ | " << strName.c_str() << " |" << x->reference_count << " | " << caller_string.c_str() << "\n";
+                    std::cout << "++ | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
                 }
             }
         #endif
@@ -236,7 +126,7 @@ class EXPORT_INTERNAL Symbol_Manager {
 
         //-- symbol_remove_ref -----------------
 
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
         #define symbol_remove_ref(&sym) \
             ({debug_store_refcount(sym, false); \
                 symbol_remove_ref_func(sym);})
@@ -246,11 +136,14 @@ class EXPORT_INTERNAL Symbol_Manager {
         inline void symbol_remove_ref(Symbol** x)
         #endif
         {
-        #ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+        #ifdef DEBUG_REFCOUNT_DB
             //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
         #else
-        //    dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
-        //    std::cout << "REMOVE-REF " << x->to_string() << "->" <<  ((x)->reference_count - 1) << "\n";
+//            dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", *x, (*x)->reference_count - 1);
+//            if (is_DT_mode_enabled(DT_REFCOUNT_REMS))
+//            {
+//                std::cout << "REMOVE-REF " << (*x)->to_string() << "->" <<  ((*x)->reference_count - 1) << "\n";
+//            }
         #endif
         //    assert((x)->reference_count > 0);
             (*x)->reference_count--;

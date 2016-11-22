@@ -73,12 +73,13 @@ double get_number_from_symbol(Symbol* sym)
 
 
 
-char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
+char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t dest_size)
 {
 
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool is_rereadable;
     bool has_angle_bracket;
+    std::string lStr;
 
     switch (symbol_type)
     {
@@ -92,61 +93,84 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
             return dest;
 
         case IDENTIFIER_SYMBOL_TYPE:
+            if (id->cached_print_str && !id->is_lti())
+             {
+                if (!dest)
+                 {
+                    return id->cached_print_str;
+                 } else {
+                     strcpy(dest, id->cached_print_str);
+                     dest[dest_size - 1] = 0; /* ensure null termination */
+                     return dest;
+                 }
+             }
+            lStr.push_back(id->name_letter);
+            lStr.append(std::to_string(id->name_number));
+            if (showLTILink && id->is_lti())
+            {
+                lStr += " (@";
+                lStr.append(std::to_string(id->LTI_ID));
+                lStr += ')';
+                if (id->cached_print_str)
+                {
+                    free_memory_block_for_string(id->thisAgent, id->cached_print_str);
+                }
+            }
+            id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
             if (!dest)
             {
-                dest_size = output_string_size; /* from agent.h */;
-                dest = Output_Manager::Get_OM().get_printed_output_string();
+                return id->cached_print_str;
+            } else {
+                strcpy(dest, id->cached_print_str);
+                dest[dest_size - 1] = 0; /* ensure null termination */
+                return dest;
             }
-            if (id->is_lti())
-            {
-                SNPRINTF(dest, dest_size, "%c%llu (@%llu)", id->name_letter, static_cast<long long unsigned>(id->name_number), static_cast<long long unsigned>(id->LTI_ID));
-            } else
-            {
-                SNPRINTF(dest, dest_size, "%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
-            }
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            return dest;
 
         case INT_CONSTANT_SYMBOL_TYPE:
+            if (ic->cached_print_str)
+             {
+                if (!dest)
+                 {
+                    return ic->cached_print_str;
+                 } else {
+                     strcpy(dest, ic->cached_print_str);
+                     dest[dest_size - 1] = 0; /* ensure null termination */
+                     return dest;
+                 }
+             }
+            lStr = std::to_string(ic->value);
+            ic->cached_print_str =  make_memory_block_for_string(ic->thisAgent, lStr.c_str());
             if (!dest)
             {
-                dest_size = output_string_size; /* from agent.h */;
-                dest = Output_Manager::Get_OM().get_printed_output_string();
+                return ic->cached_print_str;
+            } else {
+                strcpy(dest, ic->cached_print_str);
+                dest[dest_size - 1] = 0; /* ensure null termination */
+                return dest;
             }
-            SNPRINTF(dest, dest_size, "%ld", static_cast<long int>(ic->value));
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            return dest;
 
         case FLOAT_CONSTANT_SYMBOL_TYPE:
+            if (fc->cached_print_str)
+             {
+                if (!dest)
+                 {
+                    return fc->cached_print_str;
+                 } else {
+                     strcpy(dest, fc->cached_print_str);
+                     dest[dest_size - 1] = 0; /* ensure null termination */
+                     return dest;
+                 }
+             }
+            lStr = std::to_string(fc->value);
+            fc->cached_print_str =  make_memory_block_for_string(fc->thisAgent, lStr.c_str());
             if (!dest)
             {
-                dest_size = output_string_size; /* from agent.h */;
-                dest = Output_Manager::Get_OM().get_printed_output_string();
+                return fc->cached_print_str;
+            } else {
+                strcpy(dest, fc->cached_print_str);
+                dest[dest_size - 1] = 0; /* ensure null termination */
+                return dest;
             }
-            SNPRINTF(dest, dest_size, "%#.16g", fc->value);
-            dest[dest_size - 1] = 0; /* ensure null termination */
-            {
-                /* --- strip off trailing zeros --- */
-                char* start_of_exponent;
-                char* end_of_mantissa;
-                start_of_exponent = dest;
-                while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
-                {
-                    start_of_exponent++;
-                }
-                end_of_mantissa = start_of_exponent - 1;
-                while (*end_of_mantissa == '0')
-                {
-                    end_of_mantissa--;
-                }
-                end_of_mantissa++;
-                while (*start_of_exponent)
-                {
-                    *end_of_mantissa++ = *start_of_exponent++;
-                }
-                *end_of_mantissa = 0;
-            }
-            return dest;
 
         case STR_CONSTANT_SYMBOL_TYPE:
             if (!rereadable)
@@ -170,14 +194,19 @@ char* Symbol::to_string(bool rereadable, char* dest, size_t dest_size)
                 /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
                  *        - Shouldn't it also check whether dest char * was passed in and get a printed
                  *          output string instead?  */
-                return string_to_escaped_string(sc->name, '|', dest);
+                lStr = string_to_escaped_string(sc->name, '|');
+                sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, lStr.c_str());
+            } else {
+                sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, sc->name);
             }
             if (!dest)
             {
-                return sc->name;
+                return sc->cached_print_str;
+            } else {
+                strcpy(dest, sc->cached_print_str);
+                dest[dest_size - 1] = 0; /* ensure null termination */
+                return dest;
             }
-            strcpy(dest, sc->name);
-            return dest;
 
         default:
         {

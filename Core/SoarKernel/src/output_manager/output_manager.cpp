@@ -27,7 +27,7 @@ AgentOutput_Info::AgentOutput_Info()
 {
     print_enabled = true;
     printer_output_column = 1;
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_agent(true);
     #else
         set_output_params_agent(false);
@@ -38,18 +38,10 @@ void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
     if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
     {
         callback_mode = false;
-        stdout_mode = true;
         db_mode = false;
-        callback_dbg_mode = false;
-        stdout_dbg_mode = true;
-        db_dbg_mode = false;
     } else {
         callback_mode = true;
-        stdout_mode = false;
         db_mode = false;
-        callback_dbg_mode = false;
-        stdout_dbg_mode = false;
-        db_dbg_mode = false;
     }
 }
 
@@ -63,7 +55,6 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_identity_effective = true;
         db_mode = false;
         stdout_mode = true;
-        debug_set_mode_info(mode_info, true);
     } else {
         m_print_actual = true;
         m_print_identity = false;
@@ -71,7 +62,6 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_identity_effective = false;
         db_mode = false;
         stdout_mode = false;
-        debug_set_mode_info(mode_info, false);
     }
 }
 
@@ -79,6 +69,40 @@ void Output_Manager::set_output_mode(int modeIndex, bool pEnabled)
 {
     mode_info[modeIndex].enabled = pEnabled;
     print_sf("Debug trace mode for '%s' is %s.\n", mode_info[modeIndex].prefix, (pEnabled ? "enabled" : "disabled"));
+}
+
+void Output_Manager::clear_output_modes()
+{
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        mode_info[i].enabled = false;
+    }
+}
+
+void Output_Manager::copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes])
+{
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        mode_info_dest[i].enabled = mode_info_src[i].enabled;
+    }
+}
+
+void Output_Manager::cache_output_modes()
+{
+    copy_output_modes(mode_info, saved_mode_info);
+}
+
+void Output_Manager::restore_output_modes()
+{
+    copy_output_modes(saved_mode_info, mode_info);
+}
+
+void Output_Manager::print_output_modes(trace_mode_info mode_info_to_print[num_trace_modes])
+{
+    for (int i = 0; i < num_trace_modes; i++)
+    {
+        print_sf("%s: %s\n", mode_info_to_print[i].prefix, (mode_info_to_print[i].enabled ? "enabled" : "disabled"));
+    }
 }
 
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
@@ -103,14 +127,15 @@ Output_Manager::Output_Manager()
     m_pre_string = strdup("          ");
     m_post_string = NULL;
 
-    next_output_string = 0;
     reset_column_indents();
 
     initialize_debug_trace(mode_info);
-    #if defined(DEBUG_OUTPUT_ON)
+    #ifndef SOAR_RELEASE_VERSION
         set_output_params_global(true);
+        debug_set_mode_info(mode_info, true);
     #else
         set_output_params_global(false);
+        debug_set_mode_info(mode_info, false);
     #endif
 
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
@@ -185,7 +210,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column = 1;
-                if (pSoarAgent->output_settings->stdout_mode)
+                if (stdout_mode)
                 {
                     global_printer_output_column = 1;
                 }
@@ -199,7 +224,7 @@ void Output_Manager::update_printer_columns(agent* pSoarAgent, const char* msg)
             if (pSoarAgent)
             {
                 pSoarAgent->output_settings->printer_output_column++;
-                if (pSoarAgent->output_settings->stdout_mode)
+                if (stdout_mode)
                 {
                     global_printer_output_column++;
                 }

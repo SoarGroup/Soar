@@ -1121,9 +1121,7 @@ public class FoldingTextView extends AbstractComboView implements
                 if (output.length() != 0)
                     this.appendSubText(output, TraceType.kNumericIndifferent);
             }
-            else if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocals()
-                    || xmlTrace.IsTagGroundedPotentials()
-                    || xmlTrace.IsTagUngroundedPotentials())
+            else if (xmlTrace.IsTagBacktraceResult() || xmlTrace.IsTagLocals())
             {
                 String output = XmlOutput.getBacktraceText(agent, xmlTrace,
                         xmlTrace.GetTagName());

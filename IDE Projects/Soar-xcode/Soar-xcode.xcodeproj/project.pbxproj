@@ -27,73 +27,37 @@
 		4D1629881D7F0C6E00A27F4E /* support.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1629781D7F0C6E00A27F4E /* support.c */; };
 		4D1629891D7F0C6E00A27F4E /* vec3.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D1629791D7F0C6E00A27F4E /* vec3.c */; };
 		4D1A6AC81B6BC9C900B4D0B1 /* libSoar.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D5105C11B2B41A80009AABC /* libSoar.dylib */; };
-		4D1ED1751D89E54C005E98E5 /* cli_addwme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1321D89E54C005E98E5 /* cli_addwme.cpp */; };
 		4D1ED1761D89E54C005E98E5 /* cli_alias.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1331D89E54C005E98E5 /* cli_alias.cpp */; };
 		4D1ED1771D89E54C005E98E5 /* cli_Aliases.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1341D89E54C005E98E5 /* cli_Aliases.h */; };
-		4D1ED1781D89E54C005E98E5 /* cli_allocate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1351D89E54C005E98E5 /* cli_allocate.cpp */; };
-		4D1ED1791D89E54C005E98E5 /* cli_captureinput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1361D89E54C005E98E5 /* cli_captureinput.cpp */; };
 		4D1ED17A1D89E54C005E98E5 /* cli_chunk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1371D89E54C005E98E5 /* cli_chunk.cpp */; };
 		4D1ED17B1D89E54C005E98E5 /* cli_chunk.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1381D89E54C005E98E5 /* cli_chunk.h */; };
-		4D1ED17C1D89E54C005E98E5 /* cli_Cli.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1391D89E54C005E98E5 /* cli_Cli.h */; };
-		4D1ED17D1D89E54C005E98E5 /* cli_clog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED13A1D89E54C005E98E5 /* cli_clog.cpp */; };
 		4D1ED17E1D89E54C005E98E5 /* cli_CommandLineInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED13B1D89E54C005E98E5 /* cli_CommandLineInterface.cpp */; };
 		4D1ED17F1D89E54C005E98E5 /* cli_CommandLineInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED13C1D89E54C005E98E5 /* cli_CommandLineInterface.h */; };
 		4D1ED1801D89E54C005E98E5 /* cli_Commands.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED13D1D89E54C005E98E5 /* cli_Commands.h */; };
-		4D1ED1811D89E54C005E98E5 /* cli_commandtofile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED13E1D89E54C005E98E5 /* cli_commandtofile.cpp */; };
 		4D1ED1821D89E54C005E98E5 /* cli_debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED13F1D89E54C005E98E5 /* cli_debug.cpp */; };
 		4D1ED1831D89E54C005E98E5 /* cli_echo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1401D89E54C005E98E5 /* cli_echo.cpp */; };
 		4D1ED1841D89E54C005E98E5 /* cli_epmem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1411D89E54C005E98E5 /* cli_epmem.cpp */; };
-		4D1ED1851D89E54C005E98E5 /* cli_excise.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1421D89E54C005E98E5 /* cli_excise.cpp */; };
 		4D1ED1861D89E54C005E98E5 /* cli_explain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1431D89E54C005E98E5 /* cli_explain.cpp */; };
 		4D1ED1871D89E54C005E98E5 /* cli_explain.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1441D89E54C005E98E5 /* cli_explain.h */; };
 		4D1ED1881D89E54C005E98E5 /* cli_file_system_cmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1451D89E54C005E98E5 /* cli_file_system_cmds.cpp */; };
-		4D1ED1891D89E54C005E98E5 /* cli_firingcounts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1461D89E54C005E98E5 /* cli_firingcounts.cpp */; };
-		4D1ED18A1D89E54C005E98E5 /* cli_gdsprint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1471D89E54C005E98E5 /* cli_gdsprint.cpp */; };
 		4D1ED18B1D89E54C005E98E5 /* cli_gp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1481D89E54C005E98E5 /* cli_gp.cpp */; };
 		4D1ED18C1D89E54C005E98E5 /* cli_help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1491D89E54C005E98E5 /* cli_help.cpp */; };
-		4D1ED18D1D89E54C005E98E5 /* cli_indifferentselection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14A1D89E54C005E98E5 /* cli_indifferentselection.cpp */; };
-		4D1ED18E1D89E54C005E98E5 /* cli_initsoar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14B1D89E54C005E98E5 /* cli_initsoar.cpp */; };
-		4D1ED18F1D89E54C005E98E5 /* cli_loadLibrary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14C1D89E54C005E98E5 /* cli_loadLibrary.cpp */; };
-		4D1ED1901D89E54C005E98E5 /* cli_matches.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14D1D89E54C005E98E5 /* cli_matches.cpp */; };
-		4D1ED1911D89E54C005E98E5 /* cli_memories.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14E1D89E54C005E98E5 /* cli_memories.cpp */; };
-		4D1ED1921D89E54C005E98E5 /* cli_multiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED14F1D89E54C005E98E5 /* cli_multiattributes.cpp */; };
-		4D1ED1931D89E54C005E98E5 /* cli_numericindifferentmode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1501D89E54C005E98E5 /* cli_numericindifferentmode.cpp */; };
 		4D1ED1941D89E54C005E98E5 /* cli_Options.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1511D89E54C005E98E5 /* cli_Options.h */; };
 		4D1ED1951D89E54C005E98E5 /* cli_output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1521D89E54C005E98E5 /* cli_output.cpp */; };
 		4D1ED1961D89E54C005E98E5 /* cli_output.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1531D89E54C005E98E5 /* cli_output.h */; };
 		4D1ED1971D89E54C005E98E5 /* cli_Parser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1541D89E54C005E98E5 /* cli_Parser.h */; };
-		4D1ED1981D89E54C005E98E5 /* cli_pbreak.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1551D89E54C005E98E5 /* cli_pbreak.cpp */; };
-		4D1ED1991D89E54C005E98E5 /* cli_predict.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1561D89E54C005E98E5 /* cli_predict.cpp */; };
 		4D1ED19A1D89E54C005E98E5 /* cli_preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1571D89E54C005E98E5 /* cli_preferences.cpp */; };
 		4D1ED19B1D89E54C005E98E5 /* cli_print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1581D89E54C005E98E5 /* cli_print.cpp */; };
-		4D1ED19C1D89E54C005E98E5 /* cli_productionfind.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1591D89E54C005E98E5 /* cli_productionfind.cpp */; };
-		4D1ED19D1D89E54C005E98E5 /* cli_pwatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15A1D89E54C005E98E5 /* cli_pwatch.cpp */; };
-		4D1ED19E1D89E54C005E98E5 /* cli_rand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15B1D89E54C005E98E5 /* cli_rand.cpp */; };
-		4D1ED19F1D89E54C005E98E5 /* cli_removewme.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15C1D89E54C005E98E5 /* cli_removewme.cpp */; };
-		4D1ED1A01D89E54C005E98E5 /* cli_replayinput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15D1D89E54C005E98E5 /* cli_replayinput.cpp */; };
-		4D1ED1A11D89E54C005E98E5 /* cli_retenet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15E1D89E54C005E98E5 /* cli_retenet.cpp */; };
 		4D1ED1A21D89E54C005E98E5 /* cli_rl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED15F1D89E54C005E98E5 /* cli_rl.cpp */; };
 		4D1ED1A31D89E54C005E98E5 /* cli_run.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1601D89E54C005E98E5 /* cli_run.cpp */; };
-		4D1ED1A41D89E54C005E98E5 /* cli_select.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1611D89E54C005E98E5 /* cli_select.cpp */; };
 		4D1ED1A51D89E54C005E98E5 /* cli_smem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1621D89E54C005E98E5 /* cli_smem.cpp */; };
 		4D1ED1A61D89E54C005E98E5 /* cli_soar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1631D89E54C005E98E5 /* cli_soar.cpp */; };
 		4D1ED1A71D89E54C005E98E5 /* cli_soar.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1641D89E54C005E98E5 /* cli_soar.h */; };
-		4D1ED1A81D89E54C005E98E5 /* cli_source.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1651D89E54C005E98E5 /* cli_source.cpp */; };
 		4D1ED1A91D89E54C005E98E5 /* cli_sp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1661D89E54C005E98E5 /* cli_sp.cpp */; };
-		4D1ED1AA1D89E54C005E98E5 /* cli_srand.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1671D89E54C005E98E5 /* cli_srand.cpp */; };
 		4D1ED1AB1D89E54C005E98E5 /* cli_stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1681D89E54C005E98E5 /* cli_stats.cpp */; };
-		4D1ED1AC1D89E54C005E98E5 /* cli_stopsoar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1691D89E54C005E98E5 /* cli_stopsoar.cpp */; };
 		4D1ED1AD1D89E54C005E98E5 /* cli_svs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16A1D89E54C005E98E5 /* cli_svs.cpp */; };
-		4D1ED1AE1D89E54C005E98E5 /* cli_tcl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16B1D89E54C005E98E5 /* cli_tcl.cpp */; };
-		4D1ED1AF1D89E54C005E98E5 /* cli_time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16C1D89E54C005E98E5 /* cli_time.cpp */; };
-		4D1ED1B01D89E54C005E98E5 /* cli_timers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16D1D89E54C005E98E5 /* cli_timers.cpp */; };
-		4D1ED1B11D89E54C005E98E5 /* cli_unalias.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16E1D89E54C005E98E5 /* cli_unalias.cpp */; };
-		4D1ED1B21D89E54C005E98E5 /* cli_version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED16F1D89E54C005E98E5 /* cli_version.cpp */; };
 		4D1ED1B31D89E54C005E98E5 /* cli_visualize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1701D89E54C005E98E5 /* cli_visualize.cpp */; };
 		4D1ED1B41D89E54C005E98E5 /* cli_visualize.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1711D89E54C005E98E5 /* cli_visualize.h */; };
-		4D1ED1B51D89E54C005E98E5 /* cli_watch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1721D89E54C005E98E5 /* cli_watch.cpp */; };
-		4D1ED1B61D89E54C005E98E5 /* cli_watchwmes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1731D89E54C005E98E5 /* cli_watchwmes.cpp */; };
-		4D1ED1B71D89E54C005E98E5 /* cli_wma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1741D89E54C005E98E5 /* cli_wma.cpp */; };
 		4D1ED1BA1D89E574005E98E5 /* decider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1B81D89E574005E98E5 /* decider.cpp */; };
 		4D1ED1BB1D89E574005E98E5 /* decider.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1ED1B91D89E574005E98E5 /* decider.h */; };
 		4D1ED1BE1D89E586005E98E5 /* decider_settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4D1ED1BC1D89E586005E98E5 /* decider_settings.cpp */; };
@@ -413,26 +377,15 @@
 		4DD80D041D85AFEC00E85AA0 /* decide.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80CF81D85AFEC00E85AA0 /* decide.h */; };
 		4DD80D051D85AFEC00E85AA0 /* decision_manipulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80CF91D85AFEC00E85AA0 /* decision_manipulation.cpp */; };
 		4DD80D061D85AFEC00E85AA0 /* decision_manipulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80CFA1D85AFEC00E85AA0 /* decision_manipulation.h */; };
-		4DD80D071D85AFEC00E85AA0 /* osupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80CFB1D85AFEC00E85AA0 /* osupport.cpp */; };
-		4DD80D081D85AFEC00E85AA0 /* osupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80CFC1D85AFEC00E85AA0 /* osupport.h */; };
 		4DD80D091D85AFEC00E85AA0 /* rete.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80CFD1D85AFEC00E85AA0 /* rete.cpp */; };
 		4DD80D0A1D85AFEC00E85AA0 /* rete.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80CFE1D85AFEC00E85AA0 /* rete.h */; };
 		4DD80D0B1D85AFEC00E85AA0 /* run_soar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80CFF1D85AFEC00E85AA0 /* run_soar.cpp */; };
 		4DD80D0C1D85AFEC00E85AA0 /* run_soar.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D001D85AFEC00E85AA0 /* run_soar.h */; };
-		4DD80D1C1D85AFF800E85AA0 /* backtrace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D0D1D85AFF800E85AA0 /* backtrace.cpp */; };
-		4DD80D1D1D85AFF800E85AA0 /* build.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D0E1D85AFF800E85AA0 /* build.cpp */; };
-		4DD80D1E1D85AFF800E85AA0 /* constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D0F1D85AFF800E85AA0 /* constraints.cpp */; };
 		4DD80D1F1D85AFF800E85AA0 /* ebc_settings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D101D85AFF800E85AA0 /* ebc_settings.cpp */; };
 		4DD80D201D85AFF800E85AA0 /* ebc_settings.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D111D85AFF800E85AA0 /* ebc_settings.h */; };
 		4DD80D211D85AFF800E85AA0 /* ebc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D121D85AFF800E85AA0 /* ebc.cpp */; };
 		4DD80D221D85AFF800E85AA0 /* ebc.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D131D85AFF800E85AA0 /* ebc.h */; };
 		4DD80D231D85AFF800E85AA0 /* explanation_trace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D141D85AFF800E85AA0 /* explanation_trace.cpp */; };
-		4DD80D241D85AFF800E85AA0 /* map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D151D85AFF800E85AA0 /* map.cpp */; };
-		4DD80D251D85AFF800E85AA0 /* merge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D161D85AFF800E85AA0 /* merge.cpp */; };
-		4DD80D261D85AFF800E85AA0 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D171D85AFF800E85AA0 /* print.cpp */; };
-		4DD80D271D85AFF800E85AA0 /* repair.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D181D85AFF800E85AA0 /* repair.cpp */; };
-		4DD80D281D85AFF800E85AA0 /* repair.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D191D85AFF800E85AA0 /* repair.h */; };
-		4DD80D291D85AFF800E85AA0 /* unify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D1A1D85AFF800E85AA0 /* unify.cpp */; };
 		4DD80D2A1D85AFF800E85AA0 /* variablize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D1B1D85AFF800E85AA0 /* variablize.cpp */; };
 		4DD80D3A1D85B00200E85AA0 /* action_record.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D2B1D85B00200E85AA0 /* action_record.cpp */; };
 		4DD80D3B1D85B00200E85AA0 /* action_record.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D2C1D85B00200E85AA0 /* action_record.h */; };
@@ -449,16 +402,10 @@
 		4DD80D461D85B00200E85AA0 /* instantiation_record.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D371D85B00200E85AA0 /* instantiation_record.h */; };
 		4DD80D471D85B00200E85AA0 /* production_record.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D381D85B00200E85AA0 /* production_record.cpp */; };
 		4DD80D481D85B00200E85AA0 /* production_record.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D391D85B00200E85AA0 /* production_record.h */; };
-		4DD80D541D85B00E00E85AA0 /* database.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D491D85B00E00E85AA0 /* database.cpp */; };
-		4DD80D551D85B00E00E85AA0 /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D4A1D85B00E00E85AA0 /* errors.cpp */; };
 		4DD80D561D85B00E00E85AA0 /* output_db.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D4B1D85B00E00E85AA0 /* output_db.h */; };
 		4DD80D571D85B00E00E85AA0 /* output_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D4C1D85B00E00E85AA0 /* output_manager.cpp */; };
 		4DD80D581D85B00E00E85AA0 /* output_manager.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D4D1D85B00E00E85AA0 /* output_manager.h */; };
-		4DD80D5A1D85B00E00E85AA0 /* print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D4F1D85B00E00E85AA0 /* print.cpp */; };
 		4DD80D5B1D85B00E00E85AA0 /* soar_to_string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D501D85B00E00E85AA0 /* soar_to_string.cpp */; };
-		4DD80D5C1D85B00E00E85AA0 /* visualize_wm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D511D85B00E00E85AA0 /* visualize_wm.cpp */; };
-		4DD80D5D1D85B00E00E85AA0 /* visualize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D521D85B00E00E85AA0 /* visualize.cpp */; };
-		4DD80D5E1D85B00E00E85AA0 /* visualize.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D531D85B00E00E85AA0 /* visualize.h */; };
 		4DD80D711D85B01F00E85AA0 /* semantic_memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D5F1D85B01F00E85AA0 /* semantic_memory.cpp */; };
 		4DD80D721D85B01F00E85AA0 /* semantic_memory.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D601D85B01F00E85AA0 /* semantic_memory.h */; };
 		4DD80D731D85B01F00E85AA0 /* smem_activation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D611D85B01F00E85AA0 /* smem_activation.cpp */; };
@@ -500,7 +447,6 @@
 		4DD80DB51D85B02A00E85AA0 /* stl_typedefs.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */; };
 		4DD80DB61D85B02A00E85AA0 /* trace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D9A1D85B02A00E85AA0 /* trace.cpp */; };
 		4DD80DB71D85B02A00E85AA0 /* trace.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D9B1D85B02A00E85AA0 /* trace.h */; };
-		4DD80DB81D85B02A00E85AA0 /* triples.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D9C1D85B02A00E85AA0 /* triples.h */; };
 		4DD80DB91D85B02A00E85AA0 /* xml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80D9D1D85B02A00E85AA0 /* xml.cpp */; };
 		4DD80DBA1D85B02A00E85AA0 /* xml.h in Headers */ = {isa = PBXBuildFile; fileRef = 4DD80D9E1D85B02A00E85AA0 /* xml.h */; };
 		4DD80DD81D85B03500E85AA0 /* agent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4DD80DBB1D85B03500E85AA0 /* agent.cpp */; };
@@ -661,73 +607,37 @@
 		4D1629781D7F0C6E00A27F4E /* support.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = support.c; sourceTree = "<group>"; };
 		4D1629791D7F0C6E00A27F4E /* vec3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vec3.c; sourceTree = "<group>"; };
 		4D1A6AC11B6BC42F00B4D0B1 /* SoarRunner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SoarRunner; sourceTree = BUILT_PRODUCTS_DIR; };
-		4D1ED1321D89E54C005E98E5 /* cli_addwme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_addwme.cpp; sourceTree = "<group>"; };
 		4D1ED1331D89E54C005E98E5 /* cli_alias.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_alias.cpp; sourceTree = "<group>"; };
 		4D1ED1341D89E54C005E98E5 /* cli_Aliases.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Aliases.h; sourceTree = "<group>"; };
-		4D1ED1351D89E54C005E98E5 /* cli_allocate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_allocate.cpp; sourceTree = "<group>"; };
-		4D1ED1361D89E54C005E98E5 /* cli_captureinput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_captureinput.cpp; sourceTree = "<group>"; };
 		4D1ED1371D89E54C005E98E5 /* cli_chunk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_chunk.cpp; sourceTree = "<group>"; };
 		4D1ED1381D89E54C005E98E5 /* cli_chunk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_chunk.h; sourceTree = "<group>"; };
-		4D1ED1391D89E54C005E98E5 /* cli_Cli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Cli.h; sourceTree = "<group>"; };
-		4D1ED13A1D89E54C005E98E5 /* cli_clog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_clog.cpp; sourceTree = "<group>"; };
 		4D1ED13B1D89E54C005E98E5 /* cli_CommandLineInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_CommandLineInterface.cpp; sourceTree = "<group>"; };
 		4D1ED13C1D89E54C005E98E5 /* cli_CommandLineInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_CommandLineInterface.h; sourceTree = "<group>"; };
 		4D1ED13D1D89E54C005E98E5 /* cli_Commands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Commands.h; sourceTree = "<group>"; };
-		4D1ED13E1D89E54C005E98E5 /* cli_commandtofile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_commandtofile.cpp; sourceTree = "<group>"; };
 		4D1ED13F1D89E54C005E98E5 /* cli_debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_debug.cpp; sourceTree = "<group>"; };
 		4D1ED1401D89E54C005E98E5 /* cli_echo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_echo.cpp; sourceTree = "<group>"; };
 		4D1ED1411D89E54C005E98E5 /* cli_epmem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_epmem.cpp; sourceTree = "<group>"; };
-		4D1ED1421D89E54C005E98E5 /* cli_excise.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_excise.cpp; sourceTree = "<group>"; };
 		4D1ED1431D89E54C005E98E5 /* cli_explain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_explain.cpp; sourceTree = "<group>"; };
 		4D1ED1441D89E54C005E98E5 /* cli_explain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_explain.h; sourceTree = "<group>"; };
 		4D1ED1451D89E54C005E98E5 /* cli_file_system_cmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_file_system_cmds.cpp; sourceTree = "<group>"; };
-		4D1ED1461D89E54C005E98E5 /* cli_firingcounts.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_firingcounts.cpp; sourceTree = "<group>"; };
-		4D1ED1471D89E54C005E98E5 /* cli_gdsprint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_gdsprint.cpp; sourceTree = "<group>"; };
 		4D1ED1481D89E54C005E98E5 /* cli_gp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_gp.cpp; sourceTree = "<group>"; };
 		4D1ED1491D89E54C005E98E5 /* cli_help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_help.cpp; sourceTree = "<group>"; };
-		4D1ED14A1D89E54C005E98E5 /* cli_indifferentselection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_indifferentselection.cpp; sourceTree = "<group>"; };
-		4D1ED14B1D89E54C005E98E5 /* cli_initsoar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_initsoar.cpp; sourceTree = "<group>"; };
-		4D1ED14C1D89E54C005E98E5 /* cli_loadLibrary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_loadLibrary.cpp; sourceTree = "<group>"; };
-		4D1ED14D1D89E54C005E98E5 /* cli_matches.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_matches.cpp; sourceTree = "<group>"; };
-		4D1ED14E1D89E54C005E98E5 /* cli_memories.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_memories.cpp; sourceTree = "<group>"; };
-		4D1ED14F1D89E54C005E98E5 /* cli_multiattributes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_multiattributes.cpp; sourceTree = "<group>"; };
-		4D1ED1501D89E54C005E98E5 /* cli_numericindifferentmode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_numericindifferentmode.cpp; sourceTree = "<group>"; };
 		4D1ED1511D89E54C005E98E5 /* cli_Options.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Options.h; sourceTree = "<group>"; };
 		4D1ED1521D89E54C005E98E5 /* cli_output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_output.cpp; sourceTree = "<group>"; };
 		4D1ED1531D89E54C005E98E5 /* cli_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_output.h; sourceTree = "<group>"; };
 		4D1ED1541D89E54C005E98E5 /* cli_Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_Parser.h; sourceTree = "<group>"; };
-		4D1ED1551D89E54C005E98E5 /* cli_pbreak.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_pbreak.cpp; sourceTree = "<group>"; };
-		4D1ED1561D89E54C005E98E5 /* cli_predict.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_predict.cpp; sourceTree = "<group>"; };
 		4D1ED1571D89E54C005E98E5 /* cli_preferences.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_preferences.cpp; sourceTree = "<group>"; };
 		4D1ED1581D89E54C005E98E5 /* cli_print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_print.cpp; sourceTree = "<group>"; };
-		4D1ED1591D89E54C005E98E5 /* cli_productionfind.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_productionfind.cpp; sourceTree = "<group>"; };
-		4D1ED15A1D89E54C005E98E5 /* cli_pwatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_pwatch.cpp; sourceTree = "<group>"; };
-		4D1ED15B1D89E54C005E98E5 /* cli_rand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_rand.cpp; sourceTree = "<group>"; };
-		4D1ED15C1D89E54C005E98E5 /* cli_removewme.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_removewme.cpp; sourceTree = "<group>"; };
-		4D1ED15D1D89E54C005E98E5 /* cli_replayinput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_replayinput.cpp; sourceTree = "<group>"; };
-		4D1ED15E1D89E54C005E98E5 /* cli_retenet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_retenet.cpp; sourceTree = "<group>"; };
 		4D1ED15F1D89E54C005E98E5 /* cli_rl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_rl.cpp; sourceTree = "<group>"; };
 		4D1ED1601D89E54C005E98E5 /* cli_run.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_run.cpp; sourceTree = "<group>"; };
-		4D1ED1611D89E54C005E98E5 /* cli_select.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_select.cpp; sourceTree = "<group>"; };
 		4D1ED1621D89E54C005E98E5 /* cli_smem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_smem.cpp; sourceTree = "<group>"; };
 		4D1ED1631D89E54C005E98E5 /* cli_soar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_soar.cpp; sourceTree = "<group>"; };
 		4D1ED1641D89E54C005E98E5 /* cli_soar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_soar.h; sourceTree = "<group>"; };
-		4D1ED1651D89E54C005E98E5 /* cli_source.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_source.cpp; sourceTree = "<group>"; };
 		4D1ED1661D89E54C005E98E5 /* cli_sp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_sp.cpp; sourceTree = "<group>"; };
-		4D1ED1671D89E54C005E98E5 /* cli_srand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_srand.cpp; sourceTree = "<group>"; };
 		4D1ED1681D89E54C005E98E5 /* cli_stats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_stats.cpp; sourceTree = "<group>"; };
-		4D1ED1691D89E54C005E98E5 /* cli_stopsoar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_stopsoar.cpp; sourceTree = "<group>"; };
 		4D1ED16A1D89E54C005E98E5 /* cli_svs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_svs.cpp; sourceTree = "<group>"; };
-		4D1ED16B1D89E54C005E98E5 /* cli_tcl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_tcl.cpp; sourceTree = "<group>"; };
-		4D1ED16C1D89E54C005E98E5 /* cli_time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_time.cpp; sourceTree = "<group>"; };
-		4D1ED16D1D89E54C005E98E5 /* cli_timers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_timers.cpp; sourceTree = "<group>"; };
-		4D1ED16E1D89E54C005E98E5 /* cli_unalias.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_unalias.cpp; sourceTree = "<group>"; };
-		4D1ED16F1D89E54C005E98E5 /* cli_version.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_version.cpp; sourceTree = "<group>"; };
 		4D1ED1701D89E54C005E98E5 /* cli_visualize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_visualize.cpp; sourceTree = "<group>"; };
 		4D1ED1711D89E54C005E98E5 /* cli_visualize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cli_visualize.h; sourceTree = "<group>"; };
-		4D1ED1721D89E54C005E98E5 /* cli_watch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_watch.cpp; sourceTree = "<group>"; };
-		4D1ED1731D89E54C005E98E5 /* cli_watchwmes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_watchwmes.cpp; sourceTree = "<group>"; };
-		4D1ED1741D89E54C005E98E5 /* cli_wma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cli_wma.cpp; sourceTree = "<group>"; };
 		4D1ED1B81D89E574005E98E5 /* decider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = decider.cpp; sourceTree = "<group>"; };
 		4D1ED1B91D89E574005E98E5 /* decider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decider.h; sourceTree = "<group>"; };
 		4D1ED1BC1D89E586005E98E5 /* decider_settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = decider_settings.cpp; sourceTree = "<group>"; };
@@ -1067,26 +977,15 @@
 		4DD80CF81D85AFEC00E85AA0 /* decide.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decide.h; sourceTree = "<group>"; };
 		4DD80CF91D85AFEC00E85AA0 /* decision_manipulation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = decision_manipulation.cpp; sourceTree = "<group>"; };
 		4DD80CFA1D85AFEC00E85AA0 /* decision_manipulation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decision_manipulation.h; sourceTree = "<group>"; };
-		4DD80CFB1D85AFEC00E85AA0 /* osupport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = osupport.cpp; sourceTree = "<group>"; };
-		4DD80CFC1D85AFEC00E85AA0 /* osupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osupport.h; sourceTree = "<group>"; };
 		4DD80CFD1D85AFEC00E85AA0 /* rete.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rete.cpp; sourceTree = "<group>"; };
 		4DD80CFE1D85AFEC00E85AA0 /* rete.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rete.h; sourceTree = "<group>"; };
 		4DD80CFF1D85AFEC00E85AA0 /* run_soar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = run_soar.cpp; sourceTree = "<group>"; };
 		4DD80D001D85AFEC00E85AA0 /* run_soar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = run_soar.h; sourceTree = "<group>"; };
-		4DD80D0D1D85AFF800E85AA0 /* backtrace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = backtrace.cpp; sourceTree = "<group>"; };
-		4DD80D0E1D85AFF800E85AA0 /* build.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = build.cpp; sourceTree = "<group>"; };
-		4DD80D0F1D85AFF800E85AA0 /* constraints.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = constraints.cpp; sourceTree = "<group>"; };
 		4DD80D101D85AFF800E85AA0 /* ebc_settings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ebc_settings.cpp; sourceTree = "<group>"; };
 		4DD80D111D85AFF800E85AA0 /* ebc_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ebc_settings.h; sourceTree = "<group>"; };
 		4DD80D121D85AFF800E85AA0 /* ebc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ebc.cpp; sourceTree = "<group>"; };
 		4DD80D131D85AFF800E85AA0 /* ebc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ebc.h; sourceTree = "<group>"; };
 		4DD80D141D85AFF800E85AA0 /* explanation_trace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = explanation_trace.cpp; sourceTree = "<group>"; };
-		4DD80D151D85AFF800E85AA0 /* map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = map.cpp; sourceTree = "<group>"; };
-		4DD80D161D85AFF800E85AA0 /* merge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = merge.cpp; sourceTree = "<group>"; };
-		4DD80D171D85AFF800E85AA0 /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
-		4DD80D181D85AFF800E85AA0 /* repair.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = repair.cpp; sourceTree = "<group>"; };
-		4DD80D191D85AFF800E85AA0 /* repair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = repair.h; sourceTree = "<group>"; };
-		4DD80D1A1D85AFF800E85AA0 /* unify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = unify.cpp; sourceTree = "<group>"; };
 		4DD80D1B1D85AFF800E85AA0 /* variablize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = variablize.cpp; sourceTree = "<group>"; };
 		4DD80D2B1D85B00200E85AA0 /* action_record.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = action_record.cpp; sourceTree = "<group>"; };
 		4DD80D2C1D85B00200E85AA0 /* action_record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = action_record.h; sourceTree = "<group>"; };
@@ -1103,17 +1002,11 @@
 		4DD80D371D85B00200E85AA0 /* instantiation_record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = instantiation_record.h; sourceTree = "<group>"; };
 		4DD80D381D85B00200E85AA0 /* production_record.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = production_record.cpp; sourceTree = "<group>"; };
 		4DD80D391D85B00200E85AA0 /* production_record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = production_record.h; sourceTree = "<group>"; };
-		4DD80D491D85B00E00E85AA0 /* database.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = database.cpp; sourceTree = "<group>"; };
-		4DD80D4A1D85B00E00E85AA0 /* errors.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
 		4DD80D4B1D85B00E00E85AA0 /* output_db.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = output_db.h; sourceTree = "<group>"; };
 		4DD80D4C1D85B00E00E85AA0 /* output_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = output_manager.cpp; sourceTree = "<group>"; };
 		4DD80D4D1D85B00E00E85AA0 /* output_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = output_manager.h; sourceTree = "<group>"; };
 		4DD80D4E1D85B00E00E85AA0 /* output_settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = output_settings.h; sourceTree = "<group>"; };
-		4DD80D4F1D85B00E00E85AA0 /* print.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = print.cpp; sourceTree = "<group>"; };
 		4DD80D501D85B00E00E85AA0 /* soar_to_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = soar_to_string.cpp; sourceTree = "<group>"; };
-		4DD80D511D85B00E00E85AA0 /* visualize_wm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = visualize_wm.cpp; sourceTree = "<group>"; };
-		4DD80D521D85B00E00E85AA0 /* visualize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = visualize.cpp; sourceTree = "<group>"; };
-		4DD80D531D85B00E00E85AA0 /* visualize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = visualize.h; sourceTree = "<group>"; };
 		4DD80D5F1D85B01F00E85AA0 /* semantic_memory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = semantic_memory.cpp; sourceTree = "<group>"; };
 		4DD80D601D85B01F00E85AA0 /* semantic_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = semantic_memory.h; sourceTree = "<group>"; };
 		4DD80D611D85B01F00E85AA0 /* smem_activation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = smem_activation.cpp; sourceTree = "<group>"; };
@@ -1155,7 +1048,6 @@
 		4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stl_typedefs.h; sourceTree = "<group>"; };
 		4DD80D9A1D85B02A00E85AA0 /* trace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trace.cpp; sourceTree = "<group>"; };
 		4DD80D9B1D85B02A00E85AA0 /* trace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = trace.h; sourceTree = "<group>"; };
-		4DD80D9C1D85B02A00E85AA0 /* triples.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = triples.h; sourceTree = "<group>"; };
 		4DD80D9D1D85B02A00E85AA0 /* xml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xml.cpp; sourceTree = "<group>"; };
 		4DD80D9E1D85B02A00E85AA0 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
 		4DD80DBB1D85B03500E85AA0 /* agent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = agent.cpp; sourceTree = "<group>"; };
@@ -1511,73 +1403,37 @@
 		4DD686EE1D7F078400C06358 /* CLI */ = {
 			isa = PBXGroup;
 			children = (
-				4D1ED1321D89E54C005E98E5 /* cli_addwme.cpp */,
 				4D1ED1331D89E54C005E98E5 /* cli_alias.cpp */,
 				4D1ED1341D89E54C005E98E5 /* cli_Aliases.h */,
-				4D1ED1351D89E54C005E98E5 /* cli_allocate.cpp */,
-				4D1ED1361D89E54C005E98E5 /* cli_captureinput.cpp */,
 				4D1ED1371D89E54C005E98E5 /* cli_chunk.cpp */,
 				4D1ED1381D89E54C005E98E5 /* cli_chunk.h */,
-				4D1ED1391D89E54C005E98E5 /* cli_Cli.h */,
-				4D1ED13A1D89E54C005E98E5 /* cli_clog.cpp */,
 				4D1ED13B1D89E54C005E98E5 /* cli_CommandLineInterface.cpp */,
 				4D1ED13C1D89E54C005E98E5 /* cli_CommandLineInterface.h */,
 				4D1ED13D1D89E54C005E98E5 /* cli_Commands.h */,
-				4D1ED13E1D89E54C005E98E5 /* cli_commandtofile.cpp */,
 				4D1ED13F1D89E54C005E98E5 /* cli_debug.cpp */,
 				4D1ED1401D89E54C005E98E5 /* cli_echo.cpp */,
 				4D1ED1411D89E54C005E98E5 /* cli_epmem.cpp */,
-				4D1ED1421D89E54C005E98E5 /* cli_excise.cpp */,
 				4D1ED1431D89E54C005E98E5 /* cli_explain.cpp */,
 				4D1ED1441D89E54C005E98E5 /* cli_explain.h */,
 				4D1ED1451D89E54C005E98E5 /* cli_file_system_cmds.cpp */,
-				4D1ED1461D89E54C005E98E5 /* cli_firingcounts.cpp */,
-				4D1ED1471D89E54C005E98E5 /* cli_gdsprint.cpp */,
 				4D1ED1481D89E54C005E98E5 /* cli_gp.cpp */,
 				4D1ED1491D89E54C005E98E5 /* cli_help.cpp */,
-				4D1ED14A1D89E54C005E98E5 /* cli_indifferentselection.cpp */,
-				4D1ED14B1D89E54C005E98E5 /* cli_initsoar.cpp */,
-				4D1ED14C1D89E54C005E98E5 /* cli_loadLibrary.cpp */,
-				4D1ED14D1D89E54C005E98E5 /* cli_matches.cpp */,
-				4D1ED14E1D89E54C005E98E5 /* cli_memories.cpp */,
-				4D1ED14F1D89E54C005E98E5 /* cli_multiattributes.cpp */,
-				4D1ED1501D89E54C005E98E5 /* cli_numericindifferentmode.cpp */,
 				4D1ED1511D89E54C005E98E5 /* cli_Options.h */,
 				4D1ED1521D89E54C005E98E5 /* cli_output.cpp */,
 				4D1ED1531D89E54C005E98E5 /* cli_output.h */,
 				4D1ED1541D89E54C005E98E5 /* cli_Parser.h */,
-				4D1ED1551D89E54C005E98E5 /* cli_pbreak.cpp */,
-				4D1ED1561D89E54C005E98E5 /* cli_predict.cpp */,
 				4D1ED1571D89E54C005E98E5 /* cli_preferences.cpp */,
 				4D1ED1581D89E54C005E98E5 /* cli_print.cpp */,
-				4D1ED1591D89E54C005E98E5 /* cli_productionfind.cpp */,
-				4D1ED15A1D89E54C005E98E5 /* cli_pwatch.cpp */,
-				4D1ED15B1D89E54C005E98E5 /* cli_rand.cpp */,
-				4D1ED15C1D89E54C005E98E5 /* cli_removewme.cpp */,
-				4D1ED15D1D89E54C005E98E5 /* cli_replayinput.cpp */,
-				4D1ED15E1D89E54C005E98E5 /* cli_retenet.cpp */,
 				4D1ED15F1D89E54C005E98E5 /* cli_rl.cpp */,
 				4D1ED1601D89E54C005E98E5 /* cli_run.cpp */,
-				4D1ED1611D89E54C005E98E5 /* cli_select.cpp */,
 				4D1ED1621D89E54C005E98E5 /* cli_smem.cpp */,
 				4D1ED1631D89E54C005E98E5 /* cli_soar.cpp */,
 				4D1ED1641D89E54C005E98E5 /* cli_soar.h */,
-				4D1ED1651D89E54C005E98E5 /* cli_source.cpp */,
 				4D1ED1661D89E54C005E98E5 /* cli_sp.cpp */,
-				4D1ED1671D89E54C005E98E5 /* cli_srand.cpp */,
 				4D1ED1681D89E54C005E98E5 /* cli_stats.cpp */,
-				4D1ED1691D89E54C005E98E5 /* cli_stopsoar.cpp */,
 				4D1ED16A1D89E54C005E98E5 /* cli_svs.cpp */,
-				4D1ED16B1D89E54C005E98E5 /* cli_tcl.cpp */,
-				4D1ED16C1D89E54C005E98E5 /* cli_time.cpp */,
-				4D1ED16D1D89E54C005E98E5 /* cli_timers.cpp */,
-				4D1ED16E1D89E54C005E98E5 /* cli_unalias.cpp */,
-				4D1ED16F1D89E54C005E98E5 /* cli_version.cpp */,
 				4D1ED1701D89E54C005E98E5 /* cli_visualize.cpp */,
 				4D1ED1711D89E54C005E98E5 /* cli_visualize.h */,
-				4D1ED1721D89E54C005E98E5 /* cli_watch.cpp */,
-				4D1ED1731D89E54C005E98E5 /* cli_watchwmes.cpp */,
-				4D1ED1741D89E54C005E98E5 /* cli_wma.cpp */,
 			);
 			name = CLI;
 			path = ../../Core/CLI/src;
@@ -1851,8 +1707,6 @@
 				4DD80CF81D85AFEC00E85AA0 /* decide.h */,
 				4DD80CF91D85AFEC00E85AA0 /* decision_manipulation.cpp */,
 				4DD80CFA1D85AFEC00E85AA0 /* decision_manipulation.h */,
-				4DD80CFB1D85AFEC00E85AA0 /* osupport.cpp */,
-				4DD80CFC1D85AFEC00E85AA0 /* osupport.h */,
 				4DD80CFD1D85AFEC00E85AA0 /* rete.cpp */,
 				4DD80CFE1D85AFEC00E85AA0 /* rete.h */,
 				4DD80CFF1D85AFEC00E85AA0 /* run_soar.cpp */,
@@ -1873,20 +1727,11 @@
 		4DD689191D7F080200C06358 /* explanation_based_chunking */ = {
 			isa = PBXGroup;
 			children = (
-				4DD80D0D1D85AFF800E85AA0 /* backtrace.cpp */,
-				4DD80D0E1D85AFF800E85AA0 /* build.cpp */,
-				4DD80D0F1D85AFF800E85AA0 /* constraints.cpp */,
 				4DD80D101D85AFF800E85AA0 /* ebc_settings.cpp */,
 				4DD80D111D85AFF800E85AA0 /* ebc_settings.h */,
 				4DD80D121D85AFF800E85AA0 /* ebc.cpp */,
 				4DD80D131D85AFF800E85AA0 /* ebc.h */,
 				4DD80D141D85AFF800E85AA0 /* explanation_trace.cpp */,
-				4DD80D151D85AFF800E85AA0 /* map.cpp */,
-				4DD80D161D85AFF800E85AA0 /* merge.cpp */,
-				4DD80D171D85AFF800E85AA0 /* print.cpp */,
-				4DD80D181D85AFF800E85AA0 /* repair.cpp */,
-				4DD80D191D85AFF800E85AA0 /* repair.h */,
-				4DD80D1A1D85AFF800E85AA0 /* unify.cpp */,
 				4DD80D1B1D85AFF800E85AA0 /* variablize.cpp */,
 			);
 			path = explanation_based_chunking;
@@ -1928,17 +1773,11 @@
 		4DD6893E1D7F080200C06358 /* output_manager */ = {
 			isa = PBXGroup;
 			children = (
-				4DD80D491D85B00E00E85AA0 /* database.cpp */,
-				4DD80D4A1D85B00E00E85AA0 /* errors.cpp */,
 				4DD80D4B1D85B00E00E85AA0 /* output_db.h */,
 				4DD80D4C1D85B00E00E85AA0 /* output_manager.cpp */,
 				4DD80D4D1D85B00E00E85AA0 /* output_manager.h */,
 				4DD80D4E1D85B00E00E85AA0 /* output_settings.h */,
-				4DD80D4F1D85B00E00E85AA0 /* print.cpp */,
 				4DD80D501D85B00E00E85AA0 /* soar_to_string.cpp */,
-				4DD80D511D85B00E00E85AA0 /* visualize_wm.cpp */,
-				4DD80D521D85B00E00E85AA0 /* visualize.cpp */,
-				4DD80D531D85B00E00E85AA0 /* visualize.h */,
 				4D1ED1C01D89E5A5005E98E5 /* output_settings.cpp */,
 				4D1ED1C11D89E5A5005E98E5 /* output_settings.h */,
 			);
@@ -2018,7 +1857,6 @@
 				4DD80D991D85B02A00E85AA0 /* stl_typedefs.h */,
 				4DD80D9A1D85B02A00E85AA0 /* trace.cpp */,
 				4DD80D9B1D85B02A00E85AA0 /* trace.h */,
-				4DD80D9C1D85B02A00E85AA0 /* triples.h */,
 				4DD80D9D1D85B02A00E85AA0 /* xml.cpp */,
 				4DD80D9E1D85B02A00E85AA0 /* xml.h */,
 				4D97E3451DA28FA300A9B56B /* job_queue.cpp */,
@@ -2222,7 +2060,6 @@
 				4DD688461D7F07AE00C06358 /* sml_TagFilter.h in Headers */,
 				4DD688F81D7F07D200C06358 /* portability_posix.h in Headers */,
 				4D97E32E1DA28BE600A9B56B /* Transaction.h in Headers */,
-				4DD80D5E1D85B00E00E85AA0 /* visualize.h in Headers */,
 				4DD80CF41D85AFE300E85AA0 /* dprint.h in Headers */,
 				4DD6883C1D7F07AE00C06358 /* sml_RemoteConnection.h in Headers */,
 				4DD6884E1D7F07AE00C06358 /* sml_Utils.h in Headers */,
@@ -2339,12 +2176,10 @@
 				4DD80D201D85AFF800E85AA0 /* ebc_settings.h in Headers */,
 				4DD80DAF1D85B02A00E85AA0 /* soar_module.h in Headers */,
 				4DD80DA61D85B02A00E85AA0 /* memory_manager.h in Headers */,
-				4DD80D081D85AFEC00E85AA0 /* osupport.h in Headers */,
 				4DD688C31D7F07C600C06358 /* sml_KernelSML.h in Headers */,
 				4DD6885E1D7F07AE00C06358 /* sock_Socket.h in Headers */,
 				4DD687D01D7F079600C06358 /* sml_ClientTraceXML.h in Headers */,
 				4DD688621D7F07AE00C06358 /* thread_Event.h in Headers */,
-				4DD80DB81D85B02A00E85AA0 /* triples.h in Headers */,
 				4DD688581D7F07AE00C06358 /* sock_ListenerSocket.h in Headers */,
 				4DD688351D7F07AE00C06358 /* sml_EventThread.h in Headers */,
 				4DD80DEA1D85B03500E85AA0 /* slot.h in Headers */,
@@ -2356,7 +2191,6 @@
 				4DD688E01D7F07C600C06358 /* sml_XMLListener.h in Headers */,
 				4DD80D3F1D85B00200E85AA0 /* condition_record.h in Headers */,
 				4DD687C61D7F079600C06358 /* sml_ClientFloatElement.h in Headers */,
-				4D1ED17C1D89E54C005E98E5 /* cli_Cli.h in Headers */,
 				4DD80DDD1D85B03500E85AA0 /* instantiation.h in Headers */,
 				4DD68A951D7F082500C06358 /* base_node_filters.h in Headers */,
 				4DD687C41D7F079600C06358 /* sml_ClientEvents.h in Headers */,
@@ -2389,7 +2223,6 @@
 				4D97E3551DA4435D00A9B56B /* guard.hpp in Headers */,
 				4DD688F71D7F07D200C06358 /* portability.h in Headers */,
 				4D1ED17B1D89E54C005E98E5 /* cli_chunk.h in Headers */,
-				4DD80D281D85AFF800E85AA0 /* repair.h in Headers */,
 				4DD687D81D7F079600C06358 /* sml_DeltaList.h in Headers */,
 				4D1ED1771D89E54C005E98E5 /* cli_Aliases.h in Headers */,
 				4DD68A901D7F082500C06358 /* filter_table.h in Headers */,
@@ -2653,7 +2486,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4DD6884B1D7F07AE00C06358 /* sml_TagWme.cpp in Sources */,
-				4D1ED17D1D89E54C005E98E5 /* cli_clog.cpp in Sources */,
 				4D1ED17A1D89E54C005E98E5 /* cli_chunk.cpp in Sources */,
 				4DD80DE41D85B03500E85AA0 /* rhs_functions_math.cpp in Sources */,
 				4DD689E61D7F080300C06358 /* reinforcement_learning.cpp in Sources */,
@@ -2663,38 +2495,30 @@
 				4DD80D731D85B01F00E85AA0 /* smem_activation.cpp in Sources */,
 				4DD80D471D85B00200E85AA0 /* production_record.cpp in Sources */,
 				4DD68A9E1D7F082500C06358 /* tag_select.cpp in Sources */,
-				4DD80D291D85AFF800E85AA0 /* unify.cpp in Sources */,
 				4D1ED17E1D89E54C005E98E5 /* cli_CommandLineInterface.cpp in Sources */,
 				4D97E3261DA28BE600A9B56B /* Database.cpp in Sources */,
 				4DD80CF01D85AFE300E85AA0 /* debug_stacktrace.cpp in Sources */,
 				4D1ED1A21D89E54C005E98E5 /* cli_rl.cpp in Sources */,
 				4DD68A8B1D7F082500C06358 /* filter.cpp in Sources */,
-				4DD80D071D85AFEC00E85AA0 /* osupport.cpp in Sources */,
 				4DD688CB1D7F07C600C06358 /* sml_PrintListener.cpp in Sources */,
-				4D1ED19C1D89E54C005E98E5 /* cli_productionfind.cpp in Sources */,
 				4DD688431D7F07AE00C06358 /* sml_TagError.cpp in Sources */,
 				4DD68A861D7F082500C06358 /* set_transform.cpp in Sources */,
 				4DD68A961D7F082500C06358 /* calculate_placement.cpp in Sources */,
 				4DD688631D7F07AE00C06358 /* thread_Lock.cpp in Sources */,
-				4D1ED1AC1D89E54C005E98E5 /* cli_stopsoar.cpp in Sources */,
 				4D1ED1BA1D89E574005E98E5 /* decider.cpp in Sources */,
 				4DD689E01D7F080300C06358 /* lexer.cpp in Sources */,
 				4DD688B81D7F07C600C06358 /* sml_AgentSML.cpp in Sources */,
-				4D1ED19E1D89E54C005E98E5 /* cli_rand.cpp in Sources */,
 				4DD688271D7F07AE00C06358 /* sml_ArgMap.cpp in Sources */,
 				4DD68A831D7F082500C06358 /* delete_tag.cpp in Sources */,
 				4DD80D2A1D85AFF800E85AA0 /* variablize.cpp in Sources */,
 				4DD688D71D7F07C600C06358 /* sml_RunScheduler.cpp in Sources */,
-				4D1ED1781D89E54C005E98E5 /* cli_allocate.cpp in Sources */,
 				4DD687BF1D7F079600C06358 /* sml_ClientAnalyzedXML.cpp in Sources */,
 				4DD68A891D7F082500C06358 /* drawer.cpp in Sources */,
 				4DD68A8D1D7F082500C06358 /* filter_input.cpp in Sources */,
 				4D1629851D7F0C6E00A27F4E /* ccd.c in Sources */,
 				4D1ED1BE1D89E586005E98E5 /* decider_settings.cpp in Sources */,
-				4DD80D251D85AFF800E85AA0 /* merge.cpp in Sources */,
 				4DD68AAE1D7F082500C06358 /* sgnode_algs.cpp in Sources */,
 				4DD688C91D7F07C600C06358 /* sml_OutputListener.cpp in Sources */,
-				4DD80D1D1D85AFF800E85AA0 /* build.cpp in Sources */,
 				4DD688591D7F07AE00C06358 /* sock_NamedPipe.cpp in Sources */,
 				4DD688251D7F07AE00C06358 /* sml_AnalyzeXML.cpp in Sources */,
 				4DD68A7F1D7F082500C06358 /* add_node.cpp in Sources */,
@@ -2712,11 +2536,9 @@
 				4DD688B41D7F07C600C06358 /* sml_AgentListener.cpp in Sources */,
 				4DD80DF11D85B03500E85AA0 /* working_memory_activation.cpp in Sources */,
 				4DD68AA21D7F082500C06358 /* platform_specific.cpp in Sources */,
-				4D1ED1A81D89E54C005E98E5 /* cli_source.cpp in Sources */,
 				4DD80D401D85B00200E85AA0 /* explain_print.cpp in Sources */,
 				4DD688B61D7F07C600C06358 /* sml_AgentOutputFlusher.cpp in Sources */,
 				4D1ED18C1D89E54C005E98E5 /* cli_help.cpp in Sources */,
-				4D1ED1B51D89E54C005E98E5 /* cli_watch.cpp in Sources */,
 				4DD688DD1D7F07C600C06358 /* sml_UpdateListener.cpp in Sources */,
 				4D1ED1A91D89E54C005E98E5 /* cli_sp.cpp in Sources */,
 				4DD688BC1D7F07C600C06358 /* sml_EventManager.cpp in Sources */,
@@ -2735,13 +2557,10 @@
 				4DD689D11D7F080300C06358 /* callback.cpp in Sources */,
 				4DD68A991D7F082500C06358 /* intersect.cpp in Sources */,
 				4DD80DDC1D85B03500E85AA0 /* instantiation.cpp in Sources */,
-				4D1ED1981D89E54C005E98E5 /* cli_pbreak.cpp in Sources */,
 				4DD688B31D7F07C600C06358 /* KernelSMLInterface.cpp in Sources */,
-				4D1ED1AA1D89E54C005E98E5 /* cli_srand.cpp in Sources */,
 				4D1ED19A1D89E54C005E98E5 /* cli_preferences.cpp in Sources */,
 				4DD80D431D85B00200E85AA0 /* identity_record.cpp in Sources */,
 				4DD80D011D85AFEC00E85AA0 /* consistency.cpp in Sources */,
-				4DD80D271D85AFF800E85AA0 /* repair.cpp in Sources */,
 				4DD688321D7F07AE00C06358 /* sml_Events.cpp in Sources */,
 				4DD688C41D7F07C600C06358 /* sml_KernelSMLHandlers.cpp in Sources */,
 				4D1ED1861D89E54C005E98E5 /* cli_explain.cpp in Sources */,
@@ -2758,7 +2577,6 @@
 				4DD80DDE1D85B03500E85AA0 /* preference.cpp in Sources */,
 				4DD68AB21D7F082500C06358 /* svs.cpp in Sources */,
 				4DD687BD1D7F079600C06358 /* sml_ClientAgent.cpp in Sources */,
-				4DD80D241D85AFF800E85AA0 /* map.cpp in Sources */,
 				4DD80D781D85B01F00E85AA0 /* smem_instance.cpp in Sources */,
 				4DD688291D7F07AE00C06358 /* sml_Connection.cpp in Sources */,
 				4DD688531D7F07AE00C06358 /* sock_DataSender.cpp in Sources */,
@@ -2773,8 +2591,6 @@
 				4DD6887B1D7F07BA00C06358 /* ElementXMLInterface.cpp in Sources */,
 				4DD687D51D7F079600C06358 /* sml_ClientXML.cpp in Sources */,
 				4DD688BA1D7F07C600C06358 /* sml_ConnectionManager.cpp in Sources */,
-				4D1ED1811D89E54C005E98E5 /* cli_commandtofile.cpp in Sources */,
-				4D1ED18F1D89E54C005E98E5 /* cli_loadLibrary.cpp in Sources */,
 				4D1ED1881D89E54C005E98E5 /* cli_file_system_cmds.cpp in Sources */,
 				4D97E3281DA28BE600A9B56B /* Exception.cpp in Sources */,
 				4DD80D811D85B01F00E85AA0 /* smem_timers.cpp in Sources */,
@@ -2792,40 +2608,27 @@
 				4DD80DEF1D85B03500E85AA0 /* test.cpp in Sources */,
 				4DD80DAA1D85B02A00E85AA0 /* soar_db.cpp in Sources */,
 				4DD68AAA1D7F082500C06358 /* serialize.cpp in Sources */,
-				4DD80D5D1D85B00E00E85AA0 /* visualize.cpp in Sources */,
-				4D1ED1A11D89E54C005E98E5 /* cli_retenet.cpp in Sources */,
 				4D1ED1AD1D89E54C005E98E5 /* cli_svs.cpp in Sources */,
 				4D1ED1A51D89E54C005E98E5 /* cli_smem.cpp in Sources */,
-				4D1ED1B01D89E54C005E98E5 /* cli_timers.cpp in Sources */,
-				4D1ED1B21D89E54C005E98E5 /* cli_version.cpp in Sources */,
 				4DD80D571D85B00E00E85AA0 /* output_manager.cpp in Sources */,
 				4D97E3471DA28FA300A9B56B /* job_queue.cpp in Sources */,
 				4DD68A871D7F082500C06358 /* common.cpp in Sources */,
-				4D1ED19D1D89E54C005E98E5 /* cli_pwatch.cpp in Sources */,
 				4DD687C71D7F079600C06358 /* sml_ClientIdentifier.cpp in Sources */,
-				4D1ED18D1D89E54C005E98E5 /* cli_indifferentselection.cpp in Sources */,
 				4DD6883D1D7F07AE00C06358 /* sml_StringOps.cpp in Sources */,
 				4DD68A921D7F082500C06358 /* axis_distance.cpp in Sources */,
 				4D1ED1A61D89E54C005E98E5 /* cli_soar.cpp in Sources */,
-				4D1ED1A41D89E54C005E98E5 /* cli_select.cpp in Sources */,
 				4DD689B11D7F080200C06358 /* episodic_memory.cpp in Sources */,
 				4D97E3511DA2A64D00A9B56B /* sqlite_job_queue.cpp in Sources */,
-				4DD80D5C1D85B00E00E85AA0 /* visualize_wm.cpp in Sources */,
 				4DD80D3C1D85B00200E85AA0 /* chunk_record.cpp in Sources */,
 				4DD68A9A1D7F082500C06358 /* monitor_object.cpp in Sources */,
 				4D1629891D7F0C6E00A27F4E /* vec3.c in Sources */,
-				4D1ED1B11D89E54C005E98E5 /* cli_unalias.cpp in Sources */,
 				4D1ED1A31D89E54C005E98E5 /* cli_run.cpp in Sources */,
 				4DD687D31D7F079600C06358 /* sml_ClientWorkingMemory.cpp in Sources */,
 				4DD688451D7F07AE00C06358 /* sml_TagFilter.cpp in Sources */,
-				4D1ED19F1D89E54C005E98E5 /* cli_removewme.cpp in Sources */,
 				4DD80D7C1D85B01F00E85AA0 /* smem_settings.cpp in Sources */,
 				4DD6883F1D7F07AE00C06358 /* sml_TagArg.cpp in Sources */,
 				4D1ED1B31D89E54C005E98E5 /* cli_visualize.cpp in Sources */,
-				4DD80D1C1D85AFF800E85AA0 /* backtrace.cpp in Sources */,
 				4DD688C51D7F07C600C06358 /* sml_ListenerThread.cpp in Sources */,
-				4D1ED1B61D89E54C005E98E5 /* cli_watchwmes.cpp in Sources */,
-				4D1ED1B71D89E54C005E98E5 /* cli_wma.cpp in Sources */,
 				4D97E32B1DA28BE600A9B56B /* Statement.cpp in Sources */,
 				4DD68AAC1D7F082500C06358 /* sgnode.cpp in Sources */,
 				4D1629881D7F0C6E00A27F4E /* support.c in Sources */,
@@ -2838,8 +2641,6 @@
 				4DD80D1F1D85AFF800E85AA0 /* ebc_settings.cpp in Sources */,
 				4DD688391D7F07AE00C06358 /* sml_Names.cpp in Sources */,
 				4DD689E21D7F080300C06358 /* parser.cpp in Sources */,
-				4DD80D5A1D85B00E00E85AA0 /* print.cpp in Sources */,
-				4DD80D261D85AFF800E85AA0 /* print.cpp in Sources */,
 				4DD68A851D7F082500C06358 /* set_tag.cpp in Sources */,
 				4DD688CF1D7F07C600C06358 /* sml_ReceiverThread.cpp in Sources */,
 				4DD687C21D7F079600C06358 /* sml_ClientErrors.cpp in Sources */,
@@ -2847,25 +2648,19 @@
 				4DD80DB01D85B02A00E85AA0 /* soar_rand.cpp in Sources */,
 				4DD687CB1D7F079600C06358 /* sml_ClientKernel.cpp in Sources */,
 				4DD80D411D85B00200E85AA0 /* explanation_memory.cpp in Sources */,
-				4DD80D541D85B00E00E85AA0 /* database.cpp in Sources */,
 				4DD688491D7F07AE00C06358 /* sml_TagResult.cpp in Sources */,
 				4DD688C21D7F07C600C06358 /* sml_KernelSML.cpp in Sources */,
 				4DD80D211D85AFF800E85AA0 /* ebc.cpp in Sources */,
 				4D97E3241DA28BE600A9B56B /* Column.cpp in Sources */,
 				4DD6882F1D7F07AE00C06358 /* sml_EmbeddedConnectionSynch.cpp in Sources */,
 				4DD687D71D7F079600C06358 /* sml_DeltaList.cpp in Sources */,
-				4D1ED1931D89E54C005E98E5 /* cli_numericindifferentmode.cpp in Sources */,
-				4D1ED18A1D89E54C005E98E5 /* cli_gdsprint.cpp in Sources */,
 				4DD68A9D1D7F082500C06358 /* overlap.cpp in Sources */,
 				4DD80D7B1D85B01F00E85AA0 /* smem_query.cpp in Sources */,
 				4DD80DEB1D85B03500E85AA0 /* symbol_manager.cpp in Sources */,
-				4DD80D551D85B00E00E85AA0 /* errors.cpp in Sources */,
 				4D1ED1761D89E54C005E98E5 /* cli_alias.cpp in Sources */,
-				4D1ED1891D89E54C005E98E5 /* cli_firingcounts.cpp in Sources */,
 				4D1ED19B1D89E54C005E98E5 /* cli_print.cpp in Sources */,
 				4DD68A791D7F082500C06358 /* cliproxy.cpp in Sources */,
 				4DD6885F1D7F07AE00C06358 /* sock_SocketLib.cpp in Sources */,
-				4D1ED1911D89E54C005E98E5 /* cli_memories.cpp in Sources */,
 				4DD6887D1D7F07BA00C06358 /* ParseXML.cpp in Sources */,
 				4DD6882B1D7F07AE00C06358 /* sml_EmbeddedConnection.cpp in Sources */,
 				4D1ED1841D89E54C005E98E5 /* cli_epmem.cpp in Sources */,
@@ -2885,26 +2680,16 @@
 				4DD687C91D7F079600C06358 /* sml_ClientIntElement.cpp in Sources */,
 				4D97E3221DA28BE600A9B56B /* Backup.cpp in Sources */,
 				4DD68AA71D7F082500C06358 /* scene.cpp in Sources */,
-				4DD80D1E1D85AFF800E85AA0 /* constraints.cpp in Sources */,
 				4DD689E41D7F080300C06358 /* exploration.cpp in Sources */,
-				4D1ED1A01D89E54C005E98E5 /* cli_replayinput.cpp in Sources */,
-				4D1ED1AE1D89E54C005E98E5 /* cli_tcl.cpp in Sources */,
-				4D1ED1991D89E54C005E98E5 /* cli_predict.cpp in Sources */,
 				4DD68A821D7F082500C06358 /* delete_node.cpp in Sources */,
 				4DD688D91D7F07C600C06358 /* sml_StringListener.cpp in Sources */,
 				4DD68A7B1D7F082500C06358 /* command.cpp in Sources */,
-				4D1ED1AF1D89E54C005E98E5 /* cli_time.cpp in Sources */,
 				4DD6884D1D7F07AE00C06358 /* sml_Utils.cpp in Sources */,
-				4D1ED1901D89E54C005E98E5 /* cli_matches.cpp in Sources */,
-				4D1ED18E1D89E54C005E98E5 /* cli_initsoar.cpp in Sources */,
-				4D1ED1921D89E54C005E98E5 /* cli_multiattributes.cpp in Sources */,
 				4DD80DED1D85B03500E85AA0 /* symbol.cpp in Sources */,
-				4D1ED1851D89E54C005E98E5 /* cli_excise.cpp in Sources */,
 				4DD6887F1D7F07BA00C06358 /* ParseXMLFile.cpp in Sources */,
 				4DD80DA81D85B02A00E85AA0 /* print.cpp in Sources */,
 				4DD687D11D7F079600C06358 /* sml_ClientWMElement.cpp in Sources */,
 				4D1ED1831D89E54C005E98E5 /* cli_echo.cpp in Sources */,
-				4D1ED1791D89E54C005E98E5 /* cli_captureinput.cpp in Sources */,
 				4DD687DA1D7F079600C06358 /* sml_ObjectMap.cpp in Sources */,
 				4DD68A841D7F082500C06358 /* extract.cpp in Sources */,
 				4DD80CF21D85AFE300E85AA0 /* debug.cpp in Sources */,
@@ -2916,7 +2701,6 @@
 				4DD688D31D7F07C600C06358 /* sml_RhsListener.cpp in Sources */,
 				4DD80D0B1D85AFEC00E85AA0 /* run_soar.cpp in Sources */,
 				4DD687CF1D7F079600C06358 /* sml_ClientTraceXML.cpp in Sources */,
-				4D1ED1751D89E54C005E98E5 /* cli_addwme.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

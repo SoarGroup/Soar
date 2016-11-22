@@ -39,7 +39,7 @@ inline void normalize_separators(std::string& path)
     }
 }
 
-/* MToDo | Should probably rename to avoid conflicts */
+/* Should probably rename to avoid conflicts */
 // Conversion of value to string
 template<class T> std::string& to_string(const T& x, std::string& dest, int precision = 16, bool floatfixed = false)
 {
@@ -243,7 +243,7 @@ class soar_timer
             raw_per_usec = get_raw_time_per_usec();
         }
 
-        void set_enabled(int64_t* new_enabled)
+        void set_enabled(bool* new_enabled)
         {
             enabled_ptr = new_enabled;
         }
@@ -282,7 +282,7 @@ class soar_timer
     private:
         uint64_t t1, elapsed;
         double raw_per_usec;
-        int64_t* enabled_ptr;
+        bool* enabled_ptr;
 
         soar_timer(const soar_timer&);
         soar_timer& operator=(const soar_timer&);

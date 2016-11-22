@@ -11,8 +11,15 @@
 #include "decider_settings.h"
 #include "ebc.h"
 #include "ebc_settings.h"
+#include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "output_manager.h"
+#include "reinforcement_learning.h"
+#include "semantic_memory.h"
+#ifndef NO_SVS
+#include "svs_interface.h"
+#endif
+#include "working_memory_activation.h"
 
 #include "sml_Names.h"
 
@@ -28,40 +35,113 @@ SoarDecider::SoarDecider(agent* myAgent)
 
 }
 
-void SoarDecider::print_soar_status(sml::KernelSML* pKernelSML)
+void SoarDecider::get_enabled_module_strings(std::string &enabledStr, std::string &disabledStr)
 {
-    std::string tempString;
+    bool ebcEnabled = (thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->get_value() != ebc_never);
+    bool smemEnabled = thisAgent->SMem->enabled();
+    bool epmemEnabled = epmem_enabled(thisAgent);
+    bool svsEnabled = false;
+    #ifndef NO_SVS
+        svsEnabled = thisAgent->svs->is_enabled();
+    #endif
+    bool rlEnabled = rl_enabled(thisAgent);
+    bool wmaEnabled = wma_enabled(thisAgent);
+    bool spreadingEnabled = false;
+    enabledStr = "Core";
+    bool notFirstEnabledItem = true, notFirstDisabledItem = false;
+    if (ebcEnabled)
+    {
+        if (notFirstEnabledItem) enabledStr += ", "; else notFirstEnabledItem = true;
+        enabledStr += "EBC";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "EBC";
+    }
 
-    outputManager->reset_column_indents();
-    outputManager->set_column_indent(0, 55);
+    if (smemEnabled)
+    {
+        if (notFirstEnabledItem) enabledStr += ", "; else notFirstEnabledItem = true;
+        enabledStr += "SMem";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "SMem";
+    }
+    if (epmemEnabled)
+    {
+        if (notFirstEnabledItem) { enabledStr += ", "; notFirstEnabledItem = true; }
+        enabledStr += "EpMem";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "EpMem";
+    }
+    if (svsEnabled)
+    {
+        if (notFirstEnabledItem) { enabledStr += ", "; notFirstEnabledItem = true; }
+        enabledStr += "SVS";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "SVS";
+    }
+    if (rlEnabled)
+    {
+        if (notFirstEnabledItem) { enabledStr += ", "; notFirstEnabledItem = true; }
+        enabledStr += "RL";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "RL";
+    }
+    if (wmaEnabled)
+    {
+        if (notFirstEnabledItem) { enabledStr += ", "; notFirstEnabledItem = true; }
+        enabledStr += "WMA";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "WMA";
+    }
+    if (spreadingEnabled)
+    {
+        if (notFirstEnabledItem) { enabledStr += ", "; notFirstEnabledItem = true; }
+        enabledStr += "SSA";
+    } else {
+        if (notFirstDisabledItem) disabledStr += ", "; else notFirstDisabledItem = true;
+        disabledStr += "SSA";
+    }
+}
 
-    outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent,    "                     Soar %s (port %u)\n", sml::sml_Names::kSoarVersionValue, pKernelSML->GetListenerPort());
-    outputManager->printa(thisAgent,    "=======================================================\n");
-//    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->get_string(), 55).c_str());
-//    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks learned", std::to_string(thisAgent->explanationMemory->get_stat_succeeded()), 55).c_str());
-//    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Chunks attempted", std::to_string(thisAgent->explanationMemory->get_stat_chunks_attempted()), 55).c_str());
-//    ==================================================
-//                        Soar Status
-//    ==================================================
-//    Status:          Stopped, listening on port 234232
-//    Version:                                     9.6.0
-//    Enabled:                       EBC, EpMem and SMem
-//    Disabled:                    RL, SVS, SSMA and WMA
-//    --------------------------------------------------
-//    Working memory:               175  nodes
-//    Semantic memory:       1240000023  facts
-//    Episodic memory:              560  episodes
-//    Procedural memory:            325  rules
-//                                   12  chunks
-//    --------------------------------------------------
-//    Current decision cycle:                      12321
-//    Current number of states:                        2
-//    Lowest state:                                 S345
-//    Next phase:                                  apply
-//    ==================================================
+int SoarDecider::get_state_stack_string(std::string &stateStackStr)
+{
+    int soarStackDepth = 1;
+    Symbol* lState = thisAgent->top_goal;
+    bool notFirstItem;
 
-    outputManager->printa_sf(thisAgent, "\nFor a full list of soar's sub-commands and settings:  soar ?");
+    while (lState->id->lower_goal)
+    {
+        soarStackDepth++;
+        lState = lState->id->lower_goal;
+    }
+    if (soarStackDepth < 4)
+    {
+        lState = thisAgent->top_goal;
+        notFirstItem = false;
+        while (lState)
+        {
+            if (notFirstItem) stateStackStr += ", "; else notFirstItem = true;
+            stateStackStr.append(lState->to_string());
+            lState = lState->id->lower_goal;
+        }
+    } else {
+        stateStackStr.append(thisAgent->top_goal->to_string());
+        stateStackStr.append(", ");
+        stateStackStr.append(thisAgent->top_goal->id->lower_goal->to_string());
+        if (soarStackDepth > 4)
+            stateStackStr.append(" ... ");
+        else
+            stateStackStr.append(", ");
+        stateStackStr.append(thisAgent->bottom_goal->id->higher_goal->to_string());
+        stateStackStr.append(", ");
+        stateStackStr.append(thisAgent->bottom_goal->to_string());
+    }
+    return soarStackDepth;
 }
 
 void SoarDecider::clean_up_for_agent_deletion()

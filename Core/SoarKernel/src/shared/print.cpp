@@ -38,21 +38,6 @@
 
 using namespace soar_TraceNames;
 
-void print_spaces(agent* thisAgent, int n)
-{
-    char* ch;
-    char buf[PRINT_BUFSIZE];
-
-    ch = buf;
-    while (n)
-    {
-        *(ch++) = ' ';
-        n--;
-    }
-    *ch = 0;
-    thisAgent->outputManager->printa(thisAgent, buf);
-}
-
 /* ------------------------------------------------------------------------
                 String to Escaped String Conversion
            {Symbol, Test, RHS Value} to String Conversion
@@ -75,124 +60,21 @@ void print_spaces(agent* thisAgent, int n)
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-char* string_to_escaped_string(char* s, char first_and_last_char, char* dest)
+const std::string string_to_escaped_string(char* s, char first_and_last_char)
 {
-    char* ch;
-
-    if (!dest)
-    {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
-    }
-    ch = dest;
-    *ch++ = first_and_last_char;
+    std::string returnStr;
+    returnStr.push_back(first_and_last_char);
     while (*s)
     {
         if ((*s == first_and_last_char) || (*s == '\\'))
         {
-            *ch++ = '\\';
+            returnStr.push_back('\\');
         }
-        *ch++ = *s++;
+        returnStr.push_back(*s++);
     }
-    *ch++ = first_and_last_char;
-    *ch = 0;
-    return dest;
+    returnStr.push_back(first_and_last_char);
+    return returnStr;
 }
-
-
-char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
-{
-    switch (sym->symbol_type)
-    {
-        case VARIABLE_SYMBOL_TYPE:
-            return kTypeVariable ;
-        case IDENTIFIER_SYMBOL_TYPE:
-            return kTypeID ;
-        case INT_CONSTANT_SYMBOL_TYPE:
-            return kTypeInt ;
-        case FLOAT_CONSTANT_SYMBOL_TYPE:
-            return kTypeDouble ;
-        case STR_CONSTANT_SYMBOL_TYPE:
-            return kTypeString ;
-        default:
-            return 0 ;
-    }
-}
-
-char* rhs_value_to_string(rhs_value rv, char* dest, size_t dest_size)
-{
-    cons* c;
-    list* fl;
-    rhs_function* rf;
-    char* ch;
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "Internal error: rhs_value_to_string called on reteloc.\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error_noagent(msg);
-    }
-
-    if (rhs_value_is_symbol(rv))
-    {
-        return rhs_value_to_symbol(rv)->to_string(true, dest, dest_size);
-    }
-
-    fl = rhs_value_to_funcall_list(rv);
-    rf = static_cast<rhs_function_struct*>(fl->first);
-
-    if (!dest)
-    {
-        dest = Output_Manager::Get_OM().get_printed_output_string();
-        dest_size = output_string_size; /* from agent.h */
-    }
-    ch = dest;
-
-    strncpy(ch, "(", dest_size);
-    ch[dest_size - 1] = 0;
-    while (*ch)
-    {
-        ch++;
-    }
-
-    if (!strcmp(rf->name->sc->name, "+"))
-    {
-        strncpy(ch, "+", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
-    }
-    else if (!strcmp(rf->name->sc->name, "-"))
-    {
-        strncpy(ch, "-", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
-    }
-    else
-    {
-        rf->name->to_string(true, ch, dest_size - (ch - dest));
-    }
-
-    while (*ch)
-    {
-        ch++;
-    }
-    for (c = fl->rest; c != NIL; c = c->rest)
-    {
-        strncpy(ch, " ", dest_size - (ch - dest));
-        ch[dest_size - (ch - dest) - 1] = 0;
-        while (*ch)
-        {
-            ch++;
-        }
-        rhs_value_to_string(static_cast<char*>(c->first), ch, dest_size - (ch - dest));
-        while (*ch)
-        {
-            ch++;
-        }
-    }
-    strncpy(ch, ")", dest_size - (ch - dest));
-    ch[dest_size - (ch - dest) - 1] = 0;
-    return dest;
-}
-
 /* UITODO| Make this preference type to string.  Maybe move to preference struct? */
 char preference_to_char(byte type)
 {
@@ -305,7 +187,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
         if (did_one_line_already)
         {
             thisAgent->outputManager->printa(thisAgent, "\n");
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
         }
         else
         {
@@ -328,9 +210,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
 
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
-        id_test = copy_test_removing_goal_impasse_tests(thisAgent, c->data.tests.id_test,
-                  &removed_goal_test,
-                  &removed_impasse_test);
+        id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, false, true, &removed_goal_test, &removed_impasse_test);
         thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
 
         /* --- collect all cond's whose id test matches this one --- */
@@ -362,7 +242,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
             thisAgent->outputManager->printa(thisAgent, "impasse ");
             xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
         }
-
+        c_id_test.clear();
         Output_Manager::Get_OM().sprinta_sf(thisAgent, c_id_test, "%t", id_test);
         thisAgent->outputManager->printa(thisAgent, c_id_test.c_str());
         xml_att_val(thisAgent, kConditionId, c_id_test.c_str());
@@ -424,7 +304,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
                 if (thisAgent->outputManager->get_printer_output_column(thisAgent) + (ch - temp) >= COLUMNS_PER_LINE)
                 {
                     thisAgent->outputManager->printa(thisAgent, "\n");
-                    print_spaces(thisAgent, indent + 6);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent + 6);
                 }
                 thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);
@@ -498,13 +378,14 @@ void print_action_list(agent* thisAgent, action* actions,
     }
     tail_of_actions_not_yet_printed->next = NIL;
 
+    std::string lStr;
     /* --- main loop: find all actions for first id, print them together --- */
     while (actions_not_yet_printed)
     {
         if (did_one_line_already)
         {
             thisAgent->outputManager->printa(thisAgent, "\n");
-            print_spaces(thisAgent, indent);
+            thisAgent->outputManager->print_spaces(thisAgent, indent);
         }
         else
         {
@@ -516,9 +397,10 @@ void print_action_list(agent* thisAgent, action* actions,
         if (a->type == FUNCALL_ACTION)
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
+            thisAgent->outputManager->rhs_value_to_string(a->value, lStr);
             xml_begin_tag(thisAgent, kTagAction);
-            thisAgent->outputManager->printa(thisAgent, rhs_value_to_string(a->value, NULL, 0));
-            xml_att_val(thisAgent, kAction, rhs_value_to_string(a->value, NULL, 0));
+            thisAgent->outputManager->printa(thisAgent, lStr.c_str());
+            xml_att_val(thisAgent, kAction, lStr.c_str());
             xml_end_tag(thisAgent, kTagAction);
             continue;
         }
@@ -560,13 +442,13 @@ void print_action_list(agent* thisAgent, action* actions,
                 {
                     ch++;
                 }
-                rhs_value_to_string(a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                thisAgent->outputManager->rhs_value_to_cstring(a->attr, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                 while (*ch)
                 {
                     ch++;
                 }
                 *(ch++) = ' ';
-                rhs_value_to_string(a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                thisAgent->outputManager->rhs_value_to_cstring(a->value, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                 while (*ch)
                 {
                     ch++;
@@ -576,7 +458,7 @@ void print_action_list(agent* thisAgent, action* actions,
                 if (preference_is_binary(a->preference_type))
                 {
                     *(ch++) = ' ';
-                    rhs_value_to_string(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
+                    thisAgent->outputManager->rhs_value_to_cstring(a->referent, ch, PRINT_ACTION_LIST_TEMP_SIZE - (ch - temp));
                     while (*ch)
                     {
                         ch++;
@@ -587,7 +469,7 @@ void print_action_list(agent* thisAgent, action* actions,
                         COLUMNS_PER_LINE)
                 {
                     thisAgent->outputManager->printa(thisAgent, "\n");
-                    print_spaces(thisAgent, indent + 6);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent + 6);
                 }
                 thisAgent->outputManager->printa(thisAgent, temp);
                 add_to_growable_string(thisAgent, &gs, temp);
@@ -625,10 +507,10 @@ void print_production(agent* thisAgent, production* p, bool internal)
     */
     if (p->documentation)
     {
-        char temp[output_string_size];
-        string_to_escaped_string(p->documentation, '"', temp);
-        thisAgent->outputManager->printa_sf(thisAgent, "    %s\n", temp);
-        xml_att_val(thisAgent, kProductionDocumentation, temp);
+        std::string temp;
+        temp = string_to_escaped_string(p->documentation, '"');
+        thisAgent->outputManager->printa_sf(thisAgent, "    %s\n", temp.c_str());
+        xml_att_val(thisAgent, kProductionDocumentation, temp.c_str());
     }
 
     /*
@@ -1074,7 +956,7 @@ extern void print_sysparam_trace(agent* thisAgent, int64_t sysParamIndex, const 
     va_list args;
     std::string buf;
 
-    if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->sysparams[ sysParamIndex ])
+    if ((sysParamIndex == INVALID_SYSPARAM) || thisAgent->trace_settings[ sysParamIndex ])
     {
         va_start(args, format);
         thisAgent->outputManager->sprinta_sf(thisAgent, buf, format, args);

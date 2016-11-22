@@ -1,0 +1,20 @@
+source epmem_unit_common.soar
+
+sp {apply*init2
+    (state <s> ^operator.name init)
+-->
+    (<s> ^tests <tests>)
+
+    (<tests> ^test <t-12>)
+    (<t-12> ^id 12
+            ^name |after 1|
+            ^commands <c-12>
+            ^result <r-12>)
+    (<c-12> ^query.name ep-unit
+            ^neg-query.count 110
+            ^after 1
+            ^before 110)
+    (<r-12> ^graph-match 1
+            ^match-cardinality 1
+            ^memory-id 109)
+}

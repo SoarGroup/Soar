@@ -18,9 +18,10 @@
  */
 
 
-#include <decider.h>
 #include "agent.h"
+
 #include "callback.h"
+#include "cmd_settings.h"
 #include "debug.h"
 #include "decide.h"
 #include "decider.h"
@@ -30,7 +31,6 @@
 #include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "exploration.h"
-
 #include "instantiation.h"
 #include "io_link.h"
 #include "lexer.h"
@@ -55,10 +55,10 @@
 #include "stats.h"
 #include "symbol.h"
 #include "trace.h"
-#include "visualize.h"
 #include "working_memory_activation.h"
 #include "working_memory.h"
 #include "xml.h"
+#include "visualize.h"
 
 #ifndef NO_SVS
 #include "svs_interface.h"
@@ -164,7 +164,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->output_settings                    = new AgentOutput_Info();
 
     thisAgent->current_tc_number = 0;
-    thisAgent->variables_set                      = NIL;
     thisAgent->all_wmes_in_rete                   = NIL;
     thisAgent->alpha_mem_id_counter               = 0;
     thisAgent->beta_node_id_counter               = 0;
@@ -241,7 +240,6 @@ agent* create_soar_agent(char* agent_name)                                      
         thisAgent->num_productions_of_type[productionTypeCounter] = 0;
     }
 
-    thisAgent->o_support_calculation_type = 4;
     thisAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_SUM;
 
     thisAgent->rhs_functions = NIL;
@@ -258,15 +256,17 @@ agent* create_soar_agent(char* agent_name)                                      
     //
     // This was moved here so that system parameters could
     // be set before the agent was initialized.
-    init_sysparams(thisAgent);
+    init_trace_settings(thisAgent);
 
     /* Initializing all the timer structures.  Must be initialized after sysparams */
+    thisAgent->timers_enabled = true;
+
 #ifndef NO_TIMING_STUFF
-    thisAgent->timers_cpu.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_kernel.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
-    thisAgent->timers_phase.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_cpu.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_kernel.set_enabled(&(thisAgent->timers_enabled));
+    thisAgent->timers_phase.set_enabled(&(thisAgent->timers_enabled));
 #ifdef DETAILED_TIMING_STATS
-    thisAgent->timers_gds.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+    thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
 #endif
     reset_timers(thisAgent);
 #endif
@@ -276,6 +276,7 @@ agent* create_soar_agent(char* agent_name)                                      
 
     thisAgent->outputManager = &Output_Manager::Get_OM();
     thisAgent->debug_params = new debug_param_container(thisAgent);
+    thisAgent->command_params = new cli_command_params(thisAgent);
     thisAgent->EpMem = new EpMem_Manager(thisAgent);
     thisAgent->SMem = new SMem_Manager(thisAgent);
     thisAgent->symbolManager = new Symbol_Manager(thisAgent);
@@ -306,10 +307,8 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    delete delete_agent->explanationMemory;
     delete delete_agent->explanationBasedChunker;
     delete delete_agent->visualizationManager;
-    delete_agent->explanationMemory = NULL;
     delete_agent->explanationBasedChunker = NULL;
     delete_agent->visualizationManager = NULL;
     #ifndef NO_SVS
@@ -325,6 +324,9 @@ void destroy_soar_agent(agent* delete_agent)
 
     delete delete_agent->debug_params;
     delete_agent->debug_params = NULL;
+    delete delete_agent->command_params;
+    delete_agent->command_params = NULL;
+
     stats_close(delete_agent);
     delete delete_agent->stats_db;
     delete_agent->stats_db = NULL;
@@ -342,6 +344,11 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->memoryManager->free_memory(lastmattr, MISCELLANEOUS_MEM_USAGE);
 
     excise_all_productions(delete_agent, false);
+
+    /* This must happen after production excision */
+    delete delete_agent->explanationMemory;
+    delete_agent->explanationMemory = NULL;
+
     delete_agent->symbolManager->release_predefined_symbols();
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
 
@@ -406,10 +413,6 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->SMem->reinit();
 
     thisAgent->explanationBasedChunker->reinit();
-    #ifdef BUILD_WITH_EXPLAINER
-    thisAgent->explanationMemory->re_init();
-    #endif
-
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->WM->wma_params->activation->set_value(off);
 
@@ -434,7 +437,13 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->FIRING_TYPE = IE_PRODS;
     do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
 
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->re_init();
+    #endif
+
+    thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();
+
     reset_wme_timetags(thisAgent);
     reset_statistics(thisAgent);
 
@@ -442,4 +451,22 @@ bool reinitialize_agent(agent* thisAgent)
     xml_reset(thisAgent);
 
     return ok;
+}
+
+cli_command_params::cli_command_params(agent* thisAgent)
+{
+    decide_params = new decide_param_container(thisAgent);
+    load_params = new load_param_container(thisAgent);
+    production_params = new production_param_container(thisAgent);
+    save_params = new save_param_container(thisAgent);
+    wm_params = new wm_param_container(thisAgent);
+}
+
+cli_command_params::~cli_command_params()
+{
+    delete decide_params;
+    delete load_params;
+    delete production_params;
+    delete save_params;
+    delete wm_params;
 }

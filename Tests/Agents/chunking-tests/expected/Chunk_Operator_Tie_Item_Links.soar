@@ -1,0 +1,10 @@
+sp {answer*make-chunk-for-propose*Tie*t1-1
+    (state <s1> ^operator <o4> + ^operator <o3> + ^operator <o2> +
+          ^operator <o1> +)
+    (<o4> ^name a)
+    (<o3> ^name b)
+    (<o2> ^name b)
+    (<o1> ^name a)
+    -->
+    (<s1> ^result true +)
+}

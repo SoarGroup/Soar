@@ -77,10 +77,6 @@ extern bool exploration_valid_parameter_value(agent* thisAgent, const int parame
 extern bool exploration_set_parameter_value(agent* thisAgent, const char* name, double value);
 extern bool exploration_set_parameter_value(agent* thisAgent, const int parameter, double value);
 
-// control of auto-updates
-extern bool exploration_get_auto_update(agent* thisAgent);
-extern bool exploration_set_auto_update(agent* thisAgent, bool setting);
-
 // update parameters according to their reduction policies/rates
 extern void exploration_update_parameters(agent* thisAgent);
 

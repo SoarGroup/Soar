@@ -29,7 +29,9 @@
 #include "sml_RunScheduler.h"
 
 #include "agent.h"
+#include "ebc.h"
 #include "io_link.h"
+#include "output_manager.h"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
@@ -57,9 +59,7 @@
 //    #include <cxxabi.h>
 #endif
 
-//#include <exception>
-//#include <sstream>
-//#include <cstring>
+void debug_trace_off();
 
 // TODO: this is twice declared; here and output_manager.h
 // TODO: this isn't good enough. Arbitrary length should be acceptable.
@@ -183,17 +183,26 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         this->m_pRunScheduler->ScheduleAgentToRun(pAgentSML, true);
     }
 
-    /* -- Load user settings for this agent.  Checks current working
-     *    directory, dll path and the SOAR_HOME environment variable -- */
-    std::string lFileName("settings.soar");
-    std::string directory = searchForFile(lFileName);
-    if (!directory.empty())
+    if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
     {
-        directory.insert(0, "source ");
-        pAgentSML->ExecuteCommandLine(directory.c_str());
-    } else {
-//        std::cout << "Warning:  Could not find settings.soar file." << std::endl;
+        /* -- Load user settings for this agent.  Checks current working
+         *    directory, dll path and the SOAR_HOME environment variable -- */
+        std::string lFileName("settings.soar");
+        std::string directory = searchForFile(lFileName);
+        if (!directory.empty())
+        {
+            directory.insert(0, "source ");
+            std::string lResult = pAgentSML->ExecuteCommandLine(directory.c_str());
+        } else {
+            pConnection->AddErrorToSMLResponse(pResponse, "Could not find settings.soar file.", -1);
+            /* Returning true.  Otherwise, Soar will exit if the file could not be found. */
+            return true;
+        }
     }
+    pSoarAgent->outputManager->cache_output_modes();
+    #ifdef DEBUG_ONLY_CHUNK_ID
+        debug_trace_off();
+    #endif
 
     // Return true if we got an agent constructed.
     return true ;
@@ -534,7 +543,7 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
     // Close log
     if (m_CommandLineInterface.IsLogOpen())
     {
-        m_CommandLineInterface.DoCommand(0, pAgentSML, "clog --close", false, true, 0) ;
+        m_CommandLineInterface.DoCommand(0, pAgentSML, "output log --close", false, true, 0) ;
     }
 
     // Release any wmes or other objects we're keeping
@@ -837,7 +846,7 @@ bool KernelSML::HandleGetInputLink(AgentSML* pAgentSML, char const* /*pCommandNa
 
     // Turn the id symbol into an actual string
     char buf[ MAX_LEXEME_LENGTH ];
-    char* id = sym->to_string(true, buf, MAX_LEXEME_LENGTH);
+    char* id = sym->to_string(true, false, buf, MAX_LEXEME_LENGTH);
 
     if (id)
     {
@@ -1071,6 +1080,13 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
         // Update: to simplify things, I'm removing expand command line.
         // If aliases need to be expanded before going to the filter, we can change this then.
         // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
+
+        /* MToDo | Here's a new function to expand a command.  Did not use for something else
+         *         but it could solve a problem with TclSoarLib.  (Bug is that soar aliases
+         *         prevent Tcl substitution */
+        //        std::string lCmd;
+        //        lCmd = m_CommandLineInterface.ExpandCommand(pCommandName);
+        //        pFunction = m_CommandMap[lCmd.c_str()];
 
         // We'll send the command over as an XML packet, so there's some structure to work with.
         // The current structure is:

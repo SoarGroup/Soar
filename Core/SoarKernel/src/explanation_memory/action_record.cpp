@@ -14,8 +14,8 @@
 #include "rhs.h"
 #include "symbol.h"
 #include "test.h"
-#include "visualize.h"
 #include "working_memory.h"
+#include "visualize.h"
 
 action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
@@ -47,10 +47,11 @@ action_record::~action_record()
 
 void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pIDSet)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 
+    rv = rhs_value_true_null(rv);
     if (rhs_value_is_symbol(rv))
     {
         /* --- ordinary values (i.e., symbols) --- */
@@ -110,21 +111,20 @@ id_set* action_record::get_identities()
     return identities_used;
 }
 
-
-void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, bool printActual)
+void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual)
 {
     std::string tempString;
     bool identity_printed = false;
 
     if (!printActual)
     {
-        if (pRHS_variablized_value)
+        if (!pRHS_variablized_value)
         {
             if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
             {
                 tempString = "";
                 thisAgent->outputManager->set_print_test_format(false, true);
-                thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_variablized_value, tempString, NULL, NULL, true);
+                thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true);
                 thisAgent->outputManager->set_print_test_format(true, false);
                 if (!tempString.empty())
                 {
@@ -133,21 +133,45 @@ void action_record::print_rhs_value(const rhs_value pRHS_value, const rhs_value 
                 }
             }
         }
-        if (!identity_printed && pID)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
-            identity_printed = true;
-        }
     }
     if (printActual || !identity_printed)
     {
         tempString = "";
         thisAgent->outputManager->set_print_test_format(true, false);
-        thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_value, tempString, NULL, NULL);
+        thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
         thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
     }
 }
+void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
+{
+    std::string tempString("");
 
+    if (printActual)
+    {
+        thisAgent->outputManager->set_print_test_format(true, false);
+        thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
+        thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+    } else {
+        if (pPref_func) {
+            thisAgent->outputManager->set_print_test_format(false, true);
+            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true);
+            thisAgent->outputManager->set_print_test_format(true, false);
+            if (!tempString.empty())
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
+            }
+        } else {
+            if (!pID)
+            {
+                thisAgent->outputManager->set_print_test_format(true, false);
+                thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
+                thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+            } else {
+                thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
+            }
+        }
+    }
+}
 
 void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID)
 {
@@ -155,7 +179,7 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
     bool identity_printed = false;
     tempString = "";
     thisAgent->outputManager->set_print_test_format(true, false);
-    thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_value, tempString, NULL, NULL);
+    thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
     thisAgent->visualizationManager->graphviz_output += tempString;
     if (pRHS_variablized_value)
     {
@@ -163,7 +187,7 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
         {
             tempString = "";
             thisAgent->outputManager->set_print_test_format(false, true);
-            thisAgent->outputManager->rhs_value_to_string(thisAgent, pRHS_variablized_value, tempString, NULL, NULL, true);
+            thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true);
             thisAgent->outputManager->set_print_test_format(true, false);
             if (!tempString.empty())
             {
@@ -220,6 +244,30 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
                 }
             }
         }
+//        if (thisAgent->explanationMemory->print_explanation_trace)
+//        {
+//            int lNumRecords = rhs ? 1 : 0;
+//            action* tempRHS = rhs;
+//            while (tempRHS->next)
+//            {
+//                ++lNumRecords;
+//                tempRHS = tempRHS->next;
+//            }
+//            while (rhs->next)
+//            {
+//                if (++lActionCount <= lNumRecords) thisAgent->visualizationManager->viz_endl();
+//                lAction->viz_action(rhs);
+//                rhs = rhs->next;
+//            }
+//        } else {
+//            size_t lNumRecords = pActionRecords->size();
+//            for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
+//            {
+//                lAction = (*it);
+//                if (++lActionCount <= lNumRecords) thisAgent->visualizationManager->viz_endl();
+//                lAction->viz_preference();
+//            }
+//        }
         size_t lNumRecords = pActionRecords->size();
         for (action_record_list::iterator it = pActionRecords->begin(); it != pActionRecords->end(); it++)
         {
@@ -285,30 +333,30 @@ void action_record::viz_action(action* pAction)
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
         tempString = "";
-        thisAgent->outputManager->rhs_value_to_string(thisAgent, pAction->value, tempString, NULL, NULL);
+        thisAgent->outputManager->rhs_value_to_string(pAction->value, tempString);
         thisAgent->visualizationManager->graphviz_output += tempString;
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_record_end();
     } else {
         thisAgent->visualizationManager->viz_record_start();
         thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->o_ids.id);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id);
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start();
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->o_ids.attr);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr);
         thisAgent->visualizationManager->viz_table_element_end();
         if (pAction->referent)
         {
             thisAgent->visualizationManager->viz_table_element_start();
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->viz_table_element_end();
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->o_ids.referent);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent);
             thisAgent->visualizationManager->viz_table_element_end();
         } else {
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->o_ids.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
             thisAgent->visualizationManager->viz_table_element_end();
@@ -317,3 +365,8 @@ void action_record::viz_action(action* pAction)
     }
     tempString.clear();
 }
+//viz_rhs_value(pAction->id, (variablized_action ? rhs_value_true_null(variablized_action->id) : NULL), instantiated_pref->o_ids.id);
+//viz_rhs_value(pAction->attr, (variablized_action ? rhs_value_true_null(variablized_action->attr) : NULL), instantiated_pref->o_ids.attr);
+//viz_rhs_value(pAction->value, (variablized_action ? rhs_value_true_null(variablized_action->value) : NULL), instantiated_pref->o_ids.value);
+//viz_rhs_value(pAction->referent, (variablized_action ? rhs_value_true_null(variablized_action->referent) : NULL), instantiated_pref->o_ids.referent);
+//viz_rhs_value(pAction->value, (variablized_action ? rhs_value_true_null(variablized_action->value) : NULL), instantiated_pref->o_ids.value);

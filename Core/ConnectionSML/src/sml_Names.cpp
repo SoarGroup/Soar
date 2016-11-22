@@ -186,18 +186,11 @@ char const* const sml_Names::kActionId                          = "id" ;
 //backtrace stuff
 char const* const sml_Names::kTagBacktrace              = "backtrace" ;
 char const* const sml_Names::kTagGrounds                = "grounds" ;
-char const* const sml_Names::kTagPotentials             = "potentials" ;
 char const* const sml_Names::kTagLocals                 = "locals" ;
 char const* const sml_Names::kTagLocal                  = "local";
 char const* const sml_Names::kTagBacktraceResult        = "result";
-char const* const sml_Names::kTagCDPSPreference           = "cdps-preference";
-char const* const sml_Names::kTagAddToPotentials        = "add-to-potentials";
+char const* const sml_Names::kTagOSKPreference          = "osk-preference";
 char const* const sml_Names::kTagNegated                = "negated" ;
-char const* const sml_Names::kTagNots                   = "nots" ;
-char const* const sml_Names::kTagNot                    = "not" ;
-char const* const sml_Names::kTagGroundedPotentials     = "grounded-potentials";
-char const* const sml_Names::kTagUngroundedPotentials   = "ungrounded-potentials";
-char const* const sml_Names::kTagUngroundedPotential    = "ungrounded-potential";
 char const* const sml_Names::kBacktracedAlready         = "already-backtraced";
 char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
 char const* const sml_Names::kBacktraceSymbol2          = "symbol2";
@@ -409,6 +402,7 @@ char const* const sml_Names::kParamWatchEpMem                       = "watchepme
 char const* const sml_Names::kParamWatchSMem                        = "watchsmem";
 char const* const sml_Names::kParamWatchWMA                         = "watchwma";
 char const* const sml_Names::kParamWatchGDS                         = "watchgds";
+char const* const sml_Names::kParamWatchGDSStateRemoval             = "watchgdsstateremoval";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue  = "true" ;

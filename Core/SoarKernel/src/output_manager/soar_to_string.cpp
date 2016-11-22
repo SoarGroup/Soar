@@ -27,15 +27,17 @@
 #include "test.h"
 #include "working_memory.h"
 
+#include "soar_TraceNames.h"
+
 #include <vector>
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
     assert(thisAgent && w);
 
-    sprinta_sf(thisAgent, destString, "(t%u(r%u): %y(l%d) ^%y %y(l%d)%s",
-        w->timetag, w->reference_count, w->id, w->id->id->level, w->attr, w->value, w->value->is_sti() ? w->value->id->level : 0,
-        (w->acceptable ? " +)" : ")"));
+    sprinta_sf(thisAgent, destString, "(t%u: %y(lvl %d) ^%y %y(lvl %d)%s (rc %u)",
+        w->timetag, w->id, static_cast<int64_t>(w->id->id->level), w->attr, w->value, w->value->is_sti() ? static_cast<int64_t>(w->value->id->level) : 0,
+        (w->acceptable ? " +)" : ")"), w->reference_count);
 
     /* This is a bool, b/c sometimes we limit printing of WM to certain wme's.
      * Return value used to determine whether to print newline*/
@@ -55,6 +57,37 @@ void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
         }
     }
     return;
+}
+
+const char* Output_Manager::phase_to_string(top_level_phase pPhase)
+{
+    switch (pPhase)
+    {
+        case INPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Input;
+            break;
+        case PREFERENCE_PHASE:
+            return soar_TraceNames::kPhaseName_Pref;
+            break;
+        case WM_PHASE:
+            return soar_TraceNames::kPhaseName_WM;
+            break;
+        case DECISION_PHASE:
+            return soar_TraceNames::kPhaseName_Decision;
+            break;
+        case OUTPUT_PHASE:
+            return soar_TraceNames::kPhaseName_Output;
+            break;
+        case PROPOSE_PHASE:
+            return soar_TraceNames::kPhaseName_Propose;
+            break;
+        case APPLY_PHASE:
+            return soar_TraceNames::kPhaseName_Apply;
+            break;
+        default:
+            return soar_TraceNames::kPhaseName_Unknown;
+            break;
+    }
 }
 
 const char* Output_Manager::test_type_to_string(byte test_type)
@@ -124,7 +157,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             {
                 destString += test_type_to_string(t->type);
             }
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case CONJUNCTIVE_TEST:
             destString += "{ ";
@@ -146,7 +179,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
         case SMEM_LINK_NOT_TEST:
             destString += test_type_to_string(t->type);
             destString += ' ';
-            destString += t->data.referent->to_string(false);
+            destString += t->data.referent->to_string(true);
             break;
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
@@ -158,7 +191,7 @@ void Output_Manager::test_to_string(test t, std::string &destString, bool show_e
             destString += "<< ";
             for (c = t->data.disjunction_list; c != NIL; c = c->rest)
             {
-                destString += static_cast<symbol_struct*>(c->first)->to_string(false);
+                destString += static_cast<symbol_struct*>(c->first)->to_string(true);
                 destString += ' ';
             }
             destString += ">>";
@@ -223,15 +256,42 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
-void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
+void Output_Manager::condition_list_counterparts_to_string(agent* thisAgent, condition* top_cond, std::string &destString)
+{
+
+    condition* cond;
+    int64_t count = 0;
+
+    for (cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        assert(cond != cond->next);
+        sprinta_sf(thisAgent, destString, "%s%i: %l\n", m_pre_string, ++count, cond->counterpart);
+    }
+    return;
+}
+
+void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size)
+{
+    std::string lStr;
+    Output_Manager* output_manager = &Output_Manager::Get_OM();
+
+    output_manager->rhs_value_to_string(rv, lStr);
+    if (!lStr.empty())
+    {
+        strcpy(dest, lStr.c_str());
+        dest[dest_size - 1] = 0; /* ensure null termination */
+    }
+}
+
+void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
     cons* c;
-    list* fl;
+    cons* fl;
     rhs_function* rf;
 
-    if (!rv)
+    if (!rhs_value_true_null(rv))
     {
         destString += '#';
     }
@@ -249,13 +309,13 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         {
             if (rsym->referent)
             {
-                destString += rsym->referent->to_string(false);
+                destString += rsym->referent->to_string(true);
             } else {
                 destString += '#';
             }
         }
         if (m_print_identity_effective && rsym->o_id) {
-            sprinta_sf(thisAgent, destString, " (%u)", rsym->o_id);
+            sprint_sf(destString, " [%u]", rsym->o_id);
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -268,14 +328,14 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
                 rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
-                destString += sym->to_string(false);
+                destString += sym->to_string(true);
             } else {
-                destString += "[STI-RETE]";
+                destString += "[RETE-loc]";
             }
         }
         else
         {
-            destString += "[STI]";
+            destString += "[RETE-loc]";
         }
     }
     else
@@ -288,14 +348,25 @@ void Output_Manager::rhs_value_to_string(agent* thisAgent, rhs_value rv, std::st
         destString += '(';
         if (rf->name)
         {
-            destString += rf->name->to_string(false);
+            if (!strcmp(rf->name->sc->name, "+"))
+            {
+                destString.push_back('+');
+            }
+            else if (!strcmp(rf->name->sc->name, "-"))
+            {
+                destString.push_back('-');
+            }
+            else
+            {
+                destString.append(rf->name->to_string(true));
+            }
         } else {
-            destString += '#';
+            destString += "UNKNOWN_FUNCTION";
         }
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(thisAgent, static_cast<char*>(c->first), destString, tok, w, false);
+            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, pEmptyStringForNullIdentity);
         }
         destString += ')';
     }
@@ -308,22 +379,22 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     {
         if (m_pre_string) destString += m_pre_string;
         destString += "(rhs_function ";
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';
-        rhs_value_to_string(thisAgent, a->id, destString);
+        rhs_value_to_string(a->id, destString);
         destString += " ^";
-        rhs_value_to_string(thisAgent, a->attr, destString);
+        rhs_value_to_string(a->attr, destString);
         destString += ' ';
-        rhs_value_to_string(thisAgent, a->value, destString);
+        rhs_value_to_string(a->value, destString);
         destString += " ";
         destString += preference_to_char(a->preference_type);
         if (a->referent)
         {
             destString += " ";
-            rhs_value_to_string(thisAgent, a->referent, destString);
+            rhs_value_to_string(a->referent, destString);
         }
         destString += ')';
     }
@@ -349,26 +420,26 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c", pref->id, pref->attr, pref->value, preference_to_char(pref->type));
         if (preference_is_binary(pref->type))
         {
-            sprinta_sf(thisAgent, destString, " %y%s", pref->referent);
+            sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }
     }
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue;
-        if (pref->o_ids.id) {
-            lID = "<" + std::to_string(pref->o_ids.id) + ">";
+        if (pref->identities.id) {
+            lID = "[" + std::to_string(pref->identities.id) + "]";
         } else {
-            lID = pref->id->to_string(false);
+            lID = pref->id->to_string(true);
         }
-        if (pref->o_ids.attr) {
-            lAttr = "<" + std::to_string(pref->o_ids.attr) + ">";
+        if (pref->identities.attr) {
+            lAttr = "[" + std::to_string(pref->identities.attr) + "]";
         } else {
-            lAttr = pref->attr->to_string(false);
+            lAttr = pref->attr->to_string(true);
         }
-        if (pref->o_ids.value) {
-            lValue = "<" + std::to_string(pref->o_ids.value) + ">";
+        if (pref->identities.value) {
+            lValue = "[" + std::to_string(pref->identities.value) + "]";
         } else {
-            lValue = pref->value->to_string(false);
+            lValue = pref->value->to_string(true);
         }
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));

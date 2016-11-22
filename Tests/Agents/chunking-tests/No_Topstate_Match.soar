@@ -17,7 +17,7 @@ sp {test-done
     (state <s> ^superstate nil ^test-done)
 -->
     (write (crlf) |Chunk produced. Test completed.|)
-    (halt)
+    (interrupt)
 }
 
 sp {init-substate

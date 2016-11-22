@@ -20,6 +20,10 @@ typedef struct chunk_stats_struct {
         uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                reverted;
+        bool                lhs_unconnected;
+        bool                rhs_unconnected;
+        bool                repair_failed;
+        bool                did_not_match_wm;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            instantations_backtraced;
@@ -31,6 +35,7 @@ typedef struct chunk_stats_struct {
 class chunk_record
 {
         friend class Explanation_Memory;
+        friend class instantiation_record;
 
     public:
         chunk_record(agent* myAgent, uint64_t pChunkID);
@@ -42,17 +47,18 @@ class chunk_record
 
         void                    excise_chunk_record();
 
-        void					print_for_explanation_trace();
-        void					print_for_wme_trace();
-        void					visualize();
+        void                    print_for_explanation_trace();
+        void                    print_for_wme_trace();
+        void                    visualize();
 
     private:
         agent*                  thisAgent;
 
         Symbol*                 name;
         uint64_t                chunkID;
-        instantiation_record*   chunkInstantiation;
-        production*             original_production;
+        instantiation*          chunkInstantiation;
+        uint64_t                chunkInstantiationID;
+        uint64_t                original_productionID;
         production_record*      excised_production;
         uint64_t                time_formed;
         goal_stack_level        match_level;

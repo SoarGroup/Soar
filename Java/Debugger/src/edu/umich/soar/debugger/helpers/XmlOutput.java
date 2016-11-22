@@ -369,18 +369,13 @@ public class XmlOutput
         {
             text.append("For local ");
         }
-        else if (xml.IsTagCDPSPreference())
+        else if (xml.IsTagOSKPreference())
         {
-            text.append("For CDPS preference ");
+            text.append("For OSK preference ");
         }
         else if (xml.IsTagGrounds())
         {
             text.append("  -->Grounds:");
-            text.append(kLineSeparator);
-        }
-        else if (xml.IsTagPotentials())
-        {
-            text.append("  -->Potentials:");
             text.append(kLineSeparator);
         }
         else if (xml.IsTagLocals())
@@ -415,34 +410,10 @@ public class XmlOutput
             // so we have to return
             return text.toString();
         }
-        else if (xml.IsTagNots())
-        {
-            text.append("  -->Nots:");
-            text.append(kLineSeparator);
-        }
-        else if (xml.IsTagNot())
-        {
-            String symbol1 = xml.GetBacktraceSymbol1();
-            String symbol2 = xml.GetBacktraceSymbol2();
-            text.append("    ");
-            text.append(symbol1);
-            text.append(" <> ");
-            text.append(symbol2);
-        }
         else if (xml.IsTagPreference())
         {
             String output = getPreferenceText(agent, xml);
             text.append(output);
-            text.append(kLineSeparator);
-        }
-        else if (xml.IsTagGroundedPotentials())
-        {
-            text.append("*** Tracing Grounded Potentials ***");
-            text.append(kLineSeparator);
-        }
-        else if (xml.IsTagUngroundedPotentials())
-        {
-            text.append("*** Tracing Ungrounded Potentials ***");
             text.append(kLineSeparator);
         }
         else

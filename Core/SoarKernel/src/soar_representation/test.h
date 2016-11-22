@@ -41,10 +41,11 @@ typedef struct test_struct
     union test_info_union
     {
         Symbol*        referent;         /* for relational tests */
-        ::list*        disjunction_list;   /* for disjunction tests */
-        ::list*        conjunct_list;      /* for conjunctive tests */
+        cons*        disjunction_list;   /* for disjunction tests */
+        cons*        conjunct_list;      /* for conjunctive tests */
     } data;
     test_struct*     eq_test;
+    test_struct*     counterpart_test;
     tc_number        tc_num;
     uint64_t         identity;
 } test_info;
@@ -63,16 +64,14 @@ test equality_test_found_in_test(test t);
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
-void deallocate_test(agent* thisAgent, test t);
+void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity = false);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false);
-test copy_test_removing_goal_impasse_tests(agent* thisAgent, test t, bool* removed_goal, bool* removed_impasse);
-test copy_test_without_relationals(agent* thisAgent, test t);
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
 
-void add_test(agent* thisAgent, test* dest_address, test new_test);
+bool add_test(agent* thisAgent, test* dest_address, test new_test);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
 
-::list* delete_test_from_conjunct(agent* thisAgent, test* t, ::list* pDeleteItem);
+cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 
@@ -80,9 +79,9 @@ void add_hash_info_to_id_test(agent* thisAgent, condition* cond, byte field_num,
 void add_identity_to_original_id_test(agent* thisAgent, condition* cond, byte field_num, rete_node_level levels_up);
 void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* rt);
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
-void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, list** var_list);
-void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, ::list** var_list);
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity, tc_number tc, symbol_with_match_list* var_list);
+void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
+void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity, tc_number tc, matched_symbol_list* var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 
 inline bool test_has_referent(test t)

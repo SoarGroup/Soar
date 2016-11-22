@@ -36,8 +36,6 @@ void remove_current_decision(agent* thisAgent, slot* s);
 bool check_context_slot_decisions(agent* thisAgent, goal_stack_level level);
 
 /* REW: begin 08.20.97 */  /* To implement the Waterfall part of Operand2 */
-extern void print_assertion(ms_change* msc);
-extern void print_retraction(ms_change* msc);
 void initialize_consistency_calculations_for_new_decision(agent* thisAgent);
 void determine_highest_active_production_level_in_stack_apply(agent* thisAgent);
 void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);

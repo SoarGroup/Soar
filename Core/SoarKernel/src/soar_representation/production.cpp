@@ -99,7 +99,7 @@ tc_number get_new_tc_number(agent* thisAgent)
    given tc number.
 ===================================================================== */
 
-void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
+void unmark_identifiers_and_free_list(agent* thisAgent, cons* id_list)
 {
     cons* next;
     Symbol* sym;
@@ -114,7 +114,7 @@ void unmark_identifiers_and_free_list(agent* thisAgent, list* id_list)
     }
 }
 
-void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
+void unmark_variables_and_free_list(agent* thisAgent, cons* var_list)
 {
     cons* next;
     Symbol* sym;
@@ -144,7 +144,7 @@ void unmark_variables_and_free_list(agent* thisAgent, list* var_list)
 
 ===================================================================== */
 
-void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
+void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
     if (c->type != POSITIVE_CONDITION)  return;
     add_bound_variables_in_test(thisAgent, c->data.tests.id_test, tc, var_list);
@@ -152,7 +152,7 @@ void add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number 
     add_bound_variables_in_test(thisAgent, c->data.tests.value_test, tc, var_list);
 }
 
-void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
+void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
@@ -162,7 +162,7 @@ void add_bound_variables_in_condition_list(agent* thisAgent, condition* cond_lis
     }
 }
 
-void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, list** var_list)
+void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list)
 {
     if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -176,7 +176,7 @@ void add_all_variables_in_condition(agent* thisAgent, condition* c, tc_number tc
     }
 }
 
-void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, list** var_list)
+void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list, tc_number tc, cons** var_list)
 {
     condition* c;
 
@@ -215,7 +215,7 @@ void add_all_variables_in_condition_list(agent* thisAgent, condition* cond_list,
   Warning:  actions must not contain reteloc's or rhs unbound variables here.
 ==================================================================== */
 
-void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, list** id_list, list** var_list)
+void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, cons** id_list, cons** var_list)
 {
     if ((sym->symbol_type == VARIABLE_SYMBOL_TYPE) || (sym->symbol_type == IDENTIFIER_SYMBOL_TYPE))
     {
@@ -223,7 +223,7 @@ void add_symbol_to_tc(agent* thisAgent, Symbol* sym, tc_number tc, list** id_lis
     }
 }
 
-void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  list** id_list, list** var_list)
+void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  cons** id_list, cons** var_list)
 {
     cons* c;
 
@@ -233,7 +233,7 @@ void add_test_to_tc(agent* thisAgent, test t, tc_number tc,  list** id_list, lis
 }
 
 void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
-                    list** id_list, list** var_list)
+                    cons** id_list, cons** var_list)
 {
     if (c->type == POSITIVE_CONDITION)
     {
@@ -243,7 +243,7 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
 }
 
 void add_action_to_tc(agent* thisAgent, action* a, tc_number tc,
-                      list** id_list, list** var_list)
+                      cons** id_list, cons** var_list)
 {
     if (a->type != MAKE_ACTION) return;
 
@@ -269,7 +269,7 @@ bool cond_is_in_tc(agent* thisAgent, condition* cond, tc_number tc)
     condition* c;
     bool anything_changed;
     bool result;
-    list* new_ids, *new_vars;
+    cons* new_ids, *new_vars;
 
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -348,36 +348,66 @@ bool action_is_in_tc(action* a, tc_number tc)
  * so EBC can first try to fix unconnected conditions before creating
  * the production. */
 
+void fix_inst_pointers(condition**   lhs_top, condition** lhs_inst_top, condition** lhs_inst_bottom)
+{
+    *lhs_inst_top = (*lhs_top)->counterpart;
+    condition* lCond = *lhs_inst_top;
+    while (lCond->next) lCond = lCond->next;
+    *lhs_inst_bottom = lCond;
+}
+
 bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                           symbol_with_match_list*  ungrounded_syms)
+                                      condition**   lhs_inst_top,
+                                      condition**   lhs_inst_bottom,
+                              matched_symbol_list*  ungrounded_syms,
+                                     bool           add_ungrounded_lhs,
+                                     bool           add_ungrounded_rhs)
 {
     tc_number tc;
+    bool lhs_good = false;
 
     thisAgent->symbolManager->reset_variable_generator(*lhs_top, *rhs_top);
     tc = get_new_tc_number(thisAgent);
     add_bound_variables_in_condition_list(thisAgent, *lhs_top, tc, NIL);
 
-    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms))
+    dprint_header(DT_REORDERER, PrintBefore, "Reordering and validating:\n");
+    dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
+    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
+    dprint_noprefix(DT_REORDERER, "%9", *lhs_top);
+    dprint_noprefix(DT_REORDERER, "Actions:\n");
+    dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
+
+    if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {
         /* If there are problems on the LHS, we need the ungrounded_syms
          * from them, before we return.  So we call, reorder_lhs too.
          * Note ungrounded_syms is null when not called for a chunk. */
-        if (ungrounded_syms)
+        if (add_ungrounded_lhs)
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
+            if (lhs_inst_top)
+                fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
         }
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
-    if (! reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms))
+    lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
+    if (lhs_inst_top)
+        fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
+    if (!lhs_good)
     {
+        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
 
     return true;
 }
+
+/* Note:  The rete load command will create a production without calling this.  Changes made here may
+ *        need to be also made in the RETE load code */
 
 production* make_production(agent*          thisAgent,
                             ProductionType  type,
@@ -393,25 +423,10 @@ production* make_production(agent*          thisAgent,
 
     if (type != JUSTIFICATION_PRODUCTION_TYPE)
     {
-#ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
-        calculate_compile_time_o_support(*lhs_top, *rhs_top);
-#ifdef DEBUG_CT_OSUPPORT
-        for (a = *rhs_top; a != NIL; a = a->next)
-            if ((a->type == MAKE_ACTION) && (a->support == UNKNOWN_SUPPORT))
-            {
-                break;
-            }
-        if (a)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "\nCan't classify %y\n", name);
-        }
-#endif
-#else
         for (a = *rhs_top; a != NIL; a = a->next)
         {
             a->support = UNKNOWN_SUPPORT;
         }
-#endif
     }
     else
     {
@@ -451,6 +466,7 @@ production* make_production(agent*          thisAgent,
     p->save_for_justification_explanation = false;
     p->duplicate_chunks_this_cycle = 0;
     p->last_duplicate_dc = 0;
+    p->p_id = thisAgent->explanationBasedChunker->get_new_prod_id();
 
     // Soar-RL stuff
     p->rl_update_count = 0.0;
@@ -477,7 +493,7 @@ production* make_production(agent*          thisAgent,
     return p;
 }
 
-void deallocate_production(agent* thisAgent, production* prod)
+void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer)
 {
     if (prod->instantiations)
     {
@@ -486,6 +502,13 @@ void deallocate_production(agent* thisAgent, production* prod)
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
+    #ifdef BUILD_WITH_EXPLAINER
+    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
+    {
+        dprint(DT_EXPLAIN_CACHE, "Deallocate production saving production first for %y.\n", prod->name);
+        thisAgent->explanationMemory->save_excised_production(prod);
+    }
+    #endif
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
@@ -511,12 +534,15 @@ void deallocate_production(agent* thisAgent, production* prod)
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
-#ifdef BUILD_WITH_EXPLAINER
-    if (prod->save_for_justification_explanation && thisAgent->explanationMemory)
+    /* When excising, the explainer needs to save the production before we excise it from
+     * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
+    #ifdef BUILD_WITH_EXPLAINER
+    if (prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
+        dprint(DT_EXPLAIN_CACHE, "Excise production saving production first for %y.\n", prod->name);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
-#endif
+    #endif
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);
@@ -545,7 +571,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         excise_production_from_rete(thisAgent, prod);
     }
     prod->name->sc->production = NIL;
-    production_remove_ref(thisAgent, prod);
+    production_remove_ref(thisAgent, prod, false);
     dprint_header(DT_DEALLOCATES, PrintAfter, "");
 }
 
@@ -553,26 +579,18 @@ void excise_all_productions_of_type(agent* thisAgent,
                                     byte type,
                                     bool print_sharp_sign)
 {
-
-    // Iterating through the productions of the appropriate type and excising them
     while (thisAgent->all_productions_of_type[type])
     {
-        excise_production(thisAgent,
-                          thisAgent->all_productions_of_type[type],
-                          print_sharp_sign && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
+        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign);
     }
 }
 
 void excise_all_productions(agent* thisAgent,
                             bool print_sharp_sign)
 {
-
-    // Excise all the productions of the four different types
     for (int i = 0; i < NUM_PRODUCTION_TYPES; i++)
     {
-        excise_all_productions_of_type(thisAgent,
-                                       static_cast<byte>(i),
-                                       print_sharp_sign && thisAgent->sysparams[TRACE_LOADING_SYSPARAM]);
+        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign);
     }
 }
 
@@ -590,10 +608,7 @@ uint32_t canonical_test(test t)
 {
     Symbol* sym;
 
-    if (!t)
-    {
-        return NON_EQUAL_TEST_RETURN_VAL;
-    }
+    if (!t) return NON_EQUAL_TEST_RETURN_VAL;
 
     if (t->type == EQUALITY_TEST)
     {

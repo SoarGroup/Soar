@@ -8,6 +8,7 @@
 #include "soar_instance.h"
 
 #include "agent.h"
+#include "debug.h"
 #include "dprint.h"
 #include "memory_manager.h"
 #include "output_manager.h"
@@ -25,6 +26,7 @@ Soar_Instance::Soar_Instance()
     m_Memory_Manager = NULL;
     m_Output_Manager = NULL;
     m_launched_by_unit_test = false;
+    m_tcl_enabled = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
 }
@@ -157,14 +159,16 @@ std::string Soar_Instance::Message_Library(std::string &pMessage)
         if (lMessage == "on")
         {
             libraryInfo->isOn = true;
-            resultString = "\n" + lCLIExtensionName + " CLI module loaded and enabled.\n";
+            resultString = "\n" + lCLIExtensionName + " is loaded and enabled.\n";
             m_Output_Manager->print(resultString.c_str());
+            m_tcl_enabled = true; // This was intended to be general purpose, but currently only used for tcl
         }
         else if (lMessage == "off")
         {
-            resultString = lCLIExtensionName + " CLI module deactivated.\n";
+            resultString = lCLIExtensionName + " has been deactivated.\n";
             m_Output_Manager->print(resultString.c_str());
             libraryInfo->isOn = false;
+            m_tcl_enabled = false; // This was intended to be general purpose, but currently only used for tcl
         }
     }
 
@@ -243,7 +247,7 @@ sml::AgentSML* Soar_Instance::Get_Agent_Info(char* pAgentName)
 
 void Soar_Instance::CLI_Debug_Print(const char* text)
 {
-    this->m_Output_Manager->debug_print(DT_CLI_LIBRARIES, text);
+    this->m_Output_Manager->debug_print(DT_DEBUG, text);
 }
 
 void configure_for_unit_tests()
@@ -251,6 +255,8 @@ void configure_for_unit_tests()
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     Soar_Instance::Get_Soar_Instance().configure_for_unit_tests();
     Output_Manager::Get_OM().set_output_params_global(false);
+    debug_set_mode_info(Output_Manager::Get_OM().mode_info, false);
+
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(false);

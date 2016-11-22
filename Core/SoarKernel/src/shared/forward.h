@@ -10,7 +10,6 @@
 
 typedef struct action_struct action;
 typedef struct agent_struct agent;
-typedef struct backtrace_struct backtrace_str;
 typedef struct chunk_cond_struct chunk_cond;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
@@ -33,7 +32,7 @@ typedef struct saved_test_struct saved_test;
 typedef struct select_info_struct select_info;
 typedef struct slot_struct slot;
 typedef struct symbol_struct Symbol;
-typedef struct symbol_with_match_struct symbol_with_match;
+typedef struct symbol_with_match_struct matched_sym;
 typedef struct test_struct test_info;
 typedef struct trace_mode_info_struct trace_mode_info;
 
@@ -42,7 +41,7 @@ typedef byte ms_trace_type;
 typedef byte wme_trace_type;
 typedef char varnames;
 typedef char* rhs_value;
-typedef cons list;
+typedef cons cons;
 typedef signed short goal_stack_level;
 typedef test_info* test;
 typedef uint64_t tc_number;
@@ -64,12 +63,22 @@ typedef struct wme_struct wme;
 
 class Output_Manager;
 class GraphViz_Visualizer;
+class Viz_Parameters;
 class OM_Parameters;
 class OM_DB;
 class AgentOutput_Info;
 class debug_param_container;
 
+class cli_command_params;
+class decide_param_container;
+class load_param_container;
+class save_param_container;
+class memory_param_container;
+class production_param_container;
+class wm_param_container;
+
 class Explanation_Based_Chunker;
+class Path_to_Goal_State;
 class Explanation_Memory;
 class action_record;
 class chunk_record;

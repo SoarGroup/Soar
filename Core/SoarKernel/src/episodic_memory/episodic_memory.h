@@ -81,6 +81,9 @@ class epmem_param_container: public soar_module::param_container
         soar_module::constant_param<gm_ordering_choices>* gm_ordering;
         soar_module::constant_param<merge_choices>* merge;
 
+        void print_settings(agent* thisAgent);
+        void print_summary(agent* thisAgent);
+
         epmem_param_container(agent* new_agent);
 };
 

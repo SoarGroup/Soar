@@ -13,22 +13,21 @@
 ################
 # User aliases #
 ################
-alias ea                excise --all
-alias ec                excise --chunks
-alias ep                epmem
-alias m                 matches
-alias pcf               print -cf
-alias pcfi              print -cfi
-alias pf                production-find
-alias sm                smem
-alias sms               smem -S
+#alias ea                excise --all
+#alias ec                excise --chunks
+#alias ep                epmem
+#alias m                 production matches
+#alias pcf               print -cf
+#alias pcfi              print -cfi
+#alias sm                smem
+#alias sms               smem -S
 
 #################
 # Soar Settings #
 #################
 
 soar max-goal-depth 23
-soar print-depth 2
+#output print-depth 2
 
 ###################
 # Module Settings #

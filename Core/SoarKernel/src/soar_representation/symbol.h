@@ -41,7 +41,7 @@
 
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "O3"
+//#define DEBUG_TRACE_REFCOUNT_FOR "L1"
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;
@@ -126,7 +126,7 @@ typedef struct EXPORT symbol_struct
     bool        is_top_state();
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
-    char*       to_string(bool rereadable = false, char* dest = NIL, size_t dest_size = 0);
+    char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0);
 
     struct symbol_struct*   get_parent_state();
 } Symbol;
@@ -134,28 +134,37 @@ typedef struct EXPORT symbol_struct
 struct floatSymbol : public Symbol
 {
     double value;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct intSymbol   : public Symbol
 {
     int64_t value;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct strSymbol   : public Symbol
 {
     char* name;
     struct production_struct* production;
+    agent* thisAgent;
+    char* cached_print_str;
 };
 struct varSymbol   : public Symbol
 {
     char* name;
     Symbol* current_binding_value;
     uint64_t gensym_number;
-    ::cons* rete_binding_locations;
+    cons* rete_binding_locations;
 };
 
 struct idSymbol    : public Symbol
 {
     uint64_t name_number;
     char name_letter;
+
+    agent* thisAgent;
+    char* cached_print_str;
 
     bool isa_goal;
     bool isa_impasse;
@@ -202,7 +211,7 @@ struct idSymbol    : public Symbol
 
 
     /* --- fields used for Soar I/O stuff --- */
-    ::cons* associated_output_links;
+    cons* associated_output_links;
     struct wme_struct* input_wmes;
 
     int depth;

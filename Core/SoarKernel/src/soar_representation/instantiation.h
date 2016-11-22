@@ -26,7 +26,8 @@ typedef struct instantiation_struct
     wme*                            rete_wme;               /* ditto */
     condition*                      top_of_instantiated_conditions;
     condition*                      bottom_of_instantiated_conditions;
-    preference*                     preferences_generated;  /* header for dll of prefs */
+    preference*                     preferences_generated;  /* prefs created by instantiation that are still in WM*/
+    preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool                            reliable;
@@ -49,7 +50,7 @@ void                deallocate_instantiation(agent* thisAgent, instantiation*& i
 
 goal_stack_level    get_match_goal(condition* top_cond);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
-void                build_CDPS(agent* thisAgent, instantiation* inst);
+void                copy_OSK(agent* thisAgent, instantiation* inst);
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)

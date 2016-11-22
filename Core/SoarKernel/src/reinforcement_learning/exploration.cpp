@@ -10,24 +10,25 @@
 #include "exploration.h"
 
 #include "agent.h"
-#include "soar_rand.h"
-#include "xml.h"
+#include "decide.h"
+#include "decider.h"
+#include "instantiation.h"
+#include "misc.h"
+#include "output_manager.h"
+#include "preference.h"
 #include "print.h"
+#include "reinforcement_learning.h"
 #include "run_soar.h"
 #include "slot.h"
 #include "soar_TraceNames.h"
-#include "output_manager.h"
-#include "reinforcement_learning.h"
-#include "misc.h"
-#include "instantiation.h"
-#include "preference.h"
-#include "decide.h"
+#include "soar_rand.h"
+#include "xml.h"
 
-#include <stdlib.h>
-#include <math.h>
 #include <float.h>
 #include <list>
 #include <limits>
+#include <math.h>
+#include <stdlib.h>
 
 
 using namespace soar_TraceNames;
@@ -128,7 +129,7 @@ bool exploration_set_policy(agent* thisAgent, const int policy)
 {
     if (exploration_valid_policy(policy))
     {
-        set_sysparam(thisAgent, USER_SELECT_MODE_SYSPARAM, policy);
+        thisAgent->Decider->settings[DECIDER_EXPLORATION_POLICY] = policy;
         return true;
     }
 
@@ -140,7 +141,7 @@ bool exploration_set_policy(agent* thisAgent, const int policy)
  **************************************************************************/
 const int exploration_get_policy(agent* thisAgent)
 {
-    return static_cast<int>(thisAgent->sysparams[ USER_SELECT_MODE_SYSPARAM ]);
+    return static_cast<int>(thisAgent->Decider->settings[DECIDER_EXPLORATION_POLICY]);
 }
 
 /***************************************************************************
@@ -290,7 +291,7 @@ bool exploration_set_parameter_value(agent* thisAgent, const int parameter, doub
  **************************************************************************/
 bool exploration_get_auto_update(agent* thisAgent)
 {
-    return thisAgent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] != false;
+    return (thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] != false);
 }
 
 /***************************************************************************
@@ -298,9 +299,7 @@ bool exploration_get_auto_update(agent* thisAgent)
  **************************************************************************/
 bool exploration_set_auto_update(agent* thisAgent, bool setting)
 {
-    thisAgent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = setting ? true : false;
-
-    return true;
+    return (thisAgent->Decider->settings[DECIDER_AUTO_REDUCE] = setting);
 }
 
 /***************************************************************************
@@ -943,7 +942,7 @@ preference* exploration_boltzmann_select(agent* thisAgent, preference* candidate
     }
 
     // output trace information
-    if (thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ])
+    if (thisAgent->trace_settings[ TRACE_INDIFFERENT_SYSPARAM ])
     {
         for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, i++)
         {
@@ -981,7 +980,7 @@ preference* exploration_epsilon_greedy_select(agent* thisAgent, preference* cand
 {
     const double epsilon = exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_EPSILON);
 
-    if (thisAgent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ])
+    if (thisAgent->trace_settings[ TRACE_INDIFFERENT_SYSPARAM ])
     {
         for (const preference* cand = candidates; cand; cand = cand->next_candidate)
         {

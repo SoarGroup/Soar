@@ -986,7 +986,7 @@ void do_buffered_link_changes(agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
 #endif
 #endif
 
@@ -1014,31 +1014,31 @@ void do_buffered_link_changes(agent* thisAgent)
 }
 
 /* ------------------------------------------------------------------
-                  Add a preference to a slot's CDPS
+                  Add a preference to a slot's OSK prefs
    This function adds a preference to a slots's context dependent
    preference set, checking to first see whether the pref is already
-   there. If an operator The slot's CDPS is copied to conditions' bt structs in
-   create_instatiation.  Those copies of the CDPS are used to
+   there. If an operator The slot's OSK prefs is copied to conditions' bt structs in
+   create_instatiation.  Those copies of the OSK prefs are used to
    backtrace through all relevant local evaluation rules that led to the
    selection of the operator that produced a result.
 ------------------------------------------------------------------ */
 
-void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
+void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value)
 {
 
     bool already_exists = false;
-    cons* CDPS;
+    cons* lOSK_pref;
     preference* p;
 
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
-        print_preference(thisAgent, pref);
-    }
+//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//    {
+//        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
+//        print_preference(thisAgent, pref);
+//    }
 
-    for (CDPS = s->CDPS; CDPS != NIL; CDPS = CDPS->rest)
+    for (lOSK_pref = s->OSK_prefs; lOSK_pref != NIL; lOSK_pref = lOSK_pref->rest)
     {
-        p = static_cast<preference*>(CDPS->first);
+        p = static_cast<preference*>(lOSK_pref->first);
         if (p == pref)
         {
             already_exists = true;
@@ -1082,13 +1082,13 @@ void add_to_CDPS(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     }
     if (!already_exists)
     {
-        push(thisAgent, pref, s->CDPS);
+        push(thisAgent, pref, s->OSK_prefs);
         preference_add_ref(pref);
     }
-    else if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
-    }
+//    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//    {
+//        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
+//    }
 
 }
 
@@ -1225,24 +1225,24 @@ byte run_preference_semantics(agent* thisAgent,
                               bool predict)
 {
     preference* p, *p2, *cand, *prev_cand;
-    bool match_found, not_all_indifferent, some_numeric, do_CDPS, some_not_worst = false;
+    bool match_found, not_all_indifferent, some_numeric, add_OSK, some_not_worst = false;
     preference* candidates;
     Symbol* value;
 
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
-     * We can ignore the CDPS when:
+     * We can ignore OSK prefs when:
      * - Run_preference_semantics is called for a consistency check (don't want side effects)
      * - For non-context slots (only makes sense for operators)
      * - For context-slots at the top level (will never be backtraced through)
      * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
 
-    do_CDPS = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
+    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
 
     /* Empty the context-dependent preference set in the slot */
 
-    if (do_CDPS && s->CDPS)
+    if (add_OSK && s->OSK_prefs)
     {
-        clear_CDPS(thisAgent, s);
+        clear_OSK_prefs(thisAgent, s);
     }
 
     /* If the slot has no preferences at all, things are trivial --- */
@@ -1287,27 +1287,27 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If debugging a context-slot, print all preferences that we're deciding through */
 
-    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
-    {
-
-        thisAgent->outputManager->printa_sf(thisAgent,
-              "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
-        thisAgent->outputManager->printa_sf(thisAgent, "All Preferences for slot:");
-
-        for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
-        {
-            if (s->preferences[i])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent, "\n   %ss:\n", preference_name(i));
-                for (p = s->preferences[i]; p; p = p->next)
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent, "   ");
-                    print_preference(thisAgent, p);
-                }
-            }
-        }
-        thisAgent->outputManager->printa_sf(thisAgent, "-------------------------------\n");
-    }
+//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
+//    {
+//
+//        thisAgent->outputManager->printa_sf(thisAgent,
+//              "\n-------------------------------\nRUNNING PREFERENCE SEMANTICS...\n-------------------------------\n");
+//        thisAgent->outputManager->printa_sf(thisAgent, "All Preferences for slot:");
+//
+//        for (int i = 0; i < NUM_PREFERENCE_TYPES; i++)
+//        {
+//            if (s->preferences[i])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent, "\n   %ss:\n", preference_name(i));
+//                for (p = s->preferences[i]; p; p = p->next)
+//                {
+//                    thisAgent->outputManager->printa_sf(thisAgent, "   ");
+//                    print_preference(thisAgent, p);
+//                }
+//            }
+//        }
+//        thisAgent->outputManager->printa_sf(thisAgent, "-------------------------------\n");
+//    }
 
     /* === Requires === */
 
@@ -1354,15 +1354,15 @@ byte run_preference_semantics(agent* thisAgent,
 
         rl_update_for_one_candidate(thisAgent, s, consistency, candidates);
 
-        /* Print a message that we're adding the require preference to the CDPS
+        /* Print a message that we're adding the require preference to the OSK prefs
          * even though we really aren't.  Requires aren't actually handled by
-         * the CDPS mechanism since they are already backtraced through. */
+         * the OSK prefs mechanism since they are already backtraced through. */
 
-        if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM])
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to CDPS: ");
-            print_preference(thisAgent, candidates);
-        }
+//        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//        {
+//            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
+//            print_preference(thisAgent, candidates);
+//        }
 
         return NONE_IMPASSE_TYPE;
     }
@@ -1412,19 +1412,19 @@ byte run_preference_semantics(agent* thisAgent,
     }
 
     /* If there are reject or prohibit preferences, then
-     * add all reject and prohibit preferences to CDPS */
+     * add all reject and prohibit preferences to OSK prefs */
 
-    if (do_CDPS)
+    if (add_OSK)
     {
         if (s->preferences[PROHIBIT_PREFERENCE_TYPE] || s->preferences[REJECT_PREFERENCE_TYPE])
         {
             for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_CDPS(thisAgent, s, p);
+                add_to_OSK(thisAgent, s, p);
             }
             for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_CDPS(thisAgent, s, p);
+                add_to_OSK(thisAgent, s, p);
             }
         }
     }
@@ -1440,9 +1440,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1550,16 +1550,16 @@ byte run_preference_semantics(agent* thisAgent,
                 cand = cand->next_candidate;
             }
             *result_candidates = candidates;
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
             return CONFLICT_IMPASSE_TYPE;
         }
 
         /* Otherwise, delete conflicted candidates from candidate list.
-         * Also add better preferences to CDPS for every item in the candidate
-         * list and delete acceptable preferences from the CDPS for those that
+         * Also add better preferences to OSK prefs for every item in the candidate
+         * list and delete acceptable preferences from the OSK prefs for those that
          * don't make the candidate list.*/
 
         prev_cand = NIL;
@@ -1581,21 +1581,21 @@ byte run_preference_semantics(agent* thisAgent,
             }
             else
             {
-                if (do_CDPS)
+                if (add_OSK)
                 {
-                    /* Add better/worse preferences to CDPS */
+                    /* Add better/worse preferences to OSK prefs */
                     for (p = s->preferences[BETTER_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                     for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->referent == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1617,9 +1617,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1642,18 +1642,18 @@ byte run_preference_semantics(agent* thisAgent,
             p->value->decider_flag = BEST_DECIDER_FLAG;
         }
 
-        /* Reduce candidates list to only those with best preference flag and add pref to CDPS */
+        /* Reduce candidates list to only those with best preference flag and add pref to OSK prefs */
         prev_cand = NIL;
         for (cand = candidates; cand != NIL; cand = cand->next_candidate)
             if (cand->value->decider_flag == BEST_DECIDER_FLAG)
             {
-                if (do_CDPS)
+                if (add_OSK)
                 {
                     for (p = s->preferences[BEST_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1685,9 +1685,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1710,10 +1710,10 @@ byte run_preference_semantics(agent* thisAgent,
             p->value->decider_flag = WORST_DECIDER_FLAG;
         }
 
-        /* Because we only want to add worst preferences to the CDPS if they actually have an impact
+        /* Because we only want to add worst preferences to the OSK prefs if they actually have an impact
         * on the candidate list, we must first see if there's at least one non-worst candidate. */
 
-        if (do_CDPS)
+        if (add_OSK)
         {
             some_not_worst = false;
             for (cand = candidates; cand != NIL; cand = cand->next_candidate)
@@ -1742,14 +1742,14 @@ byte run_preference_semantics(agent* thisAgent,
             }
             else
             {
-                if (do_CDPS && some_not_worst)
+                if (add_OSK && some_not_worst)
                 {
-                    /* Add this worst preference to CDPS */
+                    /* Add this worst preference to OSK prefs */
                     for (p = s->preferences[WORST_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1773,9 +1773,9 @@ byte run_preference_semantics(agent* thisAgent,
         }
         else
         {
-            if (do_CDPS && s->CDPS)
+            if (add_OSK && s->OSK_prefs)
             {
-                clear_CDPS(thisAgent, s);
+                clear_OSK_prefs(thisAgent, s);
             }
         }
         return NONE_IMPASSE_TYPE;
@@ -1869,22 +1869,22 @@ byte run_preference_semantics(agent* thisAgent,
             }
             (*result_candidates)->next_candidate = NIL;
 
-            if (do_CDPS)
+            if (add_OSK)
             {
 
-                /* Add all indifferent preferences associated with the chosen candidate to the CDPS.*/
+                /* Add all indifferent preferences associated with the chosen candidate to the OSK prefs.*/
 
                 if (some_numeric)
                 {
 
                     /* Note that numeric indifferent preferences are never considered duplicates, so we
-                    * pass an extra argument to add_to_cdps so that it does not check for duplicates.*/
+                    * pass an extra argument to add_to_OSK so that it does not check for duplicates.*/
 
                     for (p = s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == (*result_candidates)->value)
                         {
-                            add_to_CDPS(thisAgent, s, p, false);
+                            add_to_OSK(thisAgent, s, p, false);
                         }
                     }
 
@@ -1897,7 +1897,7 @@ byte run_preference_semantics(agent* thisAgent,
                             if ((p->referent->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
                                     (p->value->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG))
                             {
-                                add_to_CDPS(thisAgent, s, p);
+                                add_to_OSK(thisAgent, s, p);
                             }
                         }
                     }
@@ -1906,20 +1906,20 @@ byte run_preference_semantics(agent* thisAgent,
                 {
 
                     /* This decision was non-numeric, so add all non-numeric preferences associated with the
-                     * chosen candidate to the CDPS.*/
+                     * chosen candidate to the OSK prefs.*/
 
                     for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->value == (*result_candidates)->value)
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                     for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value))
                         {
-                            add_to_CDPS(thisAgent, s, p);
+                            add_to_OSK(thisAgent, s, p);
                         }
                     }
                 }
@@ -1935,9 +1935,9 @@ byte run_preference_semantics(agent* thisAgent,
     /* Candidates are not all indifferent, so we have a tie. */
 
     *result_candidates = candidates;
-    if (do_CDPS && s->CDPS)
+    if (add_OSK && s->OSK_prefs)
     {
-        clear_CDPS(thisAgent, s);
+        clear_OSK_prefs(thisAgent, s);
     }
     return TIE_IMPASSE_TYPE;
 }
@@ -2338,13 +2338,13 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    solution seems to work well, but it's possible that there are subtle aspects
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
                     dprint(DT_GDS, "%fWME from duplicate rule.  Skipping gds processing for newly made o-supported wme %p (id level = %d, mg level = %d)\n",
-                           cand, cand->id->id->level, cand->inst->match_goal_level);
+                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
                     continue;
                 }
                 else
                 {
                     dprint(DT_GDS, "%fWME not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
-                           cand, cand->id->id->level, cand->inst->match_goal_level);
+                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
                 }
                 dprint(DT_WME_CHANGES, "Adding non-context wme for preference %p.\n", cand);
@@ -2399,7 +2399,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                 {
                     dprint(DT_GDS, "Checking GDS necessary for wme %w: %s (level = %d)\n", w,
                            (w->preference->o_supported ? ":o-support" : ":i-support"),
-                           w->preference->id->id->level);
+                           static_cast<int64_t>(w->preference->id->id->level));
                     dprint(DT_GDS, "Generated from preference created by instantiation:\n");
                     dprint(DT_GDS, "%7", w->preference->inst);
 
@@ -2479,7 +2479,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                             thisAgent->outputManager->printa_sf(thisAgent, "\n\n   ");
                             print_preference(pref);
                             thisAgent->outputManager->printa_sf(thisAgent, "   Goal level of preference: %d\n",
-                                  pref->id->id->level);
+                                static_cast<int64_t>(pref->id->id->level));
 #endif
 
                             if (pref->inst->GDS_evaluated_already == false)
@@ -2487,7 +2487,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 #ifdef DEBUG_GDS_HIGH
                                 thisAgent->outputManager->printa_sf(thisAgent, "   Match goal lev of instantiation %y ",
                                                    pref->inst->prod_name);
-                                thisAgent->outputManager->printa_sf(thisAgent, "is %d\n", pref->inst->match_goal_level);
+                                thisAgent->outputManager->printa_sf(thisAgent, "is %d\n", static_cast<int64_t>(pref->inst->match_goal_level));
 #endif
                                 if (pref->inst->match_goal_level > pref->id->id->level)
                                 {
@@ -2823,7 +2823,6 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     free_list(thisAgent, extract_list_elements(thisAgent, &(thisAgent->explanationBasedChunker->chunk_free_problem_spaces), cons_equality_fn, reinterpret_cast<void*>(goal)));
 
     post_link_removal(thisAgent, NIL, goal);   /* remove the special link */
-    thisAgent->symbolManager->symbol_remove_ref(&goal);
 
     if (goal->id->level <= thisAgent->substate_break_level)
     {
@@ -2831,6 +2830,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
         thisAgent->substate_break_level = 0;
         thisAgent->reason_for_stopping = "Stopped due to substate (goal) retraction.";
     }
+
+    thisAgent->symbolManager->symbol_remove_ref(&goal);
 }
 
 /* ------------------------------------------------------------------
@@ -2864,7 +2865,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
             // KJC note: we actually halt, because there is no interrupt function in SoarKernel
             // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
             // then the interrupt is generated and system_halted is set to false so the user can recover.
-            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %u on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
             thisAgent->outputManager->printa_sf(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
             xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
             xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
@@ -3154,7 +3155,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
         if (goal->id->lower_goal)
         {
-            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
             }
@@ -3200,7 +3201,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (goal->id->lower_goal)
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
         }
@@ -3337,14 +3338,12 @@ void do_buffered_wm_and_ownership_changes(agent* thisAgent)
 
  (2) Instantiations are retracted; their preferences are retracted.
 
- (3) Preferences (except o-rejects) from newly_created_instantiations
+ (3) Finally, o-rejects are processed.
+ (4) Preferences (except o-rejects) from newly_created_instantiations
  are asserted, and these instantiations are removed from the
  newly_created_instantiations list and moved over to the per-production
  lists of instantiations of that production.
 
- (4) Finally, o-rejects are processed.
-
- Note: Using the O_REJECTS_FIRST flag, step (4) becomes step (2b)
  ----------------------------------------------------------------------- */
 
 /* -----------------------------------------------------------------------
@@ -3370,23 +3369,15 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
 
     o_rejects = NIL;
 
-    /* REW: begin 09.15.96 */
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
         printf("\n   in assert_new_preferences:");
         xml_generate_verbose(thisAgent, "in assert_new_preferences:");
     }
-    /* REW: end   09.15.96 */
-
-#ifdef O_REJECTS_FIRST
     {
-
-        //slot *s;
-        //preference *p, *next_p;
-
         /* Do an initial loop to process o-rejects, then re-loop
-         to process normal preferences.
-         */
+         to process normal preferences. */
+
         for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
                     next_inst)
         {
@@ -3407,27 +3398,10 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         }
 
         if (o_rejects)
-            process_o_rejects_and_deallocate_them(thisAgent, o_rejects,
-                                                  bufdeallo);
-
-        //               s = find_slot(pref->id, pref->attr);
-        //               if (s) {
-        //                   /* --- remove all pref's in the slot that have the same value --- */
-        //                   p = s->all_preferences;
-        //                   while (p) {
-        //                       next_p = p->all_of_slot_next;
-        //                       if (p->value == pref->value)
-        //                           remove_preference_from_tm(thisAgent, p);
-        //                       p = next_p;
-        //                   }
-        //               }
-        ////preference_remove_ref (thisAgent, pref);
-        //           }
-        //       }
-        //   }
-
+        {
+            process_o_rejects_and_deallocate_them(thisAgent, o_rejects, bufdeallo);
+        }
     }
-#endif
 
     for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
                 next_inst)
@@ -3438,7 +3412,6 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
             insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
         }
 
-        /* REW: begin 09.15.96 */
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
             thisAgent->outputManager->printa_sf(thisAgent,
@@ -3448,7 +3421,6 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
                      inst->prod_name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
-        /* REW: end   09.15.96 */
 
         for (pref = inst->preferences_generated; pref != NIL; pref =
                     next_pref)
@@ -3456,26 +3428,14 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
             next_pref = pref->inst_next;
             if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
             {
-#ifndef O_REJECTS_FIRST
-                /* --- o-reject: just put it in the buffer for later --- */
-                pref->next = o_rejects;
-                o_rejects = pref;
-#endif
-
-                /* REW: begin 09.15.96 */
                 /* No knowledge retrieval necessary in Operand2 */
-                /* REW: end   09.15.96 */
-
             }
             else if (inst->in_ms || pref->o_supported)
             {
                 /* --- normal case --- */
                 if (add_preference_to_tm(thisAgent, pref))
                 {
-                    /* REW: begin 09.15.96 */
                     /* No knowledge retrieval necessary in Operand2 */
-                    /* REW: end   09.15.96 */
-
                     if (wma_enabled(thisAgent))
                     {
                         wma_activate_wmes_in_pref(thisAgent, pref);
@@ -3517,12 +3477,6 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
             }
         }
     }
-#ifndef O_REJECTS_FIRST
-    if (o_rejects)
-    {
-        process_o_rejects_and_deallocate_them(thisAgent, o_rejects, bufdeallo);
-    }
-#endif
 }
 
 /**
@@ -3578,13 +3532,13 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         // check level for legal change
         if (sym->id->level <= thisAgent->change_level)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent,
                                    "*** Waterfall: aborting firing because (%y * *)", sym);
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
-                      sym->id->level, thisAgent->change_level);
+                      static_cast<int64_t>(sym->id->level), static_cast<int64_t>(thisAgent->change_level));
             }
             return false;
         }
@@ -3601,7 +3555,7 @@ void do_preference_phase(agent* thisAgent)
      extra newline printed out.  The simple fix is to monitor
      get_printer_output_column and see if it's at the beginning of a line
      or not when we're ready to print a newline.  94.11.14 */
-    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
     {
         if (thisAgent->current_phase == APPLY_PHASE)   /* it's always IE for PROPOSE */
         {
@@ -3613,13 +3567,13 @@ void do_preference_phase(agent* thisAgent)
                 case PE_PRODS:
                     thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (PE) For State At Depth %d ---\n",
-                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                          static_cast<int64_t>(thisAgent->active_level)); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
                     break;
                 case IE_PRODS:
                     thisAgent->outputManager->printa_sf(thisAgent,
                           "\t--- Firing Productions (IE) For State At Depth %d ---\n",
-                          thisAgent->active_level); // SBW 8/4/2008: added active_level
+                          static_cast<int64_t>(thisAgent->active_level)); // SBW 8/4/2008: added active_level
                     xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
                     break;
             }
@@ -3652,16 +3606,16 @@ void do_preference_phase(agent* thisAgent)
     {
         thisAgent->change_level = thisAgent->next_change_level;
 
-        if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
-        {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
-                  thisAgent->active_level);
-            if (thisAgent->active_goal)
-            {
-                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
-            }
-            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
-        }
+//        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//        {
+//            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
+//                static_cast<int64_t>(thisAgent->active_level));
+//            if (thisAgent->active_goal)
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
+//            }
+//            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
+//        }
 
         thisAgent->newly_created_instantiations = NIL;
 
@@ -3718,20 +3672,20 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->active_goal == NIL)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                      " inner elaboration loop doesn't have active goal.\n");
-            }
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,
+//                      " inner elaboration loop doesn't have active goal.\n");
+//            }
             break;
         }
 
         if (thisAgent->active_goal->id->lower_goal == NIL)
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
-            }
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
+//            }
             break;
         }
 
@@ -3753,11 +3707,11 @@ void do_preference_phase(agent* thisAgent)
         }
         else
         {
-            if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM])
-            {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                      " inner elaboration loop finished but not at quiescence.\n");
-            }
+//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+//            {
+//                thisAgent->outputManager->printa_sf(thisAgent,
+//                      " inner elaboration loop finished but not at quiescence.\n");
+//            }
             break;
         }
     } // end inner elaboration loop
@@ -3804,7 +3758,7 @@ void do_preference_phase(agent* thisAgent)
 void do_working_memory_phase(agent* thisAgent)
 {
 
-    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM])
     {
         if (thisAgent->current_phase == APPLY_PHASE)    /* it's always IE for PROPOSE */
         {
@@ -3964,7 +3918,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4029,7 +3983,7 @@ void elaborate_gds(agent* thisAgent)
 
 #ifdef DEBUG_GDS
                 thisAgent->outputManager->printa_sf(thisAgent, "\n       wme_matching_this_cond at goal_level = %d : ",
-                    wme_goal_level);
+                    static_cast<int64_t>(wme_goal_level));
                 print_wme(thisAgent, wme_matching_this_cond);
 
                 if (pref_for_this_wme)
@@ -4169,7 +4123,7 @@ void elaborate_gds(agent* thisAgent)
 
 #ifdef DEBUG_GDS
                     thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d",
-                        wme_matching_this_cond->gds->goal->id->level);
+                        static_cast<int64_t>(wme_matching_this_cond->gds->goal->id->level));
                     thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n", wme_matching_this_cond->gds->goal);
 #endif
                 } /* end "wme in supergoal or arch-supported" */
@@ -4334,7 +4288,7 @@ void elaborate_gds(agent* thisAgent)
 #endif
                                     }
 #ifdef DEBUG_GDS
-                                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d", fake_inst_wme_cond->gds->goal->id->level);
+                                    thisAgent->outputManager->printa_sf(thisAgent, "            Added WME to GDS for goal = %d", static_cast<int64_t>(fake_inst_wme_cond->gds->goal->id->level));
                                     thisAgent->outputManager->printa_sf(thisAgent, " [%y]\n",
                                         fake_inst_wme_cond->gds->goal);
 #endif
@@ -4485,7 +4439,7 @@ approaches may be better */
 void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 {
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->sysparams[TRACE_GDS_SYSPARAM])
+    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4551,7 +4505,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         }
     }
 
-    if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
         print_wme(thisAgent, w);

@@ -1,0 +1,247 @@
+chunk always
+srand 7
+
+sp {water-jug*remove*last-operator
+    (state <s> ^name water-jug ^last-operator <name> ^operator <o*1>)
+    (<o*1> ^name { <> <name> <n*1> })
+    -->
+    (<s> ^last-operator <name> -)
+}
+
+sp {water-jug*record*operator
+    (state <s> ^name water-jug ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^last-operator <name> +)
+}
+
+sp {water-jug*apply*pour*empty-source
+    (state <s> ^name water-jug ^operator <o>)
+    (<o> ^name pour ^fill-jug <j> ^empty-jug <i>)
+    (<j> ^empty <jempty> ^volume <jvol> ^contents <jcon>)
+    (<i> ^volume <ivol> ^contents { > <jempty> <icon> })
+    -->
+    (<i> ^contents (- <icon> <jempty>) + ^contents <icon> -)
+    (<j> ^contents <jvol> + ^contents <jcon> -)
+}
+
+sp {water-jug*apply*pour*not-empty-source
+    (state <s> ^name water-jug ^operator <o>)
+    (<o> ^name pour ^fill-jug <j> ^empty-jug <i>)
+    (<j> ^empty <jempty> ^volume <jvol> ^contents <jcon>)
+    (<i> ^volume <ivol> ^contents { <= <jempty> <icon> })
+    -->
+    (<i> ^contents 0 + ^contents <icon> -)
+    (<j> ^contents (+ <jcon> <icon>) + ^contents <jcon> -)
+}
+
+sp {water-jug*propose*pour
+    (state <s> ^name water-jug ^jug <j> ^jug { <> <j> <i> })
+    (<j> ^empty { > 0 <e*1> })
+    (<i> ^contents { > 0 <c*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name pour + ^empty-jug <i> + ^fill-jug <j> +)
+}
+
+sp {water-jug*apply*initialize-water-jug
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name initialize-water-jug)
+    -->
+    (<s> ^name water-jug + ^jug <i> + ^jug <j> + ^last-operator none +)
+    (<i> ^volume 3 + ^contents 0 +)
+    (<j> ^volume 5 + ^contents 0 +)
+}
+
+sp {water-jug*propose*initialize-water-jug
+    (state <s> ^superstate nil -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-water-jug +)
+}
+
+sp {apply*evaluate-operator*fill-empty*after-pour
+    (state <s> ^last-operator pour ^operator <op> ^evaluation <x>)
+    (<op> ^name evaluate-operator ^evaluation <x>)
+    (<x> ^super-operator <s*1>)
+    (<s*1> ^name { << fill empty >> <n*1> })
+    -->
+    (<x> ^value equal +)
+}
+
+sp {apply*evaluate-operator*fill-empty*after-empty-fill
+    (state <s> ^operator <op> ^evaluation <x>
+          ^last-operator { << empty fill >> <l*1> })
+    (<op> ^name evaluate-operator ^evaluation <x>)
+    (<x> ^super-operator <s*1>)
+    (<s*1> ^name { << fill empty >> <n*1> })
+    -->
+    (<x> ^value worst +)
+}
+
+sp {apply*evaluate-operator*pour*after-pour
+    (state <s> ^last-operator pour ^operator <op> ^evaluation <x>)
+    (<op> ^name evaluate-operator ^evaluation <x>)
+    (<x> ^super-operator <s*1>)
+    (<s*1> ^name pour)
+    -->
+    (<x> ^value worst +)
+}
+
+sp {apply*evaluate-operator*pour*after-fill-empty
+    (state <s> ^operator <op> ^evaluation <x>
+          ^last-operator { << empty fill >> <l*1> })
+    (<op> ^name evaluate-operator ^evaluation <x>)
+    (<x> ^super-operator <s*1>)
+    (<s*1> ^name pour)
+    -->
+    (<x> ^value best +)
+}
+
+sp {apply*evaluate-operator*none
+    (state <s> ^last-operator none ^operator <op> ^evaluation <x>)
+    (<op> ^name evaluate-operator ^evaluation <x>)
+    -->
+    (<x> ^value equal +)
+}
+
+sp {Impasse__Operator_Tie*propose*evaluate-operator
+    (state <s> ^name Impasse__Operator_Tie ^evaluation <x>)
+    (<x> -^value <v*1>)
+    -->
+    (<s> ^operator <op> + ^operator <op> =)
+    (<op> ^name evaluate-operator + ^evaluation <x> +)
+}
+
+sp {apply*create-preferences*equal
+    (state <s> ^evaluation <x> ^operator <op> ^superstate <ss>)
+    (<x> ^value equal ^super-operator <so>)
+    (<op> ^name create-preferences)
+    -->
+    (<ss> ^operator <so> =)
+}
+
+sp {apply*create-preferences*worst
+    (state <s> ^evaluation <x> ^operator <op> ^superstate <ss>)
+    (<x> ^value worst ^super-operator <so>)
+    (<op> ^name create-preferences)
+    -->
+    (<ss> ^operator <so> < ^operator <so> =)
+}
+
+sp {apply*create-preferences*best
+    (state <s> ^evaluation <x> ^operator <op> ^superstate <ss>)
+    (<x> ^value best ^super-operator <so>)
+    (<op> ^name create-preferences)
+    -->
+    (<ss> ^operator <so> > ^operator <so> =)
+}
+
+sp {Impasse__Operator_Tie*propose*create-preferences
+    (state <s> ^name Impasse__Operator_Tie)
+   -{ (<s> ^evaluation <x>)
+      (<x> -^value <v*1>)}
+    -->
+    (<s> ^operator <op> + ^operator <op> = ^operator <op> >)
+    (<op> ^name create-preferences +)
+}
+
+sp {Impasse__Operator_Tie*elaborate*state*last-operator
+    (state <s> ^name Impasse__Operator_Tie ^superstate <s*1>)
+    (<s*1> ^last-operator <o>)
+    -->
+    (<s> ^last-operator <o> +)
+}
+
+sp {Impasse__Operator_Tie*elaborate*state*evaluations
+    (state <s> ^name Impasse__Operator_Tie ^item <x>)
+    -->
+    (<s> ^evaluation <e*1> +)
+    (<e*1> ^super-operator <x> +)
+}
+
+sp {Impasse__Operator_Tie*elaborate*state
+    (state <s> ^impasse tie)
+    -->
+    (<s> ^name Impasse__Operator_Tie +)
+}
+
+sp {water-jug*apply*fill
+    (state <s> ^name water-jug ^operator <o> ^jug <j>)
+    (<o> ^name fill ^fill-jug <j>)
+    (<j> ^volume <volume> ^contents <contents>)
+    -->
+    (<j> ^contents <volume> + ^contents <contents> -)
+}
+
+sp {water-jug*propose*fill
+    (state <s> ^name water-jug ^jug <j>)
+    (<j> ^empty { > 0 <e*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name fill + ^fill-jug <j> +)
+}
+
+sp {water-jug*apply*empty
+    (state <s> ^name water-jug ^operator <o> ^jug <j>)
+    (<o> ^name empty ^empty-jug <j>)
+    (<j> ^volume <volume> ^contents <contents>)
+    -->
+    (<j> ^contents 0 + ^contents <contents> -)
+}
+
+sp {water-jug*propose*empty
+    (state <s> ^name water-jug ^jug <j>)
+    (<j> ^contents { > 0 <c*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name empty + ^empty-jug <j> +)
+}
+
+sp {water-jug*monitor*operator-application*pour
+    (state <s> ^name water-jug ^operator <o>)
+    (<o> ^name pour ^fill-jug <j> ^empty-jug <i>)
+    (<j> ^volume <jvol> ^contents <jcon>)
+    (<i> ^volume <ivol> ^contents <icon>)
+    -->
+    (write (crlf) |  POUR(| <ivol> |:| <icon> |,| <jvol> |:| <jcon> |)|)
+}
+
+sp {water-jug*monitor*operator-application*fill
+    (state <s> ^name water-jug ^operator <o>)
+    (<o> ^name fill ^fill-jug <f*1>)
+    (<f*1> ^volume <volume>)
+    -->
+    (write (crlf) |  FILL(| <volume> |)|)
+}
+
+sp {water-jug*monitor*operator-application*empty
+    (state <s> ^name water-jug ^operator <o>)
+    (<o> ^name empty ^empty-jug <e*1>)
+    (<e*1> ^volume <volume>)
+    -->
+    (write (crlf) |  EMPTY(| <volume> |)|)
+}
+
+sp {water-jug*monitor*state
+    (state <s> ^name water-jug ^jug <i> ^jug <j>)
+    (<i> ^volume 3 ^contents <icon>)
+    (<j> ^volume 5 ^contents <jcon>)
+    -->
+    (write (crlf) | 5:| <jcon> | 3:| <icon>)
+}
+
+sp {water-jug*detect*goal*achieved
+    (state <s> ^name water-jug ^jug <j>)
+    (<j> ^volume 3 ^contents 1)
+    -->
+    (write (crlf) |The problem has been solved.|)
+    (write (crlf) |The problem has been solved.|)(interrupt)
+}
+
+sp {water-jug*elaborate*empty
+    (state <s> ^name water-jug ^jug <j>)
+    (<j> ^volume <v> ^contents <c>)
+    -->
+    (<j> ^empty (- <v> <c>) +)
+}

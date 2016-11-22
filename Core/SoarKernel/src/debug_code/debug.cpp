@@ -20,6 +20,7 @@
 #include "episodic_memory.h"
 #include "lexer.h"
 #include "print.h"
+#include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
 #include "test.h"
@@ -110,46 +111,38 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
-
     mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_DEALLOCATES].prefix =                  strdup("Delete  | ");
     mode_info[DT_DEALLOCATE_SYMBOLS].prefix =           strdup("DelSymbl| ");
     mode_info[DT_DEALLOCATES_TESTS].prefix =            strdup("DelTests| ");
     mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
-
     mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
-    mode_info[DT_CLI_LIBRARIES].prefix =                strdup("CLI Lib | ");
     mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
     mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
     mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
     mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
-
-
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
-
-    mode_info[DT_ADD_ADDITIONALS].prefix =              strdup("AddAddtn| ");
+    mode_info[DT_ADD_EXPLANATION_TRACE].prefix =        strdup("AddAddtn| ");
     mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
-    mode_info[DT_VM_MAPS].prefix =                      strdup("VM Maps | ");
     mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
-    mode_info[DT_IDENTITY_PROP].prefix =                strdup("ID Prop | ");
-    mode_info[DT_UNIFICATION].prefix =                  strdup("Unify   | ");
+    mode_info[DT_IDENTITY_GENERATION].prefix =          strdup("ID Prop | ");
+    mode_info[DT_ADD_IDENTITY_SET_MAPPING].prefix =     strdup("Unify   | ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
     mode_info[DT_RHS_VALUE].prefix =                    strdup("RHSValue| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
-    mode_info[DT_UNGROUNDED_STI].prefix =               strdup("UngrnSTI| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
-    mode_info[DT_REPAIR].prefix =                       strdup("Grnd LTI| ");
+    mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
     mode_info[DT_EXPLAIN_PATHS].prefix =                strdup("EIDPaths| ");
     mode_info[DT_EXPLAIN_ADD_INST].prefix =             strdup("EAddInst| ");
@@ -159,10 +152,13 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
-    mode_info[DT_PARSER_PROMOTE].prefix =               strdup("Unkn LTI| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
+    mode_info[DT_DEALLOCATE_INSTANTIATION].prefix =     strdup("Del Inst| ");
+    mode_info[DT_EXPLAIN_CACHE].prefix =                strdup("ExpCache| ");
+    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
+    mode_info[DT_UNUSED4].prefix =                      strdup("| ");
 
-#ifdef DEBUG_OUTPUT_ON
+#ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
 #else
     debug_set_mode_info(mode_info, false);
@@ -191,24 +187,6 @@ bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, co
             symbol_matches_string(w->value, match_value));
 }
 
-bool wme_matches_bug(wme *w)
-{
-    if (wme_matches_string(w, "@P3", "default", "@D1") ||
-        wme_matches_string(w, "@P4", "default", "@D1") ||
-        wme_matches_string(w, "@D1", "name", "pantry") ||
-        wme_matches_string(w, "@P2", "1", "@P3") ||
-        wme_matches_string(w, "S1", "goal", "@G1") ||
-        wme_matches_string(w, "R6", "retrieved", "@G1") ||
-        wme_matches_string(w, "@P2", "1", "@P4"))
-    {
-        if ((wme_matches_string(w, "S1", "goal", "@G1")) || wme_matches_string(w, "R6", "retrieved", "@G1"))
-
-            dprint(DT_UNKNOWN_LEVEL, "(S1 ^ goal @G1) or (R6 ^retrieved @G1)found.\n");
-        return true;
-    }
-    return false;
-
-}
 bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
 {
 #ifdef DEBUG_CHECK_SYMBOL
@@ -259,7 +237,7 @@ bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
     return false;
 }
 
-#ifdef DEBUG_TRACE_REFCOUNT_INVENTORY
+#ifdef DEBUG_REFCOUNT_DB
 
 #include "output_manager.h"
 
@@ -277,7 +255,7 @@ std::string get_stacktrace(const char* prefix)
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
     // the stack summarized in the string returned
-    void* addrlist[7];
+    void* addrlist[12];
 
     // retrieve current stack addresses
     int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
@@ -313,22 +291,50 @@ std::string get_stacktrace(const char* prefix)
 }
 #endif
 
+void debug_trace_off()
+{
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+//    Output_Manager::Get_OM().cache_output_modes();
+//    Output_Manager::Get_OM().set_output_params_global(false);
+    Output_Manager::Get_OM().clear_output_modes();
+
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (thisAgent)
+    {
+        thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
+//        thisAgent->output_settings->set_output_params_agent(false);
+    }
+}
+
+void debug_trace_on()
+{
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
+    Output_Manager::Get_OM().restore_output_modes();
+    Output_Manager::Get_OM().set_output_params_global(true);
+    Output_Manager::Get_OM().set_output_mode(DT_DEBUG, true);
+
+    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
+    if (thisAgent)
+    {
+        thisAgent->output_settings->set_output_params_agent(true);
+        thisAgent->outputManager->printa(thisAgent, "Debug trace settings restored.\n");
+    }
+}
+
 void debug_trace_set(int dt_num, bool pEnable)
 {
-    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
-    if (!thisAgent || Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
-    {
-        return;
-    }
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) return;
     if (dt_num < num_trace_modes)
     {
         if (dt_num == 0)
         {
-             Output_Manager::Get_OM().set_output_params_global(pEnable);
-             thisAgent->output_settings->set_output_params_agent(pEnable);
+
              if (pEnable)
              {
+                 debug_trace_on();
                  dprint(DT_DEBUG, "...testing debug trace output.\n");
+             } else {
+                 debug_trace_off();
              }
              return;
         } else {
@@ -361,12 +367,11 @@ void debug_test(int type)
     {
         case 1:
         {
-            Symbol *sym = thisAgent->symbolManager->find_identifier('V', 30);
+            Symbol *sym = thisAgent->symbolManager->find_identifier('L', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "%y found.\n", sym);
-                condition* dummy = make_condition(thisAgent);
-
+                dprint(DT_DEBUG, "%y found with refcount of %u.\n", sym, sym->reference_count);
+//                condition* dummy = make_condition(thisAgent);
 //                thisAgent->ebChunker->generate_conditions_to_ground_lti(&dummy, sym);
             } else {
                 dprint(DT_DEBUG, "Could not find symbol.\n");
@@ -374,7 +379,31 @@ void debug_test(int type)
             break;
         }
         case 2:
-            dprint(DT_DEBUG, "%8");
+//            rhs_value rv;
+//            rv = reteloc_to_rhs_value(0,0);
+//            dprint(DT_DEBUG, "NULL reteloc: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = reteloc_to_rhs_value(1,0);
+//            dprint(DT_DEBUG, "Non-NULL reteloc: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = funcall_list_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL funcall: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            cons* ls;
+//            allocate_cons(thisAgent, &ls);
+//            rv = funcall_list_to_rhs_value(ls);
+//            dprint(DT_DEBUG, "Non-NULL funcall: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            free_cons(thisAgent, ls);
+//            rv = unboundvar_to_rhs_value(0);
+//            dprint(DT_DEBUG, "NULL unbound: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = unboundvar_to_rhs_value(1);
+//            dprint(DT_DEBUG, "Non-NULL unbound: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rv = rhs_symbol_to_rhs_value(NULL);
+//            dprint(DT_DEBUG, "NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rhs_symbol rs;
+//            rs->referent = NULL;
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Semi-NULL symbol: %s", rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
+//            rs->referent = thisAgent->symbolManager->find_identifier('S', 1);
+//            rv = rhs_symbol_to_rhs_value(rs);
+//            dprint(DT_DEBUG, "Non-NULL symbol: %s", !rhs_value_is_null(rv) ? "PASS\n" : "FAIL\n");
             break;
         case 3:
         {
@@ -387,7 +416,7 @@ void debug_test(int type)
             Symbol *sym = thisAgent->symbolManager->find_identifier('G', 1);
             if (sym)
             {
-                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", sym->id->level, sym->id->promotion_level);
+                dprint(DT_DEBUG, "G1 found.  level = %d, promoted level = %d.\n", static_cast<int64_t>(sym->id->level), static_cast<int64_t>(sym->id->promotion_level));
             } else {
                 dprint(DT_DEBUG, "Could not find G1.\n");
             }

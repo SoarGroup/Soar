@@ -598,17 +598,20 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         while (thisAgent->symbolManager->find_str_constant(new_name.c_str()) != NIL);
         new_name_symbol = thisAgent->symbolManager->make_str_constant(new_name.c_str());
-        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom);
+        /* --- Assign a new instantiation ID --- */
+        /* We need to set a chunk ID because variablization uses it to assign new identities */
+        thisAgent->explanationBasedChunker->set_new_chunk_id();
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
+        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top, true);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-        if (reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
+        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false, NULL, NULL))
         {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
@@ -630,6 +633,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         else
         {
+            thisAgent->name_of_production_being_reordered = NULL;
             dprint(DT_RL_VARIABLIZATION, "Re-orderer failure for template production: \n%4", cond_top, new_action);
             rl_revert_template_id(thisAgent);
             thisAgent->symbolManager->symbol_remove_ref(&new_name_symbol);
@@ -637,6 +641,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
 
         thisAgent->explanationBasedChunker->clear_variablization_maps();
+        thisAgent->explanationBasedChunker->clear_chunk_id();
         deallocate_condition_list(thisAgent, cond_top);
 
     return new_name_symbol;
@@ -769,7 +774,7 @@ void rl_store_data(agent* thisAgent, Symbol* goal, preference* cand)
     }
     else
     {
-        if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
+        if (thisAgent->trace_settings[ TRACE_RL_SYSPARAM ] && using_gaps &&
                 (data->gap_age == 0) && !data->prev_op_rl_rules->empty())
         {
             char buf[256];
@@ -828,7 +833,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
             double discount = pow(gamma, static_cast< double >(effective_age));
 
             // notify of gap closure
-            if (data->gap_age && using_gaps && thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
+            if (data->gap_age && using_gaps && thisAgent->trace_settings[ TRACE_RL_SYSPARAM ])
             {
                 char buf[256];
                 SNPRINTF(buf, 254, "gap ended (%c%llu)", goal->id->name_letter, static_cast<long long unsigned>(goal->id->name_number));
@@ -973,7 +978,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                     new_gql = old_gql + eta * (delta_ecr + delta_efr);
 
                     // print as necessary
-                    if (thisAgent->sysparams[ TRACE_RL_SYSPARAM ])
+                    if (thisAgent->trace_settings[ TRACE_RL_SYSPARAM ])
                     {
                         std::ostringstream ss;
                         ss << "RL update " << prod->name->sc->name << " "

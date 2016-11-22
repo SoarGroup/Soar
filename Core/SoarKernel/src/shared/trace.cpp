@@ -77,7 +77,7 @@ typedef struct trace_format_struct
     {
         char* string;                           /* string to print */
         struct trace_format_struct* subformat;  /* [subformat in brackets] */
-        list* attribute_path;  /* list.of.attr.path.symbols (NIL if path is '*') */
+        cons* attribute_path;  /* list.of.attr.path.symbols (NIL if path is '*') */
     } data;
 } trace_format;
 
@@ -206,9 +206,9 @@ trace_format* parse_format_string(agent* thisAgent, const char* string)
     return first;
 }
 
-list* parse_attribute_path_in_brackets(agent* thisAgent)
+cons* parse_attribute_path_in_brackets(agent* thisAgent)
 {
-    list* path;
+    cons* path;
     char name[MAX_LEXEME_LENGTH + 20], *ch;
     Symbol* sym;
 
@@ -342,7 +342,7 @@ trace_format* parse_item_from_format_string(agent* thisAgent)
 {
     trace_format* tf, *pattern;
     char* ch;
-    list* attribute_path;
+    cons* attribute_path;
     int n;
 
     if (*format == 0)
@@ -657,15 +657,19 @@ void print_trace_format_list(agent* thisAgent, trace_format* tf)
         {
             case STRING_TFT:
             {
-                char* s;
-                size_t i, len;
+                std::string temp;
+                temp = string_to_escaped_string(tf->data.string, '"');
+                thisAgent->outputManager->printa_sf(thisAgent,  "%s", temp.c_str());
 
-                s = string_to_escaped_string(tf->data.string, '"', NULL);
-                len = strlen(s);
-                for (i = 1; i < len - 1; i++)
-                {
-                    thisAgent->outputManager->printa_sf(thisAgent,  "%c", *(s + i));
-                }
+//                char* s;
+//                size_t i, len;
+//
+//                s = string_to_escaped_string(tf->data.string, '"', NULL);
+//                len = strlen(s);
+//                for (i = 1; i < len - 1; i++)
+//                {
+//                    thisAgent->outputManager->printa_sf(thisAgent,  "%c", *(s + i));
+//                }
             }
             break;
             case PERCENT_TFT:
@@ -1196,7 +1200,7 @@ struct tracing_parameters
 
 void add_values_of_attribute_path(agent* thisAgent,
                                   Symbol* object,
-                                  list* path,
+                                  cons* path,
                                   growable_string* result,
                                   bool recursive,
                                   int* count)
@@ -1217,7 +1221,7 @@ void add_values_of_attribute_path(agent* thisAgent,
         }
         else
         {
-            ch = object->to_string(true, NULL, 0);
+            ch = object->to_string(true, false, NULL, 0);
             add_to_growable_string(thisAgent, result, ch);
         }
         (*count)++;
@@ -1299,7 +1303,7 @@ void add_trace_for_wme(agent* thisAgent,
 
 void add_trace_for_attribute_path(agent* thisAgent,
                                   Symbol* object,
-                                  list* path,
+                                  cons* path,
                                   growable_string* result,
                                   bool print_attributes,
                                   bool recursive)

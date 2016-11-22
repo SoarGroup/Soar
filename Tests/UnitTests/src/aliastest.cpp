@@ -128,8 +128,9 @@ void AliasTest::testDefaults()
     std::vector< std::string > init;
     init.push_back("init");
     CPPUNIT_ASSERT(aliases->Expand(init));
-    CPPUNIT_ASSERT(init.size() == 1);
-    CPPUNIT_ASSERT(init.front() == "init-soar");
+    CPPUNIT_ASSERT(init.size() == 2);
+    CPPUNIT_ASSERT(init[0] == "soar");
+    CPPUNIT_ASSERT(init[1] == "init");
     
     std::vector< std::string > varprint;
     varprint.push_back("varprint");
@@ -164,20 +165,22 @@ void AliasTest::testDefaults()
     std::vector< std::string > stop;
     stop.push_back("stop");
     CPPUNIT_ASSERT(aliases->Expand(stop));
-    CPPUNIT_ASSERT(stop.size() == 1);
-    CPPUNIT_ASSERT(stop.front() == "stop-soar");
+    CPPUNIT_ASSERT(stop.size() == 2);
+    CPPUNIT_ASSERT(stop[0] == "soar");
+    CPPUNIT_ASSERT(stop[1] == "stop");
     
     std::vector< std::string > interrupt;
     interrupt.push_back("interrupt");
     CPPUNIT_ASSERT(aliases->Expand(interrupt));
-    CPPUNIT_ASSERT(interrupt.size() == 1);
-    CPPUNIT_ASSERT(interrupt.front() == "stop-soar");
+    CPPUNIT_ASSERT(interrupt.size() == 2);
+    CPPUNIT_ASSERT(interrupt[0] == "soar");
+    CPPUNIT_ASSERT(interrupt[1] == "stop");
     
     std::vector< std::string > w;
     w.push_back("w");
     CPPUNIT_ASSERT(aliases->Expand(w));
     CPPUNIT_ASSERT(w.size() == 1);
-    CPPUNIT_ASSERT(w.front() == "watch");
+    CPPUNIT_ASSERT(w.front() == "trace");
 }
 
 void AliasTest::testSimpleCommand()

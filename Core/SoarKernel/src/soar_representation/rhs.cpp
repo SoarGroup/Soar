@@ -37,7 +37,7 @@ test var_test_bound_in_reconstructed_conds(
 void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 {
     cons* c;
-    list* fl;
+    cons* fl;
 
     if (rv == NULL) return;
 
@@ -66,7 +66,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_RHS_VALUE, "%y(o%u)\n", r->referent, r->o_id);
+        dprint_noprefix(DT_RHS_VALUE, "%y(%u)\n", r->referent, r->o_id);
         if (r->referent)
         {
             thisAgent->symbolManager->symbol_remove_ref(&r->referent);
@@ -79,10 +79,10 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
    Returns a new copy of the given rhs_value.
 ---------------------------------------------------------------- */
 
-rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
+rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
 {
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
-    list* fl=NULL, *new_fl=NULL;
+    cons* fl=NULL, *new_fl=NULL;
 
     if (rhs_value_is_reteloc(rv))
     {
@@ -101,7 +101,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first));
+            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first), unify_identities);
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
         }
@@ -111,46 +111,15 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, r->o_id);
-    }
-}
-
-
-rhs_value copy_rhs_value_no_refcount(agent* thisAgent, rhs_value rv)
-{
-    cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
-    list* fl=NULL, *new_fl=NULL;
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        return rv;
-    } else if (rhs_value_is_unboundvar(rv))
-    {
-        return rv;
-    } else if (!rv) {
-        return NULL;
-    } else if (rhs_value_is_funcall(rv))
-    {
-        fl = rhs_value_to_funcall_list(rv);
-        allocate_cons(thisAgent, &new_fl);
-        new_fl->first = fl->first;
-        prev_new_c = new_fl;
-        for (c = fl->rest; c != NIL; c = c->rest)
+        uint64_t lID = r->o_id;
+        if (unify_identities)
         {
-            allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value_no_refcount(thisAgent, static_cast<char*>(c->first));
-            prev_new_c->rest = new_c;
-            prev_new_c = new_c;
+            lID = thisAgent->explanationBasedChunker->get_identity(lID);
         }
-        prev_new_c->rest = NIL;
-        return funcall_list_to_rhs_value(new_fl);
-    }
-    else
-    {
-        rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        return allocate_rhs_value_for_symbol_no_refcount(thisAgent, r->referent, r->o_id);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID);
     }
 }
+
 /* ----------------------------------------------------------------
    Deallocates the given action (singly-linked) list.
 ---------------------------------------------------------------- */
@@ -211,9 +180,9 @@ char first_letter_from_rhs_value(rhs_value rv)
 
 void add_all_variables_in_rhs_value(agent* thisAgent,
                                     rhs_value rv, tc_number tc,
-                                    list** var_list)
+                                    cons** var_list)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 
@@ -243,7 +212,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
  * to a LHS element or a RHS action that has already been executed */
 
 void add_all_variables_in_action(agent* thisAgent, action* a,
-                                 tc_number tc, list** var_list)
+                                 tc_number tc, cons** var_list)
 {
     Symbol* id;
 
@@ -270,7 +239,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
 }
 
 void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc,
-                                      list** var_list)
+                                      cons** var_list)
 {
     action* a;
 
@@ -292,9 +261,9 @@ void add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_numb
 
 void add_bound_variables_in_rhs_value(agent* thisAgent,
                                       rhs_value rv, tc_number tc,
-                                      list** var_list)
+                                      cons** var_list)
 {
-    list* fl;
+    cons* fl;
     cons* c;
     Symbol* sym;
 
@@ -319,7 +288,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
 }
 
 void add_bound_variables_in_action(agent* thisAgent, action* a,
-                                   tc_number tc, list** var_list)
+                                   tc_number tc, cons** var_list)
 {
     Symbol* id;
 
@@ -343,7 +312,7 @@ void add_bound_variables_in_action(agent* thisAgent, action* a,
 }
 
 void add_bound_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc,
-                                        list** var_list)
+                                        cons** var_list)
 {
     action* a;
 
@@ -407,7 +376,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                            AddAdditionalTestsMode add_original_vars)
 {
     cons* c, *new_c, *prev_new_c;
-    list* fl, *new_fl;
+    cons* fl, *new_fl;
     Symbol* sym;
     int64_t index;
     char prefix[2];
@@ -428,7 +397,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        dprint(DT_RHS_VALUE, "create_RHS_value: reteloc %y o%u\n", t->data.referent, t->identity);
+        dprint(DT_RHS_VALUE, "create_RHS_value: reteloc %y %u\n", t->data.referent, t->identity);
 
         return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
     }
@@ -455,7 +424,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* -- generate will increment the refcount on the new variable,
              *    so don't need to do it here. -- */
-            dprint(DT_RHS_VALUE, "create_RHS_value: unbound %y o%u\n", sym, lO_id);
+            dprint(DT_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
             return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
         }
         else
@@ -468,7 +437,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             lO_id = thisAgent->explanationBasedChunker->get_or_create_o_id(sym, pI_id);
         }
 
-        dprint(DT_RHS_VALUE, "create_RHS_value: previous unbound %y <o%u> in i%u (%s)\n", sym, lO_id, pI_id, add_original_vars ? "T" : "F");
+        dprint(DT_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u (%s)\n", sym, lO_id, pI_id, add_original_vars ? "T" : "F");
         return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
     }
 
@@ -501,7 +470,7 @@ rhs_value create_RHS_value(agent* thisAgent,
 
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->o_id : 0;
-        dprint(DT_RHS_VALUE, "create_RHS_value: rhs_symbol %y o%u\n", rs->referent, lO_id);
+        dprint(DT_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, lO_id);
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
     }
 }
@@ -575,7 +544,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
-//    dprint(DT_RHS_VALUE, "Allocated new rhs_value for new rhs_symbol %y(o%u).\n", sym, pO_ID);
+//    dprint(DT_RHS_VALUE, "Allocated new rhs_value for new rhs_symbol %y(%u).\n", sym, pO_ID);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

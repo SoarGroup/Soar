@@ -18,58 +18,74 @@
  * ------------------------------------------------------------------------- */
 enum TraceMode
 {
+    // Generic
     No_Mode = 0,
     DT_DEBUG = 1,
-    DT_ID_LEAKING = 2,
-    DT_LHS_VARIABLIZATION = 3,
-    DT_ADD_ADDITIONALS = 4,
-    DT_RHS_VARIABLIZATION = 5,
+
+    // General
+    DT_MILESTONES = 2,
+    DT_PRINT_INSTANTIATIONS = 3,
+
+    // Explanation trace and identity creation
+    DT_ADD_EXPLANATION_TRACE = 4,
+    DT_IDENTITY_GENERATION = 5,
+
+    // EBC
     DT_VARIABLIZATION_MANAGER = 6,
-    DT_PRINT_INSTANTIATIONS = 7,
-    DT_DEALLOCATES = 8,
-    DT_DEALLOCATE_SYMBOLS = 9,
-    DT_REFCOUNT_ADDS = 10,
-    DT_REFCOUNT_REMS = 11,
-    DT_EPMEM_CMD = 12,
-    DT_PARSER = 13,
-    DT_MILESTONES = 14,
-    DT_REORDERER = 15,
-    DT_BACKTRACE = 16,
-    DT_GDS = 17,
-    DT_RL_VARIABLIZATION = 18,
-    DT_NCC_VARIABLIZATION = 19,
-    DT_IDENTITY_PROP = 20,
-    DT_SOAR_INSTANCE = 21,
-    DT_CLI_LIBRARIES = 22,
-    DT_CONSTRAINTS = 23,
-    DT_MERGE = 24,
-    DT_UNGROUNDED_STI = 25,
-    DT_UNIFICATION = 26,
-    DT_VM_MAPS = 27,
-    DT_BUILD_CHUNK_CONDS = 28,
-    DT_RHS_VALUE = 29,
-    DT_WME_CHANGES = 30,
-    DT_DEALLOCATES_TESTS = 31,
-    DT_LINKS = 32,
-    DT_EBC_CLEANUP = 33,
-    DT_UNKNOWN_LEVEL = 34,
-    DT_RETE_PNODE_ADD = 35,
-    DT_REPAIR = 36,
-    DT_EXPLAIN = 37,
-    DT_EXPLAIN_PATHS = 38,
-    DT_EXPLAIN_ADD_INST = 39,
-    DT_EXPLAIN_CONNECT = 40,
-    DT_EXPLAIN_UPDATE = 41,
-    DT_EXPLAIN_CONDS = 42,
-    DT_EXPLAIN_IDENTITIES = 43,
-    DT_UNIFY_SINGLETONS = 44,
-    DT_EXTRA_RESULTS = 45,
-    DT_PARSER_PROMOTE = 46,
-    DT_SMEM_INSTANCE = 47,
+    DT_EXTRA_RESULTS = 7,
+    DT_BACKTRACE = 8,
+    DT_ADD_IDENTITY_SET_MAPPING = 9,
+    DT_UNIFY_SINGLETONS = 10,
+    DT_BUILD_CHUNK_CONDS = 11,
+    DT_LHS_VARIABLIZATION = 12,
+    DT_RHS_VARIABLIZATION = 13,
+    DT_NCC_VARIABLIZATION = 14,
+    DT_RL_VARIABLIZATION = 15,
+    DT_CONSTRAINTS = 16,
+    DT_MERGE = 17,
+    DT_REORDERER = 18,
+    DT_REPAIR = 19,
+    DT_EBC_CLEANUP = 20,
+
+    // Explainer
+    DT_EXPLAIN = 21,
+    DT_EXPLAIN_PATHS = 22,
+    DT_EXPLAIN_ADD_INST = 23,
+    DT_EXPLAIN_CONNECT = 24,
+    DT_EXPLAIN_UPDATE = 25,
+    DT_EXPLAIN_CONDS = 26,
+    DT_EXPLAIN_IDENTITIES = 27,
+    DT_EXPLAIN_CACHE = 45,
+
+    // Other Soar modules
+    DT_EPMEM_CMD = 28,
+    DT_GDS = 29,
+    DT_SMEM_INSTANCE = 30,
+    DT_PARSER = 31,
+    DT_SOAR_INSTANCE = 32,
+    DT_WME_CHANGES = 33,
+
+    // Memory and refcounts
+    DT_ID_LEAKING = 34,
+    DT_DEALLOCATES = 35,
+    DT_DEALLOCATE_SYMBOLS = 36,
+    DT_DEALLOCATE_INSTANTIATION = 44,
+    DT_DEALLOCATES_TESTS = 37,
+    DT_REFCOUNT_ADDS = 38,
+    DT_REFCOUNT_REMS = 39,
+    DT_RHS_VALUE = 40,
+
+    // Other low-level debugging
+    DT_LINKS = 41,
+    DT_UNKNOWN_LEVEL = 42,
+    DT_RETE_PNODE_ADD = 43,
+    DT_WATERFALL = 46,
+
+    // Not used
+    DT_UNUSED4 = 47,
     num_trace_modes
 };
 
-enum OSupportModes { OMode3, OMode4 };
 enum Decider_settings {
     DECIDER_MAX_GP,
     DECIDER_MAX_DC_TIME,
@@ -77,9 +93,10 @@ enum Decider_settings {
     DECIDER_MAX_GOAL_DEPTH,
     DECIDER_MAX_MEMORY_USAGE,
     DECIDER_MAX_NIL_OUTPUT_CYCLES,
-    DECIDER_O_SUPPORT_MODE,
     DECIDER_STOP_PHASE,
     DECIDER_WAIT_SNC,
+    DECIDER_EXPLORATION_POLICY,
+    DECIDER_AUTO_REDUCE,
     num_decider_settings
 };
 
@@ -100,7 +117,8 @@ enum ChunkingSettings {
     SETTING_EBC_EXCEPT,
     SETTING_EBC_BOTTOM_ONLY,
     SETTING_EBC_INTERRUPT,
-    SETTING_EBC_INTERRUPT_FAILURE,
+    SETTING_EBC_INTERRUPT_WARNING,
+    SETTING_EBC_INTERRUPT_WATCHED,
     SETTING_EBC_UTILITY_MODE,
     SETTING_EBC_IDENTITY_VRBLZ,
     SETTING_EBC_CONSTRAINTS,
@@ -108,7 +126,6 @@ enum ChunkingSettings {
     SETTING_EBC_OSK,
     SETTING_EBC_REPAIR_LHS,
     SETTING_EBC_REPAIR_RHS,
-    SETTING_EBC_REPAIR_PROMOTION,
     SETTING_EBC_MERGE,
     SETTING_EBC_USER_SINGLETONS,
     SETTING_EBC_ALLOW_LOCAL_NEGATIONS,
@@ -117,17 +134,38 @@ enum ChunkingSettings {
     SETTING_EBC_ALLOW_PROB,
     SETTING_EBC_ALLOW_CONFLATED,
     SETTING_EBC_ALLOW_LOCAL_PROMOTION,
+    SETTING_EBC_REPAIR_JUSTIFICATIONS,
+    SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS,
     num_ebc_settings
  };
 
+enum IDSet_Mapping_Type {
+    IDS_no_existing_mapping,
+    IDS_transitive,
+    IDS_literalize_mappings_exist,
+    IDS_unified_with_existing_mappings,
+    IDS_unified_with_literalized_identity,
+    IDS_base_instantiation
+};
+
 enum BTSourceType {
     BT_BaseInstantiation,
-    BT_CDPS,
+    BT_OSK,
     BT_ExtraResults,
     BT_Normal
 };
 
-enum visualizationObjectType {
+enum visMemoryFormat {
+    viz_node,
+    viz_record
+};
+
+enum visRuleFormat {
+    viz_name,
+    viz_full
+};
+
+enum visObjectType {
     viz_inst_record,
     viz_chunk_record,
     viz_simple_inst,
@@ -158,6 +196,7 @@ enum SoarCannedMessageType {
     ebc_error_no_conditions,
     ebc_progress_repairing,
     ebc_progress_repaired,
+    ebc_progress_validating
 };
 
 enum EBCTraceType {

@@ -203,7 +203,7 @@ SOAR_CALLBACK_TYPE soar_callback_name_to_enum(char* name,
 bool soar_exists_callback(agent* the_agent,
                           SOAR_CALLBACK_TYPE callback_type)
 {
-    list* cb_cons;
+    cons* cb_cons;
 
     cb_cons = the_agent->soar_callbacks[callback_type];
 
@@ -390,7 +390,7 @@ void soar_invoke_first_callback(agent* thisAgent,
                                 SOAR_CALLBACK_TYPE callback_type,
                                 soar_call_data call_data)
 {
-    list* head;
+    cons* head;
 
     /* if no callback is registered, just return */
     head = thisAgent->soar_callbacks[callback_type];
@@ -544,7 +544,7 @@ void soar_list_all_callbacks_for_event(agent* thisAgent,
 void soar_pop_callback(agent* thisAgent,
                        SOAR_CALLBACK_TYPE callback_type)
 {
-    list* head;
+    cons* head;
     soar_callback* cb;
 
     head = thisAgent->soar_callbacks[callback_type];
@@ -602,7 +602,7 @@ void soar_remove_all_callbacks_for_event(agent* thisAgent,
         SOAR_CALLBACK_TYPE ct)
 {
     cons* c;
-    list* next;
+    cons* next;
 
     next = thisAgent->soar_callbacks[ct];
 
@@ -626,7 +626,7 @@ void soar_remove_callback(agent* thisAgent,
 {
     cons* c;
     cons* prev_c = NULL;      /* Initialized to placate gcc -Wall */
-    list* head;
+    cons* head;
 
     head = thisAgent->soar_callbacks[callback_type];
 

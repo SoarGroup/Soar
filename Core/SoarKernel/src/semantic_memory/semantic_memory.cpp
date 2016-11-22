@@ -737,6 +737,20 @@ void SMem_Manager::reset(Symbol* state)
     }
 }
 
+bool SMem_Manager::clear()
+{
+    if (thisAgent->SMem->connected())
+    {
+        boolean oldAppendSetting = thisAgent->SMem->settings->append_db->get_value();
+        thisAgent->SMem->settings->append_db->set_value(off);
+        close();
+        init_db();
+        thisAgent->SMem->settings->append_db->set_value(oldAppendSetting);
+        return true;
+    }
+    return false;
+}
+
 void SMem_Manager::reinit()
 {
     if (thisAgent->SMem->connected())

@@ -11,10 +11,12 @@
 #include "kernel.h"
 #include "decider_settings.h"
 
+#include <string>
+
 class SoarDecider
 {
         friend cli::CommandLineInterface;
-
+        friend decider_param_container;
 
     public:
 
@@ -29,13 +31,13 @@ class SoarDecider
         decider_param_container*    params;
         uint64_t                    settings[num_decider_settings];
 
-        void                        print_soar_status(sml::KernelSML* pKernelSML);
-
     private:
 
         agent*                      thisAgent;
         Output_Manager*             outputManager;
 
+        void get_enabled_module_strings(std::string &enabledStr, std::string &disabledStr);
+        int get_state_stack_string(std::string &stateStackStr);
 };
 
 #endif /* CORE_SOARKERNEL_SRC_DECISION_PROCESS_DECIDER_H_ */

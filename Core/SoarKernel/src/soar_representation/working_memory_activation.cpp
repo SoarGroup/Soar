@@ -511,7 +511,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
 
             w->wma_decay_el = temp_el;
 
-            if (thisAgent->sysparams[ TRACE_WMA_SYSPARAM ])
+            if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
             {
                 std::string msg("WMA @");
                 std::string temp;
@@ -685,7 +685,7 @@ void wma_remove_decay_element(agent* thisAgent, wme* w)
         }
 
         // log
-        if (thisAgent->sysparams[ TRACE_WMA_SYSPARAM ])
+        if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
         {
             std::string msg("WMA @");
             std::string temp;
@@ -1148,7 +1148,7 @@ inline void wma_update_decay_histories(agent* thisAgent)
         temp_el->touches.access_history[ temp_el->touches.next_p ].num_references = temp_el->num_references;
 
         // log
-        if (thisAgent->sysparams[ TRACE_WMA_SYSPARAM ])
+        if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
         {
             std::string msg("WMA @");
             std::string temp;
@@ -1346,7 +1346,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
 
             if (forgot_something)
             {
-                if (thisAgent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ])
+                if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
                 {
                     const char* msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
 
@@ -1365,7 +1365,7 @@ void wma_go(agent* thisAgent, wma_go_action go_action)
                     thisAgent->WM->wma_stats->forgotten_wmes->set_value(thisAgent->WM->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >(wm_removal_diff));
                 }
 
-                if (thisAgent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ])
+                if (thisAgent->trace_settings[ TRACE_WMA_SYSPARAM ])
                 {
                     const char* msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
 

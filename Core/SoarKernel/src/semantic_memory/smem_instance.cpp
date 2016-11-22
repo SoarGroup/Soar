@@ -178,7 +178,7 @@ Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_leve
 {
     id_to_sym_map::iterator lIter;
 
-    dprint(DT_SMEM_INSTANCE, "Getting current iSTI for lti ID %u at level %d.\n", pLTI_ID, pLevel);
+    dprint(DT_SMEM_INSTANCE, "Getting current iSTI for lti ID %u at level %d.\n", pLTI_ID, static_cast<int64_t>(pLevel));
     lIter = lti_to_sti_map.find(pLTI_ID);
 
     if (lIter != lti_to_sti_map.end())
@@ -286,7 +286,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         }
     }
 
-    /* MToDo | Not sure if this is still needed */
+    /* Not sure if this is still needed with this new implementation of smem*/
     if (sti_created_here)
     {
         // if the identifier was created above we need to

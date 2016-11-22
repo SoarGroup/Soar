@@ -39,6 +39,7 @@ class SMem_Manager
         friend cli::CommandLineInterface;
         friend SMemExperimental::smem_statement_container;
         friend smem_path_param;
+        friend class smem_param_container;
         friend smem_db_lib_version_stat;
         friend smem_mem_usage_stat;
         friend smem_mem_high_stat;
@@ -60,6 +61,7 @@ class SMem_Manager
         bool enabled();
         void go(bool store_only);
         void clean_up_for_agent_deletion();
+        bool clear();
         void reinit();
         void reset_stats() { statistics->reset(); };
 
@@ -67,7 +69,7 @@ class SMem_Manager
         void attach();
         bool connected();
         void reset(Symbol* state);
-        void reset_id_counters() { lti_id_counter = get_max_lti_id(); };
+        void reset_id_counters() { lti_id_counter = (get_max_lti_id() > settings->initial_variable_id->get_value() ? get_max_lti_id() : settings->initial_variable_id->get_value()-1); };
         bool backup_db(const char* file_name, std::string* err);
         bool export_smem(uint64_t lti_id, std::string& result_text, std::string** err_msg);
         void close();
@@ -77,6 +79,7 @@ class SMem_Manager
         bool        CLI_add(const char* str_to_LTMs, std::string** err_msg);
         bool        CLI_query(const char* ltms, std::string** err_msg, std::string** result_message, uint64_t number_to_retrieve);
         bool        CLI_remove(const char* ltms, std::string** err_msg, std::string** result_message, bool force = false);
+        void        set_id_counter(uint64_t counter_value);
 
 
         /* Methods for creating an instance of a LTM using STIs */

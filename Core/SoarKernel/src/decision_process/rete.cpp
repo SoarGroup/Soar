@@ -832,10 +832,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     goal_stack_level lowest_level_so_far;
     token* tok;
 
-#ifdef DEBUG_WATERFALL
-    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal for assertion: %y", msc->p_node->b.p.prod->name);
-#endif
-
+    dprint(DT_WATERFALL, "Match goal for assertion: %y", msc->p_node->b.p.prod->name);
 
     lowest_goal_wme = NIL;
     lowest_level_so_far = -1;
@@ -876,12 +873,11 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 
     if (lowest_goal_wme)
     {
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", lowest_goal_wme->id);
-#endif
+        dprint_noprefix(DT_WATERFALL, " is [%y]\n", lowest_goal_wme->id);
         return lowest_goal_wme->id;
     }
     {
+        dprint_noprefix(DT_WATERFALL, " has no lowest_goal_wme!\n");
         char msg[BUFFER_MSG_SIZE];
         thisAgent->outputManager->printa_sf(thisAgent, "\nError: Did not find goal for ms_change assertion: %y\n", msc->p_node->b.p.prod->name);
         SNPRINTF(msg, BUFFER_MSG_SIZE, "\nError: Did not find goal for ms_change assertion: %s\n",
@@ -895,57 +891,23 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
-#ifdef DEBUG_WATERFALL
-    thisAgent->outputManager->printa_sf(thisAgent, "\nMatch goal level for retraction: %y", msc->inst->prod_name);
-#endif
+    dprint(DT_WATERFALL, "Match goal level for retraction: %y", msc->inst->prod_name);
 
     if (msc->inst->match_goal)
     {
         /* If there is a goal, just return the goal */
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, " is [%y]", msc->inst->match_goal);
-#endif
+        dprint_noprefix(DT_WATERFALL, " is [%y]", msc->inst->match_goal);
         return  msc->inst->match_goal;
 
     }
     else
     {
 
-#ifdef DEBUG_WATERFALL
-        combozulator(" is NIL (nil goal retraction)");
-#endif
+        dprint_noprefix(DT_WATERFALL, " is NIL (nil goal retraction)");
         return NIL;
 
     }
 }
-
-void print_assertion(agent* thisAgent, ms_change* msc)
-{
-
-    if (msc->p_node)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion: %y", msc->p_node->b.p.prod->name);
-    }
-    else
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAssertion exists but has no p_node");
-    }
-}
-
-void print_retraction(agent* thisAgent, ms_change* msc)
-{
-
-    if (msc->p_node)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->p_node->b.p.prod->name);
-    }
-    else
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction exists but has no p_node");
-    }
-}
-
-
 
 bool any_assertions_or_retractions_ready(agent* thisAgent)
 {
@@ -1685,6 +1647,8 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
             _epmem_process_ids(thisAgent);
         }
     }
+
+    dprint(DT_RETE_PNODE_ADD, "Removing WME from RETE: %w\n", w);
 
     /* --- remove w from all_wmes_in_rete --- */
     remove_from_dll(thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
@@ -2608,7 +2572,7 @@ void bind_variables_in_test(agent* thisAgent,
                             rete_node_level depth,
                             byte field_num,
                             bool dense,
-                            list** varlist,
+                            cons** varlist,
                             test main_eq_test = NULL)
 {
     Symbol* referent;
@@ -2651,7 +2615,7 @@ void bind_variables_in_test(agent* thisAgent,
    bound in some procedure.
 ------------------------------------------------------------------- */
 
-void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, list* vars)
+void pop_bindings_and_deallocate_list_of_variables(agent* thisAgent, cons* vars)
 {
     while (vars)
     {
@@ -2726,7 +2690,7 @@ varnames* add_var_to_varnames(agent* thisAgent, Symbol* var,
 void deallocate_varnames(agent* thisAgent, varnames* vn)
 {
     Symbol* sym;
-    list* symlist;
+    cons* symlist;
 
     if (vn == NIL)
     {
@@ -2792,9 +2756,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
-        if (!strcmp(temp->var->name, "<x4>"))
-            assert(true);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2803,7 +2765,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            dprint(DT_ADD_ADDITIONALS, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
+            dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
@@ -2829,7 +2791,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     {
         temp = varnames_to_one_var(vn);
         t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-        dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     }
     else
     {
@@ -2840,7 +2802,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         {
             temp = static_cast<Symbol*>(c->first);
             t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_ADDITIONALS, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
+            dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
     }
 }
@@ -2890,7 +2852,7 @@ node_varnames* make_nvn_for_posneg_cond(agent* thisAgent,
                                         node_varnames* parent_nvn)
 {
     node_varnames* New;
-    list* vars_bound;
+    cons* vars_bound;
 
     vars_bound = NIL;
 
@@ -2923,7 +2885,7 @@ node_varnames* get_nvn_for_condition_list(agent* thisAgent,
 {
     node_varnames* New = 0;
     condition* cond;
-    list* vars;
+    cons* vars;
 
     vars = NIL;
 
@@ -3325,7 +3287,7 @@ rete_node* make_node_for_positive_cond(agent* thisAgent,
     var_location left_hash_loc;
     left_hash_loc.var_location_struct::field_num = 0;
     left_hash_loc.var_location_struct::levels_up = 0;
-    list* vars_bound_here;
+    cons* vars_bound_here;
 
     alpha_id = alpha_attr = alpha_value = NIL;
     rt = NIL;
@@ -3468,7 +3430,7 @@ rete_node* make_node_for_negative_cond(agent* thisAgent,
     var_location left_hash_loc;
     left_hash_loc.var_location_struct::field_num = 0;
     left_hash_loc.var_location_struct::levels_up = 0;
-    list* vars_bound_here;
+    cons* vars_bound_here;
 
     alpha_id = alpha_attr = alpha_value = NIL;
     rt = NIL;
@@ -3552,12 +3514,12 @@ void build_network_for_condition_list(agent* thisAgent,
                                       rete_node* parent,
                                       rete_node** dest_bottom_node,
                                       rete_node_level* dest_bottom_depth,
-                                      list** dest_vars_bound)
+                                      cons** dest_vars_bound)
 {
     rete_node* node, *new_node, *child, *subconditions_bottom_node;
     condition* cond;
     rete_node_level current_depth;
-    list* vars_bound;
+    cons* vars_bound;
 
     node = parent;
     current_depth = depth_of_first_cond;
@@ -3760,7 +3722,7 @@ bool same_rhs(action* rhs1, action* rhs2, bool rl_chunk_stop)
 
 void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         rete_node_level bottom_depth,
-        list*& rhs_unbound_vars_for_new_prod,
+        cons*& rhs_unbound_vars_for_new_prod,
         uint64_t& num_rhs_unbound_vars_for_new_prod,
         tc_number rhs_unbound_vars_tc)
 {
@@ -3868,7 +3830,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 {
     rete_node* bottom_node, *p_node;
     rete_node_level bottom_depth;
-    list* vars_bound;
+    cons* vars_bound;
     ms_change* msc;
     action* a;
     byte production_addition_result;
@@ -3883,7 +3845,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 
     /* --- change variable names in RHS to Rete location references or
     unbound variable indices --- */
-    list* rhs_unbound_vars_for_new_prod = NIL;
+    cons* rhs_unbound_vars_for_new_prod = NIL;
     uint64_t num_rhs_unbound_vars_for_new_prod = 0;
     tc_number rhs_unbound_vars_tc = get_new_tc_number(thisAgent);
     for (a = p->action_list; a != NIL; a = a->next)
@@ -3919,11 +3881,11 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         {
             continue;
         }
-        /* MToDo | This is a hack to get around an RL template bug that surfaced
+        /* Note:   This is a hack to get around an RL template bug that surfaced
          *         after we added identity-based STI variablization. For some
-         *         reason, the original template that created the instantiation
-         *         can now qualify as a duplicate of the instance, if that instance
-         *         had no conditions specialized by the match that created it.
+         *         reason, the RETE will now say that the original template that
+         *         created the instantiation is a duplicate of the instance, if that
+         *         instance had no conditions specialized by the match that created it.
          *         Previously, bottom_node->first_child was null, indicating that
          *         it was not a duplicate.  Not sure why, but this seems to work
          *         for now, though it hasn't been well-tested.  (very limited RL
@@ -4014,10 +3976,8 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc's, regardless of the mode */
         msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, "\n %y is a refracted instantiation",
-                           refracted_inst->prod_name);
-#endif
+
+        dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
@@ -4068,16 +4028,23 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             production_addition_result = REFRACTED_INST_MATCHED;
         }
     }
-    /* --- if not a chunk, store variable name information --- */
-  if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
-        p->p_node->b.p.parents_nvn = NIL;
-        p->rhs_unbound_variables = NIL;
-        thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
-  } else {
-        p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
-        p->rhs_unbound_variables =
-            destructively_reverse_list(rhs_unbound_vars_for_new_prod);
-    }
+    
+    /* The following was used to discard var names.  Not currently compatible with EBC.  If we want to
+     * save memory and throw the chunk names out, we'll need to change explanation trace
+     * generation to handle a null nvn.  It might just be a matter of gensymm'ing symbols, but
+     * we might have to keep track of stuff to get the identities of the gensymmed vars consistent 
+     * across conditions and actions. */
+    //if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
+    //   p->p_node->b.p.parents_nvn = NIL;
+    //   p->rhs_unbound_variables = NIL;
+    //   thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
+    //} else {
+    //}
+    
+    /* --- Store variable name information --- */
+    p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
+    p->rhs_unbound_variables =
+        destructively_reverse_list(rhs_unbound_vars_for_new_prod);
 
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
@@ -4092,15 +4059,15 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
    its existing instantiations as pending retractions.
 --------------------------------------------------------------------- */
 
-void excise_production_from_rete(agent* thisAgent, production* p)
+void excise_production_from_rete(agent* thisAgent, production* pProd)
 {
     rete_node* p_node, *parent;
     ms_change* msc;
 
-    soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
+    soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(pProd));
 
-    p_node = p->p_node;
-    p->p_node = NIL;      /* mark production as not being in the rete anymore */
+    p_node = pProd->p_node;
+    pProd->p_node = NIL;      /* mark production as not being in the rete anymore */
     parent = p_node->parent;
 
     /* --- deallocate the variable name information --- */
@@ -4472,15 +4439,15 @@ void rete_node_to_conditions(agent* thisAgent,
                equality test in each of the three fields --- */
             if (! nvn)
             {
-                if (!cond->data.tests.id_test->eq_test)
+                if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.id_test), 's');
                 }
-                if (!cond->data.tests.attr_test->eq_test)
+                if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
                 {
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                 }
-                if (!cond->data.tests.value_test->eq_test)
+                if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
                                                 first_letter_from_test(cond->data.tests.attr_test));
             }
@@ -4659,9 +4626,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case STR_CONSTANT_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case STR_CONSTANT_SYMBOL_TYPE:
                     return strcmp(s1->sc->name, s2->sc->name);
                 default:
@@ -4670,10 +4634,6 @@ inline int64_t compare_symbols(Symbol* s1, Symbol* s2)
         case IDENTIFIER_SYMBOL_TYPE:
             switch (s2->symbol_type)
             {
-                case INT_CONSTANT_SYMBOL_TYPE:
-                case FLOAT_CONSTANT_SYMBOL_TYPE:
-                case STR_CONSTANT_SYMBOL_TYPE:
-                    return 1;
                 case IDENTIFIER_SYMBOL_TYPE:
                     if (s1->id->name_letter == s2->id->name_letter)
                     {
@@ -6082,7 +6042,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     action*    act;
     bool      operator_proposal, op_elab;
-    char      action_attr[50];
 
     int pass;
     wme* lowest_goal_wme;
@@ -6173,19 +6132,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
 
         thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-#ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative retraction: %y",
-                           node->b.p.prod->name);
-#endif
+        dprint(DT_RETE_PNODE_ADD, "Removing tentative retraction: %y\n", node->b.p.prod->name);
         activation_exit_sanity_check();
         return;
     }
 
     /* --- no match found, so add new assertion --- */
-#ifdef DEBUG_RETE_PNODES
-    thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative assertion: %y",
-                       node->b.p.prod->name);
-#endif
+    dprint(DT_RETE_PNODE_ADD, "Adding tentative assertion: %y\n", node->b.p.prod->name);
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
     msc->tok = tok;
@@ -6218,9 +6171,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     /* Find the goal and level for this ms change */
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
-#ifdef DEBUG_WATERFALL
-    combozulator("\n    Level of goal is  %d", msc->level);
-#endif
+
+    dprint(DT_WATERFALL, "    Level of goal is  %d\n", static_cast<int64_t>(msc->level));
 
     prod_type = IE_PRODS;
 
@@ -6246,19 +6198,23 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
         {
-            if ((act->type == MAKE_ACTION) &&
-                    (rhs_value_is_symbol(act->attr)))
+            if ((act->type == MAKE_ACTION) && (rhs_value_is_symbol(act->attr)))
             {
-                if ((strcmp(rhs_value_to_string(act->attr, action_attr, 50),
-                            "operator") == NIL) &&
-                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE) &&
-                        (get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
-                                                  rhs_value_to_reteloc_field_num(act->id),
-                                                  tok, w)->id->isa_goal))
+                if ((rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                        (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
-                    operator_proposal = true;
-                    prod_type = !PE_PRODS;
-                    break;
+                    Symbol* lSym = NULL;
+                    if (tok && w)
+                    {
+                        lSym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                                                       rhs_value_to_reteloc_field_num(act->id), tok, w);
+                    }
+                    if (lSym && lSym->id->isa_goal)
+                    {
+                        operator_proposal = true;
+                        prod_type = !PE_PRODS;
+                        break;
+                    }
                 }
             }
         }
@@ -6346,53 +6302,40 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         }
                         else
                         {
-                            if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
+                            if ((temp_tok->w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+                                (temp_tok->w->acceptable == false) && (temp_tok->w->id == lowest_goal_wme->id))
                             {
-                                if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4))
-                                {
-                                    /* iff RHS has only operator elaborations
+                                /* iff RHS has only operator elaborations
                                     then it's IE_PROD, otherwise PE_PROD, so
                                     look for non-op-elabs in the actions  KJC 1/00 */
 
 
-                                    /* We also need to check reteloc's to see if they
+                                /* We also need to check reteloc's to see if they
                                     are referring to operator augmentations before determining
                                     if this is an operator elaboration
-                                    */
+                                 */
 
-                                    for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
-                                    {
-                                        if (act->type == MAKE_ACTION)
-                                        {
-                                            if ((rhs_value_is_symbol(act->id)) &&
-
-                                                    /** shouldn't this be either
-                                                    symbol_to_rhs_value (act->id) ==  or
-                                                    act->id == rhs_value_to_symbol(temp..)**/
-                                                    (rhs_value_to_symbol(act->id) ==
-                                                     temp_tok->w->value))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else if ((thisAgent->o_support_calculation_type == 4)
-                                                     && (rhs_value_is_reteloc(act->id))
-                                                     && (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w)))
-                                            {
-                                                op_elab = true;
-                                            }
-                                            else
-                                            {
-                                                /* this is not an operator elaboration */
-                                                prod_type = PE_PRODS;
-                                            }
-                                        } // act->type == MAKE_ACTION
-                                    } // for
-                                }
-                                else
+                                for (act = node->b.p.prod->action_list; act != NIL ; act = act->next)
                                 {
-                                    prod_type = PE_PRODS;
-                                    break;
-                                }
+                                    if (act->type == MAKE_ACTION)
+                                    {
+                                        if ((rhs_value_is_symbol(act->id)) && (rhs_value_to_symbol(act->id) == temp_tok->w->value))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else if (rhs_value_is_reteloc(act->id) &&
+                                            (temp_tok->w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id),
+                                                                                            rhs_value_to_reteloc_field_num(act->id), tok, w)))
+                                        {
+                                            op_elab = true;
+                                        }
+                                        else
+                                        {
+                                            /* this is not an operator elaboration */
+                                            prod_type = PE_PRODS;
+                                        }
+                                    } // act->type == MAKE_ACTION
+                                } // for
                             }
                         } /* end if (pass == 0) ... */
                         temp_tok = temp_tok->parent;
@@ -6400,38 +6343,19 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                     if (prod_type == PE_PRODS)
                     {
-                        if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4))
-                        {
-                            break;
-                        }
-                        else if (op_elab == true)
+                        if (op_elab == true)
                         {
 
                             /* warn user about mixed actions */
 
-                            if ((thisAgent->o_support_calculation_type == 3) && thisAgent->outputManager->settings[OM_WARNINGS])
+                            if (thisAgent->outputManager->settings[OM_WARNINGS])
                             {
-                                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y",
+                                thisAgent->outputManager->printa_sf(thisAgent, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
                                                    node->b.p.prod->name);
 
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-                                add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
-                                xml_generate_warning(thisAgent, text_of_growable_string(gs));
-                                free_growable_string(thisAgent, gs);
-
-                                prod_type = PE_PRODS;
-                                break;
-                            }
-                            else if ((thisAgent->o_support_calculation_type == 4)  && thisAgent->outputManager->settings[OM_WARNINGS])
-                            {
-                                thisAgent->outputManager->printa_sf(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y",
-                                                   node->b.p.prod->name);
-
-                                // XML generation
-                                growable_string gs = make_blank_growable_string(thisAgent);
-                                add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+                                add_to_growable_string(thisAgent, &gs, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod ");
                                 add_to_growable_string(thisAgent, &gs, node->b.p.prod->name->to_string(true));
                                 xml_generate_warning(thisAgent, text_of_growable_string(gs));
                                 free_growable_string(thisAgent, gs);
@@ -6471,7 +6395,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_o_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
@@ -6491,7 +6415,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "\n   RETE: putting [%y] into ms_i_assertions",
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",
                                node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
@@ -6553,6 +6477,8 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         if ((msc->tok == tok) && (msc->w == w))
         {
+            dprint(DT_RETE_PNODE_ADD, "Removing tentative assertion: %y", node->b.p.prod->name);
+
             /* --- match found in tentative_assertions, so remove it --- */
             remove_from_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
 
@@ -6569,6 +6495,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
+                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_o_assertions\n");
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
@@ -6577,16 +6504,13 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
+                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_i_assertions\n");
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc,
                                 next_in_level, prev_in_level);
             }
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-#ifdef DEBUG_RETE_PNODES
-            thisAgent->outputManager->printa_sf(thisAgent, "\nRemoving tentative assertion: %y",
-                               node->b.p.prod->name);
-#endif
             activation_exit_sanity_check();
             return;
         }
@@ -6602,11 +6526,15 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (inst)
     {
         /* --- add that instantiation to tentative_retractions --- */
-#ifdef DEBUG_RETE_PNODES
-        thisAgent->outputManager->printa_sf(thisAgent, "\nAdding tentative retraction: %y",
-                           node->b.p.prod->name);
-#endif
-
+        dprint(DT_RETE_PNODE_ADD, "Adding tentative retraction: %y", node->b.p.prod->name);
+        /* MToDo | Tried commenting out the following two lines in an effort to
+         *         fix a problem where Soar can't find an instantiation to
+         *         retract.  It was matching based on the rete_token and rete_wme,
+         *         and they were all null. Unfortunately, that didn't solve the
+         *         problem.  The item it was looking for wasnt' there.  It's
+         *         possible that it was trying to retract the instantiations a
+         *         second time while it was still in tentative limbo.
+         */
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
@@ -6624,9 +6552,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->goal = find_goal_for_match_set_change_retraction(msc);
         msc->level = msc->goal->id->level;
 
-#ifdef DEBUG_WATERFALL
-        combozulator("\n    Level of retraction is: %d", msc->level);
-#endif
+        dprint(DT_WATERFALL, "    Level of retraction is: %d\n", msc->level);
 
         if (msc->goal->id->link_count == 0)
         {
@@ -6665,25 +6591,25 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                                   msc, next_in_level, prev_in_level);
         }
 
-#ifdef DEBUG_WATERFALL
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRetraction: %y", msc->inst->prod_name);
-        combozulator(" is active at level %d\n", msc->level);
+        dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
+
+        #ifdef DEBUG_WATERFALL
 
         {
             ms_change* assertion;
-            combozulator("\n Retractions list:\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%f Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;
                     assertion;
                     assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                    assertion->p_node->b.p.prod->name);
-                combozulator(" at level %d\n", assertion->level);
+                thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
             }
 
             if (thisAgent->nil_goal_retractions)
             {
-                combozulator("\nCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "%fCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions;
                         assertion;
@@ -6691,15 +6617,15 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
                                        assertion->p_node->b.p.prod->name);
-                    combozulator(" at level %d\n", assertion->level);
+                    thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
                     if (assertion->goal)
                     {
-                        combozulator("This assertion has non-NIL goal pointer.\n");
+                        thisAgent->outputManager->printa_sf(thisAgent, "This assertion has non-NIL goal pointer.\n");
                     }
                 }
             }
         }
-#endif
+        #endif
 
         activation_exit_sanity_check();
         return;
@@ -6708,7 +6634,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n%y: ", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%f%y: ", node->b.p.prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -6718,20 +6644,28 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
 #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "\nWarning: can't find an existing inst to retract (BUG 139 WORKAROUND)\n");
-        xml_generate_warning(thisAgent, "Warning: can't find an existing inst to retract (BUG 139 WORKAROUND)");
+        thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
+            node->b.p.prod ? node->b.p.prod->name : NULL);
+        xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
 #endif
         return;
     }
 #endif
 
-    {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg,
-                "Internal error: can't find existing instantiation to retract\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
+    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.\n",
+        node->b.p.prod ? node->b.p.prod->name : NULL);
+    xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
+
+    /* In certain agents that chunk, Soar is getting this error.  It also occurs when an agent reaches max-chunks (even before
+     * EBC). Bug 139 workaround just continues execution.  Perhaps that's ok because justifications are different.  I'm not sure.
+     * But until we figure out what's going on, I'm going to try doing the same thing and just print a warning, instead of aborting.  */
+//    {
+//        char msg[BUFFER_MSG_SIZE];
+//        strncpy(msg,
+//                "Internal error: can't find existing instantiation to retract\n", BUFFER_MSG_SIZE);
+//        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+//        abort_with_fatal_error(thisAgent, msg);
+//    }
 }
 
 /* ************************************************************************
@@ -7334,7 +7268,7 @@ void reteload_free_am_table(agent* thisAgent)
 
 void retesave_varnames(varnames* names, FILE* f)
 {
-    list* c;
+    cons* c;
     uint64_t i;
     Symbol* sym;
 
@@ -7362,7 +7296,7 @@ void retesave_varnames(varnames* names, FILE* f)
 
 varnames* reteload_varnames(agent* thisAgent, FILE* f)
 {
-    list* c;
+    cons* c;
     uint64_t i, count;
     Symbol* sym;
 
@@ -7504,7 +7438,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
     Symbol* sym;
     byte type, field_num;
     int levels_up;
-    list* funcall_list;
+    cons* funcall_list;
     rhs_function* rf;
 
     type = reteload_one_byte(f);
@@ -7730,7 +7664,7 @@ rete_test* reteload_rete_test(agent* thisAgent, FILE* f)
     rete_test* rt;
     Symbol* sym;
     uint64_t count;
-    list* temp;
+    cons* temp;
 
     thisAgent->memoryManager->allocate_with_pool(MP_rete_test, &rt);
     rt->type = reteload_one_byte(f);
@@ -7858,23 +7792,25 @@ void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
 
 void retesave_children_of_node(agent* thisAgent, rete_node* node, FILE* f)
 {
-    uint64_t i;
     rete_node* child;
+    std::stack<rete_node*> nodeStack;
 
     /* --- Count number of non-CN-node children. --- */
-    for (i = 0, child = node->first_child; child; child = child->next_sibling)
+    for (child = node->first_child; child; child = child->next_sibling)
+    {
         if (child->node_type != CN_BNODE)
         {
-            i++;
+            nodeStack.push(child);
         }
-    retesave_eight_bytes(i, f);
+    }
+    retesave_eight_bytes(nodeStack.size(), f);
 
     /* --- Write out records for all the node's children except CN's. --- */
-    for (child = node->first_child; child; child = child->next_sibling)
-        if (child->node_type != CN_BNODE)
-        {
-            retesave_rete_node_and_children(thisAgent, child, f);
-        }
+    while (!nodeStack.empty())
+    {
+        retesave_rete_node_and_children(thisAgent, nodeStack.top(), f);
+        nodeStack.pop();
+    }
 }
 
 void retesave_rete_node_and_children(agent* thisAgent, rete_node* node, FILE* f)
@@ -7996,7 +7932,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
     alpha_mem* am;
     production* prod;
     Symbol* sym;
-    list* ubv_list;
+    cons* ubv_list;
     var_location left_hash_loc;
     rete_test* other_tests;
 
@@ -8074,6 +8010,10 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->p_node = NIL;
             prod->interrupt = false;
             prod->interrupt_break = false;
+            prod->duplicate_chunks_this_cycle = 0;
+            prod->last_duplicate_dc = 0;
+            prod->explain_its_chunks = false;
+            prod->save_for_justification_explanation = false;
 
             sym = reteload_symbol_from_index(thisAgent, f);
             thisAgent->symbolManager->symbol_add_ref(sym);
@@ -8667,7 +8607,7 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
     }
 
     /* --- print extra indentation spaces --- */
-    print_spaces(thisAgent, indent);
+    thisAgent->outputManager->print_spaces(thisAgent, indent);
 
     if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
     {
@@ -8678,7 +8618,7 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
                  cond->data.ncc.bottom,
                  wtt,
                  indent + 5);
-        print_spaces(thisAgent, indent);
+        thisAgent->outputManager->print_spaces(thisAgent, indent);
         thisAgent->outputManager->printa_sf(thisAgent, "%s }\n", match_count_string);
     }
     else
@@ -8692,19 +8632,19 @@ int64_t ppmi_aux(agent* thisAgent,    /* current agent */
         {
             if (wtt != NONE_WME_TRACE)
             {
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 thisAgent->outputManager->printa_sf(thisAgent, "*** Matches For Left ***\n");
                 parent_tokens = get_all_left_tokens_emerging_from_node(thisAgent, parent);
                 for (t = parent_tokens; t != NIL; t = t->next_of_node)
                 {
-                    print_spaces(thisAgent, indent);
+                    thisAgent->outputManager->print_spaces(thisAgent, indent);
                     print_whole_token(thisAgent, t, wtt);
                     thisAgent->outputManager->printa_sf(thisAgent, "\n");
                 }
                 deallocate_token_list(thisAgent, parent_tokens);
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 thisAgent->outputManager->printa_sf(thisAgent, "*** Matches for Right ***\n");
-                print_spaces(thisAgent, indent);
+                thisAgent->outputManager->print_spaces(thisAgent, indent);
                 for (rm = node->b.posneg.alpha_mem_->right_mems; rm != NIL;
                         rm = rm->next_in_am)
                 {
@@ -9044,7 +8984,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
     condition* c;
     bool removed_goal_test, removed_impasse_test;
     test id_test;
-    char c_id_test[PRINT_BUFSIZE];
+    std::string id_test_str;
 
     if (!conds)
     {
@@ -9102,9 +9042,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
 
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
-        id_test = copy_test_removing_goal_impasse_tests(thisAgent, c->data.tests.id_test,
-                  &removed_goal_test,
-                  &removed_impasse_test);
+        id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, false, true, &removed_goal_test, &removed_impasse_test);
         thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
 
         /* --- collect all cond's whose id test matches this one --- */
@@ -9140,11 +9078,9 @@ void xml_condition_list(agent* thisAgent, condition* conds,
                 //print_string (thisAgent, "impasse ");
                 xml_att_val(thisAgent, kConditionTest, kConditionTestImpasse);
             }
-
-            Output_Manager::Get_OM().sprinta_sf_cstr(thisAgent, c_id_test, PRINT_BUFSIZE, "%t", id_test);
-            //thisAgent->outputManager->printa(thisAgent, c_id_test);
-            //xml_test(thisAgent, kConditionId, id_test) ;
-            xml_att_val(thisAgent, kConditionId, c_id_test);
+            id_test_str.clear();
+            thisAgent->outputManager->sprinta_sf(thisAgent, id_test_str, "%t", id_test);
+            xml_att_val(thisAgent, kConditionId, id_test_str.c_str());
             deallocate_test(thisAgent, thisAgent->id_test_to_match);
             deallocate_test(thisAgent, id_test);
 

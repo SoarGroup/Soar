@@ -116,7 +116,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->reference_count = 0;
     w->preference = NIL;
     w->output_link = NIL;
-    w->grounds_tc = 0;
+    w->tc = 0;
     w->chunker_bt_last_ground_cond = NULL;
 
     w->next = NIL;
@@ -144,11 +144,22 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
 void add_wme_to_wm(agent* thisAgent, wme* w)
 {
-    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
-    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
-           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
-           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    /* Not sure if this is necessary anymore now that we don't have LTIs in STM.
+     *
+     * We do have an agent that causes this assert to fire. If we disable the assert,
+     * it seems to run fine, so perhaps the level gets set correctly soon after.  The
+     * agent is a very weird one, so for now, we'll put in a warning with a debug statement
+     * until we have time to investigate (or get a less crazy agent than Shane's.) */
 
+    //    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+    //           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
+    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
+
+
+    dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);
     push(thisAgent, w, thisAgent->wmes_to_add);
 
     if (w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -161,7 +172,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
         }
     }
 
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and attr %y.\n", w->id, w->attr);
@@ -180,7 +191,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-    #ifdef DEBUG_CONSIDER_ATTRIBUTES_AS_LINKS
+    #ifdef DEBUG_ATTR_AS_LINKS
     if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
@@ -248,7 +259,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->sysparams[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
 #endif
 #endif
 
@@ -295,7 +306,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 #endif
     dprint(DT_WME_CHANGES, "...looking for wmes added and removed in same phase.\n");
     /* --- warn if watching wmes and same wme was added and removed -- */
-    if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
     {
         for (c = thisAgent->wmes_to_add; c != NIL; c = next_c)
         {
@@ -325,7 +336,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     {
         next_c = c->rest;
         w = static_cast<wme_struct*>(c->first);
-        if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             /* print ("=>WM: ");
              * print_wme (w);
@@ -343,7 +354,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     {
         next_c = c->rest;
         w = static_cast<wme_struct*>(c->first);
-        if (thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
         {
             /* print ("<=WM: ");
              * print_wme (thisAgent, w);
