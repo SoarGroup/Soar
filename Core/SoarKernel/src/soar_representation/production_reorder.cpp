@@ -867,15 +867,17 @@ cons* collect_root_variables(agent* thisAgent,
     {
         if (cond->type == POSITIVE_CONDITION)
         {
+            lMatchedSym = NULL;
             if (cond->data.tests.value_test->eq_test->data.referent->is_variable())
             {
-                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.value_test->eq_test->data.referent : cond->data.tests.value_test->eq_test->data.referent;
-            } else {
-                lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
+                lMatchedSym = cond->data.tests.value_test->eq_test->data.referent->var->instantiated_sym;
             }
+            /* Dummy variables and literals won't have a matched sym */
+            if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
+            dprint(DT_REORDERER, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
@@ -886,13 +888,15 @@ cons* collect_root_variables(agent* thisAgent,
         {
             if (cond->data.tests.id_test->eq_test->data.referent->is_variable())
             {
-                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.id_test->eq_test->data.referent : cond->data.tests.id_test->eq_test->data.referent;
-            } else {
-                lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
+                lMatchedSym = cond->data.tests.id_test->eq_test->data.referent->var->instantiated_sym;
             }
+            /* Dummy variables and literals won't have a matched sym */
+            if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
+
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
+            dprint(DT_REORDERER, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
@@ -910,6 +914,8 @@ cons* collect_root_variables(agent* thisAgent,
         for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
             found_goal_impasse_test = false;
+            dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+
             for (cond = cond_list; cond != NIL; cond = cond->next)
             {
                 if (cond->type != POSITIVE_CONDITION)
@@ -920,11 +926,13 @@ cons* collect_root_variables(agent* thisAgent,
                     if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
                     {
                         found_goal_impasse_test = true;
+                        dprint_noprefix(DT_REORDERER, "found\n");
                         break;
                     }
             }
             if (! found_goal_impasse_test)
             {
+                dprint_noprefix(DT_REORDERER, "not found\n");
                 if (add_ungrounded)
                 {
                     chunk_element* lNewUngroundedSym = new chunk_element();

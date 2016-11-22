@@ -89,7 +89,9 @@ void EpmemTest::setUp()
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
+    #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
     configure_for_unit_tests();
+    #endif
 
     pAgent = pKernel->CreateAgent("soar1");
     CPPUNIT_ASSERT(pAgent != NULL);
@@ -100,6 +102,13 @@ void EpmemTest::setUp()
 
 void EpmemTest::tearDown()
 {
+    #ifdef INIT_AFTER_RUN
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    #endif
     pKernel->Shutdown();
     delete pKernel ;
     pKernel = 0;

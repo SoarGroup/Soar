@@ -199,7 +199,9 @@ void MultiAgentTest::doTest()
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
+    #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
     configure_for_unit_tests();
+    #endif
 
     // We'll require commits, just so we're testing that path
     pKernel->SetAutoCommit(false) ;

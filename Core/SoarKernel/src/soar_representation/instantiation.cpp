@@ -1427,7 +1427,12 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         if (temp->prod)
         {
             dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
-            production_remove_ref(thisAgent, temp->prod, true);
+            if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
+            {
+                excise_production(thisAgent, temp->prod, false, true);
+            } else {
+                production_remove_ref(thisAgent, temp->prod, true);
+            }
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }

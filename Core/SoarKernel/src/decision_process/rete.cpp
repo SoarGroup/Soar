@@ -3967,7 +3967,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         chunk), we make the refracted instantiation of the chunk a nil_goal
         retraction, rather than associating it with the activity of its match
         goal. In p_node_left_addition, where the tentative assertion will be
-        generated, we make it a point to look at the goal value and exrtac
+        generated, we make it a point to look at the goal value and extract
         from the appropriate list; here we just make a a simplifying
         assumption that the goal is NIL (although, in reality), it never will
         be.  */
@@ -6652,13 +6652,14 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     }
 #endif
 
-    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
         node->b.p.prod ? node->b.p.prod->name : NULL);
-    xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
+    xml_generate_warning(thisAgent, "Warning: Soar can't find an existing instantiation to retract.  Soar memory may be corrupt.");
 
-    /* In certain agents that chunk, Soar is getting this error.  It also occurs when an agent reaches max-chunks (even before
-     * EBC). Bug 139 workaround just continues execution.  Perhaps that's ok because justifications are different.  I'm not sure.
-     * But until we figure out what's going on, I'm going to try doing the same thing and just print a warning, instead of aborting.  */
+    /* This can occur when an agent reaches max-chunks (even before EBC). Bug 139 workaround just continues execution when it can't
+     * find an instantiation it expects.  Perhaps that's ok because justifications are different.  I'm not sure.
+     * I'm going to try doing the same thing here and just print a warning, instead of aborting.  It could be useful to allow
+     * execution, for debugging if nothing else.  */
 //    {
 //        char msg[BUFFER_MSG_SIZE];
 //        strncpy(msg,

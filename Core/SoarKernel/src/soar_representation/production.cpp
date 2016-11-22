@@ -502,6 +502,7 @@ void deallocate_production(agent* thisAgent, production* prod, bool cacheProdFor
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
+    dprint_header(DT_DEALLOCATES, PrintBoth, "Deallocating production %y.\n", prod->name);
     #ifdef BUILD_WITH_EXPLAINER
     if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
@@ -509,6 +510,7 @@ void deallocate_production(agent* thisAgent, production* prod, bool cacheProdFor
         thisAgent->explanationMemory->save_excised_production(prod);
     }
     #endif
+
     deallocate_action_list(thisAgent, prod->action_list);
     /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
@@ -531,7 +533,7 @@ void deallocate_production(agent* thisAgent, production* prod, bool cacheProdFor
     thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 
-void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
+void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign, bool cacheProdForExplainer)
 {
     dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
     /* When excising, the explainer needs to save the production before we excise it from
@@ -548,6 +550,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         remove_pwatch(thisAgent, prod);
     }
     remove_from_dll(thisAgent->all_productions_of_type[prod->type], prod, next, prev);
+    prod->next = prod->prev = NULL;
 
     // Remove reference from apoptosis object store
     if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->RL->rl_params) && (thisAgent->RL->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
@@ -571,7 +574,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         excise_production_from_rete(thisAgent, prod);
     }
     prod->name->sc->production = NIL;
-    production_remove_ref(thisAgent, prod, false);
+    production_remove_ref(thisAgent, prod, cacheProdForExplainer);
     dprint_header(DT_DEALLOCATES, PrintAfter, "");
 }
 
