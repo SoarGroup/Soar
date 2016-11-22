@@ -173,8 +173,8 @@ env = Environment(
 # extra compilation time.  (for some reason, this will build it the first two times you compile after
 # it exists.)
 
-if ((GetOption('dbg') == None) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
-    cli_version_dep = open('Core/shared/build_time_date.h', 'w')
+if ((GetOption('dbg') == None) or (FindFile('build_time_date.cpp', 'Core/shared/') == None)):
+    cli_version_dep = open('Core/shared/build_time_date.cpp', 'w')
     print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
     print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
     print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"

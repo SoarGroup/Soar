@@ -888,197 +888,198 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                         lexer->get_lexeme();
                         l_ltm_attr = parse_constant_attr(&(lexer->current_lexeme));
 
-                    // if constant attribute, proceed to value
-                    if (l_ltm_attr != NIL)
-                    {
-                        // consume attribute
-                        lexer->get_lexeme();
-
-                        // support for dot notation:
-                        // when we encounter a dot, instantiate
-                        // the previous attribute as a temporary
-                        // identifier and use that as the parent
-                        while (lexer->current_lexeme.type == PERIOD_LEXEME)
-                        {
-                            // create a new ltm
-                            l_ltm_temp = new ltm_object;
-                            l_ltm_temp->lti_id = NIL;
-                            l_ltm_temp->slots = new ltm_slot_map;
-                            //                        l_ltm_temp->soar_id = NIL;
-
-                            // add it as a child to the current parent
-                            l_ltm_value = new ltm_value;
-                            l_ltm_value->val_lti.val_type = value_lti_t;
-                            l_ltm_value->val_lti.val_value = l_ltm_temp;
-                            l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
-                            l_ltm_slot->push_back(l_ltm_value);
-
-                            // create a key guaranteed to be unique
-                            temp_key.assign("<");
-                            temp_key.append(1, ((l_ltm_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(l_ltm_attr->sc->name[0]))) : ('X')));
-                            temp_key.append("#");
-                            temp_key.append(std::to_string(++intermediate_counter));
-                            temp_key.append(">");
-
-                            // insert the new ltm
-                            (*str_to_LTMs)[ temp_key ] = l_ltm_temp;
-
-                            // definitely a new ltm
-                            newbies->insert(l_ltm_temp);
-
-                            // the new ltm is our parent for this set of values (or further dots)
-                            l_ltm_intermediate_parent = l_ltm_temp;
-                            l_ltm_temp = NULL;
-
-                            // get the next attribute
-                            lexer->get_lexeme();
-                            l_ltm_attr = parse_constant_attr(&(lexer->current_lexeme));
-
-                            // consume attribute
-                            lexer->get_lexeme();
-                        }
-
+                        // if constant attribute, proceed to value
                         if (l_ltm_attr != NIL)
                         {
-                            bool first_value = true;
+                            // consume attribute
+                            lexer->get_lexeme();
 
-                            do
+                            // support for dot notation:
+                            // when we encounter a dot, instantiate
+                            // the previous attribute as a temporary
+                            // identifier and use that as the parent
+                            while (lexer->current_lexeme.type == PERIOD_LEXEME)
                             {
-                                // value by type
-                                l_ltm_value = NIL;
-                                if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
-                                {
-                                    l_ltm_value = new ltm_value;
-                                    l_ltm_value->val_const.val_type = value_const_t;
-                                    l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer->current_lexeme.string()));
-                                }
-                                else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
-                                {
-                                    l_ltm_value = new ltm_value;
-                                    l_ltm_value->val_const.val_type = value_const_t;
-                                    l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_int_constant(lexer->current_lexeme.int_val);
-                                }
-                                else if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
-                                {
-                                    l_ltm_value = new ltm_value;
-                                    l_ltm_value->val_const.val_type = value_const_t;
-                                    l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
-                                }
-                                else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
-                                {
-                                    bool mistakenLTI = false;
-                                    if (lexer->current_lexeme.type == AT_LEXEME)
-                                    {
-                                        lexer->get_lexeme();
-                                        if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
-                                        {
-                                            std::string fixedString("|@");
-                                            fixedString.append(lexer->current_lexeme.string());
-                                            fixedString.push_back('|');
-                                            l_ltm_value = new ltm_value;
-                                            l_ltm_value->val_const.val_type = value_const_t;
-                                            l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(fixedString.c_str());
-                                            mistakenLTI = true;
-                                        } else {
-                                            good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
-                                        }
-                                    }
+                                // create a new ltm
+                                l_ltm_temp = new ltm_object;
+                                l_ltm_temp->lti_id = NIL;
+                                l_ltm_temp->slots = new ltm_slot_map;
+                                //                        l_ltm_temp->soar_id = NIL;
 
-                                    if (good_at && !mistakenLTI)
-                                    {
-                                        // create new value
-                                        l_ltm_value = new ltm_value;
-                                        l_ltm_value->val_lti.val_type = value_lti_t;
+                                // add it as a child to the current parent
+                                l_ltm_value = new ltm_value;
+                                l_ltm_value->val_lti.val_type = value_lti_t;
+                                l_ltm_value->val_lti.val_value = l_ltm_temp;
+                                l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
+                                l_ltm_slot->push_back(l_ltm_value);
 
-                                        // get key
-                                        if (lexer->current_lexeme.type == VARIABLE_LEXEME)
-                                        {
-                                            temp_key2.assign(lexer->current_lexeme.string());
-                                        } else {
-                                            assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
-                                            temp_key2.clear();
-                                            get_lti_name(static_cast<uint64_t>(lexer->current_lexeme.int_val), temp_key2);
-                                        }
+                                // create a key guaranteed to be unique
+                                temp_key.assign("<");
+                                temp_key.append(1, ((l_ltm_attr->symbol_type == STR_CONSTANT_SYMBOL_TYPE) ? (static_cast<char>(static_cast<int>(l_ltm_attr->sc->name[0]))) : ('X')));
+                                temp_key.append("#");
+                                temp_key.append(std::to_string(++intermediate_counter));
+                                temp_key.append(">");
 
-                                        // search for an existing ltm
-                                        str_to_ltm_map::iterator p = str_to_LTMs->find((temp_key2));
+                                // insert the new ltm
+                                (*str_to_LTMs)[ temp_key ] = l_ltm_temp;
 
-                                        // if exists, point; else create new
-                                        if (p != str_to_LTMs->end())
-                                        {
-                                            l_ltm_value->val_lti.val_value = p->second;
-                                        }
-                                        else
-                                        {
-                                            // create new ltm
-                                            l_ltm_temp = new ltm_object;
-                                            l_ltm_temp->slots = NIL;
-                                            //                                        l_ltm_temp->soar_id = NIL;
+                                // definitely a new ltm
+                                newbies->push_back(l_ltm_temp);
 
-                                            if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
-                                            {
-                                                l_ltm_temp->lti_id = static_cast<uint64_t>(lexer->current_lexeme.int_val);
-                                                /* May want to verify that this is a legitimate id in the smem database */
-                                                //l_ltm_temp->lti_id = lti_exists(static_cast<uint64_t>(lexer->current_lexeme.int_val));
-                                                //if (l_ltm_temp->lti_id == NIL)
-                                                //{
-                                                //    good_at = false;
-                                                //    delete l_ltm_temp;
-                                                //    delete l_ltm_value;
-                                                //    l_ltm_temp = NULL;
-                                                //    l_ltm_value = NULL;
-                                                //}
+                                // the new ltm is our parent for this set of values (or further dots)
+                                l_ltm_intermediate_parent = l_ltm_temp;
+                                l_ltm_temp = NULL;
 
-                                            } else {
-                                                l_ltm_temp->lti_id = NIL;
-                                            }
-                                            if (l_ltm_temp)
-                                            {
-                                                // associate with value
-                                                l_ltm_value->val_lti.val_value = l_ltm_temp;
+                                // get the next attribute
+                                lexer->get_lexeme();
+                                l_ltm_attr = parse_constant_attr(&(lexer->current_lexeme));
 
-                                                // add to ltms
-                                                (*str_to_LTMs)[temp_key2] = l_ltm_temp;
-
-                                                // possibly a newbie (could be a self-loop)
-                                                newbies->insert(l_ltm_temp);
-                                            }
-                                        }
-                                    } else {
-                                        /* Bad clause.  Print it out */
-                                        thisAgent->outputManager->printa_sf(thisAgent, "Value of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
-                                    }
-                                }
-
-                                if (l_ltm_value != NIL)
-                                {
-                                    // consume
-                                    lexer->get_lexeme();
-
-                                    // add to appropriate slot
-                                    l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
-                                    if (first_value && !l_ltm_slot->empty())
-                                    {
-                                        // in the case of a repeated attribute, remove ref here to avoid leak
-                                        thisAgent->symbolManager->symbol_remove_ref(&l_ltm_attr);
-                                    }
-                                    l_ltm_slot->push_back(l_ltm_value);
-
-                                    // if this was the last attribute
-                                    if (lexer->current_lexeme.type == R_PAREN_LEXEME)
-                                    {
-                                        return_val = true;
-                                        lexer->get_lexeme();
-                                        l_ltm_value = NIL;
-                                    }
-                                    first_value = false;
-                                }
+                                // consume attribute
+                                lexer->get_lexeme();
                             }
-                            while (l_ltm_value != NIL);
-                        }
-                        else
-                        {
-                            thisAgent->outputManager->printa_sf(thisAgent, "Attribute of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
+
+                            if (l_ltm_attr != NIL)
+                            {
+                                bool first_value = true;
+
+                                do
+                                {
+                                    // value by type
+                                    l_ltm_value = NIL;
+                                    if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
+                                    {
+                                        l_ltm_value = new ltm_value;
+                                        l_ltm_value->val_const.val_type = value_const_t;
+                                        l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(static_cast<const char*>(lexer->current_lexeme.string()));
+                                    }
+                                    else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
+                                    {
+                                        l_ltm_value = new ltm_value;
+                                        l_ltm_value->val_const.val_type = value_const_t;
+                                        l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_int_constant(lexer->current_lexeme.int_val);
+                                    }
+                                    else if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
+                                    {
+                                        l_ltm_value = new ltm_value;
+                                        l_ltm_value->val_const.val_type = value_const_t;
+                                        l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
+                                    }
+                                    else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
+                                    {
+                                        bool mistakenLTI = false;
+                                        if (lexer->current_lexeme.type == AT_LEXEME)
+                                        {
+                                            lexer->get_lexeme();
+                                            if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
+                                            {
+                                                std::string fixedString("|@");
+                                                fixedString.append(lexer->current_lexeme.string());
+                                                fixedString.push_back('|');
+                                                l_ltm_value = new ltm_value;
+                                                l_ltm_value->val_const.val_type = value_const_t;
+                                                l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_str_constant(fixedString.c_str());
+                                                mistakenLTI = true;
+                                            } else {
+                                                good_at = (lexer->current_lexeme.type == INT_CONSTANT_LEXEME);
+                                            }
+                                        }
+
+                                        if (good_at && !mistakenLTI)
+                                        {
+                                            // create new value
+                                            l_ltm_value = new ltm_value;
+                                            l_ltm_value->val_lti.val_type = value_lti_t;
+
+                                            // get key
+                                            if (lexer->current_lexeme.type == VARIABLE_LEXEME)
+                                            {
+                                                temp_key2.assign(lexer->current_lexeme.string());
+                                            } else {
+                                                assert ((lexer->current_lexeme.type == INT_CONSTANT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME));
+                                                temp_key2.clear();
+                                                get_lti_name(static_cast<uint64_t>(lexer->current_lexeme.int_val), temp_key2);
+                                            }
+
+                                            // search for an existing ltm
+                                            str_to_ltm_map::iterator p = str_to_LTMs->find((temp_key2));
+
+                                            // if exists, point; else create new
+                                            if (p != str_to_LTMs->end())
+                                            {
+                                                l_ltm_value->val_lti.val_value = p->second;
+                                            }
+                                            else
+                                            {
+                                                // create new ltm
+                                                l_ltm_temp = new ltm_object;
+                                                l_ltm_temp->slots = NIL;
+                                                //                                        l_ltm_temp->soar_id = NIL;
+
+                                                if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
+                                                {
+                                                    l_ltm_temp->lti_id = static_cast<uint64_t>(lexer->current_lexeme.int_val);
+                                                    /* May want to verify that this is a legitimate id in the smem database */
+                                                    //l_ltm_temp->lti_id = lti_exists(static_cast<uint64_t>(lexer->current_lexeme.int_val));
+                                                    //if (l_ltm_temp->lti_id == NIL)
+                                                    //{
+                                                    //    good_at = false;
+                                                    //    delete l_ltm_temp;
+                                                    //    delete l_ltm_value;
+                                                    //    l_ltm_temp = NULL;
+                                                    //    l_ltm_value = NULL;
+                                                    //}
+
+                                                } else {
+                                                    l_ltm_temp->lti_id = NIL;
+                                                }
+                                                if (l_ltm_temp)
+                                                {
+                                                    // associate with value
+                                                    l_ltm_value->val_lti.val_value = l_ltm_temp;
+
+                                                    // add to ltms
+                                                    (*str_to_LTMs)[temp_key2] = l_ltm_temp;
+
+                                                    // possibly a newbie (could be a self-loop)
+                                                    newbies->push_back(l_ltm_temp);
+                                                }
+                                            }
+                                        } else {
+                                            /* Bad clause.  Print it out */
+                                            thisAgent->outputManager->printa_sf(thisAgent, "Value of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
+                                        }
+                                    }
+
+                                    if (l_ltm_value != NIL)
+                                    {
+                                        // consume
+                                        lexer->get_lexeme();
+
+                                        // add to appropriate slot
+                                        l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
+                                        if (first_value && !l_ltm_slot->empty())
+                                        {
+                                            // in the case of a repeated attribute, remove ref here to avoid leak
+                                            thisAgent->symbolManager->symbol_remove_ref(&l_ltm_attr);
+                                        }
+                                        l_ltm_slot->push_back(l_ltm_value);
+
+                                        // if this was the last attribute
+                                        if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                        {
+                                            return_val = true;
+                                            lexer->get_lexeme();
+                                            l_ltm_value = NIL;
+                                        }
+                                        first_value = false;
+                                    }
+                                }
+                                while (l_ltm_value != NIL);
+                            }
+                            else
+                            {
+                                thisAgent->outputManager->printa_sf(thisAgent, "Attribute of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
+                            }
                         }
                     }
                 }
