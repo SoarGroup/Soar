@@ -82,8 +82,6 @@ typedef struct condition_struct
     bt_info                     bt;             /* backtrace info for top-level positive cond's:
                                                    used by chunking and the rete */
     reorder_info                reorder;        /* used only during reordering */
-    struct condition_struct*    counterpart;    /* pointer from variablized condition to instantiated condtion.
-                                                   Used only during chunking and not guaranteed to exist */
     instantiation*              inst;           /* ID for the instantiation where this condition
                                                    came to the grounds from.  This is used by
                                                    EBC's explain mechanism to properly link
@@ -101,10 +99,10 @@ typedef struct condition_struct
 
 condition*  make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
 uint32_t    hash_condition(agent* thisAgent, condition* cond);
-condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
+condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pStripGoalImpasseTests = false);
 void        copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
-                         bool pCopyInstantiation = false, bool pLinkTests = false, bool pStripGoalImpasseTests = false);
+                         bool pCopyInstantiation = false, bool pStripGoalImpasseTests = false);
 void        deallocate_condition(agent* thisAgent, condition*& cond);
 void        deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity = false);
 

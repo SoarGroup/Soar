@@ -150,15 +150,11 @@ class Explanation_Based_Chunker
         tc_number           m_results_tc;
         preference*         m_extra_results;
         bool                m_reliable;
-        condition*          m_inst_top;
-        condition*          m_inst_bottom;
         condition*          m_vrblz_top;
         action*             m_rhs;
         production*         m_prod;
         instantiation*      m_chunk_inst;
         Symbol*             m_prod_name;
-        condition*          m_saved_justification_top;
-        condition*          m_saved_justification_bottom;
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
         EBCFailureType      m_failure_type;
@@ -210,15 +206,10 @@ class Explanation_Based_Chunker
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
         void            make_clones_of_results();
-        void            create_instantiated_counterparts();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
-        void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
-        void            set_instantiated_conds_to_counterparts();
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
         void            clean_up();
-        void            save_conditions_for_reversal();
-        void            revert_chunk_to_justification();
         void            add_chunk_to_rete();
 
         /* Dependency analysis methods */
@@ -273,9 +264,9 @@ class Explanation_Based_Chunker
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
-        void reinstantiate_condition_list(condition* top_cond, bool pDeallocateCounterparts = true);
+        condition* reinstantiate_condition_list(condition* top_cond);
         void reinstantiate_actions(action* pActionList);
-        void reinstantiate_current_rule();
+        condition* reinstantiate_current_rule();
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

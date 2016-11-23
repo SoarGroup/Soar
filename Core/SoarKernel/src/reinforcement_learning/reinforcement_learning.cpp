@@ -601,7 +601,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         /* --- Assign a new instantiation ID --- */
         /* We need to set a chunk ID because variablization uses it to assign new identities */
         thisAgent->explanationBasedChunker->set_new_chunk_id();
-        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true, true);
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
@@ -612,7 +612,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false, NULL, NULL))
+        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
         {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 

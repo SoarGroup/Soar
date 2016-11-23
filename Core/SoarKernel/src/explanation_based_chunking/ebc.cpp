@@ -100,15 +100,11 @@ void Explanation_Based_Chunker::reinit()
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_inst_top                          = NULL;
-    m_inst_bottom                       = NULL;
     m_vrblz_top                         = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;
     m_prod_name                         = NULL;
-    m_saved_justification_top           = NULL;
-    m_saved_justification_bottom        = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
     local_singleton_superstate_identity = NULL;

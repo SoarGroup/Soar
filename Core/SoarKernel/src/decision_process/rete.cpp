@@ -9043,7 +9043,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
 
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
-        id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, false, true, &removed_goal_test, &removed_impasse_test);
+        id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, true, &removed_goal_test, &removed_impasse_test);
         thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
 
         /* --- collect all cond's whose id test matches this one --- */

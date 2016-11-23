@@ -182,7 +182,6 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
         cond->inst = chunkInstantiation;
-        cond->counterpart->inst = chunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 
@@ -302,7 +301,7 @@ void chunk_record::print_for_explanation_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");

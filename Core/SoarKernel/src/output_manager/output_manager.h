@@ -104,7 +104,6 @@ class Output_Manager
         void condition_to_string(agent* thisAgent, condition* cond, std::string &destString);
         void condition_cons_to_string(agent* thisAgent, cons* c, std::string &destString);
         void condition_list_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
-        void condition_list_counterparts_to_string(agent* thisAgent, condition* top_cond, std::string &destString);
         void cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
         void cond_actions_to_string(agent* thisAgent, condition* top_cond, action* top_action, std::string &destString);
         void cond_results_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString);
@@ -312,6 +311,5 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
  *       %8   Working Memory
- *       %9   condition lists's counterparts
    ------------------------------------*/
 #endif /* OUTPUT_MANAGER_H_ */

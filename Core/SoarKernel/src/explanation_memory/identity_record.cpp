@@ -44,15 +44,11 @@ identity_record::~identity_record()
 }
 
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-            pTest = pTest->eq_test;
-    }
-    if (pInstantiatedTest && pInstantiatedTest->type == CONJUNCTIVE_TEST)
-    {
-        pInstantiatedTest = pInstantiatedTest->eq_test;
+        pTest = pTest->eq_test;
     }
     if (test_has_referent(pTest)) {
         if (pTest->identity)
@@ -87,12 +83,9 @@ void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t
             add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
             thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
-            test id_test_without_goal_test = NULL;
-            id_test_without_goal_test = copy_test(thisAgent, lCond->data.tests.id_test, false, false, false, true);
-            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            deallocate_test(thisAgent, id_test_without_goal_test);
+            add_identities_in_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
         }
     }
 }

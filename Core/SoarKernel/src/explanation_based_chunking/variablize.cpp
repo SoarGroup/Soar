@@ -167,9 +167,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
             thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
 
             pTest->eq_test->identity = var_info->identity;
-            pTest->eq_test->counterpart_test->identity = var_info->identity;
-            pTest->eq_test->counterpart_test->counterpart_test = NULL;
-            pTest->eq_test->counterpart_test = NULL;
             dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
         } else {
             /* Create a new variable.  If constant is being variablized just used
@@ -203,9 +200,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
             thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
 
             pTest->eq_test->identity = var_info->identity;
-            pTest->eq_test->counterpart_test->identity = var_info->identity;
-            pTest->eq_test->counterpart_test->counterpart_test = NULL;
-            pTest->eq_test->counterpart_test = NULL;
             dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
         }
         dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
@@ -245,9 +239,6 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
 
         t->identity = found_variablization->identity;
-        t->counterpart_test->identity = found_variablization->identity;
-        t->counterpart_test->counterpart_test = NULL;
-        t->counterpart_test = NULL;
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", found_variablization->variable_sym, found_variablization->identity);
     }
     else
@@ -537,18 +528,17 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pDeallocateCounterparts)
+condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
 {
     dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of all LHS Condition list:\n");
-    condition* last_cond, *lCond, *last_counterpart;
-    last_cond = NULL;
-    deallocate_condition_list(thisAgent, m_inst_top);
+
+    condition* last_cond, *lCond, *inst_top;
+    last_cond = inst_top = lCond = NULL;
+
     for (condition* cond = m_vrblz_top; cond != NIL; cond = cond->next)
     {
         dprint(DT_REINSTANTIATE, "Reversing variablization of condition: %l\n", cond);
-//        last_counterpart = cond->counterpart;
-//        deallocate_condition(thisAgent, last_counterpart);
-        cond->counterpart = NULL;
+
         if (m_rule_type == ebc_justification)
         {
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
@@ -563,16 +553,10 @@ void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond
                     reinstantiate_test(ncond->data.tests.attr_test);
                     reinstantiate_test(ncond->data.tests.value_test);
                 }
-//                reinstantiate_condition_list(cond->data.ncc.top, false);
-//                last_counterpart->data.ncc.top = NULL;
             }
-            lCond = copy_condition(thisAgent, cond, false, false, true);
-            cond->counterpart = lCond;
-            lCond->counterpart = cond;
+            lCond = copy_condition(thisAgent, cond, false, false);
         } else {
-            lCond = copy_condition(thisAgent, cond, false, false, true);
-            cond->counterpart = lCond;
-            lCond->counterpart = cond;
+            lCond = copy_condition(thisAgent, cond, false, false);
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
                 reinstantiate_test(lCond->data.tests.id_test);
@@ -585,21 +569,29 @@ void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond
                     reinstantiate_test(ncond->data.tests.attr_test);
                     reinstantiate_test(ncond->data.tests.value_test);
                 }
-//                reinstantiate_condition_list(lCond->data.ncc.top, false);
-//                last_counterpart->data.ncc.top = NULL;
             }
         }
-
 
         if (last_cond)
         {
             last_cond->next = lCond;
-            lCond->prev = last_cond;
+        } else {
+            inst_top = lCond;
         }
+        lCond->prev = last_cond;
         last_cond = lCond;
     }
-    dprint_header(DT_REINSTANTIATE, PrintAfter, "Done reversing variablization of LHS condition list.\n");
+    if (last_cond)
+    {
+        last_cond->next = NULL;
+    }
+    else
+    {
+        inst_top = NULL;
+    }
 
+    dprint_header(DT_REINSTANTIATE, PrintAfter, "Done reversing variablization of LHS condition list.\n");
+    return inst_top;
 }
 
 void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
@@ -612,7 +604,7 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
 
-        for (c = fl->rest; c != NIL; c = c->rest)
+        for (c = fl->rest; c != NULL; c = c->rest)
         {
             dprint(DT_REINSTANTIATE, "Reversing variablization of RHS value %r\n", static_cast<char*>(c->first));
             reinstantiate_rhs_symbol(static_cast<char*>(c->first));
@@ -651,18 +643,13 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_current_rule()
+condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
     dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_vrblz_top);
-    dprint(DT_REINSTANTIATE, "m_inst_top before reinstantiation: \n%1", m_inst_top);
-    dprint(DT_REINSTANTIATE, "m_vrblz_top counterparts: \n%1", m_vrblz_top->counterpart);
 
-    reinstantiate_condition_list(m_vrblz_top);
-    set_instantiated_conds_to_counterparts();
+    condition* returnConds = reinstantiate_condition_list(m_vrblz_top);
 
     dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_vrblz_top);
-    dprint(DT_REINSTANTIATE, "m_inst_top after reinstantiation: \n%1", m_inst_top);
-    dprint(DT_REINSTANTIATE, "m_vrblz_top counterparts: \n%9", m_vrblz_top);
 
     if (m_rule_type == ebc_justification)
     {
@@ -670,5 +657,7 @@ void Explanation_Based_Chunker::reinstantiate_current_rule()
         reinstantiate_actions(m_rhs);
         dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
     }
+
+    return returnConds;
 }
 

@@ -348,20 +348,10 @@ bool action_is_in_tc(action* a, tc_number tc)
  * so EBC can first try to fix unconnected conditions before creating
  * the production. */
 
-void fix_inst_pointers(condition**   lhs_top, condition** lhs_inst_top, condition** lhs_inst_bottom)
-{
-    *lhs_inst_top = (*lhs_top)->counterpart;
-    condition* lCond = *lhs_inst_top;
-    while (lCond->next) lCond = lCond->next;
-    *lhs_inst_bottom = lCond;
-}
-
 bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                                      condition**   lhs_inst_top,
-                                      condition**   lhs_inst_bottom,
                               matched_symbol_list*  ungrounded_syms,
                                      bool           add_ungrounded_lhs,
                                      bool           add_ungrounded_rhs)
@@ -375,8 +365,6 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
     dprint_header(DT_REORDERER, PrintBefore, "Reordering and validating:\n");
     dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
-    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
-    dprint_noprefix(DT_REORDERER, "%9", *lhs_top);
     dprint_noprefix(DT_REORDERER, "Actions:\n");
     dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
 
@@ -388,15 +376,11 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         if (add_ungrounded_lhs)
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
-            if (lhs_inst_top)
-                fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
         }
         thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
     lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
-    if (lhs_inst_top)
-        fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
     if (!lhs_good)
     {
         thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");

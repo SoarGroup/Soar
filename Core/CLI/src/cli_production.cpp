@@ -1350,7 +1350,7 @@ bool tests_are_equal_with_bindings(agent* thisAgent, test t1, test test2, cons**
     if ((!test_includes_goal_or_impasse_id_test(t1, true, false)) &&
             test_includes_goal_or_impasse_id_test(test2, true, false))
     {
-        t2 = copy_test(thisAgent, test2, false, false, false, true);
+        t2 = copy_test(thisAgent, test2, false, false, true);
     }
     else
     {

@@ -80,7 +80,7 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     cond->type = POSITIVE_CONDITION;
     cond->already_in_tc = false;
     cond->test_for_acceptable_preference = false;
-    cond->next = cond->prev = cond->counterpart = NULL;
+    cond->next = cond->prev = NULL;
     cond->inst = NULL;
     cond->bt.wme_ = NULL;
     cond->bt.level = NO_WME_LEVEL;
@@ -94,7 +94,7 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests, bool pStripGoalImpasseTests)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pStripGoalImpasseTests)
 {
     condition* New;
 
@@ -109,28 +109,21 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     {
         case POSITIVE_CONDITION:
             New->bt = cond->bt;
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case NEGATIVE_CONDITION:
-            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
-            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
-            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+            New->data.tests.id_test = copy_test(thisAgent, cond->data.tests.id_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
+            New->data.tests.attr_test = copy_test(thisAgent, cond->data.tests.attr_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
+            New->data.tests.value_test = copy_test(thisAgent, cond->data.tests.value_test, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
             New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
             break;
         case CONJUNCTIVE_NEGATION_CONDITION:
             copy_condition_list(thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
-                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false, pLinkTests, false);  // I don't think we'd want to strip state tests from NCCs
+                &(New->data.ncc.bottom), pUnify_variablization_identity, pStripLiteralConjuncts, false, false);  // I don't think we'd want to strip state tests from NCCs
             break;
-    }
-    if (pLinkTests)
-    {
-        New->counterpart = cond;
-        cond->counterpart = New;
-    } else {
-        New->counterpart = cond->counterpart;
     }
     return New;
 }
@@ -147,7 +140,6 @@ void copy_condition_list(agent* thisAgent,
                          bool pUnify_variablization_identity,
                          bool pStripLiteralConjuncts,
                          bool pCopyInstantiation,
-                         bool pLinkTests,
                          bool pStripGoalImpasseTests)
 {
     condition* New, *prev;
@@ -155,7 +147,7 @@ void copy_condition_list(agent* thisAgent,
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests, pStripGoalImpasseTests);
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
         if (pCopyInstantiation)
         {
             New->inst = top_cond->inst;

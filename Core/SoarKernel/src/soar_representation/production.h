@@ -159,8 +159,6 @@ bool reorder_and_validate_lhs_and_rhs(agent*                    thisAgent,
                                       condition**               lhs_top,
                                       action**                  rhs_top,
                                       bool                      reorder_nccs,
-                                      condition**               lhs_inst_top,
-                                      condition**               lhs_inst_bottom,
                                       matched_symbol_list*      ungrounded_syms = NULL,
                                       bool                      add_ungrounded_lhs = false,
                                       bool                      add_ungrounded_rhs = false

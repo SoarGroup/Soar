@@ -660,8 +660,6 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
-    dprint_noprefix(DT_REORDERER, "%9", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     dprint_header(DT_REORDERER, PrintAfter, "= end restore saved tests =\n");
@@ -1200,7 +1198,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                                    bool reorder_nccs)
 {
     condition* remaining_conds;           /* header of dll */
-    condition* first_cond, *last_cond, *last_cond_counterpart;
+    condition* first_cond, *last_cond;
     condition* cond, *next_cond;
     condition* min_cost_conds, *chosen;
     int64_t cost = 0;
@@ -1210,7 +1208,6 @@ void reorder_simplified_conditions(agent* thisAgent,
     remaining_conds = *top_of_conds;
     first_cond = NIL;
     last_cond = NIL;
-    last_cond_counterpart = NIL;
     new_vars = NIL;
 
     /* repeat:  scan through remaining_conds
@@ -1222,7 +1219,6 @@ void reorder_simplified_conditions(agent* thisAgent,
     dprint_header(DT_REORDERER, PrintBefore, "Re-ordering simplified conditions:\n");
 //  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
-//    dprint_noprefix(DT_REORDERER, "Counterparts:\n%1", (*top_of_conds)->counterpart);
     dprint(DT_REORDERER, "Saved Tests:\n");
 //  dprint_saved_test_list (DT_REORDERER, saved_tests);
     dprint_header(DT_REORDERER, PrintAfter, "");
@@ -1338,7 +1334,6 @@ void reorder_simplified_conditions(agent* thisAgent,
         dprint(DT_REORDERER, "Before removing condition:\n%1", remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);
         dprint(DT_REORDERER, "After removing condition:\n%1", remaining_conds);
-        //dprint(DT_REORDERER, "After removing condition counterpart:\n%9", remaining_conds);
         if (!first_cond)
         {
             first_cond = chosen;
@@ -1346,10 +1341,7 @@ void reorder_simplified_conditions(agent* thisAgent,
         /* Note: args look weird on the next line, because we're really
            inserting the chosen item at the *end* of the list */
         insert_at_head_of_dll(last_cond, chosen, prev, next);
-        if (chosen->counterpart)
-            insert_at_head_of_dll(last_cond_counterpart, chosen->counterpart, prev, next);
         dprint(DT_REORDERER, "New condition list:\n%1", chosen);
-        //dprint(DT_REORDERER, "New condition list counterparts:\n%9", chosen);
 
         /* --- if a conjunctive negation, recursively reorder its conditions --- */
         if ((chosen->type == CONJUNCTIVE_NEGATION_CONDITION) && reorder_nccs)
@@ -1579,7 +1571,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
         {
             temp = cond->data.tests.id_test;
             cond->data.tests.id_test =
-                copy_test(thisAgent, temp, false, false, false, true);
+                copy_test(thisAgent, temp, false, false, true);
             deallocate_test(thisAgent, temp);
         }
     }

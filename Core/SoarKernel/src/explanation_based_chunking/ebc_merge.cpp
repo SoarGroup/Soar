@@ -93,24 +93,6 @@ inline int64_t count_conditions(condition* top_cond)
     return count;
 }
 
-inline void delete_instantiated_condition(agent* thisAgent, condition* c)
-{
-//    condition* del_cond = c->counterpart;
-    if (c->counterpart->prev)
-    {
-        c->counterpart->prev->next = c->counterpart->next;
-    } else {
-//        assert((*top_cc) == c->counterpart);
-//        *top_cc = c->counterpart->next;
-    }
-    if (c->counterpart->next)
-    {
-        c->counterpart->next->prev = c->counterpart->prev;
-    }
-    deallocate_condition(thisAgent, c->counterpart);
-    c->counterpart = NULL;
-}
-
 void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
 {
     if (!ebc_settings[SETTING_EBC_LEARNING_ON] || !ebc_settings[SETTING_EBC_MERGE]) return;
@@ -141,7 +123,6 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
                     /* -- Not at the head of the list -- */
                     dprint(DT_MERGE, "...deleting non-head item.\n");
                     last_cond->next = cond->next;
-                    delete_instantiated_condition(thisAgent, cond);
                     deallocate_condition(thisAgent, cond);
                     if (last_cond->next)
                     {
@@ -197,8 +178,6 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
     dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %i conditions! (%i - %i)\n" : "No decrease in number of conditions. [%i = (%i - %i)]\n"), cond_diff, old_num_conds, new_num_conds);
-
-    dprint_noprefix(DT_MERGE, "Counterparts:\n%1", top_cond->counterpart);
 
     clear_merge_map();
 }
