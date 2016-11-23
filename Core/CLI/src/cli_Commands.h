@@ -1690,6 +1690,7 @@ namespace cli
                     {'a', "wma",                         OPTARG_OPTIONAL},
                     {'b', "backtracing",                 OPTARG_OPTIONAL},
                     {'c', "chunks",                      OPTARG_OPTIONAL},
+                    {'C', "chunk-warnings",              OPTARG_OPTIONAL},
                     {'d', "decisions",                   OPTARG_OPTIONAL},
                     {'D', "default-productions",         OPTARG_OPTIONAL},
                     {'e', "epmem",                       OPTARG_OPTIONAL},
@@ -1770,6 +1771,19 @@ namespace cli
                             else
                             {
                                 settings.set(cli::WATCH_CHUNKS);
+                            }
+                            break;
+
+                        case 'C':
+                            options.set(cli::WATCH_CHUNK_WARNINGS);
+                            if (opt.GetOptionArgument().size())
+                            {
+                                if (!CheckOptargRemoveOrZero(opt)) return cli.SetError(opt.GetError().c_str());
+                                settings.reset(cli::WATCH_CHUNK_WARNINGS);
+                            }
+                            else
+                            {
+                                settings.set(cli::WATCH_CHUNK_WARNINGS);
                             }
                             break;
 
@@ -2078,6 +2092,7 @@ namespace cli
                 options.set(cli::WATCH_DEFAULT);
                 options.set(cli::WATCH_USER);
                 options.set(cli::WATCH_CHUNKS);
+                options.set(cli::WATCH_CHUNK_WARNINGS);
                 options.set(cli::WATCH_JUSTIFICATIONS);
                 options.set(cli::WATCH_TEMPLATES);
                 options.set(cli::WATCH_PHASES);
@@ -2091,6 +2106,7 @@ namespace cli
                 settings.reset(cli::WATCH_DEFAULT);
                 settings.reset(cli::WATCH_USER);
                 settings.reset(cli::WATCH_CHUNKS);
+                settings.reset(cli::WATCH_CHUNK_WARNINGS);
                 settings.reset(cli::WATCH_JUSTIFICATIONS);
                 settings.reset(cli::WATCH_TEMPLATES);
                 settings.reset(cli::WATCH_PHASES);
@@ -2126,9 +2142,11 @@ namespace cli
                         settings.set(cli::WATCH_WATERFALL);
                     // falls through
                     case 2:// phases, gds
-                        cli.PrintCLIMessage("Trace level 2 enabled: All phases and GDS state removals");
+                        cli.PrintCLIMessage("Trace level 2 enabled: All phases, chunk warnings and GDS state removals");
                         settings.set(cli::WATCH_PHASES);
                         settings.set(cli::WATCH_GDS_STATE_REMOVAL);
+                        settings.set(cli::WATCH_CHUNK_WARNINGS);
+
                     // falls through
                     case 1:// decisions
                         cli.PrintCLIMessage("Trace level 1 enabled: Operator decision and state changes");

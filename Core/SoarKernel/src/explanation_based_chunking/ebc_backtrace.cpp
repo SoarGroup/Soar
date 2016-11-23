@@ -417,17 +417,13 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
 void Explanation_Based_Chunker::report_local_negation(condition* c)
 {
-    if (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM])
-    {
-        // use the same code as the backtracing above
-        cons* negated_to_print = NIL;
-        push(thisAgent, c, negated_to_print);
+    cons* negated_to_print = NIL;
+    push(thisAgent, c, negated_to_print);
 
-        thisAgent->outputManager->printa(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
-        xml_begin_tag(thisAgent, kTagLocalNegation);
-        print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
-        xml_end_tag(thisAgent, kTagLocalNegation);
+    thisAgent->outputManager->printa(thisAgent, "\n*** Won't learn rule because of negative reasoning that cannot be represented.***\n");
+    xml_begin_tag(thisAgent, kTagLocalNegation);
+    print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
+    xml_end_tag(thisAgent, kTagLocalNegation);
 
-        free_list(thisAgent, negated_to_print);
-    }
+    free_list(thisAgent, negated_to_print);
 }

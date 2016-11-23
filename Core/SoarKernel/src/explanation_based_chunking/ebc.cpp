@@ -127,37 +127,37 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_EXCEPT] &&
             member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was flagged to prevent learning";
             thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
-//            chunk_history += "Did not attempt to learn a chunk for match of ";
-//            chunk_history += inst->prod_name->to_string();
-//            chunk_history += " because state ";
-//            chunk_history += inst->match_goal->to_string();
-//            chunk_history += " was flagged to prevent learning (chunk all-except)\n";
+
         }
-        m_learning_on_for_instantiation = false;
+        //            chunk_history += "Did not attempt to learn a chunk for match of ";
+        //            chunk_history += inst->prod_name->to_string();
+        //            chunk_history += " because state ";
+        //            chunk_history += inst->match_goal->to_string();
+        //            chunk_history += " was flagged to prevent learning (chunk all-except)\n";        m_learning_on_for_instantiation = false;
         return false;
     }
 
     if (ebc_settings[SETTING_EBC_ONLY]  &&
             !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_SYSPARAM])
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             std::ostringstream message;
             message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " was not flagged for learning";
             thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
-//            chunk_history += "Did not attempt to learn a chunk for match of ";
-//            chunk_history += inst->prod_name->to_string();
-//            chunk_history += " because state ";
-//            chunk_history += inst->match_goal->to_string();
-//            chunk_history += " was not flagged for learning.  (chunk only)\n";
         }
+        //            chunk_history += "Did not attempt to learn a chunk for match of ";
+        //            chunk_history += inst->prod_name->to_string();
+        //            chunk_history += " because state ";
+        //            chunk_history += inst->match_goal->to_string();
+        //            chunk_history += " was not flagged for learning.  (chunk only)\n";
         m_learning_on_for_instantiation = false;
         return false;
     }
@@ -168,10 +168,13 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
     if (ebc_settings[SETTING_EBC_BOTTOM_ONLY]  &&
             !inst->match_goal->id->allow_bottom_up_chunks)
     {
-        std::ostringstream message;
-        message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " is not the bottom state";
-        thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
-        xml_generate_verbose(thisAgent, message.str().c_str());
+        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            std::ostringstream message;
+            message << "\nWill not attempt to learn a chunk for match of " << inst->prod_name->to_string() << " because state " << inst->match_goal->to_string() << " is not the bottom state";
+            thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
+            xml_generate_verbose(thisAgent, message.str().c_str());
+        }
 //        chunk_history += "Did not attempt to learn a chunk for match of ";
 //        chunk_history += inst->prod_name->to_string();
 //        chunk_history += " because state ";
@@ -373,7 +376,7 @@ void Explanation_Based_Chunker::set_up_rule_name()
     if (m_should_print_name)
     {
         thisAgent->outputManager->start_fresh_line(thisAgent);
-        thisAgent->outputManager->printa_sf(thisAgent, "\nForming rule %y\n", m_prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nLearning new rule %y\n", m_prod_name);
         xml_begin_tag(thisAgent, kTagLearning);
         xml_begin_tag(thisAgent, kTagProduction);
         xml_att_val(thisAgent, kProduction_Name, m_prod_name);

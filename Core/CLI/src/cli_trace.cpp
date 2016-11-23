@@ -71,6 +71,7 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
             PrintCLIMessage_Justify("Preferences", (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM] ? "on" : "off"), 60, "-r, --preferences");
             PrintCLIMessage_Section("Additional Trace Messages", 60);
             PrintCLIMessage_Justify("Chunking dependency analysis", (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off"), 60, "-b, --backtracing");
+            PrintCLIMessage_Justify("Chunking warnings", (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM] ? "on" : "off"), 60, "-C, --chunk-warnings");
             PrintCLIMessage_Justify("Goal dependency set changes", (thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM] ? "on" : "off"), 60, "-G, --gds-wmes");
             PrintCLIMessage_Justify("Episodic memory recording and queries", (thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM] ? "on" : "off"), 60, "-e, --epmem");
             PrintCLIMessage_Justify("Numeric preference calculations", (thisAgent->trace_settings[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off"), 60, "-i, --indifferent-selection");
@@ -167,6 +168,13 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
         traceFeedback.append("when chunks fire.\n");
     }
     
+    if (options.test(WATCH_CHUNK_WARNINGS))
+    {
+        set_trace_setting(thisAgent, TRACE_CHUNKS_WARNINGS_SYSPARAM, settings.test(WATCH_CHUNK_WARNINGS));
+        traceFeedback.append(settings.test(WATCH_CHUNK_WARNINGS) ? "Now printing " : "Will not print ");
+        traceFeedback.append("warnings when issues detected while learning rules.\n");
+    }
+
     if (options.test(WATCH_DECISIONS))
     {
         set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings.test(WATCH_DECISIONS));
@@ -298,14 +306,14 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
                 set_trace_setting(thisAgent, TRACE_CHUNKS_SYSPARAM, false);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
-                traceFeedback.append("Now printing the names of chunks and justifications that fire.\n");
+                traceFeedback.append("Now printing the names of chunks and justifications that are learned and any chunking issues detected.\n");
                 break;
             case 2:
                 set_trace_setting(thisAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_CHUNKS_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
-                traceFeedback.append("Now printing the full chunks and justifications that are learned.\n");
+                traceFeedback.append("Now printing the full chunks and justifications that are learned and any chunking issues detected.\n");
                 break;
         }
     }

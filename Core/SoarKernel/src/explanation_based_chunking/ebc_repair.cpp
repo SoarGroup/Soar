@@ -438,17 +438,20 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
         if (((m_failure_type == ebc_failed_unconnected_conditions) && ebc_settings[SETTING_EBC_REPAIR_LHS]) ||
             ((m_failure_type == ebc_failed_reordering_rhs) && ebc_settings[SETTING_EBC_REPAIR_RHS]))
         {
-            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing);
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
             lRepairManager->repair_rule(m_vrblz_top, unconnected_syms);
             delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
             unconnected_syms = new matched_symbol_list();
-            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating);
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_validating, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             if (reorder_and_validate_lhs_and_rhs(thisAgent, &m_vrblz_top, &m_rhs, false, unconnected_syms, false, false))
             {
                 delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
-                print_current_built_rule("Repaired rule:");
+                if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+                {
+                    thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
+                    print_current_built_rule("Repaired rule:");
+                }
                 #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->increment_stat_chunks_repaired();
                 #endif
@@ -458,7 +461,7 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
             thisAgent->explanationMemory->increment_stat_could_not_repair();
             #endif
         }
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
         return false;
     }

@@ -193,6 +193,7 @@ namespace cli
         WATCH_DEFAULT,
         WATCH_USER,
         WATCH_CHUNKS,
+        WATCH_CHUNK_WARNINGS,
         WATCH_JUSTIFICATIONS,
         WATCH_TEMPLATES,
         WATCH_WMES,

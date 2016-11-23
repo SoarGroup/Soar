@@ -481,10 +481,10 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
             {
                 // this chunk will be overgeneral! don't create it
 
-                // SBW 5/07
-                // report what local negations are preventing the chunk,
-                // and set flags like we saw a ^quiescence t so it won't be created
-                report_local_negation(cc->cond);    // in backtrace.cpp
+                if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+                {
+                    report_local_negation(cc->cond);
+                }
                 m_reliable = false;
             }
             has_local_negation = true;
@@ -715,13 +715,13 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             if (ebc_settings[SETTING_EBC_INTERRUPT])
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule.";
+                thisAgent->reason_for_stopping = "Soar learned a new rule.";
 
             }
             if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && m_prod->explain_its_chunks && thisAgent->explanationMemory->isRecordingChunk())
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule from a watched production.";
+                thisAgent->reason_for_stopping = "Soar learned a new rule from a watched production.";
             }
             //            chunk_history += "Successfully created chunk\n";
             //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
@@ -821,7 +821,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
     if (chunks_this_d_cycle >= max_chunks)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->outputManager->settings[OM_WARNINGS]);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_chunks();
@@ -832,8 +832,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->outputManager->settings[OM_WARNINGS]);
-        thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+            thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
+        }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
         #endif
@@ -888,8 +891,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
     if (!m_vrblz_top)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
+        }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
@@ -963,13 +969,15 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         {
             /* Could not re-order chunk, so we create a justification for the results instead */
             m_rule_type = ebc_justification;
-            thisAgent->outputManager->printa_sf(thisAgent, "Learning a justification instead of a variablized rule.");
+            if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
+            }
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_chunks_reverted();
             #endif
         } else if (ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS]){
-            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification);
-
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->cancel_chunk_record();

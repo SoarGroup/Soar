@@ -19,7 +19,7 @@
 
 void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorType, const char* pString1, const char* pString2)
 {
-    if (!thisAgent->outputManager->settings[OM_WARNINGS]) return;
+    if (!thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]) return;
     switch (pErrorType)
     {
         case ebc_failed_reordering_rhs:

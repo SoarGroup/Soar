@@ -666,10 +666,10 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     if (tests_to_restore)
     {
-        if (thisAgent->outputManager->settings[OM_WARNINGS])
+        dprint_saved_test_list(DT_DEBUG, tests_to_restore);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
-            dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
@@ -907,7 +907,7 @@ cons* collect_root_variables(agent* thisAgent,
     }
 
     /* --- make sure each root var has some condition with goal/impasse --- */
-    if (allow_printing_warnings && thisAgent->outputManager->settings[OM_WARNINGS])
+    if (allow_printing_warnings && (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]))
     {
         for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
@@ -1251,7 +1251,7 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&
-                thisAgent->outputManager->settings[OM_WARNINGS])
+                (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]))
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "Warning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
