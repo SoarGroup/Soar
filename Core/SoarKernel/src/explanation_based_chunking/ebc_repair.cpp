@@ -393,7 +393,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
 
     /* Create conditions based on set of wme's compiled */
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
-    condition* new_cond, *new_inst_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
+    condition* new_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
     while (prev_cond->next != NULL)
         prev_cond = prev_cond->next;
 
@@ -403,7 +403,6 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
     {
         lWME = (*it);
         new_cond = make_condition_from_wme(lWME);
-        new_inst_cond = copy_condition(thisAgent, new_cond);
         dprint(DT_REPAIR, "   Variablizing %l\n", new_cond);
         /* Variablize and add to condition list */
         variablize_connecting_sti(new_cond->data.tests.id_test);

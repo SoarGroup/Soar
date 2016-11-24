@@ -131,7 +131,7 @@ class Symbol_Manager {
             ({debug_store_refcount(sym, false); \
                 symbol_remove_ref_func(sym);})
 
-        inline void symbol_remove_ref_func(Symbol*& x)
+        inline void symbol_remove_ref_func(Symbol** x)
         #else
         inline void symbol_remove_ref(Symbol** x)
         #endif
