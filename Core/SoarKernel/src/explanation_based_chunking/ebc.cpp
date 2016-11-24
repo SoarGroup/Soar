@@ -140,6 +140,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         //            chunk_history += " because state ";
         //            chunk_history += inst->match_goal->to_string();
         //            chunk_history += " was flagged to prevent learning (chunk all-except)\n";        m_learning_on_for_instantiation = false;
+        m_learning_on_for_instantiation = false;
         return false;
     }
 
