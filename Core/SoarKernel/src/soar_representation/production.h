@@ -169,22 +169,19 @@ production* make_production(agent* thisAgent, ProductionType type,
                                    condition** lhs_top, action** rhs_top,
                                    bool reorder_nccs, preference* results);
 
-void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer);
+void deallocate_production(agent* thisAgent, production* prod);
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign = true, bool cacheProdForExplainer = false);
-void excise_all_productions_of_type(agent* thisAgent,
-                                    byte type,
-                                    bool print_sharp_sign);
-void excise_all_productions(agent* thisAgent,
-                            bool print_sharp_sign);
+void excise_all_productions_of_type(agent* thisAgent, byte type, bool print_sharp_sign, bool cacheProdForExplainer = false);
+void excise_all_productions(agent* thisAgent, bool print_sharp_sign, bool cacheProdForExplainer = false);
 
 inline void production_add_ref(production* p)
 {
     (p)->reference_count++;
 }
 
-inline void production_remove_ref(agent* thisAgent, production* p, bool cacheProdForExplainer)
+inline void production_remove_ref(agent* thisAgent, production* p)
 {
-    if (--(p->reference_count) == 0) deallocate_production(thisAgent, p, cacheProdForExplainer);
+    if (--(p->reference_count) == 0) deallocate_production(thisAgent, p);
 }
 
 #endif

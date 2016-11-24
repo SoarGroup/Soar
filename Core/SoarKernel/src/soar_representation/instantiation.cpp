@@ -1429,9 +1429,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
             if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
             {
+                /* We are about to remove a justification that has not been excised from the rete.
+                 * Normally, justifications are excised as soon as they don't have any matches in
+                 * rete.cpp, but we found situations where it would remove the production here
+                 * and then later try to excise it when it no longer matched. */
                 excise_production(thisAgent, temp->prod, false, true);
             } else {
-                production_remove_ref(thisAgent, temp->prod, true);
+                production_remove_ref(thisAgent, temp->prod);
             }
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
@@ -1510,7 +1514,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
         (prod->reference_count > 1))
     {
-        excise_production(thisAgent, prod, false);
+        excise_production(thisAgent, prod, false, true);
     }
     else if (prod->type == CHUNK_PRODUCTION_TYPE)
     {

@@ -487,7 +487,6 @@ void Explanation_Memory::save_excised_production(production* pProd)
     if (lProductionRecord->was_generated())
     {
         cached_production->insert(lProductionRecord);
-        excise_production_id(pProd->p_id);
     } else {
         delete lProductionRecord;
     }

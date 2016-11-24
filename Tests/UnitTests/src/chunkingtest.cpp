@@ -344,7 +344,7 @@ void ChunkTest::tearDown()
 void ChunkTest::testLearn()
 {
     source("testLearn.soar");
-    pAgent->ExecuteCommandLine("chunk unflagged");
+    pAgent->ExecuteCommandLine("chunk except");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;
@@ -365,7 +365,7 @@ void ChunkTest::testLearn()
 
     // turn learn except on
     pAgent->ExecuteCommandLine("init");
-    pAgent->ExecuteCommandLine("chunk unflagged");
+    pAgent->ExecuteCommandLine("chunk except");
     pKernel->RunAllAgentsForever();
     {
         sml::ClientAnalyzedXML response;

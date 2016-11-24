@@ -483,7 +483,7 @@ production* make_production(agent*          thisAgent,
     return p;
 }
 
-void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer)
+void deallocate_production(agent* thisAgent, production* prod)
 {
     if (prod->instantiations)
     {
@@ -493,33 +493,16 @@ void deallocate_production(agent* thisAgent, production* prod, bool cacheProdFor
         abort_with_fatal_error(thisAgent, msg);
     }
     dprint_header(DT_DEALLOCATES, PrintBoth, "Deallocating production %y.\n", prod->name);
-    #ifdef BUILD_WITH_EXPLAINER
-    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
-    {
-        dprint(DT_EXPLAIN_CACHE, "Deallocate production saving production first for %y.\n", prod->name);
-        thisAgent->explanationMemory->save_excised_production(prod);
-    }
-    #endif
 
     deallocate_action_list(thisAgent, prod->action_list);
-    /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
     thisAgent->symbolManager->symbol_remove_ref(&prod->name);
-    free_memory_block_for_string(thisAgent, prod->original_rule_name);
-    if (prod->documentation)
-    {
-        free_memory_block_for_string(thisAgent, prod->documentation);
-    }
-    /* next line, kjh CUSP(B11) */
-    if (prod->filename)
-    {
-        free_memory_block_for_string(thisAgent, prod->filename);
-    }
 
-    if (prod->rl_template_conds)
-    {
-        deallocate_condition_list(thisAgent, prod->rl_template_conds);
-    }
+    if (prod->original_rule_name)   free_memory_block_for_string(thisAgent, prod->original_rule_name);
+    if (prod->documentation)        free_memory_block_for_string(thisAgent, prod->documentation);
+    if (prod->filename)             free_memory_block_for_string(thisAgent, prod->filename);
+    if (prod->rl_template_conds)    deallocate_condition_list(thisAgent, prod->rl_template_conds);
+
     thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 
@@ -529,12 +512,16 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     /* When excising, the explainer needs to save the production before we excise it from
      * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
     #ifdef BUILD_WITH_EXPLAINER
-    if (prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
+    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
         dprint(DT_EXPLAIN_CACHE, "Excise production saving production first for %y.\n", prod->name);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
     #endif
+    if (thisAgent->explanationMemory->is_any_enabled())
+    {
+        thisAgent->explanationMemory->excise_production_id(prod->p_id);
+    }
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);
@@ -564,26 +551,23 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         excise_production_from_rete(thisAgent, prod);
     }
     prod->name->sc->production = NIL;
-    production_remove_ref(thisAgent, prod, cacheProdForExplainer);
+    production_remove_ref(thisAgent, prod);
     dprint_header(DT_DEALLOCATES, PrintAfter, "");
 }
 
-void excise_all_productions_of_type(agent* thisAgent,
-                                    byte type,
-                                    bool print_sharp_sign)
+void excise_all_productions_of_type(agent* thisAgent, byte type, bool print_sharp_sign, bool cacheProdForExplainer)
 {
     while (thisAgent->all_productions_of_type[type])
     {
-        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign);
+        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign, cacheProdForExplainer);
     }
 }
 
-void excise_all_productions(agent* thisAgent,
-                            bool print_sharp_sign)
+void excise_all_productions(agent* thisAgent, bool print_sharp_sign,  bool cacheProdForExplainer)
 {
     for (int i = 0; i < NUM_PRODUCTION_TYPES; i++)
     {
-        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign);
+        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign, cacheProdForExplainer);
     }
 }
 

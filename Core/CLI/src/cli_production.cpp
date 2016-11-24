@@ -664,7 +664,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod);
+                excise_production(thisAgent, prod, true, true);
             }
         }
 
@@ -674,7 +674,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod);
+                excise_production(thisAgent, prod, true, true);
             }
         }
 
@@ -684,7 +684,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
             if (prod->rl_rule)
             {
                 exciseCount++;
-                excise_production(thisAgent, prod);
+                excise_production(thisAgent, prod, true, true);
             }
         }
 
@@ -710,20 +710,20 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         exciseCount += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
         exciseCount += thisAgent->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
-        excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false, true);
+        excise_all_productions_of_type(thisAgent, DEFAULT_PRODUCTION_TYPE, false, true);
     }
     if (options.test(EXCISE_TEMPLATE))
     {
         exciseCount += thisAgent->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(thisAgent, TEMPLATE_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, TEMPLATE_PRODUCTION_TYPE, false, true);
     }
     if (options.test(EXCISE_USER))
     {
         exciseCount += thisAgent->num_productions_of_type[USER_PRODUCTION_TYPE];
 
-        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false);
+        excise_all_productions_of_type(thisAgent, USER_PRODUCTION_TYPE, false, true);
     }
 
     // Excise specific production
@@ -745,7 +745,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
         // Increment the count for the structured response
         ++exciseCount;
 
-        excise_production(thisAgent, sym->sc->production, false);
+        excise_production(thisAgent, sym->sc->production, false, true);
     }
 
     if (m_RawOutput)

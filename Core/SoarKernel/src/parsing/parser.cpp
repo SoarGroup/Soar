@@ -2299,7 +2299,7 @@ production* parse_production(agent* thisAgent, const char* prod_string, unsigned
     /* --- if there's already a prod with this name, excise it --- */
     if (name->sc->production)
     {
-        excise_production(thisAgent, name->sc->production);
+        excise_production(thisAgent, name->sc->production, true, true);
     }
 
     /* --- read optional documentation string --- */

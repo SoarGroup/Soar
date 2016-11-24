@@ -627,7 +627,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, duplicate_rule, true) == DUPLICATE_PRODUCTION)
             {
                 dprint(DT_RL_VARIABLIZATION, "Template production is a duplicate of %y: \n%4", duplicate_rule->name, cond_top, new_action);
-                excise_production(thisAgent, new_production, false);
+                excise_production(thisAgent, new_production, false, false);
                 rl_revert_template_id(thisAgent);
                 new_name_symbol = NULL;
             }

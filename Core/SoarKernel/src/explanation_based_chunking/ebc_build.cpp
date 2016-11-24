@@ -742,7 +742,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         }
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
-        excise_production(thisAgent, m_prod, false);
+        excise_production(thisAgent, m_prod, false, false);
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {

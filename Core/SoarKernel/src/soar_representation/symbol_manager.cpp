@@ -16,6 +16,7 @@
 #include "rhs.h"
 #include "run_soar.h"
 #include "semantic_memory.h"
+#include "soar_instance.h"
 #include "smem_db.h"
 #include "symbol.h"
 
@@ -970,65 +971,17 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (identifier_hash_table->count != 0)
         {
-//            dprint(DT_DEBUG, "%d short-term identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+            {
+                /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
+                 * unit tests are leaking id's after soar init */
+                std::cout << "Refcount leak detected.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
+            }
             thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
-//            do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            //do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
-//            thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
-            /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
-             * unit tests are leaking id's after soar init */
-            //std::cout << "Identifier refcount leak.\n";
-        }
-    }
-    else if (lHashTable == MP_float_constant)
-    {
-        if (float_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d floating numbers identifiers still exist.  Forcing deletion.\n", float_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, float_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_float_constant);
-            float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_float_constant, sizeof(floatSymbol), "float constant");
-        }
-    }
-    else if (lHashTable == MP_int_constant)
-    {
-        if (int_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d integer identifiers still exist.  Forcing deletion.\n", int_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, int_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_int_constant);
-            int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_int_constant, sizeof(intSymbol), "int constant");
-        }
-    }
-    else if (lHashTable == MP_str_constant)
-    {
-        if (str_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d string identifiers still exist.  Forcing deletion.\n", str_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, str_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_str_constant);
-            str_constant_hash_table = make_hash_table(thisAgent, 0, hash_str_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_str_constant, sizeof(strSymbol), "str constant");
-        }
-    }
-    else if (lHashTable == MP_variable)
-    {
-        if (variable_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d variable identifiers still exist.  Forcing deletion.\n", variable_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, variable_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_variable);
-            variable_hash_table = make_hash_table(thisAgent, 0, hash_variable);
-            thisAgent->memoryManager->init_memory_pool(MP_variable, sizeof(varSymbol), "variable");
-            /* Add predefined symbols? */
         }
     }
 }
