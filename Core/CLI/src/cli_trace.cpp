@@ -58,6 +58,7 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
             PrintCLIMessage_Section("Level 2", 60);
             PrintCLIMessage_Justify("Phases", (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM] ? "on" : "off"), 60, "-p, --phases");
             PrintCLIMessage_Justify("State removals caused by GDS violation", (thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM] ? "on" : "off"), 60, "-g, --gds");
+            PrintCLIMessage_Justify("Chunking warnings", (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM] ? "on" : "off"), 60, "-C, --chunk-warnings");
             PrintCLIMessage_Section("Level 3: Rule firings", 60);
             PrintCLIMessage_Justify("Default rules", (thisAgent->trace_settings[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM] ? "on" : "off"), 60, "-D, --default");
             PrintCLIMessage_Justify("User rules", (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? "on" : "off"), 60, "-u, --user");
@@ -69,14 +70,15 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
             PrintCLIMessage_Justify("WME additions and removals", (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM] ? "on" : "off"), 60, "-w, --wmes");
             PrintCLIMessage_Section("Level 5", 60);
             PrintCLIMessage_Justify("Preferences", (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM] ? "on" : "off"), 60, "-r, --preferences");
-            PrintCLIMessage_Section("Additional Trace Messages", 60);
-            PrintCLIMessage_Justify("Chunking dependency analysis", (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off"), 60, "-b, --backtracing");
-            PrintCLIMessage_Justify("Chunking warnings", (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM] ? "on" : "off"), 60, "-C, --chunk-warnings");
+            PrintCLIMessage_Section("Additional EBC Trace Messages", 60);
+            PrintCLIMessage_Justify("Dependency analysis", (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off"), 60, "-b, --backtracing");
+            PrintCLIMessage_Justify("Rules Learned Verbosity Level", ((learning == 0) ? "none (0)" : ((learning == 1) ? "rule name (1)" : "full rules (2)")), 60, "-L, --learning [0-2]");
+            PrintCLIMessage_Section("Additional Soar Trace Messages", 60);
             PrintCLIMessage_Justify("Goal dependency set changes", (thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM] ? "on" : "off"), 60, "-G, --gds-wmes");
-            PrintCLIMessage_Justify("Episodic memory recording and queries", (thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM] ? "on" : "off"), 60, "-e, --epmem");
             PrintCLIMessage_Justify("Numeric preference calculations", (thisAgent->trace_settings[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off"), 60, "-i, --indifferent-selection");
-            PrintCLIMessage_Justify("Learning Level", ((learning == 0) ? "off" : ((learning == 1) ? "rule name" : "full rules")), 60, "-L, --learning [0-2]");
             PrintCLIMessage_Justify("Reinforcement learning value updates", (thisAgent->trace_settings[TRACE_RL_SYSPARAM] ? "on" : "off"), 60, "-R, --rl");
+            PrintCLIMessage_Section("Additional Memory System Trace Messages", 60);
+            PrintCLIMessage_Justify("Episodic memory recording and queries", (thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM] ? "on" : "off"), 60, "-e, --epmem");
             PrintCLIMessage_Justify("Semantic memory additions", (thisAgent->trace_settings[TRACE_SMEM_SYSPARAM] ? "on" : "off"), 60, "-s, --smem");
             PrintCLIMessage_Justify("Working memory activation and forgetting", (thisAgent->trace_settings[TRACE_WMA_SYSPARAM] ? "on" : "off"), 60, "-a, --wma");
             PrintCLIMessage(" ");

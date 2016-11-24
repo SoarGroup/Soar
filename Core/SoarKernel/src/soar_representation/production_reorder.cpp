@@ -154,7 +154,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         std::string unSymString("");
         action* lAction;
         Symbol* lSym;
-        thisAgent->outputManager->set_print_indents("        ");
+        thisAgent->outputManager->set_print_indents("   ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
@@ -176,12 +176,16 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             }
         }
         thisAgent->outputManager->set_print_indents();
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected:  Created rule with with ungrounded action:");
+        }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with with ungrounded action.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with with partially-operational action.  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
@@ -1604,12 +1608,16 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             }
 
         }
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->explanationBasedChunker->print_current_built_rule("   Chunking issue detected:  Ungrounded condition found in learned rule:");
+        }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational conditions.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with partially-operational condition.  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_lhs_unconnected();

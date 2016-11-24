@@ -26,42 +26,42 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
         {
 //            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,  "   Warning: The following RHS actions contain variables that are not tested\n"
-                                  "            in a positive condition on the LHS: \n"
-                                  "   %s\n\n", pString2);
+            printa_sf(thisAgent,  "%fThe following RHS actions contain variables that are not tested\n"
+                                  "in a positive condition on the LHS: \n\n"
+                                  "%s\n", pString2);
             break;
         }
         case ebc_failed_unconnected_conditions:
         {
 //            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,"   Warning: Conditions on the LHS contain tests that are not connected \n"
-                                "            to a goal: %s\n\n", pString2);
+            printa_sf(thisAgent,"%f Conditions on the LHS contain tests that are not connected \n"
+                                "to a goal: %s\n\n", pString2);
             printa(thisAgent,   "   This is likely caused by a condition that tested a working memory element \n"
                                 "   that was created in the sub-state but later became connected to the \n"
                                 "   super-state because it was a child of an identifier that was an element\n"
-                                "   of a previous result in that same sub-state.\n\n");
+                                "   of a previous result in that same sub-state.\n");
             break;
         }
         case ebc_failed_no_roots:
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 //            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
-            printa(   thisAgent,  "   None of the conditions reference a goal state.\n\n");
+            printa(   thisAgent,  "   None of the conditions reference a goal state.\n");
             break;
         }
         case ebc_failed_negative_relational_test_bindings:
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 //            printa_sf(thisAgent,"\nChunking has created an invalid rule: %s\n\n", pString1);
-            printa(thisAgent,  "   Unbound relational test in negative condition of rule \n\n");
+            printa(thisAgent,  "   Unbound relational test in negative condition of rule \n");
             break;
         }
         default:
         {
             thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
             printa(thisAgent, "\nUnspecified chunking failure. That's weird.  Should report.\n\n");
-            printa_sf(thisAgent, "        %s\n\n", pString1);
+            printa_sf(thisAgent, "        %s\n", pString1);
         }
     }
 }
@@ -97,17 +97,17 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_progress_validating:
         {
-            printa(thisAgent, "Validating repaired rule.\n\n");
+            printa(thisAgent, "Validating repaired rule.\n");
             break;
         }
         case ebc_progress_repairing:
         {
-            printa(thisAgent, "Attempting to repair rule.\n\n");
+            printa(thisAgent, "Attempting to repair rule.\n");
             break;
         }
         case ebc_progress_repaired:
         {
-            printa(thisAgent, "...repair succeeded.\n\n");
+            printa(thisAgent, "...repair succeeded.\n");
             break;
         }
         case ebc_error_no_conditions:

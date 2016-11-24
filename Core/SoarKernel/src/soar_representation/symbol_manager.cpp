@@ -978,7 +978,7 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
                 std::cout << "Refcount leak detected.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
             }
             thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
-            //do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
