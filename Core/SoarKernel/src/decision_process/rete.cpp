@@ -8015,6 +8015,7 @@ void reteload_node_and_children(agent* thisAgent, rete_node* parent, FILE* f)
             prod->last_duplicate_dc = 0;
             prod->explain_its_chunks = false;
             prod->save_for_justification_explanation = false;
+            prod->p_id = thisAgent->explanationBasedChunker->get_new_prod_id();
 
             sym = reteload_symbol_from_index(thisAgent, f);
             thisAgent->symbolManager->symbol_add_ref(sym);
