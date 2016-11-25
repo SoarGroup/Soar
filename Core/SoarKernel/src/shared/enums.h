@@ -272,6 +272,9 @@ MP_epmem_uedge,
 MP_epmem_interval,
 MP_constraints,
 MP_attachments,
+MP_sym_triple,
+MP_sym_identity,
+MP_aug_set,
 num_memory_pools
 };
 

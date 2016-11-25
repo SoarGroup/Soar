@@ -31,7 +31,6 @@
     typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
-    typedef std::list< test_triple*, soar_module::soar_memory_pool_allocator< test_triple* > >                      test_triple_list;
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
@@ -99,7 +98,6 @@
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< symbol_triple* >                         symbol_triple_list;
     typedef std::list< Symbol* >                                symbol_list;
-    typedef std::list< test_triple* >                           test_triple_list;
     typedef std::list< wme* >                                   wme_list;
 
     typedef std::set< instantiation* >                          inst_set;

@@ -32,11 +32,7 @@ void Explanation_Based_Chunker::clear_data()
 
 void Explanation_Based_Chunker::clear_singletons()
 {
-    if (local_singleton_superstate_identity)
-    {
-        delete local_singleton_superstate_identity;
-        local_singleton_superstate_identity = NULL;
-    }
+    local_singleton_superstate_identity = { 0, 0, 0, 0};
 }
 
 void Explanation_Based_Chunker::clear_attachment_map()

@@ -12,6 +12,7 @@
 
 #include "ebc_structs.h"
 #include "stl_typedefs.h"
+#include "test.h"
 
 #include <list>
 #include <set>
@@ -63,7 +64,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void unify_identity(test t);
+        void unify_identity(test t) { t->identity = get_identity(t->identity); }
         void unify_preference_identities(preference* lPref);
         uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
@@ -173,7 +174,7 @@ class Explanation_Based_Chunker
         id_set*                    identities_to_clean_up;
 
         id_to_id_map*              unification_map;
-        identity_triple*           local_singleton_superstate_identity;
+        identity_triple            local_singleton_superstate_identity;
 
         constraint_list*           constraints;
         attachment_points_map*     attachment_points;
