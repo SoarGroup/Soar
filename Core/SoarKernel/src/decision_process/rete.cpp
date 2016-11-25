@@ -6107,8 +6107,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         msc->inst->rete_token = tok;
         msc->inst->rete_wme = w;
-        remove_from_dll(node->b.p.tentative_retractions, msc,
-                        next_of_node, prev_of_node);
+        remove_from_dll(node->b.p.tentative_retractions, msc, next_of_node, prev_of_node);
         remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
         if (msc->goal)
         {
@@ -6126,8 +6125,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
             // voigtjr 2009: returning things to how they were now that soar7 is removed
             //if(thisAgent->nil_goal_retractions)
             {
-                remove_from_dll(thisAgent->nil_goal_retractions,
-                                msc, next_in_level, prev_in_level);
+                remove_from_dll(thisAgent->nil_goal_retractions,  msc, next_in_level, prev_in_level);
             }
         }
 
@@ -6188,11 +6186,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     else if (node->b.p.prod->declared_support == UNDECLARED_SUPPORT)
     {
-
-        /*
-        check if the instantiation is proposing an operator.  if it
-        is, then this instantiation is i-supported.
-        */
+        /* check if the instantiation is proposing an operator.  if it
+           is, then this instantiation is i-supported. */
 
         operator_proposal = false;
 
@@ -6231,9 +6226,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                     OPERAND_curr_tok = OPERAND_curr_tok->next_of_node)
             {
 
-                /*
-
-                i'll need to make two passes over each set of wmes that
+                /* i'll need to make two passes over each set of wmes that
                 match this production.  the first pass looks for the lowest
                 goal identifier.  the second pass looks for a wme of the form:
 
@@ -6253,9 +6246,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 Modified 1/00 by KJC for o-support-mode == 3:  prods that have ONLY operator
                 elaborations (<o> ^attr ^value) are IE_PROD.  If prod has
                 both operator applications and <o> elabs, then it's PE_PROD
-                and the user is warned that <o> elabs will be o-supported.
-
-                */
+                and the user is warned that <o> elabs will be o-supported. */
+                
                 op_elab = false;
                 lowest_goal_wme = NIL;
 
@@ -6268,19 +6260,10 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
                         while (temp_tok->w == NIL)
                         {
                             temp_tok = temp_tok->parent;
-                            if (temp_tok == NIL)
-                            {
-                                break;
-                            }
+                            if (temp_tok == NIL) break;
                         }
-                        if (temp_tok == NIL)
-                        {
-                            break;
-                        }
-                        if (temp_tok->w == NIL)
-                        {
-                            break;
-                        }
+                        if (temp_tok == NIL) break;
+                        if (temp_tok->w == NIL) break;
 
                         if (pass == 0)
                         {
@@ -6350,8 +6333,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
                             if (thisAgent->outputManager->settings[OM_WARNINGS])
                             {
-                                thisAgent->outputManager->printa_sf(thisAgent, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",
-                                                   node->b.p.prod->name);
+                                thisAgent->outputManager->printa_sf(thisAgent, "WARNING:  Operator elaborations mixed with operator applications\nAssigning i_support to prod %y",  node->b.p.prod->name);
 
                                 // XML generation
                                 growable_string gs = make_blank_growable_string(thisAgent);
@@ -6386,17 +6368,12 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (prod_type == PE_PRODS)
     {
         insert_at_head_of_dll(thisAgent->ms_o_assertions, msc, next, prev);
-
-        insert_at_head_of_dll(msc->goal->id->ms_o_assertions,
-                              msc, next_in_level, prev_in_level);
-
-
+        insert_at_head_of_dll(msc->goal->id->ms_o_assertions, msc, next_in_level, prev_in_level);
         node->b.p.prod->OPERAND_which_assert_list = O_LIST;
 
-        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+        if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",
-                               node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6405,18 +6382,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     else
     {
-        insert_at_head_of_dll(thisAgent->ms_i_assertions,
-                              msc, next, prev);
-
-        insert_at_head_of_dll(msc->goal->id->ms_i_assertions,
-                              msc, next_in_level, prev_in_level);
-
+        insert_at_head_of_dll(thisAgent->ms_i_assertions, msc, next, prev);
+        insert_at_head_of_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
         node->b.p.prod->OPERAND_which_assert_list = I_LIST;
 
-        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+        if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",
-                               node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6443,8 +6415,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     /* RCHONG: end 10.11 */
 
-    insert_at_head_of_dll(node->b.p.tentative_assertions, msc,
-                          next_of_node, prev_of_node);
+    insert_at_head_of_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
     activation_exit_sanity_check();
     //dprint(DT_RETE_PNODE_ADD, "p_node_left_addition finished for node %d, token %u, and wme %w\n", node->node_id, tok, w);
 
@@ -6487,7 +6458,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             {
                 node->b.p.prod->interrupt--;
                 thisAgent->stop_soar = false;
-                if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+                if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
                 }
@@ -6499,15 +6470,13 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
-                remove_from_dll(msc->goal->id->ms_o_assertions, msc,
-                                next_in_level, prev_in_level);
+                remove_from_dll(msc->goal->id->ms_o_assertions, msc, next_in_level, prev_in_level);
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
                 dprint(DT_RETE_PNODE_ADD, "...also removing from ms_i_assertions\n");
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
-                remove_from_dll(msc->goal->id->ms_i_assertions, msc,
-                                next_in_level, prev_in_level);
+                remove_from_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
             }
 
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
@@ -6544,8 +6513,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->w = NIL;       /* just for safety */
         msc->level = NO_WME_LEVEL;      /* just for safety */
         msc->goal = NIL;    /* just for safety */
-        insert_at_head_of_dll(node->b.p.tentative_retractions, msc,
-                              next_of_node, prev_of_node);
+        insert_at_head_of_dll(node->b.p.tentative_retractions, msc,  next_of_node, prev_of_node);
 
         /* Determine what the goal of the msc is and add it to that
         goal's list of retractions */
@@ -6582,13 +6550,11 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         insert_at_head_of_dll(thisAgent->ms_retractions, msc, next, prev);
         if (msc->goal)   /* Goal exists */
         {
-            insert_at_head_of_dll(msc->goal->id->ms_retractions, msc,
-                                  next_in_level, prev_in_level);
+            insert_at_head_of_dll(msc->goal->id->ms_retractions, msc, next_in_level, prev_in_level);
         }
         else   /* NIL Goal; put on the NIL Goal list */
         {
-            insert_at_head_of_dll(thisAgent->nil_goal_retractions,
-                                  msc, next_in_level, prev_in_level);
+            insert_at_head_of_dll(thisAgent->nil_goal_retractions,  msc, next_in_level, prev_in_level);
         }
 
         dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
@@ -6598,12 +6564,9 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         {
             ms_change* assertion;
             thisAgent->outputManager->printa_sf(thisAgent, "%f Retractions list:\n");
-            for (assertion = thisAgent->ms_retractions;
-                    assertion;
-                    assertion = assertion->next)
+            for (assertion = thisAgent->ms_retractions;  assertion; assertion = assertion->next)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
-                                   assertion->p_node->b.p.prod->name);
+                thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
                 thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
             }
 
@@ -6611,12 +6574,9 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "%fCurrent NIL Goal list:\n");
                 assertion = NIL;
-                for (assertion = thisAgent->nil_goal_retractions;
-                        assertion;
-                        assertion = assertion->next_in_level)
+                for (assertion = thisAgent->nil_goal_retractions; assertion; assertion = assertion->next_in_level)
                 {
-                    thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ",
-                                       assertion->p_node->b.p.prod->name);
+                    thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
                     thisAgent->outputManager->printa_sf(thisAgent, " at level %d\n", assertion->level);
                     if (assertion->goal)
                     {
@@ -6631,8 +6591,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         return;
     }
 
-
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+    if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "%f%y: ", node->b.p.prod->name);
         char buf[256];
@@ -6640,17 +6599,17 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         xml_generate_verbose(thisAgent, buf);
     }
 
-#ifdef BUG_139_WORKAROUND
+    #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
-#ifdef BUG_139_WORKAROUND_WARNING
+        #ifdef BUG_139_WORKAROUND_WARNING
         thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
             node->b.p.prod ? node->b.p.prod->name : NULL);
         xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
-#endif
+        #endif
         return;
     }
-#endif
+    #endif
 
     thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
         node->b.p.prod ? node->b.p.prod->name : NULL);

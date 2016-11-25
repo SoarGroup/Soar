@@ -41,7 +41,6 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
 
     pOutput_sysparams[OM_ECHO_COMMANDS] = 0;
     pOutput_sysparams[OM_WARNINGS]      = 1;
-    pOutput_sysparams[OM_VERBOSE]       = 0;
     pOutput_sysparams[OM_PRINT_DEPTH]   = 1;
 
     print_depth = new soar_module::integer_param("print-depth", pOutput_sysparams[OM_PRINT_DEPTH], new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
@@ -51,8 +50,6 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
     add(echo_commands);
     warnings = new soar_module::boolean_param("warnings", pOutput_sysparams[OM_WARNINGS] ? on : off, new soar_module::f_predicate<boolean>());
     add(warnings);
-    verbose = new soar_module::boolean_param("verbose", pOutput_sysparams[OM_VERBOSE] ? on : off, new soar_module::f_predicate<boolean>());
-    add(verbose);
 
     /* Actual values initialized before printing because agent might not be created yet, and it is agent-specific */
     enabled = new soar_module::boolean_param("enabled", off, new soar_module::f_predicate<boolean>());
@@ -78,10 +75,6 @@ void OM_Parameters::update_bool_setting(agent* thisAgent, soar_module::boolean_p
     if (pChangedParam == warnings)
     {
         thisAgent->outputManager->settings[OM_WARNINGS] = pChangedParam->get_value();
-    }
-    else if (pChangedParam == verbose)
-    {
-        thisAgent->outputManager->settings[OM_VERBOSE] = pChangedParam->get_value();
     }
     else if (pChangedParam == stdout_enabled)
     {
@@ -127,7 +120,6 @@ void OM_Parameters::print_output_summary(agent* thisAgent)
     outputManager->printa(thisAgent, "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Printing enabled", (thisAgent->output_settings->print_enabled ? "Yes" : "No"), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Print warnings", (warnings->get_value() ? "Yes" : "No"), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Print verbose output", (verbose->get_value() ? "Yes" : "No"), 55).c_str());
 #ifndef SOAR_RELEASE_VERSION
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Soar release compilation", "OFF", 55).c_str());
@@ -158,9 +150,9 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output", "[? | help]", 55).c_str());
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("enabled",enabled->get_string(), 55).c_str(), "Globally turn off printing for agent");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Used for architecture debugging");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("callbacks", callback_enabled->get_string(), 55).c_str(), "Standard agent printing mechanism");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("enabled",enabled->get_string(), 55).c_str(), "Globally turn off all output");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Send output to std::out for debugging");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("callbacks", callback_enabled->get_string(), 55).c_str(), "Send output to standard agent print callback");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("output log", "[--append | -A] <filename>", 55).c_str(), "Log all output to file");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output log", "--add <string>", 55).c_str());
@@ -170,7 +162,6 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("print-depth", print_depth->get_string(), 55).c_str(), "Default print depth for 'print'");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("warnings", warnings->get_string(), 55).c_str(), "Print all warnings");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("verbose", verbose->get_string(), 55).c_str(), "Include verbose output");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("echo-commands", echo_commands->get_string(), 55).c_str(), "Echo commands to debugger");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "To view/change a setting: %-%- output <setting> [<value>]\n");

@@ -625,11 +625,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     int       pass;
     wme*       lowest_goal_wme;
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
-    {
-        printf("\n      in calculate_support_for_instantiation_preferences:");
-        xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
-    }
     o_support = false;
     op_elab = false;
 
@@ -643,11 +638,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     }
     else if (inst->prod->declared_support == UNDECLARED_SUPPORT)
     {
-
-        /*
-        check if the instantiation is proposing an operator.  if it
-        is, then this instantiation is i-supported.
-         */
+        /* check if the instantiation is proposing an operator.  if it is, then this instantiation is i-supported.  */
 
         operator_proposal = false;
         instantiation* non_variabilized_inst = original_inst ? original_inst : inst;
@@ -935,14 +926,9 @@ void create_instantiation(agent* thisAgent, production* prod,
     int64_t index;
     Symbol** cell;
 
-#ifdef BUG_139_WORKAROUND
-    /* New waterfall model: this is now checked for before we call this function */
-    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
-    /* RPM workaround for bug #139: don't fire justifications */
-    //if (prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
-    //    return;
-    //}
-#endif
+    #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
+        assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
+    #endif
 
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->next = thisAgent->newly_created_instantiations;
@@ -964,18 +950,14 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
-//        debug_trace_set(0, true);
-//        debug_trace_set(DT_DEBUG, true);
-//        debug_trace_set(DT_ADD_IDENTITY_SET_MAPPING, true);
 //        debug_trace_set(DT_UNIFY_SINGLETONS, true);
-////        debug_trace_set(DT_REPAIR, true);
 //        dprint(DT_DEBUG, "Found.\n");
 //    } else {
 //        thisAgent->outputManager->clear_output_modes();
 //    }
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+    if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n   Creating instantiation of rule %y\n", inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nCreating instantiation of rule %y\n", inst->prod_name);
         char buf[256];
         SNPRINTF(buf, 254, "Creating instantiation of rule %s", inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -988,12 +970,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     AddAdditionalTestsMode additional_test_mode;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-//    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
-//    {
-//        additional_test_mode = ALL_ORIGINALS;
     } else  {
         additional_test_mode = ALL_ORIGINALS;
-//        additional_test_mode = DONT_EXPLAIN;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
@@ -1016,9 +994,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     {
         thisAgent->outputManager->start_fresh_line(thisAgent);
         thisAgent->outputManager->printa(thisAgent,  "Firing ");
-        print_instantiation_with_wmes(thisAgent, inst,
-                                      static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
-                                      0);
+        print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
     }
 
     /* --- initialize rhs_variable_bindings array with names of variables
@@ -1084,22 +1060,14 @@ void create_instantiation(agent* thisAgent, production* prod,
              * operator. However, it could be the case that <x> is actually bound to
              * a number, which would make this a numeric indifferent preference. The
              * parser had no way of easily figuring this out, but it's easy to check
-             * here.
-             *
-             * jzxu April 22, 2009
-             */
-            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-                    && ((pref->referent->symbol_type
-                         == FLOAT_CONSTANT_SYMBOL_TYPE)
-                        || (pref->referent->symbol_type
-                            == INT_CONSTANT_SYMBOL_TYPE)))
+             * here. */
+            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && (pref->referent->is_float() || pref->referent->is_int()))
             {
                 pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
             }
 
             pref->inst = inst;
-            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,
-                                  inst_prev);
+            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
             if (inst->prod->declared_support == DECLARED_O_SUPPORT)
             {
                 pref->o_supported = true;
@@ -1110,9 +1078,7 @@ void create_instantiation(agent* thisAgent, production* prod,
             }
             else
             {
-
-                pref->o_supported =
-                    (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
+                pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
                 /* REW: end   09.15.96 */
             }
 
@@ -1196,8 +1162,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     if (!thisAgent->system_halted)
     {
         /* --- invoke callback function --- */
-        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK,
-                              static_cast<soar_call_data>(inst));
+        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
 
     }
 }

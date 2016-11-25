@@ -3155,7 +3155,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
         if (goal->id->lower_goal)
         {
-            if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
+            if (thisAgent->trace_settings[TRACE_CONSISTENCY_CHANGES_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because of a decision.\n", goal->id->lower_goal);
             }
@@ -3201,7 +3201,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (goal->id->lower_goal)
     {
-        if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM])
+        if (thisAgent->trace_settings[TRACE_CONSISTENCY_CHANGES_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id->lower_goal);
         }
@@ -3369,7 +3369,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
 
     o_rejects = NIL;
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+    if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
         printf("\n   in assert_new_preferences:");
         xml_generate_verbose(thisAgent, "in assert_new_preferences:");
@@ -3378,17 +3378,14 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         /* Do an initial loop to process o-rejects, then re-loop
          to process normal preferences. */
 
-        for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
-                    next_inst)
+        for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =  next_inst)
         {
             next_inst = inst->next;
 
-            for (pref = inst->preferences_generated; pref != NIL; pref =
-                        next_pref)
+            for (pref = inst->preferences_generated; pref != NIL; pref = next_pref)
             {
                 next_pref = pref->inst_next;
-                if ((pref->type == REJECT_PREFERENCE_TYPE)
-                        && (pref->o_supported))
+                if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
                 {
                     /* --- o-reject: just put it in the buffer for later --- */
                     pref->next = o_rejects;
@@ -3403,8 +3400,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
         }
     }
 
-    for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst =
-                next_inst)
+    for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst)
     {
         next_inst = inst->next;
         if (inst->in_ms)
@@ -3412,18 +3408,15 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
             insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
         }
 
-        if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+        if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent,
-                               "\n      asserting instantiation: %y\n", inst->prod_name);
+            thisAgent->outputManager->printa_sf(thisAgent,  "\n      asserting instantiation: %y\n", inst->prod_name);
             char buf[256];
-            SNPRINTF(buf, 254, "asserting instantiation: %s",
-                     inst->prod_name->to_string(true));
+            SNPRINTF(buf, 254, "asserting instantiation: %s", inst->prod_name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
         }
 
-        for (pref = inst->preferences_generated; pref != NIL; pref =
-                    next_pref)
+        for (pref = inst->preferences_generated; pref != NIL; pref = next_pref)
         {
             next_pref = pref->inst_next;
             if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
@@ -3918,7 +3911,7 @@ void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
     wme_to_add->gds = gds;
     insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4438,8 +4431,7 @@ approaches may be better */
 
 void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
 {
-
-    if (thisAgent->outputManager->settings[OM_VERBOSE] || thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
     {
         // BADBAD: the XML code makes this all very ugly
         char msgbuf[256];
@@ -4505,7 +4497,7 @@ void gds_invalid_so_remove_goal(agent* thisAgent, wme* w)
         }
     }
 
-    if (thisAgent->trace_settings[TRACE_OPERAND2_REMOVALS_SYSPARAM])
+    if (thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
         print_wme(thisAgent, w);

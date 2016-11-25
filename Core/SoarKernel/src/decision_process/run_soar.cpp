@@ -349,41 +349,19 @@ bool reinitialize_soar(agent* thisAgent)
     ++thisAgent->init_count;
     ++thisAgent->RL->rl_init_count;
 
-    int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
-    int64_t cur_TRACE_PHASES_SYSPARAM;
-    int64_t cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM;
-    int64_t cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM;
-    int64_t cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM;
-    int64_t cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
-    int64_t cur_TRACE_WM_CHANGES_SYSPARAM;
-    int64_t cur_TRACE_GDS_SYSPARAM;
-    int64_t cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM;
-
     thisAgent->did_PE = false;    /* RCHONG:  10.11 */
 
     soar_invoke_callbacks(thisAgent, BEFORE_INIT_SOAR_CALLBACK, 0);
 
-    /* Stash trace state: */
-    cur_TRACE_CONTEXT_DECISIONS_SYSPARAM        = thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM];
-    cur_TRACE_PHASES_SYSPARAM                   = thisAgent->trace_settings[TRACE_PHASES_SYSPARAM];
-    cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM = thisAgent->trace_settings[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM];
-    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM    = thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM];
-    cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM   = thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM];
-    cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM      = thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM];
-    cur_TRACE_WM_CHANGES_SYSPARAM               = thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM];
-    cur_TRACE_GDS_SYSPARAM                      = thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM];
-    cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM        = thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM];
-
-    /* Temporarily disable tracing: */
-    set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        false);
-    set_trace_setting(thisAgent, TRACE_PHASES_SYSPARAM,                   false);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, false);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    false);
+    int64_t current_trace_settings[HIGHEST_SYSPARAM_NUMBER];
+    for (int i = 0; i < HIGHEST_SYSPARAM_NUMBER; i++)
+    {
+        /* Stash trace state: */
+        current_trace_settings[i] = thisAgent->trace_settings[i];
+        /* Temporarily disable tracing: */
+        set_trace_setting(thisAgent, i, false);
+    }
     set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      false);
-    set_trace_setting(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               false);
-    set_trace_setting(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      false);
-    set_trace_setting(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        false);
 
     bool ok = reinitialize_agent(thisAgent);
 
@@ -397,15 +375,10 @@ bool reinitialize_soar(agent* thisAgent)
     thisAgent->go_type = GO_DECISION;
 
     /* Restore trace state: */
-    set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        cur_TRACE_CONTEXT_DECISIONS_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_PHASES_SYSPARAM,                   cur_TRACE_PHASES_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM,    cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_GDS_WMES_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
-    set_trace_setting(thisAgent, TRACE_GDS_STATE_REMOVAL_SYSPARAM,        cur_TRACE_GDS_STATE_REMOVAL_SYSPARAM);
+    for (int i = 0; i < HIGHEST_SYSPARAM_NUMBER; i++)
+    {
+        set_trace_setting(thisAgent, i, current_trace_settings[i]);
+    }
 
     soar_invoke_callbacks(thisAgent, AFTER_INIT_SOAR_CALLBACK, 0);
 

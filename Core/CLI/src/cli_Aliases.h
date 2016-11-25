@@ -122,7 +122,7 @@ namespace cli
                 t.evaluate("command-to-file output command-to-file");
                 t.evaluate("default-wme-depth output print-depth");
                 t.evaluate("echo-commands output echo-commands");
-                t.evaluate("verbose output verbose");
+                t.evaluate("verbose trace -A");
                 t.evaluate("warnings output warnings");
 
                 t.evaluate("watch trace");

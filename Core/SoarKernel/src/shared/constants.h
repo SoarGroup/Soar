@@ -143,7 +143,7 @@
 #define TRACE_CHUNKS_WARNINGS_SYSPARAM           14
 #define TRACE_JUSTIFICATIONS_SYSPARAM            15
 #define TRACE_BACKTRACING_SYSPARAM               16
-#define TRACE_OPERAND2_REMOVALS_SYSPARAM         17
+#define TRACE_CONSISTENCY_CHANGES_SYSPARAM       17
 #define TRACE_INDIFFERENT_SYSPARAM               18
 #define TRACE_RL_SYSPARAM                        19
 #define TRACE_WATERFALL_SYSPARAM                 20
@@ -152,7 +152,8 @@
 #define TRACE_SMEM_SYSPARAM                      23
 #define TRACE_GDS_WMES_SYSPARAM                  24
 #define TRACE_GDS_STATE_REMOVAL_SYSPARAM         25
+#define TRACE_ASSERTIONS_SYSPARAM                26
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  26
+#define HIGHEST_SYSPARAM_NUMBER                  27
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_CONSTANTS_H_ */
