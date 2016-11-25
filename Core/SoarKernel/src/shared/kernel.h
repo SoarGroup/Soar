@@ -67,7 +67,7 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-//    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+    //#define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif

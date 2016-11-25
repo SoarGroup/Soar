@@ -973,12 +973,15 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
         {
             if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
             {
-                /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
-                 * unit tests are leaking id's after soar init */
-                std::cout << "Refcount leak detected.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
+                /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
+                 * detect refcount leaks in unit tests and print out a message accordingly */
+                std::cout << "Refcount leak detected in unit test.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
-            do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            if (thisAgent->outputManager->settings[OM_WARNINGS])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            }
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);

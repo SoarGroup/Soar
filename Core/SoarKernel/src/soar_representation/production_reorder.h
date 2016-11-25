@@ -28,7 +28,7 @@ extern bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs
 extern void init_reorderer(agent* thisAgent);
 
 /* this prototype moved here from osupport.cpp -ajc (5/3/02) */
-extern cons* collect_root_variables(agent* thisAgent, condition* cond_list, tc_number tc, bool allow_printing_warnings, matched_symbol_list* ungrounded_syms = NULL, bool add_ungrounded = false);
+extern cons* collect_root_variables(agent* thisAgent, condition* cond_list, tc_number tc, matched_symbol_list* ungrounded_syms = NULL, bool add_ungrounded = false);
 
 #endif
 

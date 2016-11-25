@@ -178,14 +178,14 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         thisAgent->outputManager->set_print_indents();
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected:  Created rule with with ungrounded action:");
+            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded action(s):");
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with with partially-operational action.  Repair required.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded action(s).  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
@@ -848,7 +848,6 @@ void remove_vars_requiring_bindings(agent* thisAgent,
 cons* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
-                             bool allow_printing_warnings,
                              matched_symbol_list* ungrounded_syms,
                              bool add_ungrounded)
 {
@@ -911,43 +910,41 @@ cons* collect_root_variables(agent* thisAgent,
     }
 
     /* --- make sure each root var has some condition with goal/impasse --- */
-    if (allow_printing_warnings && (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]))
-    {
-        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
-        {
-            found_goal_impasse_test = false;
-            dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+    std::string errorStr;
 
-            for (cond = cond_list; cond != NIL; cond = cond->next)
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
+    {
+        found_goal_impasse_test = false;
+        dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+
+        for (cond = cond_list; cond != NIL; cond = cond->next)
+        {
+            if (cond->type != POSITIVE_CONDITION) continue;
+            if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
+                test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
             {
-                if (cond->type != POSITIVE_CONDITION)
-                {
-                    continue;
-                }
-                if (cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym)
-                    if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
-                    {
-                        found_goal_impasse_test = true;
-                        dprint_noprefix(DT_REORDERER, "found\n");
-                        break;
-                    }
+                found_goal_impasse_test = true;
+                dprint_noprefix(DT_REORDERER, "found\n");
+                break;
             }
-            if (! found_goal_impasse_test)
+        }
+        if (! found_goal_impasse_test)
+        {
+            dprint_noprefix(DT_REORDERER, "not found\n");
+            if (add_ungrounded)
             {
-                dprint_noprefix(DT_REORDERER, "not found\n");
-                if (add_ungrounded)
+                chunk_element* lNewUngroundedSym = new chunk_element();
+                chunk_element* lOldMatchedSym = (*it);
+                lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+                lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
+                lNewUngroundedSym->identity = (*it)->identity;
+                dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
+                ungrounded_syms->push_back(lNewUngroundedSym);
+            } else {
+                thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
+                    thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
+                if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
                 {
-                    chunk_element* lNewUngroundedSym = new chunk_element();
-                    chunk_element* lOldMatchedSym = (*it);
-                    lNewUngroundedSym->variable_sym = (*it)->variable_sym;
-                    lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                    lNewUngroundedSym->identity = (*it)->identity;
-                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
-                    ungrounded_syms->push_back(lNewUngroundedSym);
-                } else {
-                    std::string errorStr;
-                    thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                           thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
                     xml_generate_warning(thisAgent, errorStr.c_str());
                 }
@@ -1352,7 +1349,7 @@ void reorder_simplified_conditions(agent* thisAgent,
         {
             dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
             cons* ncc_roots;
-            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number, true);
+            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number);
             reorder_condition_list(thisAgent, &(chosen->data.ncc.top), ncc_roots, bound_vars_tc_number, reorder_nccs);
             free_list(thisAgent, ncc_roots);
         }
@@ -1588,7 +1585,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, ungrounded_syms, add_ungrounded);
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, ungrounded_syms, add_ungrounded);
 
     /* MToDo | Trying to move up here.  Was after ungrounded stuff */
     if (roots)
@@ -1610,14 +1607,14 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
         }
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("   Chunking issue detected:  Ungrounded condition found in learned rule:");
+            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with partially-operational condition.  Repair required.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_lhs_unconnected();
@@ -1632,15 +1629,10 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
 
         for (cond = *lhs_top; cond != NIL; cond = cond->next)
         {
-            if ((cond->type == POSITIVE_CONDITION) &&
-                    (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,
-                            true, false)))
+            if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
             {
                 add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
-                if (roots)
-                {
-                    break;
-                }
+                if (roots) break;
             }
         }
     }
@@ -1652,7 +1644,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with no conditions that match a goal state.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
         }
         return false;
     }
@@ -1670,7 +1662,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with negative relational test bindings.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with negative relational test bindings.";
         }
         return false;
     }
