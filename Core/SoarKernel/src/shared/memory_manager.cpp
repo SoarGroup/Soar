@@ -171,7 +171,10 @@ void Memory_Manager::free_memory_pool_by_ptr(memory_pool* pThisPool)
         cur_block = next_block;
     }
     pThisPool->num_blocks = 0;
+    pThisPool->first_block = NIL;
+    pThisPool->free_list = NIL;
 }
+
 void Memory_Manager::free_memory_pool(MemoryPoolType mempool_index)
 {
     free_memory_pool_by_ptr(&(memory_pools[mempool_index]));
