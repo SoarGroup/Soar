@@ -420,7 +420,7 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
     cons* negated_to_print = NIL;
     push(thisAgent, c, negated_to_print);
 
-    thisAgent->outputManager->printa(thisAgent, "\n*** Won't learn rule because of negative reasoning that cannot be represented.***\n");
+    thisAgent->outputManager->printa(thisAgent, "\n*** Rule learned that used negative reasoning about local sub-state.***\n");
     xml_begin_tag(thisAgent, kTagLocalNegation);
     print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
     xml_end_tag(thisAgent, kTagLocalNegation);

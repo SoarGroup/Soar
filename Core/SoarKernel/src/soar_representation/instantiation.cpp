@@ -988,11 +988,12 @@ void create_instantiation(agent* thisAgent, production* prod,
     AddAdditionalTestsMode additional_test_mode;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
-    {
-        additional_test_mode = ALL_ORIGINALS;
+//    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+//    {
+//        additional_test_mode = ALL_ORIGINALS;
     } else  {
-        additional_test_mode = DONT_EXPLAIN;
+        additional_test_mode = ALL_ORIGINALS;
+//        additional_test_mode = DONT_EXPLAIN;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,

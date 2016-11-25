@@ -479,8 +479,6 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
             if (ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] == false)
             {
-                // this chunk will be overgeneral! don't create it
-
                 if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
                 {
                     report_local_negation(cc->cond);
@@ -496,9 +494,9 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     if (has_local_negation)
     {
         thisAgent->explanationMemory->increment_stat_tested_local_negation();
-
     }
     #endif
+
     if (prev_vrblz)
     {
         prev_vrblz->next = NIL;

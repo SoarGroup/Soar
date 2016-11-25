@@ -566,6 +566,8 @@ TEST_DEFINITION(testClientMessageHandler)
 
 TEST_DEFINITION(testFilterHandler)
 {
+    /* Will not pass if debug output is redirected */
+
     // Record a filter
     bool filterHandlerReceived(false);
     int clientFilter = m_pKernel->RegisterForClientMessageEvent(sml::sml_Names::kFilterName, Handlers::MyFilterHandler, &filterHandlerReceived) ;
@@ -1578,6 +1580,7 @@ TEST_DEFINITION(testMatchTimeInterrupt)
 }
 TEST_DEFINITION(testNegatedConjunctiveTestReorder)
 {
+    /* Will not pass if debug output is redirected */
     m_pAgent->ExecuteCommandLine("sp {test (state <s> ^a <val> -^a {<val> < 1}) --> }");
     std::string production(m_pAgent->ExecuteCommandLine("print test"));
     CPPUNIT_ASSERT(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n");
