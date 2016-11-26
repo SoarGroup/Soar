@@ -28,7 +28,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** uncon
         {
             lSym->variable_sym->tc_num = 0;
         }
-        delete lSym;
+        thisAgent->memoryManager->free_with_pool(MP_chunk_element, lSym);
     }
     delete (*unconnected_syms);
     (*unconnected_syms) = NULL;

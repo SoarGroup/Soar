@@ -162,7 +162,9 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                chunk_element* lNewUngroundedSym = new chunk_element();
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+
                 lNewUngroundedSym->variable_sym = lSym;
                 if (lSym->is_sti())
                 {
@@ -933,7 +935,8 @@ cons* collect_root_variables(agent* thisAgent,
             dprint_noprefix(DT_REORDERER, "not found\n");
             if (add_ungrounded)
             {
-                chunk_element* lNewUngroundedSym = new chunk_element();
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                 chunk_element* lOldMatchedSym = (*it);
                 lNewUngroundedSym->variable_sym = (*it)->variable_sym;
                 lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;

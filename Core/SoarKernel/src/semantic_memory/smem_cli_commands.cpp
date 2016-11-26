@@ -393,6 +393,29 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
         {
             (*result_message)->append("SMem| No results for query.");
         }
+        // clear cache
+        {
+            symbol_triple_list::iterator mw_it;
+
+            for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+                thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+            }
+            retrieval_wmes.clear();
+
+            for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+                thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+            }
+            meta_wmes.clear();
+        }
+
         delete prohibit;
 
     }
@@ -753,13 +776,26 @@ bool SMem_Manager::CLI_remove(const char* ltms_str, std::string** err_msg, std::
             delete attributes->second;
         }
 
-        symbol_triple_list::iterator triple_iterator, end2 = retrieval_wmes.end();
-        for (triple_iterator = retrieval_wmes.begin(); triple_iterator != end2; triple_iterator++)
         {
-            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->id);
-            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->attr);
-            thisAgent->symbolManager->symbol_remove_ref(&(*triple_iterator)->value);
-            delete *triple_iterator;
+            symbol_triple_list::iterator mw_it;
+
+            for (mw_it = retrieval_wmes.begin(); mw_it != retrieval_wmes.end(); mw_it++)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+                thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+            }
+            retrieval_wmes.clear();
+
+            for (mw_it = meta_wmes.begin(); mw_it != meta_wmes.end(); mw_it++)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->id);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
+                thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
+                thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+            }
+            meta_wmes.clear();
         }
     }
     return good_command;

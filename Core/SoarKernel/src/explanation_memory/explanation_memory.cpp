@@ -198,7 +198,8 @@ void Explanation_Memory::cancel_chunk_record()
 {
     if (current_recording_chunk)
     {
-        delete current_recording_chunk;
+        current_recording_chunk->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_chunk_record, current_recording_chunk);
         current_recording_chunk = NULL;
     }
 }
@@ -504,7 +505,7 @@ void Explanation_Memory::save_excised_production(production* pProd)
     {
         cached_production->insert(lProductionRecord);
     } else {
-        delete lProductionRecord;
+        thisAgent->memoryManager->free_with_pool(MP_production_record, lProductionRecord);
     }
     dprint(DT_EXPLAIN_CACHE, "Explanation logger done adding production record for excised production: %y\n", pProd->name);
 }

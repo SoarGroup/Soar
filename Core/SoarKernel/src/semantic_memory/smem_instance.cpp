@@ -130,11 +130,16 @@ void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbo
 
 void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
-    my_list.push_back(new symbol_triple(id, attr, value));
-    dprint(DT_SMEM_INSTANCE, "Adding (%y ^%y %y) to recall buffer.\n", id, attr, value);
+    symbol_triple* new_triple;
+    thisAgent->memoryManager->allocate_with_pool(MP_sym_triple, &new_triple);
+    new_triple->id = id;
+    new_triple->attr = attr;
+    new_triple->value = value;
     thisAgent->symbolManager->symbol_add_ref(id);
     thisAgent->symbolManager->symbol_add_ref(attr);
     thisAgent->symbolManager->symbol_add_ref(value);
+    my_list.push_back(new_triple);
+    dprint(DT_SMEM_INSTANCE, "Adding (%y ^%y %y) to recall buffer.\n", id, attr, value);
 }
 
 void SMem_Manager::clear_instance_mappings()

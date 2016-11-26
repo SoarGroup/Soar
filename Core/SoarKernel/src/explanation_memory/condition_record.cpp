@@ -68,14 +68,12 @@ void condition_record::clean_up()
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
-    if (matched_wme)
-    {
-        dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->id);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->attr);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->value);
-        delete matched_wme;
-    }
+
+    dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme.id, matched_wme.attr, matched_wme.value);
+    if (matched_wme.id) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.id);
+    if (matched_wme.attr) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.attr);
+    if (matched_wme.value) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.value);
+
     if (path_to_base)
     {
         delete path_to_base;
@@ -111,7 +109,7 @@ void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
 void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
 {
     //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
-    if (!matched_wme)
+    if (!matched_wme.id)
     {
         set_matched_wme_for_cond(pCond);
     }
@@ -138,19 +136,19 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
         !condition_tests.attr->eq_test->data.referent->is_variable() &&
         !condition_tests.attr->eq_test->data.referent->is_variable())
     {
-        matched_wme = new symbol_triple(condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
+        matched_wme = { condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent };
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.id);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.attr);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.value);
     } else {
         if (pCond->bt.wme_)
         {
-            matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
+            matched_wme = { pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value };
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.id);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.attr);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.value);
         } else {
-            matched_wme = NULL;
+            matched_wme.id = matched_wme.attr = matched_wme.value = NULL;
         }
     }
 }
@@ -334,10 +332,10 @@ void condition_record::visualize_for_chunk()
 
     thisAgent->visualizationManager->viz_record_start();
     id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, true);
-    viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace);
+    viz_matched_test(id_test_without_goal_test, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace);
     deallocate_test(thisAgent, id_test_without_goal_test);
-    viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace);
-    viz_matched_test(condition_tests.value, matched_wme ? matched_wme->value : NULL, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace);
+    viz_matched_test(condition_tests.attr, matched_wme.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace);
+    viz_matched_test(condition_tests.value, matched_wme.value, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace);
     thisAgent->visualizationManager->viz_record_end();
 }
 

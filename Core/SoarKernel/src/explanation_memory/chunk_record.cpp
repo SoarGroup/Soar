@@ -347,14 +347,14 @@ void chunk_record::print_for_wme_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            if (lCond->matched_wme)
+            if (lCond->matched_wme.id)
             {
                 outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
-                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                    lCond->matched_wme.id, lCond->matched_wme.attr, lCond->matched_wme.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             } else {
                 outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             }
-            if (lCond->matched_wme != NULL)
+            if (lCond->matched_wme.id)
             {
                 instantiation_record* lInstRecord = lCond->get_instantiation();
                 bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);

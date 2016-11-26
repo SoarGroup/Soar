@@ -71,7 +71,7 @@ class condition_record
         inst_record_list*               path_to_base;
 
         test_triple                     condition_tests;
-        symbol_triple*                  matched_wme;
+        symbol_triple                   matched_wme;
 };
 
 

@@ -33,7 +33,7 @@ void identity_record::clean_up()
         for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
         {
             if (it->second->variable_sym) thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
-            delete it->second;
+            thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
         }
         delete id_to_id_set_mappings;
     }
@@ -56,7 +56,8 @@ void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_s
             if (pID_Set->find(pTest->identity) == pID_Set->end())
             {
                 pID_Set->insert(pTest->identity);
-                sym_identity_info* lNewIDSet = new sym_identity_info();
+                sym_identity_info* lNewIDSet;
+                thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
                 if (pTest->identity)
                 {
                     lNewIDSet->identity = thisAgent->explanationMemory->get_identity_set_counter();
@@ -108,7 +109,7 @@ void identity_record::map_originals_to_sets()
     thisAgent->explanationMemory->reset_identity_set_counter();
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        lNewIDSet = new sym_identity_info();
+        thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
         if (iter->second != NULL_IDENTITY_SET)
         {
             lMapping = iter->first;
@@ -127,7 +128,7 @@ void identity_record::map_originals_to_sets()
                 lNewIDSet->identity = lNewIdSetID;
                 lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
-                lNewIDSet = new sym_identity_info();
+                thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
                 lNewIDSet->identity = lNewIdSetID;
                 lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
@@ -189,7 +190,8 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     } else {
         lInstMappingList = lIterInst->second;
     }
-    identity_mapping* lMapping = new identity_mapping();
+    identity_mapping* lMapping;
+    thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
     lMapping->from_identity = pFromID;
     lMapping->from_symbol = pFromSym;
     if (pFromSym)
@@ -355,7 +357,7 @@ void identity_record::clear_mappings()
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(lMapping->to_symbol));
             }
-            delete lMapping;
+            thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
         }
         delete lMapList;
     }

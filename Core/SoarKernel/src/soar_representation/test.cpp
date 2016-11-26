@@ -720,7 +720,8 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pM
             pSym->tc_num = tc;
             if (var_list)
             {
-                chunk_element* lNewUngroundedSym = new chunk_element();
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                 lNewUngroundedSym->variable_sym = pSym;
                 lNewUngroundedSym->identity = pIdentity;
                 lNewUngroundedSym->instantiated_sym = pMatchedSym ? pMatchedSym : pSym;
