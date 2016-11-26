@@ -199,6 +199,18 @@ void ChunkTest::source(const std::string& path)
 void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks)
 {
     source(path.c_str());
+#ifdef TURN_EXPLAINER_ON
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("explain all on", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+    {
+        sml::ClientAnalyzedXML response;
+        pAgent->ExecuteCommandLineXML("explain just on", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    }
+#endif
     pAgent->RunSelf(decisions, sml::sml_DECISION);
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
     //    CPPUNIT_ASSERT(succeeded);
