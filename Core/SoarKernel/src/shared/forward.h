@@ -78,7 +78,7 @@ class production_param_container;
 class wm_param_container;
 
 class Explanation_Based_Chunker;
-class Path_to_Goal_State;
+class Repair_Path;
 class Explanation_Memory;
 class action_record;
 class chunk_record;

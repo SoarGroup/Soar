@@ -17,6 +17,72 @@
 #include "working_memory.h"
 #include "visualize.h"
 
+void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
+{
+    thisAgent = myAgent;
+    conditionID = pCondID;
+    type = pCond->type;
+    parent_action = NULL;
+    path_to_base = NULL;
+    my_instantiation = NULL;
+
+    dprint(DT_EXPLAIN_CONDS, "   Creating condition %u for %l.\n", conditionID, pCond);
+
+    condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
+    condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
+    condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
+
+    set_matched_wme_for_cond(pCond);
+
+    if (pCond->bt.level)
+    {
+        wme_level_at_firing = pCond->bt.level;
+    } else if (condition_tests.id->eq_test->data.referent->is_sti())
+    {
+        assert (condition_tests.id->eq_test->data.referent->id->level);
+        wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
+        dprint(DT_EXPLAIN_CONDS, "   No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
+    } else {
+        wme_level_at_firing = 0;
+        dprint(DT_EXPLAIN_CONDS, "   No backtrace level or sti identifier found.  Setting condition level to 0.\n", wme_level_at_firing);
+    }
+
+    /* Cache the pref to make it easier to connect this condition to the action that created
+     * the preference later. Tricky because NCs and NCCs have neither and architectural
+     * may have neither */
+    cached_pref = pCond->bt.trace;
+    cached_wme = pCond->bt.wme_;
+    if (pCond->bt.trace)
+    {
+        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
+    } else {
+        parent_instantiation = NULL;
+    }
+    dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
+}
+
+void condition_record::clean_up()
+{
+    dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+
+    deallocate_test(thisAgent, condition_tests.id);
+    deallocate_test(thisAgent, condition_tests.attr);
+    deallocate_test(thisAgent, condition_tests.value);
+    if (matched_wme)
+    {
+        dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->id);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->attr);
+        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->value);
+        delete matched_wme;
+    }
+    if (path_to_base)
+    {
+        delete path_to_base;
+    }
+    dprint(DT_EXPLAIN_CONDS, "   Done deleting condition record c%u\n", conditionID);
+}
+
 void condition_record::connect_to_action()
 {
     if (parent_instantiation && cached_pref)
@@ -87,72 +153,6 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
             matched_wme = NULL;
         }
     }
-}
-
-condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID)
-{
-    thisAgent = myAgent;
-    conditionID = pCondID;
-    type = pCond->type;
-    parent_action = NULL;
-    path_to_base = NULL;
-    my_instantiation = NULL;
-
-    dprint(DT_EXPLAIN_CONDS, "   Creating condition %u for %l.\n", conditionID, pCond);
-
-    condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
-    condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
-    condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-
-    set_matched_wme_for_cond(pCond);
-
-    if (pCond->bt.level)
-    {
-        wme_level_at_firing = pCond->bt.level;
-    } else if (condition_tests.id->eq_test->data.referent->is_sti())
-    {
-        assert (condition_tests.id->eq_test->data.referent->id->level);
-        wme_level_at_firing = condition_tests.id->eq_test->data.referent->id->level;
-        dprint(DT_EXPLAIN_CONDS, "   No backtrace level found.  Setting condition level to id's current level.\n", wme_level_at_firing);
-    } else {
-        wme_level_at_firing = 0;
-        dprint(DT_EXPLAIN_CONDS, "   No backtrace level or sti identifier found.  Setting condition level to 0.\n", wme_level_at_firing);
-    }
-
-    /* Cache the pref to make it easier to connect this condition to the action that created
-     * the preference later. Tricky because NCs and NCCs have neither and architectural
-     * may have neither */
-    cached_pref = pCond->bt.trace;
-    cached_wme = pCond->bt.wme_;
-    if (pCond->bt.trace)
-    {
-        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
-    } else {
-        parent_instantiation = NULL;
-    }
-    dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
-}
-
-condition_record::~condition_record()
-{
-    dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
-
-    deallocate_test(thisAgent, condition_tests.id);
-    deallocate_test(thisAgent, condition_tests.attr);
-    deallocate_test(thisAgent, condition_tests.value);
-    if (matched_wme)
-    {
-        dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->id);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->attr);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->value);
-        delete matched_wme;
-    }
-    if (path_to_base)
-    {
-        delete path_to_base;
-    }
-    dprint(DT_EXPLAIN_CONDS, "   Done deleting condition record c%u\n", conditionID);
 }
 
 bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)

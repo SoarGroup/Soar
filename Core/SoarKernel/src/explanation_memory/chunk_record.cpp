@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
+void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 {
     thisAgent                   = myAgent;
     name                        = NULL;
@@ -41,7 +41,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     backtraced_instantiations   = new inst_set();
     backtraced_inst_records     = new inst_record_list();
 
-    identity_analysis           = new identity_record(thisAgent, this);
+    identity_analysis.init(thisAgent);
 
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
@@ -61,33 +61,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 
-/* This function is not currently used, but I'm leaving in case we ever add something
- * that needs to excise explanations, for example a command or something to limit
- * memory use.  This function has not been tested. */
-void chunk_record::excise_chunk_record()
-{
-    for (auto it = conditions->begin(); it != conditions->end(); it++)
-    {
-        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
-    }
-    for (auto it = actions->begin(); it != actions->end(); it++)
-    {
-        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
-    }
-    /* For this to work, store id of last chunk that created instantiation record.  If it's the
-     * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
-     * called when a chunk fails.  If we need to excise records in general, we'll need refcounts */
-    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
-    {
-        if ((*it)->get_chunk_creator() == chunkID)
-        {
-            (*it)->delete_instantiation();
-            thisAgent->explanationMemory->delete_instantiation((*it)->get_instantiationID());
-        }
-    }
-}
-
-chunk_record::~chunk_record()
+void chunk_record::clean_up()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record %y (c %u)\n", name, chunkID);
 //    production_remove_ref(thisAgent, original_production);
@@ -103,7 +77,8 @@ chunk_record::~chunk_record()
     if (result_inst_records) delete result_inst_records;
     if (backtraced_inst_records) delete backtraced_inst_records;
     if (backtraced_instantiations) delete backtraced_instantiations;
-    if (identity_analysis) delete identity_analysis;
+
+    identity_analysis.clean_up();
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
@@ -198,18 +173,18 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-    identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
-    identity_analysis->generate_identity_sets(chunkInstantiationID, lhs);
+    identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
+    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
     /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
      * will have been added already.  Identities sets that don't appear in the chunk will be generated
      * when mapping originals to sets */
-//    identity_analysis->generate_identity_sets(pBaseInstantiation->i_id, pBaseInstantiation->top_of_instantiated_conditions);
+//    identity_analysis.generate_identity_sets(pBaseInstantiation->i_id, pBaseInstantiation->top_of_instantiated_conditions);
 //    for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
 //    {
 //        lChunkCondInst = *it;
-//        identity_analysis->generate_identity_sets(lChunkCondInst->i_id, lChunkCondInst->top_of_instantiated_conditions);
+//        identity_analysis.generate_identity_sets(lChunkCondInst->i_id, lChunkCondInst->top_of_instantiated_conditions);
 //    }
-    identity_analysis->map_originals_to_sets();
+    identity_analysis.map_originals_to_sets();
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
@@ -322,9 +297,9 @@ void chunk_record::print_for_explanation_trace()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_identities_in_chunk();
     outputManager->printa(thisAgent, "\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiationID);
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(chunkInstantiationID);
     thisAgent->explanationMemory->print_footer(true);
 }
 
@@ -473,4 +448,30 @@ void chunk_record::visualize()
         visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), this->chunkID, lCond->get_conditionID());
     }
 
+}
+
+/* This function is not currently used, but I'm leaving in case we ever add something
+ * that needs to excise explanations, for example a command or something to limit
+ * memory use.  This function has not been tested. */
+void chunk_record::excise_chunk_record()
+{
+    for (auto it = conditions->begin(); it != conditions->end(); it++)
+    {
+        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
+    }
+    for (auto it = actions->begin(); it != actions->end(); it++)
+    {
+        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
+    }
+    /* For this to work, store id of last chunk that created instantiation record.  If it's the
+     * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
+     * called when a chunk fails.  If we need to excise records in general, we'll need refcounts */
+    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
+    {
+        if ((*it)->get_chunk_creator() == chunkID)
+        {
+            (*it)->delete_instantiation();
+            thisAgent->explanationMemory->delete_instantiation((*it)->get_instantiationID());
+        }
+    }
 }

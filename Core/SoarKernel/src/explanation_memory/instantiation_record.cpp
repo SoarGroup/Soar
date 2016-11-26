@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
+void instantiation_record::init(agent* myAgent, instantiation* pInst)
 {
     thisAgent               = myAgent;
     instantiationID         = pInst->i_id;
@@ -61,7 +61,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 
 }
 
-instantiation_record::~instantiation_record()
+void instantiation_record::clean_up()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
     thisAgent->symbolManager->symbol_remove_ref(&production_name);
@@ -450,7 +450,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         outputManager->printa(thisAgent, "   -->\n");
         thisAgent->explanationMemory->print_instantiation_actions(actions, originalProduction, rhs);
         outputManager->printa(thisAgent, "\n");
-        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(instantiationID);
+        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(instantiationID);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
         }

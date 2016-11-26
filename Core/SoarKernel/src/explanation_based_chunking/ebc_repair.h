@@ -4,10 +4,14 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-class Path_to_Goal_State
+class Repair_Path
 {
     public:
-        Path_to_Goal_State(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL) {
+        Repair_Path() {};
+        ~Repair_Path() {};
+
+        void init(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL)
+        {
             topSym = new_root;
             wme_path = new wme_list();
             if (new_path) {
@@ -15,7 +19,7 @@ class Path_to_Goal_State
                 if (new_wme) wme_path->push_front(new_wme);
             }
         }
-        ~Path_to_Goal_State() { delete wme_path; }
+        void clean_up() { delete wme_path; }
 
         Symbol* get_root() {return topSym;}
         wme_list* get_path() {return wme_path;}
@@ -40,8 +44,8 @@ class Repair_Manager
     private:
 
         agent*                  thisAgent;
-        sym_to_sym_map     m_sym_to_var_map;
-        sym_to_id_map      m_sym_to_id_map;
+        sym_to_sym_map          m_sym_to_var_map;
+        sym_to_id_map           m_sym_to_id_map;
         wme_set                 m_repair_WMEs;
         goal_stack_level        m_match_goal_level;
         uint64_t                m_chunk_ID;

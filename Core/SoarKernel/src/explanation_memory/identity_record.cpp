@@ -16,7 +16,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
+void identity_record::init(agent* myAgent)
 {
     thisAgent = myAgent;
     id_to_id_set_mappings = new id_to_sym_id_map();
@@ -25,7 +25,7 @@ identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
     original_ebc_mappings = NULL;
 }
 
-identity_record::~identity_record()
+void identity_record::clean_up()
 {
     if (original_ebc_mappings) delete original_ebc_mappings;
     if (id_to_id_set_mappings)

@@ -20,18 +20,22 @@
 
 #include "agent.h"
 
+#include "action_record.h"
 #include "callback.h"
 #include "cmd_settings.h"
+#include "condition_record.h"
 #include "debug.h"
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_repair.h"
 #include "episodic_memory.h"
 #include "explanation_memory.h"
 #include "exploration.h"
 #include "instantiation.h"
+#include "instantiation_record.h"
 #include "io_link.h"
 #include "lexer.h"
 #include "mem.h"
@@ -40,6 +44,7 @@
 #include "parser.h"
 #include "print.h"
 #include "production.h"
+#include "production_record.h"
 #include "instantiation.h"
 #include "reinforcement_learning.h"
 #include "rete.h"
@@ -72,11 +77,9 @@
                            Initialization Function
 
 =================================================================== */
-
 void init_soar_agent(agent* thisAgent)
 {
 
-    /* JC ADDED: initialize the rhs function linked list */
     thisAgent->rhs_functions = NIL;
 
     /* --- initialize everything --- */
@@ -87,13 +90,23 @@ void init_soar_agent(agent* thisAgent)
     init_decider(thisAgent);
     init_soar_io(thisAgent);
     init_tracing(thisAgent);
-    //init_explain(thisAgent);  /* AGR 564 */
     select_init(thisAgent);
     predict_init(thisAgent);
 
     thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
     thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
     thisAgent->memoryManager->init_memory_pool(MP_attachments, sizeof(attachment_struct), "attachments");
+    thisAgent->memoryManager->init_memory_pool(MP_sym_triple, sizeof(symbol_triple), "symbol_triple");
+    thisAgent->memoryManager->init_memory_pool(MP_identity_mapping, sizeof(identity_mapping), "identity_map");
+    thisAgent->memoryManager->init_memory_pool(MP_chunk_element, sizeof(chunk_element), "chunk_element");
+    thisAgent->memoryManager->init_memory_pool(MP_sym_identity, sizeof(sym_identity_info), "sym_identity");
+
+    thisAgent->memoryManager->init_memory_pool(MP_action_record, sizeof(action_record), "action_record");
+    thisAgent->memoryManager->init_memory_pool(MP_condition_record, sizeof(condition_record), "cond_record");
+    thisAgent->memoryManager->init_memory_pool(MP_instantiation_record, sizeof(instantiation_record), "inst_record");
+    thisAgent->memoryManager->init_memory_pool(MP_chunk_record, sizeof(chunk_record), "chunk_record");
+    thisAgent->memoryManager->init_memory_pool(MP_production_record, sizeof(production_record), "prod_record");
+    thisAgent->memoryManager->init_memory_pool(MP_repair_path, sizeof(Repair_Path), "repair_paths");
 
     thisAgent->memoryManager->init_memory_pool(MP_gds, sizeof(goal_dependency_set), "gds");
 
@@ -106,11 +119,11 @@ void init_soar_agent(agent* thisAgent)
     thisAgent->memoryManager->init_memory_pool(MP_wma_wme_oset, sizeof(wma_pooled_wme_set), "wma_oset");
     thisAgent->memoryManager->init_memory_pool(MP_wma_slot_refs, sizeof(wma_sym_reference_map), "wma_slot_ref");
 
-    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
-    thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
     thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(preference_list), "smem_wmes");
     thisAgent->memoryManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
 
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_pedge, sizeof(epmem_pedge), "epmem_pedges");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_uedge, sizeof(epmem_uedge), "epmem_uedges");
@@ -118,12 +131,6 @@ void init_soar_agent(agent* thisAgent)
 
     thisAgent->EpMem->epmem_params->exclusions->set_value("epmem");
     thisAgent->EpMem->epmem_params->exclusions->set_value("smem");
-
-#ifdef REAL_TIME_BEHAVIOR
-    /* RMJ */
-    init_real_time(thisAgent);
-#endif
-
 
     /* --- add default object trace formats --- */
     add_trace_format(thisAgent, false, FOR_ANYTHING_TF, NIL,

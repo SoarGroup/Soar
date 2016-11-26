@@ -7,6 +7,7 @@
 #include "dprint.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
+#include "memory_manager.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "production_record.h"
@@ -92,7 +93,8 @@ void Explanation_Memory::clear_explanations()
     {
         lSym = it->first;
         thisAgent->symbolManager->symbol_remove_ref(&lSym);
-        delete it->second;
+        it->second->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_chunk_record, it->second);
     }
     chunks->clear();
     chunks_by_ID->clear();
@@ -100,31 +102,35 @@ void Explanation_Memory::clear_explanations()
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d instantiation records...\n", instantiations->size());
     for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
-        delete it->second;
+        it->second->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_instantiation_record, it->second);
     }
     instantiations->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d condition records...\n", all_conditions->size());
     for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
-        delete it->second;
+        it->second->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_condition_record, it->second);
     }
     all_conditions->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d action records...\n", all_actions->size());
     for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
-        delete it->second;
+        it->second->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_action_record, static_cast<action_record *>(it->second));
     }
     all_actions->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d cached productions...\n", cached_production->size());
     for (std::set< production_record* >::iterator it = (*cached_production).begin(); it != (*cached_production).end(); ++it)
     {
-        delete (*it);
+        (*it)->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_production_record, (*it));
     }
-    cached_production->clear();
 
+    cached_production->clear();
     production_id_map->clear();
 
     dprint(DT_EXPLAIN, "Explanation logger done clearing explanation records...\n");
@@ -167,7 +173,9 @@ void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
         return;
     }
 
-    current_recording_chunk = new chunk_record(thisAgent, chunk_id_count++);
+    thisAgent->memoryManager->allocate_with_pool(MP_chunk_record, &current_recording_chunk);
+    current_recording_chunk->init(thisAgent, chunk_id_count++);
+
     //dprint(DT_DEBUG, "Chunk number %u from prod %y\n", chunk_id_count, pBaseInstantiation->prod_name);
     //if (this->chunk_id_count == 35)
     //{
@@ -245,8 +253,9 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
 
     if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
+        thisAgent->memoryManager->allocate_with_pool(MP_condition_record, &lCondRecord);
         increment_counter(condition_id_count);
-        lCondRecord = new condition_record(thisAgent, pCond, condition_id_count);
+        lCondRecord->init(thisAgent, pCond, condition_id_count);
         lCondRecord->set_instantiation(pInst);
         if (pMakeNegative)
         {
@@ -301,7 +310,9 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         pInst->explain_status = explain_recording;
         pInst->explain_tc_num = backtrace_number;
 
-        instantiation_record* lInstRecord = new instantiation_record(thisAgent, pInst);
+        instantiation_record* lInstRecord;
+        thisAgent->memoryManager->allocate_with_pool(MP_instantiation_record, &lInstRecord);
+        lInstRecord->init(thisAgent, pInst);
         instantiations->insert({pInst->i_id, lInstRecord});
         lInstRecord->terminal = lIsTerminalInstantiation;
         lInstRecord->creating_chunk = pChunkID;
@@ -342,7 +353,10 @@ action_record* Explanation_Memory::add_result(preference* pPref, action* pAction
 {
     increment_counter(action_id_count);
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
-    action_record* lActionRecord = new action_record(thisAgent, pPref, pAction, action_id_count);
+    action_record* lActionRecord;
+    thisAgent->memoryManager->allocate_with_pool(MP_action_record, &lActionRecord);
+    lActionRecord->init(thisAgent, pPref, pAction, action_id_count);
+
     all_actions->insert({lActionRecord->actionID, lActionRecord});
     return lActionRecord;
 }
@@ -483,7 +497,9 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 void Explanation_Memory::save_excised_production(production* pProd)
 {
     dprint(DT_EXPLAIN_CACHE, "Saving excised production: %y\n", pProd->name);
-    production_record* lProductionRecord = new production_record(thisAgent, pProd);
+    production_record* lProductionRecord;
+    thisAgent->memoryManager->allocate_with_pool(MP_production_record, &lProductionRecord);
+    lProductionRecord->init(thisAgent, pProd);
     if (lProductionRecord->was_generated())
     {
         cached_production->insert(lProductionRecord);

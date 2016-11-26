@@ -37,7 +37,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** uncon
 wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
 {
     sym_grounding_path_list ids_to_walk;
-    Path_to_Goal_State*     lCurrentPath = NULL, *lNewPath = NULL;
+    Repair_Path*            lCurrentPath = NULL, *lNewPath = NULL;
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
 
@@ -52,7 +52,8 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     }
     dprint(DT_REPAIR, "...%y's goal found: %y at level %d.\n", pNonOperationalSym, g, static_cast<int64_t>(pNonOperationalSym->id->level));
 
-    lNewPath = new Path_to_Goal_State(g);
+    thisAgent->memoryManager->allocate_with_pool(MP_repair_path, &lNewPath);
+    lNewPath->init(g);
 //    if (g == pNonOperationalSym)
 //    {
 ////        return (new wme_list());
@@ -64,7 +65,11 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
 
     while (!ids_to_walk.empty())
     {
-        if (lCurrentPath) delete lCurrentPath;
+        if (lCurrentPath)
+        {
+            lCurrentPath->clean_up();
+            thisAgent->memoryManager->free_with_pool(MP_repair_path, lCurrentPath);
+        }
 
         lCurrentPath = ids_to_walk.back();
         ids_to_walk.pop_back();
@@ -81,7 +86,8 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
                     if (w->preference && w->value->is_sti() && (w->value->tc_num != ground_lti_tc))
                     {
                         w->value->tc_num = ground_lti_tc;
-                        lNewPath = new Path_to_Goal_State(w->value, lCurrentPath->get_path(), w);
+                        thisAgent->memoryManager->allocate_with_pool(MP_repair_path, &lNewPath);
+                        lNewPath->init(w->value, lCurrentPath->get_path(), w);
                         if (w->value == pNonOperationalSym)
                         {
                             dprint(DT_REPAIR, "...found path to %y: %w.\n", pNonOperationalSym, w);
@@ -97,7 +103,8 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
         }
     }
 
-    delete lCurrentPath;
+    lCurrentPath->clean_up();
+    thisAgent->memoryManager->free_with_pool(MP_repair_path, lCurrentPath);
 
     assert(final_path);
     return final_path;

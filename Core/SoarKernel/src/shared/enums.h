@@ -272,9 +272,18 @@ MP_epmem_uedge,
 MP_epmem_interval,
 MP_constraints,
 MP_attachments,
+
 MP_sym_triple,
+MP_identity_mapping,
+MP_chunk_element,
 MP_sym_identity,
-MP_aug_set,
+MP_action_record,
+MP_condition_record,
+MP_instantiation_record,
+MP_chunk_record,
+MP_production_record,
+MP_repair_path,
+
 num_memory_pools
 };
 

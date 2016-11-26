@@ -22,8 +22,11 @@ class condition_record
         friend class chunk_record;
 
     public:
-        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
-        ~condition_record();
+        condition_record() {};
+        ~condition_record() {};
+
+        void init(agent* myAgent, condition* pCond, uint64_t pCondID);
+        void clean_up();
 
         uint64_t                        get_conditionID()   { return conditionID; };
         goal_stack_level                get_level()         { return wme_level_at_firing; };

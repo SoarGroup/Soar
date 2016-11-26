@@ -24,11 +24,10 @@
     typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
     typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
     typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
-    typedef std::list< identity_triple*, soar_module::soar_memory_pool_allocator< identity_triple* > >              identity_triple_list;
-    typedef std::list< chunk_element*, soar_module::soar_memory_pool_allocator< chunk_element* > >                      matched_symbol_list;
+    typedef std::list< chunk_element*, soar_module::soar_memory_pool_allocator< chunk_element* > >                  matched_symbol_list;
     typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > >                        preference_list;
     typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > >                        rl_rule_list;
-    typedef std::list< Path_to_Goal_State*, soar_module::soar_memory_pool_allocator<Path_to_Goal_State*> >          sym_grounding_path_list;
+    typedef std::list< Repair_Path*, soar_module::soar_memory_pool_allocator<Repair_Path*> >          sym_grounding_path_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
@@ -88,12 +87,11 @@
     typedef std::list< condition* >                             condition_list;
     typedef std::list< constraint* >                            constraint_list;
     typedef std::list< uint64_t >                               id_list;
-    typedef std::list< identity_triple* >                       identity_triple_list;
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
     typedef std::list< inst_record_list* >                      inst_path_list;
     typedef std::list< chunk_element* >                           matched_symbol_list;
-    typedef std::list< Path_to_Goal_State* >                    sym_grounding_path_list;
+    typedef std::list< Repair_Path* >                    sym_grounding_path_list;
     typedef std::list< preference* >                            preference_list;
     typedef std::list< production* >                            rl_rule_list;
     typedef std::list< symbol_triple* >                         symbol_triple_list;

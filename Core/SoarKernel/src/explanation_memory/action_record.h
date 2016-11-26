@@ -18,8 +18,11 @@ class action_record
         friend class Explanation_Memory;
 
     public:
-        action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);
-        ~action_record();
+        action_record() {};
+        ~action_record() {};
+
+        void init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);
+        void clean_up();
 
         uint64_t                get_actionID()   { return actionID; };
         id_set*                 get_identities();
