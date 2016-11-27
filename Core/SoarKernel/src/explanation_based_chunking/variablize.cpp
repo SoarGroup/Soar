@@ -607,22 +607,24 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
         for (c = fl->rest; c != NULL; c = c->rest)
         {
-            dprint(DT_REINSTANTIATE, "Reversing variablization of RHS value %r\n", static_cast<char*>(c->first));
+            dprint(DT_REINSTANTIATE, "Reversing variablization of funcall RHS value %r\n", static_cast<char*>(c->first));
             reinstantiate_rhs_symbol(static_cast<char*>(c->first));
             dprint(DT_REINSTANTIATE, "... RHS value is now %r\n", static_cast<char*>(c->first));
         }
+        return;
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y (%y/o%u).\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
-
     if (rs->referent->is_variable())
     {
+        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y (%y/o%u) -> %y.\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id, rs->referent->var->instantiated_sym);
         Symbol* oldSym = rs->referent;
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
+    } else {
+        dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->o_id);
     }
 
 }
