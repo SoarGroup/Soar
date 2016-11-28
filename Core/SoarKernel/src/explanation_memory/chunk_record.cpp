@@ -277,12 +277,13 @@ void chunk_record::print_for_explanation_trace()
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
             id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
-            outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+                lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "",
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value);
+                lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             thisAgent->explanationMemory->print_path_to_base(lCond->get_path_to_base(), true);
@@ -349,8 +350,10 @@ void chunk_record::print_for_wme_trace()
 
             if (lCond->matched_wme.id)
             {
-                outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
-                    lCond->matched_wme.id, lCond->matched_wme.attr, lCond->matched_wme.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                outputManager->printa_sf(thisAgent, "(%y ^%y %y%s)%s",
+                    lCond->matched_wme.id, lCond->matched_wme.attr, lCond->matched_wme.value,
+                    lCond->test_for_acceptable_preference ? " +" : "",
+                    thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             } else {
                 outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             }

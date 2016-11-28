@@ -287,9 +287,11 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
 
             id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "",
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -402,13 +404,15 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             }
             id_test_without_goal_test = copy_test(thisAgent, print_cond->data.tests.id_test, false, false, true);
             id_test_without_goal_test2 = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
-            outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s%-",
+            outputManager->printa_sf(thisAgent, "(%o%s^%o %o%s)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
+                print_cond->test_for_acceptable_preference ? " +" : "",
                 thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
-            outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value);
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
             deallocate_test(thisAgent, id_test_without_goal_test2);
 
