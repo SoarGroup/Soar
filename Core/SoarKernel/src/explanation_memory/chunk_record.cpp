@@ -251,8 +251,6 @@ void chunk_record::print_for_explanation_trace()
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_print_test_format(true, false);
 
@@ -276,15 +274,13 @@ void chunk_record::print_for_explanation_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
             outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "",
                 thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "");
-            deallocate_test(thisAgent, id_test_without_goal_test);
 
             thisAgent->explanationMemory->print_path_to_base(lCond->get_path_to_base(), true);
         }
@@ -323,8 +319,6 @@ void chunk_record::print_for_wme_trace()
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_print_test_format(true, false);
 
@@ -404,8 +398,6 @@ void chunk_record::visualize()
     {
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
         visualizer->viz_object_start(name, chunkID, viz_chunk_record);

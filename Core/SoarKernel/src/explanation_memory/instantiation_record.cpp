@@ -336,7 +336,6 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         int lConditionCount = 0;
         action* rhs;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
@@ -402,19 +401,15 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            id_test_without_goal_test = copy_test(thisAgent, print_cond->data.tests.id_test, false, false, true);
-            id_test_without_goal_test2 = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
             outputManager->printa_sf(thisAgent, "(%o%s^%o %o%s)%s%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
                 print_cond->test_for_acceptable_preference ? " +" : "",
                 thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
-                id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
                 lCond->test_for_acceptable_preference ? " +" : "");
-            deallocate_test(thisAgent, id_test_without_goal_test);
-            deallocate_test(thisAgent, id_test_without_goal_test2);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
             outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
@@ -491,8 +486,6 @@ void instantiation_record::viz_wm_instantiation()
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
         action* rhs;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
         thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);

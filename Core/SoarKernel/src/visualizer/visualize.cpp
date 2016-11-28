@@ -273,7 +273,7 @@ void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pT
 {
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD PORT=\"%c_%u%cs\"\xF2 ",
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD PORT=\"%c_%u%s\"\xF2 ",
             pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
         outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD\xF2 ");

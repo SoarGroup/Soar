@@ -219,18 +219,42 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable)
 {
     cons* c, *c2;
+    test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
-        for (c = pTest->data.conjunct_list, c2 = pTestIdentity->data.conjunct_list; c != NIL; c = c->rest, c2 = c2->rest)
+        if (pTestIdentity->type == CONJUNCTIVE_TEST)
         {
-            assert(c2);
+            c2 =  pTestIdentity->data.conjunct_list;
+            c2_test = NULL;
+        } else {
+            c2 = NULL;
+            c2_test = pTestIdentity;
+        }
+        /* The following requires that the two conjunctive tests have the same number of elements.  This is to
+         * handle the case when the main test for an identifier element has an isa_state test but the identity
+         * test does not. */
+        for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
             visualizer->viz_record_start();
-            viz_combo_test(static_cast<test>(c->first), static_cast<test>(c2->first), pNode_id, false, false, false, false, printIdentity, printAcceptable);
+            c1_test = static_cast<test>(c->first);
+            if (c2)
+            {
+                c2_test = static_cast<test>(c2->first);
+                viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+            } else {
+                if (test_has_referent(c1_test) && c1_test->data.referent->is_variable())
+                {
+                    viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+                } else {
+                    viz_combo_test(c1_test, NULL, pNode_id, false, false, false, false, false, printAcceptable);
+                }
+            }
             visualizer->viz_record_end();
             visualizer->viz_endl();
+            if (c2) c2 = c2->rest;
         }
         visualizer->viz_table_end();
         visualizer->viz_table_element_end();
@@ -331,12 +355,8 @@ void condition_record::visualize_for_wm_trace()
 
 void condition_record::visualize_for_chunk()
 {
-    test id_test_without_goal_test ;
-
     thisAgent->visualizationManager->viz_record_start();
-    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, true);
-    viz_matched_test(id_test_without_goal_test, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace, false);
-    deallocate_test(thisAgent, id_test_without_goal_test);
+    viz_matched_test(condition_tests.id, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace, false);
     viz_matched_test(condition_tests.attr, matched_wme.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace, false);
     viz_matched_test(condition_tests.value, matched_wme.value, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace, test_for_acceptable_preference);
     thisAgent->visualizationManager->viz_record_end();
@@ -344,13 +364,8 @@ void condition_record::visualize_for_chunk()
 
 void condition_record::visualize_for_explanation_trace(condition* pCond)
 {
-    test id_test_without_goal_test = copy_test(thisAgent, pCond->data.tests.id_test, false, false, true);
-    test id_test_without_goal_test2 = copy_test(thisAgent, condition_tests.id, false, false, true);
-
     thisAgent->visualizationManager->viz_record_start();
-    viz_combo_test(id_test_without_goal_test, id_test_without_goal_test2, conditionID, true, false, false, false, true, false);
-    deallocate_test(thisAgent, id_test_without_goal_test);
-    deallocate_test(thisAgent, id_test_without_goal_test2);
+    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, true, false, false, false, true, false);
     viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true, false);
     viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true, test_for_acceptable_preference);
     thisAgent->visualizationManager->viz_record_end();
