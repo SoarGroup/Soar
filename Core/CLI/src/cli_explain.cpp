@@ -49,7 +49,10 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
         soar_module::param* my_param = thisAgent->explanationMemory->settings->get(pArg1->c_str());
         if (!my_param)
         {
-            return SetError("Invalid explain sub-command.  Use 'explain ?' to see a list of valid sub-commands and settings.");
+            if (!thisAgent->explanationMemory->explain_chunk(pArg1))
+            {
+                return SetError("Invalid explain sub-command.  Use 'explain ?' to see a list of valid sub-commands and settings.");
+            }
         }
         else if (my_param == thisAgent->explanationMemory->settings->all)
         {
