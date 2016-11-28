@@ -548,7 +548,7 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 reinstantiate_test(cond->data.tests.attr_test);
                 reinstantiate_test(cond->data.tests.value_test);
             } else {
-                for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)
+                for (condition* ncond = cond->data.ncc.top; ncond != NIL; ncond = ncond->next)
                 {
                     reinstantiate_test(ncond->data.tests.id_test);
                     reinstantiate_test(ncond->data.tests.attr_test);
