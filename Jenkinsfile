@@ -20,7 +20,7 @@ for (int i=0; i<names.size(); ++i) {
       } else {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env.bat'
-        bat 'del /q /f VS2013\\'
+        //bat 'del /q /f VS2013\\'
         bat 'del /q /f VS2015\\'
 
         def tcl="C:\\Tcl"
@@ -36,7 +36,7 @@ for (int i=0; i<names.size(); ++i) {
         bat 'echo set SWIG_HOME=C:\\swigwin\\>> user-env.bat'
 
         //bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
-        bat "%VS_2015% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
+        bat "%VS_2015% & call build.bat all --scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
 
         bat 'pushd VS2015 & UnitTests & popd'
         //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
@@ -52,9 +52,9 @@ for (int i=0; i<names.size(); ++i) {
           sh "export VERSION=\$(<soarversion); 7za a \${VERSION}-" + name + ".7zip out/"
           sh "export VERSION=\$(<soarversion); sshpass -p \${PASSWORD} scp \${VERSION}-" + name + ".7zip \${USERNAME}@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/"
         } else {
-          bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
+          //bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
           bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
-          bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2013.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+          //bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2013.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
           bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2015.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
         }
       }
