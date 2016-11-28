@@ -14,8 +14,9 @@ for (int i=0; i<names.size(); ++i) {
         sh 'rm -f *.7zip'
         sh 'rm -rf out/'
         sh 'scons all --no-scu'
-        sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
-        junit 'out/TestResults.xml'
+        //sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
+        //junit 'out/TestResults.xml'
+        sh 'pushd out; ./UnitTests; popd'
       } else {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env.bat'
@@ -34,14 +35,15 @@ for (int i=0; i<names.size(); ++i) {
         bat 'echo set JAVA_HOME=C:\\Program Files\\Java\\jdk1.7.0_79>> user-env.bat'
         bat 'echo set SWIG_HOME=C:\\swigwin\\>> user-env.bat'
 
-        bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
+        //bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
         bat "%VS_2015% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
 
-        bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
-        bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
+        bat 'pushd VS2015 & UnitTests & popd'
+        //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
+        //bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
 
-        junit 'VS2013\\TestResults.xml'
-        junit 'VS2015\\TestResults.xml'
+        //junit 'VS2013\\TestResults.xml'
+        //junit 'VS2015\\TestResults.xml'
       }
 
       withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '099da30c-b551-4c0c-847d-28fa1c22c5cb',
