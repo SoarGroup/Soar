@@ -151,6 +151,23 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
             /* The backtrace should have already added all instantiations that contained
              * grounds, so we can just look up the instantiation for each condition */
             lchunkInstRecord = thisAgent->explanationMemory->get_instantiation(lChunkCondInst);
+            if (!lchunkInstRecord)
+            {
+                /* I think this can only occur if a condition was testing a wme created as a child of a previous result, so the instantiation
+                 * that originally created it is not in the backtrace 
+                 * 
+                 * Bug:  If a second explanation also has a condition that tests a wme created by this rule, problems will occur
+                 *       It won't be detected here, since it was added for the first explanation, so it won't be added it to its 
+                 *       backtraced instantiations and its path to a result won't be updated.  We need a better mechanism, but we'll 
+                 *       punt for now since this only happens for explanations with partially operational conditions that are repaired. 
+                 *       FYI, no longer crashes.  But the rule won't show up properly in the visualization.  */
+                dprint(DT_EXPLAIN, "Adding missing instantiation record for i%u (%y)", lChunkCondInst->i_id, lChunkCondInst->prod_name);
+                lchunkInstRecord = thisAgent->explanationMemory->add_instantiation(lChunkCondInst, chunkID);
+                lchunkInstRecord->record_instantiation_contents();
+                lchunkInstRecord->update_instantiation_contents();
+                lchunkInstRecord->cached_inst->explain_status = explain_recorded;
+                backtraced_inst_records->push_back(lNewInstRecord);
+            }
         } else {
             lchunkInstRecord = NULL;
         }
@@ -175,15 +192,6 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
     identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
-    /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
-     * will have been added already.  Identities sets that don't appear in the chunk will be generated
-     * when mapping originals to sets */
-//    identity_analysis.generate_identity_sets(pBaseInstantiation->i_id, pBaseInstantiation->top_of_instantiated_conditions);
-//    for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
-//    {
-//        lChunkCondInst = *it;
-//        identity_analysis.generate_identity_sets(lChunkCondInst->i_id, lChunkCondInst->top_of_instantiated_conditions);
-//    }
     identity_analysis.map_originals_to_sets();
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
@@ -216,8 +224,13 @@ void chunk_record::generate_dependency_paths()
         if (l_inst)
         {
             l_path = l_inst->get_path_to_base();
-            dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
-            l_cond->set_path_to_base(l_path);
+            /* This is to handle the problem situation that can occur with partially operational conditions that
+             * are repaired.  Described above in record_chunk_contents. */
+            if (l_path)
+            {
+                dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
+                l_cond->set_path_to_base(l_path);
+            }
         }
     }
 }
@@ -440,7 +453,14 @@ void chunk_record::visualize()
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         lCond = (*it);
-        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), this->chunkID, lCond->get_conditionID());
+        uint64_t x1, x2, x3;
+        instantiation_record* i1 = lCond->get_instantiation();
+        x1 = i1->get_instantiationID();
+        x2 = chunkID;
+        x3 = lCond->get_conditionID();
+        dprint(DT_DEBUG, "Connecting %u %u %u.\n", x1, x2, x3);
+        visualizer->viz_connect_inst_to_chunk(x1, x2, x3);
+//        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), chunkID, lCond->get_conditionID());
     }
 
 }

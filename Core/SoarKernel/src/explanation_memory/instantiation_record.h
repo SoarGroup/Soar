@@ -40,6 +40,7 @@ class instantiation_record
         action_record*          find_rhs_action(preference* pPref);
 
         void                    print_for_explanation_trace(bool printFooter);
+        void                    print_arch_inst_for_explanation_trace(bool printFooter);
         void                    print_for_wme_trace(bool printFooter);
         void                    visualize();
 
