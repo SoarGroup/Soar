@@ -947,7 +947,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) and adding to newly_created_instantiations...\n", inst->i_id, inst->prod_name);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
 //        debug_trace_set(DT_UNIFY_SINGLETONS, true);

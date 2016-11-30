@@ -437,9 +437,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         /* --- make the instantiated condition --- */
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
-        /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
         c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
-        c_vrblz->inst = ground->inst;
+        c_vrblz->inst = m_chunk_inst;
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
@@ -469,7 +468,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 print_condition(thisAgent, cc->cond);
             }
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
-            c_vrblz->inst = cc->cond->inst;
+            c_vrblz->inst = m_chunk_inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
         }
@@ -845,6 +844,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID for this chunk --- */
     set_new_chunk_id();
+    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
@@ -1015,7 +1016,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
     m_chunk_inst->preferences_cached = NULL;
@@ -1036,7 +1036,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Chunk formed.\n", m_chunk_new_i_id, m_inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     add_chunk_to_rete();
 
@@ -1048,6 +1048,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = m_chunk_inst;
 
+    /* So that we don't deallocate the chunk instantiation we're chunking on next */
+    m_chunk_inst = NULL;
     clean_up();
 
     if (!max_chunks_reached)
@@ -1066,6 +1068,11 @@ void Explanation_Based_Chunker::clean_up ()
         thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(m_chunk_new_i_id);
     }
     thisAgent->explanationMemory->end_chunk_record();
+    if (m_chunk_inst)
+    {
+        thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
+        m_chunk_inst = NULL;
+    }
     if (m_vrblz_top)
     {
         deallocate_condition_list(thisAgent, m_vrblz_top);
