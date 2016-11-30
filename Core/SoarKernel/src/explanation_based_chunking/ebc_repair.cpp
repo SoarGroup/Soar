@@ -333,7 +333,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
                 dprint(DT_REPAIR, "Marking state found %y in value element's instantiated sym with tc_num %u\n", lMatchedSym, tc);
                 lMatchedSym->tc_num = tc;
             }
-            if (lMatchedSym)
+            if (lMatchedSym && lMatchedSym->is_sti())
             {
                 add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
             }
