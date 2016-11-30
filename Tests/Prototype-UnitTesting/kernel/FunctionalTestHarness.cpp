@@ -64,7 +64,7 @@ void FunctionalTestHarness::runTestExecute(std::string testName, int expectedDec
 	}
 	
 	runner->output << std::endl << result << std::endl;
-	
+
 	assertTrue_msg(testName + " functional test did not halt", halted);
 	assertFalse_msg(testName + " functional test failed", failed);
 	if(expectedDecisions >= 0)
