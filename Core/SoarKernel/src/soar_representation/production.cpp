@@ -484,7 +484,7 @@ void deallocate_production(agent* thisAgent, production* prod)
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
-    dprint_header(DT_DEALLOCATES, PrintBoth, "Deallocating production %y.\n", prod->name);
+    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Deallocating production %y (p %u).\n", prod->name, prod->p_id);
 
     deallocate_action_list(thisAgent, prod->action_list);
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
@@ -500,13 +500,13 @@ void deallocate_production(agent* thisAgent, production* prod)
 
 void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign, bool cacheProdForExplainer)
 {
-    dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
+    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Excising production %y (p %u).\n", prod->name, prod->p_id);
     /* When excising, the explainer needs to save the production before we excise it from
      * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
     #ifdef BUILD_WITH_EXPLAINER
     if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
-        dprint(DT_EXPLAIN_CACHE, "Excise production saving production first for %y.\n", prod->name);
+        dprint(DT_DEALLOCATE_PROD, "Caching production for %y (p %u) before excising.\n", prod->name, prod->p_id);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
     #endif
@@ -544,7 +544,7 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     }
     prod->name->sc->production = NIL;
     production_remove_ref(thisAgent, prod);
-    dprint_header(DT_DEALLOCATES, PrintAfter, "");
+    dprint_header(DT_DEALLOCATE_PROD, PrintAfter, "Done excising production.\n");
 }
 
 void excise_all_productions_of_type(agent* thisAgent, byte type, bool print_sharp_sign, bool cacheProdForExplainer)

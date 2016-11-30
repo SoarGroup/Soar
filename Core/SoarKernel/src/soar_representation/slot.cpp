@@ -218,7 +218,7 @@ void remove_garbage_slots(agent* thisAgent)
         }
 
         /* --- deallocate the slot --- */
-        dprint(DT_DEALLOCATES, "Deallocating slot %y ^%y.\n", s->id, s->attr);
+        dprint(DT_DEALLOCATE_SLOT, "Deallocating slot %y ^%y.\n", s->id, s->attr);
         /* MMA 9-2012 */
         if (s->OSK_prefs && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
         {

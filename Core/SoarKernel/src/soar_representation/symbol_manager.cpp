@@ -828,7 +828,7 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
             }
         }
     #else
-        dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
+        dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
 //        std::string caller_string = get_stacktrace("dea_sym");
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif

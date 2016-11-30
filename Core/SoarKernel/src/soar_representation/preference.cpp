@@ -87,10 +87,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, rhs_funcs.value, pUnify_identities);
 
-#ifdef DEBUG_PREFS
-    print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
-    print_preference(thisAgent, p);
-#endif
+    dprint(DT_PREFS, "Created preference %p\n", p);
 
     return p;
 
@@ -154,10 +151,7 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->next_candidate = NULL;
     p->next_result = NULL;
 
-#ifdef DEBUG_PREFS
-    print(thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
-    print_preference(thisAgent, p);
-#endif
+    dprint(DT_PREFS, "Created shallow copy of preference %p\n", p);
 
     return p;
 
@@ -170,7 +164,7 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 
 void deallocate_preference(agent* thisAgent, preference* pref)
 {
-    dprint(DT_DEALLOCATES, "Deallocating preference %p\n", pref);
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p\n", pref);
 
     assert(pref->reference_count == 0);
 
@@ -193,7 +187,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         }
         /* --- remove it from the list of pref's from that instantiation --- */
         remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* The following code re-uses the preference instead of copying it.  It worked
@@ -280,6 +274,7 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
 {
     preference* clone, *next;
 
+    dprint(DT_DEALLOCATE_PREF, "Possibly deallocating preference %p and clones...\n", pref);
     if (pref->reference_count)
     {
         return false;
@@ -295,6 +290,7 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
             return false;
         }
 
+    dprint(DT_DEALLOCATE_PREF, "Deallocating clones of %p...\n", pref);
     /* --- deallocate all the clones --- */
     clone = pref->next_clone;
     while (clone)
@@ -343,7 +339,7 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
     {
         possibly_deallocate_preference_and_clones(thisAgent, any_clone);
     }
-    if (! pref->reference_count)
+    if (!pref->reference_count)
     {
         deallocate_preference(thisAgent, pref);
         return true;
@@ -361,10 +357,7 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
 
 bool add_preference_to_tm(agent* thisAgent, preference* pref)
 {
-#ifdef DEBUG_PREFS
-    print(thisAgent, "\nAdd preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
-    print_preference(thisAgent, pref);
-#endif
+    dprint(DT_PREFS, "Adding preference %p to temporary memory\n", pref);
 
     slot* s = make_slot(thisAgent, pref->id, pref->attr);
     preference* p2;
@@ -531,10 +524,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
 
     s = pref->slot;
 
-#ifdef DEBUG_PREFS
-    print(thisAgent, "\nRemove preference at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
-    print_preference(thisAgent, pref);
-#endif
+    dprint(DT_PREFS, "Removing preference %p from temporary memory\n", pref);
 
     /* --- remove preference from the list for the slot --- */
     remove_from_dll(s->all_preferences, pref,
@@ -604,10 +594,7 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
         preference_add_ref(pref);  /* prevents it from being deallocated if it's
                                    a clone of some other pref we're about to
                                    remove */
-#ifdef DEBUG_PREFS
-        print(thisAgent, "\nO-reject posted at 0x%8x:  ", reinterpret_cast<uintptr_t>(pref));
-        print_preference(thisAgent, pref);
-#endif
+        dprint(DT_PREFS, "O-reject preferences posted: %p\n", pref);
     }
 
     pref = o_rejects;

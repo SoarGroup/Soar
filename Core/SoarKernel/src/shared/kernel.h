@@ -73,6 +73,7 @@
     #endif
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
 
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
     //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. */
@@ -80,8 +81,6 @@
     //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */
 
     //#define DEBUG_EPMEM_WME_ADD
-    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
-    //#define DEBUG_PREFS
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */
     //#define DEBUG_GDS             /* Low level GDS debug information */
     //#define DEBUG_GDS_HIGH        /* Include instantiations that created an o-supported element and

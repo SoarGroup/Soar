@@ -947,7 +947,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
 //        debug_trace_set(DT_UNIFY_SINGLETONS, true);
@@ -1201,7 +1201,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 //        if (inst->i_id == 23)
 //        {
 //            dprint(DT_DEBUG, "Found.\n");
@@ -1374,13 +1374,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 //    }
     // free instantiations in the reverse order
     inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
     while (riter != inst_list.rend())
     {
         instantiation* temp = *riter;
         ++riter;
 
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
 
         #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
@@ -1392,7 +1392,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         if (temp->prod)
         {
-            dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
+            dprint(DT_DEALLOCATE_INST, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
             if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
             {
                 /* We are about to remove a justification that has not been excised from the rete.
@@ -1406,7 +1406,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Done removing instantiation's instantiation list.\n");
+    dprint(DT_DEALLOCATE_INST, "Done removing instantiation's instantiation list.\n");
     inst = NULL;
 }
 
@@ -1507,7 +1507,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
     /* --- mark as no longer in MS, and possibly deallocate  --- */
     inst->in_ms = false;
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
@@ -1607,7 +1607,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     thisAgent->SMem->clear_instance_mappings();
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;
@@ -1792,7 +1792,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
 
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
