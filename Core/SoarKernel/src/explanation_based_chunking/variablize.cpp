@@ -556,8 +556,12 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 }
             }
             lCond = copy_condition(thisAgent, cond, false, false);
+            lCond->inst = cond->inst;
+            lCond->bt = cond->bt;
         } else {
             lCond = copy_condition(thisAgent, cond, false, false);
+            lCond->inst = cond->inst;
+            lCond->bt = cond->bt;
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
                 reinstantiate_test(lCond->data.tests.id_test);
