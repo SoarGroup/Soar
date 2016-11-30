@@ -883,10 +883,10 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
     #endif
 
-    /* --- Collect the grounds into the chunk condition lists --- */
+    /* --- Backtracing done.  Collect the grounds into the chunk condition lists --- */
     create_initial_chunk_condition_lists();
 
-    /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
+    /* --- If there aren't any grounds, abort chunk --- */
     if (!m_vrblz_top)
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -920,8 +920,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
         }
-
     }
+
     #ifdef BUILD_WITH_EXPLAINER
     if ((m_rule_type == ebc_justification) && !thisAgent->explanationMemory->isRecordingJustifications())
     {
@@ -989,7 +989,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
             #endif
-            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
         }
     }
 
