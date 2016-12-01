@@ -132,9 +132,9 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     {
         print_object_trace(thisAgent, pref->referent);
     }
+    char dest[output_string_size]; /* from agent.h */
     if (selection_probability)
     {
-        char dest[output_string_size]; /* from agent.h */
         SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
         dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
         {
@@ -158,6 +158,12 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
             }
             *end_of_mantissa = 0;
         }
+    } else {
+        dest[0] = '0';
+        dest[1] = 0;
+    }
+    if (selection_probability)
+    {
         thisAgent->outputManager->printa_sf(thisAgent,  " =%s", dest);
     }
     if (pref->o_supported)
@@ -170,7 +176,36 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     }
     if (selection_probability)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "(%f%)", (*selection_probability) * 100.0);
+        SNPRINTF(dest, sizeof(dest), "%#.2f", (*selection_probability) * 100.0);
+        dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
+        {
+            /* --- strip off trailing zeros --- */
+            char* start_of_exponent;
+            char* end_of_mantissa;
+            start_of_exponent = dest;
+            while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+            {
+                start_of_exponent++;
+            }
+            end_of_mantissa = start_of_exponent - 1;
+            while (*end_of_mantissa == '0')
+            {
+                end_of_mantissa--;
+            }
+            end_of_mantissa++;
+            while (*start_of_exponent)
+            {
+                *end_of_mantissa++ = *start_of_exponent++;
+            }
+            *end_of_mantissa = 0;
+        }
+    } else {
+        dest[0] = '0';
+        dest[1] = 0;
+    }
+    if (selection_probability)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent,  "(%s%)", dest);
     }
     thisAgent->outputManager->printa_sf(thisAgent,  "\n");
     if (print_source)
