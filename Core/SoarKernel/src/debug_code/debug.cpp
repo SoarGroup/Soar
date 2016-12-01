@@ -110,6 +110,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_DEALLOCATE_TEST].prefix =              strdup("Del Test| ");
     mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
+    mode_info[DT_CLONES].prefix =                       strdup("Clones  | ");
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);

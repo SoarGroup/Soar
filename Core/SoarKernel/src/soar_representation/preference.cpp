@@ -188,10 +188,10 @@ void deallocate_preference(agent* thisAgent, preference* pref)
         /* --- remove it from the list of pref's from that instantiation --- */
         remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
         dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
-        if (pref->inst->i_id == 1710)
-        {
-            dprint(DT_DEALLOCATE_INST, "Found.\n");
-        }
+//        if (pref->inst->i_id == 1707)
+//        {
+//            dprint(DT_DEALLOCATE_INST, "Found.\n");
+//        }
         possibly_deallocate_instantiation(thisAgent, pref->inst);
     }
     /* The following code re-uses the preference instead of copying it.  It worked
@@ -381,7 +381,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         if (already_top_o_supported)
         {
             // NLD: if it is suspected that this code is causing an issue, simply comment out the following line to debug.
-            return false;
+//            return false;
         }
     }
 

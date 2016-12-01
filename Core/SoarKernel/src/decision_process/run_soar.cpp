@@ -19,6 +19,7 @@
 #include "agent.h"
 #include "callback.h"
 #include "consistency.h"
+#include "debug.h"
 #include "decide.h"
 #include "decider.h"
 #include "episodic_memory.h"
@@ -1019,7 +1020,20 @@ void do_one_top_level_phase(agent* thisAgent)
             thisAgent->current_phase = INPUT_PHASE;
             thisAgent->d_cycle_count++;
             thisAgent->WM->wma_d_cycle_count++;
-            /* REW: end 09.15.96 */
+            #ifdef DEBUG_ONLY_AFTER_DC
+            if (thisAgent->d_cycle_count == DEBUG_ONLY_AFTER_DC)
+            {
+                dprint(DT_DEBUG, "Turning on debug tracing now that DC %u has reached DEBUG_ONLY_AFTER_DC.\n", thisAgent->d_cycle_count);
+                debug_trace_on();
+            }
+            #endif
+            #ifdef DEBUG_ONLY_BEFORE_DC
+            if (thisAgent->d_cycle_count == (DEBUG_ONLY_BEFORE_DC + 1))
+            {
+                dprint(DT_DEBUG, "Turning off debug tracing now that DC %u has reached DEBUG_ONLY_BEFORE_DC.\n", thisAgent->d_cycle_count);
+                debug_trace_off();
+            }
+            #endif
             break;
 
         /////////////////////////////////////////////////////////////////////////////////

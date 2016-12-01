@@ -566,37 +566,49 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
 
 void Explanation_Based_Chunker::make_clones_of_results()
 {
-    preference* p, *result_p;
+    preference* lClonedPref, *lResultPref;
 
     m_chunk_inst->preferences_generated = NIL;
-    for (result_p = m_results; result_p != NIL; result_p = result_p->next_result)
+    for (lResultPref = m_results; lResultPref != NIL; lResultPref = lResultPref->next_result)
     {
         /* --- copy the preference --- */
-//        p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
-//                            result_p->value, result_p->referent,
-//                            (m_rule_type == ebc_chunk) ? result_p->clone_identities : result_p->identities, result_p->rhs_funcs, true);
-        p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
-                            result_p->value, result_p->referent,
-                            result_p->clone_identities, result_p->rhs_funcs, true);
-        thisAgent->symbolManager->symbol_add_ref(p->id);
-        thisAgent->symbolManager->symbol_add_ref(p->attr);
-        thisAgent->symbolManager->symbol_add_ref(p->value);
-        if (preference_is_binary(p->type))
+        dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
+        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr,
+                            lResultPref->value, lResultPref->referent,
+                            lResultPref->clone_identities, lResultPref->rhs_funcs, true);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
+        if (preference_is_binary(lClonedPref->type))
         {
-            thisAgent->symbolManager->symbol_add_ref(p->referent);
+            thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
+        lClonedPref->inst = m_chunk_inst;
+        dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
+
         /* --- put it onto the list for chunk_inst --- */
-        p->inst = m_chunk_inst;
-        insert_at_head_of_dll(m_chunk_inst->preferences_generated, p, inst_next, inst_prev);
+        insert_at_head_of_dll(m_chunk_inst->preferences_generated, lClonedPref, inst_next, inst_prev);
 
         /* --- insert it into the list of clones for this preference --- */
-        p->next_clone = result_p;
-        p->prev_clone = result_p->prev_clone;
-        result_p->prev_clone = p;
-        if (p->prev_clone)
+        lClonedPref->next_clone = lResultPref;
+        lClonedPref->prev_clone = lResultPref->prev_clone;
+        lResultPref->prev_clone = lClonedPref;
+        if (lClonedPref->prev_clone)
         {
-            p->prev_clone->next_clone = p;
+            lClonedPref->prev_clone->next_clone = lClonedPref;
         }
+//        {
+//            preference* tempCond = lClonedPref;
+//            while (tempCond->prev_clone) tempCond = tempCond->prev_clone;
+//            dprint(DT_CLONES, "Clone list: \n");
+//            while (tempCond)
+//            {
+//                dprint(DT_CLONES, "%p --> \n", tempCond);
+//                tempCond = tempCond->next_clone;
+//            }
+//
+//        }
+//        assert((!lClonedPref->next_clone || (lClonedPref->inst == lClonedPref->next_clone->inst)) && (!lClonedPref->prev_clone || (lClonedPref->inst == lClonedPref->prev_clone->inst)));
     }
 }
 

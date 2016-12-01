@@ -3403,10 +3403,10 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
     for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst)
     {
         next_inst = inst->next;
-        if ((inst->i_id == 1708) || (inst->i_id == 1709))
-        {
-            dprint(DT_DEALLOCATE_INST, "Found.\n");
-        }
+//        if ((inst->i_id == 1708) || (inst->i_id == 1709))
+//        {
+//            dprint(DT_DEALLOCATE_INST, "Found.\n");
+//        }
         if (inst->in_ms)
         {
             insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);

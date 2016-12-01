@@ -29,7 +29,7 @@
 #include "sml_RunScheduler.h"
 
 #include "agent.h"
-#include "ebc.h"
+#include "debug.h"
 #include "io_link.h"
 #include "output_manager.h"
 #include "symbol.h"
@@ -56,8 +56,6 @@
 //    #include <memory>
 //    #include <cxxabi.h>
 #endif
-
-void debug_trace_off();
 
 // TODO: this is twice declared; here and output_manager.h
 // TODO: this isn't good enough. Arbitrary length should be acceptable.
@@ -198,7 +196,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
         }
     }
     pSoarAgent->outputManager->cache_output_modes();
-    #ifdef DEBUG_ONLY_CHUNK_ID
+    #if defined(DEBUG_ONLY_CHUNK_ID) || defined(DEBUG_ONLY_AFTER_DC)
         debug_trace_off();
     #endif
 

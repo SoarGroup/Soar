@@ -19,10 +19,6 @@
 #include <unordered_map>
 #include <cstdlib>
 
-/* This can be used to turn off chunking dprints except for a particular chunk */
-//#define DEBUG_ONLY_CHUNK_ID 64
-//#define DEBUG_ONLY_CHUNK_ID_LAST 65
-
 tc_number get_new_tc_number(agent* thisAgent);
 
 class Explanation_Based_Chunker
