@@ -178,27 +178,6 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     {
         SNPRINTF(dest, sizeof(dest), "%#.2f", (*selection_probability) * 100.0);
         dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
-        {
-            /* --- strip off trailing zeros --- */
-            char* start_of_exponent;
-            char* end_of_mantissa;
-            start_of_exponent = dest;
-            while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
-            {
-                start_of_exponent++;
-            }
-            end_of_mantissa = start_of_exponent - 1;
-            while (*end_of_mantissa == '0')
-            {
-                end_of_mantissa--;
-            }
-            end_of_mantissa++;
-            while (*start_of_exponent)
-            {
-                *end_of_mantissa++ = *start_of_exponent++;
-            }
-            *end_of_mantissa = 0;
-        }
     } else {
         dest[0] = '0';
         dest[1] = 0;
