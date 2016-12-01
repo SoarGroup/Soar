@@ -54,7 +54,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
-    total_dc = 0;
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
@@ -220,13 +219,7 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
             rule_naming_counter = justification_naming_counter;
         }
     }
-    if (thisAgent->d_cycle_count <= total_dc)
-    {
-        /* Must be after an init-soar, so just keep incrementing */
-        total_dc++;
-    } else {
-        total_dc = thisAgent->d_cycle_count;
-    }
+
     lowest_result_level = thisAgent->top_goal->id->level;
     for (p = m_inst->preferences_generated; p != NIL; p = p->inst_next)
         if (p->id->id->level > lowest_result_level)
@@ -320,7 +313,12 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
                 lName << "*" << lImpasseName;
             }
 
-            lName << "*t" << total_dc << "-" << rule_number;
+            if (thisAgent->init_count)
+            {
+                lName << "*t" << (thisAgent->init_count + 1) << "-" << thisAgent->d_cycle_count << "-" << rule_number;
+            } else {
+                lName << "*t" << thisAgent->d_cycle_count << "-" << rule_number;
+            }
         }
     }
     lImpasseName.erase();

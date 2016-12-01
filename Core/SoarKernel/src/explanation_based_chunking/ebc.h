@@ -113,7 +113,6 @@ class Explanation_Based_Chunker
         uint64_t            justification_naming_counter;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
-        uint64_t            total_dc;
 
         std::string*        chunk_history;
 
