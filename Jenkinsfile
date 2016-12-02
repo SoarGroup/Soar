@@ -22,7 +22,7 @@ for (int i=0; i<names.size(); ++i) {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env*.bat'
         //bat 'del /q /f VS2013\\'
-        bat 'del /q /f VS2015*'
+        bat 'del /q /f VS2015\\'
 
         def tcl="C:\\Tcl"
         if (name == "Windows32") {
