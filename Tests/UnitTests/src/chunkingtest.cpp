@@ -675,7 +675,7 @@ void ChunkTest::Literalization_with_BT_Constraints2()
 
 void ChunkTest::Unify_through_Two_Traces_Four_Deep()
 {
-    build_and_check_chunk("Unify_through_Two_Traces_Four_Deep.soar", 8, 1);
+    build_and_check_chunk_clean("Unify_through_Two_Traces_Four_Deep.soar", 8, 3);
 }
 
 void ChunkTest::STI_with_referents()
