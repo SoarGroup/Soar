@@ -23,7 +23,7 @@ for (int i=0; i<names.size(); ++i) {
         bat 'del /q /f user-env*.bat'
         //bat 'del /q /f VS2013\\'
         bat 'del /q /f VS2015*'
-        dir('build\\Core\\ClientSMLSWIG') {
+        dir('build/Core/ClientSMLSWIG') {
           deleteDir()
         }
         REM bat 'del /q /f build\\Core\\ClientSMLSWIG\\*.**'
