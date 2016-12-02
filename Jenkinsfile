@@ -12,18 +12,18 @@ for (int i=0; i<names.size(); ++i) {
 
       if (isUnix()) {
         sh 'rm -f *.7zip'
-        sh 'rm -rf out/'
-        sh 'rm -rf build/Core/ClientSMLSWIG/'
+        sh 'rm -rf out*'
+        sh 'rm -rf build/Core/ClientSMLSWIG*'
         sh 'scons all --scu'
         //sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
         //junit 'out/TestResults.xml'
         sh 'pushd out; ./UnitTests; popd'
       } else {
         bat 'del /q /f *.7zip'
-        bat 'del /q /f user-env.bat'
+        bat 'del /q /f user-env*.bat'
         //bat 'del /q /f VS2013\\'
-        bat 'del /q /f VS2015\\'
-        bat 'del /q /f build\\Core\\ClientSMLSWIG\\'
+        bat 'del /q /f VS2015*'
+        bat 'del /q /f build\\Core\\ClientSMLSWIG*'
 
         def tcl="C:\\Tcl"
         if (name == "Windows32") {
