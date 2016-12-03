@@ -180,14 +180,14 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         thisAgent->outputManager->set_print_indents();
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
-            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded action(s):");
+            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add rule with ungrounded action(s):");
         }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded action(s).  Repair required.";
+            thisAgent->reason_for_stopping = "Attempted to add rule with ungrounded action action(s).  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
