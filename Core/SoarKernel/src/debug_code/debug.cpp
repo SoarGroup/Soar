@@ -59,31 +59,31 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
-    mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
-    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
-    mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
-    mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
-    mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
-    mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
-    mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
+
     mode_info[DT_MILESTONES].prefix =                   strdup("Milestne| ");
     mode_info[DT_PRINT_INSTANTIATIONS].prefix =         strdup("PrntInst| ");
+
     mode_info[DT_ADD_EXPLANATION_TRACE].prefix =        strdup("AddAddtn| ");
-    mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
-    mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
-    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_IDENTITY_GENERATION].prefix =          strdup("ID Prop | ");
+
+    mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
+    mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
+    mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
     mode_info[DT_ADD_IDENTITY_SET_MAPPING].prefix =     strdup("Unify   | ");
-    mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
+    mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
+    mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
-    mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
+    mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
+    mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
-    mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
-    mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
     mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
+    mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");
+    mode_info[DT_EBC_CLEANUP].prefix =                  strdup("CleanUp | ");
+    mode_info[DT_CLONES].prefix =                       strdup("Clones  | ");
+
     mode_info[DT_EXPLAIN].prefix =                      strdup("Explain | ");
     mode_info[DT_EXPLAIN_PATHS].prefix =                strdup("EIDPaths| ");
     mode_info[DT_EXPLAIN_ADD_INST].prefix =             strdup("EAddInst| ");
@@ -91,13 +91,14 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_EXPLAIN_UPDATE].prefix =               strdup("EUpdate | ");
     mode_info[DT_EXPLAIN_CONDS].prefix =                strdup("EConds  | ");
     mode_info[DT_EXPLAIN_IDENTITIES].prefix =           strdup("EIdent  | ");
-    mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
-    mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
-    mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
     mode_info[DT_EXPLAIN_CACHE].prefix =                strdup("ExpCache| ");
-    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
-    mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");
-    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
+
+    mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
+    mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
+    mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
+    mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
+    mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
+    mode_info[DT_WME_CHANGES].prefix =                  strdup("WMEChngs| ");
 
     mode_info[DT_ALLOCATE_RHS_VALUE].prefix =           strdup("MakeRHSv| ");
     mode_info[DT_ID_LEAKING].prefix =                   strdup("ID Leak | ");
@@ -110,7 +111,12 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_DEALLOCATE_TEST].prefix =              strdup("Del Test| ");
     mode_info[DT_REFCOUNT_ADDS].prefix =                strdup("RefCnt  | ");
     mode_info[DT_REFCOUNT_REMS].prefix =                strdup("RefCnt  | ");
-    mode_info[DT_CLONES].prefix =                       strdup("Clones  | ");
+
+    mode_info[DT_LINKS].prefix =                        strdup("Links   | ");
+    mode_info[DT_UNKNOWN_LEVEL].prefix =                strdup("No Level| ");
+    mode_info[DT_PREFS].prefix =                        strdup("Prefs   | ");
+    mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
+    mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
