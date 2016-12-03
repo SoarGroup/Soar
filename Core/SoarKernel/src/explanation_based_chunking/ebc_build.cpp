@@ -1043,6 +1043,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
     m_chunk_inst->in_ms                             = true;  /* set true for now, we'll find out later... */
+    m_chunk_inst->in_newly_created                  = true;
+    m_chunk_inst->in_newly_deleted                  = false;
     m_chunk_inst->explain_status                    = explain_unrecorded;
     m_chunk_inst->explain_depth                     = 0;
     m_chunk_inst->explain_tc_num                    = 0;

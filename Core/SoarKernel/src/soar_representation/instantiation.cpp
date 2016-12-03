@@ -1175,16 +1175,16 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     preference* pref;
     goal_stack_level level;
 
-//    if (inst->in_newly_created)
-//    {
-//        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
-//        if (!inst->in_newly_deleted)
-//        {
-//            inst->in_newly_deleted = true;
-//            thisAgent->newly_deleted_instantiations.push_back(inst);
-//        }
-//        return;
-//    }
+    if (inst->in_newly_created)
+    {
+        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
+        if (!inst->in_newly_deleted)
+        {
+            inst->in_newly_deleted = true;
+            thisAgent->newly_deleted_instantiations.push_back(inst);
+        }
+        return;
+    }
 
     condition_list cond_stack;
     inst_list l_instantiation_list;
