@@ -32,6 +32,8 @@ typedef struct instantiation_struct
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool                            reliable;
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
+    bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
+    bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
     tc_number                       backtrace_number;
     bool                            GDS_evaluated_already;
     uint64_t                        i_id;                   /* id number used by EBC */

@@ -299,9 +299,9 @@ inline void rl_add_ref(Symbol* goal, production* prod)
 
 inline void rl_remove_ref(Symbol* goal, production* prod)
 {
-    rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
+    production_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
-    for (rl_rule_list::iterator p = rules->begin(); p != rules->end(); p++)
+    for (production_list::iterator p = rules->begin(); p != rules->end(); p++)
     {
         if (*p == prod)
         {
@@ -314,9 +314,9 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
 
 void rl_clear_refs(Symbol* goal)
 {
-    rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
+    production_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
-    for (rl_rule_list::iterator p = rules->begin(); p != rules->end(); p++)
+    for (production_list::iterator p = rules->begin(); p != rules->end(); p++)
     {
         (*p)->rl_ref_count--;
     }
@@ -886,7 +886,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
                 const double I = goal->id->lower_goal ? 0.0 : 1.0;
                 double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
-                rl_rule_list::iterator p;
+                production_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
                 {
@@ -1021,7 +1021,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         pref->inst->prod->rl_efr -= alpha * gamma * (1 - lambda) * dot_w_e;
                     }
 
-                    for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
+                    for (production_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
                     {
                         (*p)->rl_gql -= alpha * eta * dot_w_phi;
                     }

@@ -415,7 +415,7 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
     preference* pref;
     condition* cond;
     wme* cond_wme;
-    wma_pooled_wme_set::iterator wme_p;
+    wme_set::iterator wme_p;
 
     tc_number tc = (thisAgent->WM->wma_tc_counter++);
 
@@ -475,7 +475,7 @@ inline wma_reference wma_calculate_initial_boost(agent* thisAgent, wme* w)
     return return_val;
 }
 
-void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wma_pooled_wme_set* o_set, bool o_only)
+void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wme_set* o_set, bool o_only)
 {
     // o-supported, non-architectural WME
     if (wma_should_have_decay_element(w))
@@ -589,18 +589,14 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
     // i-supported, non-architectural WME
     else if (!o_only && (w->preference) && (w->preference->reference_count))
     {
-        wma_pooled_wme_set* my_o_set = w->preference->wma_o_set;
-        wma_pooled_wme_set::iterator wme_p;
+        wme_set* my_o_set = w->preference->wma_o_set;
+        wme_set::iterator wme_p;
 
         // if doesn't have an o_set, populate
         if (!my_o_set)
         {
             thisAgent->memoryManager->allocate_with_pool(MP_wma_wme_oset, &my_o_set);
-#ifdef USE_MEM_POOL_ALLOCATORS
-            my_o_set = new(my_o_set) wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >());
-#else
-            my_o_set = new(my_o_set) wma_pooled_wme_set();
-#endif
+            my_o_set = new(my_o_set) wme_set();
 
             w->preference->wma_o_set = my_o_set;
 
@@ -714,15 +710,15 @@ void wma_remove_pref_o_set(agent* thisAgent, preference* pref)
 {
     if (pref && pref->wma_o_set)
     {
-        wma_pooled_wme_set* victim = pref->wma_o_set;
+        wme_set* victim = pref->wma_o_set;
         pref->wma_o_set = NULL;
 
-        for (wma_pooled_wme_set::iterator p = victim->begin(); p != victim->end(); p++)
+        for (wme_set::iterator p = victim->begin(); p != victim->end(); p++)
         {
             wme_remove_ref(thisAgent, (*p));
         }
 
-        victim->~wma_pooled_wme_set();
+        victim->~wme_set();
         thisAgent->memoryManager->free_with_pool(MP_wma_wme_oset, victim);
     }
 }
@@ -1129,7 +1125,7 @@ void wma_activate_wmes_tested_in_prods(agent* thisAgent)
 
 inline void wma_update_decay_histories(agent* thisAgent)
 {
-    wma_pooled_wme_set::iterator wme_p;
+    wme_set::iterator wme_p;
     wma_decay_element* temp_el;
     wma_d_cycle current_cycle = thisAgent->WM->wma_d_cycle_count;
     bool forgetting = ((thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::approx) || (thisAgent->WM->wma_params->forgetting->get_value() == wma_param_container::bsearch));

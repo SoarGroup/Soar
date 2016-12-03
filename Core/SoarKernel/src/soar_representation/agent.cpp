@@ -112,11 +112,11 @@ void init_soar_agent(agent* thisAgent)
 
     thisAgent->memoryManager->init_memory_pool(MP_rl_info, sizeof(rl_data), "rl_id_data");
     thisAgent->memoryManager->init_memory_pool(MP_rl_et, sizeof(rl_et_map), "rl_et");
-    thisAgent->memoryManager->init_memory_pool(MP_rl_rule, sizeof(rl_rule_list), "rl_rules");
+    thisAgent->memoryManager->init_memory_pool(MP_rl_rule, sizeof(production_list), "rl_rules");
 
     thisAgent->memoryManager->init_memory_pool(MP_wma_decay_element, sizeof(wma_decay_element), "wma_decay");
     thisAgent->memoryManager->init_memory_pool(MP_wma_decay_set, sizeof(wma_decay_set), "wma_decay_set");
-    thisAgent->memoryManager->init_memory_pool(MP_wma_wme_oset, sizeof(wma_pooled_wme_set), "wma_oset");
+    thisAgent->memoryManager->init_memory_pool(MP_wma_wme_oset, sizeof(wme_set), "wma_oset");
     thisAgent->memoryManager->init_memory_pool(MP_wma_slot_refs, sizeof(wma_sym_reference_map), "wma_slot_ref");
 
     thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(preference_list), "smem_wmes");
@@ -167,63 +167,64 @@ agent* create_soar_agent(char* agent_name)                                      
     char cur_path[MAXPATHLEN];
 
     agent* thisAgent = new agent();
-    thisAgent->name                               = savestring(agent_name);
-    thisAgent->output_settings                    = new AgentOutput_Info();
+    thisAgent->name                                     = savestring(agent_name);
+    thisAgent->output_settings                          = new AgentOutput_Info();
 
-    thisAgent->current_tc_number = 0;
-    thisAgent->all_wmes_in_rete                   = NIL;
-    thisAgent->alpha_mem_id_counter               = 0;
-    thisAgent->beta_node_id_counter               = 0;
-    thisAgent->bottom_goal                        = NIL;
-    thisAgent->changed_slots                      = NIL;
-    thisAgent->context_slots_with_changed_acceptable_preferences = NIL;
-    thisAgent->current_phase                      = INPUT_PHASE;
-    thisAgent->applyPhase                         = false;
-    thisAgent->current_wme_timetag                = 1;
-    thisAgent->disconnected_ids                   = NIL;
-    thisAgent->existing_output_links              = NIL;
-    thisAgent->output_link_changed                = false;
-    thisAgent->go_number                          = 1;
-    thisAgent->go_type                            = GO_DECISION;
-    thisAgent->init_count                         = 0;
-    thisAgent->highest_goal_whose_context_changed = NIL;
-    thisAgent->ids_with_unknown_level             = NIL;
-    thisAgent->input_period                       = 0;
-    thisAgent->input_cycle_flag                   = true;
-    thisAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
-    thisAgent->mcs_counter                        = 1;
-    thisAgent->ms_assertions                      = NIL;
-    thisAgent->ms_retractions                     = NIL;
-    thisAgent->num_existing_wmes                  = 0;
-    thisAgent->num_wmes_in_rete                   = 0;
-    thisAgent->prev_top_state                     = NIL;
-    thisAgent->production_being_fired             = NIL;
-    thisAgent->productions_being_traced           = NIL;
-    thisAgent->promoted_ids                       = NIL;
-    thisAgent->reason_for_stopping                = "Startup";
-    thisAgent->slots_for_possible_removal         = NIL;
-    thisAgent->stop_soar                          = true;
-    thisAgent->system_halted                      = false;
-    thisAgent->token_additions                    = 0;
-    thisAgent->top_goal                           = NIL;
-    thisAgent->top_state                          = NIL;
-    thisAgent->wmes_to_add                        = NIL;
-    thisAgent->wmes_to_remove                     = NIL;
-    thisAgent->wme_filter_list                    = NIL;
-    thisAgent->multi_attributes                   = NIL;
+    thisAgent->newly_created_instantiations             = NULL;
+    thisAgent->current_tc_number       = 0;
+    thisAgent->all_wmes_in_rete                         = NIL;
+    thisAgent->alpha_mem_id_counter                     = 0;
+    thisAgent->beta_node_id_counter                     = 0;
+    thisAgent->bottom_goal                              = NIL;
+    thisAgent->changed_slots                            = NIL;
+    thisAgent->context_slots_with_changed_accept_prefs  = NIL;
+    thisAgent->current_phase                            = INPUT_PHASE;
+    thisAgent->applyPhase                               = false;
+    thisAgent->current_wme_timetag                      = 1;
+    thisAgent->disconnected_ids                         = NIL;
+    thisAgent->existing_output_links                    = NIL;
+    thisAgent->output_link_changed                      = false;
+    thisAgent->go_number                                = 1;
+    thisAgent->go_type                                  = GO_DECISION;
+    thisAgent->init_count                               = 0;
+    thisAgent->highest_goal_whose_context_changed       = NIL;
+    thisAgent->ids_with_unknown_level                   = NIL;
+    thisAgent->input_period                             = 0;
+    thisAgent->input_cycle_flag                         = true;
+    thisAgent->link_update_mode                         = UPDATE_LINKS_NORMALLY;
+    thisAgent->mcs_counter                              = 1;
+    thisAgent->ms_assertions                            = NIL;
+    thisAgent->ms_retractions                           = NIL;
+    thisAgent->num_existing_wmes                        = 0;
+    thisAgent->num_wmes_in_rete                         = 0;
+    thisAgent->prev_top_state                           = NIL;
+    thisAgent->production_being_fired                   = NIL;
+    thisAgent->productions_being_traced                 = NIL;
+    thisAgent->promoted_ids                             = NIL;
+    thisAgent->reason_for_stopping                      = "Startup";
+    thisAgent->slots_for_possible_removal               = NIL;
+    thisAgent->stop_soar                                = true;
+    thisAgent->system_halted                            = false;
+    thisAgent->token_additions                          = 0;
+    thisAgent->top_goal                                 = NIL;
+    thisAgent->top_state                                = NIL;
+    thisAgent->wmes_to_add                              = NIL;
+    thisAgent->wmes_to_remove                           = NIL;
+    thisAgent->wme_filter_list                          = NIL;
+    thisAgent->multi_attributes                         = NIL;
 
-    thisAgent->did_PE                             = false;
-    thisAgent->FIRING_TYPE                        = IE_PRODS;
-    thisAgent->ms_o_assertions                    = NIL;
-    thisAgent->ms_i_assertions                    = NIL;
+    thisAgent->did_PE                                   = false;
+    thisAgent->FIRING_TYPE                              = IE_PRODS;
+    thisAgent->ms_o_assertions                          = NIL;
+    thisAgent->ms_i_assertions                          = NIL;
 
-    thisAgent->postponed_assertions              = NIL;
+    thisAgent->postponed_assertions                     = NIL;
 
-    thisAgent->active_goal                        = NIL;
-    thisAgent->active_level                       = 0;
-    thisAgent->previous_active_level              = 0;
+    thisAgent->active_goal                              = NIL;
+    thisAgent->active_level                             = 0;
+    thisAgent->previous_active_level                    = 0;
 
-    thisAgent->nil_goal_retractions               = NIL;
+    thisAgent->nil_goal_retractions                     = NIL;
 
     /* Initializing rete stuff */
     for (int i = 0; i < 256; i++)

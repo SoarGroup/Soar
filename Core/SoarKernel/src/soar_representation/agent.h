@@ -26,41 +26,18 @@
 #include "mem.h"
 #include "memory_manager.h"
 #include "misc.h"
+#include "stl_typedefs.h"
 
 #include <string>
-#include <map>
 #include <unordered_map>
 
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
 typedef void* xml_handle;
 
-/* RBD Need more comments here, or should this stuff be here at all? */
-
 #define UPDATE_LINKS_NORMALLY 0
 #define UPDATE_DISCONNECTED_IDS_LIST 1
 #define JUST_UPDATE_COUNT 2
-
-/* !!!!!!!!!!!!!!!!  here's the agent structure !!!!!!!!!!!!!!!!!!!!!!!!*/
-/*----------------------------------------------------------------------*/
-/*                                                                      */
-/*  Agent structure used to hold what were previously global variables  */
-/*  in the single-agent Soar.                                           */
-/*                                                                      */
-/*----------------------------------------------------------------------*/
-
-/* WARNING!! If you add a new global into the Soar C code, be
-   sure to use the current_agent macro to ensure compatibility
-   with the multi-agent code!  E.g. if your new global is "foo"
-   then do NOT refer to it in the code as "foo" but instead as
-   "current_agent(foo)".
-
-   As of version 8.6, the current_agent macro was deprecated
-   when gSKI was added as a wrapper.  Use ptr directly, thisAgent->foo. */
-
-
-/* If you define a new global, initialize it in the create_soar_agent
-   routine.  AGR 527c 3-May-94 */
 
 typedef struct alpha_mem_struct alpha_mem;
 typedef struct token_struct token;
@@ -76,45 +53,23 @@ typedef struct EXPORT agent_struct
     /* -- Rete stuff: These are used for statistics in rete.cpp -- */
     uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
 
-    uint64_t current_retesave_amindex;
-    uint64_t reteload_num_ams;
+    uint64_t    current_retesave_amindex;
+    uint64_t    reteload_num_ams;
     alpha_mem** reteload_am_table;
 
-    uint64_t current_retesave_symindex;
-    uint64_t reteload_num_syms;
-    Symbol** reteload_symbol_table;
+    uint64_t    current_retesave_symindex;
+    uint64_t    reteload_num_syms;
+    Symbol**    reteload_symbol_table;
 
-    token* dummy_matches_node_tokens;
+    token*      dummy_matches_node_tokens;
 
-    int64_t highest_rhs_unboundvar_index;
-
-    //
-    // Moved here from parser.cpp.  This is used to create temporary unique
-    // identifiers for parsing.  This should probably be localized to the
-    // production, but for now, this is much better than having it as a
-    // global.
-    //
-    uint64_t placeholder_counter[26];
-
-    //
-    // Used to be a global,  this has been moved here from recmem.cpp
-    //
-    int64_t firer_highest_rhs_unboundvar_index;
-
-    //
-    // This was taked from reorder.cpp, but it is also used in production.cpp
-    //
-    char* name_of_production_being_reordered;
-
-    //
-    // These was taked from print.
-    Symbol* action_id_to_match;
-    test id_test_to_match;
-
-    //
-    // This was taken from production.h
-    //
-    tc_number current_tc_number;
+    int64_t     highest_rhs_unboundvar_index;
+    uint64_t    placeholder_counter[26];
+    int64_t     firer_highest_rhs_unboundvar_index;
+    char*       name_of_production_being_reordered;
+    Symbol*     action_id_to_match;
+    test        id_test_to_match;
+    tc_number   current_tc_number;
 
     /////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////
@@ -386,6 +341,7 @@ typedef struct EXPORT agent_struct
     /* ----------------------- Firer stuff -------------------------- */
 
     instantiation*      newly_created_instantiations;
+    inst_list           newly_deleted_instantiations;  // instantiations from NCI that are flagged for deallocation before they are asserted
 
     /* production_being_fired -- during firing, points to the prod. being fired */
     production*         production_being_fired;
@@ -414,8 +370,8 @@ typedef struct EXPORT agent_struct
 
     Symbol*             highest_goal_whose_context_changed;
     dl_list*            changed_slots;
-    dl_list*            context_slots_with_changed_acceptable_preferences;
-    cons*             slots_for_possible_removal;
+    dl_list*            context_slots_with_changed_accept_prefs;
+    cons*               slots_for_possible_removal;
 
     dl_list*            disconnected_ids;
     goal_stack_level    highest_level_anything_could_fall_from;
@@ -425,19 +381,19 @@ typedef struct EXPORT agent_struct
     goal_stack_level    level_at_which_marking_started;
     goal_stack_level    walk_level;
     tc_number           walk_tc_number;
-    cons*             promoted_ids;
+    cons*               promoted_ids;
     int                 link_update_mode;
 
     /* ----------------------- Trace Formats -------------------------- */
 
     struct trace_format_struct* (object_tf_for_anything[3]);
     struct hash_table_struct* (object_tr_ht[3]);
-    bool               printing_stack_traces;
+    bool                printing_stack_traces;
     struct trace_format_struct* (stack_tf_for_anything[3]);
     struct hash_table_struct* (stack_tr_ht[3]);
     tc_number           tf_printing_tc;
 
-    cons*             wme_filter_list; /* kjh(CUSP-B2) */
+    cons*               wme_filter_list; /* kjh(CUSP-B2) */
 
     /* ----------------------- RHS Function Stuff -------------------------- */
 

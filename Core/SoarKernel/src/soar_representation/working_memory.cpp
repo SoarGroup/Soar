@@ -56,15 +56,9 @@ WM_Manager::WM_Manager(agent* myAgent)
     wma_stats = new wma_stat_container(thisAgent);
     wma_timers = new wma_timer_container(thisAgent);
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-    wma_forget_pq = new wma_forget_p_queue(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >());
-    wma_touched_elements = new wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
-    wma_touched_sets = new wma_decay_cycle_set(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< wma_d_cycle >(thisAgent));
-#else
     wma_forget_pq = new wma_forget_p_queue();
-    wma_touched_elements = new wma_pooled_wme_set();
     wma_touched_sets = new wma_decay_cycle_set();
-#endif
+    wma_touched_elements = new wme_set();
     wma_initialized = false;
     wma_tc_counter = 2;
 

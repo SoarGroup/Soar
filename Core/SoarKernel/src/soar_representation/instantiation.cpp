@@ -60,16 +60,6 @@
 
 using namespace soar_TraceNames;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list<instantiation*,
-        soar_module::soar_memory_pool_allocator<instantiation*> > inst_mpool_list;
-typedef std::list<condition*,
-        soar_module::soar_memory_pool_allocator<condition*> > cond_mpool_list;
-#else
-typedef std::list< instantiation* > inst_mpool_list;
-typedef std::list< condition* > cond_mpool_list;
-#endif
-
 void init_instantiation_pool(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
@@ -938,6 +928,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
+    inst->in_newly_created = true;
+    inst->in_newly_deleted = false;
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
@@ -1183,20 +1175,24 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     preference* pref;
     goal_stack_level level;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-    cond_mpool_list cond_stack = cond_mpool_list(
-                                     soar_module::soar_memory_pool_allocator<condition*>(thisAgent));
-    inst_mpool_list inst_list = inst_mpool_list(
-                                    soar_module::soar_memory_pool_allocator<instantiation*>(thisAgent));
-#else
-    cond_mpool_list cond_stack;
-    inst_mpool_list inst_list;
-#endif
+//    if (inst->in_newly_created)
+//    {
+//        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
+//        if (!inst->in_newly_deleted)
+//        {
+//            inst->in_newly_deleted = true;
+//            thisAgent->newly_deleted_instantiations.push_back(inst);
+//        }
+//        return;
+//    }
 
-    inst_list.push_back(inst);
-    inst_mpool_list::iterator next_iter = inst_list.begin();
+    condition_list cond_stack;
+    inst_list l_instantiation_list;
 
-    while (next_iter != inst_list.end())
+    l_instantiation_list.push_back(inst);
+    inst_list::iterator next_iter = l_instantiation_list.begin();
+
+    while (next_iter != l_instantiation_list.end())
     {
         inst = *next_iter;
         assert(inst);
@@ -1288,8 +1284,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                                 continue;
                             }
 
-                            // The clones are hopefully a simple case so we just call deallocate_preference on them.
-                            // Someone needs to create a test case to push this boundary...
                             {
                                 preference* clone = cond->bt.trace->next_clone;
                                 preference* next;
@@ -1320,8 +1314,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             remove_from_dll(cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev);
                             if ((!cond->bt.trace->inst->preferences_generated) && (!cond->bt.trace->inst->in_ms))
                             {
-                                next_iter = inst_list.insert(next_iter,
-                                                             cond->bt.trace->inst);
+                                next_iter = l_instantiation_list.insert(next_iter, cond->bt.trace->inst);
                             }
 
                             cond_stack.push_back(cond);
@@ -1367,15 +1360,10 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
-//    for (instantiation* linst = thisAgent->newly_created_instantiations; linst != NIL; linst = linst->next)
-//    {
-//        if (linst == inst)
-//            remove_from_dll(thisAgent->newly_created_instantiations, inst, next, prev);
-//    }
     // free instantiations in the reverse order
-    inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
+    inst_list::reverse_iterator riter = l_instantiation_list.rbegin();
     dprint(DT_DEALLOCATE_INST, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
-    while (riter != inst_list.rend())
+    while (riter != l_instantiation_list.rend())
     {
         instantiation* temp = *riter;
         ++riter;
@@ -1397,8 +1385,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             {
                 /* We are about to remove a justification that has not been excised from the rete.
                  * Normally, justifications are excised as soon as they don't have any matches in
-                 * rete.cpp, but we found situations where it would remove the production here
-                 * and then later try to excise it when it no longer matched. */
+                 * rete.cpp.  But if removing the preference will remove the instantiation, we
+                 * need to excise it now so that the rete doesn't try to later */
                 excise_production(thisAgent, temp->prod, false, true);
             } else {
                 production_remove_ref(thisAgent, temp->prod);
@@ -1595,6 +1583,8 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
+    inst->in_newly_created = false;
+    inst->in_newly_deleted = false;
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
@@ -1783,6 +1773,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
+    inst->in_newly_created = false;
+    inst->in_newly_deleted = false;
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;

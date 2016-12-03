@@ -182,8 +182,7 @@ void mark_context_slot_as_acceptable_preference_changed(agent* thisAgent, slot* 
     thisAgent->memoryManager->allocate_with_pool(MP_dl_cons, &dc);
     dc->item = s;
     s->acceptable_preference_changed = dc;
-    insert_at_head_of_dll(thisAgent->context_slots_with_changed_acceptable_preferences, dc,
-                          next, prev);
+    insert_at_head_of_dll(thisAgent->context_slots_with_changed_accept_prefs, dc, next, prev);
 }
 
 /* --- This updates the acceptable preference wmes for a single slot. --- */
@@ -286,10 +285,10 @@ void do_buffered_acceptable_preference_wme_changes(agent* thisAgent)
     dl_cons* dc;
     slot* s;
 
-    while (thisAgent->context_slots_with_changed_acceptable_preferences)
+    while (thisAgent->context_slots_with_changed_accept_prefs)
     {
-        dc = thisAgent->context_slots_with_changed_acceptable_preferences;
-        thisAgent->context_slots_with_changed_acceptable_preferences = dc->next;
+        dc = thisAgent->context_slots_with_changed_accept_prefs;
+        thisAgent->context_slots_with_changed_accept_prefs = dc->next;
         s = static_cast<slot_struct*>(dc->item);
         thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
         do_acceptable_preference_wme_changes_for_slot(thisAgent, s);
@@ -2767,7 +2766,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
 
     goal->id->rl_info->eligibility_traces->~rl_et_map();
     thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
-    goal->id->rl_info->prev_op_rl_rules->~rl_rule_list();
+    goal->id->rl_info->prev_op_rl_rules->~production_list();
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
     thisAgent->symbolManager->symbol_remove_ref(&goal->id->reward_header);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
@@ -2886,11 +2885,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map();
 #endif
     thisAgent->memoryManager->allocate_with_pool(MP_rl_rule, &(id->id->rl_info->prev_op_rl_rules));
-#ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) rl_rule_list(soar_module::soar_memory_pool_allocator< production* >(thisAgent));
-#else
-    id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) rl_rule_list();
-#endif
+    id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) production_list();
 
     id->id->epmem_info->last_ol_time = 0;
     id->id->epmem_info->last_cmd_time = 0;
@@ -3386,76 +3381,93 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
     for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst)
     {
         next_inst = inst->next;
-//        if ((inst->i_id == 1708) || (inst->i_id == 1709))
-//        {
-//            dprint(DT_DEALLOCATE_INST, "Found.\n");
-//        }
-        if (inst->in_ms)
+        //        if ((inst->i_id == 1708) || (inst->i_id == 1709))
+        //        {
+        //            dprint(DT_DEALLOCATE_INST, "Found.\n");
+        //        }
+        if (!inst->in_newly_deleted)
         {
-            insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
-        }
-
-        if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
-        {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\n      asserting instantiation: %y\n", inst->prod_name);
-            char buf[256];
-            SNPRINTF(buf, 254, "asserting instantiation: %s", inst->prod_name->to_string(true));
-            xml_generate_verbose(thisAgent, buf);
-        }
-
-        for (pref = inst->preferences_generated; pref != NIL; pref = next_pref)
-        {
-            next_pref = pref->inst_next;
-            if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
+            if (inst->in_ms)
             {
-                /* No knowledge retrieval necessary in Operand2 */
+                inst->in_newly_created = false;
+                insert_at_head_of_dll(inst->prod->instantiations, inst, next, prev);
             }
-            else if (inst->in_ms || pref->o_supported)
+
+            if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
             {
-                /* --- normal case --- */
-                if (add_preference_to_tm(thisAgent, pref))
+                thisAgent->outputManager->printa_sf(thisAgent,  "\n      asserting instantiation: %y\n", inst->prod_name);
+                char buf[256];
+                SNPRINTF(buf, 254, "asserting instantiation: %s", inst->prod_name->to_string(true));
+                xml_generate_verbose(thisAgent, buf);
+            }
+
+            for (pref = inst->preferences_generated; pref != NIL; pref = next_pref)
+            {
+                next_pref = pref->inst_next;
+                if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported))
                 {
                     /* No knowledge retrieval necessary in Operand2 */
-                    if (wma_enabled(thisAgent))
+                }
+                else if (inst->in_ms || pref->o_supported)
+                {
+                    /* --- normal case --- */
+                    if (add_preference_to_tm(thisAgent, pref))
                     {
-                        wma_activate_wmes_in_pref(thisAgent, pref);
+                        /* No knowledge retrieval necessary in Operand2 */
+                        if (wma_enabled(thisAgent))
+                        {
+                            wma_activate_wmes_in_pref(thisAgent, pref);
+                        }
+                    }
+                    else
+                    {
+                        // NLD: the preference was o-supported, at
+                        // the top state, and was asserting an acceptable
+                        // preference for a WME that was already
+                        // o-supported. hence unnecessary.
+
+                        preference_add_ref(pref);
+                        preference_remove_ref(thisAgent, pref);
                     }
                 }
                 else
                 {
-                    // NLD: the preference was o-supported, at
-                    // the top state, and was asserting an acceptable
-                    // preference for a WME that was already
-                    // o-supported. hence unnecessary.
+                    /* --- inst. is refracted chunk, and pref. is not o-supported:
+                 remove the preference --- */
 
+                    /* --- first splice it out of the clones list--otherwise we might
+                 accidentally deallocate some clone that happens to have refcount==0
+                 just because it hasn't been asserted yet --- */
+
+                    if (pref->next_clone)
+                    {
+                        pref->next_clone->prev_clone = pref->prev_clone;
+                    }
+                    if (pref->prev_clone)
+                    {
+                        pref->prev_clone->next_clone = pref->next_clone;
+                    }
+                    pref->next_clone = pref->prev_clone = NIL;
+
+                    /* --- now add then remove ref--this should result in deallocation */
                     preference_add_ref(pref);
                     preference_remove_ref(thisAgent, pref);
                 }
             }
-            else
-            {
-                /* --- inst. is refracted chunk, and pref. is not o-supported:
-                 remove the preference --- */
-
-                /* --- first splice it out of the clones list--otherwise we might
-                 accidentally deallocate some clone that happens to have refcount==0
-                 just because it hasn't been asserted yet --- */
-
-                if (pref->next_clone)
-                {
-                    pref->next_clone->prev_clone = pref->prev_clone;
-                }
-                if (pref->prev_clone)
-                {
-                    pref->prev_clone->next_clone = pref->next_clone;
-                }
-                pref->next_clone = pref->prev_clone = NIL;
-
-                /* --- now add then remove ref--this should result in deallocation */
-                preference_add_ref(pref);
-                preference_remove_ref(thisAgent, pref);
-            }
         }
+    }
+    if (!thisAgent->newly_deleted_instantiations.empty())
+    {
+        dprint(DT_DEALLOCATE_INST, "Deallocating %d newly created instantiations that were flagged for deletion before they were asserted.\n", thisAgent->newly_deleted_instantiations.size());
+        instantiation* lDeleteInst;
+        for (auto iter = thisAgent->newly_deleted_instantiations.begin(); iter != thisAgent->newly_deleted_instantiations.end(); iter++)
+        {
+            lDeleteInst = *iter;
+            lDeleteInst->in_newly_created = false;
+            lDeleteInst->in_newly_deleted = false;
+            deallocate_instantiation(thisAgent, lDeleteInst);
+        }
+        thisAgent->newly_deleted_instantiations.clear();
     }
 }
 

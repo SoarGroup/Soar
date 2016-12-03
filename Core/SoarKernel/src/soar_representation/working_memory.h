@@ -56,7 +56,7 @@ class WM_Manager
         wma_stat_container* wma_stats;
         wma_timer_container* wma_timers;
 
-        wma_pooled_wme_set* wma_touched_elements;
+        wme_set* wma_touched_elements;
         wma_forget_p_queue* wma_forget_pq;
         wma_decay_cycle_set* wma_touched_sets;
 

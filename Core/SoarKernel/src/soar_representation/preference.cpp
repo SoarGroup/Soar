@@ -381,7 +381,8 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         if (already_top_o_supported)
         {
             // NLD: if it is suspected that this code is causing an issue, simply comment out the following line to debug.
-//            return false;
+            dprint(DT_PREFS, "...not adding because already o-supported on top state.\n");
+            return false;
         }
     }
 

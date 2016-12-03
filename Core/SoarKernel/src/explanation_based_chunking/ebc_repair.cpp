@@ -36,7 +36,7 @@ void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** uncon
 
 wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
 {
-    sym_grounding_path_list ids_to_walk;
+    repair_path_list ids_to_walk;
     Repair_Path*            lCurrentPath = NULL, *lNewPath = NULL;
     wme_list*               final_path = NULL;
     tc_number               ground_lti_tc;
