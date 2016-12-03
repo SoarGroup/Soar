@@ -788,8 +788,8 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
-    preference* pref;
-    bool lChunkValidated = false;
+    preference*         pref;
+    bool                lChunkValidated = true;
     condition*          l_inst_top = NULL;
     condition*          l_inst_bottom = NULL;
 
@@ -970,8 +970,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after merge, variablize and add goal tests: \n%1", m_vrblz_top);
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
-    lChunkValidated = reorder_and_validate_chunk();
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after reorder_and_validate_chunk\n%1", m_vrblz_top);
+    if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
+    {
+        lChunkValidated = reorder_and_validate_chunk();
+        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after reorder_and_validate_chunk\n%1", m_vrblz_top);
+    }
     clear_rhs_var_to_match_map();
 
     if (!lChunkValidated)

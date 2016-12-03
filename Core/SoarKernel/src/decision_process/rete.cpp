@@ -1040,6 +1040,8 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
     // save the assertion on the postponed list
     insert_at_head_of_dll(thisAgent->postponed_assertions, msc, next, prev);
 
+//    assert(msc->tok && *tok);
+
     return true;
 }
 
@@ -6146,7 +6148,8 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     /* initialize goal regardless of run mode */
     msc->level = NO_WME_LEVEL;
     msc->goal = NIL;
-
+    
+    //assert(tok);
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
 
     what we have to do now is to, essentially, determine the kind of
@@ -6496,14 +6499,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         /* --- add that instantiation to tentative_retractions --- */
         dprint(DT_RETE_PNODE_ADD, "Adding tentative retraction: %y", node->b.p.prod->name);
-        /* MToDo | Tried commenting out the following two lines in an effort to
-         *         fix a problem where Soar can't find an instantiation to
-         *         retract.  It was matching based on the rete_token and rete_wme,
-         *         and they were all null. Unfortunately, that didn't solve the
-         *         problem.  The item it was looking for wasnt' there.  It's
-         *         possible that it was trying to retract the instantiations a
-         *         second time while it was still in tentative limbo.
-         */
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);

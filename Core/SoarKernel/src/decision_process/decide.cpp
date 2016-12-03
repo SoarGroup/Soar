@@ -224,14 +224,12 @@ void do_acceptable_preference_wme_changes_for_slot(agent* thisAgent, slot* s)
         else
         {
             remove_from_dll(s->acceptable_preference_wmes, w, next, prev);
-            /* REW: begin 09.15.96 */
             /* IF we lose an acceptable preference for an operator, then that
             operator comes out of the slot immediately in OPERAND2.
             However, if the lost acceptable preference is not for item
             in the slot, then we don;t need to do anything special until
             mini-quiescence. */
             remove_operator_if_necessary(thisAgent, s, w);
-            /* REW: end   09.15.96 */
             remove_wme_from_wm(thisAgent, w);
         }
         w = next_w;
@@ -643,11 +641,8 @@ void mark_id_and_tc_as_unknown_level(agent* thisAgent, Symbol* root)
     dl_cons* dc;
 
     Symbol* id;
-#ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
-#else
     symbol_list ids_to_walk;
-#endif
+
     //dprint(DT_UNKNOWN_LEVEL, "mark_id_and_tc_as_unknown_level called on %y.  (mark tc = %u)", root, thisAgent->mark_tc_number);
     ids_to_walk.push_back(root);
 
@@ -784,12 +779,9 @@ void walk_and_update_levels(agent* thisAgent, Symbol* root)
     dl_cons* dc;
     Symbol* id;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-    symbol_list ids_to_walk = symbol_list(soar_module::soar_memory_pool_allocator< Symbol* >());
-#else
-    symbol_list ids_to_walk;
-#endif
     //dprint(DT_UNKNOWN_LEVEL, "walk_and_update_levels called for %y.\n", root);
+
+    symbol_list ids_to_walk;
     ids_to_walk.push_back(root);
 
     while (!ids_to_walk.empty())
@@ -2301,7 +2293,6 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
             else
             {
                 remove_from_dll(s->wmes, w, next, prev);
-                /* REW: begin 09.15.96 */
                 if (w->gds)
                 {
                     if (w->gds->goal != NIL)
@@ -2310,7 +2301,6 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         gds_invalid_so_remove_goal(thisAgent, w);
                     }
                 }
-                /* REW: end   09.15.96 */
                 remove_wme_from_wm(thisAgent, w);
             }
             w = next_w;
@@ -2321,10 +2311,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
         {
             if (cand->value->decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG)
             {
-                /* REW: begin 11.22.97 */
                 /* print(thisAgent, "\n This WME was marked as already existing...."); print_wme(cand->value->decider_wme); */
-
-                /* REW: end   11.22.97 */
                 cand->value->decider_wme->preference = cand;
             }
             else
@@ -2528,16 +2515,12 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                     } /* end if not halted */
                 }  /* end if w->preference->o_supported == true ... */
 
-                /* REW: begin 11.25.96 */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
                 thisAgent->timers_gds.stop();
                 thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
 #endif
 #endif
-                /* REW: end   11.25.96 */
-                /* REW: end   09.15.96 */
-
                 add_wme_to_wm(thisAgent, w);
             }
         }
@@ -3624,6 +3607,9 @@ void do_preference_phase(agent* thisAgent)
         bool once = true;
         while (postpone_assertion(thisAgent, &prod, &tok, &w))
         {
+//            if(!tok)
+//                dprint(DT_DEBUG, "Found.\n");
+
             assertionsExist = true;
 
             if (thisAgent->explanationBasedChunker->max_chunks_reached)
