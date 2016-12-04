@@ -216,6 +216,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
         }
         prefix[1] = 0;
         lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
+        lNewVar->var->instantiated_sym = lMatchedSym;
         lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
     }
     else

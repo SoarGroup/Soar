@@ -518,14 +518,27 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
             reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
-     * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */
     else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->data.referent->var->instantiated_sym)
     {
+        /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
+         * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */
         Symbol* oldSym = pTest->data.referent;
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
+    }
+}
+
+void sanity_test (test pTest)
+{
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            sanity_test(static_cast<test>(c->first));
+        }
+    } else {
+        assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
     }
 }
 
@@ -547,6 +560,12 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 reinstantiate_test(cond->data.tests.id_test);
                 reinstantiate_test(cond->data.tests.attr_test);
                 reinstantiate_test(cond->data.tests.value_test);
+//                if (cond->type == POSITIVE_CONDITION)
+//                {
+//                    sanity_test(cond->data.tests.id_test);
+//                    sanity_test(cond->data.tests.attr_test);
+//                    sanity_test(cond->data.tests.value_test);
+//                }
             } else {
                 for (condition* ncond = cond->data.ncc.top; ncond != NIL; ncond = ncond->next)
                 {
@@ -567,6 +586,12 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 reinstantiate_test(lCond->data.tests.id_test);
                 reinstantiate_test(lCond->data.tests.attr_test);
                 reinstantiate_test(lCond->data.tests.value_test);
+//                if (cond->type == POSITIVE_CONDITION)
+//                {
+//                    sanity_test(lCond->data.tests.id_test);
+//                    sanity_test(lCond->data.tests.attr_test);
+//                    sanity_test(lCond->data.tests.value_test);
+//                }
             } else {
                 for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)
                 {
@@ -630,6 +655,7 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->o_id);
     }
+    assert(!rs->referent->is_variable());
 
 }
 
