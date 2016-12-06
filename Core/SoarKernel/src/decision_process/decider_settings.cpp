@@ -19,7 +19,7 @@
 
 decider_param_container::decider_param_container(agent* new_agent, uint64_t pDecider_settings[]): soar_module::param_container(new_agent)
 {
-    pDecider_settings[DECIDER_KEEP_TOP_OPREFS] = false;
+    pDecider_settings[DECIDER_KEEP_TOP_OPREFS] = true;
     pDecider_settings[DECIDER_MAX_GP] = 20000;
     pDecider_settings[DECIDER_MAX_DC_TIME] = 0;
     pDecider_settings[DECIDER_MAX_ELABORATIONS] = 100;
