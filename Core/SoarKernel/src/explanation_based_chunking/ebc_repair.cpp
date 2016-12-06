@@ -3,6 +3,7 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "production.h"
@@ -250,7 +251,10 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
     new_cond->test_for_acceptable_preference = lWME->acceptable;
     new_cond->bt.wme_ = lWME;
     new_cond->bt.level = lWME->id->id->level;
+//    new_cond->bt.trace = find_clone_for_level(lWME->preference, static_cast<goal_stack_level>(m_match_goal_level));
+//    assert(new_cond->bt.trace || !lWME->preference);
     new_cond->bt.trace = lWME->preference;
+
     new_cond->inst = lWME->preference ? lWME->preference->inst : NULL;
 
     /* In other functions we only add a reference if the instantiation match goal level is

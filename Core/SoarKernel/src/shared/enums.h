@@ -97,6 +97,7 @@ enum LearnedRuleType {
 };
 
 enum Decider_settings {
+    DECIDER_KEEP_TOP_OPREFS,
     DECIDER_MAX_GP,
     DECIDER_MAX_DC_TIME,
     DECIDER_MAX_ELABORATIONS,

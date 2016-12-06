@@ -2323,15 +2323,16 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                      *    creating a GDS for a WME level different from the instantiation level.  This
                      *    solution seems to work well, but it's possible that there are subtle aspects
                      *    of the GDS that aren't being appreciated.  See comments below. -- */
-                    dprint(DT_GDS, "%fWME from duplicate rule.  Skipping gds processing for newly made o-supported wme %p (id level = %d, mg level = %d)\n",
-                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
+                    dprint(DT_GDS, "Preference is from result instantiation %y (i%u) bc (%d != %d).  Not adding new o-supported wme from %p\n",
+                           cand->inst->prod_name, cand->inst->i_id,
+                           static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level), cand);
                     continue;
                 }
                 else
                 {
-                    dprint(DT_GDS, "%fWME not a duplicate.  Performing gds processing for newly made wme %p (id level = %d, mg level = %d)\n",
-                           cand, static_cast<int64_t>(cand->id->id->level), static_cast<int64_t>(cand->inst->match_goal_level));
-                    dprint(DT_GDS, "Generated from preference created by instantiation:\n%7", cand->inst);
+                    dprint(DT_GDS, "Adding %s WME at %y (lvl %d) from instantiation i%u (%y) and pref %p\n",
+                        cand->o_supported ? "o-supported" : "i-supported",
+                        cand->inst->match_goal, static_cast<int64_t>(cand->id->id->level), cand->inst->i_id, cand->inst->prod_name, cand);
                 }
                 dprint(DT_WME_CHANGES, "Adding non-context wme for preference %p.\n", cand);
                 w = make_wme(thisAgent, cand->id, cand->attr, cand->value, false);
@@ -2383,17 +2384,15 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
 
                 if ((w->preference->o_supported == true) && (w->preference->inst->match_goal_level != 1))
                 {
-                    dprint(DT_GDS, "Checking GDS necessary for wme %w: %s (level = %d)\n", w,
-                           (w->preference->o_supported ? ":o-support" : ":i-support"),
-                           static_cast<int64_t>(w->preference->id->id->level));
-                    dprint(DT_GDS, "Generated from preference created by instantiation:\n");
-                    dprint(DT_GDS, "%7", w->preference->inst);
+                    dprint(DT_GDS, "GDS creation detected o-supported WME being added for subgoal %y (l%d). %s.  %w\n",
+                           w->preference->inst->match_goal, static_cast<int64_t>(w->preference->id->id->level),
+                           (w->preference->inst->match_goal->id->gds == NIL) ? "GDS exists" : "GDS does not exist", w);
+//                    dprint(DT_GDS, "- created as a result of instantiation i%u preference: %p\n", w->preference->inst->i_id, w->preference);
 
                     if (w->preference->inst->match_goal->id->gds == NIL)
                     {
                         /* If there is no GDS yet for this goal,
                          * then we need to create one */
-                        dprint(DT_GDS, "Creating new GDS for match goal...\n");
                         if (w->preference->inst->match_goal_level == w->preference->id->id->level)
                         {
                             /*
@@ -2407,6 +2406,7 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                              * it can add up between calls to init-soar, but I'm not sure if it can increase
                              * more frequently than that.
                              */
+                            dprint(DT_GDS, "...creating new GDS for match goal %y\n", w->preference->inst->match_goal);
                             create_gds_for_goal(thisAgent, w->preference->inst->match_goal);
 
                             /* REW: BUG When chunks and result instantiations both create
@@ -2430,6 +2430,9 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
                         }
                         else
                         {
+                            dprint(DT_GDS, "...NOT creating new GDS for match goal %y because level of w->pref->inst->match_goal (%d) is not the same as level of identifier in wme (%d).\n",
+                                w->preference->inst->match_goal, static_cast<int64_t>(w->preference->inst->match_goal_level), static_cast<int64_t>(w->preference->id->id->level));
+                            assert(false);
                             /* -- Should not be able to get here any more with new clause checking for this
                              *    cumulative state earlier. Leaving comment in case this solution doesn't
                              *    prove to be sufficient and we need to do something more complex, as
@@ -3456,7 +3459,7 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
             }
         }
     }
-    if (!thisAgent->newly_deleted_instantiations.empty())
+    if (!thisAgent->Decider->settings[DECIDER_KEEP_TOP_OPREFS] && !thisAgent->newly_deleted_instantiations.empty())
     {
         dprint(DT_DEALLOCATE_INST, "Deallocating %d newly created instantiations that were flagged for deletion before they were asserted.\n", thisAgent->newly_deleted_instantiations.size());
         instantiation* lDeleteInst;
@@ -3959,7 +3962,7 @@ void elaborate_gds(agent* thisAgent)
          * for an instantiation at the top level.
          * - My guess is that this should have never been called for that instantiation, but I don't
          * know enough about the GDS code to know if that's true.
-         * - The problem agent does crash all versions of Soar at least as far back as 9.3.2 - Maz */
+         * - The problem agent does crash all versions of Soar at least as far back as 9.3.2 */
         if (inst->match_goal_level > 1)
         {
             for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
@@ -4101,6 +4104,12 @@ void elaborate_gds(agent* thisAgent)
                          * (i.e., if NIL GDS) */
 
                         /* JC ADDED: Separate adding wme to GDS as a function */
+//                        if (!inst->match_goal->id->id->gds)
+//                        {
+//                            create_gds_for_goal(thisAgent, inst->match_goal);
+//                            elaborate_gds(thisAgent);
+
+//                        }
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 
                         //               wme_matching_this_cond->gds = inst->match_goal->id->gds;

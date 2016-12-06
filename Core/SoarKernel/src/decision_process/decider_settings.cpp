@@ -19,6 +19,7 @@
 
 decider_param_container::decider_param_container(agent* new_agent, uint64_t pDecider_settings[]): soar_module::param_container(new_agent)
 {
+    pDecider_settings[DECIDER_KEEP_TOP_OPREFS] = false;
     pDecider_settings[DECIDER_MAX_GP] = 20000;
     pDecider_settings[DECIDER_MAX_DC_TIME] = 0;
     pDecider_settings[DECIDER_MAX_ELABORATIONS] = 100;
@@ -37,6 +38,8 @@ decider_param_container::decider_param_container(agent* new_agent, uint64_t pDec
     stop_phase->add_mapping(PROPOSE_PHASE, "propose");
     add(stop_phase);
 
+    keep_all_top_oprefs = new soar_module::boolean_param("keep-all-top-oprefs", pDecider_settings[DECIDER_KEEP_TOP_OPREFS] ? on : off, new soar_module::f_predicate<boolean>());
+    add(keep_all_top_oprefs);
     max_gp = new soar_module::integer_param("max-gp", pDecider_settings[DECIDER_MAX_GP], new soar_module::gt_predicate<int64_t>(1, true), new soar_module::f_predicate<int64_t>());
     add(max_gp);
     max_dc_time = new soar_module::integer_param("max-dc-time", pDecider_settings[DECIDER_MAX_DC_TIME], new soar_module::gt_predicate<int64_t>(0, true), new soar_module::f_predicate<int64_t>());
@@ -123,6 +126,7 @@ void decider_param_container::print_settings(agent* thisAgent)
 //    outputManager->printa_sf(thisAgent, "soar run%-%-%s\n", "Run Soar");
     outputManager->printa_sf(thisAgent, "soar version%-%-%s\n", "Print version number of Soar");
     outputManager->printa(thisAgent, "----------------- Settings --------------------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("keep-all-top-oprefs", keep_all_top_oprefs->get_string(), 47).c_str(), "Keep all preferences for o-supported WMEs on top state");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-elaborations", max_elaborations->get_string(), 47).c_str(), "Maximum elaboration in a decision cycle");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-goal-depth", max_goal_depth->get_string(), 47).c_str(), "Halt if goal stack reaches this depth");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-nil-output-cycles", max_nil_output_cycles->get_string(), 47).c_str(), "Impasse after this many nil outputs (run --out)");

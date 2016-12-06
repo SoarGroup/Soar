@@ -346,7 +346,7 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
     }
 
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
-    dprint(DT_DEBUG, "Generated name %s.\n", lName.str().c_str());
+//    dprint(DT_DEBUG, "Generated name %s.\n", lName.str().c_str());
     return generated_name;
 }
 void Explanation_Based_Chunker::set_up_rule_name()
