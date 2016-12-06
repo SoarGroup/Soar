@@ -4041,12 +4041,12 @@ void elaborate_gds(agent* thisAgent)
                     {
                         /* WME should be in the GDS of the current goal if the WME's GDS does not already exist. (i.e., if NIL GDS) */
 
-//                        if (!inst->match_goal->id->id->gds)
-//                        {
-//                            create_gds_for_goal(thisAgent, inst->match_goal);
-//                            elaborate_gds(thisAgent);
+                        /* MToDo | Remove.  Experimenting while debugging agent that has a missing gds */
+                        if (!inst->match_goal->id->id->gds)
+                        {
+                            create_gds_for_goal(thisAgent, inst->match_goal);
+                        }
 
-//                        }
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 
                         if (wme_matching_this_cond->gds->wmes_in_gds->gds_prev)
@@ -4203,8 +4203,8 @@ void elaborate_gds(agent* thisAgent)
                                             {
                                                 dprint(DT_GDS, "           ignoring inst %y because it is at a lower level than the GDS\n", pref->inst->prod_name);
                                             }
-                                            pref->inst->GDS_evaluated_already = true;
-                                        }
+                                                pref->inst->GDS_evaluated_already = true;
+                                            }
                                         else
                                         {
                                             dprint(DT_GDS, "           the inst producing this pref was already explored; skipping it\n");
