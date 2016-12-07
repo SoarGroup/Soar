@@ -821,7 +821,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         return;
     }
 
-    dprint_header(DT_MILESTONES, PrintBoth, "Learning EBC rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     m_reliable = true;
@@ -920,7 +920,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_vrblz_top);
 
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
@@ -951,29 +951,29 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
     variablize_condition_list(m_vrblz_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_vrblz_top);
 
     merge_conditions(m_vrblz_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after merging: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after merging: \n%1", m_vrblz_top);
 
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_results before variablizing into actions: \n%6", NULL, m_results);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_results before variablizing: \n%6", NULL, m_results);
 
     m_rhs = variablize_results_into_actions(m_results);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Variablized actions m_rhs after merge: \n%2", m_rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", m_rhs);
 
     /* m_rhs has identities here for rhs functions*/
     add_goal_or_impasse_tests();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after merge, variablize and add goal tests: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_vrblz_top);
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
     if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
     {
         lChunkValidated = reorder_and_validate_chunk();
-        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after reorder_and_validate_chunk\n%1", m_vrblz_top);
+        dprint(DT_VARIABLIZATION_MANAGER, "Conditions after re-ordering and repair:\n%1", m_vrblz_top);
     }
     clear_rhs_var_to_match_map();
 

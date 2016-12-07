@@ -156,57 +156,60 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
     assert(pTest && pTest->eq_test);
     
-    if (pTest->eq_test->identity && !pTest->eq_test->data.referent->is_variable())
+    if (!pTest->eq_test->data.referent->is_variable())
     {
-        dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
-
-        var_info = get_variablization(pTest->eq_test->identity);
-        if (var_info)
+        if (pTest->eq_test->identity)
         {
-            thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
-            pTest->eq_test->data.referent = var_info->variable_sym;
-            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
 
-            pTest->eq_test->identity = var_info->identity;
-            dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
-        } else {
-            /* Create a new variable.  If constant is being variablized just used
-             * 'c' instead of first letter of id name.  We now avoid using 'o' for
-             * non-operators and 's' for non-states.  That makes things
-             * clearer in chunks because of standard naming conventions. --- */
-            lOldSym = pTest->eq_test->data.referent;
-            if (lOldSym->is_sti())
+            var_info = get_variablization(pTest->eq_test->identity);
+            if (var_info)
             {
-                char prefix_char = static_cast<char>(tolower(lOldSym->id->name_letter));
-                if (((prefix_char == 's') || (prefix_char == 'S')) && !lOldSym->id->isa_goal)
+                thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
+                pTest->eq_test->data.referent = var_info->variable_sym;
+                thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+
+                pTest->eq_test->identity = var_info->identity;
+                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", var_info->variable_sym, var_info->identity);
+            } else {
+                /* Create a new variable.  If constant is being variablized just used
+                 * 'c' instead of first letter of id name.  We now avoid using 'o' for
+                 * non-operators and 's' for non-states.  That makes things
+                 * clearer in chunks because of standard naming conventions. --- */
+                lOldSym = pTest->eq_test->data.referent;
+                if (lOldSym->is_sti())
+                {
+                    char prefix_char = static_cast<char>(tolower(lOldSym->id->name_letter));
+                    if (((prefix_char == 's') || (prefix_char == 'S')) && !lOldSym->id->isa_goal)
+                    {
+                        prefix[0] = 'c';
+                    } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lOldSym->id->isa_operator) {
+                        prefix[0] = 'c';
+                    } else {
+                        prefix[0] = prefix_char;
+                    }
+                }
+                else
                 {
                     prefix[0] = 'c';
-                } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lOldSym->id->isa_operator) {
-                    prefix[0] = 'c';
-                } else {
-                    prefix[0] = prefix_char;
                 }
+                prefix[1] = 0;
+                lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
+
+                var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
+
+                thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
+                pTest->eq_test->data.referent = var_info->variable_sym;
+                thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
+
+                pTest->eq_test->identity = var_info->identity;
+                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
             }
-            else
-            {
-                prefix[0] = 'c';
-            }
-            prefix[1] = 0;
-            lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
-
-            var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
-
-            thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
-            pTest->eq_test->data.referent = var_info->variable_sym;
-            thisAgent->symbolManager->symbol_add_ref(var_info->variable_sym);
-
-            pTest->eq_test->identity = var_info->identity;
-            dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+        } else {
+            /* Literalized identity, so set identity in chunk to 0 */
+            pTest->eq_test->identity = NULL_IDENTITY_SET;
         }
-        dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
-    } else {
-        /* Literalized identity, so set identity in chunk to 0 */
-        pTest->eq_test->identity = NULL_IDENTITY_SET;
     }
 }
 
@@ -289,7 +292,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
                         continue;
                     }
                 }
-                else if (tt->identity)
+                else if (tt->identity && !tt->data.referent->is_variable())
                 {
                     variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
                 }
@@ -319,7 +322,7 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
     {
         for (condition* cond = top_cond; cond != NIL; cond = cond->next)
         {
-            if (cond->type == POSITIVE_CONDITION)
+            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
                 dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 variablize_equality_tests(cond->data.tests.id_test);

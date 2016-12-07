@@ -204,8 +204,7 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     //    if (pref->inst)
     //    {
     //        /*  remove it from the list of pref's from that instantiation */
-    //        remove_from_dll(pref->inst->preferences_generated, pref,
-    //            inst_next, inst_prev);
+    //        remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
     //        instantiation* prefInst = pref->inst;
     //        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
     //        {
@@ -369,6 +368,8 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
 
     if (!thisAgent->Decider->settings[DECIDER_KEEP_TOP_OPREFS] && (pref->inst->match_goal == thisAgent->top_state) && pref->o_supported && !s->isa_context_slot && (pref->type == ACCEPTABLE_PREFERENCE_TYPE) )
     {
+        /* We could potentially cache a list of all o-supported values in the slot so that we don't have to iterate
+         * through all of the preferences. We would need to maintain the list as we decide non-context slots */
         bool already_top_o_supported = false;
 
         for (p2 = s->all_preferences; (p2 && !already_top_o_supported); p2 = p2->all_of_slot_next)
@@ -388,8 +389,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
 
     pref->slot = s;
 
-    insert_at_head_of_dll(s->all_preferences, pref,
-        all_of_slot_next, all_of_slot_prev);
+    insert_at_head_of_dll(s->all_preferences, pref, all_of_slot_next, all_of_slot_prev);
 
     /*  add to preference list of slot (according to match goal level of the instantiations) */
 
@@ -424,7 +424,6 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         }
     }
 
-    /*  other miscellaneous stuff */
     pref->in_tm = true;
     preference_add_ref(pref);
 
@@ -504,9 +503,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     }
 
     /*  if acceptable/require pref for context slot, we may need to add a wme later */
-    if ((s->isa_context_slot) &&
-        ((pref->type == ACCEPTABLE_PREFERENCE_TYPE) ||
-            (pref->type == REQUIRE_PREFERENCE_TYPE)))
+    if ((s->isa_context_slot) &&  ((pref->type == ACCEPTABLE_PREFERENCE_TYPE) || (pref->type == REQUIRE_PREFERENCE_TYPE)))
     {
         mark_context_slot_as_acceptable_preference_changed(thisAgent, s);
     }
@@ -527,8 +524,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
     dprint(DT_PREFS, "Removing preference %p from temporary memory\n", pref);
 
     /*  remove preference from the list for the slot */
-    remove_from_dll(s->all_preferences, pref,
-                    all_of_slot_next, all_of_slot_prev);
+    remove_from_dll(s->all_preferences, pref, all_of_slot_next, all_of_slot_prev);
     remove_from_dll(s->preferences[pref->type], pref, next, prev);
 
     /*  other miscellaneous stuff */

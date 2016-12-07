@@ -23,8 +23,8 @@
 //    #define DEBUG_ONLY_BEFORE_DC 430
 
     /* This can be used to turn off dprints except for a particular chunk */
-//    #define DEBUG_ONLY_CHUNK_ID 64
-//    #define DEBUG_ONLY_CHUNK_ID_LAST 65
+//    #define DEBUG_ONLY_CHUNK_ID 23611
+//    #define DEBUG_ONLY_CHUNK_ID_LAST 23613
 #endif
 
 

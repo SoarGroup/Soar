@@ -138,17 +138,17 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     uint64_t btLevel = cond->bt.level;
     uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
     /* MToDo | Remove */
-    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
-    {
-        dprint(DT_DEBUG, "Levels don't match: id level %u != cond bt.level %u!!!  Operational is <= %d\n", idLevel, btLevel, static_cast<int64_t>(grounds_level));
+//    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
+//    {
+ //       dprint(DT_DEBUG, "Levels don't match: id level %u != cond bt.level %u!!!  Operational is <= %d\n", idLevel, btLevel, static_cast<int64_t>(grounds_level));
 //            "!= pref id level %u!!!\n          %y | %l | %p\n", prefLevel, thisID, cond, cond->bt.trace);
-        preference* testp = find_clone_for_level(cond->bt.trace, btLevel);
-        preference* testp2 = find_clone_for_level(cond->bt.trace, (grounds_level));
-        preference* testp3 = find_clone_for_level(cond->bt.trace, (grounds_level + 1));
-        dprint(DT_DEBUG, "bt level, bt level + 1, grounds_level, grounds_level + 1: %u %u %d %d %s %s %s %s",
-            btLevel, static_cast<int64_t>(grounds_level), static_cast<int64_t>(grounds_level+1),
-            testp ? "Yes" : "No ",testp2 ? "Yes" : "No ",testp3 ? "Yes" : "No ");
-    }
+//        preference* testp = find_clone_for_level(cond->bt.trace, btLevel);
+//        preference* testp2 = find_clone_for_level(cond->bt.trace, (grounds_level));
+//        preference* testp3 = find_clone_for_level(cond->bt.trace, (grounds_level + 1));
+//        dprint(DT_DEBUG, "bt level, bt level + 1, grounds_level, grounds_level + 1: %u %u %d %d %s %s %s %s",
+ //           btLevel, static_cast<int64_t>(grounds_level), static_cast<int64_t>(grounds_level+1),
+ //           testp ? "Yes" : "No ",testp2 ? "Yes" : "No ",testp3 ? "Yes" : "No ");
+ //   }
 
     return  (thisID->id->level <= grounds_level);
 //    return (btLevel <= grounds_level);
