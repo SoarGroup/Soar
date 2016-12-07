@@ -139,7 +139,7 @@ typedef struct preference_struct
     bool                            rl_contribution;
     double                          rl_rho;                                 /* ratio of target policy to behavior policy */
 
-    wma_pooled_wme_set*             wma_o_set;
+    wme_set*                        wma_o_set;
 
 } preference;
 

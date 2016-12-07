@@ -215,7 +215,7 @@ extern bool wma_enabled(agent* thisAgent);
 //////////////////////////////////////////////////////////
 
 // generic call to activate a wme
-extern void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL, bool o_only = false);
+extern void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references = 1, wme_set* o_set = NULL, bool o_only = false);
 
 // Removes a decay element from an existing WME so that
 // it is no longer activated.

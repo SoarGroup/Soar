@@ -10,7 +10,7 @@ sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1
     (<l5> ^arg1 <l6> +)
 }
 
-sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1
+sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1b
     (state <s1> ^cue1 handle -^goal <g*1> -^deleted <d*1> ^cue2 goal
           ^superstate nil)
     -->
@@ -22,5 +22,14 @@ sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1
     (<l4> ^name pantry +)
 }
 
-
-
+sp {answer*retrieve-goal*copy-goal*StateNoChange*t5-1c
+    (state <s1> ^cue1 handle -^deleted <d*1> -^goal <g*1> ^cue2 goal
+          ^superstate nil)
+    -->
+    (<s1> ^goal <l1> +)
+    (<l1> ^handle goal + ^procedural <l2> + ^predicate <l6> +)
+    (<l2> ^arg1 <l3> +)
+    (<l6> ^1 <l5> +)
+    (<l5> ^default <l4> +)
+    (<l4> ^name pantry +)
+}

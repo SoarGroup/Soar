@@ -12,14 +12,12 @@
 
 #include "ebc_structs.h"
 #include "stl_typedefs.h"
+#include "test.h"
 
 #include <list>
 #include <set>
 #include <unordered_map>
 #include <cstdlib>
-
-/* This can be used to turn off chunking dprints except for a particular chunk */
-//#define DEBUG_ONLY_CHUNK_ID 13
 
 tc_number get_new_tc_number(agent* thisAgent);
 
@@ -62,7 +60,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void unify_identity(test t);
+        void unify_identity(test t) { t->identity = get_identity(t->identity); }
         void unify_preference_identities(preference* lPref);
         uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
@@ -72,11 +70,12 @@ class Explanation_Based_Chunker
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
+        void set_rule_type(LearnedRuleType pRuleType) {m_rule_type = pRuleType; };
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
         /* RL templates utilize the EBChunker variablization code when building
          * template instances.  We make these two methods public to support that. */
-        void        variablize_condition_list   (condition* top_cond, bool variablize, bool pInNegativeCondition = false);
+        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
@@ -114,7 +113,6 @@ class Explanation_Based_Chunker
         uint64_t            justification_naming_counter;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
-        uint64_t            total_dc;
 
         std::string*        chunk_history;
 
@@ -130,8 +128,8 @@ class Explanation_Based_Chunker
         tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
-        cons*             grounds;
-        cons*             locals;
+        cons*               grounds;
+        cons*               locals;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
@@ -140,6 +138,7 @@ class Explanation_Based_Chunker
 
         /* Variables used by result building methods */
         bool                m_learning_on_for_instantiation;
+        LearnedRuleType     m_rule_type;
         instantiation*      m_inst;
         preference*         m_results;
         goal_stack_level    m_results_match_goal_level;
@@ -147,15 +146,11 @@ class Explanation_Based_Chunker
         tc_number           m_results_tc;
         preference*         m_extra_results;
         bool                m_reliable;
-        condition*          m_inst_top;
-        condition*          m_inst_bottom;
         condition*          m_vrblz_top;
         action*             m_rhs;
         production*         m_prod;
         instantiation*      m_chunk_inst;
         Symbol*             m_prod_name;
-        condition*          m_saved_justification_top;
-        condition*          m_saved_justification_bottom;
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
         EBCFailureType      m_failure_type;
@@ -174,7 +169,7 @@ class Explanation_Based_Chunker
         id_set*                    identities_to_clean_up;
 
         id_to_id_map*              unification_map;
-        identity_triple*           local_singleton_superstate_identity;
+        identity_triple            local_singleton_superstate_identity;
 
         constraint_list*           constraints;
         attachment_points_map*     attachment_points;
@@ -193,8 +188,8 @@ class Explanation_Based_Chunker
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
                                                         uint64_t pI_id, AddAdditionalTestsMode additional_tests);
         /* Chunk building methods */
-        Symbol*         generate_chunk_name(instantiation* inst, bool pIsChunk);
-        void            set_up_rule_name(bool pForChunk);
+        Symbol*         generate_name_for_new_rule();
+        void            set_up_rule_name();
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
@@ -206,15 +201,11 @@ class Explanation_Based_Chunker
         void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
-        void            make_clones_of_results(bool pForChunk);
-        void            create_instantiated_counterparts();
+        void            make_clones_of_results();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
-        void            reorder_instantiated_conditions(condition* top_cond, condition** dest_inst_top, condition** dest_inst_bottom);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
         void            clean_up();
-        void            save_conditions_for_reversal();
-        void            revert_chunk_to_instantiation();
         void            add_chunk_to_rete();
 
         /* Dependency analysis methods */
@@ -248,7 +239,8 @@ class Explanation_Based_Chunker
         void add_additional_constraints();
         bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
-        void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
+        void reset_constraint_found_tc_num() { /*if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; */
+            tc_num_found = get_new_tc_number(thisAgent); };
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
@@ -257,15 +249,21 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        action* variablize_result_into_actions(preference* result, bool variablize);
-        action* variablize_results_into_actions(preference* result, bool variablize);
+        action* variablize_result_into_actions(preference* result);
+        action* variablize_results_into_actions(preference* result);
         uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
-        void variablize_equality_tests(test t, bool pVariablize = true);
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities, bool pVariablize = true);
-        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable);
+        void variablize_equality_tests(test t);
+        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
         sym_identity_info* get_variablization(uint64_t index_id);
         void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
+
+        void reinstantiate_test(test pTest);
+        void reinstantiate_rhs_symbol(rhs_value pRhs_val);
+        condition* reinstantiate_condition_list(condition* top_cond);
+        void reinstantiate_actions(action* pActionList);
+        condition* reinstantiate_current_rule();
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

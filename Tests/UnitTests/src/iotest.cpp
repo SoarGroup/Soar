@@ -130,7 +130,9 @@ void IOTest::createKernelAndAgents(const KernelBitset& options, int port)
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
+    #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
     configure_for_unit_tests();
+    #endif
 
     pKernel->SetAutoCommit(options.test(kOpt_AUTO_COMMIT_ENABLED)) ;
 

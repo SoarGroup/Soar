@@ -154,7 +154,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         std::string unSymString("");
         action* lAction;
         Symbol* lSym;
-        thisAgent->outputManager->set_print_indents("        ");
+        thisAgent->outputManager->set_print_indents("   ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
@@ -162,26 +162,32 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                matched_sym* lNewUngroundedSym = new matched_sym();
-                lNewUngroundedSym->sym = lSym;
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+
+                lNewUngroundedSym->variable_sym = lSym;
                 if (lSym->is_sti())
                 {
-                    lNewUngroundedSym->matched_sym = lSym;
+                    lNewUngroundedSym->instantiated_sym = lSym;
                 } else {
-                    lNewUngroundedSym->matched_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
+                    lNewUngroundedSym->instantiated_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
-                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->sym, lNewUngroundedSym->matched_sym, lNewUngroundedSym->identity);
+                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
                 ungrounded_syms->push_back(lNewUngroundedSym);
             }
         }
         thisAgent->outputManager->set_print_indents();
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add rule with ungrounded action(s):");
+        }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_reordering_rhs, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_reordering_rhs);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected:  Created rule with with ungrounded action.";
+            thisAgent->reason_for_stopping = "Attempted to add rule with ungrounded action action(s).  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
@@ -299,6 +305,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
+    uint64_t sym_identity = NULL_IDENTITY_SET;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
@@ -341,6 +348,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                         continue;
                     }
                     sym = subtest->data.referent;
+                    sym_identity = subtest->identity;
                     dprint(DT_REORDERER, "...found equality symbol on %y.  Setting as index.\n", sym);
                 }
             }
@@ -379,6 +387,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     old_sts = saved;
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
+                    saved->var_identity = sym_identity;
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -426,6 +435,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
+            saved->var_identity = NULL_IDENTITY_SET;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -563,6 +573,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
+                        st->the_test->identity = st->var_identity;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;
@@ -655,18 +666,16 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     dprint_header(DT_REORDERER, PrintBefore, "Final Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", conds_list);
-    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
-    dprint_noprefix(DT_REORDERER, "%9", conds_list);
     dprint(DT_REORDERER, "Saved Tests:\n");
     dprint_saved_test_list(DT_REORDERER, tests_to_restore);
     dprint_header(DT_REORDERER, PrintAfter, "= end restore saved tests =\n");
 
     if (tests_to_restore)
     {
-        if (thisAgent->outputManager->settings[OM_WARNINGS])
+        dprint_saved_test_list(DT_DEBUG, tests_to_restore);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
-            dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
@@ -841,7 +850,6 @@ void remove_vars_requiring_bindings(agent* thisAgent,
 cons* collect_root_variables(agent* thisAgent,
                              condition* cond_list,
                              tc_number tc, /* for vars bound outside */
-                             bool allow_printing_warnings,
                              matched_symbol_list* ungrounded_syms,
                              bool add_ungrounded)
 {
@@ -862,15 +870,17 @@ cons* collect_root_variables(agent* thisAgent,
     {
         if (cond->type == POSITIVE_CONDITION)
         {
+            lMatchedSym = NULL;
             if (cond->data.tests.value_test->eq_test->data.referent->is_variable())
             {
-                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.value_test->eq_test->data.referent : cond->data.tests.value_test->eq_test->data.referent;
-            } else {
-                lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
+                lMatchedSym = cond->data.tests.value_test->eq_test->data.referent->var->instantiated_sym;
             }
+            /* Dummy variables and literals won't have a matched sym */
+            if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
+            dprint(DT_REORDERER, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
@@ -881,13 +891,15 @@ cons* collect_root_variables(agent* thisAgent,
         {
             if (cond->data.tests.id_test->eq_test->data.referent->is_variable())
             {
-                lMatchedSym = cond->counterpart ? cond->counterpart->data.tests.id_test->eq_test->data.referent : cond->data.tests.id_test->eq_test->data.referent;
-            } else {
-                lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
+                lMatchedSym = cond->data.tests.id_test->eq_test->data.referent->var->instantiated_sym;
             }
+            /* Dummy variables and literals won't have a matched sym */
+            if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
+
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
+            dprint(DT_REORDERER, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
@@ -896,43 +908,46 @@ cons* collect_root_variables(agent* thisAgent,
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_value_slot);
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        (*it)->sym->tc_num = 0;
+        (*it)->variable_sym->tc_num = 0;
     }
 
     /* --- make sure each root var has some condition with goal/impasse --- */
-    if (allow_printing_warnings && thisAgent->outputManager->settings[OM_WARNINGS])
+    std::string errorStr;
+
+    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
+        found_goal_impasse_test = false;
+        dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+
+        for (cond = cond_list; cond != NIL; cond = cond->next)
         {
-            found_goal_impasse_test = false;
-            for (cond = cond_list; cond != NIL; cond = cond->next)
+            if (cond->type != POSITIVE_CONDITION) continue;
+            if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
+                test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
             {
-                if (cond->type != POSITIVE_CONDITION)
-                {
-                    continue;
-                }
-                if (cond->data.tests.id_test->eq_test->data.referent == (*it)->sym)
-                    if (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
-                    {
-                        found_goal_impasse_test = true;
-                        break;
-                    }
+                found_goal_impasse_test = true;
+                dprint_noprefix(DT_REORDERER, "found\n");
+                break;
             }
-            if (! found_goal_impasse_test)
+        }
+        if (! found_goal_impasse_test)
+        {
+            dprint_noprefix(DT_REORDERER, "not found\n");
+            if (add_ungrounded)
             {
-                if (add_ungrounded)
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                chunk_element* lOldMatchedSym = (*it);
+                lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+                lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
+                lNewUngroundedSym->identity = (*it)->identity;
+                dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
+                ungrounded_syms->push_back(lNewUngroundedSym);
+            } else {
+                thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
+                    thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
+                if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
                 {
-                    matched_sym* lNewUngroundedSym = new matched_sym();
-                    matched_sym* lOldMatchedSym = (*it);
-                    lNewUngroundedSym->sym = (*it)->sym;
-                    lNewUngroundedSym->matched_sym = (*it)->matched_sym;
-                    lNewUngroundedSym->identity = (*it)->identity;
-                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->matched_sym, lNewUngroundedSym->sym, lNewUngroundedSym->identity);
-                    ungrounded_syms->push_back(lNewUngroundedSym);
-                } else {
-                    std::string errorStr;
-                    thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                           thisAgent->name_of_production_being_reordered, (*it)->sym);
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
                     xml_generate_warning(thisAgent, errorStr.c_str());
                 }
@@ -944,8 +959,8 @@ cons* collect_root_variables(agent* thisAgent,
     dprint(DT_REORDERER, "Found the following root symbols:  ");
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        dprint_noprefix(DT_REORDERER, "%y ", (*it)->sym);
-        push(thisAgent, (*it)->sym, returnList);
+        dprint_noprefix(DT_REORDERER, "%y ", (*it)->variable_sym);
+        push(thisAgent, (*it)->variable_sym, returnList);
     }
     dprint_noprefix(DT_REORDERER, "\n");
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
@@ -1187,7 +1202,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                                    bool reorder_nccs)
 {
     condition* remaining_conds;           /* header of dll */
-    condition* first_cond, *last_cond, *last_cond_counterpart;
+    condition* first_cond, *last_cond;
     condition* cond, *next_cond;
     condition* min_cost_conds, *chosen;
     int64_t cost = 0;
@@ -1197,7 +1212,6 @@ void reorder_simplified_conditions(agent* thisAgent,
     remaining_conds = *top_of_conds;
     first_cond = NIL;
     last_cond = NIL;
-    last_cond_counterpart = NIL;
     new_vars = NIL;
 
     /* repeat:  scan through remaining_conds
@@ -1209,7 +1223,6 @@ void reorder_simplified_conditions(agent* thisAgent,
     dprint_header(DT_REORDERER, PrintBefore, "Re-ordering simplified conditions:\n");
 //  dprint(DT_REORDERER, "Before Reorder Conditions:\n");
     dprint_noprefix(DT_REORDERER, "%1", *top_of_conds);
-//    dprint_noprefix(DT_REORDERER, "Counterparts:\n%1", (*top_of_conds)->counterpart);
     dprint(DT_REORDERER, "Saved Tests:\n");
 //  dprint_saved_test_list (DT_REORDERER, saved_tests);
     dprint_header(DT_REORDERER, PrintAfter, "");
@@ -1242,7 +1255,7 @@ void reorder_simplified_conditions(agent* thisAgent,
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&
-                thisAgent->outputManager->settings[OM_WARNINGS])
+            (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]))
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "Warning:  in production %s,\n",
                   thisAgent->name_of_production_being_reordered);
@@ -1325,7 +1338,6 @@ void reorder_simplified_conditions(agent* thisAgent,
         dprint(DT_REORDERER, "Before removing condition:\n%1", remaining_conds);
         remove_from_dll(remaining_conds, chosen, next, prev);
         dprint(DT_REORDERER, "After removing condition:\n%1", remaining_conds);
-        //dprint(DT_REORDERER, "After removing condition counterpart:\n%9", remaining_conds);
         if (!first_cond)
         {
             first_cond = chosen;
@@ -1333,17 +1345,14 @@ void reorder_simplified_conditions(agent* thisAgent,
         /* Note: args look weird on the next line, because we're really
            inserting the chosen item at the *end* of the list */
         insert_at_head_of_dll(last_cond, chosen, prev, next);
-        if (chosen->counterpart)
-            insert_at_head_of_dll(last_cond_counterpart, chosen->counterpart, prev, next);
         dprint(DT_REORDERER, "New condition list:\n%1", chosen);
-        //dprint(DT_REORDERER, "New condition list counterparts:\n%9", chosen);
 
         /* --- if a conjunctive negation, recursively reorder its conditions --- */
         if ((chosen->type == CONJUNCTIVE_NEGATION_CONDITION) && reorder_nccs)
         {
             dprint(DT_REORDERER, "...conjunctive negation being reordered...\n");
             cons* ncc_roots;
-            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number, true);
+            ncc_roots = collect_root_variables(thisAgent, chosen->data.ncc.top, bound_vars_tc_number);
             reorder_condition_list(thisAgent, &(chosen->data.ncc.top), ncc_roots, bound_vars_tc_number, reorder_nccs);
             free_list(thisAgent, ncc_roots);
         }
@@ -1566,7 +1575,7 @@ void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition** lhs_top,
         {
             temp = cond->data.tests.id_test;
             cond->data.tests.id_test =
-                copy_test(thisAgent, temp, false, false, false, true);
+                copy_test(thisAgent, temp, false, false, true);
             deallocate_test(thisAgent, temp);
         }
     }
@@ -1579,7 +1588,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
 
     tc = get_new_tc_number(thisAgent);
     /* don't mark any variables, since nothing is bound outside the LHS */
-    roots = collect_root_variables(thisAgent, *lhs_top, tc, true, ungrounded_syms, add_ungrounded);
+    roots = collect_root_variables(thisAgent, *lhs_top, tc, ungrounded_syms, add_ungrounded);
 
     /* MToDo | Trying to move up here.  Was after ungrounded stuff */
     if (roots)
@@ -1592,19 +1601,23 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
     {
         std::string unSymString;
         for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); ) {
-            unSymString += (*it)->sym->to_string(true);
+            unSymString += (*it)->variable_sym->to_string(true);
             if (++it != ungrounded_syms->end())
             {
                 unSymString += ", ";
             }
 
         }
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->explanationBasedChunker->print_current_built_rule("Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s):");
+        }
         thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_unconnected_conditions, thisAgent->name_of_production_being_reordered, unSymString.c_str());
         thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_unconnected_conditions);
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with partially-operational conditions.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_lhs_unconnected();
@@ -1619,15 +1632,10 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
 
         for (cond = *lhs_top; cond != NIL; cond = cond->next)
         {
-            if ((cond->type == POSITIVE_CONDITION) &&
-                    (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,
-                            true, false)))
+            if ((cond->type == POSITIVE_CONDITION) && (test_includes_goal_or_impasse_id_test(cond->data.tests.id_test,  true, false)))
             {
                 add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
-                if (roots)
-                {
-                    break;
-                }
+                if (roots) break;
             }
         }
     }
@@ -1639,7 +1647,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with no conditions that match a goal state.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
         }
         return false;
     }
@@ -1657,7 +1665,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Created rule with negative relational test bindings.";
+            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with negative relational test bindings.";
         }
         return false;
     }

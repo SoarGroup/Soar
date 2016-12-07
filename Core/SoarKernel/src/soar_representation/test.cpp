@@ -33,7 +33,7 @@
 /* --- This just copies a consed list of tests and returns
  *     a new copy of it. --- */
 
-cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests)
+cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_variablization_identity, bool pStripLiteralConjuncts)
 {
     cons* new_c;
 
@@ -42,12 +42,12 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
         return NIL;
     }
     allocate_cons(thisAgent, &new_c);
-    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
+    new_c->first = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts);
     if (static_cast<test>(new_c->first)->type == EQUALITY_TEST)
     {
         *pEq_test = static_cast<test>(new_c->first);
     }
-    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
+    new_c->rest = copy_test_list(thisAgent, c->rest, pEq_test, pUnify_variablization_identity, pStripLiteralConjuncts);
     return new_c;
 }
 
@@ -55,7 +55,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pLinkTests, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
+test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
 //    Symbol* referent;
     test new_ct;
@@ -96,7 +96,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                 {
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
-                t->eq_test->counterpart_test = new_ct;
             } else if (remove_state_impasse)
             {
                 new_ct = NULL;
@@ -105,7 +104,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                  {
                      temp = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts,
-                                      pLinkTests, remove_state_impasse, removed_goal, removed_impasse);
+                                      remove_state_impasse, removed_goal, removed_impasse);
                      if (temp)
                      {
                          add_test(thisAgent, &new_ct, temp);
@@ -117,7 +116,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts, pLinkTests);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
             }
             break;
         default:
@@ -142,12 +141,6 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
             }
-            if (pLinkTests)
-            {
-                t->counterpart_test = new_ct;
-                /* This direction is also needed for RL */
-                new_ct->counterpart_test = t;
-            }
             break;
     }
     return new_ct;
@@ -161,7 +154,7 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test %t\n", t);
+    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t\n", t);
     if (!t)
     {
         return;
@@ -178,7 +171,7 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE conjunctive test\n");
+            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE conjunctive test\n");
             c = t->data.conjunct_list;
             while (c)
             {
@@ -209,13 +202,11 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
     }
     /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
      *    which was all over the kernel.  We did not copy the test or increment the
-     *    refcount, so we don't need to deallocate the test here. Counterpart test
-     *    is similar but is only used during chunking -- */
+     *    refcount, so we don't need to deallocate the test here. -- */
     t->eq_test = NULL;
-    t->counterpart_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
-    dprint(DT_DEALLOCATES_TESTS, "DEALLOCATE test done.\n");
+    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test done.\n");
 }
 
 /* ----------------------------------------------------------------
@@ -718,7 +709,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
     return;
 }
 
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pSymCounterpart, uint64_t pIdentity,  tc_number tc, matched_symbol_list* var_list)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
     Symbol* referent;
 
@@ -729,10 +720,11 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pS
             pSym->tc_num = tc;
             if (var_list)
             {
-                matched_sym* lNewUngroundedSym = new matched_sym();
-                lNewUngroundedSym->sym = pSym;
+                chunk_element* lNewUngroundedSym;
+                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                lNewUngroundedSym->variable_sym = pSym;
                 lNewUngroundedSym->identity = pIdentity;
-                lNewUngroundedSym->matched_sym = pSymCounterpart ? pSymCounterpart : pSym;
+                lNewUngroundedSym->instantiated_sym = pMatchedSym ? pMatchedSym : pSym;
                 var_list->push_back(lNewUngroundedSym);
             }
         }
@@ -941,7 +933,6 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->tc_num = 0;
-    new_ct->counterpart_test = NULL;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

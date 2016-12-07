@@ -8,18 +8,18 @@
 
 #include "portability.h"
 
-#include "sml_Utils.h"
-#include "cli_CommandLineInterface.h"
+#include "cli_trace.h"
 
+#include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 
+#include "sml_AgentSML.h"
 #include "sml_Names.h"
-
 #include "sml_KernelSML.h"
+#include "sml_Utils.h"
 
 #include "misc.h"
 #include "agent.h"
-#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;
@@ -53,11 +53,16 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
         if (m_RawOutput)
         {
             PrintCLIMessage_Header("Soar Trace Messages", 60);
+
             PrintCLIMessage_Section("Level 1", 60);
             PrintCLIMessage_Justify("Operator decisions and states", (thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? "on" : "off"), 60, "-d, --decisions");
+
             PrintCLIMessage_Section("Level 2", 60);
             PrintCLIMessage_Justify("Phases", (thisAgent->trace_settings[TRACE_PHASES_SYSPARAM] ? "on" : "off"), 60, "-p, --phases");
+            PrintCLIMessage_Justify("Chunking warnings", (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM] ? "on" : "off"), 60, "-C, --chunk-warnings");
             PrintCLIMessage_Justify("State removals caused by GDS violation", (thisAgent->trace_settings[TRACE_GDS_STATE_REMOVAL_SYSPARAM] ? "on" : "off"), 60, "-g, --gds");
+            PrintCLIMessage_Justify("State removals caused by operator consistency checks", (thisAgent->trace_settings[TRACE_CONSISTENCY_CHANGES_SYSPARAM] ? "on" : "off"), 60, "-o, --consistency");
+
             PrintCLIMessage_Section("Level 3: Rule firings", 60);
             PrintCLIMessage_Justify("Default rules", (thisAgent->trace_settings[TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM] ? "on" : "off"), 60, "-D, --default");
             PrintCLIMessage_Justify("User rules", (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? "on" : "off"), 60, "-u, --user");
@@ -65,22 +70,29 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
             PrintCLIMessage_Justify("Justifications", (thisAgent->trace_settings[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? "on" : "off"), 60, "-j, --justifications");
             PrintCLIMessage_Justify("Templates", (thisAgent->trace_settings[TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM] ? "on" : "off"), 60, "-T, --template");
             PrintCLIMessage_Justify("Firings inhibited by higher-level firings", (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM] ? "on" : "off"), 60, "-W, --waterfall");
+
             PrintCLIMessage_Section("Level 4", 60);
             PrintCLIMessage_Justify("WME additions and removals", (thisAgent->trace_settings[TRACE_WM_CHANGES_SYSPARAM] ? "on" : "off"), 60, "-w, --wmes");
+
             PrintCLIMessage_Section("Level 5", 60);
             PrintCLIMessage_Justify("Preferences", (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM] ? "on" : "off"), 60, "-r, --preferences");
-            PrintCLIMessage_Section("Additional Trace Messages", 60);
-            PrintCLIMessage_Justify("Chunking dependency analysis", (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off"), 60, "-b, --backtracing");
-            PrintCLIMessage_Justify("Goal dependency set changes", (thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM] ? "on" : "off"), 60, "-G, --gds-wmes");
-            PrintCLIMessage_Justify("Episodic memory recording and queries", (thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM] ? "on" : "off"), 60, "-e, --epmem");
-            PrintCLIMessage_Justify("Numeric preference calculations", (thisAgent->trace_settings[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off"), 60, "-i, --indifferent-selection");
-            PrintCLIMessage_Justify("Learning Level", ((learning == 0) ? "off" : ((learning == 1) ? "rule name" : "full rules")), 60, "-L, --learning [0-2]");
-            PrintCLIMessage_Justify("Reinforcement learning value updates", (thisAgent->trace_settings[TRACE_RL_SYSPARAM] ? "on" : "off"), 60, "-R, --rl");
-            PrintCLIMessage_Justify("Semantic memory additions", (thisAgent->trace_settings[TRACE_SMEM_SYSPARAM] ? "on" : "off"), 60, "-s, --smem");
-            PrintCLIMessage_Justify("Working memory activation and forgetting", (thisAgent->trace_settings[TRACE_WMA_SYSPARAM] ? "on" : "off"), 60, "-a, --wma");
             PrintCLIMessage(" ");
+            PrintCLIMessage_Section("Additional General Trace Messages", 60);
+            PrintCLIMessage_Justify("Assertions of rules and preferences", (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM] ? "on" : "off"), 60, "-A, --assertions");
+            PrintCLIMessage_Justify("Goal dependency set changes", (thisAgent->trace_settings[TRACE_GDS_WMES_SYSPARAM] ? "on" : "off"), 60, "-G, --gds-wmes");
+            PrintCLIMessage_Justify("Numeric preference calculations", (thisAgent->trace_settings[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off"), 60, "-i, --indifferent-selection");
+            PrintCLIMessage_Justify("Reinforcement learning value updates", (thisAgent->trace_settings[TRACE_RL_SYSPARAM] ? "on" : "off"), 60, "-R, --rl");
             PrintCLIMessage_Justify("WME Detail Level", ((thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] == NONE_WME_TRACE) ? "none" :
                 ((thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] == TIMETAG_WME_TRACE) ? "timetag" : "full detail")), 60, "--nowmes, --timetags, --fullwmes");
+            PrintCLIMessage(" ");
+            PrintCLIMessage_Section("Additional Chunking Trace Messages", 60);
+            PrintCLIMessage_Justify("Dependency analysis", (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off"), 60, "-b, --backtracing");
+            PrintCLIMessage_Justify("Rules learned (verbosity level)", ((learning == 0) ? "none (0)" : ((learning == 1) ? "rule name (1)" : "full rules (2)")), 60, "-L, --learning [0-2]");
+            PrintCLIMessage(" ");
+            PrintCLIMessage_Section("Additional Memory System Trace Messages", 60);
+            PrintCLIMessage_Justify("Episodic memory recording and queries", (thisAgent->trace_settings[TRACE_EPMEM_SYSPARAM] ? "on" : "off"), 60, "-e, --epmem");
+            PrintCLIMessage_Justify("Semantic memory additions", (thisAgent->trace_settings[TRACE_SMEM_SYSPARAM] ? "on" : "off"), 60, "-s, --smem");
+            PrintCLIMessage_Justify("Working memory activation and forgetting", (thisAgent->trace_settings[TRACE_WMA_SYSPARAM] ? "on" : "off"), 60, "-a, --wma");
         }
         else
         {
@@ -153,6 +165,13 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
     std::string traceFeedback;
 
     // No watch level and no none flags, that means we have to do the rest
+    if (options.test(WATCH_ASSERTIONS))
+    {
+        set_trace_setting(thisAgent, TRACE_ASSERTIONS_SYSPARAM, settings.test(WATCH_ASSERTIONS));
+        traceFeedback.append(settings.test(WATCH_ASSERTIONS) ? "Now printing " : "Will not print ");
+        traceFeedback.append("assertions of rule instantiations and the preferences they generate.\n");
+    }
+
     if (options.test(WATCH_BACKTRACING))
     {
         set_trace_setting(thisAgent, TRACE_BACKTRACING_SYSPARAM, settings.test(WATCH_BACKTRACING));
@@ -167,6 +186,20 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
         traceFeedback.append("when chunks fire.\n");
     }
     
+    if (options.test(WATCH_CHUNK_WARNINGS))
+    {
+        set_trace_setting(thisAgent, TRACE_CHUNKS_WARNINGS_SYSPARAM, settings.test(WATCH_CHUNK_WARNINGS));
+        traceFeedback.append(settings.test(WATCH_CHUNK_WARNINGS) ? "Now printing " : "Will not print ");
+        traceFeedback.append("warnings when issues detected while learning rules.\n");
+    }
+
+    if (options.test(WATCH_CONSISTENCY))
+    {
+        set_trace_setting(thisAgent, TRACE_CONSISTENCY_CHANGES_SYSPARAM, settings.test(WATCH_CONSISTENCY));
+        traceFeedback.append(settings.test(WATCH_CONSISTENCY) ? "Now printing " : "Will not print ");
+        traceFeedback.append("operator proposal consistency messages and any states removed as a result.\n");
+    }
+
     if (options.test(WATCH_DECISIONS))
     {
         set_trace_setting(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings.test(WATCH_DECISIONS));
@@ -298,14 +331,14 @@ bool CommandLineInterface::DoTrace(const WatchBitset& options, const WatchBitset
                 set_trace_setting(thisAgent, TRACE_CHUNKS_SYSPARAM, false);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
-                traceFeedback.append("Now printing the names of chunks and justifications that fire.\n");
+                traceFeedback.append("Now printing the names of chunks and justifications that are learned and any chunking issues detected.\n");
                 break;
             case 2:
                 set_trace_setting(thisAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_CHUNKS_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
                 set_trace_setting(thisAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
-                traceFeedback.append("Now printing the full chunks and justifications that are learned.\n");
+                traceFeedback.append("Now printing the full chunks and justifications that are learned and any chunking issues detected.\n");
                 break;
         }
     }

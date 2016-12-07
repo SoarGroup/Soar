@@ -16,6 +16,7 @@
 #include "rhs.h"
 #include "run_soar.h"
 #include "semantic_memory.h"
+#include "soar_instance.h"
 #include "smem_db.h"
 #include "symbol.h"
 
@@ -365,7 +366,10 @@ Symbol* Symbol_Manager::make_variable(const char* name)
     sym->tc_num = 0;
     sym->name = make_memory_block_for_string(thisAgent, name);
     sym->gensym_number = 0;
+    sym->current_binding_value = NULL;
+    sym->instantiated_sym = NULL;
     sym->rete_binding_locations = NULL;
+
     sym->fc = NULL;
     sym->ic = NULL;
     sym->sc = NULL;
@@ -381,7 +385,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
 {
 
     idSymbol* sym;
-
     if (isalpha(name_letter))
     {
         if (islower(name_letter))
@@ -415,6 +418,12 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
         }
     }
     sym->name_number = name_number;
+
+    /* MToDo | Remove */
+    if ((name_letter == 'L') && (name_number == 198))
+    {
+        dprint(DT_DEBUG, "Found.\n");
+    }
 
     sym->level = level;
     sym->promotion_level = level;
@@ -826,7 +835,7 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
             }
         }
     #else
-        dprint(DT_DEALLOCATE_SYMBOLS, "DEALLOCATE symbol %y\n", sym);
+        dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
 //        std::string caller_string = get_stacktrace("dea_sym");
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
@@ -969,65 +978,20 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     {
         if (identifier_hash_table->count != 0)
         {
-//            dprint(DT_DEBUG, "%d short-term identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
-            thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
-            do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+            {
+                /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
+                 * detect refcount leaks in unit tests and print out a message accordingly */
+                std::cout << "Refcount leak detected in unit test.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
+            }
+            if (thisAgent->outputManager->settings[OM_WARNINGS])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+            }
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
             identifier_hash_table = make_hash_table(thisAgent, 0, hash_identifier);
-            thisAgent->memoryManager->init_memory_pool(MP_identifier, sizeof(idSymbol), "identifier");
-            /* If you enable init-soar in chunkingtest.cpp, you can use the following line to see if any chunking
-             * unit tests are leaking id's after soar init */
-            //std::cout << "Identifier refcount leak.\n";
-        }
-    }
-    else if (lHashTable == MP_float_constant)
-    {
-        if (float_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d floating numbers identifiers still exist.  Forcing deletion.\n", float_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, float_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_float_constant);
-            float_constant_hash_table = make_hash_table(thisAgent, 0, hash_float_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_float_constant, sizeof(floatSymbol), "float constant");
-        }
-    }
-    else if (lHashTable == MP_int_constant)
-    {
-        if (int_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d integer identifiers still exist.  Forcing deletion.\n", int_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, int_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_int_constant);
-            int_constant_hash_table = make_hash_table(thisAgent, 0, hash_int_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_int_constant, sizeof(intSymbol), "int constant");
-        }
-    }
-    else if (lHashTable == MP_str_constant)
-    {
-        if (str_constant_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d string identifiers still exist.  Forcing deletion.\n", str_constant_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, str_constant_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_str_constant);
-            str_constant_hash_table = make_hash_table(thisAgent, 0, hash_str_constant);
-            thisAgent->memoryManager->init_memory_pool(MP_str_constant, sizeof(strSymbol), "str constant");
-        }
-    }
-    else if (lHashTable == MP_variable)
-    {
-        if (variable_hash_table->count != 0)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%d variable identifiers still exist.  Forcing deletion.\n", variable_hash_table->count);
-            //print_internal_symbols();
-            free_hash_table(thisAgent, variable_hash_table);
-            thisAgent->memoryManager->free_memory_pool(MP_variable);
-            variable_hash_table = make_hash_table(thisAgent, 0, hash_variable);
-            thisAgent->memoryManager->init_memory_pool(MP_variable, sizeof(varSymbol), "variable");
-            /* Add predefined symbols? */
         }
     }
 }

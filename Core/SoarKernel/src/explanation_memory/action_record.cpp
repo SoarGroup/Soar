@@ -17,7 +17,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-action_record::action_record(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
+void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
     thisAgent               = myAgent;
     actionID                = pActionID;
@@ -33,7 +33,7 @@ action_record::action_record(agent* myAgent, preference* pPref, action* pAction,
     dprint(DT_EXPLAIN_CONDS, "   Created action record a%u for pref %p (%r ^%r %r), [act %a]", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
 }
 
-action_record::~action_record()
+void action_record::clean_up()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting action record a%u for: %p\n", actionID, instantiated_pref);
     deallocate_preference(thisAgent, instantiated_pref);

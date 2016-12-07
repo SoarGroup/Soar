@@ -21,12 +21,6 @@
 #include <list>
 #include <map>
 
-#ifdef REAL_TIME_BEHAVIOR
-/* RMJ */
-extern void init_real_time(agent* thisAgent);
-extern struct timeval* current_real_time;
-#endif // REAL_TIME_BEHAVIOR
-
 //////////////////////////////////////////////////////////
 // Statistics database
 //////////////////////////////////////////////////////////

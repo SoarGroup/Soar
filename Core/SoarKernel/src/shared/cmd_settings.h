@@ -75,6 +75,7 @@ class save_param_container: public soar_module::param_container
 {
     public:
 
+        soar_module::boolean_param* agent_cmd;
         soar_module::boolean_param* chunks_cmd;
         soar_module::boolean_param* input_cmd;
         soar_module::boolean_param* rete_cmd;

@@ -194,6 +194,10 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
                 m_pKernelSML->SetStopBefore(sml::sml_PROPOSAL_PHASE) ;
             }
         }
+        else if (my_param == thisAgent->Decider->params->keep_all_top_oprefs)
+        {
+            thisAgent->Decider->settings[DECIDER_KEEP_TOP_OPREFS] = thisAgent->Decider->params->keep_all_top_oprefs->get_value();
+        }
         else if (my_param == thisAgent->Decider->params->wait_snc)
         {
             thisAgent->Decider->settings[DECIDER_WAIT_SNC] = thisAgent->Decider->params->wait_snc->get_value();

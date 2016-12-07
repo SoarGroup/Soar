@@ -576,7 +576,7 @@ void Explanation_Memory::print_identity_set_explanation()
     outputManager->printa_sf(thisAgent, "=========================================================================\n");
     outputManager->printa_sf(thisAgent, "-             Variablization Identity to Identity Set Mappings          -\n");
     outputManager->printa_sf(thisAgent, "=========================================================================\n");
-    current_discussed_chunk->identity_analysis->print_mappings();
+    current_discussed_chunk->identity_analysis.print_mappings();
 }
 
 void Explanation_Memory::print_constraints_enforced()

@@ -164,13 +164,17 @@ void Memory_Manager::free_memory_pool_by_ptr(memory_pool* pThisPool)
     char* next_block;
     for (size_t i = 0; i < pThisPool->num_blocks; i++)
     {
+        //std::cout << "Free memory block for " << pThisPool->name << std::endl;
         // the first 4 bytes point to the next block
         next_block = *(char**)cur_block;
         free_memory(cur_block, POOL_MEM_USAGE);
         cur_block = next_block;
     }
     pThisPool->num_blocks = 0;
+    pThisPool->first_block = NIL;
+    pThisPool->free_list = NIL;
 }
+
 void Memory_Manager::free_memory_pool(MemoryPoolType mempool_index)
 {
     free_memory_pool_by_ptr(&(memory_pools[mempool_index]));

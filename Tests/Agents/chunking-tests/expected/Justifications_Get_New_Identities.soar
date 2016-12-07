@@ -1,0 +1,7 @@
+sp {answer*make-chunk-level2*StateNoChange*t4-1
+    (state <s1> ^superstate nil ^data <d1> ^data <d2>)
+    (<d1> ^attr1 foo ^attr2 <c1>)
+    (<d2> ^attr2 <c3> ^attr1 { > ZZZ <c2> })
+    -->
+    (<s1> ^result true +)
+}

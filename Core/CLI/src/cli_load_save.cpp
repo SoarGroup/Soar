@@ -26,6 +26,7 @@
 #include "parser.h"
 #include "print.h"
 #include "production.h"
+#include "semantic_memory.h"
 #include "soar_rand.h"
 #include "symbol.h"
 #include "symbol_manager.h"
@@ -124,6 +125,43 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
                 return false;
             }
 
+        }
+    }
+    else if (my_param == thisAgent->command_params->save_params->agent_cmd)
+    {
+        if ((argv.size() < 3) || (argv.size() > 3))
+        {
+            return SetError("Syntax: save agent <filename>");
+
+        }
+        else
+        {
+            std::string lFile = argv[2];
+            std::string export_text;
+            std::string* err = new std::string("");
+            std::vector< std::string > lCmdVector;
+
+            if (!DoCLog(LOG_NEW, &lFile, 0, true)) return false;
+            err->assign("# Procedural Memory\n\n");
+            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
+            lCmdVector.push_back("print");
+            lCmdVector.push_back("-fai");
+            if (!DoCommandToFile(LOG_NEWAPPEND, lFile, lCmdVector)) return false;
+            bool result = thisAgent->SMem->export_smem(0, export_text, &(err));
+            if (!DoCLog(LOG_NEWAPPEND, &lFile, 0, true)) return false;
+            err->assign("# Semantic Memory\n\n");
+            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+            if (!DoCLog(LOG_ADD, 0, &export_text, true)) return false;
+            err->assign("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
+            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+            err->assign("# Settings\n\n");
+            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
+
+            PrintCLIMessage("Procedural and long-term memory written to file.  (Does not include episodic memories.)");
+            delete err;
+            return result;
         }
     }
     else if ((my_param == thisAgent->command_params->save_params->help_cmd) || (my_param == thisAgent->command_params->save_params->qhelp_cmd))

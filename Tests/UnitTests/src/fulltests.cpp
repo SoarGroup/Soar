@@ -53,7 +53,10 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testWMEs);
         CPPUNIT_TEST(testXML);
         CPPUNIT_TEST(testAgent);
+#ifndef INIT_AFTER_RUN
         CPPUNIT_TEST(testSimpleCopy);
+        CPPUNIT_TEST(testEventOrdering);                        // bug 1100
+#endif
         CPPUNIT_TEST(testSimpleReteNetLoader);
         CPPUNIT_TEST(test64BitReteNet);
         CPPUNIT_TEST(testOSupportCopyDestroy);
@@ -75,7 +78,6 @@ class FullTests : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(testEchoEquals);                           // bug 1028
         CPPUNIT_TEST(testStatusCompleteDuplication);   // bug 1042
         CPPUNIT_TEST(testSharedWmeSetViolation);   // bug 1060
-        CPPUNIT_TEST(testEventOrdering);                        // bug 1100
         CPPUNIT_TEST(testTemplateVariableNameBug);              // bug 1121
         CPPUNIT_TEST(testFindAttrPipes);   // bug 1138
         CPPUNIT_TEST(testGDSBug1144);   // bug 1144
@@ -255,7 +257,9 @@ void FullTests::createSoar()
 
     /* Sets Soar's output settings to what the unit tests expect.  Prevents
      * debug trace code from being output and causing some tests to appear to fail. */
+    #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
     configure_for_unit_tests();
+    #endif
 
     if (m_Options.test(VERBOSE))
     {
@@ -299,7 +303,13 @@ void FullTests::destroySoar()
     {
         std::cout << "Destroy the agent now" << std::endl ;
     }
-
+    #ifdef INIT_AFTER_RUN
+    {
+        sml::ClientAnalyzedXML response;
+        m_pAgent->ExecuteCommandLineXML("soar init", &response);
+        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), m_pAgent->GetLastCommandLineResult());
+    }
+    #endif
     // The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
     // We need to get this callback just before the agentSML data is deleted (otherwise there'll be no way to send/receive the callback)
     // and then continue on to delete the agent after we've responded to the callback.
@@ -556,6 +566,8 @@ TEST_DEFINITION(testClientMessageHandler)
 
 TEST_DEFINITION(testFilterHandler)
 {
+    /* Will not pass if debug output is redirected */
+
     // Record a filter
     bool filterHandlerReceived(false);
     int clientFilter = m_pKernel->RegisterForClientMessageEvent(sml::sml_Names::kFilterName, Handlers::MyFilterHandler, &filterHandlerReceived) ;
@@ -1568,6 +1580,7 @@ TEST_DEFINITION(testMatchTimeInterrupt)
 }
 TEST_DEFINITION(testNegatedConjunctiveTestReorder)
 {
+    /* Will not pass if debug output is redirected */
     m_pAgent->ExecuteCommandLine("sp {test (state <s> ^a <val> -^a {<val> < 1}) --> }");
     std::string production(m_pAgent->ExecuteCommandLine("print test"));
     CPPUNIT_ASSERT(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n");

@@ -17,6 +17,17 @@
 #include "kernel.h"
 #include "soar_module.h"
 
+#ifndef SOAR_RELEASE_VERSION
+    /* This can be used to turn off dprints except for a decision cycle range */
+//    #define DEBUG_ONLY_AFTER_DC 413
+//    #define DEBUG_ONLY_BEFORE_DC 430
+
+    /* This can be used to turn off dprints except for a particular chunk */
+//    #define DEBUG_ONLY_CHUNK_ID 64
+//    #define DEBUG_ONLY_CHUNK_ID_LAST 65
+#endif
+
+
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 
 extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);

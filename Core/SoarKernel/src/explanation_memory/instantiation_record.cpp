@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
+void instantiation_record::init(agent* myAgent, instantiation* pInst)
 {
     thisAgent               = myAgent;
     instantiationID         = pInst->i_id;
@@ -61,7 +61,7 @@ instantiation_record::instantiation_record(agent* myAgent, instantiation* pInst)
 
 }
 
-instantiation_record::~instantiation_record()
+void instantiation_record::clean_up()
 {
     dprint(DT_EXPLAIN, "Deleting instantiation record i%u (%y)\n", instantiationID, production_name);
     thisAgent->symbolManager->symbol_remove_ref(&production_name);
@@ -254,8 +254,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
         action* rhs;
-        condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
+        test id_test_without_goal_test = NULL;
 
         outputManager->set_column_indent(0, 7);
         outputManager->set_column_indent(1, 57);
@@ -285,11 +284,13 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
+            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "",
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -318,7 +319,6 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         }
     }
 }
-
 void instantiation_record::print_for_explanation_trace(bool printFooter)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
@@ -334,7 +334,6 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         int lConditionCount = 0;
         action* rhs;
         condition* top, *bottom, *currentNegativeCond, *current_cond, *print_cond;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
         production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
 
         /* If we're printing the explanation trace, we reconstruct the conditions.  We need to do this
@@ -356,7 +355,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
                 thisAgent->explanationMemory->print_explanation_trace = false;
-                print_for_wme_trace(printFooter);
+//                print_for_wme_trace(printFooter);
+                print_arch_inst_for_explanation_trace(printFooter);
                 thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
@@ -400,17 +400,15 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            id_test_without_goal_test = copy_test(thisAgent, print_cond->data.tests.id_test, false, false, false, true);
-            id_test_without_goal_test2 = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
-            outputManager->printa_sf(thisAgent, "(%o%s^%o %o)%s%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+            outputManager->printa_sf(thisAgent, "(%o%s^%o %o%s)%s%-",
+                print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
+                print_cond->test_for_acceptable_preference ? " +" : "",
                 thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
-            outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-                id_test_without_goal_test2, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value);
-            deallocate_test(thisAgent, id_test_without_goal_test);
-            deallocate_test(thisAgent, id_test_without_goal_test2);
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "");
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
             outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
@@ -450,7 +448,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         outputManager->printa(thisAgent, "   -->\n");
         thisAgent->explanationMemory->print_instantiation_actions(actions, originalProduction, rhs);
         outputManager->printa(thisAgent, "\n");
-        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(instantiationID);
+        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(instantiationID);
         if (printFooter) {
             thisAgent->explanationMemory->print_footer();
         }
@@ -458,6 +456,89 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         if (original_productionID && originalProduction->p_node)
         {
             deallocate_condition_list(thisAgent, top);
+        }
+    }
+}
+void instantiation_record::print_arch_inst_for_explanation_trace(bool printFooter)
+{
+
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    if (conditions->empty())
+    {
+        outputManager->printa(thisAgent, "No conditions on left-hand-side\n");
+    }
+    else
+    {
+        condition_record* lCond;
+        bool lInNegativeConditions = false;
+        int lConditionCount = 0;
+        action* rhs;
+        production* originalProduction = thisAgent->explanationMemory->get_production(original_productionID);
+
+        /* Print header */
+        outputManager->set_column_indent(0, 7);
+        outputManager->set_column_indent(1, 57);
+        outputManager->set_column_indent(2, 100);
+        outputManager->set_column_indent(3, 115);
+        thisAgent->outputManager->set_print_test_format(true, false);
+        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
+            instantiationID, production_name, match_level);
+        thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
+        outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
+
+        for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
+        {
+            lCond = (*it);
+            ++lConditionCount;
+            if (!lInNegativeConditions && (lCond->type == CONJUNCTIVE_NEGATION_CONDITION))
+            {
+                outputManager->printa(thisAgent, "     -{\n");
+                lInNegativeConditions = true;
+            } else if (lInNegativeConditions && (lCond->type != CONJUNCTIVE_NEGATION_CONDITION))
+            {
+                outputManager->printa(thisAgent, "\n     }");
+                lInNegativeConditions = false;
+            }
+
+            outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
+
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "",
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value,
+                lCond->test_for_acceptable_preference ? " +" : "");
+
+            bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
+            outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
+            if (lCond->parent_instantiation)
+            {
+                outputManager->printa_sf(thisAgent, "%-i %u (%y)%-",
+                    (lCond->parent_instantiation->instantiationID),
+                    (lCond->parent_instantiation->production_name));
+            } else if (lCond->type == POSITIVE_CONDITION)
+            {
+                outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+            } else {
+                outputManager->printa_sf(thisAgent, "%-N/A%-");
+            }
+
+            outputManager->printa(thisAgent, "\n");
+        }
+        if (lInNegativeConditions)
+        {
+            outputManager->printa(thisAgent, "     }\n");
+        }
+        outputManager->printa(thisAgent, "   -->\n");
+        thisAgent->explanationMemory->print_instantiation_actions(actions, originalProduction, NULL);
+        outputManager->printa(thisAgent, "\n");
+        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(instantiationID);
+        if (printFooter) {
+            thisAgent->explanationMemory->print_footer();
         }
     }
 }
@@ -487,8 +568,6 @@ void instantiation_record::viz_wm_instantiation()
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
         action* rhs;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
         thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);

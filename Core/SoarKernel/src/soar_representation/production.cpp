@@ -348,20 +348,10 @@ bool action_is_in_tc(action* a, tc_number tc)
  * so EBC can first try to fix unconnected conditions before creating
  * the production. */
 
-void fix_inst_pointers(condition**   lhs_top, condition** lhs_inst_top, condition** lhs_inst_bottom)
-{
-    *lhs_inst_top = (*lhs_top)->counterpart;
-    condition* lCond = *lhs_inst_top;
-    while (lCond->next) lCond = lCond->next;
-    *lhs_inst_bottom = lCond;
-}
-
 bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
                                       condition**   lhs_top,
                                       action**      rhs_top,
                                       bool          reorder_nccs,
-                                      condition**   lhs_inst_top,
-                                      condition**   lhs_inst_bottom,
                               matched_symbol_list*  ungrounded_syms,
                                      bool           add_ungrounded_lhs,
                                      bool           add_ungrounded_rhs)
@@ -375,8 +365,6 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
 
     dprint_header(DT_REORDERER, PrintBefore, "Reordering and validating:\n");
     dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
-    dprint_noprefix(DT_REORDERER, "Counterparts:\n");
-    dprint_noprefix(DT_REORDERER, "%9", *lhs_top);
     dprint_noprefix(DT_REORDERER, "Actions:\n");
     dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
 
@@ -388,18 +376,12 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
         if (add_ungrounded_lhs)
         {
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
-            if (lhs_inst_top)
-                fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
         }
-        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
     lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
-    if (lhs_inst_top)
-        fix_inst_pointers(lhs_top, lhs_inst_top, lhs_inst_bottom);
     if (!lhs_good)
     {
-        thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
         return false;
     }
 
@@ -493,7 +475,7 @@ production* make_production(agent*          thisAgent,
     return p;
 }
 
-void deallocate_production(agent* thisAgent, production* prod, bool cacheProdForExplainer)
+void deallocate_production(agent* thisAgent, production* prod)
 {
     if (prod->instantiations)
     {
@@ -502,52 +484,42 @@ void deallocate_production(agent* thisAgent, production* prod, bool cacheProdFor
         msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
         abort_with_fatal_error(thisAgent, msg);
     }
-    #ifdef BUILD_WITH_EXPLAINER
-    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
-    {
-        dprint(DT_EXPLAIN_CACHE, "Deallocate production saving production first for %y.\n", prod->name);
-        thisAgent->explanationMemory->save_excised_production(prod);
-    }
-    #endif
+    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Deallocating production %y (p %u).\n", prod->name, prod->p_id);
+
     deallocate_action_list(thisAgent, prod->action_list);
-    /* RBD 3/28/95 the following line used to use free_list(), leaked memory */
     thisAgent->symbolManager->deallocate_symbol_list_removing_references(prod->rhs_unbound_variables);
     thisAgent->symbolManager->symbol_remove_ref(&prod->name);
-    free_memory_block_for_string(thisAgent, prod->original_rule_name);
-    if (prod->documentation)
-    {
-        free_memory_block_for_string(thisAgent, prod->documentation);
-    }
-    /* next line, kjh CUSP(B11) */
-    if (prod->filename)
-    {
-        free_memory_block_for_string(thisAgent, prod->filename);
-    }
 
-    if (prod->rl_template_conds)
-    {
-        deallocate_condition_list(thisAgent, prod->rl_template_conds);
-    }
+    if (prod->original_rule_name)   free_memory_block_for_string(thisAgent, prod->original_rule_name);
+    if (prod->documentation)        free_memory_block_for_string(thisAgent, prod->documentation);
+    if (prod->filename)             free_memory_block_for_string(thisAgent, prod->filename);
+    if (prod->rl_template_conds)    deallocate_condition_list(thisAgent, prod->rl_template_conds);
+
     thisAgent->memoryManager->free_with_pool(MP_production, prod);
 }
 
-void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign)
+void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign, bool cacheProdForExplainer)
 {
-    dprint_header(DT_DEALLOCATES, PrintBoth, "Excising production %y.\n", prod->name);
+    dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Excising production %y (p %u).\n", prod->name, prod->p_id);
     /* When excising, the explainer needs to save the production before we excise it from
      * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
     #ifdef BUILD_WITH_EXPLAINER
-    if (prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
+    if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
-        dprint(DT_EXPLAIN_CACHE, "Excise production saving production first for %y.\n", prod->name);
+        dprint(DT_DEALLOCATE_PROD, "Caching production for %y (p %u) before excising.\n", prod->name, prod->p_id);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
     #endif
+    if (thisAgent->explanationMemory->is_any_enabled())
+    {
+        thisAgent->explanationMemory->excise_production_id(prod->p_id);
+    }
     if (prod->trace_firings)
     {
         remove_pwatch(thisAgent, prod);
     }
     remove_from_dll(thisAgent->all_productions_of_type[prod->type], prod, next, prev);
+    prod->next = prod->prev = NULL;
 
     // Remove reference from apoptosis object store
     if ((prod->type == CHUNK_PRODUCTION_TYPE) && (thisAgent->RL->rl_params) && (thisAgent->RL->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none))
@@ -571,26 +543,23 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
         excise_production_from_rete(thisAgent, prod);
     }
     prod->name->sc->production = NIL;
-    production_remove_ref(thisAgent, prod, false);
-    dprint_header(DT_DEALLOCATES, PrintAfter, "");
+    production_remove_ref(thisAgent, prod);
+    dprint_header(DT_DEALLOCATE_PROD, PrintAfter, "Done excising production.\n");
 }
 
-void excise_all_productions_of_type(agent* thisAgent,
-                                    byte type,
-                                    bool print_sharp_sign)
+void excise_all_productions_of_type(agent* thisAgent, byte type, bool print_sharp_sign, bool cacheProdForExplainer)
 {
     while (thisAgent->all_productions_of_type[type])
     {
-        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign);
+        excise_production(thisAgent, thisAgent->all_productions_of_type[type], print_sharp_sign, cacheProdForExplainer);
     }
 }
 
-void excise_all_productions(agent* thisAgent,
-                            bool print_sharp_sign)
+void excise_all_productions(agent* thisAgent, bool print_sharp_sign,  bool cacheProdForExplainer)
 {
     for (int i = 0; i < NUM_PRODUCTION_TYPES; i++)
     {
-        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign);
+        excise_all_productions_of_type(thisAgent, static_cast<byte>(i), print_sharp_sign, cacheProdForExplainer);
     }
 }
 

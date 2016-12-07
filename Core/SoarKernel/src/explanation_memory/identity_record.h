@@ -19,8 +19,11 @@ class identity_record
         friend class Explanation_Memory;
 
     public:
-        identity_record(agent* myAgent, chunk_record* pChunkRecord);
-        ~identity_record();
+        identity_record() {};
+        ~identity_record() {};
+
+        void    init(agent* myAgent);
+        void    clean_up();
 
         void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL);
         void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }

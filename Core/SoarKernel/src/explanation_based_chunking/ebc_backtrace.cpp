@@ -138,8 +138,8 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     uint64_t btLevel = cond->bt.level;
     uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
     /* MToDo | Remove */
-    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
-        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
+//    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
+//        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
 //    else
 //        dprint(DT_DEBUG, "Levels: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
     return  (thisID->id->level <= grounds_level);
@@ -417,17 +417,13 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 
 void Explanation_Based_Chunker::report_local_negation(condition* c)
 {
-    if (thisAgent->trace_settings[TRACE_CHUNK_NAMES_SYSPARAM])
-    {
-        // use the same code as the backtracing above
-        cons* negated_to_print = NIL;
-        push(thisAgent, c, negated_to_print);
+    cons* negated_to_print = NIL;
+    push(thisAgent, c, negated_to_print);
 
-        thisAgent->outputManager->printa(thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
-        xml_begin_tag(thisAgent, kTagLocalNegation);
-        print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
-        xml_end_tag(thisAgent, kTagLocalNegation);
+    thisAgent->outputManager->printa(thisAgent, "\n*** Rule learned that used negative reasoning about local sub-state.***\n");
+    xml_begin_tag(thisAgent, kTagLocalNegation);
+    print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
+    xml_end_tag(thisAgent, kTagLocalNegation);
 
-        free_list(thisAgent, negated_to_print);
-    }
+    free_list(thisAgent, negated_to_print);
 }

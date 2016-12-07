@@ -9,11 +9,11 @@
 #define CORE_SOARKERNEL_SRC_EXPLANATION_MEMORY_CHUNK_RECORD_H_
 
 #include "kernel.h"
+#include "identity_record.h"
 #include "stl_typedefs.h"
 
 class instantiation_record;
 class production_record;
-class identity_record;
 
 typedef struct chunk_stats_struct {
         uint64_t            duplicates;
@@ -38,8 +38,11 @@ class chunk_record
         friend class instantiation_record;
 
     public:
-        chunk_record(agent* myAgent, uint64_t pChunkID);
-        ~chunk_record();
+        chunk_record() {};
+        ~chunk_record() {};
+
+        void init(agent* myAgent, uint64_t pChunkID);
+        void clean_up();
 
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    generate_dependency_paths();
@@ -74,7 +77,7 @@ class chunk_record
         inst_set*               backtraced_instantiations;
         inst_record_list*       backtraced_inst_records;
 
-        identity_record*        identity_analysis;
+        identity_record         identity_analysis;
         chunk_stats             stats;
 };
 
