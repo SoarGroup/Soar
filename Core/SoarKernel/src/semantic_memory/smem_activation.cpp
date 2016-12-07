@@ -37,7 +37,9 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     SQL->history_get->bind_int(1, pLTI_ID);
     SQL->history_get->execute();
     bool prohibited = false;
-    bool recent = false;
+    //int recent = 0;
+    int64_t recent_time = 0;
+
     double small_n = 0;
     {
         while (SQL->history_get->column_int(available_history) != 0)
@@ -50,10 +52,14 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         {
             small_n+=SQL->history_get->column_double(i+10);
             int64_t time_diff = (time_now - SQL->history_get->column_int(i));
-            if (time_diff < 2)
+            if (i == 0 && n > 0)
             {
-                recent = true;
+                recent_time = time_diff;
             }
+            /*if (time_diff < 3)
+            {
+                recent = time_diff;
+            }*/
             sum += SQL->history_get->column_double(i+10)*pow(static_cast<double>(time_now - SQL->history_get->column_int(i)),
                        static_cast<double>(-d));
         }
@@ -75,7 +81,14 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         }
     }
     //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
-    return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : -8);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
+    //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : recent-3);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
+    double inhibition_odds = 0;
+    if (recent_time != 0)
+    {
+        inhibition_odds = pow(1+pow(recent_time/10.0,-1.0),-1.0);
+        return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
+    }
+    return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
 }
 
 // activates a new or existing long-term identifier
@@ -368,7 +381,6 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 time = (*edge_it)->update_time;
                 if (time != previous_time && !first_time)
                 {//We need to compile the edge weight changes for the previous timestep before moving on to the next timestep.
-                    assert(!first_time);
                     std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
                     std::map<uint64_t,double>::iterator updates_it;
                     double normalizing_sum = 0;
@@ -399,7 +411,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                     children_q->bind_int(2, lti_id);
                     while (children_q->execute() == soar_module::row)
                     {
-                        if (children_q->column_int(0) == lti_id)
+                        if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
                         {
                             continue;
                         }

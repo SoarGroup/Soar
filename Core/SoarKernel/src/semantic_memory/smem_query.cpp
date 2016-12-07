@@ -753,9 +753,9 @@ uint64_t SMem_Manager::process_query(Symbol* state, Symbol* query, Symbol* negqu
         if (king_id != NIL)
         {
             // success!
-            //Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
-            //add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
-            //thisAgent->symbolManager->symbol_remove_ref(&act_sym);
+            Symbol* act_sym = thisAgent->symbolManager->make_float_constant(cand_act);
+            add_triple_to_recall_buffer(retrieval_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_act, act_sym);
+            thisAgent->symbolManager->symbol_remove_ref(&act_sym);
 
             add_triple_to_recall_buffer(meta_wmes, state->id->smem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.smem_sym_success, query);
             if (negquery)
