@@ -138,8 +138,8 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     uint64_t btLevel = cond->bt.level;
     uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
     /* MToDo | Remove */
-    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
-        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
+//    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
+//        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
 //    else
 //        dprint(DT_DEBUG, "Levels: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
     return  (thisID->id->level <= grounds_level);
