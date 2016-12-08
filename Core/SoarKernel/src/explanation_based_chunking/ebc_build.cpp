@@ -43,7 +43,7 @@
 #include <ebc_repair.h>
 
 using namespace soar_TraceNames;
-
+void sanity_check_conditions(condition* top_cond);
 /* =====================================================================
 
                            Results Calculation
@@ -758,13 +758,15 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             thisAgent->explanationMemory->increment_stat_justification_did_not_match();
-            thisAgent->explanationMemory->cancel_chunk_record();
-            excise_production(thisAgent, m_prod, false);
+            assert(m_prod);
+            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Warning:  Justification did not match working memory.  Potential issue.";
+                print_current_built_rule("Justification that did not match WM: ");
             }
+            excise_production(thisAgent, m_prod, false);
             m_chunk_inst->in_ms = false;
         } else {
             /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.
@@ -776,6 +778,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             {
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Warning:  Chunk did not match working memory.  Potential issue.";
+                print_current_built_rule("Chunk that did not match WM: ");
             }
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
@@ -952,6 +955,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     variablize_condition_list(m_vrblz_top);
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_vrblz_top);
+
+//    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
 
     merge_conditions(m_vrblz_top);
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after merging: \n%1", m_vrblz_top);

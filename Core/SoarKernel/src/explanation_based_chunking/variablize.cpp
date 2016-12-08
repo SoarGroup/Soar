@@ -322,12 +322,17 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
     {
         for (condition* cond = top_cond; cond != NIL; cond = cond->next)
         {
-            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+            if (cond->type == POSITIVE_CONDITION)
             {
                 dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 variablize_equality_tests(cond->data.tests.id_test);
                 variablize_equality_tests(cond->data.tests.attr_test);
                 variablize_equality_tests(cond->data.tests.value_test);
+            }
+            else if (cond->type == NEGATIVE_CONDITION)
+            {
+                dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS NC equality test for id in: %l\n", cond);
+                variablize_equality_tests(cond->data.tests.id_test);
             }
         }
     }
@@ -337,25 +342,25 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
         if (cond->type == POSITIVE_CONDITION)
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            if (cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
+            if ((cond->data.tests.id_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
-            if (cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
+            if ((cond->data.tests.attr_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
-            if (cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
+            if ((cond->data.tests.value_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
             dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
-            variablize_tests_by_lookup(cond->data.tests.id_test, false);
-            variablize_tests_by_lookup(cond->data.tests.attr_test, false);
-            variablize_tests_by_lookup(cond->data.tests.value_test, false);
+            variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
+            variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
             dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
             dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
-            variablize_condition_list(cond->data.ncc.top, false);
+            variablize_condition_list(cond->data.ncc.top, true);
         }
     }
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
@@ -532,13 +537,49 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
     }
 }
 
-void sanity_test (test pTest)
+void sanity_test_chunk (test pTest)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
-            sanity_test(static_cast<test>(c->first));
+            sanity_test_chunk(static_cast<test>(c->first));
+        }
+    } else {
+        assert(!test_has_referent(pTest) || !pTest->data.referent->is_sti());
+    }
+}
+
+void sanity_check_conditions(condition* top_cond)
+{
+    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+//            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
+            if (cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
+                sanity_test_chunk(cond->data.tests.id_test);
+            if (cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
+                sanity_test_chunk(cond->data.tests.attr_test);
+            if (cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
+                sanity_test_chunk(cond->data.tests.value_test);
+        }
+        else
+        {
+//            dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
+//            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
+            sanity_check_conditions(cond->data.ncc.top);
+        }
+    }
+}
+
+void sanity_test_justification (test pTest)
+{
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            sanity_test_justification(static_cast<test>(c->first));
         }
     } else {
         assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
@@ -565,9 +606,9 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 reinstantiate_test(cond->data.tests.value_test);
 //                if (cond->type == POSITIVE_CONDITION)
 //                {
-//                    sanity_test(cond->data.tests.id_test);
-//                    sanity_test(cond->data.tests.attr_test);
-//                    sanity_test(cond->data.tests.value_test);
+//                    sanity_test_justification(cond->data.tests.id_test);
+//                    sanity_test_justification(cond->data.tests.attr_test);
+//                    sanity_test_justification(cond->data.tests.value_test);
 //                }
             } else {
                 for (condition* ncond = cond->data.ncc.top; ncond != NIL; ncond = ncond->next)
@@ -591,9 +632,9 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                 reinstantiate_test(lCond->data.tests.value_test);
 //                if (cond->type == POSITIVE_CONDITION)
 //                {
-//                    sanity_test(lCond->data.tests.id_test);
-//                    sanity_test(lCond->data.tests.attr_test);
-//                    sanity_test(lCond->data.tests.value_test);
+//                    sanity_test_justification(lCond->data.tests.id_test);
+//                    sanity_test_justification(lCond->data.tests.attr_test);
+//                    sanity_test_justification(lCond->data.tests.value_test);
 //                }
             } else {
                 for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)

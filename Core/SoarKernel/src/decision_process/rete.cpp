@@ -4335,7 +4335,7 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
-        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
+//        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent,
                                 nvn ? nvn->data.bottom_of_subconditions : NIL,
                                 node->parent,
@@ -4350,16 +4350,16 @@ void rete_node_to_conditions(agent* thisAgent,
     }
     else
     {
-        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
+//        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
+//            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
+//            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
@@ -4376,7 +4376,7 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
             }
-            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
+//            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
