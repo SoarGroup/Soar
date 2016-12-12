@@ -187,7 +187,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
             sql->bind(1, pLTI_ID);
 
-            if (!sql->executeStep())
+            if (sql->executeStep())
                 return std::make_tuple(true, sql->getColumn(1).getInt64() == true);
             else
                 return std::make_tuple(false, false);
@@ -276,7 +276,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
             sql->bind(1, pLTI_ID);
 
-            if (!sql->executeStep())
+            if (sql->executeStep())
                 return std::make_tuple(true, sql->getColumn(1).getInt64() == true);
             else
                 return std::make_tuple(false, false);

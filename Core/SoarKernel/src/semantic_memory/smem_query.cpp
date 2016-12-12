@@ -368,26 +368,36 @@ std::pair<bool, bool>* SMem_Manager::processMathQuery(Symbol* mathQuery, smem_pr
 
 void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool needFullSearch, const id_set& prohibit_lti, Symbol* state, Symbol* query, Symbol* negquery, std::list<uint64_t>* match_ids, uint64_t number_to_retrieve, uint64_t depth)
 {
-<<<<<<< HEAD
     id_set prohibit;
     prohibit.insert(prohibit_lti.begin(), prohibit_lti.end());
-=======
     //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
     id_set::iterator prohibited_lti_p;
     for (prohibited_lti_p = prohibit->begin(); prohibited_lti_p != prohibit->end(); ++prohibited_lti_p)
     {
-        SQL->prohibit_check->bind_int(1, *prohibited_lti_p);
-        if (SQL->prohibit_check->execute() != soar_module::row)
+        std::packaged_task<bool()> pt_ProhibitCheck([] {
+            auto sql = sqlite_thread_guard(SQL->prohibit_check);
+
+            sql->bind(1, *prohibited_lti_p);
+
+            return sql->executeStep();
+        });
+        bool prohibited = JobQueue->post(pt_ProhibitCheck).get();
+        if (prohibited)
         {
-            SQL->prohibit_set->bind_int(1, *prohibited_lti_p);
-            SQL->prohibit_set->execute(soar_module::op_reinit);
+            std::packaged_task<void()> pt_ProhibitSet([]{
+                auto sql = sqlite_thread_guard(SQL->prohibit_set);
+
+                sql->bind(1, *prohibited_lti_p);
+
+                sql->exec();
+            });
+
+            JobQueue->post(pt_ProhibitSet).wait();
         }
-        SQL->prohibit_check->reinitialize();
     }
 
     smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
->>>>>>> origin/new_smem_with_edge_weight_spread
 
     uint64_t king_id = NIL;
 
