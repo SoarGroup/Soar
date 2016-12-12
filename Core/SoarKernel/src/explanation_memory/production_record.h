@@ -16,8 +16,11 @@ class production_record
 
     public:
 
-        production_record(agent* pAgent, production* pProd);
-        ~production_record();
+        production_record() {};
+        ~production_record() {};
+
+        void init(agent* pAgent, production* pProd);
+        void clean_up();
 
         condition*  get_lhs() { return lhs_conds; }
         action*     get_rhs() { return rhs_actions; }

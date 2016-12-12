@@ -54,16 +54,16 @@ typedef struct identity_mapping_struct {
 } identity_mapping;
 
 
-typedef struct symbol_with_match_struct {
-        Symbol*     sym;
-        Symbol*     matched_sym;
+typedef struct chunk_element_struct {
+        Symbol*     variable_sym;
+        Symbol*     instantiated_sym;
         uint64_t    identity;
-        symbol_with_match_struct() {
-            sym = NULL;
-            matched_sym = NULL;
+        chunk_element_struct() {
+            variable_sym = NULL;
+            instantiated_sym = NULL;
             identity = 0;
         }
-} matched_sym;
+} chunk_element;
 
 typedef struct aug_struct
 {

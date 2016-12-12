@@ -411,51 +411,6 @@ inline void add_cond(condition** c, condition** prev, condition** first)
 
 }
 
-void Explanation_Based_Chunker::create_instantiated_counterparts()
-{
-    condition* copy_cond = m_vrblz_top;
-    condition* c_inst = NULL, *first_inst = NULL, *prev_inst = NULL;
-    condition* ncc_cond, *ncc_icond;
-    while (copy_cond)
-    {
-        c_inst = copy_condition(thisAgent, copy_cond, false, false, true);
-        c_inst->inst = copy_cond->inst;
-        assert(c_inst->inst);
-        /*-- Store a link from the variablized condition to the instantiated
-         *   condition.  Used during merging if the chunker needs
-         *   to delete a redundant condition.  Also used to reorder
-         *   instantiated condition to match the re-ordered variablized
-         *   conditions list (required by the rete.) -- */
-        c_inst->counterpart = copy_cond;
-        copy_cond->counterpart = c_inst;
-        if (copy_cond->type == CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            ncc_cond = copy_cond->data.ncc.top;
-            ncc_icond = c_inst->data.ncc.top;
-            while (ncc_cond)
-            {
-                ncc_cond->counterpart = ncc_icond;
-                ncc_icond->counterpart = ncc_cond;
-                ncc_cond = ncc_cond->next;
-                ncc_icond = ncc_icond->next;
-            }
-        }
-        add_cond(&c_inst, &prev_inst, &first_inst);
-        copy_cond = copy_cond->next;
-    }
-    if (prev_inst)
-    {
-        prev_inst->next = NIL;
-    }
-    else
-    {
-        first_inst->next = NIL;
-    }
-
-    m_inst_top = first_inst;
-    m_inst_bottom = c_inst;
-}
-
 void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 {
     cons* c;
@@ -482,9 +437,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         /* --- make the instantiated condition --- */
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
-        /* -- Originally cc->cond would be set to ground and cc->inst was a copy-- */
-        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true, true);
-        c_vrblz->inst = ground->inst;
+        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
+        c_vrblz->inst = m_chunk_inst;
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
@@ -513,8 +467,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify, true);
-            c_vrblz->inst = cc->cond->inst;
+            c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            c_vrblz->inst = m_chunk_inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
         }
@@ -524,12 +478,10 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
             if (ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] == false)
             {
-                // this chunk will be overgeneral! don't create it
-
-                // SBW 5/07
-                // report what local negations are preventing the chunk,
-                // and set flags like we saw a ^quiescence t so it won't be created
-                report_local_negation(cc->cond);    // in backtrace.cpp
+                if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+                {
+                    report_local_negation(cc->cond);
+                }
                 m_reliable = false;
             }
             has_local_negation = true;
@@ -541,9 +493,9 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     if (has_local_negation)
     {
         thisAgent->explanationMemory->increment_stat_tested_local_negation();
-
     }
     #endif
+
     if (prev_vrblz)
     {
         prev_vrblz->next = NIL;
@@ -558,7 +510,6 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     if (first_vrblz)
     {
         add_additional_constraints();
-        create_instantiated_counterparts();
     }
     dprint(DT_BUILD_CHUNK_CONDS, "build_chunk_conds_for_grounds_and_add_negateds done.\n");
 }
@@ -581,27 +532,25 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     condition* cc;
     tc_number tc;   /* mark each id as we add a test for it, so we don't add
                      a test for the same id in two different places */
-    Symbol* id, *id_vrblz;
+    Symbol* idSym, *id_vrblz;
     test t;
+    bool isa_goal, isa_impasse;
 
     tc = get_new_tc_number(thisAgent);
-    for (cc = m_inst_top; cc != NIL; cc = cc->next)
+    for (cc = m_vrblz_top; cc != NIL; cc = cc->next)
     {
         if (cc->type != POSITIVE_CONDITION)
         {
             continue;
         }
-        id = cc->data.tests.id_test->eq_test->data.referent;
-        id_vrblz = cc->counterpart->data.tests.id_test->eq_test->data.referent;
-        if ((id->id->isa_goal || id->id->isa_impasse) &&
-                (id_vrblz->tc_num != tc))
+        idSym = cc->data.tests.id_test->eq_test->data.referent;
+        isa_goal = idSym->is_variable() ? idSym->var->instantiated_sym->id->isa_goal : idSym->id->isa_goal;
+        isa_impasse = idSym->is_variable() ? idSym->var->instantiated_sym->id->isa_impasse : idSym->id->isa_impasse;
+        if ((isa_goal || isa_impasse) && (idSym->tc_num != tc))
         {
-            /* We add the goal test to the counterpart, which is the variablized condition list */
-            t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
-            add_test(thisAgent, &(cc->counterpart->data.tests.id_test), t);
-            t = make_test(thisAgent, NULL, ((id->id->isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST));
+            t = make_test(thisAgent, NULL, (isa_goal ? GOAL_ID_TEST : IMPASSE_ID_TEST));
             add_test(thisAgent, &(cc->data.tests.id_test), t);
-            id_vrblz->tc_num = tc;
+            idSym->tc_num = tc;
         }
     }
 }
@@ -615,36 +564,51 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
    makes these clones and fills in chunk_inst->preferences_generated.
 -------------------------------------------------------------------- */
 
-void Explanation_Based_Chunker::make_clones_of_results(bool pForChunk)
+void Explanation_Based_Chunker::make_clones_of_results()
 {
-    preference* p, *result_p;
+    preference* lClonedPref, *lResultPref;
 
     m_chunk_inst->preferences_generated = NIL;
-    for (result_p = m_results; result_p != NIL; result_p = result_p->next_result)
+    for (lResultPref = m_results; lResultPref != NIL; lResultPref = lResultPref->next_result)
     {
         /* --- copy the preference --- */
-        p = make_preference(thisAgent, result_p->type, result_p->id, result_p->attr,
-                            result_p->value, result_p->referent,
-                            pForChunk ? result_p->clone_identities : result_p->identities, result_p->rhs_funcs, true);
-        thisAgent->symbolManager->symbol_add_ref(p->id);
-        thisAgent->symbolManager->symbol_add_ref(p->attr);
-        thisAgent->symbolManager->symbol_add_ref(p->value);
-        if (preference_is_binary(p->type))
+        dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
+        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr,
+                            lResultPref->value, lResultPref->referent,
+                            lResultPref->clone_identities, lResultPref->rhs_funcs, true);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
+        thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
+        if (preference_is_binary(lClonedPref->type))
         {
-            thisAgent->symbolManager->symbol_add_ref(p->referent);
+            thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
+        lClonedPref->inst = m_chunk_inst;
+        dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
+
         /* --- put it onto the list for chunk_inst --- */
-        p->inst = m_chunk_inst;
-        insert_at_head_of_dll(m_chunk_inst->preferences_generated, p,
-                              inst_next, inst_prev);
+        insert_at_head_of_dll(m_chunk_inst->preferences_generated, lClonedPref, inst_next, inst_prev);
+
         /* --- insert it into the list of clones for this preference --- */
-        p->next_clone = result_p;
-        p->prev_clone = result_p->prev_clone;
-        result_p->prev_clone = p;
-        if (p->prev_clone)
+        lClonedPref->next_clone = lResultPref;
+        lClonedPref->prev_clone = lResultPref->prev_clone;
+        lResultPref->prev_clone = lClonedPref;
+        if (lClonedPref->prev_clone)
         {
-            p->prev_clone->next_clone = p;
+            lClonedPref->prev_clone->next_clone = lClonedPref;
         }
+//        {
+//            preference* tempCond = lClonedPref;
+//            while (tempCond->prev_clone) tempCond = tempCond->prev_clone;
+//            dprint(DT_CLONES, "Clone list: \n");
+//            while (tempCond)
+//            {
+//                dprint(DT_CLONES, "%p --> \n", tempCond);
+//                tempCond = tempCond->next_clone;
+//            }
+//
+//        }
+//        assert((!lClonedPref->next_clone || (lClonedPref->inst == lClonedPref->next_clone->inst)) && (!lClonedPref->prev_clone || (lClonedPref->inst == lClonedPref->prev_clone->inst)));
     }
 }
 
@@ -731,33 +695,9 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
 {
     deallocate_condition_list(thisAgent, m_vrblz_top);
     m_vrblz_top = NULL;
-    deallocate_condition_list(thisAgent, m_inst_top);
-    m_inst_top = m_inst_bottom = NULL;
     deallocate_action_list(thisAgent, m_rhs);
     m_rhs = NULL;
 }
-
-void Explanation_Based_Chunker::revert_chunk_to_instantiation()
-{
-    /* Change to justification naming */
-    thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
-    set_up_rule_name(false);
-
-    /* Clean up */
-    /* Note:  We could decrease chunks_this_d_cycle but choosing not to in case
-     *        something can happen where you get massive number of failed chunks */
-    deallocate_failed_chunk();
-    m_vrblz_top = m_saved_justification_top;
-    m_saved_justification_top = m_saved_justification_bottom = NULL;
-
-    /* Re-do work without variablization */
-    create_instantiated_counterparts();
-    m_rhs = variablize_results_into_actions(m_results, false);
-    add_goal_or_impasse_tests();
-
-}
-
-
 
 void Explanation_Based_Chunker::add_chunk_to_rete()
 {
@@ -784,13 +724,13 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
             if (ebc_settings[SETTING_EBC_INTERRUPT])
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule.";
+                thisAgent->reason_for_stopping = "Soar learned a new rule.";
 
             }
             if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && m_prod->explain_its_chunks && thisAgent->explanationMemory->isRecordingChunk())
             {
                 thisAgent->stop_soar = true;
-                thisAgent->reason_for_stopping = "Soar learned new rule from a watched production.";
+                thisAgent->reason_for_stopping = "Soar learned a new rule from a watched production.";
             }
             //            chunk_history += "Successfully created chunk\n";
             //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
@@ -811,7 +751,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         }
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
-        excise_production(thisAgent, m_prod, false);
+        excise_production(thisAgent, m_prod, false, false);
         m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
@@ -848,9 +788,10 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
 {
-    preference* pref;
-    bool variablize;
-    bool lChunkValidated = false;
+    preference*         pref;
+    bool                lChunkValidated = true;
+    condition*          l_inst_top = NULL;
+    condition*          l_inst_bottom = NULL;
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     soar_timer local_timer;
@@ -884,12 +825,12 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     m_reliable = true;
-    m_inst_top = m_inst_bottom = m_vrblz_top = NULL;
+    m_vrblz_top = NULL;
 
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
     if (chunks_this_d_cycle >= max_chunks)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->outputManager->settings[OM_WARNINGS]);
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         max_chunks_reached = true;
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_chunks();
@@ -900,8 +841,11 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     }
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->outputManager->settings[OM_WARNINGS]);
-        thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+            thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
+        }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
         #endif
@@ -912,15 +856,21 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
 
     /* --- Assign a new instantiation ID for this chunk --- */
     set_new_chunk_id();
-#ifdef DEBUG_ONLY_CHUNK_ID
-        if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+
+    #ifdef DEBUG_ONLY_CHUNK_ID
+    #ifndef DEBUG_ONLY_CHUNK_ID_LAST
+    if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+    #else
+    if ((m_chunk_new_i_id >= DEBUG_ONLY_CHUNK_ID) && (m_chunk_new_i_id <= DEBUG_ONLY_CHUNK_ID_LAST))
+    #endif
         {
             dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_new_i_id);
             debug_trace_on();
         }
 #endif
 
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
+    dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
 //    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
 //    if (m_chunk_new_i_id == 9)
 //    {
@@ -946,14 +896,17 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
     #endif
 
-    /* --- Collect the grounds into the chunk condition lists --- */
+    /* --- Backtracing done.  Collect the grounds into the chunk condition lists --- */
     create_initial_chunk_condition_lists();
 
-    /* --- Backtracing done.  If there aren't any grounds, abort chunk --- */
-    if (!m_inst_top)
+    /* --- If there aren't any grounds, abort chunk --- */
+    if (!m_vrblz_top)
     {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->outputManager->settings[OM_WARNINGS]);
-        thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
+        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        {
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+            thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
+        }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
@@ -966,94 +919,79 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         clean_up();
         return;
     }
-    dprint(DT_MILESTONES, "Dependency analysis complete.  Building chunk %u based on firing of %y (i%u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "Unified m_inst_top: \n%1", m_inst_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "Unified m_vrblz_top: \n%1", m_vrblz_top);
+    dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top: \n%1", m_vrblz_top);
 
     /* Determine if we create a justification or chunk */
-    variablize = m_learning_on_for_instantiation;
-    if (variablize && !m_reliable)
+    m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
+
+    if ((m_rule_type == ebc_chunk) && !m_reliable)
     {
-        variablize = false;
+        m_rule_type = ebc_justification;
         if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
         }
-
     }
+
     #ifdef BUILD_WITH_EXPLAINER
-    if (!variablize && !thisAgent->explanationMemory->isRecordingJustifications())
+    if ((m_rule_type == ebc_justification) && !thisAgent->explanationMemory->isRecordingJustifications())
     {
         thisAgent->explanationMemory->cancel_chunk_record();
     }
     #endif
-    set_up_rule_name(variablize);
+    set_up_rule_name();
 
 
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
     #endif
 
-    if (variablize)
-    {
-        /* Save conditions and results in case we need to make a justification because chunking fails.
-         * Note that we copy the instantiated condition list because we want the counterpart links to
-         * points to the instantiated conditions, not the variablized ones that we would be throwing
-         * out. */
-        copy_condition_list(thisAgent, m_inst_top, &m_saved_justification_top, &m_saved_justification_bottom, false, false, true, true);
-        thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-    }
+    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
-    //variablize_condition_list(m_vrblz_top, variablize);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%6", m_vrblz_top, m_results);
-    //        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top counterparts: \n%6", m_vrblz_top->counterpart, m_results);
-    if (variablize)
-    {
-        variablize_condition_list(m_vrblz_top, variablize);
-        merge_conditions(m_vrblz_top);
-    }
+    variablize_condition_list(m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after variablizing: \n%1", m_vrblz_top);
+
+    merge_conditions(m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after merging: \n%1", m_vrblz_top);
 
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
 
-    m_rhs = variablize_results_into_actions(m_results, variablize);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_results before variablizing into actions: \n%6", NULL, m_results);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top, m_rhs after merge, variablize: \n%1-->\n%2", m_vrblz_top, m_rhs);
+    m_rhs = variablize_results_into_actions(m_results);
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Variablized actions m_rhs after merge: \n%2", m_rhs);
 
     /* m_rhs has identities here for rhs functions*/
     add_goal_or_impasse_tests();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top, m_rhs after merge, variablize and add goal tests: \n%1-->\n%2", m_vrblz_top, m_rhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_inst_top after merge, variablize and add goal tests\n%1", m_inst_top, NULL);
-    //dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top->counterparts after add_goal_test\n%1", m_vrblz_top->counterpart, NULL);
+    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after merge, variablize and add goal tests: \n%1", m_vrblz_top);
 
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
-    lChunkValidated = reorder_and_validate_chunk();
-    dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after reorder_and_validate_chunk\n%1", m_vrblz_top, NULL);
-    //dprint(DT_VARIABLIZATION_MANAGER, "counterparts after reorder_and_validate_chunk\n%9", m_vrblz_top, NULL);
-    dprint(DT_VARIABLIZATION_MANAGER, "m_inst_top after reorder_and_validate_chunk\n%1", m_inst_top, NULL);
-    //dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top->counterparts\n%1", m_vrblz_top->counterpart, NULL);
+    if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
+    {
+        lChunkValidated = reorder_and_validate_chunk();
+        dprint(DT_VARIABLIZATION_MANAGER, "m_vrblz_top after reorder_and_validate_chunk\n%1", m_vrblz_top);
+    }
     clear_rhs_var_to_match_map();
 
     if (!lChunkValidated)
     {
-        if (variablize)
+        if (m_rule_type == ebc_chunk)
         {
-            /* Could not re-order chunk, so we need to go back and create a justification for the results instead */
-            revert_chunk_to_instantiation();
-            variablize = false;     // Needed to determine which identities are used when creating cloned preference identities
-            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
-            if (m_prod)
+            /* Could not re-order chunk, so we create a justification for the results instead */
+            m_rule_type = ebc_justification;
+            if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
             {
-                print_current_built_rule("Adding the following justification instead:");
-
-                #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_chunks_reverted();
-                #endif
+                thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
             }
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationMemory->increment_stat_chunks_reverted();
+            #endif
         } else if (ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS]){
-            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification);
-
+            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             deallocate_failed_chunk();
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->cancel_chunk_record();
@@ -1067,28 +1005,37 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
             #endif
-            m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
         }
-    } else {
-        m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
     }
+
+    /* reinstantiate_current_rule will return an instantiated list of conditions based on the
+     * variablized conditions.  This is used for the chunk's instantiation m_chunk_inst, which
+     * is submitted to the RETE and then chunked over if necessary for bottom up chunking.
+     *
+     * Note: If the rule being formed is a justification, this is where it happens.  Both
+     * m_vrblz_top and m_rhs will both become instantiated as well.  Until this point,
+     * everything was equivalent for both chunks and justifications. - MMA 11-23-16 */
+
+    l_inst_top = reinstantiate_current_rule();
+    l_inst_bottom = l_inst_top;
+    while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+
+    m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
 
     #ifdef BUILD_WITH_EXPLAINER
     if (m_inst->prod && m_inst->prod->explain_its_chunks)
     {
-        m_prod ->explain_its_chunks = true;
+        m_prod->explain_its_chunks = true;
     }
     #endif
     /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
     m_prod_name = NULL;
 
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
     m_chunk_inst->preferences_cached = NULL;
-//    reorder_instantiated_conditions(m_vrblz_top, &m_chunk_inst->top_of_instantiated_conditions, &m_chunk_inst->bottom_of_instantiated_conditions);
-    m_chunk_inst->top_of_instantiated_conditions    = m_inst_top;
-    m_chunk_inst->bottom_of_instantiated_conditions = m_inst_bottom;
+    m_chunk_inst->top_of_instantiated_conditions    = l_inst_top;
+    m_chunk_inst->bottom_of_instantiated_conditions = l_inst_bottom;
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
@@ -1096,15 +1043,17 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
     m_chunk_inst->in_ms                             = true;  /* set true for now, we'll find out later... */
+    m_chunk_inst->in_newly_created                  = true;
+    m_chunk_inst->in_newly_deleted                  = false;
     m_chunk_inst->explain_status                    = explain_unrecorded;
     m_chunk_inst->explain_depth                     = 0;
     m_chunk_inst->explain_tc_num                    = 0;
 
-    make_clones_of_results(variablize);
+    make_clones_of_results();
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Chunk formed.\n", m_chunk_new_i_id, m_inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     add_chunk_to_rete();
 
@@ -1116,6 +1065,8 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_chunk_inst->next = (*custom_inst_list);
     (*custom_inst_list) = m_chunk_inst;
 
+    /* So that we don't deallocate the chunk instantiation we're chunking on next */
+    m_chunk_inst = NULL;
     clean_up();
 
     if (!max_chunks_reached)
@@ -1134,6 +1085,11 @@ void Explanation_Based_Chunker::clean_up ()
         thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(m_chunk_new_i_id);
     }
     thisAgent->explanationMemory->end_chunk_record();
+    if (m_chunk_inst)
+    {
+        thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
+        m_chunk_inst = NULL;
+    }
     if (m_vrblz_top)
     {
         deallocate_condition_list(thisAgent, m_vrblz_top);
@@ -1143,33 +1099,31 @@ void Explanation_Based_Chunker::clean_up ()
         dprint_header(DT_MILESTONES, PrintAfter, "chunk_instantiation() done building and cleaning up for chunk %y.\n", m_prod_name);
         thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
     }
-    if (m_saved_justification_top)
-    {
-        deallocate_condition_list(thisAgent, m_saved_justification_top);
-    }
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_inst_top                          = NULL;
-    m_inst_bottom                       = NULL;
     m_vrblz_top                         = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;
     m_prod_name                         = NULL;
-    m_saved_justification_top           = NULL;
-    m_saved_justification_bottom        = NULL;
+    m_rule_type                         = ebc_no_rule;
+    m_failure_type                      = ebc_success;
     clear_variablization_maps();
     clear_cached_constraints();
     clear_o_id_substitution_map();
     clear_attachment_map();
     clear_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
-            if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
-            {
-                dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_new_i_id);
-                debug_trace_off();
-            }
+    #ifndef DEBUG_ONLY_CHUNK_ID_LAST
+    if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+    #else
+    if (m_chunk_new_i_id >= DEBUG_ONLY_CHUNK_ID_LAST)
+    #endif
+    {
+        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_new_i_id);
+        debug_trace_off();
+    }
     #endif
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)

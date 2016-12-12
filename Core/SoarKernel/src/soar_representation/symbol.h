@@ -156,6 +156,11 @@ struct varSymbol   : public Symbol
     Symbol* current_binding_value;
     uint64_t gensym_number;
     cons* rete_binding_locations;
+    /* instantiated_sym is a temporary pointer that is only guaranteed to be
+     * valid after variablization and while chuking the rule that set its
+     * value.  It is used to revert back to the instantiated value when the
+     * rule is a justification or if chunking fails for some reason. */
+    Symbol* instantiated_sym;
 };
 
 struct idSymbol    : public Symbol

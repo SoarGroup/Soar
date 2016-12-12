@@ -21,6 +21,7 @@ class smem_stat_container: public soar_module::stat_container
         soar_module::integer_stat* queries;
         soar_module::integer_stat* stores;
         soar_module::integer_stat* act_updates;
+        soar_module::integer_stat* trajectories_total;
 
         soar_module::integer_stat* nodes;
         soar_module::integer_stat* edges;

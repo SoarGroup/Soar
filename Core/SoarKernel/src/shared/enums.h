@@ -19,74 +19,86 @@
 enum TraceMode
 {
     // Generic
-    No_Mode = 0,
-    DT_DEBUG = 1,
+    No_Mode                     = 0,
+    DT_DEBUG                    = 1,
 
     // General
-    DT_MILESTONES = 2,
-    DT_PRINT_INSTANTIATIONS = 3,
+    DT_MILESTONES               = 2,
+    DT_PRINT_INSTANTIATIONS     = 3,
 
     // Explanation trace and identity creation
-    DT_ADD_EXPLANATION_TRACE = 4,
-    DT_IDENTITY_GENERATION = 5,
+    DT_ADD_EXPLANATION_TRACE    = 4,
+    DT_IDENTITY_GENERATION      = 5,
 
     // EBC
-    DT_VARIABLIZATION_MANAGER = 6,
-    DT_EXTRA_RESULTS = 7,
-    DT_BACKTRACE = 8,
+    DT_VARIABLIZATION_MANAGER   = 6,
+    DT_EXTRA_RESULTS            = 7,
+    DT_BACKTRACE                = 8,
     DT_ADD_IDENTITY_SET_MAPPING = 9,
-    DT_UNIFY_SINGLETONS = 10,
-    DT_BUILD_CHUNK_CONDS = 11,
-    DT_LHS_VARIABLIZATION = 12,
-    DT_RHS_VARIABLIZATION = 13,
-    DT_NCC_VARIABLIZATION = 14,
-    DT_RL_VARIABLIZATION = 15,
-    DT_CONSTRAINTS = 16,
-    DT_MERGE = 17,
-    DT_REORDERER = 18,
-    DT_REPAIR = 19,
-    DT_EBC_CLEANUP = 20,
+    DT_UNIFY_SINGLETONS         = 10,
+    DT_BUILD_CHUNK_CONDS        = 11,
+    DT_LHS_VARIABLIZATION       = 12,
+    DT_RHS_VARIABLIZATION       = 13,
+    DT_NCC_VARIABLIZATION       = 14,
+    DT_RL_VARIABLIZATION        = 15,
+    DT_CONSTRAINTS              = 16,
+    DT_MERGE                    = 17,
+    DT_REORDERER                = 18,
+    DT_REPAIR                   = 19,
+    DT_REINSTANTIATE            = 20,
+    DT_CLONES                   = 21,
+    DT_EBC_CLEANUP              = 22,
 
     // Explainer
-    DT_EXPLAIN = 21,
-    DT_EXPLAIN_PATHS = 22,
-    DT_EXPLAIN_ADD_INST = 23,
-    DT_EXPLAIN_CONNECT = 24,
-    DT_EXPLAIN_UPDATE = 25,
-    DT_EXPLAIN_CONDS = 26,
-    DT_EXPLAIN_IDENTITIES = 27,
-    DT_EXPLAIN_CACHE = 45,
+    DT_EXPLAIN                  = 23,
+    DT_EXPLAIN_PATHS            = 24,
+    DT_EXPLAIN_ADD_INST         = 25,
+    DT_EXPLAIN_CONNECT          = 26,
+    DT_EXPLAIN_UPDATE           = 27,
+    DT_EXPLAIN_CONDS            = 28,
+    DT_EXPLAIN_IDENTITIES       = 29,
+    DT_EXPLAIN_CACHE            = 30,
 
     // Other Soar modules
-    DT_EPMEM_CMD = 28,
-    DT_GDS = 29,
-    DT_SMEM_INSTANCE = 30,
-    DT_PARSER = 31,
-    DT_SOAR_INSTANCE = 32,
-    DT_WME_CHANGES = 33,
+    DT_EPMEM_CMD                = 31,
+    DT_GDS                      = 32,
+    DT_SMEM_INSTANCE            = 33,
+    DT_PARSER                   = 34,
+    DT_SOAR_INSTANCE            = 35,
+    DT_WME_CHANGES              = 36,
 
     // Memory and refcounts
-    DT_ID_LEAKING = 34,
-    DT_DEALLOCATES = 35,
-    DT_DEALLOCATE_SYMBOLS = 36,
-    DT_DEALLOCATE_INSTANTIATION = 44,
-    DT_DEALLOCATES_TESTS = 37,
-    DT_REFCOUNT_ADDS = 38,
-    DT_REFCOUNT_REMS = 39,
-    DT_RHS_VALUE = 40,
+    DT_ALLOCATE_RHS_VALUE       = 37,
+    DT_ID_LEAKING               = 38,
+    DT_DEALLOCATE_INST          = 39,
+    DT_DEALLOCATE_PREF          = 40,
+    DT_DEALLOCATE_PROD          = 41,
+    DT_DEALLOCATE_RHS_VALUE     = 42,
+    DT_DEALLOCATE_SLOT          = 43,
+    DT_DEALLOCATE_SYMBOL        = 44,
+    DT_DEALLOCATE_TEST          = 45,
+    DT_REFCOUNT_ADDS            = 46,
+    DT_REFCOUNT_REMS            = 47,
 
     // Other low-level debugging
-    DT_LINKS = 41,
-    DT_UNKNOWN_LEVEL = 42,
-    DT_RETE_PNODE_ADD = 43,
-    DT_WATERFALL = 46,
-
-    // Not used
-    DT_UNUSED4 = 47,
+    DT_LINKS                    = 48,
+    DT_UNKNOWN_LEVEL            = 49,
+    DT_PREFS                    = 50,
+    DT_RETE_PNODE_ADD           = 51,
+    DT_WATERFALL                = 52,
+    DT_GDS_HIGH                 = 53,
     num_trace_modes
 };
 
+enum LearnedRuleType {
+    ebc_no_rule,
+    ebc_chunk,
+    ebc_justification,
+    ebc_template
+};
+
 enum Decider_settings {
+    DECIDER_KEEP_TOP_OPREFS,
     DECIDER_MAX_GP,
     DECIDER_MAX_DC_TIME,
     DECIDER_MAX_ELABORATIONS,
@@ -103,7 +115,6 @@ enum Decider_settings {
 enum Output_sysparams {
     OM_ECHO_COMMANDS,
     OM_WARNINGS,
-    OM_VERBOSE,
     OM_PRINT_DEPTH,
     num_output_sysparams
 };
@@ -268,6 +279,18 @@ MP_epmem_uedge,
 MP_epmem_interval,
 MP_constraints,
 MP_attachments,
+
+MP_sym_triple,
+MP_identity_mapping,
+MP_chunk_element,
+MP_sym_identity,
+MP_action_record,
+MP_condition_record,
+MP_instantiation_record,
+MP_chunk_record,
+MP_production_record,
+MP_repair_path,
+
 num_memory_pools
 };
 

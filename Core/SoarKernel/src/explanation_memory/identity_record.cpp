@@ -16,7 +16,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
+void identity_record::init(agent* myAgent)
 {
     thisAgent = myAgent;
     id_to_id_set_mappings = new id_to_sym_id_map();
@@ -25,7 +25,7 @@ identity_record::identity_record(agent* myAgent, chunk_record* pChunkRecord)
     original_ebc_mappings = NULL;
 }
 
-identity_record::~identity_record()
+void identity_record::clean_up()
 {
     if (original_ebc_mappings) delete original_ebc_mappings;
     if (id_to_id_set_mappings)
@@ -33,7 +33,7 @@ identity_record::~identity_record()
         for (auto it = id_to_id_set_mappings->begin(); it != id_to_id_set_mappings->end(); ++it)
         {
             if (it->second->variable_sym) thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
-            delete it->second;
+            thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
         }
         delete id_to_id_set_mappings;
     }
@@ -44,15 +44,11 @@ identity_record::~identity_record()
 }
 
 
-void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-            pTest = pTest->eq_test;
-    }
-    if (pInstantiatedTest && pInstantiatedTest->type == CONJUNCTIVE_TEST)
-    {
-        pInstantiatedTest = pInstantiatedTest->eq_test;
+        pTest = pTest->eq_test;
     }
     if (test_has_referent(pTest)) {
         if (pTest->identity)
@@ -60,7 +56,8 @@ void add_identities_in_test(agent* thisAgent, test pTest, test pInstantiatedTest
             if (pID_Set->find(pTest->identity) == pID_Set->end())
             {
                 pID_Set->insert(pTest->identity);
-                sym_identity_info* lNewIDSet = new sym_identity_info();
+                sym_identity_info* lNewIDSet;
+                thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
                 if (pTest->identity)
                 {
                     lNewIDSet->identity = thisAgent->explanationMemory->get_identity_set_counter();
@@ -87,12 +84,9 @@ void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t
             add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
             thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
-            test id_test_without_goal_test = NULL;
-            id_test_without_goal_test = copy_test(thisAgent, lCond->data.tests.id_test, false, false, false, true);
-            add_identities_in_test(thisAgent, id_test_without_goal_test, lCond->counterpart ? lCond->counterpart->data.tests.id_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, lCond->counterpart ? lCond->counterpart->data.tests.attr_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, lCond->counterpart ? lCond->counterpart->data.tests.value_test : NULL, pInstID, pID_Set, pID_Set_Map);
-            deallocate_test(thisAgent, id_test_without_goal_test);
+            add_identities_in_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
+            add_identities_in_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
         }
     }
 }
@@ -115,7 +109,7 @@ void identity_record::map_originals_to_sets()
     thisAgent->explanationMemory->reset_identity_set_counter();
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        lNewIDSet = new sym_identity_info();
+        thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
         if (iter->second != NULL_IDENTITY_SET)
         {
             lMapping = iter->first;
@@ -134,7 +128,7 @@ void identity_record::map_originals_to_sets()
                 lNewIDSet->identity = lNewIdSetID;
                 lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
-                lNewIDSet = new sym_identity_info();
+                thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lNewIDSet);
                 lNewIDSet->identity = lNewIdSetID;
                 lNewIDSet->variable_sym = NULL;
                 id_to_id_set_mappings->insert({iter->first, lNewIDSet});
@@ -196,7 +190,8 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     } else {
         lInstMappingList = lIterInst->second;
     }
-    identity_mapping* lMapping = new identity_mapping();
+    identity_mapping* lMapping;
+    thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
     lMapping->from_identity = pFromID;
     lMapping->from_symbol = pFromSym;
     if (pFromSym)
@@ -362,7 +357,7 @@ void identity_record::clear_mappings()
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(lMapping->to_symbol));
             }
-            delete lMapping;
+            thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
         }
         delete lMapList;
     }

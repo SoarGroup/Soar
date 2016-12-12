@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
+void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 {
     thisAgent                   = myAgent;
     name                        = NULL;
@@ -41,7 +41,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     backtraced_instantiations   = new inst_set();
     backtraced_inst_records     = new inst_record_list();
 
-    identity_analysis           = new identity_record(thisAgent, this);
+    identity_analysis.init(thisAgent);
 
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
@@ -61,33 +61,7 @@ chunk_record::chunk_record(agent* myAgent, uint64_t pChunkID)
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 
-/* This function is not currently used, but I'm leaving in case we ever add something
- * that needs to excise explanations, for example a command or something to limit
- * memory use.  This function has not been tested. */
-void chunk_record::excise_chunk_record()
-{
-    for (auto it = conditions->begin(); it != conditions->end(); it++)
-    {
-        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
-    }
-    for (auto it = actions->begin(); it != actions->end(); it++)
-    {
-        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
-    }
-    /* For this to work, store id of last chunk that created instantiation record.  If it's the
-     * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
-     * called when a chunk fails.  If we need to excise records in general, we'll need refcounts */
-    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
-    {
-        if ((*it)->get_chunk_creator() == chunkID)
-        {
-            (*it)->delete_instantiation();
-            thisAgent->explanationMemory->delete_instantiation((*it)->get_instantiationID());
-        }
-    }
-}
-
-chunk_record::~chunk_record()
+void chunk_record::clean_up()
 {
     dprint(DT_EXPLAIN, "Deleting chunk record %y (c %u)\n", name, chunkID);
 //    production_remove_ref(thisAgent, original_production);
@@ -103,7 +77,8 @@ chunk_record::~chunk_record()
     if (result_inst_records) delete result_inst_records;
     if (backtraced_inst_records) delete backtraced_inst_records;
     if (backtraced_instantiations) delete backtraced_instantiations;
-    if (identity_analysis) delete identity_analysis;
+
+    identity_analysis.clean_up();
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
@@ -176,13 +151,29 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
             /* The backtrace should have already added all instantiations that contained
              * grounds, so we can just look up the instantiation for each condition */
             lchunkInstRecord = thisAgent->explanationMemory->get_instantiation(lChunkCondInst);
+            if (!lchunkInstRecord)
+            {
+                /* I think this can only occur if a condition was testing a wme created as a child of a previous result, so the instantiation
+                 * that originally created it is not in the backtrace 
+                 * 
+                 * Bug:  If a second explanation also has a condition that tests a wme created by this rule, problems will occur
+                 *       It won't be detected here, since it was added for the first explanation, so it won't be added it to its 
+                 *       backtraced instantiations and its path to a result won't be updated.  We need a better mechanism, but we'll 
+                 *       punt for now since this only happens for explanations with partially operational conditions that are repaired. 
+                 *       FYI, no longer crashes.  But the rule won't show up properly in the visualization.  */
+                dprint(DT_EXPLAIN, "Adding missing instantiation record for i%u (%y)", lChunkCondInst->i_id, lChunkCondInst->prod_name);
+                lchunkInstRecord = thisAgent->explanationMemory->add_instantiation(lChunkCondInst, chunkID);
+                lchunkInstRecord->record_instantiation_contents();
+                lchunkInstRecord->update_instantiation_contents();
+                lchunkInstRecord->cached_inst->explain_status = explain_recorded;
+                backtraced_inst_records->push_back(lNewInstRecord);
+            }
         } else {
             lchunkInstRecord = NULL;
         }
         lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
         cond->inst = chunkInstantiation;
-        cond->counterpart->inst = chunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 
@@ -199,18 +190,9 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-    identity_analysis->set_original_ebc_mappings(pIdentitySetMappings);
-    identity_analysis->generate_identity_sets(chunkInstantiationID, lhs);
-    /* Don't think we need to add sets for the base instantiations.  All mappings that appear in the chunk
-     * will have been added already.  Identities sets that don't appear in the chunk will be generated
-     * when mapping originals to sets */
-//    identity_analysis->generate_identity_sets(pBaseInstantiation->i_id, pBaseInstantiation->top_of_instantiated_conditions);
-//    for (auto it = result_instantiations->begin(); it != result_instantiations->end(); ++it)
-//    {
-//        lChunkCondInst = *it;
-//        identity_analysis->generate_identity_sets(lChunkCondInst->i_id, lChunkCondInst->top_of_instantiated_conditions);
-//    }
-    identity_analysis->map_originals_to_sets();
+    identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
+    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
+    identity_analysis.map_originals_to_sets();
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
@@ -242,8 +224,13 @@ void chunk_record::generate_dependency_paths()
         if (l_inst)
         {
             l_path = l_inst->get_path_to_base();
-            dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
-            l_cond->set_path_to_base(l_path);
+            /* This is to handle the problem situation that can occur with partially operational conditions that
+             * are repaired.  Described above in record_chunk_contents. */
+            if (l_path)
+            {
+                dprint(DT_EXPLAIN_PATHS, "Path to base of length %d for chunk cond found from instantiation i%u: \n", l_path->size(), l_inst->get_instantiationID());
+                l_cond->set_path_to_base(l_path);
+            }
         }
     }
 }
@@ -277,8 +264,6 @@ void chunk_record::print_for_explanation_trace()
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_print_test_format(true, false);
 
@@ -302,14 +287,13 @@ void chunk_record::print_for_explanation_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, false, true);
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t)%s%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
-            outputManager->printa_sf(thisAgent, "(%g%s^%g %g)%-",
-                id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
-                lCond->condition_tests.attr, lCond->condition_tests.value);
-            deallocate_test(thisAgent, id_test_without_goal_test);
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "",
+                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+            outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
+                lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
+                lCond->condition_tests.attr, lCond->condition_tests.value, lCond->test_for_acceptable_preference ? " +" : "");
 
             thisAgent->explanationMemory->print_path_to_base(lCond->get_path_to_base(), true);
         }
@@ -323,9 +307,9 @@ void chunk_record::print_for_explanation_trace()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_identities_in_chunk();
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_identities_in_chunk();
     outputManager->printa(thisAgent, "\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis->print_instantiation_mappings(chunkInstantiationID);
+    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(chunkInstantiationID);
     thisAgent->explanationMemory->print_footer(true);
 }
 
@@ -348,8 +332,6 @@ void chunk_record::print_for_wme_trace()
         condition_record* lCond;
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         outputManager->set_print_test_format(true, false);
 
@@ -373,14 +355,16 @@ void chunk_record::print_for_wme_trace()
             }
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            if (lCond->matched_wme)
+            if (lCond->matched_wme.id)
             {
-                outputManager->printa_sf(thisAgent, "(%y ^%y %y)%s",
-                    lCond->matched_wme->id, lCond->matched_wme->attr, lCond->matched_wme->value, thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                outputManager->printa_sf(thisAgent, "(%y ^%y %y%s)%s",
+                    lCond->matched_wme.id, lCond->matched_wme.attr, lCond->matched_wme.value,
+                    lCond->test_for_acceptable_preference ? " +" : "",
+                    thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             } else {
                 outputManager->printa_sf(thisAgent, "(N/A)%s", thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
             }
-            if (lCond->matched_wme != NULL)
+            if (lCond->matched_wme.id)
             {
                 instantiation_record* lInstRecord = lCond->get_instantiation();
                 bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -427,8 +411,6 @@ void chunk_record::visualize()
     {
         bool lInNegativeConditions = false;
         int lConditionCount = 0;
-        test id_test_without_goal_test = NULL, id_test_without_goal_test2 = NULL;
-        bool removed_goal_test, removed_impasse_test;
 
         thisAgent->outputManager->set_print_test_format(false, true);
         visualizer->viz_object_start(name, chunkID, viz_chunk_record);
@@ -471,7 +453,40 @@ void chunk_record::visualize()
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
     {
         lCond = (*it);
-        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), this->chunkID, lCond->get_conditionID());
+        uint64_t x1, x2, x3;
+        instantiation_record* i1 = lCond->get_instantiation();
+        x1 = i1->get_instantiationID();
+        x2 = chunkID;
+        x3 = lCond->get_conditionID();
+        dprint(DT_DEBUG, "Connecting %u %u %u.\n", x1, x2, x3);
+        visualizer->viz_connect_inst_to_chunk(x1, x2, x3);
+//        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), chunkID, lCond->get_conditionID());
     }
 
+}
+
+/* This function is not currently used, but I'm leaving in case we ever add something
+ * that needs to excise explanations, for example a command or something to limit
+ * memory use.  This function has not been tested. */
+void chunk_record::excise_chunk_record()
+{
+    for (auto it = conditions->begin(); it != conditions->end(); it++)
+    {
+        thisAgent->explanationMemory->delete_condition((*it)->get_conditionID());
+    }
+    for (auto it = actions->begin(); it != actions->end(); it++)
+    {
+        thisAgent->explanationMemory->delete_action((*it)->get_actionID());
+    }
+    /* For this to work, store id of last chunk that created instantiation record.  If it's the
+     * same as this chunk being excised, no other chunk uses it.  This assumes that this is only
+     * called when a chunk fails.  If we need to excise records in general, we'll need refcounts */
+    for (auto it = backtraced_inst_records->begin(); it != backtraced_inst_records->end(); it++)
+    {
+        if ((*it)->get_chunk_creator() == chunkID)
+        {
+            (*it)->delete_instantiation();
+            thisAgent->explanationMemory->delete_instantiation((*it)->get_instantiationID());
+        }
+    }
 }

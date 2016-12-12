@@ -192,6 +192,12 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         PrintCLIMessage(&viz);
         return true;
     }
+    else if (pOp == 'P')
+    {
+        thisAgent->SMem->timers->total->start();
+        thisAgent->SMem->calc_spread_trajectories();
+        thisAgent->SMem->timers->total->stop();
+    }
     else if (pOp == 'q')
     {
         std::string* err = new std::string;
@@ -257,6 +263,17 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
             return SetError("Invalid setting for SMem parameter.");
         }
 
+        if (thisAgent->SMem->settings->spreading->get_value() == on
+                && !(
+                        strcmp(pArg1->c_str(), "spreading-baseline") &&
+                        strcmp(pArg1->c_str(), "spreading-depth-limit") &&
+                        strcmp(pArg1->c_str(), "spreading-limit") &&
+                        strcmp(pArg1->c_str(), "spreading-loop-avoidance") &&
+                        strcmp(pArg1->c_str(), "spreading-continue-probability")))
+        {
+            return SetError("Some spreading activation settings cannot be changed once spreading activation has been turned on.");
+        }
+
         smem_param_container::db_choices last_db_mode = thisAgent->SMem->settings->database->get_value();
         bool result = my_param->set_string(pArg2->c_str());
         if (!strcmp(pArg1->c_str(), "initial-variable-id"))
@@ -313,6 +330,11 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
             PrintCLIMessage_Item("Activation Updates:", thisAgent->SMem->statistics->act_updates, 40);
             PrintCLIMessage_Item("Nodes:", thisAgent->SMem->statistics->nodes, 40);
             PrintCLIMessage_Item("Edges:", thisAgent->SMem->statistics->edges, 40);
+            uint64_t number_spread_elements = thisAgent->SMem->spread_size();
+            std::ostringstream s_spread_output_string;
+            s_spread_output_string << number_spread_elements;
+            std::string spread_output_string = s_spread_output_string.str();
+            PrintCLIMessage_Justify("Spread Size:", spread_output_string.c_str(), 40);
         }
         else
         {

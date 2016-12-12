@@ -8,7 +8,7 @@
 #include "explanation_memory.h"
 #include "explanation_memory.h"
 
-production_record::production_record(agent* pAgent, production* pProd)
+void production_record::init(agent* pAgent, production* pProd)
 {
     dprint(DT_EXPLAIN_CACHE, "Creating production record for %y\n.", pProd->name);
     thisAgent = pAgent;
@@ -22,7 +22,7 @@ production_record::production_record(agent* pAgent, production* pProd)
     p_node_to_conditions_and_rhs(thisAgent, pProd->p_node, NIL, NIL, &lhs_conds, &bottom, &rhs_actions);
 }
 
-production_record::~production_record()
+void production_record::clean_up()
 {
     if (lhs_conds)
     {

@@ -85,9 +85,10 @@ class Explanation_Memory
         void                    cancel_chunk_record();
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);
+        void                    excise_production_id(uint64_t pId);
 
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL)
-                                { if (current_recording_chunk) current_recording_chunk->identity_analysis->add_identity_mapping(pI_ID, pType, pFromID, pToID, pFromSym, pToSym); }
+                                { if (current_recording_chunk) current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromID, pToID, pFromSym, pToSym); }
         void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 
@@ -173,7 +174,6 @@ class Explanation_Memory
         action_record*          add_result(preference* pPref, action* pAction = NULL);
 
         uint64_t                add_production_id_if_necessary(production* pProd);
-        void                    excise_production_id(uint64_t pId);
         production*             get_production(uint64_t pId);
 
         void                    discuss_chunk(chunk_record* pChunkRecord);

@@ -275,11 +275,11 @@ void Explanation_Based_Chunker::print_chunking_settings()
 //    outputManager->printa_sf(thisAgent, "history %-%-%s\n", "Print a bullet-point list of all chunking events");
     outputManager->printa_sf(thisAgent, "stats %-%-%s\n", "Print statistics on learning that has occurred");
     outputManager->printa_sf(thisAgent, "------------------- Settings ----------------------\n");
-    outputManager->printa_sf(thisAgent, "%s | %s | %s | %s       %-%s\n",
+    outputManager->printa_sf(thisAgent, "%s | %s | %s | %s                   %-%s\n",
         ebc_params->chunk_in_states->get_value() == ebc_always  ? "ALWAYS" : "always",
             ebc_params->chunk_in_states->get_value() == ebc_never ? "NEVER" : "never",
-                ebc_params->chunk_in_states->get_value() == ebc_only ? "FLAGGED" : "flagged",
-                    ebc_params->chunk_in_states->get_value() == ebc_except ? "UNFLAGGED" : "unflagged",
+                ebc_params->chunk_in_states->get_value() == ebc_only ? "ONLY" : "only",
+                    ebc_params->chunk_in_states->get_value() == ebc_except ? "EXCEPT" : "except",
         "When Soar will learn new rules");
     outputManager->printa_sf(thisAgent, "bottom-only                %-%s%-%s\n", capitalizeOnOff(ebc_params->bottom_level_only->get_value()), "Learn only from bottom sub-state");
     tempString = "[ ";

@@ -1,5 +1,4 @@
 chunk always
-watch --learn 2
 
 sp {init
    (state <s> ^superstate nil)
@@ -10,14 +9,16 @@ sp {init
 }
 
 sp {propose*stop
-   (state <s> ^superstate.superstate.superstate nil)
+   (state <s> ^superstate.superstate.superstate.superstate.superstate nil)
 -->
     (write (crlf) |Too deep.|)
     (interrupt)
 }
 
 sp {propose
-    (state <s> ^superstate <ss>)
+    (state <s> ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
     (<ss> ^superstate nil
           ^word <w>)
 -->
@@ -26,8 +27,10 @@ sp {propose
 }
 
 sp {apply*1
-    (state <s> ^superstate <ss>
-               ^operator <o>)
+    (state <s> ^operator <o>
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
     (<ss> ^word <w>)
     (<o> ^word <w>)
     -->
@@ -35,7 +38,11 @@ sp {apply*1
 }
 
 sp {apply*2
-    (state <s> ^sub-result1 { <> not-object <w> })
+    (state <s> ^sub-result1 { <> not-object <w> }
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
+    (<ss> ^word <w2>)
     -->
     (<s> ^sub-result2 <w> +)
 }
@@ -63,11 +70,14 @@ sp {apply*4b
     -->
     (<s> ^sub-result4b <w> +)
 }
+
 sp {make-chunk
-    (state <s> ^superstate <ss>
-               ^operator <o>
+    (state <s> ^operator <o>
                ^sub-result4 <r>
-               ^sub-result4b <r>)
+               ^sub-result4b <r>
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
     (<o> ^word {<> <not-object> <object> })
     (<ss> ^word2 <not-object>)
     -->

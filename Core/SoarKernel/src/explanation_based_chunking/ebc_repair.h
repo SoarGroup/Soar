@@ -4,10 +4,14 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-class Path_to_Goal_State
+class Repair_Path
 {
     public:
-        Path_to_Goal_State(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL) {
+        Repair_Path() {};
+        ~Repair_Path() {};
+
+        void init(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL)
+        {
             topSym = new_root;
             wme_path = new wme_list();
             if (new_path) {
@@ -15,7 +19,7 @@ class Path_to_Goal_State
                 if (new_wme) wme_path->push_front(new_wme);
             }
         }
-        ~Path_to_Goal_State() { delete wme_path; }
+        void clean_up() { delete wme_path; }
 
         Symbol* get_root() {return topSym;}
         wme_list* get_path() {return wme_path;}
@@ -35,13 +39,13 @@ class Repair_Manager
         Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID);
         ~Repair_Manager();
 
-        void        repair_rule(condition*& m_vrblz_top, condition*& m_inst_top, condition*& m_inst_bottom, matched_symbol_list* pUnconnected_LTIs);
+        void        repair_rule(condition*& m_vrblz_top, matched_symbol_list* pUnconnected_LTIs);
 
     private:
 
         agent*                  thisAgent;
-        sym_to_sym_map     m_sym_to_var_map;
-        sym_to_id_map      m_sym_to_id_map;
+        sym_to_sym_map          m_sym_to_var_map;
+        sym_to_id_map           m_sym_to_id_map;
         wme_set                 m_repair_WMEs;
         goal_stack_level        m_match_goal_level;
         uint64_t                m_chunk_ID;
@@ -52,7 +56,7 @@ class Repair_Manager
         condition*  make_condition_from_wme(wme* lWME);
         void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
         void        variablize_connecting_sti(test pTest);
-        void        add_path_to_goal_WMEs(matched_sym* pTargetSym, tc_number cond_tc);
+        void        add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc);
         void        add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC);
 
 

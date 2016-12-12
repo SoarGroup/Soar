@@ -22,8 +22,11 @@ class condition_record
         friend class chunk_record;
 
     public:
-        condition_record(agent* myAgent, condition* pCond, uint64_t pCondID);
-        ~condition_record();
+        condition_record() {};
+        ~condition_record() {};
+
+        void init(agent* myAgent, condition* pCond, uint64_t pCondID);
+        void clean_up();
 
         uint64_t                        get_conditionID()   { return conditionID; };
         goal_stack_level                get_level()         { return wme_level_at_firing; };
@@ -46,9 +49,9 @@ class condition_record
         void        set_matched_wme_for_cond(condition* pCond);
         void        update_condition(condition* pCond, instantiation_record* pInst);
 
-        void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
+        void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable);
         void        visualize_for_wm_trace();
-        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity);
+        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable);
         void        visualize_for_chunk();
         void        visualize_for_explanation_trace(condition* pCond);
 
@@ -68,7 +71,8 @@ class condition_record
         inst_record_list*               path_to_base;
 
         test_triple                     condition_tests;
-        symbol_triple*                  matched_wme;
+        symbol_triple                   matched_wme;
+        bool                            test_for_acceptable_preference;
 };
 
 

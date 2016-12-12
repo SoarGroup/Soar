@@ -56,15 +56,9 @@ WM_Manager::WM_Manager(agent* myAgent)
     wma_stats = new wma_stat_container(thisAgent);
     wma_timers = new wma_timer_container(thisAgent);
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-    wma_forget_pq = new wma_forget_p_queue(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >());
-    wma_touched_elements = new wma_pooled_wme_set(std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >(thisAgent));
-    wma_touched_sets = new wma_decay_cycle_set(std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< wma_d_cycle >(thisAgent));
-#else
     wma_forget_pq = new wma_forget_p_queue();
-    wma_touched_elements = new wma_pooled_wme_set();
     wma_touched_sets = new wma_decay_cycle_set();
-#endif
+    wma_touched_elements = new wme_set();
     wma_initialized = false;
     wma_tc_counter = 2;
 
@@ -289,12 +283,53 @@ void do_buffered_wm_changes(agent* thisAgent)
     dprint(DT_WME_CHANGES, "...adding wmes_to_add to rete.\n");
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
+        w = (wme_struct*)(c->first);
+        if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+        {//We attempt to keep track of ltis currently in wmem.
+            if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) == thisAgent->SMem->smem_in_wmem->end())
+            {
+                (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (uint64_t)1;
+                //This must have been newly added.
+                thisAgent->SMem->smem_context_additions->insert(w->id->id->LTI_ID);
+                if (thisAgent->SMem->smem_context_removals->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_context_removals->end())
+                {
+                    thisAgent->SMem->smem_context_removals->erase(w->id->id->LTI_ID);
+                }
+            }
+            else
+            {
+                (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] + 1;
+            }
+        }
         dprint(DT_WME_CHANGES, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
     dprint(DT_WME_CHANGES, "...removing wmes_to_remove from rete.\n");
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
+        w = (wme_struct*)(c->first);
+        if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+        {
+            if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_in_wmem->end())
+            {
+                if ((*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] == 1)
+                {//We are removing the last instance = actual removal.
+                    thisAgent->SMem->smem_in_wmem->erase(w->id->id->LTI_ID);
+                    if (thisAgent->SMem->smem_context_additions->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_context_additions->end())
+                    {
+                        thisAgent->SMem->smem_context_additions->erase(w->id->id->LTI_ID);
+                    }
+                    else
+                    {
+                        thisAgent->SMem->smem_context_removals->insert(w->id->id->LTI_ID);
+                    }
+                }
+                else
+                {//just reducing the number of instances.
+                    (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] - 1;
+                }
+            }
+        }
         dprint(DT_WME_CHANGES, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }

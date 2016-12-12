@@ -17,6 +17,7 @@
 #include "cli_output.h"
 #include "cli_production.h"
 #include "cli_soar.h"
+#include "cli_trace.h"
 #include "cli_visualize.h"
 #include "cli_wm.h"
 

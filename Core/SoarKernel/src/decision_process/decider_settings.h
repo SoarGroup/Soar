@@ -18,6 +18,7 @@ class decider_param_container: public soar_module::param_container
 
         soar_module::constant_param<top_level_phase>* stop_phase;
 
+        soar_module::boolean_param* keep_all_top_oprefs;
         soar_module::integer_param* max_gp;
         soar_module::integer_param* max_dc_time;
         soar_module::integer_param* max_elaborations;

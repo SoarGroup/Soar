@@ -22,8 +22,11 @@ class instantiation_record
 
     public:
 
-        instantiation_record(agent* myAgent, instantiation* pInst);
-        ~instantiation_record();
+        instantiation_record() {};
+        ~instantiation_record() {};
+
+        void init(agent* myAgent, instantiation* pInst);
+        void clean_up();
 
         uint64_t                get_instantiationID() { return instantiationID; };
         goal_stack_level        get_match_level() { return match_level; };
@@ -37,6 +40,7 @@ class instantiation_record
         action_record*          find_rhs_action(preference* pPref);
 
         void                    print_for_explanation_trace(bool printFooter);
+        void                    print_arch_inst_for_explanation_trace(bool printFooter);
         void                    print_for_wme_trace(bool printFooter);
         void                    visualize();
 

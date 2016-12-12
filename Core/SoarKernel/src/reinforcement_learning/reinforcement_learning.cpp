@@ -299,9 +299,9 @@ inline void rl_add_ref(Symbol* goal, production* prod)
 
 inline void rl_remove_ref(Symbol* goal, production* prod)
 {
-    rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
+    production_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
-    for (rl_rule_list::iterator p = rules->begin(); p != rules->end(); p++)
+    for (production_list::iterator p = rules->begin(); p != rules->end(); p++)
     {
         if (*p == prod)
         {
@@ -314,9 +314,9 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
 
 void rl_clear_refs(Symbol* goal)
 {
-    rl_rule_list* rules = goal->id->rl_info->prev_op_rl_rules;
+    production_list* rules = goal->id->rl_info->prev_op_rl_rules;
 
-    for (rl_rule_list::iterator p = rules->begin(); p != rules->end(); p++)
+    for (production_list::iterator p = rules->begin(); p != rules->end(); p++)
     {
         (*p)->rl_ref_count--;
     }
@@ -601,17 +601,18 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         /* --- Assign a new instantiation ID --- */
         /* We need to set a chunk ID because variablization uses it to assign new identities */
         thisAgent->explanationBasedChunker->set_new_chunk_id();
-        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true, true);
+        copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
+        thisAgent->explanationBasedChunker->set_rule_type(ebc_template);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top, true);
+        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
         thisAgent->name_of_production_being_reordered = new_name_symbol->sc->name;
-        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false, NULL, NULL))
+        if (new_action && reorder_and_validate_lhs_and_rhs(thisAgent, &cond_top, &new_action, false))
         {
             production* new_production = make_production(thisAgent, USER_PRODUCTION_TYPE, new_name_symbol, my_template->name->sc->name, &cond_top, &new_action, false, NULL);
 
@@ -626,7 +627,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             if (add_production_to_rete(thisAgent, new_production, cond_top, NULL, false, duplicate_rule, true) == DUPLICATE_PRODUCTION)
             {
                 dprint(DT_RL_VARIABLIZATION, "Template production is a duplicate of %y: \n%4", duplicate_rule->name, cond_top, new_action);
-                excise_production(thisAgent, new_production, false);
+                excise_production(thisAgent, new_production, false, false);
                 rl_revert_template_id(thisAgent);
                 new_name_symbol = NULL;
             }
@@ -642,6 +643,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
 
         thisAgent->explanationBasedChunker->clear_variablization_maps();
         thisAgent->explanationBasedChunker->clear_chunk_id();
+        thisAgent->explanationBasedChunker->set_rule_type(ebc_no_rule);
         deallocate_condition_list(thisAgent, cond_top);
 
     return new_name_symbol;
@@ -884,7 +886,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                 /// I = 0.0 for non-terminal states when using hierarchical reinforcement learning
                 const double I = goal->id->lower_goal ? 0.0 : 1.0;
                 double trace_increment = I * (1.0 / static_cast<double>(data->prev_op_rl_rules->size()));
-                rl_rule_list::iterator p;
+                production_list::iterator p;
 
                 for (p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
                 {
@@ -1019,7 +1021,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
                         pref->inst->prod->rl_efr -= alpha * gamma * (1 - lambda) * dot_w_e;
                     }
 
-                    for (rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
+                    for (production_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); p++)
                     {
                         (*p)->rl_gql -= alpha * eta * dot_w_phi;
                     }

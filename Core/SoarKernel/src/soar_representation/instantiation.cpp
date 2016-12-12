@@ -60,16 +60,6 @@
 
 using namespace soar_TraceNames;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list<instantiation*,
-        soar_module::soar_memory_pool_allocator<instantiation*> > inst_mpool_list;
-typedef std::list<condition*,
-        soar_module::soar_memory_pool_allocator<condition*> > cond_mpool_list;
-#else
-typedef std::list< instantiation* > inst_mpool_list;
-typedef std::list< condition* > cond_mpool_list;
-#endif
-
 void init_instantiation_pool(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
@@ -625,11 +615,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     int       pass;
     wme*       lowest_goal_wme;
 
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
-    {
-        printf("\n      in calculate_support_for_instantiation_preferences:");
-        xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
-    }
     o_support = false;
     op_elab = false;
 
@@ -643,11 +628,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
     }
     else if (inst->prod->declared_support == UNDECLARED_SUPPORT)
     {
-
-        /*
-        check if the instantiation is proposing an operator.  if it
-        is, then this instantiation is i-supported.
-         */
+        /* check if the instantiation is proposing an operator.  if it is, then this instantiation is i-supported.  */
 
         operator_proposal = false;
         instantiation* non_variabilized_inst = original_inst ? original_inst : inst;
@@ -935,14 +916,9 @@ void create_instantiation(agent* thisAgent, production* prod,
     int64_t index;
     Symbol** cell;
 
-#ifdef BUG_139_WORKAROUND
-    /* New waterfall model: this is now checked for before we call this function */
-    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
-    /* RPM workaround for bug #139: don't fire justifications */
-    //if (prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
-    //    return;
-    //}
-#endif
+    #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
+        assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
+    #endif
 
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->next = thisAgent->newly_created_instantiations;
@@ -952,6 +928,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->rete_wme = w;
     inst->reliable = true;
     inst->in_ms = true;
+    inst->in_newly_created = true;
+    inst->in_newly_deleted = false;
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
@@ -961,21 +939,17 @@ void create_instantiation(agent* thisAgent, production* prod,
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
         inst->prod_name, inst->i_id);
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) and adding to newly_created_instantiations...\n", inst->i_id, inst->prod_name);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
-//        debug_trace_set(0, true);
-//        debug_trace_set(DT_DEBUG, true);
-//        debug_trace_set(DT_ADD_IDENTITY_SET_MAPPING, true);
 //        debug_trace_set(DT_UNIFY_SINGLETONS, true);
-////        debug_trace_set(DT_REPAIR, true);
 //        dprint(DT_DEBUG, "Found.\n");
 //    } else {
 //        thisAgent->outputManager->clear_output_modes();
 //    }
-    if (thisAgent->outputManager->settings[OM_VERBOSE] == true)
+    if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\n   Creating instantiation of rule %y\n", inst->prod_name);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nCreating instantiation of rule %y\n", inst->prod_name);
         char buf[256];
         SNPRINTF(buf, 254, "Creating instantiation of rule %s", inst->prod_name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -988,11 +962,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     AddAdditionalTestsMode additional_test_mode;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
         additional_test_mode = JUST_INEQUALITIES;
-    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
-    {
-        additional_test_mode = ALL_ORIGINALS;
     } else  {
-        additional_test_mode = DONT_EXPLAIN;
+        additional_test_mode = ALL_ORIGINALS;
     }
     /* --- build the instantiated conditions, and bind LHS variables --- */
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
@@ -1015,9 +986,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     {
         thisAgent->outputManager->start_fresh_line(thisAgent);
         thisAgent->outputManager->printa(thisAgent,  "Firing ");
-        print_instantiation_with_wmes(thisAgent, inst,
-                                      static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
-                                      0);
+        print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
     }
 
     /* --- initialize rhs_variable_bindings array with names of variables
@@ -1083,22 +1052,14 @@ void create_instantiation(agent* thisAgent, production* prod,
              * operator. However, it could be the case that <x> is actually bound to
              * a number, which would make this a numeric indifferent preference. The
              * parser had no way of easily figuring this out, but it's easy to check
-             * here.
-             *
-             * jzxu April 22, 2009
-             */
-            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-                    && ((pref->referent->symbol_type
-                         == FLOAT_CONSTANT_SYMBOL_TYPE)
-                        || (pref->referent->symbol_type
-                            == INT_CONSTANT_SYMBOL_TYPE)))
+             * here. */
+            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && (pref->referent->is_float() || pref->referent->is_int()))
             {
                 pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
             }
 
             pref->inst = inst;
-            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,
-                                  inst_prev);
+            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
             if (inst->prod->declared_support == DECLARED_O_SUPPORT)
             {
                 pref->o_supported = true;
@@ -1109,9 +1070,7 @@ void create_instantiation(agent* thisAgent, production* prod,
             }
             else
             {
-
-                pref->o_supported =
-                    (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
+                pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
                 /* REW: end   09.15.96 */
             }
 
@@ -1195,8 +1154,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     if (!thisAgent->system_halted)
     {
         /* --- invoke callback function --- */
-        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK,
-                              static_cast<soar_call_data>(inst));
+        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
 
     }
 }
@@ -1217,25 +1175,29 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     preference* pref;
     goal_stack_level level;
 
-#ifdef USE_MEM_POOL_ALLOCATORS
-    cond_mpool_list cond_stack = cond_mpool_list(
-                                     soar_module::soar_memory_pool_allocator<condition*>(thisAgent));
-    inst_mpool_list inst_list = inst_mpool_list(
-                                    soar_module::soar_memory_pool_allocator<instantiation*>(thisAgent));
-#else
-    cond_mpool_list cond_stack;
-    inst_mpool_list inst_list;
-#endif
+    if (inst->in_newly_created)
+    {
+        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
+        if (!inst->in_newly_deleted)
+        {
+            inst->in_newly_deleted = true;
+            thisAgent->newly_deleted_instantiations.push_back(inst);
+        }
+        return;
+    }
 
-    inst_list.push_back(inst);
-    inst_mpool_list::iterator next_iter = inst_list.begin();
+    condition_list cond_stack;
+    inst_list l_instantiation_list;
 
-    while (next_iter != inst_list.end())
+    l_instantiation_list.push_back(inst);
+    inst_list::iterator next_iter = l_instantiation_list.begin();
+
+    while (next_iter != l_instantiation_list.end())
     {
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 //        if (inst->i_id == 23)
 //        {
 //            dprint(DT_DEBUG, "Found.\n");
@@ -1322,8 +1284,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                                 continue;
                             }
 
-                            // The clones are hopefully a simple case so we just call deallocate_preference on them.
-                            // Someone needs to create a test case to push this boundary...
                             {
                                 preference* clone = cond->bt.trace->next_clone;
                                 preference* next;
@@ -1354,8 +1314,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             remove_from_dll(cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev);
                             if ((!cond->bt.trace->inst->preferences_generated) && (!cond->bt.trace->inst->in_ms))
                             {
-                                next_iter = inst_list.insert(next_iter,
-                                                             cond->bt.trace->inst);
+                                next_iter = l_instantiation_list.insert(next_iter, cond->bt.trace->inst);
                             }
 
                             cond_stack.push_back(cond);
@@ -1401,20 +1360,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
-//    for (instantiation* linst = thisAgent->newly_created_instantiations; linst != NIL; linst = linst->next)
-//    {
-//        if (linst == inst)
-//            remove_from_dll(thisAgent->newly_created_instantiations, inst, next, prev);
-//    }
     // free instantiations in the reverse order
-    inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
-    while (riter != inst_list.rend())
+    inst_list::reverse_iterator riter = l_instantiation_list.rbegin();
+    dprint(DT_DEALLOCATE_INST, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
+    while (riter != l_instantiation_list.rend())
     {
         instantiation* temp = *riter;
         ++riter;
 
-        dprint(DT_DEALLOCATE_INSTANTIATION, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
 
         #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
@@ -1426,12 +1380,21 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         if (temp->prod)
         {
-            dprint(DT_DEALLOCATE_INSTANTIATION, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
-            production_remove_ref(thisAgent, temp->prod, true);
+            dprint(DT_DEALLOCATE_INST, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
+            if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
+            {
+                /* We are about to remove a justification that has not been excised from the rete.
+                 * Normally, justifications are excised as soon as they don't have any matches in
+                 * rete.cpp.  But if removing the preference will remove the instantiation, we
+                 * need to excise it now so that the rete doesn't try to later */
+                excise_production(thisAgent, temp->prod, false, true);
+            } else {
+                production_remove_ref(thisAgent, temp->prod);
+            }
         }
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Done removing instantiation's instantiation list.\n");
+    dprint(DT_DEALLOCATE_INST, "Done removing instantiation's instantiation list.\n");
     inst = NULL;
 }
 
@@ -1505,7 +1468,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
         (prod->reference_count > 1))
     {
-        excise_production(thisAgent, prod, false);
+        excise_production(thisAgent, prod, false, true);
     }
     else if (prod->type == CHUNK_PRODUCTION_TYPE)
     {
@@ -1532,7 +1495,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
     /* --- mark as no longer in MS, and possibly deallocate  --- */
     inst->in_ms = false;
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
@@ -1620,6 +1583,8 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
+    inst->in_newly_created = false;
+    inst->in_newly_deleted = false;
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
     inst->GDS_evaluated_already = false;
     inst->top_of_instantiated_conditions = NULL;
@@ -1632,7 +1597,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
 
     thisAgent->SMem->clear_instance_mappings();
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
 
     // create preferences
     inst->preferences_generated = NULL;
@@ -1808,6 +1773,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->reliable = true;
     inst->backtrace_number = 0;
     inst->in_ms = false;
+    inst->in_newly_created = false;
+    inst->in_newly_deleted = false;
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
@@ -1817,7 +1784,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
 
-    dprint(DT_DEALLOCATE_INSTANTIATION, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);

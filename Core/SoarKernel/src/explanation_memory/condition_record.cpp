@@ -17,79 +17,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-void condition_record::connect_to_action()
-{
-    if (parent_instantiation && cached_pref)
-    {
-        assert(cached_pref);
-        parent_action = parent_instantiation->find_rhs_action(cached_pref);
-        assert(parent_action);
-        dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
-    } else {
-        dprint(DT_EXPLAIN_CONNECT, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
-    }
-//    cached_pref = NULL;
-}
-
-void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
-{
-    if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
-    {
-        assert(parent_action);
-        assert(my_instantiation);
-        thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
-            parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
-    }
-}
-
-void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
-{
-    //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
-    if (!matched_wme)
-    {
-        set_matched_wme_for_cond(pCond);
-    }
-    cached_pref = pCond->bt.trace;
-    cached_wme = pCond->bt.wme_;
-    if (pCond->bt.trace)
-    {
-        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
-    } else {
-        parent_instantiation = NULL;
-    }
-    parent_action = NULL;
-    if (path_to_base) {
-        delete path_to_base;
-    }
-    path_to_base = NULL;
-}
-
-void condition_record::set_matched_wme_for_cond(condition* pCond)
-{
-    /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
-     * we use actual tests if we know it's a literal condition because identifier is STI */
-    if (condition_tests.id->eq_test->data.referent->is_sti() &&
-        !condition_tests.attr->eq_test->data.referent->is_variable() &&
-        !condition_tests.attr->eq_test->data.referent->is_variable())
-    {
-        matched_wme = new symbol_triple(condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
-        thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
-    } else {
-        if (pCond->bt.wme_)
-        {
-            matched_wme = new symbol_triple(pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->id);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->attr);
-            thisAgent->symbolManager->symbol_add_ref(matched_wme->value);
-        } else {
-            matched_wme = NULL;
-        }
-    }
-}
-
-condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pCondID)
+void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -103,6 +31,7 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
+    test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);
 
@@ -133,26 +62,96 @@ condition_record::condition_record(agent* myAgent, condition* pCond, uint64_t pC
     dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
 }
 
-condition_record::~condition_record()
+void condition_record::clean_up()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting condition record c%u for: (%t ^%t %t)\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
 
     deallocate_test(thisAgent, condition_tests.id);
     deallocate_test(thisAgent, condition_tests.attr);
     deallocate_test(thisAgent, condition_tests.value);
-    if (matched_wme)
-    {
-        dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme->id, matched_wme->attr, matched_wme->value);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->id);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->attr);
-        thisAgent->symbolManager->symbol_remove_ref(&matched_wme->value);
-        delete matched_wme;
-    }
+
+    dprint(DT_EXPLAIN_CONDS, "   Removing references for matched wme: (%y ^%y %y)\n", matched_wme.id, matched_wme.attr, matched_wme.value);
+    if (matched_wme.id) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.id);
+    if (matched_wme.attr) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.attr);
+    if (matched_wme.value) thisAgent->symbolManager->symbol_remove_ref(&matched_wme.value);
+
     if (path_to_base)
     {
         delete path_to_base;
     }
     dprint(DT_EXPLAIN_CONDS, "   Done deleting condition record c%u\n", conditionID);
+}
+
+void condition_record::connect_to_action()
+{
+    if (parent_instantiation && cached_pref)
+    {
+        assert(cached_pref);
+        parent_action = parent_instantiation->find_rhs_action(cached_pref);
+        assert(parent_action);
+        dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
+    } else {
+        dprint(DT_EXPLAIN_CONNECT, "   Did not link condition %u (%t ^%t %t) because no parent instantiation.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value);
+    }
+//    cached_pref = NULL;
+}
+
+void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
+{
+    if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
+    {
+        assert(parent_action);
+        assert(my_instantiation);
+        thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
+            parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
+    }
+}
+
+void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
+{
+    //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
+    if (!matched_wme.id)
+    {
+        set_matched_wme_for_cond(pCond);
+    }
+    cached_pref = pCond->bt.trace;
+    cached_wme = pCond->bt.wme_;
+    if (pCond->bt.trace)
+    {
+        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
+    } else {
+        parent_instantiation = NULL;
+    }
+    parent_action = NULL;
+    if (path_to_base) {
+        delete path_to_base;
+    }
+    path_to_base = NULL;
+}
+
+void condition_record::set_matched_wme_for_cond(condition* pCond)
+{
+    /* bt info wme doesn't seem to always exist (maybe just for terminal nodes), so
+     * we use actual tests if we know it's a literal condition because identifier is STI */
+    if (condition_tests.id->eq_test->data.referent->is_sti() &&
+        !condition_tests.attr->eq_test->data.referent->is_variable() &&
+        !condition_tests.attr->eq_test->data.referent->is_variable())
+    {
+        matched_wme = { condition_tests.id->eq_test->data.referent, condition_tests.attr->eq_test->data.referent, condition_tests.value->eq_test->data.referent };
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.id);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.attr);
+        thisAgent->symbolManager->symbol_add_ref(matched_wme.value);
+    } else {
+        if (pCond->bt.wme_)
+        {
+            matched_wme = { pCond->bt.wme_->id, pCond->bt.wme_->attr, pCond->bt.wme_->value };
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.id);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.attr);
+            thisAgent->symbolManager->symbol_add_ref(matched_wme.value);
+        } else {
+            matched_wme.id = matched_wme.attr = matched_wme.value = NULL;
+        }
+    }
 }
 
 bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)
@@ -217,21 +216,45 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 
 }
 
-void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
+void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable)
 {
     cons* c, *c2;
+    test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
-        for (c = pTest->data.conjunct_list, c2 = pTestIdentity->data.conjunct_list; c != NIL; c = c->rest, c2 = c2->rest)
+        if (pTestIdentity->type == CONJUNCTIVE_TEST)
         {
-            assert(c2);
+            c2 =  pTestIdentity->data.conjunct_list;
+            c2_test = NULL;
+        } else {
+            c2 = NULL;
+            c2_test = pTestIdentity;
+        }
+        /* The following requires that the two conjunctive tests have the same number of elements.  This is to
+         * handle the case when the main test for an identifier element has an isa_state test but the identity
+         * test does not. */
+        for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
             visualizer->viz_record_start();
-            viz_combo_test(static_cast<test>(c->first), static_cast<test>(c2->first), pNode_id, false, false, false, false, printIdentity);
+            c1_test = static_cast<test>(c->first);
+            if (c2)
+            {
+                c2_test = static_cast<test>(c2->first);
+                viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+            } else {
+                if (test_has_referent(c1_test) && c1_test->data.referent->is_variable())
+                {
+                    viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+                } else {
+                    viz_combo_test(c1_test, NULL, pNode_id, false, false, false, false, false, printAcceptable);
+                }
+            }
             visualizer->viz_record_end();
             visualizer->viz_endl();
+            if (c2) c2 = c2->rest;
         }
         visualizer->viz_table_end();
         visualizer->viz_table_element_end();
@@ -258,11 +281,12 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
         }
+        if (printAcceptable) thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "+ ");
         visualizer->viz_table_element_end();
     }
 }
 
-void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity)
+void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable)
 {
     cons* c;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
@@ -273,7 +297,7 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
             visualizer->viz_record_start();
-            viz_matched_test(static_cast<test>(c->first), pMatchedWME, pNode_id, false, false, false, false, printIdentity);
+            viz_matched_test(static_cast<test>(c->first), pMatchedWME, pNode_id, false, false, false, false, printIdentity, printAcceptable);
             visualizer->viz_record_end();
             visualizer->viz_endl();
         }
@@ -307,6 +331,7 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%y ", pMatchedWME);
         }
+        if (printAcceptable) thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "+ ");
         visualizer->viz_table_element_end();
     }
 }
@@ -320,38 +345,29 @@ void condition_record::visualize_for_wm_trace()
     test id_test_without_goal_test ;
 
     thisAgent->visualizationManager->viz_record_start();
-    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, false, true);
-    viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false);
+    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, true);
+    viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false, false);
     deallocate_test(thisAgent, id_test_without_goal_test);
-    viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false);
-    viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false);
+    viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false, false);
+    viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false, test_for_acceptable_preference);
     thisAgent->visualizationManager->viz_record_end();
 }
 
 void condition_record::visualize_for_chunk()
 {
-    test id_test_without_goal_test ;
-
     thisAgent->visualizationManager->viz_record_start();
-    id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, false, true);
-    viz_matched_test(id_test_without_goal_test, matched_wme ? matched_wme->id : NULL, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace);
-    deallocate_test(thisAgent, id_test_without_goal_test);
-    viz_matched_test(condition_tests.attr, matched_wme ? matched_wme->attr : NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace);
-    viz_matched_test(condition_tests.value, matched_wme ? matched_wme->value : NULL, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace);
+    viz_matched_test(condition_tests.id, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace, false);
+    viz_matched_test(condition_tests.attr, matched_wme.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace, false);
+    viz_matched_test(condition_tests.value, matched_wme.value, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace, test_for_acceptable_preference);
     thisAgent->visualizationManager->viz_record_end();
 }
 
 void condition_record::visualize_for_explanation_trace(condition* pCond)
 {
-    test id_test_without_goal_test = copy_test(thisAgent, pCond->data.tests.id_test, false, false, false, true);
-    test id_test_without_goal_test2 = copy_test(thisAgent, condition_tests.id, false, false, false, true);
-
     thisAgent->visualizationManager->viz_record_start();
-    viz_combo_test(id_test_without_goal_test, id_test_without_goal_test2, conditionID, true, false, false, false, true);
-    deallocate_test(thisAgent, id_test_without_goal_test);
-    deallocate_test(thisAgent, id_test_without_goal_test2);
-    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true);
-    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true);
+    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, true, false, false, false, true, false);
+    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true, false);
+    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true, test_for_acceptable_preference);
     thisAgent->visualizationManager->viz_record_end();
 }
 

@@ -70,12 +70,13 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-    //#define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
     #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
 
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
     //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. */
@@ -83,12 +84,8 @@
     //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */
 
     //#define DEBUG_EPMEM_WME_ADD
-    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
-    //#define DEBUG_PREFS
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */
-    //#define DEBUG_GDS             /* Low level GDS debug information */
-    //#define DEBUG_GDS_HIGH        /* Include instantiations that created an o-supported element and
-                                    /* lead to the elaboration of the GDS */
+    //#define DEBUG_GDS             /* Use DT_GDS and DT_GDS_HIGH.  This setting just adds parent instantiations that it recurses through */
 #else
     //#define MEMORY_POOL_STATS
     #define MEM_POOLS_ENABLED 1
@@ -131,5 +128,4 @@
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
  *       %8   Working Memory
- *       %9   condition lists's counterparts
    ------------------------------------*/

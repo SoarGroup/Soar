@@ -7,6 +7,10 @@
 #include <string>
 #include <sstream>
 
+#define CONFIGURE_SOAR_FOR_UNIT_TESTS
+#define INIT_AFTER_RUN
+#define TURN_EXPLAINER_ON
+
 #define DO_ALIAS_TESTS
 #define DO_CHUNKING_TESTS
 #define DO_ELEMENTXML_TESTS

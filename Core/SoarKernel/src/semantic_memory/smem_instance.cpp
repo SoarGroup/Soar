@@ -132,11 +132,16 @@ void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbo
 
 void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
 {
-    my_list.push_back(new symbol_triple(id, attr, value));
-    dprint(DT_SMEM_INSTANCE, "Adding (%y ^%y %y) to recall buffer.\n", id, attr, value);
+    symbol_triple* new_triple;
+    thisAgent->memoryManager->allocate_with_pool(MP_sym_triple, &new_triple);
+    new_triple->id = id;
+    new_triple->attr = attr;
+    new_triple->value = value;
     thisAgent->symbolManager->symbol_add_ref(id);
     thisAgent->symbolManager->symbol_add_ref(attr);
     thisAgent->symbolManager->symbol_add_ref(value);
+    my_list.push_back(new_triple);
+    dprint(DT_SMEM_INSTANCE, "Adding (%y ^%y %y) to recall buffer.\n", id, attr, value);
 }
 
 void SMem_Manager::clear_instance_mappings()
@@ -354,9 +359,8 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
             if (depth > 1)
             {
-                dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
-                children.insert(value_sym);
-            }
+                visited->insert((*iterator)->id->LTI_ID);
+                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node            }
         }
         else
         {

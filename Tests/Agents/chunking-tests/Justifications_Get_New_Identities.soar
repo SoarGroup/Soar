@@ -23,7 +23,7 @@ sp {elab-state-3
     (<ss> ^superstate <ts>)
     (<ts> ^superstate nil
           ^data <d>)
-    (<d> ^attr1 <a>
+    (<d> ^attr1 { > |ZZZ| <a> }
          ^attr2 <a2>)
     -->
     (<s> ^matched <a>)

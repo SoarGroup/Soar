@@ -256,20 +256,6 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     return;
 }
 
-void Output_Manager::condition_list_counterparts_to_string(agent* thisAgent, condition* top_cond, std::string &destString)
-{
-
-    condition* cond;
-    int64_t count = 0;
-
-    for (cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        assert(cond != cond->next);
-        sprinta_sf(thisAgent, destString, "%s%i: %l\n", m_pre_string, ++count, cond->counterpart);
-    }
-    return;
-}
-
 void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size)
 {
     std::string lStr;

@@ -119,6 +119,7 @@ class Memory_Manager
         void init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void add_block_to_memory_pool(memory_pool* pThisPool);
         bool add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks);
+        void reinit_memory_pool(MemoryPoolType mempool_index);
         void init_memory_pool(MemoryPoolType mempool_index, size_t item_size, const char* name);
         void init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name);
         void free_memory_pool(MemoryPoolType mempool_index);

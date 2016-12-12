@@ -32,11 +32,7 @@ void Explanation_Based_Chunker::clear_data()
 
 void Explanation_Based_Chunker::clear_singletons()
 {
-    if (local_singleton_superstate_identity)
-    {
-        delete local_singleton_superstate_identity;
-        local_singleton_superstate_identity = NULL;
-    }
+    local_singleton_superstate_identity = { 0, 0, 0, 0};
 }
 
 void Explanation_Based_Chunker::clear_attachment_map()
@@ -57,7 +53,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
     {
         thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
-        delete it->second;
+        thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
     }
     identity_to_var_map->clear();
 }

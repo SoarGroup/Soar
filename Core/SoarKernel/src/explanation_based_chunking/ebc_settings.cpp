@@ -48,10 +48,10 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     chunk_in_states->add_mapping(ebc_never, "off");
     chunk_in_states->add_mapping(ebc_never, "none");
     chunk_in_states->add_mapping(ebc_never, "never");
-    chunk_in_states->add_mapping(ebc_only, "only");
     chunk_in_states->add_mapping(ebc_only, "flagged");
-    chunk_in_states->add_mapping(ebc_except, "except");
+    chunk_in_states->add_mapping(ebc_only, "only");
     chunk_in_states->add_mapping(ebc_except, "unflagged");
+    chunk_in_states->add_mapping(ebc_except, "except");
     add(chunk_in_states);
 
     naming_style = new soar_module::constant_param<chunkNameFormats>("naming-style", ruleFormat, new soar_module::f_predicate<chunkNameFormats>());
@@ -63,9 +63,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(always_cmd);
     never_cmd = new soar_module::boolean_param("never", on, new soar_module::f_predicate<boolean>());
     add(never_cmd);
-    flagged_cmd = new soar_module::boolean_param("flagged", on, new soar_module::f_predicate<boolean>());
+    flagged_cmd = new soar_module::boolean_param("only", on, new soar_module::f_predicate<boolean>());
     add(flagged_cmd);
-    unflagged_cmd = new soar_module::boolean_param("unflagged", on, new soar_module::f_predicate<boolean>());
+    unflagged_cmd = new soar_module::boolean_param("except", on, new soar_module::f_predicate<boolean>());
     add(unflagged_cmd);
 
 //    history_cmd = new soar_module::boolean_param("history", on, new soar_module::f_predicate<boolean>());

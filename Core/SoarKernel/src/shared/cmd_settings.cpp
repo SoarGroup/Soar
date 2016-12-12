@@ -148,6 +148,8 @@ save_param_container::save_param_container(agent* new_agent): soar_module::param
     add(rete_cmd);
     chunks_cmd = new soar_module::boolean_param("chunks", on, new soar_module::f_predicate<boolean>());
     add(chunks_cmd);
+    agent_cmd = new soar_module::boolean_param("agent", on, new soar_module::f_predicate<boolean>());
+    add(agent_cmd);
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     add(help_cmd);
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -166,6 +168,7 @@ void save_param_container::print_settings(agent* thisAgent)
     outputManager->printa(thisAgent,    "======================================================\n");
     outputManager->printa_sf(thisAgent, "save [? | help]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "save agent %-<filename>\n");
     outputManager->printa_sf(thisAgent, "save chunks %-<filename>\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "save percepts %---open <filename>\n");

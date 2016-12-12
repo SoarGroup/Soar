@@ -33,7 +33,11 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
+<<<<<<< HEAD
 #include "Export.h"
+=======
+#include "semantic_memory.h"
+>>>>>>> origin/new_smem_with_edge_weight_spread
 
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
@@ -57,7 +61,7 @@ class WM_Manager
         wma_stat_container* wma_stats;
         wma_timer_container* wma_timers;
 
-        wma_pooled_wme_set* wma_touched_elements;
+        wme_set* wma_touched_elements;
         wma_forget_p_queue* wma_forget_pq;
         wma_decay_cycle_set* wma_touched_sets;
 
