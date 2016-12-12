@@ -612,12 +612,12 @@ void SMem_Manager::respond_to_cmd(bool store_only)
         state = state->id->higher_goal;
     }
 
-    auto lockCheckQueryResults = [=]() -> bool {
-        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
-        return query_results.size() > 0;
-    };
+//    auto lockCheckQueryResults = [=]() -> bool {
+//        std::lock_guard<std::mutex> lock(agent_jobqueue_boundary_mutex);
+//        return query_results.size() > 0;
+//    };
 
-    if (lockCheckQueryResults())
+    if (query_results.size() > 0)
     {
         meta_wmes.clear();
 
