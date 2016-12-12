@@ -59,10 +59,20 @@ public:
     template<class returnType>
     std::future<returnType> post(std::packaged_task<returnType()>& pt)
     {
+        struct movePT {
+            std::packaged_task<returnType()> pt;
+        };
+
+        auto temp = new movePT({std::move(pt)});
+        auto jobQueueInvoker = [temp](){
+            temp->pt();
+            delete temp;
+        };
+
         std::unique_lock<std::mutex> lock(mutex);
 
-        auto rt = pt.get_future();
-        jobQueue.push_back([&pt]{pt();});
+        auto rt = temp->pt.get_future();
+        jobQueue.push_back(jobQueueInvoker);
 
         condition.notify_one();
         
