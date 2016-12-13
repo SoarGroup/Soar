@@ -33,11 +33,11 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
-<<<<<<< HEAD
+
 #include "Export.h"
-=======
+
 #include "semantic_memory.h"
->>>>>>> origin/new_smem_with_edge_weight_spread
+
 
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);

@@ -170,86 +170,231 @@ smem_statement_container::smem_statement_container(SMem_Manager* SMem)
     // Update the version number
     add_structure("REPLACE INTO versions (system, version_number) VALUES ('smem_schema'," SMEM_SCHEMA_VERSION ")");
 
-<<<<<<< HEAD
     if (!DB->containsData())
         createStructure();
 }),
 
 begin(*DB, "BEGIN"),
-commit(*DB, "COMMIT"),
+    commit(*DB, "COMMIT"),
+    rollback(*DB, "ROLLBACK"),
 
-rollback(*DB, "ROLLBACK"),
+    //
 
-var_get(*DB, "SELECT variable_value FROM smem_persistent_variables WHERE variable_id=?"),
-var_set(*DB, "UPDATE smem_persistent_variables SET variable_value=? WHERE variable_id=?"),
-var_create(*DB, "INSERT INTO smem_persistent_variables (variable_id,variable_value) VALUES (?,?)"),
+    var_get(*DB, "SELECT variable_value FROM smem_persistent_variables WHERE variable_id=?"),
+    var_set(*DB, "UPDATE smem_persistent_variables SET variable_value=? WHERE variable_id=?"),
+    var_create(*DB, "INSERT INTO smem_persistent_variables (variable_id,variable_value) VALUES (?,?)"),
+
+    //
+
+    hash_rev_int(*DB, "SELECT symbol_value FROM smem_symbols_integer WHERE s_id=?"),
+    hash_rev_float(*DB, "SELECT symbol_value FROM smem_symbols_float WHERE s_id=?"),
+    hash_rev_str(*DB, "SELECT symbol_value FROM smem_symbols_string WHERE s_id=?"),
+    hash_rev_type(*DB, "SELECT symbol_type FROM smem_symbols_type WHERE s_id=?"),
+    hash_get_int(*DB, "SELECT s_id FROM smem_symbols_integer WHERE symbol_value=?"),
+    hash_get_float(*DB, "SELECT s_id FROM smem_symbols_float WHERE symbol_value=?"),
+    hash_get_str(*DB, "SELECT s_id FROM smem_symbols_string WHERE symbol_value=?"),
+    hash_add_type(*DB, "INSERT INTO smem_symbols_type (symbol_type) VALUES (?)"),
+    hash_add_int(*DB, "INSERT INTO smem_symbols_integer (s_id,symbol_value) VALUES (?,?)"),
+    hash_add_float(*DB, "INSERT INTO smem_symbols_float (s_id,symbol_value) VALUES (?,?)"),
+    hash_add_str(*DB, "INSERT INTO smem_symbols_string (s_id,symbol_value) VALUES (?,?)"),
+    //
+
+    lti_id_exists(*DB, "SELECT lti_id FROM smem_lti WHERE lti_id=?"),
+    lti_id_max(*DB, "SELECT MAX(lti_id) FROM smem_lti"),
+    lti_add(*DB, "INSERT INTO smem_lti (lti_id, total_augmentations,activation_base_level,activations_total,activations_last,activations_first,activation_spread,activation_value,lti_augmentations) VALUES (?,?,?,?,?,?,?,?,?)"),
+    lti_access_get(*DB, "SELECT activations_total, activations_last, activations_first FROM smem_lti WHERE lti_id=?"),
+    lti_access_set(*DB, "UPDATE smem_lti SET activations_total=?, activations_last=?, activations_first=? WHERE lti_id=?"),
+    lti_get_t(*DB, "SELECT lti_id FROM smem_lti WHERE activations_last=?"),
+    //
+
+    web_add(*DB, "INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value, edge_weight) VALUES (?,?,?,?,?,?)"),
+    web_truncate(*DB, "DELETE FROM smem_augmentations WHERE lti_id=?"),
+    web_expand(*DB, "SELECT tsh_a.symbol_type AS attr_type, tsh_a.s_id AS attr_hash, vcl.symbol_type AS value_type, vcl.s_id AS value_hash, vcl.value_lti_id AS value_lti FROM ((smem_augmentations w LEFT JOIN smem_symbols_type tsh_v ON w.value_constant_s_id=tsh_v.s_id) vc LEFT JOIN smem_lti AS lti ON vc.value_lti_id=lti.lti_id) vcl INNER JOIN smem_symbols_type tsh_a ON vcl.attribute_s_id=tsh_a.s_id WHERE vcl.lti_id=?"),
+    //
+
+    web_all(*DB, "SELECT attribute_s_id, value_constant_s_id, value_lti_id FROM smem_augmentations WHERE lti_id=?"),
+    web_edge(*DB, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR ""),
+
+    // /* The following indexes can be postpended with ", lti_id ASC" (without quotes) for debugging. */
+
+    web_attr_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? ORDER BY activation_value DESC"),
+    web_const_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value DESC"),
+    web_lti_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value DESC"),
+
+    //
+
+    web_attr_all_spread(*DB, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=?"),
+    web_const_all_spread(*DB, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR ""),
+    web_lti_all_spread(*DB, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ?"),
+
+    web_attr_all_cheap(*DB, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? ORDER BY activation_value_aug DESC"),
+    web_const_all_cheap(*DB, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value_aug DESC"),
+    web_lti_all_cheap(*DB, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ? ORDER BY activation_value_aug DESC"),
+
+    web_attr_all_manual(*DB, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=?"),
+    web_const_all_manual(*DB, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=? AND value_constant_s_id=? AND value_lti_id = " SMEM_AUGMENTATIONS_NULL_STR ""),
+    web_lti_all_manual(*DB, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?"),
+
+    //
+
+    web_attr_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=?"),
+    web_const_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=?"),
+    web_lti_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?"),
 
 
-hash_rev_int(*DB, "SELECT symbol_value FROM smem_symbols_integer WHERE s_id=?"),
-hash_rev_float(*DB, "SELECT symbol_value FROM smem_symbols_float WHERE s_id=?"),
-hash_rev_str(*DB, "SELECT symbol_value FROM smem_symbols_string WHERE s_id=?"),
-hash_rev_type(*DB, "SELECT symbol_type FROM smem_symbols_type WHERE s_id=?"),
+    //
 
-hash_get_int(*DB, "SELECT s_id FROM smem_symbols_integer WHERE symbol_value=?"),
-hash_get_float(*DB, "SELECT s_id FROM smem_symbols_float WHERE symbol_value=?"),
-hash_get_str(*DB, "SELECT s_id FROM smem_symbols_string WHERE symbol_value=?"),
+    web_val_child(*DB, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR ""),
 
-hash_add_type(*DB, "INSERT INTO smem_symbols_type (symbol_type) VALUES (?)"),
-hash_add_int(*DB, "INSERT INTO smem_symbols_integer (s_id,symbol_value) VALUES (?,?)"),
-hash_add_float(*DB, "INSERT INTO smem_symbols_float (s_id,symbol_value) VALUES (?,?)"),
-hash_add_str(*DB, "INSERT INTO smem_symbols_string (s_id,symbol_value) VALUES (?,?)"),
+    //
 
-lti_id_exists(*DB, "SELECT lti_id FROM smem_lti WHERE lti_id=?"),
-lti_id_max(*DB, "SELECT MAX(lti_id) FROM smem_lti"),
-lti_add(*DB, "INSERT INTO smem_lti (lti_id, total_augmentations,activation_value,activations_total,activations_last,activations_first) VALUES (?,?,?,?,?,?)"),
-lti_access_get(*DB, "SELECT activations_total, activations_last, activations_first FROM smem_lti WHERE lti_id=?"),
-lti_access_set(*DB, "UPDATE smem_lti SET activations_total=?, activations_last=?, activations_first=? WHERE lti_id=?"),
-lti_get_t(*DB, "SELECT lti_id FROM smem_lti WHERE activations_last=?"),
+    web_update_child_edge(*DB, "UPDATE smem_augmentations SET edge_weight = ? WHERE lti_id = ? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ?"),
+    web_update_all_lti_child_edges(*DB, "UPDATE smem_augmentations SET edge_weight = ? WHERE lti_id = ? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR ""),
 
-web_add(*DB, "INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value) VALUES (?,?,?,?,?)"),
-web_truncate(*DB, "DELETE FROM smem_augmentations WHERE lti_id=?"),
-web_expand(*DB, "SELECT tsh_a.symbol_type AS attr_type, tsh_a.s_id AS attr_hash, vcl.symbol_type AS value_type, vcl.s_id AS value_hash, vcl.value_lti_id AS value_lti FROM ((smem_augmentations w LEFT JOIN smem_symbols_type tsh_v ON w.value_constant_s_id=tsh_v.s_id) vc LEFT JOIN smem_lti AS lti ON vc.value_lti_id=lti.lti_id) vcl INNER JOIN smem_symbols_type tsh_a ON vcl.attribute_s_id=tsh_a.s_id WHERE vcl.lti_id=?"),
+    //
 
-web_all(*DB, "SELECT attribute_s_id, value_constant_s_id, value_lti_id FROM smem_augmentations WHERE lti_id=?"),
+    attribute_frequency_check(*DB, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?"),
+    wmes_constant_frequency_check(*DB, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?"),
+    wmes_lti_frequency_check(*DB, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?"),
 
-web_attr_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? ORDER BY activation_value DESC"),
-web_const_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value DESC"),
-web_lti_all(*DB, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value DESC"),
+    //
 
-web_attr_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=?"),
-web_const_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=?"),
-web_lti_child(*DB, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?"),
+    attribute_frequency_add(*DB, "INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) VALUES (?,1)"),
+    wmes_constant_frequency_add(*DB, "INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) VALUES (?,?,1)"),
+    wmes_lti_frequency_add(*DB, "INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) VALUES (?,?,1)"),
 
-attribute_frequency_check(*DB, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?"),
-wmes_constant_frequency_check(*DB, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?"),
-wmes_lti_frequency_check(*DB, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?"),
+    //
 
-attribute_frequency_add(*DB, "INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) VALUES (?,1)"),
-wmes_constant_frequency_add(*DB, "INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) VALUES (?,?,1)"),
-wmes_lti_frequency_add(*DB, "INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) VALUES (?,?,1)"),
+    attribute_frequency_update(*DB, "UPDATE smem_attribute_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=?"),
+    wmes_constant_frequency_update(*DB, "UPDATE smem_wmes_constant_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_constant_s_id=?"),
+    wmes_lti_frequency_update(*DB, "UPDATE smem_wmes_lti_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_lti_id=?"),
 
-attribute_frequency_update(*DB, "UPDATE smem_attribute_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=?"),
-wmes_constant_frequency_update(*DB, "UPDATE smem_wmes_constant_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_constant_s_id=?"),
-wmes_lti_frequency_update(*DB, "UPDATE smem_wmes_lti_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_lti_id=?"),
+    //
 
-attribute_frequency_get(*DB, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?"),
-wmes_constant_frequency_get(*DB, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?"),
-wmes_lti_frequency_get(*DB, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?"),
+    attribute_frequency_get(*DB, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?"),
+    wmes_constant_frequency_get(*DB, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?"),
+    wmes_lti_frequency_get(*DB, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?"),
 
-act_set(*DB, "UPDATE smem_augmentations SET activation_value=? WHERE lti_id=?"),
-act_lti_child_ct_get(*DB, "SELECT total_augmentations FROM smem_lti WHERE lti_id=?"),
-act_lti_child_ct_set(*DB, "UPDATE smem_lti SET total_augmentations=? WHERE lti_id=?"),
-act_lti_set(*DB, "UPDATE smem_lti SET activation_value=? WHERE lti_id=?"),
-act_lti_get(*DB, "SELECT activation_value FROM smem_lti WHERE lti_id=?"),
+    //
 
-history_get(*DB, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10 FROM smem_activation_history WHERE lti_id=?"),
-history_push(*DB, "UPDATE smem_activation_history SET t10=t9,t9=t8,t8=t7,t8=t7,t7=t6,t6=t5,t5=t4,t4=t3,t3=t2,t2=t1,t1=? WHERE lti_id=?"),
-history_add(*DB, "INSERT INTO smem_activation_history (lti_id,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10) VALUES (?,?,0,0,0,0,0,0,0,0,0)"),
+    act_set(*DB, "UPDATE smem_augmentations SET activation_value=? WHERE lti_id=?"),
+    act_lti_child_ct_get(*DB, "SELECT total_augmentations FROM smem_lti WHERE lti_id=?"),
+    act_lti_child_ct_set(*DB, "UPDATE smem_lti SET total_augmentations=? WHERE lti_id=?"),
+    act_lti_set(*DB, "UPDATE smem_lti SET activation_base_level = ?, activation_spread = ?, activation_value=? WHERE lti_id=?"),
+    act_lti_get(*DB, "SELECT activation_base_level, activation_spread, activation_value FROM smem_lti WHERE lti_id=?"),
+    history_get(*DB, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10 FROM smem_activation_history WHERE lti_id=?"),
+    history_push(*DB, "UPDATE smem_activation_history SET t10=t9,t9=t8,t8=t7,t8=t7,t7=t6,t6=t5,t5=t4,t4=t3,t3=t2,t2=t1,t1=?,touch10=touch9,touch9=touch8,touch8=touch7,touch7=touch6,touch6=touch5,touch5=touch4,touch4=touch3,touch3=touch2,touch2=touch1,touch1=? WHERE lti_id=?"),
+    history_add(*DB, "INSERT INTO smem_activation_history (lti_id,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10) VALUES (?,?,0,0,0,0,0,0,0,0,0,?,0,0,0,0,0,0,0,0,0)"),
 
-vis_lti(*DB, "SELECT lti_id, activation_value FROM smem_lti ORDER BY lti_id ASC"),
-vis_lti_act(*DB, "SELECT activation_value FROM smem_lti WHERE lti_id=?"),
-vis_value_const(*DB, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)"),
-vis_value_lti(*DB, "SELECT lti_id, tsh.symbol_type AS attr_type, tsh.s_id AS attr_hash, value_lti_id FROM smem_augmentations w, smem_symbols_type tsh WHERE (w.attribute_s_id=tsh.s_id) AND (value_lti_id<>" SMEM_AUGMENTATIONS_NULL_STR ")")
+    // Adding statements needed to support prohibits.
+
+    prohibit_set(*DB, "UPDATE smem_prohibited SET prohibited=1,dirty=1 WHERE lti_id=?"),
+    prohibit_add(*DB, "INSERT OR IGNORE INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)"),
+    prohibit_check(*DB, "SELECT lti_id,dirty FROM smem_prohibited WHERE lti_id=? AND prohibited=1"),
+    prohibit_reset(*DB, "UPDATE smem_prohibited SET prohibited=0,dirty=0 WHERE lti_id=?"),
+    prohibit_clean(*DB, "UPDATE smem_prohibited SET prohibited=1,dirty=0 WHERE lti_id=?"),
+    prohibit_remove(*DB, "DELETE FROM smem_prohibited WHERE lti_id=?"),
+    history_remove(*DB, "UPDATE smem_activation_history SET t1=t2,t2=t3,t3=t4,t4=t5,t5=t6,t6=t7,t7=t8,t8=t9,t9=t10,t10=0,touch1=touch2,touch2=touch3,touch3=touch4,touch4=touch5,touch5=touch6,touch6=touch7,touch7=touch8,touch8=touch9,touch9=touch10,touch10=0 WHERE lti_id=?"), //add something like "only use 9/10 when prohibited"
+
+    //
+
+    act_lti_child_lti_ct_get(*DB, "SELECT lti_augmentations FROM smem_ltI WHERE lti_id = ?"),
+    act_lti_child_lti_ct_set(*DB, "UPDATE smem_lti SET lti_augmentations = ? WHERE lti_id = ?"),
+    act_lti_fake_set(*DB, "UPDATE smem_current_spread_activations SET activation_base_level = ?, activation_spread = ?, activation_value = ? WHERE lti_id = ?"),
+    act_lti_fake_insert(*DB, "INSERT INTO smem_current_spread_activations (lti_id, activation_base_level, activation_spread, activation_value) VALUES (?,?,?,?)"),
+    act_lti_fake_delete(*DB, "DELETE FROM smem_current_spread_activations WHERE lti_id = ?"),
+    act_lti_fake_get(*DB, "SELECT activation_base_level, activation_spread, activation_value FROM smem_current_spread_activations WHERE lti_id = ?"),
+
+    //
+
+    vis_lti(*DB, "SELECT lti_id, activation_value FROM smem_lti ORDER BY lti_id ASC"),
+    vis_lti_act(*DB, "SELECT activation_value FROM smem_lti WHERE lti_id=?"),
+    vis_value_const(*DB, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)"),
+    vis_value_lti(*DB, "SELECT lti_id, tsh.symbol_type AS attr_type, tsh.s_id AS attr_hash, value_lti_id FROM smem_augmentations w, smem_symbols_type tsh WHERE (w.attribute_s_id=tsh.s_id) AND (value_lti_id<>" SMEM_AUGMENTATIONS_NULL_STR ")"),
+    //This was for spreading (batch processing/initialization), but it just iterates over all ltis.
+    // I should perhaps change to iterate based on the ordering in smem_augmentations, but if it isn't broke...
+    lti_all(*DB, "SELECT lti_id FROM smem_lti"),
+        //adding trajectory into fingerprint. Assume we do not insert invalid trajectories.
+    trajectory_add(*DB,"INSERT INTO smem_likelihood_trajectories (lti_id, lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10, valid_bit) VALUES (?,?,?,?,?,?,?,?,?,?,?,1)"),
+    //Removing trajectories for a particular lti. Assume we do not remove valid trajectories.
+    trajectory_remove(*DB,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0"),
+    //Removing trajectories for a particular lti.
+    trajectory_remove_lti(*DB,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=?"),
+    //like trajectory_get, but with invalid instead of valid.
+    trajectory_check_invalid(*DB, "SELECT lti_id FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0"),
+    //Removing all invalid trajectories.
+    trajectory_remove_invalid(*DB,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0"),
+    //Removing all trajectories from ltis with invalid trajectories.
+    trajectory_remove_all(*DB,"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)"),
+//"DELETE a.* FROM smem_likelihood_trajectories AS a INNER JOIN smem_likelihood_trajectories AS b on a.lti_id = b.lti_id WHERE b.valid_bit=0"
+//"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)"
+    //"DELETE FROM smem_likelihood_trajectories WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = smem_likelihood_trajectories.lti_id AND b.valid_bit = 0)"
+
+    //Find all of the ltis with invalid trajectories and find how many new ones they need.
+    trajectory_find_invalid(*DB, "SELECT lti_id, COUNT(*) FROM smem_likelihood_trajectories WHERE valid_bit=0 GROUP BY lti_id"),
+    //getting trajectory from fingerprint. Only retrieves ones with valid bit of 1.
+    trajectory_get(*DB, "SELECT lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10 FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=1"),
+    //invalidating trajectories containing some lti and don't have null afterwards
+    trajectory_invalidate_from_lti(*DB,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)"),
+    trajectory_invalidate_from_lti_add(*DB,"INSERT OR IGNORE INTO smem_invalid_parents (lti_id) VALUES (?)"),
+    trajectory_invalidate_from_lti_clear(*DB,"DELETE FROM smem_invalid_parents"),
+    trajectory_invalidate_from_lti_table(*DB,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE rowid in (SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON smem_likelihood_trajectories.lti_id=smem_invalid_parents.lti_id WHERE lti1!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti1=smem_invalid_parents.lti_id WHERE lti2!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti2=smem_invalid_parents.lti_id WHERE lti3!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti3=smem_invalid_parents.lti_id WHERE lti4!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti4=smem_invalid_parents.lti_id WHERE lti5!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti5=smem_invalid_parents.lti_id WHERE lti6!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti6=smem_invalid_parents.lti_id WHERE lti7!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti7=smem_invalid_parents.lti_id WHERE lti8!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti8=smem_invalid_parents.lti_id WHERE lti9!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti9=smem_invalid_parents.lti_id WHERE lti10!=0)"),
+    //invalidating trajectories containing some lti followed by a particular different lti
+    trajectory_invalidate_edge(*DB,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=? AND lti1!=0) OR (lti1=? AND lti2=? AND lti2!=0) OR (lti2=? AND lti3=? AND lti3!=0) OR (lti3=? AND lti4=? AND lti4!=0) OR (lti4=? AND lti5=? AND lti5!=0) OR (lti5=? AND lti6=? AND lti6!=0) OR (lti6=? AND lti7=? AND lti7!=0) OR (lti7=? AND lti8=? AND lti8!=0) OR (lti8=? AND lti9=? AND lti9!=0) OR (lti9=? AND lti10=? AND lti10!=0)"),
+    //gets the size of the current fingerprint table.
+    trajectory_size_debug_cmd(*DB,"SELECT COUNT(*) FROM smem_likelihood_trajectories WHERE lti1!=0"),
+    //
+    //take away spread precalculated values for some lti
+    likelihood_cond_count_remove(*DB,"DELETE FROM smem_likelihoods WHERE lti_j=?"),
+    //take away other spread precalculated values for some lti
+    lti_count_num_appearances_remove(*DB,"DELETE FROM smem_trajectory_num WHERE lti_id=?"),
+    //add spread precalculated values for some lti
+    likelihood_cond_count_insert(*DB,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti, parent) GROUP BY parent, lti"),
+    likelihood_cond_count_find(*DB,"SELECT lti_id AS parent, lti1 AS lti,1 AS depth FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? UNION ALL SELECT lti1 AS parent, lti2 AS lti,2 AS depth FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? UNION ALL SELECT lti2 AS parent, lti3 AS lti,3 AS depth FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? UNION ALL SELECT lti3 AS parent, lti4 AS lti,4 AS depth FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? UNION ALL SELECT lti4 AS parent, lti5 AS lti,5 AS depth FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? UNION ALL SELECT lti5 AS parent, lti6 AS lti,6 AS depth FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? UNION ALL SELECT lti6 AS parent, lti7 AS lti,7 AS depth FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? UNION ALL SELECT lti7 AS parent, lti8 AS lti,8 AS depth FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? UNION ALL SELECT lti8 AS parent, lti9 AS lti,9 AS depth FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? UNION ALL SELECT lti9 AS parent, lti10 AS lti,10 AS depth FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? ORDER BY 3 ASC, lti DESC"),
+    likelihood_cond_count_insert(*DB,"INSERT INTO smem_likelihoods (lti_j,lti_i,num_appearances_i_j) VALUES (?,?,?)"),
+    //add other spread precalculated values for some lti
+    lti_count_num_appearances_insert(*DB,"INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods WHERE lti_j=? GROUP BY lti_j"),
+    //gets the relevant info from currently relevant ltis
+    //calc_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?"),
+    //add(calc_spread),
+
+    //gets the relevant info from currently relevant ltis
+    calc_uncommitted_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_uncommitted_spread WHERE lti_id = ?"),
+    calc_current_spread(*DB,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_current_spread WHERE lti_id = ?"),
+    list_uncommitted_spread(*DB, "SELECT lti_id FROM smem_uncommitted_spread"),
+    //gets the size of the current spread table.
+    calc_spread_size_debug_cmd(*DB,"SELECT COUNT(*) FROM smem_committed_spread"),
+    //delete lti from context table
+    //delete_old_context(*DB,"DELETE FROM smem_current_context WHERE lti_id=?"),
+    //add(delete_old_context),
+
+    //delete lti's info from current spread table
+    delete_old_spread(*DB,"DELETE FROM smem_current_spread WHERE lti_source=?"),
+    list_current_spread(*DB,"SELECT lti_id from smem_current_spread"),
+    //When spread is still uncommitted, just remove. when it is committed, mark row as negative.
+    //This should be called alongside reverse_old_committed_spread
+    delete_old_uncommitted_spread(*DB,"DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id NOT IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)"),
+    //When spread is committed but needs removal, add a negative row for later processing.
+    //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
+    reverse_old_committed_spread(*DB,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source=?"),//
+    //add lti to the context table
+    //add_new_context(*DB,"INSERT INTO smem_current_context (lti_id) VALUES (?)"),
+    //add(add_new_context),
+
+    //add a fingerprint's information to the current spread table.
+    select_fingerprint(*DB,"SELECT lti_i,num_appearances_i_j,num_appearances,1,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?"),
+    add_fingerprint(*DB,"INSERT or ignore INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,sign,lti_source) VALUES (?,?,?,?,?)"),
+
+    //add a fingerprint's information to the current uncommitted spread table. should happen after add_fingerprint
+    add_uncommitted_fingerprint(*DB,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,1 FROM smem_current_spread WHERE lti_source=?"),
+//    add_uncommitted_fingerprint(*DB,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j,1 FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j"),
+    remove_fingerprint_reversal(*DB, "DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)"),
+    prepare_delete_committed_fingerprint(*DB,"INSERT INTO smem_to_delete (lti_id) VALUES (?)"),
+    //remove a fingerprint's information from the current uncommitted spread table.(has been processed)
+    delete_committed_fingerprint(*DB,"DELETE FROM smem_uncommitted_spread WHERE lti_id IN (SELECT lti_id FROM smem_to_delete)"),
+    delete_committed_fingerprint_2(*DB,"DELETE FROM smem_to_delete"),
+    delete_commit_of_negative_fingerprint(*DB,"DELETE FROM smem_committed_spread WHERE lti_id=? AND lti_source=?"),
+    add_committed_fingerprint(*DB,"INSERT INTO smem_committed_spread (lti_id,num_appearances_i_j,num_appearances,lti_source) VALUES (?,?,?,?)"),
 {}
 
 smem_statement_container::smem_statement_container(smem_statement_container&& other)
@@ -286,10 +431,23 @@ web_truncate(std::move(other.web_truncate)),
 web_expand(std::move(other.web_expand)),
 
 web_all(std::move(other.web_all)),
+web_edge(std::move(other.web_edge)),
 
 web_attr_all(std::move(other.web_attr_all)),
 web_const_all(std::move(other.web_const_all)),
 web_lti_all(std::move(other.web_lti_all)),
+
+web_attr_all_spread(std::move(other.web_attr_all_spread)),
+web_const_all_spread(std::move(other.web_const_all_spread)),
+web_lti_all_spread(std::move(other.web_lti_all_spread)),
+
+web_attr_all_cheap(std::move(other.web_attr_all_cheap)),
+web_const_all_cheap(std::move(other.web_const_all_cheap)),
+web_lti_all_cheap(std::move(other.web_lti_all_cheap)),
+
+web_attr_all_manual(std::move(other.web_attr_all_manual)),
+web_const_all_manual(std::move(other.web_const_all_manual)),
+web_lti_all_manual(std::move(other.web_lti_all_manual)),
 
 web_attr_child(std::move(other.web_attr_child)),
 web_const_child(std::move(other.web_const_child)),
@@ -314,12 +472,70 @@ wmes_lti_frequency_get(std::move(other.wmes_lti_frequency_get)),
 act_set(std::move(other.act_set)),
 act_lti_child_ct_set(std::move(other.act_lti_child_ct_set)),
 act_lti_child_ct_get(std::move(other.act_lti_child_ct_get)),
+act_lti_child_lti_ct_set(std::move(other.act_lti_child_lti_ct_set)),
+act_lti_child_lti_ct_get(std::move(other.act_lti_child_lti_ct_get)),
 act_lti_set(std::move(other.act_lti_set)),
 act_lti_get(std::move(other.act_lti_get)),
+
+act_lti_fake_set(std::move(other.act_lti_fake_set)),
+act_lti_fake_get(std::move(other.act_lti_fake_get)),
+act_lti_fake_delete(std::move(other.act_lti_fake_delete)),
+act_lti_fake_insert(std::move(other.act_lti_fake_insert)),
 
 history_get(std::move(other.history_get)),
 history_push(std::move(other.history_push)),
 history_add(std::move(other.history_add)),
+prohibit_set(std::move(other.prohibit_set)),
+prohibit_add(std::move(other.prohibit_add)),
+prohibit_check(std::move(other.prohibit_check)),
+prohibit_reset(std::move(other.prohibit_reset)),
+prohibit_clean(std::move(other.prohibit_clean)),
+prohibit_remove(std::move(other.prohibit_remove)),
+history_remove(std::move(other.history_remove)),
+
+web_val_child(std::move(other.web_val_child)),
+web_update_child_edge(std::move(other.web_update_child_edge)),
+web_update_all_lti_child_edges(std::move(other.web_update_all_lti_child_edges)),
+lti_all(std::move(other.lti_all)),
+trajectory_add(std::move(other.trajectory_add)),
+trajectory_remove(std::move(other.trajectory_remove)),
+trajectory_remove_lti(std::move(other.trajectory_remove_lti)),
+trajectory_check_invalid(std::move(other.trajectory_check_invalid)),
+trajectory_remove_invalid(std::move(other.trajectory_remove_invalid)),
+trajectory_remove_all(std::move(other.trajectory_remove_all)),
+trajectory_find_invalid(std::move(other.trajectory_find_invalid)),
+trajectory_get(std::move(other.trajectory_get)),
+trajectory_invalidate_from_lti(std::move(other.trajectory_invalidate_from_lti)),
+trajectory_invalidate_from_lti_add(std::move(other.trajectory_invalidate_from_lti_add)),
+trajectory_invalidate_from_lti_clear(std::move(other.trajectory_invalidate_from_lti_clear)),
+trajectory_invalidate_from_lti_table(std::move(other.trajectory_invalidate_from_lti_table)),
+trajectory_invalidate_edge(std::move(other.trajectory_invalidate_edge)),
+trajectory_size_debug_cmd(std::move(other.trajectory_size_debug_cmd)),
+likelihood_cond_count_remove(std::move(other.likelihood_cond_count_remove)),
+lti_count_num_appearances_remove(std::move(other.lti_count_num_appearances_remove)),
+likelihood_cond_count_find(std::move(other.likelihood_cond_count_find)),
+likelihood_cond_count_insert(std::move(other.likelihood_cond_count_insert)),
+lti_count_num_appearances_insert(std::move(other.lti_count_num_appearances_insert)),
+calc_spread(std::move(other.calc_spread)),
+calc_spread_size_debug_cmd(std::move(other.calc_spread_size_debug_cmd)),
+delete_old_context(std::move(other.delete_old_context)),
+delete_old_spread(std::move(other.delete_old_spread)),
+add_new_context(std::move(other.add_new_context)),
+select_fingerprint(std::move(other.select_fingerprint)),
+add_fingerprint(std::move(other.add_fingerprint)),
+delete_old_uncommitted_spread(std::move(other.delete_old_uncommitted_spread)),
+reverse_old_committed_spread(std::move(other.reverse_old_committed_spread)),
+add_uncommitted_fingerprint(std::move(other.add_uncommitted_fingerprint)),
+remove_fingerprint_reversal(std::move(other.remove_fingerprint_reversal)),
+prepare_delete_committed_fingerprint(std::move(other.prepare_delete_committed_fingerprint)),
+delete_committed_fingerprint(std::move(other.delete_committed_fingerprint)),
+delete_committed_fingerprint_2(std::move(other.delete_committed_fingerprint_2)),
+calc_uncommitted_spread(std::move(other.calc_uncommitted_spread)),
+list_uncommitted_spread(std::move(other.list_uncommitted_spread)),
+delete_commit_of_negative_fingerprint(std::move(other.delete_commit_of_negative_fingerprint)),
+add_committed_fingerprint(std::move(other.add_committed_fingerprint)),
+list_current_spread(std::move(other.list_current_spread)),
+calc_current_spread(std::move(other.calc_current_spread)),
 
 vis_lti(std::move(other.vis_lti)),
 vis_lti_act(std::move(other.vis_lti_act)),
@@ -364,10 +580,23 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     web_expand = std::move(other.web_expand);
 
     web_all = std::move(other.web_all);
+    web_edge = std::move(other.web_edge);
 
     web_attr_all = std::move(other.web_attr_all);
     web_const_all = std::move(other.web_const_all);
     web_lti_all = std::move(other.web_lti_all);
+
+    web_attr_all_spread = std::move(other.web_attr_all_spread);
+    web_const_all_spread = std::move(other.web_const_all_spread);
+    web_lti_all_spread = std::move(other.web_lti_all_spread);
+
+    web_attr_all_cheap = std::move(other.web_attr_all_cheap);
+    web_const_all_cheap = std::move(other.web_const_all_cheap);
+    web_lti_all_cheap = std::move(other.web_lti_all_cheap);
+
+    web_attr_all_manual = std::move(other.web_attr_all_manual);
+    web_const_all_manual = std::move(other.web_const_all_manual);
+    web_lti_all_manual = std::move(other.web_lti_all_manual);
 
     web_attr_child = std::move(other.web_attr_child);
     web_const_child = std::move(other.web_const_child);
@@ -392,463 +621,78 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     act_set = std::move(other.act_set);
     act_lti_child_ct_set = std::move(other.act_lti_child_ct_set);
     act_lti_child_ct_get = std::move(other.act_lti_child_ct_get);
+    act_lti_child_lti_ct_set = std::move(other.act_lti_child_lti_ct_set);
+    act_lti_child_lti_ct_get = std::move(other.act_lti_child_lti_ct_get);
     act_lti_set = std::move(other.act_lti_set);
     act_lti_get = std::move(other.act_lti_get);
+
+    act_lti_fake_set = std::move(other.act_lti_fake_set);
+    act_lti_fake_get = std::move(other.act_lti_fast_get);
+    act_lti_fake_delete = std::move(other.act_lti_fake_delete);
+    act_lti_fake_insert = std::move(other.act_lti_fake_insert);
 
     history_get = std::move(other.history_get);
     history_push = std::move(other.history_push);
     history_add = std::move(other.history_add);
+    prohibit_set = std::move(other.prohibit_set);
+    prohibit_add = std::move(other.prohibit_add);
+    prohibit_check = std::move(other.prohibit_check);
+    prohibit_reset = std::move(other.prohibit_reset);
+    prohibit_clean = std::move(other.prohibit_clean);
+    prohibit_remove = std::move(other.prohibit_remove);
+    history_remove = std::move(other.history_remove);
     
+    web_val_child = std::move(other.web_val_child);
+    web_update_child_edge = std::move(other.web_update_child_edge);
+    web_update_all_lti_child_edges = std::move(other.web_update_all_lti_child_edges);
+    lti_all = std::move(other.lti_all);
+    trajectory_add = std::move(other.trajectory_add);
+    trajectory_remove = std::move(other.trajectory_remove);
+    trajectory_remove_lti = std::move(other.trajectory_remove_lti);
+    trajectory_check_invalid = std::move(other.trajectory_check_invalid);
+    trajectory_remove_invalid = std::move(other.trajectory_remove_invalid);
+    trajectory_remove_all = std::move(other.trajectory_remove_all);
+    trajectory_find_invalid = std::move(other.trajectory_find_invalid);
+    trajectory_get = std::move(other.trajectory_get);
+    trajectory_invalidate_from_lti = std::move(other.trajectory_invalidate_from_lti);
+    trajectory_invalidate_from_lti_add = std::move(other.trajectory_invalidate_from_lti_add);
+    trajectory_invalidate_from_lti_clear = std::move(other.trajectory_invalidate_from_lti_clear);
+    trajectory_invalidate_from_lti_table = std::move(other.trajectory_invalidate_from_lti_table);
+    trajectory_invalidate_edge = std::move(other.trajectory_invalidate_edge);
+    trajectory_size_debug_cmd = std::move(other.trajectory_size_debug_cmd);
+    likelihood_cond_count_remove = std::move(other.likelihood_cond_count_remove);
+    lti_count_num_appearances_remove = std::move(other.lti_count_num_appearances_remove);
+    likelihood_cond_count_find = std::move(other.likelihood_cond_count_find);
+    likelihood_cond_count_insert = std::move(other.likelihood_cond_count_insert);
+    lti_count_num_appearances_insert = std::move(other.lti_count_num_appearances_insert);
+    calc_spread = std::move(other.calc_spread);
+    calc_spread_size_debug_cmd = std::move(other.calc_spread_size_debug_cmd);
+    delete_old_context = std::move(other.delete_old_context);
+    delete_old_spread = std::move(other.delete_old_spread);
+    add_new_context = std::move(other.add_new_context);
+    select_fingerprint = std::move(other.select_fingerprint);
+    add_fingerprint = std::move(other.add_fingerprint);
+    delete_old_uncommitted_spread = std::move(other.delete_old_uncommitted_spread);
+    reverse_old_committed_spread = std::move(other.reverse_old_committed_spread);
+    add_uncommitted_fingerprint = std::move(other.add_uncommitted_fingerprint);
+    remove_fingerprint_reversal = std::move(other.remove_fingerprint_reversal);
+    prepare_delete_committed_fingerprint = std::move(other.prepare_delete_committed_fingerprint);
+    delete_committed_fingerprint = std::move(other.delete_committed_fingerprint);
+    delete_committed_fingerprint_2 = std::move(other.delete_committed_fingerprint_2);
+    calc_uncommitted_spread = std::move(other.calc_uncommitted_spread);
+    list_uncommitted_spread = std::move(other.list_uncommitted_spread);
+    delete_commit_of_negative_fingerprint = std::move(other.delete_commit_of_negative_fingerprint);
+    add_committed_fingerprint = std::move(other.add_committed_fingerprint);
+    list_current_spread = std::move(other.list_current_spread);
+    calc_current_spread = std::move(other.calc_current_spread);
+
     vis_lti = std::move(other.vis_lti);
     vis_lti_act = std::move(other.vis_lti_act);
     vis_value_const = std::move(other.vis_value_const);
     vis_value_lti = std::move(other.vis_value_lti);
 
     return *this;
-=======
-    begin = new soar_module::sqlite_statement(new_db, "BEGIN");
-    add(begin);
-
-    commit = new soar_module::sqlite_statement(new_db, "COMMIT");
-    add(commit);
-
-    rollback = new soar_module::sqlite_statement(new_db, "ROLLBACK");
-    add(rollback);
-
-    //
-
-    var_get = new soar_module::sqlite_statement(new_db, "SELECT variable_value FROM smem_persistent_variables WHERE variable_id=?");
-    add(var_get);
-
-    var_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_persistent_variables SET variable_value=? WHERE variable_id=?");
-    add(var_set);
-
-    var_create = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_persistent_variables (variable_id,variable_value) VALUES (?,?)");
-    add(var_create);
-
-    //
-
-    hash_rev_int = new soar_module::sqlite_statement(new_db, "SELECT symbol_value FROM smem_symbols_integer WHERE s_id=?");
-    add(hash_rev_int);
-
-    hash_rev_float = new soar_module::sqlite_statement(new_db, "SELECT symbol_value FROM smem_symbols_float WHERE s_id=?");
-    add(hash_rev_float);
-
-    hash_rev_str = new soar_module::sqlite_statement(new_db, "SELECT symbol_value FROM smem_symbols_string WHERE s_id=?");
-    add(hash_rev_str);
-
-    hash_rev_type = new soar_module::sqlite_statement(new_db, "SELECT symbol_type FROM smem_symbols_type WHERE s_id=?");
-    add(hash_rev_type);
-
-    hash_get_int = new soar_module::sqlite_statement(new_db, "SELECT s_id FROM smem_symbols_integer WHERE symbol_value=?");
-    add(hash_get_int);
-
-    hash_get_float = new soar_module::sqlite_statement(new_db, "SELECT s_id FROM smem_symbols_float WHERE symbol_value=?");
-    add(hash_get_float);
-
-    hash_get_str = new soar_module::sqlite_statement(new_db, "SELECT s_id FROM smem_symbols_string WHERE symbol_value=?");
-    add(hash_get_str);
-
-    hash_add_type = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_symbols_type (symbol_type) VALUES (?)");
-    add(hash_add_type);
-
-    hash_add_int = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_symbols_integer (s_id,symbol_value) VALUES (?,?)");
-    add(hash_add_int);
-
-    hash_add_float = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_symbols_float (s_id,symbol_value) VALUES (?,?)");
-    add(hash_add_float);
-
-    hash_add_str = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_symbols_string (s_id,symbol_value) VALUES (?,?)");
-    add(hash_add_str);
-
-    //
-
-    lti_id_exists = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE lti_id=?");
-    add(lti_id_exists);
-
-    lti_id_max = new soar_module::sqlite_statement(new_db, "SELECT MAX(lti_id) FROM smem_lti");
-    add(lti_id_max);
-
-    lti_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_lti (lti_id, total_augmentations,activation_base_level,activations_total,activations_last,activations_first,activation_spread,activation_value,lti_augmentations) VALUES (?,?,?,?,?,?,?,?,?)");
-    add(lti_add);
-
-    lti_access_get = new soar_module::sqlite_statement(new_db, "SELECT activations_total, activations_last, activations_first FROM smem_lti WHERE lti_id=?");
-    add(lti_access_get);
-
-    lti_access_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activations_total=?, activations_last=?, activations_first=? WHERE lti_id=?");
-    add(lti_access_set);
-
-    lti_get_t = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti WHERE activations_last=?");
-    add(lti_get_t);
-
-    //
-
-    web_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_augmentations (lti_id, attribute_s_id, value_constant_s_id, value_lti_id, activation_value, edge_weight) VALUES (?,?,?,?,?,?)");
-    add(web_add);
-
-    web_truncate = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_augmentations WHERE lti_id=?");
-    add(web_truncate);
-
-    web_expand = new soar_module::sqlite_statement(new_db, "SELECT tsh_a.symbol_type AS attr_type, tsh_a.s_id AS attr_hash, vcl.symbol_type AS value_type, vcl.s_id AS value_hash, vcl.value_lti_id AS value_lti FROM ((smem_augmentations w LEFT JOIN smem_symbols_type tsh_v ON w.value_constant_s_id=tsh_v.s_id) vc LEFT JOIN smem_lti AS lti ON vc.value_lti_id=lti.lti_id) vcl INNER JOIN smem_symbols_type tsh_a ON vcl.attribute_s_id=tsh_a.s_id WHERE vcl.lti_id=?");
-    add(web_expand);
-
-    //
-
-    web_all = new soar_module::sqlite_statement(new_db, "SELECT attribute_s_id, value_constant_s_id, value_lti_id FROM smem_augmentations WHERE lti_id=?");
-    add(web_all);
-
-    web_edge = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR "");
-    add(web_edge);
-
-    // /* The following indexes can be postpended with ", lti_id ASC" (without quotes) for debugging. */
-
-    web_attr_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? ORDER BY activation_value DESC");
-    add(web_attr_all);
-
-    web_const_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value DESC");
-    add(web_const_all);
-
-    web_lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_augmentations w WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=? ORDER BY activation_value DESC");
-    add(web_lti_all);
-
-    //
-
-    web_attr_all_spread = new soar_module::sqlite_statement(new_db, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=?");
-    add(web_attr_all_spread);
-
-    web_const_all_spread = new soar_module::sqlite_statement(new_db, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR "");
-    add(web_const_all_spread);
-
-    web_lti_all_spread = new soar_module::sqlite_statement(new_db, "SELECT smem_augmentations.lti_id, smem_current_spread_activations.activation_value FROM smem_augmentations INNER JOIN smem_current_spread_activations ON smem_augmentations.lti_id = smem_current_spread_activations.lti_id WHERE attribute_s_id=? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ?");
-    add(web_lti_all_spread);
-
-    web_attr_all_cheap = new soar_module::sqlite_statement(new_db, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? ORDER BY activation_value_aug DESC");
-    add(web_attr_all_cheap);
-
-    web_const_all_cheap = new soar_module::sqlite_statement(new_db, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=? AND value_lti_id=" SMEM_AUGMENTATIONS_NULL_STR " ORDER BY activation_value_aug DESC");
-    add(web_const_all_cheap);
-
-    web_lti_all_cheap = new soar_module::sqlite_statement(new_db, "SELECT lti_id AS lti_id1, activation_value AS activation_value_aug FROM smem_augmentations WHERE attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ? ORDER BY activation_value_aug DESC");
-    add(web_lti_all_cheap);
-
-    web_attr_all_manual = new soar_module::sqlite_statement(new_db, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=?");
-    add(web_attr_all_manual);
-
-    web_const_all_manual = new soar_module::sqlite_statement(new_db, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=? AND value_constant_s_id=? AND value_lti_id = " SMEM_AUGMENTATIONS_NULL_STR "");
-    add(web_const_all_manual);
-
-    web_lti_all_manual = new soar_module::sqlite_statement(new_db, "SELECT 1 FROM smem_augmentations WHERE attribute_s_id=? AND lti_id=? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?");
-    add(web_lti_all_manual);
-
-    //
-
-    web_attr_child = new soar_module::sqlite_statement(new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=?");
-    add(web_attr_child);
-
-    web_const_child = new soar_module::sqlite_statement(new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=?");
-    add(web_const_child);
-
-    web_lti_child = new soar_module::sqlite_statement(new_db, "SELECT lti_id, value_constant_s_id FROM smem_augmentations WHERE lti_id=? AND attribute_s_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id=?");
-    add(web_lti_child);
-
-    //
-
-    web_val_child = new soar_module::sqlite_statement(new_db, "SELECT value_lti_id, edge_weight FROM smem_augmentations WHERE lti_id=? AND value_constant_s_id=" SMEM_AUGMENTATIONS_NULL_STR "");
-    add(web_val_child);
-
-    //
-
-    web_update_child_edge = new soar_module::sqlite_statement(new_db, "UPDATE smem_augmentations SET edge_weight = ? WHERE lti_id = ? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR " AND value_lti_id = ?");
-    add(web_update_child_edge);
-
-    web_update_all_lti_child_edges = new soar_module::sqlite_statement(new_db, "UPDATE smem_augmentations SET edge_weight = ? WHERE lti_id = ? AND value_constant_s_id = " SMEM_AUGMENTATIONS_NULL_STR "");
-    add(web_update_all_lti_child_edges);
-
-    //
-
-    attribute_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?");
-    add(attribute_frequency_check);
-
-    wmes_constant_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?");
-    add(wmes_constant_frequency_check);
-
-    wmes_lti_frequency_check = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?");
-    add(wmes_lti_frequency_check);
-
-    //
-
-    attribute_frequency_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_attribute_frequency (attribute_s_id, edge_frequency) VALUES (?,1)");
-    add(attribute_frequency_add);
-
-    wmes_constant_frequency_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_wmes_constant_frequency (attribute_s_id, value_constant_s_id, edge_frequency) VALUES (?,?,1)");
-    add(wmes_constant_frequency_add);
-
-    wmes_lti_frequency_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_wmes_lti_frequency (attribute_s_id, value_lti_id, edge_frequency) VALUES (?,?,1)");
-    add(wmes_lti_frequency_add);
-
-    //
-
-    attribute_frequency_update = new soar_module::sqlite_statement(new_db, "UPDATE smem_attribute_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=?");
-    add(attribute_frequency_update);
-
-    wmes_constant_frequency_update = new soar_module::sqlite_statement(new_db, "UPDATE smem_wmes_constant_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_constant_s_id=?");
-    add(wmes_constant_frequency_update);
-
-    wmes_lti_frequency_update = new soar_module::sqlite_statement(new_db, "UPDATE smem_wmes_lti_frequency SET edge_frequency = edge_frequency + ? WHERE attribute_s_id=? AND value_lti_id=?");
-    add(wmes_lti_frequency_update);
-
-    //
-
-    attribute_frequency_get = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_attribute_frequency WHERE attribute_s_id=?");
-    add(attribute_frequency_get);
-
-    wmes_constant_frequency_get = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_wmes_constant_frequency WHERE attribute_s_id=? AND value_constant_s_id=?");
-    add(wmes_constant_frequency_get);
-
-    wmes_lti_frequency_get = new soar_module::sqlite_statement(new_db, "SELECT edge_frequency FROM smem_wmes_lti_frequency WHERE attribute_s_id=? AND value_lti_id=?");
-    add(wmes_lti_frequency_get);
-
-    //
-
-    act_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_augmentations SET activation_value=? WHERE lti_id=?");
-    add(act_set);
-
-    act_lti_child_ct_get = new soar_module::sqlite_statement(new_db, "SELECT total_augmentations FROM smem_lti WHERE lti_id=?");
-    add(act_lti_child_ct_get);
-
-    act_lti_child_ct_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET total_augmentations=? WHERE lti_id=?");
-    add(act_lti_child_ct_set);
-
-    act_lti_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET activation_base_level = ?, activation_spread = ?, activation_value=? WHERE lti_id=?");
-    add(act_lti_set);
-
-    act_lti_get = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level, activation_spread, activation_value FROM smem_lti WHERE lti_id=?");
-    add(act_lti_get);
-
-    history_get = new soar_module::sqlite_statement(new_db, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10 FROM smem_activation_history WHERE lti_id=?");
-    add(history_get);
-
-    history_push = new soar_module::sqlite_statement(new_db, "UPDATE smem_activation_history SET t10=t9,t9=t8,t8=t7,t8=t7,t7=t6,t6=t5,t5=t4,t4=t3,t3=t2,t2=t1,t1=?,touch10=touch9,touch9=touch8,touch8=touch7,touch7=touch6,touch6=touch5,touch5=touch4,touch4=touch3,touch3=touch2,touch2=touch1,touch1=? WHERE lti_id=?");
-    add(history_push);
-
-    history_add = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_activation_history (lti_id,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,touch1,touch2,touch3,touch4,touch5,touch6,touch7,touch8,touch9,touch10) VALUES (?,?,0,0,0,0,0,0,0,0,0,?,0,0,0,0,0,0,0,0,0)");
-    add(history_add);
-
-    // Adding statements needed to support prohibits.
-
-    prohibit_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=1,dirty=1 WHERE lti_id=?");
-    add(prohibit_set);
-
-    prohibit_add = new soar_module::sqlite_statement(new_db, "INSERT OR IGNORE INTO smem_prohibited (lti_id,prohibited,dirty) VALUES (?,0,0)");
-    add(prohibit_add);
-
-    prohibit_check = new soar_module::sqlite_statement(new_db, "SELECT lti_id,dirty FROM smem_prohibited WHERE lti_id=? AND prohibited=1");
-    add(prohibit_check);
-
-    prohibit_reset = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=0,dirty=0 WHERE lti_id=?");
-    add(prohibit_reset);
-
-    prohibit_clean = new soar_module::sqlite_statement(new_db, "UPDATE smem_prohibited SET prohibited=1,dirty=0 WHERE lti_id=?");
-    add(prohibit_clean);
-
-    prohibit_remove = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_prohibited WHERE lti_id=?");
-    add(prohibit_remove);
-
-    history_remove = new soar_module::sqlite_statement(new_db, "UPDATE smem_activation_history SET t1=t2,t2=t3,t3=t4,t4=t5,t5=t6,t6=t7,t7=t8,t8=t9,t9=t10,t10=0,touch1=touch2,touch2=touch3,touch3=touch4,touch4=touch5,touch5=touch6,touch6=touch7,touch7=touch8,touch8=touch9,touch9=touch10,touch10=0 WHERE lti_id=?"); //add something like "only use 9/10 when prohibited"
-    add(history_remove);
-
-    //
-
-    act_lti_child_lti_ct_get = new soar_module::sqlite_statement(new_db, "SELECT lti_augmentations FROM smem_ltI WHERE lti_id = ?");
-    add(act_lti_child_lti_ct_get);
-
-    act_lti_child_lti_ct_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_lti SET lti_augmentations = ? WHERE lti_id = ?");
-    add(act_lti_child_lti_ct_set);
-
-    act_lti_fake_set = new soar_module::sqlite_statement(new_db, "UPDATE smem_current_spread_activations SET activation_base_level = ?, activation_spread = ?, activation_value = ? WHERE lti_id = ?");
-    add(act_lti_fake_set);
-
-    act_lti_fake_insert = new soar_module::sqlite_statement(new_db, "INSERT INTO smem_current_spread_activations (lti_id, activation_base_level, activation_spread, activation_value) VALUES (?,?,?,?)");
-    add(act_lti_fake_insert);
-
-    act_lti_fake_delete = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_current_spread_activations WHERE lti_id = ?");
-    add(act_lti_fake_delete);
-
-    act_lti_fake_get = new soar_module::sqlite_statement(new_db, "SELECT activation_base_level, activation_spread, activation_value FROM smem_current_spread_activations WHERE lti_id = ?");
-    add(act_lti_fake_get);
-
-    //
-
-    vis_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, activation_value FROM smem_lti ORDER BY lti_id ASC");
-    add(vis_lti);
-
-    vis_lti_act = new soar_module::sqlite_statement(new_db, "SELECT activation_value FROM smem_lti WHERE lti_id=?");
-    add(vis_lti_act);
-
-    vis_value_const = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh1.symbol_type AS attr_type, tsh1.s_id AS attr_hash, tsh2.symbol_type AS val_type, tsh2.s_id AS val_hash FROM smem_augmentations w, smem_symbols_type tsh1, smem_symbols_type tsh2 WHERE (w.attribute_s_id=tsh1.s_id) AND (w.value_constant_s_id=tsh2.s_id)");
-    add(vis_value_const);
-
-    vis_value_lti = new soar_module::sqlite_statement(new_db, "SELECT lti_id, tsh.symbol_type AS attr_type, tsh.s_id AS attr_hash, value_lti_id FROM smem_augmentations w, smem_symbols_type tsh WHERE (w.attribute_s_id=tsh.s_id) AND (value_lti_id<>" SMEM_AUGMENTATIONS_NULL_STR ")");
-    add(vis_value_lti);
-
-    //This was for spreading (batch processing/initialization), but it just iterates over all ltis.
-    // I should perhaps change to iterate based on the ordering in smem_augmentations, but if it isn't broke...
-    lti_all = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_lti");
-    add(lti_all);
-
-        //adding trajectory into fingerprint. Assume we do not insert invalid trajectories.
-    trajectory_add = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihood_trajectories (lti_id, lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10, valid_bit) VALUES (?,?,?,?,?,?,?,?,?,?,?,1)");
-    add(trajectory_add);
-
-    //Removing trajectories for a particular lti. Assume we do not remove valid trajectories.
-    trajectory_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
-    add(trajectory_remove);
-
-    //Removing trajectories for a particular lti.
-    trajectory_remove_lti = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id=?");
-    add(trajectory_remove_lti);
-
-    //like trajectory_get, but with invalid instead of valid.
-    trajectory_check_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=0");
-    add(trajectory_check_invalid);
-
-    //Removing all invalid trajectories.
-    trajectory_remove_invalid = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE valid_bit=0");
-    add(trajectory_remove_invalid);
-
-    //Removing all trajectories from ltis with invalid trajectories.
-    trajectory_remove_all = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)");
-    add(trajectory_remove_all);//"DELETE a.* FROM smem_likelihood_trajectories AS a INNER JOIN smem_likelihood_trajectories AS b on a.lti_id = b.lti_id WHERE b.valid_bit=0"
-//"DELETE FROM smem_likelihood_trajectories WHERE lti_id IN (SELECT DISTINCT lti_id FROM smem_likelihood_trajectories WHERE valid_bit=0)"
-    //"DELETE FROM smem_likelihood_trajectories WHERE EXISTS (SELECT * FROM smem_likelihood_trajectories AS b WHERE b.lti_id = smem_likelihood_trajectories.lti_id AND b.valid_bit = 0)"
-
-    //Find all of the ltis with invalid trajectories and find how many new ones they need.
-    trajectory_find_invalid = new soar_module::sqlite_statement(new_db, "SELECT lti_id, COUNT(*) FROM smem_likelihood_trajectories WHERE valid_bit=0 GROUP BY lti_id");
-    add(trajectory_find_invalid);
-
-    //getting trajectory from fingerprint. Only retrieves ones with valid bit of 1.
-    trajectory_get = new soar_module::sqlite_statement(new_db, "SELECT lti1, lti2, lti3, lti4, lti5, lti6, lti7, lti8, lti9, lti10 FROM smem_likelihood_trajectories WHERE lti_id=? AND valid_bit=1");
-    add(trajectory_get);
-
-    //invalidating trajectories containing some lti and don't have null afterwards
-    trajectory_invalidate_from_lti = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1!=0) OR (lti1=? AND lti2!=0) OR (lti2=? AND lti3!=0) OR (lti3=? AND lti4!=0) OR (lti4=? AND lti5!=0) OR (lti5=? AND lti6!=0) OR (lti6=? AND lti7!=0) OR (lti7=? AND lti8!=0) OR (lti8=? AND lti9!=0) OR (lti9=? AND lti10!=0)");
-    add(trajectory_invalidate_from_lti);
-
-    trajectory_invalidate_from_lti_add = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_invalid_parents (lti_id) VALUES (?)");
-    add(trajectory_invalidate_from_lti_add);
-
-    trajectory_invalidate_from_lti_clear = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_invalid_parents");
-    add(trajectory_invalidate_from_lti_clear);
-
-    trajectory_invalidate_from_lti_table = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE rowid in (SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON smem_likelihood_trajectories.lti_id=smem_invalid_parents.lti_id WHERE lti1!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti1=smem_invalid_parents.lti_id WHERE lti2!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti2=smem_invalid_parents.lti_id WHERE lti3!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti3=smem_invalid_parents.lti_id WHERE lti4!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti4=smem_invalid_parents.lti_id WHERE lti5!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti5=smem_invalid_parents.lti_id WHERE lti6!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti6=smem_invalid_parents.lti_id WHERE lti7!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti7=smem_invalid_parents.lti_id WHERE lti8!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti8=smem_invalid_parents.lti_id WHERE lti9!=0 UNION SELECT smem_likelihood_trajectories.rowid FROM smem_likelihood_trajectories INNER JOIN smem_invalid_parents ON lti9=smem_invalid_parents.lti_id WHERE lti10!=0)");
-    add(trajectory_invalidate_from_lti_table);
-
-    //invalidating trajectories containing some lti followed by a particular different lti
-    trajectory_invalidate_edge = new soar_module::sqlite_statement(new_db,"UPDATE smem_likelihood_trajectories SET valid_bit=0 WHERE (lti_id=? AND lti1=? AND lti1!=0) OR (lti1=? AND lti2=? AND lti2!=0) OR (lti2=? AND lti3=? AND lti3!=0) OR (lti3=? AND lti4=? AND lti4!=0) OR (lti4=? AND lti5=? AND lti5!=0) OR (lti5=? AND lti6=? AND lti6!=0) OR (lti6=? AND lti7=? AND lti7!=0) OR (lti7=? AND lti8=? AND lti8!=0) OR (lti8=? AND lti9=? AND lti9!=0) OR (lti9=? AND lti10=? AND lti10!=0)");
-    add(trajectory_invalidate_edge);
-
-    //gets the size of the current fingerprint table.
-    trajectory_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_likelihood_trajectories WHERE lti1!=0");
-    add(trajectory_size_debug_cmd);
-
-
-    //
-
-    //take away spread precalculated values for some lti
-    likelihood_cond_count_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_likelihoods WHERE lti_j=?");
-    add(likelihood_cond_count_remove);
-
-    //take away other spread precalculated values for some lti
-    lti_count_num_appearances_remove = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_trajectory_num WHERE lti_id=?");
-    add(lti_count_num_appearances_remove);
-
-    //add spread precalculated values for some lti
-    likelihood_cond_count_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j, lti_i, num_appearances_i_j) SELECT parent, lti, SUM(count) FROM (SELECT lti_id AS parent, lti1 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti2 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti3 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti4 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti5 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti6 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti7 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti8 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti9 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti_id=? GROUP BY lti, parent UNION ALL SELECT lti_id AS parent, lti10 AS lti,COUNT(*) AS count FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? GROUP BY lti, parent) GROUP BY parent, lti");
-    add(likelihood_cond_count_insert);
-
-    likelihood_cond_count_find = new soar_module::sqlite_statement(new_db,"SELECT lti_id AS parent, lti1 AS lti,1 AS depth FROM smem_likelihood_trajectories WHERE lti1 !=0 AND lti2 = 0 AND lti_id=? UNION ALL SELECT lti1 AS parent, lti2 AS lti,2 AS depth FROM smem_likelihood_trajectories WHERE lti2 !=0 AND lti3 = 0 AND lti_id=? UNION ALL SELECT lti2 AS parent, lti3 AS lti,3 AS depth FROM smem_likelihood_trajectories WHERE lti3 !=0 AND lti4 = 0 AND lti_id=? UNION ALL SELECT lti3 AS parent, lti4 AS lti,4 AS depth FROM smem_likelihood_trajectories WHERE lti4 !=0 AND lti5 = 0 AND lti_id=? UNION ALL SELECT lti4 AS parent, lti5 AS lti,5 AS depth FROM smem_likelihood_trajectories WHERE lti5 !=0 AND lti6 = 0 AND lti_id=? UNION ALL SELECT lti5 AS parent, lti6 AS lti,6 AS depth FROM smem_likelihood_trajectories WHERE lti6 !=0 AND lti7 = 0 AND lti_id=? UNION ALL SELECT lti6 AS parent, lti7 AS lti,7 AS depth FROM smem_likelihood_trajectories WHERE lti7 !=0 AND lti8 = 0 AND lti_id=? UNION ALL SELECT lti7 AS parent, lti8 AS lti,8 AS depth FROM smem_likelihood_trajectories WHERE lti8 !=0 AND lti9 = 0 AND lti_id=? UNION ALL SELECT lti8 AS parent, lti9 AS lti,9 AS depth FROM smem_likelihood_trajectories WHERE lti9 !=0 AND lti10 = 0 AND lti_id=? UNION ALL SELECT lti9 AS parent, lti10 AS lti,10 AS depth FROM smem_likelihood_trajectories WHERE lti10 !=0 AND lti_id=? ORDER BY 3 ASC, lti DESC");
-    add(likelihood_cond_count_find);
-
-    likelihood_cond_count_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_likelihoods (lti_j,lti_i,num_appearances_i_j) VALUES (?,?,?)");
-    add(likelihood_cond_count_insert);
-
-    //add other spread precalculated values for some lti
-    lti_count_num_appearances_insert = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods WHERE lti_j=? GROUP BY lti_j");
-    add(lti_count_num_appearances_insert);
-
-    //gets the relevant info from currently relevant ltis
-    //calc_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j FROM smem_current_spread WHERE lti_source = ?");
-    //add(calc_spread);
-
-    //gets the relevant info from currently relevant ltis
-    calc_uncommitted_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_uncommitted_spread WHERE lti_id = ?");
-    add(calc_uncommitted_spread);
-
-    calc_current_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id,num_appearances,num_appearances_i_j,sign,lti_source FROM smem_current_spread WHERE lti_id = ?");
-    add(calc_current_spread);
-
-    list_uncommitted_spread = new soar_module::sqlite_statement(new_db, "SELECT lti_id FROM smem_uncommitted_spread");
-    add(list_uncommitted_spread);
-
-    //gets the size of the current spread table.
-    calc_spread_size_debug_cmd = new soar_module::sqlite_statement(new_db,"SELECT COUNT(*) FROM smem_committed_spread");
-    add(calc_spread_size_debug_cmd);
-
-    //delete lti from context table
-    //delete_old_context = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_context WHERE lti_id=?");
-    //add(delete_old_context);
-
-    //delete lti's info from current spread table
-    delete_old_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_current_spread WHERE lti_source=?");
-    add(delete_old_spread);
-
-    list_current_spread = new soar_module::sqlite_statement(new_db,"SELECT lti_id from smem_current_spread");
-    add(list_current_spread);
-
-    //When spread is still uncommitted, just remove. when it is committed, mark row as negative.
-    //This should be called alongside reverse_old_committed_spread
-    delete_old_uncommitted_spread = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id NOT IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
-    add(delete_old_uncommitted_spread);
-
-    //When spread is committed but needs removal, add a negative row for later processing.
-    //This needs to be called before delete_old_spread and for the same value as delete_old_spread's delete.
-    reverse_old_committed_spread = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,0 FROM smem_committed_spread WHERE lti_source=?");//
-    add(reverse_old_committed_spread);
-
-    //add lti to the context table
-    //add_new_context = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_current_context (lti_id) VALUES (?)");
-    //add(add_new_context);
-
-    //add a fingerprint's information to the current spread table.
-    select_fingerprint = new soar_module::sqlite_statement(new_db,"SELECT lti_i,num_appearances_i_j,num_appearances,1,lti_j FROM smem_likelihoods INNER JOIN smem_trajectory_num ON lti_id=lti_j WHERE lti_j=?");
-    add(select_fingerprint);
-    add_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT or ignore INTO smem_current_spread(lti_id,num_appearances_i_j,num_appearances,sign,lti_source) VALUES (?,?,?,?,?)");
-    add(add_fingerprint);
-
-    //add a fingerprint's information to the current uncommitted spread table. should happen after add_fingerprint
-    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT OR IGNORE INTO smem_uncommitted_spread SELECT lti_id,num_appearances_i_j,num_appearances,lti_source,1 FROM smem_current_spread WHERE lti_source=?");
-//    add_uncommitted_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_uncommitted_spread(lti_id,num_appearances_i_j,num_appearances,lti_source,sign) SELECT lti_i,num_appearances_i_j,num_appearances,lti_j,1 FROM (SELECT * FROM smem_likelihoods WHERE lti_j=?) INNER JOIN smem_trajectory_num ON lti_id=lti_j");
-    add(add_uncommitted_fingerprint);
-
-    remove_fingerprint_reversal = new soar_module::sqlite_statement(new_db, "DELETE FROM smem_uncommitted_spread WHERE lti_source=? AND lti_id IN (SELECT lti_id FROM smem_committed_spread WHERE lti_source=?)");
-    add(remove_fingerprint_reversal);
-
-    prepare_delete_committed_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_to_delete (lti_id) VALUES (?)");
-    add(prepare_delete_committed_fingerprint);
-
-    //remove a fingerprint's information from the current uncommitted spread table.(has been processed)
-    delete_committed_fingerprint = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_uncommitted_spread WHERE lti_id IN (SELECT lti_id FROM smem_to_delete)");
-    add(delete_committed_fingerprint);
-    delete_committed_fingerprint_2 = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_to_delete");
-    add(delete_committed_fingerprint_2);
-
-    delete_commit_of_negative_fingerprint = new soar_module::sqlite_statement(new_db,"DELETE FROM smem_committed_spread WHERE lti_id=? AND lti_source=?");
-    add(delete_commit_of_negative_fingerprint);
-
-    add_committed_fingerprint = new soar_module::sqlite_statement(new_db,"INSERT INTO smem_committed_spread (lti_id,num_appearances_i_j,num_appearances,lti_source) VALUES (?,?,?,?)");
-    add(add_committed_fingerprint);
->>>>>>> origin/new_smem_with_edge_weight_spread
-}
+   
 
 };
 

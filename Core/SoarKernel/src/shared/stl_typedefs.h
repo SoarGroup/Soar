@@ -148,16 +148,7 @@ typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
-<<<<<<< HEAD
-typedef std::set<ltm_object*>                   ltm_set;
-typedef std::list<ltm_object*>                  ltm_list;
-typedef std::list<ltm_value*>                   ltm_slot;
-typedef std::map<Symbol*, ltm_slot*>            ltm_slot_map;
-typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;
-typedef std::pair< double, uint64_t >           smem_activated_lti;
-typedef std::map<std::string, ltm_object*>      str_to_ltm_map;
-typedef std::map<Symbol*, ltm_object*>          sym_to_ltm_map;
-=======
+
 typedef std::set<ltm_object*>                                   ltm_set;
 typedef std::list<ltm_value*>                                   ltm_slot;
 typedef std::map<Symbol*, ltm_slot*>                            ltm_slot_map;
@@ -166,6 +157,6 @@ typedef std::pair< double, uint64_t >                           smem_activated_l
 typedef std::map<std::string, ltm_object*>                      str_to_ltm_map;
 typedef std::map<Symbol*, ltm_object*>                          sym_to_ltm_map;
 typedef std::unordered_multimap<uint64_t,wma_decay_element*>    smem_wma_map;
->>>>>>> origin/new_smem_with_edge_weight_spread
+
 
 #endif /* STL_TYPEDEFS_H_ */

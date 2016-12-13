@@ -233,23 +233,12 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
             if (!sql->executeStep())
                 throw SoarAssertionException("Failed to retrieve column", __FILE__, __LINE__);
 
-<<<<<<< HEAD
+
             return sql->getColumn(0).getUInt64();
         });
 
         existing_edges = JobQueue->post(edges).get();
-=======
-        SQL->act_lti_child_ct_get->reinitialize();
 
-        //
-
-        SQL->act_lti_child_lti_ct_get->bind_int(1,pLTI_ID);
-        SQL->act_lti_child_lti_ct_get->execute();
-
-        existing_lti_edges = static_cast<uint64_t>(SQL->act_lti_child_lti_ct_get->column_int(0));
-
-        SQL->act_lti_child_lti_ct_get->reinitialize();
->>>>>>> origin/new_smem_with_edge_weight_spread
     }
 
     // get new edges
