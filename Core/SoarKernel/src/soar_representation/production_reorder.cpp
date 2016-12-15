@@ -547,7 +547,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                 {
                     dprint(DT_REORDERER, "Found match with  using index var %y: %t\n", st->var, st->the_test);
                     dprint(DT_REORDERER, "Removing entry with index %y and adding test.\n", st->var);
-                    add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
+                    add_test_if_not_already_there(thisAgent, t, st->the_test, neg, true);
                     added_it = true;
                 }
                 break;

@@ -42,6 +42,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Demo_Water_Jug_Hierarchy);
         CPPUNIT_TEST(Demo_Water_Jug_Look_Ahead);
         CPPUNIT_TEST(Demo_Water_Jug_Tie);
+        CPPUNIT_TEST(Disjunction_Merge);
         CPPUNIT_TEST(Faux_Operator);
         CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
@@ -180,6 +181,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Demo_Water_Jug_Hierarchy();
         void Demo_Water_Jug_Look_Ahead();
         void Demo_Water_Jug_Tie();
+        void Disjunction_Merge();
         void Chunk_Superstate_Operator_Preference();
         void Justifications_Get_New_Identities();
 
@@ -824,6 +826,11 @@ void ChunkTest::Demo_Water_Jug_Tie()
 void ChunkTest::Chunk_Superstate_Operator_Preference()
 {
     build_and_check_chunk_clean("Chunk_Superstate_Operator_Preference.soar", 3, 1);
+}
+
+void ChunkTest::Disjunction_Merge()
+{
+    build_and_check_chunk_clean("Disjunction_Merge.soar", 5, 1);
 }
 
 void ChunkTest::Justifications_Get_New_Identities()

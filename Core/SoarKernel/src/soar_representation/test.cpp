@@ -209,17 +209,94 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
     dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test done.\n");
 }
 
+void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
+{
+    cons* c_new, *c_next, *c_last;
+    Symbol* lSym;
+    tc_number lTC = get_new_tc_number(thisAgent);
+
+    for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_new->rest)
+    {
+        static_cast<Symbol*>(c_new->first)->tc_num = lTC;
+        c_last = c_new;
+    }
+    assert(c_last);
+    for (c_new = new_test->data.disjunction_list; c_new != NULL; c_new = c_next)
+    {
+        lSym = static_cast<Symbol*>(c_new->first);
+        c_next = c_new->rest;
+        if (lSym->tc_num != lTC)
+        {
+            assert(!c_last->rest);
+            c_last->rest = c_new;
+            c_new->rest = NULL;
+            c_last = c_new;
+        } else {
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            free_cons(thisAgent, c_new);
+        }
+    }
+    new_test->data.disjunction_list = NULL;
+    deallocate_test(thisAgent, new_test);
+}
+
+bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
+{
+    test destination = 0;//, original = 0;
+    cons* c;//, *c_orig;
+
+    destination = *dest_test_address;
+
+//    dprint(DT_DEBUG, "Merging disjunctive test %t into %t", new_test, destination);
+    if (destination->type != CONJUNCTIVE_TEST)
+    {
+        if (destination->type == DISJUNCTION_TEST)
+        {
+            merge_disjunction_tests(thisAgent, destination, new_test);
+            return true;
+        }
+
+        destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
+        allocate_cons(thisAgent, &c);
+        destination->data.conjunct_list = c;
+        destination->eq_test = (*dest_test_address)->eq_test;
+        c->first = *dest_test_address;
+        c->rest = NIL;
+        *dest_test_address = destination;
+    }
+
+//    assert(destination->eq_test);
+
+    for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
+    {
+        if (static_cast<test>(c->first)->type == DISJUNCTION_TEST)
+        {
+            merge_disjunction_tests(thisAgent, static_cast<test>(c->first), new_test);
+//            dprint(DT_DEBUG, "Found another disjunction.  Merged test is now %t", destination);
+            return true;
+        }
+    }
+    /* --- now add add_test to the conjunct list --- */
+    allocate_cons(thisAgent, &c);
+    c->first = new_test;
+    c->rest = destination->data.conjunct_list;
+    destination->data.conjunct_list = c;
+
+//    dprint(DT_DEBUG, "No disjunction found.  Merged test is now %t", destination);
+    return true;
+}
+
+
 /* ----------------------------------------------------------------
    Destructively modifies the first test (t) by adding the second
    one (add_me) to it (usually as a new conjunct).  The first test
    need not be a conjunctive test nor even exist.
 ---------------------------------------------------------------- */
-
-bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
+bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool merge_disjunctions)
 {
 
-	test destination = 0;//, original = 0;
-	cons* c;//, *c_orig;
+    test destination = 0;//, original = 0;
+    cons* c;//, *c_orig;
 
     if (!new_test)
     {
@@ -234,6 +311,13 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
 
     destination = *dest_test_address;
     assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
+
+    /* Since this function is called frequently but merges infrequently, we call a special
+     * version of this function instead */
+    if (merge_disjunctions && (new_test->type == DISJUNCTION_TEST))
+    {
+        return add_test_merge_disjunctions(thisAgent, dest_test_address, new_test);
+    }
 
     if (destination->type != CONJUNCTIVE_TEST)
     {
@@ -266,7 +350,7 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
    test is already included in the first one.
 ---------------------------------------------------------------- */
 
-void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg)
+void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg, bool merge_disjunctions)
 {
     test ct;
     cons* c;
@@ -286,7 +370,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 return;
             }
 
-    add_test(thisAgent, t, add_me);
+    add_test(thisAgent, t, add_me, merge_disjunctions);
 }
 
 /* ----------------------------------------------------------------
