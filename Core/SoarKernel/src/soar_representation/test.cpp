@@ -211,33 +211,49 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
 
 void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
 {
-    cons* c_new, *c_next, *c_last;
+    cons* c_new, *c_next, *c_last = NULL, *c_first = NULL;
     Symbol* lSym;
     tc_number lTC = get_new_tc_number(thisAgent);
+    tc_number lTC2 = get_new_tc_number(thisAgent);
 
     for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_new->rest)
     {
         static_cast<Symbol*>(c_new->first)->tc_num = lTC;
-        c_last = c_new;
     }
-    assert(c_last);
+
     for (c_new = new_test->data.disjunction_list; c_new != NULL; c_new = c_next)
     {
         lSym = static_cast<Symbol*>(c_new->first);
         c_next = c_new->rest;
-        if (lSym->tc_num != lTC)
+        if (lSym->tc_num == lTC)
         {
-            assert(!c_last->rest);
-            c_last->rest = c_new;
-            c_new->rest = NULL;
-            c_last = c_new;
-        } else {
-            thisAgent->symbolManager->symbol_remove_ref(&lSym);
-            free_cons(thisAgent, c_new);
+            lSym->tc_num = lTC2;
         }
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
+        free_cons(thisAgent, c_new);
     }
     new_test->data.disjunction_list = NULL;
     deallocate_test(thisAgent, new_test);
+
+    for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_next)
+    {
+        lSym = static_cast<Symbol*>(c_new->first);
+        c_next = c_new->rest;
+        if (lSym->tc_num != lTC2)
+        {
+            if (c_last)
+            {
+                c_last->rest = c_next;
+            }
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            free_cons(thisAgent, c_new);
+            continue;
+        } else if (!c_first) {
+            c_first = c_new;
+        }
+        c_last = c_new;
+    }
+    destination->data.disjunction_list = c_first;
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
