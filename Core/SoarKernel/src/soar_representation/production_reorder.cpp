@@ -1587,16 +1587,9 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
     cons* roots;
 
     tc = get_new_tc_number(thisAgent);
-    /* don't mark any variables, since nothing is bound outside the LHS */
     roots = collect_root_variables(thisAgent, *lhs_top, tc, ungrounded_syms, add_ungrounded);
 
-    /* MToDo | Trying to move up here.  Was after ungrounded stuff */
-    if (roots)
-    {
-        /* Include only root "STATE" test in the LHS of a chunk.*/
-        remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
-    }
-
+    /* Collecting root variables will also detect ungrounded symbols on the LHS */
     if (add_ungrounded && ungrounded_syms->size() > 0)
     {
         std::string unSymString;
@@ -1638,19 +1631,20 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
                 if (roots) break;
             }
         }
+        if (!roots)
+        {
+            thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
+            thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
+            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
+            }
+            return false;
+        }
     }
 
-    if (!roots)
-    {
-        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
-        }
-        return false;
-    }
+    remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
 
     fill_in_vars_requiring_bindings(thisAgent, *lhs_top, tc);
 

@@ -121,7 +121,7 @@ typedef struct EXPORT agent_struct
      * commands that were combined in Soar 9.6 */
     cli_command_params*         command_params;
 
-    // MToDo | Move these two
+    /* Move these two to somewhere more appropriate */
     debug_param_container*      debug_params;
     AgentOutput_Info*           output_settings;
 
