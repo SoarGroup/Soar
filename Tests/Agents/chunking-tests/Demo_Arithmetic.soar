@@ -1,6 +1,7 @@
 chunk always
 chunk allow-local-negations off
-output enable off
+srand 1
+#output enable off
 
 sp {arithmetic*apply*stop-arithmetic
     (state <s> ^operator <op>)

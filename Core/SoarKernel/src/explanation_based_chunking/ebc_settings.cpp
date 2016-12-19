@@ -17,6 +17,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_EXCEPT] = false;
     pEBC_settings[SETTING_EBC_BOTTOM_ONLY] = false;
     pEBC_settings[SETTING_EBC_INTERRUPT] = false;
+    pEBC_settings[SETTING_EBC_INTERRUPT_WARNING] = false;
+    pEBC_settings[SETTING_EBC_INTERRUPT_WATCHED] = false;
     pEBC_settings[SETTING_EBC_UTILITY_MODE] = false;
     pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] = true;
     pEBC_settings[SETTING_EBC_CONSTRAINTS] = true;

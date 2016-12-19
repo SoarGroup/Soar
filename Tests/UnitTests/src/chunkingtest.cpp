@@ -785,7 +785,7 @@ void ChunkTest::SMem_Chunked_Query2()
 
 void ChunkTest::Demo_Arithmetic()
 {
-    build_and_check_chunk("Demo_Arithmetic.soar", 41424, 1);
+    build_and_check_chunk_clean("Demo_Arithmetic.soar", 41424, 1);
 }
 
 void ChunkTest::Demo_Blocks_World_Look_Ahead()
