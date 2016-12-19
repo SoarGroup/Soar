@@ -1894,14 +1894,17 @@ byte run_preference_semantics(agent* thisAgent,
 
                     /* This decision was non-numeric, so add all non-numeric preferences associated with the
                      * chosen candidate to the OSK prefs.*/
-
-                    for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
-                    {
-                        if (p->value == (*result_candidates)->value)
-                        {
-                            add_to_OSK(thisAgent, s, p);
-                        }
-                    }
+                    /* MToDo | Temporarily removed because it was causing problems for John in demo agents.  All of the OSK
+                     *         prefs that involve uncertainty now seem weird. Will need to reconsider how we handle them now
+                     *         that we have a better handle for correctness issues and are thinking more about probabilistic
+                     *         chunks.*/
+//                    for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+//                    {
+//                        if (p->value == (*result_candidates)->value)
+//                        {
+//                            add_to_OSK(thisAgent, s, p);
+//                        }
+//                    }
                     for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value))
