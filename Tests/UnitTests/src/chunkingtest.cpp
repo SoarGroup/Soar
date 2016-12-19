@@ -91,9 +91,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Unify_Children_Results);
         CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
         CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
-        #ifndef SKIP_SLOW_TESTS
+//        #ifndef SKIP_SLOW_TESTS
                 CPPUNIT_TEST(Demo_Arithmetic);
-        #endif
+//        #endif
 
 #endif
         CPPUNIT_TEST_SUITE_END();
