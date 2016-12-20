@@ -579,13 +579,27 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                     for (sym_p = prohibit.begin(); sym_p != prohibit.end(); sym_p++)
                     {
-                        SQL->prohibit_check->bind_int(1, (*sym_p)->id->LTI_ID);
-                        if (SQL->prohibit_check->execute() != soar_module::row)
+                        std::packaged_task<bool()> pt_ProhibitCheck([&] {
+                            auto sql = sqlite_thread_guard(thisAgent->SMem->SQL->prohibit_check);
+
+                            sql->bind(1, (*sym_p)->id->LTI_ID);
+
+                            return sql->executeStep();
+                        });
+                        bool prohibited = JobQueue->post(pt_ProhibitCheck).get();
+
+                        if (!prohibited)
                         {
-                            SQL->prohibit_set->bind_int(1, (*sym_p)->id->LTI_ID);
-                            SQL->prohibit_set->execute(soar_module::op_reinit);
+                            std::packaged_task<void()> pt_ProhibitSet([&]{
+                                auto sql = sqlite_thread_guard(thisAgent->SMem->SQL->prohibit_set);
+
+                                sql->bind(1, (*sym_p)->id->LTI_ID);
+
+                                sql->exec();
+                            });
+
+                            JobQueue->post(pt_ProhibitSet).wait();
                         }
-                        SQL->prohibit_check->reinitialize();
                     }
                     /*
                      * This allows prohibits to modify BLA without a query present.
@@ -810,8 +824,8 @@ statistics(new smem_stat_container(myAgent))
 
     smem_in_wmem = new std::map<uint64_t, uint64_t>();
     smem_wmas = new smem_wma_map();
-    smem_spreaded_to = new std::unordered_map<uint64_t, int64_t>();
-    smem_recipient = new std::unordered_map<uint64_t, int64_t>();
+    smem_spreaded_to = new std::unordered_map<uint64_t, uint64_t>();
+    smem_recipient = new std::unordered_map<uint64_t, uint64_t>();
     smem_recipients_of_source = new std::unordered_map<uint64_t,std::set<uint64_t>*>();
     smem_context_additions = new std::set<uint64_t>();
     smem_context_removals = new std::set<uint64_t>();
@@ -841,7 +855,7 @@ void SMem_Manager::clean_up_for_agent_deletion()
     delete settings;
     delete statistics;
     delete timers;
-    delete DB;
+    //delete DB;
     delete smem_in_wmem;
     delete smem_wmas;
     delete smem_spreaded_to;

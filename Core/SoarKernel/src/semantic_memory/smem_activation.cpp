@@ -50,6 +50,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
         uint64_t t_k = 0;
         double sum = 0;
         uint64_t small_n = 0;
+        uint64_t recent_time = 0;
 
         if (sql->executeStep())
         {
@@ -58,6 +59,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
             for (int i = 0;i < SMEM_ACT_HISTORY_ENTRIES;++i)
                 if (sql->getColumn(i).getUInt64() != 0)
                     ++available_history;
+            small_n = available_history;
 
             t_k = uint64_t(time_now - sql->getColumn(int(available_history - 1)).getInt64());
 
@@ -73,7 +75,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
             }
         }
 
-        return std::make_tuple(t_k, sum);
+        return std::make_tuple(t_k, sum, small_n, recent_time);
     });
 
     // get all history
@@ -100,7 +102,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     double inhibition_odds = 0;
     if (recent_time != 0)
     {
-        inhibition_odds = pow(1+pow(double(recent_time) / 10.0,-1.0));
+        inhibition_odds = pow(1+pow(double(recent_time) / 10.0,-1.0),-1.0);
         return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
     }
 
@@ -125,7 +127,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
 
     // get old (potentially useful below)
     typedef std::tuple<double,uint64_t,uint64_t> prev_tuple;
-    std::packaged_task<prev_tuple()> prev([this,pLTI_ID,time_now,add_access]
+    std::packaged_task<prev_tuple()> prev([this,pLTI_ID]
     {
         prev_tuple result = std::make_tuple(0,0,0);
 
@@ -165,6 +167,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     prev_access_t = std::get<1>(prev_t);
     prev_access_1 = std::get<2>(prev_t);
 
+    bool prohibited;
+
     int64_t time_now;
     if (add_access)
     {
@@ -182,7 +186,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
          * updating behavior should take care of most things (with the exception of what we expressly do under the prohibit
          * tests below..
          */
-        std::packaged_task<std::tuple<bool,bool>()> pt_ProhibitCheck([] {
+        std::packaged_task<std::tuple<bool,bool>()> pt_ProhibitCheck([this, pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->prohibit_check);
 
             sql->bind(1, pLTI_ID);
@@ -194,7 +198,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         });
 
         auto t = JobQueue->post(pt_ProhibitCheck).get();
-        bool prohibited = std::get<0>(t);
+        prohibited = std::get<0>(t);
         bool dirty = std::get<1>(t);
 
         if (prohibited)
@@ -202,7 +206,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
             //Find the number of touches from the most recent activation and remove that much touching.
             if (dirty)
             {
-                std::packaged_task<double()> pt_historyRemove([this] {
+                std::packaged_task<double()> pt_historyRemove([this, pLTI_ID] {
                     double prevN = 0;
 
                     {
@@ -224,7 +228,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                 prev_access_n -= JobQueue->post(pt_historyRemove).get();
             }
 
-            std::packaged_task<void()> pt_prohibitReset([this] {
+            std::packaged_task<void()> pt_prohibitReset([this, pLTI_ID] {
                 auto sql = sqlite_thread_guard(SQL->prohibit_reset);
                 sql->bind(1, pLTI_ID);
                 sql->exec();
@@ -271,7 +275,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     }
     else
     {
-        std::packaged_task<std::tuple<bool,bool>()> pt_ProhibitCheck([] {
+        std::packaged_task<std::tuple<bool,bool>()> pt_ProhibitCheck([this, pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->prohibit_check);
 
             sql->bind(1, pLTI_ID);
@@ -283,12 +287,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         });
 
         auto t = JobQueue->post(pt_ProhibitCheck).get();
-        bool prohibited = std::get<0>(t);
+        prohibited = std::get<0>(t);
         bool dirty = std::get<1>(t);
 
         if (prohibited && dirty)
         {
-            std::packaged_task<double()> pt_historyRemove([this] {
+            std::packaged_task<double()> pt_historyRemove([this, pLTI_ID] {
                 double prevN = 0;
 
                 {
@@ -320,12 +324,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         statistics->act_updates->set_value(statistics->act_updates->get_value() + 1);
     }
 
-    std::packaged_task<void()> updateLTIAccess([this,time_now,pLTI_ID] {
+    std::packaged_task<void()> updateLTIAccess([this, prev_access_n, add_access, touches, time_now, prev_access_t, prev_access_1, pLTI_ID] {
         auto sql = sqlite_thread_guard(SQL->lti_access_set);
 
-        sql->bind(1, std::get<0>(result) + 1);
-        sql->bind(2, time_now);
-        sql->bind(3, ((std::get<0>(result) == 0) ? (time_now) : (std::get<2>(result))));
+        sql->bind(1, (prev_access_n + (add_access ? touches : 0.0)));
+        sql->bind(2, add_access ? time_now : prev_access_t);
+        sql->bind(3, prev_access_n == 0 ? (add_access ? time_now : 0) : prev_access_1);
         sql->bind(4, pLTI_ID);
 
         sql->exec();
@@ -429,7 +433,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     for (uint64_t i = 0;i < depth_limit;++i)
     {
         // representing a maximum possible spreading value for comparison.  It's an admissible heuristic. (fancy word!)
-        baseline_denom =  = baseline_denom + baseline_denom * k_decay;
+        baseline_denom = baseline_denom + baseline_denom * k_decay;
     }
 
     double spread = 0, modified_spread = 0, new_base = 0, additional = 0;
@@ -469,7 +473,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (already_in_spread_table)
     {
         double offset = settings->spreading_baseline->get_value()/baseline_denom;
-        modified_spread = log(spread) - log(offset));
+        modified_spread = log(spread) - log(offset);
 
         assert(modified_spread >= 0.0);
 
@@ -509,7 +513,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && !already_in_spread_table)
     {
         // activation_value=? WHERE lti=?
-        std::packaged_task<void()> set([this,new_activation,pLTI_ID] {
+        std::packaged_task<void()> set([this,new_base,modified_spread,pLTI_ID] {
             auto sql = sqlite_thread_guard(SQL->act_set);
 
             sql->bind(1, new_base + modified_spread);
@@ -532,7 +536,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
 {
     if (lti_trajectories.find(lti_id) == lti_trajectories.end())
     {//If we don't already have the children and their edge weights, we need to get them.
-        soar_module::sqlite_statement* children_q = SQL->web_val_child;
+        //soar_module::sqlite_statement* children_q = SQL->web_val_child;
         std::list<uint64_t> children;
 
         //First, we don't bother changing edge weights unless we have changes with which to update the edge weights.
@@ -580,7 +584,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 if (first_time)
                 {//this is where we extract the old edge weights from the database store.
                     first_time = false;
-                    children_q->bind_int(1, lti_id);
+                    /*children_q->bind_int(1, lti_id);
                     children_q->bind_int(2, lti_id);
                     while (children_q->execute() == soar_module::row)
                     {
@@ -591,7 +595,26 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                         old_edge_weight_map_for_children[(uint64_t)(children_q->column_int(0))] = children_q->column_double(1);
                         edge_weight_update_map_for_children[(uint64_t)(children_q->column_int(0))] = 0;
                     }
-                    children_q->reinitialize();
+                    children_q->reinitialize();*/
+
+                    {
+                        auto sql = sqlite_thread_guard(SQL->web_val_child);
+
+                        sql->bind(1, lti_id);
+                        sql->bind(2, lti_id);
+                        while(sql->executeStep())
+                        {
+                            if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64())
+                            {
+                                continue;
+                            }
+                        }
+                        old_edge_weight_map_for_children[sql->getColumn(0).getUInt64()] = sql->getColumn(1).getDouble();
+                        edge_weight_update_map_for_children[sql->getColumn(0).getUInt64()] = 0;
+                    }
+
+                    //JobQueue->post(pt_children_query).wait();
+                    
                 }
                 uint64_t child = (*edge_it)->lti_edge_id;
                 double touches = (*edge_it)->num_touches;
@@ -645,13 +668,18 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             std::map<uint64_t,double>::iterator updates_begin = old_edge_weight_map_for_children.begin();
             std::map<uint64_t,double>::iterator updates_it;
             double update_sum = 0;
-            soar_module::sqlite_statement* update_edge = SQL->web_update_child_edge;
+            //soar_module::sqlite_statement* update_edge = SQL->web_update_child_edge;
             for (updates_it = updates_begin; updates_it != old_edge_weight_map_for_children.end(); ++updates_it)
             {// args are edge weight, parent lti it, child lti id.
-                update_edge->bind_double(1, updates_it->second);
-                update_edge->bind_int(2, lti_id);
-                update_edge->bind_int(3, updates_it->first);
-                update_edge->execute(soar_module::op_reinit);
+                std::packaged_task<void()> pt_update_edge([this, lti_id, updates_it] {
+                    auto sql = sqlite_thread_guard(SQL->web_update_child_edge);
+
+                    sql->bind(1, updates_it->second);
+                    sql->bind(2, lti_id);
+                    sql->bind(3, updates_it->first);
+                    sql->exec();
+                });
+                JobQueue->post(pt_update_edge).wait();
             }
             for (edge_it = edge_begin_it; edge_it != edge_updates->end(); ++edge_it)
             {
@@ -659,7 +687,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             }
             smem_edges_to_update->erase(lti_id);
         }
-        children_q->bind_int(1, lti_id);
+        /*children_q->bind_int(1, lti_id);
         children_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<std::pair<uint64_t, double>>;
         while (children_q->execute() == soar_module::row)
@@ -671,7 +699,26 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             (lti_trajectories[lti_id])->push_back(std::make_pair((uint64_t)(children_q->column_int(0)),children_q->column_double(1)));
             children.push_back(children_q->column_int(0));
         }
-        children_q->reinitialize();
+        children_q->reinitialize();*/
+
+        {
+            auto sql = sqlite_thread_guard(SQL->web_val_child);
+
+            sql->bind(1, lti_id);
+            sql->bind(2, lti_id);
+            while(sql->executeStep())
+            {
+                if (settings->spreading_loop_avoidance->get_value() == on && sql->getColumn(0).getUInt64())
+                {
+                    continue;
+                }
+            }
+            (lti_trajectories[lti_id])->push_back(std::make_pair(sql->getColumn(0).getUInt64(),sql->getColumn(1).getDouble()));
+            children.push_back(sql->getColumn(0).getUInt64());
+        }
+
+        //JobQueue->post(pt_children_query_again).wait();
+
         if (depth > 1)
         {
             for (std::list<uint64_t>::iterator child_iterator = children.begin(); child_iterator != children.end(); ++child_iterator)
@@ -687,8 +734,9 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     //If this isn't the initial formation of the trajectories for this lti, we should get rid of the old trajectory
     if (!initial)
     {
-        SQL->trajectory_remove_lti->bind_int(1,lti_id);
-        SQL->trajectory_remove_lti->execute(soar_module::op_reinit);
+        auto sql = sqlite_thread_guard(SQL->trajectory_remove_lti);
+        sql->bind(1,lti_id);
+        sql->exec();
     }
     //The way the traversal is managed is by keeping track of where the largest amount of leftover spread still is.
     //We prioritize visiting those places first.
@@ -784,16 +832,19 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             new_list_iterator_begin = new_list->begin();
             new_list_iterator_end = new_list->end();
             depth = 0;
-            for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end && depth < (depth_limit + 2); ++new_list_iterator)
             {
-                SQL->trajectory_add->bind_int(++depth, new_list_iterator->first);
-            }//We add the amount of traversal we have.
-            while (depth < 11)
-            {//And we pad unused columns with 0. This helps the indexing ignore these columns later. I could maybe do the same with NULL.
-                //It depends on the specifics of partial indexing in sqlite... Point is - I know this works for that efficiency gain.
-                SQL->trajectory_add->bind_int(++depth, 0);
+                auto sql = sqlite_thread_guard(SQL->trajectory_add);
+                for (new_list_iterator = new_list_iterator_begin; new_list_iterator != new_list_iterator_end && depth < (depth_limit + 2); ++new_list_iterator)
+                {
+                    sql->bind(++depth, new_list_iterator->first);
+                }//We add the amount of traversal we have.
+                while (depth < 11)
+                {//And we pad unused columns with 0. This helps the indexing ignore these columns later. I could maybe do the same with NULL.
+                    //It depends on the specifics of partial indexing in sqlite... Point is - I know this works for that efficiency gain.
+                    sql->bind(++depth, 0);
+                }
+                sql->exec();
             }
-            SQL->trajectory_add->execute(soar_module::op_reinit);
             //For later use, this is bookkeeping:
             ever_added = true;
             ++count;
@@ -813,27 +864,29 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     //Once we've generated the full spread map of accumulated spread for recipients from this source, we record it.
     for (std::map<uint64_t,double>::iterator spread_map_it = spread_map.begin(); spread_map_it != spread_map.end(); ++spread_map_it)
     {
-        SQL->likelihood_cond_count_insert->bind_int(1,lti_id);
-        SQL->likelihood_cond_count_insert->bind_int(2,spread_map_it->first);
-        SQL->likelihood_cond_count_insert->bind_double(3,spread_map_it->second);
-        SQL->likelihood_cond_count_insert->execute(soar_module::op_reinit);
+        auto sql = sqlite_thread_guard(SQL->likelihood_cond_count_insert);
+        sql->bind(1,lti_id);
+        sql->bind(2,spread_map_it->first);
+        sql->bind(3,spread_map_it->second);
+        sql->exec();
     }
     //In the special case where we don't ever add anything, we need to insert all zeros as the traversal.
     if (!ever_added)
     {
-        SQL->trajectory_add->bind_int(1,lti_id);
-        SQL->trajectory_add->bind_int(2,0);
-        SQL->trajectory_add->bind_int(3,0);
-        SQL->trajectory_add->bind_int(4,0);
-        SQL->trajectory_add->bind_int(5,0);
-        SQL->trajectory_add->bind_int(6,0);
-        SQL->trajectory_add->bind_int(7,0);
-        SQL->trajectory_add->bind_int(8,0);
-        SQL->trajectory_add->bind_int(9,0);
-        SQL->trajectory_add->bind_int(10,0);
-        SQL->trajectory_add->bind_int(11,0);
-        SQL->trajectory_add->bind_int(12,1);
-        SQL->trajectory_add->execute(soar_module::op_reinit);
+        auto sql = sqlite_thread_guard(SQL->trajectory_add);
+        sql->bind(1,lti_id);
+        sql->bind(2,0);
+        sql->bind(3,0);
+        sql->bind(4,0);
+        sql->bind(5,0);
+        sql->bind(6,0);
+        sql->bind(7,0);
+        sql->bind(8,0);
+        sql->bind(9,0);
+        sql->bind(10,0);
+        sql->bind(11,0);
+        sql->bind(12,1);
+        sql->exec();
     }
     //cleaning up
     while (!lti_traversal_queue.empty())
@@ -843,7 +896,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     }
 }
 
-void SMem_Manager::calc_spread_trajectories()
+/*void SMem_Manager::calc_spread_trajectories()
 {
     attach();
     soar_module::sqlite_statement* lti_all = SQL->lti_all;
@@ -872,9 +925,9 @@ void SMem_Manager::calc_spread_trajectories()
     lti_count_num_appearances->prepare();
     lti_count_num_appearances->execute(soar_module::op_reinit);
     delete lti_count_num_appearances;
-}
+}*/
 
-inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id)
+/*inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id)
 {
     soar_module::sqlite_statement* q = NULL;
     if (el->element_type == attr_t)
@@ -895,6 +948,35 @@ inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_
     q->bind_int(1, el->attr_hash);
 
     return q;
+}*/
+
+std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id)
+{
+    // first, point to correct query and setup
+    // query-specific parameters
+    std::shared_ptr<sqlite_thread_guard> sql;
+
+    if (el->element_type == attr_t)
+    {
+        // attribute_s_id=?
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_manual);
+    }
+    else if (el->element_type == value_const_t)
+    {
+        // attribute_s_id=? AND value_constant_s_id=?
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_const_all_manual);
+        (*sql)->bind(3, el->value_hash);
+    }
+    else if (el->element_type == value_lti_t)
+    {
+        // attribute_s_id=? AND value_lti_id=?
+        sql = std::make_shared<sqlite_thread_guard>(SQL->web_lti_all_manual);
+        (*sql)->bind(3, el->value_lti);
+    }
+    (*sql)->bind(2, lti_id);
+    (*sql)->bind(1, el->attr_hash);
+
+    return sql;
 }
 
 void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_manual_crawl, smem_weighted_cue_list::iterator* cand_set)
@@ -937,30 +1019,58 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         ////////////////////////////////////////////////////////////////////////////
         for(std::set<uint64_t>::iterator it = smem_context_additions->begin(); it != smem_context_additions->end(); ++it)
         {//We keep track of old walks. If we haven't changed smem, no need to recalculate.
-            SQL->trajectory_check_invalid->bind_int(1,*it);
+            /*SQL->trajectory_check_invalid->bind_int(1,*it);
             SQL->trajectory_get->bind_int(1,*it);
             bool was_invalid = (SQL->trajectory_check_invalid->execute() == soar_module::row);
             //If the previous trajectory is no longer valid because of a change to memory or we don't have a trajectory, we might need to remove
             //the old one.
             bool no_trajectory = SQL->trajectory_get->execute() != soar_module::row;
-            SQL->trajectory_check_invalid->reinitialize();
-            SQL->trajectory_get->reinitialize();
+            SQL->trajectory_check_invalid->reinitialize();*/
+
+            std::packaged_task<bool()> pt_trajectoryCheck([this, it] {
+                auto sql = sqlite_thread_guard(SQL->trajectory_check_invalid);
+
+                sql->bind(1,*it);
+
+                return sql->executeStep();
+            });
+
+            std::packaged_task<bool()> pt_trajectoryGet([this, it] {
+                auto sql = sqlite_thread_guard(SQL->trajectory_get);
+
+                sql->bind(1,*it);
+
+                return sql->executeStep();
+            });
+
+            bool no_trajectory = JobQueue->post(pt_trajectoryGet).get();
+            bool was_invalid = JobQueue->post(pt_trajectoryCheck).get();
+
+            //SQL->trajectory_get->reinitialize();
             if (was_invalid || no_trajectory)
             {
                 //We also need to make a new one.
                 if (was_invalid)
                 {
-                    SQL->likelihood_cond_count_remove->bind_int(1,(*it));
-                    SQL->likelihood_cond_count_remove->execute(soar_module::op_reinit);
-                    SQL->lti_count_num_appearances_remove->bind_int(1,(*it));
-                    SQL->lti_count_num_appearances_remove->execute(soar_module::op_reinit);
+                    {
+                        auto sql = sqlite_thread_guard(SQL->likelihood_cond_count_remove);
+                        sql->bind(1,(*it));
+                        sql->exec();
+                    }
+                    {
+                        auto sql = sqlite_thread_guard(SQL->lti_count_num_appearances_remove);
+                        sql->bind(1,(*it));
+                        sql->exec();
+                    }
                 }
                 trajectory_construction(*it,lti_trajectories);
                 //statistics->expansions->set_value(statistics->expansions->get_value() + 1);
                 //smem_calc_likelihoods_for_det_trajectories(thisAgent, (*it));
-
-                SQL->lti_count_num_appearances_insert->bind_int(1,(*it));
-                SQL->lti_count_num_appearances_insert->execute(soar_module::op_reinit);
+                {
+                    auto sql = sqlite_thread_guard(SQL->lti_count_num_appearances_insert);
+                    sql->bind(1,(*it));
+                    sql->exec();
+                }
             }
         }
         ////////////////////////////////////////////////////////////////////////////
@@ -1010,13 +1120,65 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_3->start();
     ////////////////////////////////////////////////////////////////////////////
-    soar_module::sqlite_statement* add_fingerprint = SQL->add_fingerprint;
-    soar_module::sqlite_statement* select_fingerprint = SQL->select_fingerprint;
-    soar_module::sqlite_statement* add_uncommitted_fingerprint = SQL->add_uncommitted_fingerprint;
-    soar_module::sqlite_statement* remove_fingerprint_reversal = SQL->remove_fingerprint_reversal;
+    //soar_module::sqlite_statement* add_fingerprint = SQL->add_fingerprint;
+    //soar_module::sqlite_statement* select_fingerprint = SQL->select_fingerprint;
+    //soar_module::sqlite_statement* add_uncommitted_fingerprint = SQL->add_uncommitted_fingerprint;
+    //soar_module::sqlite_statement* remove_fingerprint_reversal = SQL->remove_fingerprint_reversal;
     for (std::set<uint64_t>::iterator it = smem_context_additions->begin(); it != smem_context_additions->end(); ++it)
     {//Now we add the walks/traversals we've done. //can imagine doing this as a batch process through a join on a list of the additions if need be.
-        select_fingerprint->bind_int(1,(*it));
+
+        //std::packaged_task<void()> pt_addSelectedFingerprints([this,it]{
+        {
+            auto select = sqlite_thread_guard(SQL->select_fingerprint);
+            select->bind(1, (*it));
+            while (select->executeStep())
+            {//lti_id,num_appearances_i_j,num_appearances,sign,lti_source
+                uint64_t lti_recipient = select->getColumn(0).getUInt64();
+                double num_app_i_j = select->getColumn(1).getDouble();
+                double num_app = select->getColumn(2).getDouble();
+                uint64_t sign = select->getColumn(3).getUInt64();
+                uint64_t lti_source = select->getColumn(4).getUInt64();
+                //std::packaged_task<void()> pt_addFingerprint([this,lti_recipient, num_app_i_j, num_app, sign, lti_source]{
+                {
+                    auto sql = sqlite_thread_guard(SQL->add_fingerprint);
+                    sql->bind(1,lti_recipient);
+                    sql->bind(2,num_app_i_j);
+                    sql->bind(3,num_app);
+                    sql->bind(4,sign);
+                    sql->bind(5,lti_source);
+                    sql->exec();
+                }
+                //});
+                //Right here, I have a chance to add to "spreaded_to" because we have a row with a pariticular recipient.
+                //When this fingerprint goes away, we can remove the recipient if this is the only fingerprint contributing to that recipient.
+                //This is done by reference counting by fingerprint.
+                if (smem_recipients_of_source->find(lti_source) == smem_recipients_of_source->end())
+                {//This source has no recipients yet. we need to add this element to the map. This means making a new set.
+                    (*(smem_recipients_of_source))[lti_source] = new std::set<uint64_t>;
+                    (*(smem_recipients_of_source))[lti_source]->insert(lti_recipient);
+                }
+                else
+                {//This source already has recipients. We just need to add to the set.
+                    (*(smem_recipients_of_source))[lti_source]->insert(lti_recipient);
+                }
+                if (smem_recipient->find(lti_recipient) == smem_recipient->end())
+                {
+                    (*(smem_recipient))[lti_recipient] = 1;
+                }
+                else
+                {//I need a second one of these that keeps track of those that actually received spread. OR - more clever:
+                    //I just make the value of this a set of sources and when that set exists = potential spread.
+                    //when it is populated with elements = those are the ones actually contributing spread.
+                    (*(smem_recipient))[lti_recipient] = (*(smem_recipient))[lti_recipient] + 1;
+                }
+                //JobQueue->post(pt_addFingerprint).wait();
+            }
+        }
+        //});
+
+        //JobQueue->post(pt_addSelectedFingerprints).wait();
+
+        /*select_fingerprint->bind_int(1,(*it));
         while (select_fingerprint->execute() == soar_module::row)
         {
             add_fingerprint->bind_int(1,select_fingerprint->column_int(0));
@@ -1048,7 +1210,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 (*(smem_recipient))[select_fingerprint->column_int(0)] = (*(smem_recipient))[select_fingerprint->column_int(0)] + 1;
             }
         }
-        select_fingerprint->reinitialize();
+        select_fingerprint->reinitialize();*/
         //I need to split this into separate select and insert batches. The select will allow me to keep an in-memory record of
         //potential spread recipients. The insert is then the normal insert. A select/insert combo would be nice, but that doesn't
         //make sense with the sqlite api.
@@ -1069,16 +1231,23 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     timers->spreading_4->start();
     ////////////////////////////////////////////////////////////////////////////
     smem_context_additions->clear();
-    soar_module::sqlite_statement* delete_old_spread = SQL->delete_old_spread;
-    soar_module::sqlite_statement* delete_old_uncommitted_spread = SQL->delete_old_uncommitted_spread;
-    soar_module::sqlite_statement* reverse_old_committed_spread = SQL->reverse_old_committed_spread;
+    //soar_module::sqlite_statement* delete_old_spread = SQL->delete_old_spread;
+    //soar_module::sqlite_statement* delete_old_uncommitted_spread = SQL->delete_old_uncommitted_spread;
+    //soar_module::sqlite_statement* reverse_old_committed_spread = SQL->reverse_old_committed_spread;
     //delete_old_spread->prepare();
-    std::unordered_map<uint64_t,int64_t>* spreaded_to = smem_spreaded_to;
+    std::unordered_map<uint64_t,uint64_t>* spreaded_to = smem_spreaded_to;
     std::set<uint64_t>::iterator recipient_it;
     std::set<uint64_t>::iterator recipient_begin;
     std::set<uint64_t>::iterator recipient_end;
     for (std::set<uint64_t>::iterator source_it = smem_context_removals->begin(); source_it != smem_context_removals->end(); ++source_it)
     {
+        std::packaged_task<void()> pt_deleteOldSpread([this,source_it]{
+            auto sql = sqlite_thread_guard(SQL->delete_old_spread);
+            sql->bind(1, *source_it);
+            sql->exec();
+        });
+        auto j = JobQueue->post(pt_deleteOldSpread);
+
         if (smem_recipients_of_source->find((*source_it)) != smem_recipients_of_source->end())
         {//This very well should be the case in fact... changed to an assert instead of if
             //Scratch that. The lti could have no real fingerprint, meaning that it doesn't have recipients.
@@ -1096,18 +1265,45 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                     //this allows us to detect that we can migrate the activation from the spread table to the base-level table.
                     if (spreaded_to->find(*recipient_it) != spreaded_to->end())
                     {
-                        SQL->act_lti_fake_get->bind_int(1,*recipient_it);
+                        std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,recipient_it]{
+                            auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
+                            sql->bind(1, *recipient_it);
+                            sql->exec();
+                            return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
+                        });
+                        auto result_t = JobQueue->post(pt_fakeGet).get();
+                        double prev_base = std::get<0>(result_t);
+                        double spread = std::get<1>(result_t);
+                        /*SQL->act_lti_fake_get->bind_int(1,*recipient_it);
                         SQL->act_lti_fake_get->execute();
-                        double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
+                        //double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
                         double prev_base = SQL->act_lti_fake_get->column_double(0);
-                        SQL->act_lti_fake_get->reinitialize();
-                        SQL->act_lti_fake_delete->bind_int(1, *recipient_it);
-                        SQL->act_lti_fake_delete->execute(soar_module::op_reinit);
-                        SQL->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                        SQL->act_lti_fake_get->reinitialize();*/
+
+                        std::packaged_task<void()> pt_fakeDelete([this, recipient_it]{
+                            auto sql = sqlite_thread_guard(SQL->act_lti_fake_delete);
+                            sql->bind(1, *recipient_it);
+                            sql->exec();
+                        });
+                        JobQueue->post(pt_fakeDelete).wait();
+                        /*SQL->act_lti_fake_delete->bind_int(1, *recipient_it);
+                        SQL->act_lti_fake_delete->execute(soar_module::op_reinit);*/
+
+                        std::packaged_task<void()> pt_lti_set([this, prev_base, recipient_it]{
+                            auto sql = sqlite_thread_guard(SQL->act_lti_set);
+                            sql->bind(1, prev_base == 0 ? SMEM_ACT_LOW:prev_base);
+                            sql->bind(2,0.0);
+                            sql->bind(3,prev_base);
+                            sql->bind(4, *recipient_it);
+                            sql->exec();
+                        });
+                        JobQueue->post(pt_fakeDelete).wait();
+                        /*SQL->act_lti_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                         SQL->act_lti_set->bind_double(2, 0);
                         SQL->act_lti_set->bind_double(3, prev_base);
                         SQL->act_lti_set->bind_int(4, *recipient_it);
-                        SQL->act_lti_set->execute(soar_module::op_reinit);
+                        SQL->act_lti_set->execute(soar_module::op_reinit);*/
+
                         spreaded_to->erase(*recipient_it);
                         //SQL->act_lti_fake_get->reinitialize();
                     }
@@ -1125,8 +1321,9 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         //delete_old_uncommitted_spread->execute(soar_module::op_reinit);
         //reverse_old_committed_spread->bind_int(1,(*it));
         //reverse_old_committed_spread->execute(soar_module::op_reinit);
-        delete_old_spread->bind_int(1,(*source_it));
-        delete_old_spread->execute(soar_module::op_reinit);
+        j.wait();
+        /*delete_old_spread->bind_int(1,(*source_it));
+        delete_old_spread->execute(soar_module::op_reinit);*/
     }
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_4->stop();
@@ -1144,22 +1341,23 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
     double modified_spread = 0;
     std::set<uint64_t> pruned_candidates;
     //soar_module::sqlite_statement* list_uncommitted_spread = SQL->list_uncommitted_spread;
-    soar_module::sqlite_statement* list_current_spread = SQL->list_current_spread;
-   //do_manual_crawl = true;
+    //soar_module::sqlite_statement* list_current_spread = SQL->list_current_spread;
+    //do_manual_crawl = true;
     if (do_manual_crawl)
     {//This means that the candidate set was quite large, so we instead manually check the sql store for candidacy.
-        soar_module::sqlite_statement* q_manual;
-        while (list_current_spread->execute() == soar_module::row)
+        //soar_module::sqlite_statement* q_manual;
+        auto list_current_spread = sqlite_thread_guard(SQL->list_current_spread);
+        while (list_current_spread->executeStep())
         {//we loop over all spread sinks
-            q_manual = setup_manual_web_crawl(**cand_set, list_current_spread->column_int(0));
-            if (q_manual->execute() == soar_module::row)//and if the sink is a candidate, we will actually calculate on it later.
+            auto q_manual = setup_manual_web_crawl(**cand_set, list_current_spread->getColumn(0).getUInt64());
+            if ((*q_manual)->executeStep())//and if the sink is a candidate, we will actually calculate on it later.
             {
-                pruned_candidates.insert(list_current_spread->column_int(0));
+                pruned_candidates.insert(list_current_spread->getColumn(0).getUInt64());
             }
-            q_manual->reinitialize();
+            //q_manual->reinitialize();
         }
     }
-    list_current_spread->reinitialize();
+    //list_current_spread->reinitialize();
     ////////////////////////////////////////////////////////////////////////////
     timers->spreading_5->stop();
     ////////////////////////////////////////////////////////////////////////////
@@ -1175,7 +1373,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         baseline_denom = baseline_denom + baseline_denom*decay_const;
     }
 
-    soar_module::sqlite_statement* calc_current_spread = SQL->calc_current_spread;
+    //soar_module::sqlite_statement* calc_current_spread = SQL->calc_current_spread;
     std::set<uint64_t>* actual_candidates = ( do_manual_crawl ? &pruned_candidates : current_candidates);
     std::unordered_set<uint64_t> updated_candidates;
     //spreaded_to->clear();
@@ -1192,9 +1390,43 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         ////////////////////////////////////////////////////////////////////////////
         if (spreaded_to->find(*candidate) != spreaded_to->end())
         {
-            SQL->act_lti_fake_get->bind_int(1,*candidate);
+            std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,candidate]{
+                auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
+                sql->bind(1, *candidate);
+                sql->exec();
+                return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
+            });
+            auto result_t = JobQueue->post(pt_fakeGet).get();
+            prev_base = std::get<0>(result_t);
+            spread = std::get<1>(result_t);
+            /*SQL->act_lti_fake_get->bind_int(1,*recipient_it);
             SQL->act_lti_fake_get->execute();
-            double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
+            //double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
+            double prev_base = SQL->act_lti_fake_get->column_double(0);
+            SQL->act_lti_fake_get->reinitialize();*/
+
+            std::packaged_task<void()> pt_fakeDelete([this, candidate]{
+                auto sql = sqlite_thread_guard(SQL->act_lti_fake_delete);
+                sql->bind(1, *candidate);
+                sql->exec();
+            });
+            JobQueue->post(pt_fakeDelete).wait();
+            /*SQL->act_lti_fake_delete->bind_int(1, *recipient_it);
+            SQL->act_lti_fake_delete->execute(soar_module::op_reinit);*/
+
+            std::packaged_task<void()> pt_lti_set([this, prev_base, candidate]{
+                auto sql = sqlite_thread_guard(SQL->act_lti_set);
+                sql->bind(1, prev_base == 0 ? SMEM_ACT_LOW:prev_base);
+                sql->bind(2,0.0);
+                sql->bind(3,prev_base);
+                sql->bind(4, *candidate);
+                sql->exec();
+            });
+            JobQueue->post(pt_fakeDelete).wait();
+
+            /*SQL->act_lti_fake_get->bind_int(1,*candidate);
+            SQL->act_lti_fake_get->execute();
+            //double spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
             double prev_base = SQL->act_lti_fake_get->column_double(0);
             SQL->act_lti_fake_get->reinitialize();
             SQL->act_lti_fake_delete->bind_int(1, *candidate);
@@ -1203,7 +1435,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
             SQL->act_lti_set->bind_double(2, 0);
             SQL->act_lti_set->bind_double(3, prev_base);
             SQL->act_lti_set->bind_int(4, *candidate);
-            SQL->act_lti_set->execute(soar_module::op_reinit);
+            SQL->act_lti_set->execute(soar_module::op_reinit);*/
             //SQL->act_lti_fake_get->reinitialize();
             spreaded_to->erase(*candidate);
         }
@@ -1213,13 +1445,15 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         ////////////////////////////////////////////////////////////////////////////
         timers->spreading_7_2->start();
         ////////////////////////////////////////////////////////////////////////////
-        calc_current_spread->bind_int(1,(*candidate));
-        while (calc_current_spread->execute() == soar_module::row && calc_current_spread->column_double(2))
+        //calc_current_spread->bind_int(1,(*candidate));
+        auto calc_current_spread = sqlite_thread_guard(SQL->calc_current_spread);
+        calc_current_spread->bind(1, (*candidate));
+        while (calc_current_spread->executeStep() && calc_current_spread->getColumn(2).getDouble())
         {
             //First, I need to get the existing info for this lti_id.
             bool already_in_spread_table = false;
 statistics->stores->set_value(statistics->stores->get_value() + 1);
-            bool addition = (((int)(calc_current_spread->column_int(3))) == 1);
+            bool addition = ((calc_current_spread->getColumn(3).getUInt64()) == 1);
             if (addition)
             {
 
@@ -1228,12 +1462,21 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_1->start();
                     ////////////////////////////////////////////////////////////////////////////
+                    std::packaged_task<std::tuple<double,double>()> pt_ltiGet([this,candidate]{
+                        auto sql = sqlite_thread_guard(SQL->act_lti_get);
+                        sql->bind(1, *candidate);
+                        sql->exec();
+                        return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
+                    });
+                    auto result_t = JobQueue->post(pt_ltiGet).get();
+                    prev_base = std::get<0>(result_t);
+                    spread = std::get<1>(result_t);
                     (*spreaded_to)[*candidate] = 1;
-                    SQL->act_lti_get->bind_int(1,*candidate);
+                    /*SQL->act_lti_get->bind_int(1,*candidate);
                     SQL->act_lti_get->execute();
                     spread = SQL->act_lti_get->column_double(1);//This is the spread before changes.
                     prev_base = SQL->act_lti_get->column_double(0);
-                    SQL->act_lti_get->reinitialize();
+                    SQL->act_lti_get->reinitialize();*/
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_1->stop();
                     ////////////////////////////////////////////////////////////////////////////
@@ -1248,11 +1491,21 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                     {
                         (*spreaded_to)[*candidate] = (*spreaded_to)[*candidate] + 1;
                     }
-                    SQL->act_lti_fake_get->bind_int(1,*candidate);
+                    std::packaged_task<std::tuple<double,double>()> pt_fakeGet([this,candidate]{
+                        auto sql = sqlite_thread_guard(SQL->act_lti_fake_get);
+                        sql->bind(1, *candidate);
+                        sql->exec();
+                        return std::make_tuple(sql->getColumn(0).getDouble(),sql->getColumn(1).getDouble());
+                    });
+                    auto result_t = JobQueue->post(pt_fakeGet).get();
+                    prev_base = std::get<0>(result_t);
+                    spread = std::get<1>(result_t);
+
+                    /*SQL->act_lti_fake_get->bind_int(1,*candidate);
                     SQL->act_lti_fake_get->execute();
                     spread = SQL->act_lti_fake_get->column_double(1);//This is the spread before changes.
                     prev_base = SQL->act_lti_fake_get->column_double(0);
-                    SQL->act_lti_fake_get->reinitialize();
+                    SQL->act_lti_fake_get->reinitialize();*/
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_2->stop();
                     ////////////////////////////////////////////////////////////////////////////
@@ -1293,7 +1546,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 //std::list<wma_reference> touches;
                 std::list<wma_cycle_reference> cycles;
                 unsigned int counter;
-                auto wmas = smem_wmas->equal_range(calc_current_spread->column_int(4));
+                auto wmas = smem_wmas->equal_range(calc_current_spread->getColumn(4).getUInt64());//column_int(4));
                 double pre_logd_wma = 0;
                 for (auto wma = wmas.first; wma != wmas.second; ++wma)
                 {
@@ -1327,7 +1580,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 ////////////////////////////////////////////////////////////////////////////
                 double wma_multiplicative_factor = pre_logd_wma/(1.0+pre_logd_wma);//1;//pre_logd_wma/(1.0+pre_logd_wma);
                 {
-                    raw_prob = wma_multiplicative_factor*(((double)(calc_current_spread->column_double(2)))/(calc_current_spread->column_double(1)));
+                    raw_prob = wma_multiplicative_factor*((calc_current_spread->getColumn(2).getDouble())/(calc_current_spread->getColumn(1).getDouble()));
                 }
                 //offset = (settings->spreading_baseline->get_value())/(calc_spread->column_double(1));
                 offset = (settings->spreading_baseline->get_value())/baseline_denom;//(settings->spreading_limit->get_value());
@@ -1339,11 +1592,20 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_6->start();
                 ////////////////////////////////////////////////////////////////////////////
-                SQL->act_lti_child_ct_get->bind_int(1, *candidate);
+                /*SQL->act_lti_child_ct_get->bind_int(1, *candidate);
                 SQL->act_lti_child_ct_get->execute();
                 uint64_t num_edges = SQL->act_lti_child_ct_get->column_int(0);
+                SQL->act_lti_child_ct_get->reinitialize();*/
 
-                SQL->act_lti_child_ct_get->reinitialize();
+                std::packaged_task<uint64_t()> pt_childCtGet([this, candidate]{
+                    auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_get);
+                    sql->bind(1, *candidate);
+                    sql->exec();
+                    return sql->getColumn(0).getUInt64();
+                });
+
+                uint64_t num_edegs = JobQueue->post(pt_childCtGet).get();
+
                 double modified_spread = (log(spread)-log(offset));
                 double new_base;
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
@@ -1369,11 +1631,20 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_7->start();
                     ////////////////////////////////////////////////////////////////////////////
-                    SQL->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
+                    std::packaged_task<void()> pt_fakeSet([this, prev_base, spread, modified_spread, new_base, candidate]{
+                        auto sql = sqlite_thread_guard(SQL->act_lti_fake_set);
+                        sql->bind(1, prev_base == 0 ? SMEM_ACT_LOW : prev_base);
+                        sql->bind(2, spread);
+                        sql->bind(3, modified_spread + new_base);
+                        sql->bind(4, *candidate);
+                        sql->exec();
+                    });
+                    JobQueue->post(pt_fakeSet).wait();
+                    /*SQL->act_lti_fake_set->bind_double(1, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_set->bind_double(2, spread);
                     SQL->act_lti_fake_set->bind_double(3, modified_spread+ new_base);
                     SQL->act_lti_fake_set->bind_int(4, *candidate);
-                    SQL->act_lti_fake_set->execute(soar_module::op_reinit);
+                    SQL->act_lti_fake_set->execute(soar_module::op_reinit);*/
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_7->stop();
                     ////////////////////////////////////////////////////////////////////////////
@@ -1383,11 +1654,21 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_8->start();
                     ////////////////////////////////////////////////////////////////////////////
-                    SQL->act_lti_fake_insert->bind_int(1, *candidate);
+                    std::packaged_task<void()> pt_fakeInsert([this, candidate, prev_base, spread, modified_spread, new_base]{
+                        auto sql = sqlite_thread_guard(SQL->act_lti_fake_insert);
+                        sql->bind(1, *candidate);
+                        sql->bind(2, prev_base == 0 ? SMEM_ACT_LOW : prev_base);
+                        sql->bind(3, spread);
+                        sql->bind(4, modified_spread + new_base);
+                        sql->exec();
+                    });
+                    JobQueue->post(pt_fakeInsert).wait();
+
+                    /*SQL->act_lti_fake_insert->bind_int(1, *candidate);
                     SQL->act_lti_fake_insert->bind_double(2, ((static_cast<double>(prev_base)==0) ? (SMEM_ACT_LOW):(prev_base)));
                     SQL->act_lti_fake_insert->bind_double(3, spread);
                     SQL->act_lti_fake_insert->bind_double(4, modified_spread+ new_base);
-                    SQL->act_lti_fake_insert->execute(soar_module::op_reinit);
+                    SQL->act_lti_fake_insert->execute(soar_module::op_reinit);*/
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_8->stop();
                     ////////////////////////////////////////////////////////////////////////////
@@ -1479,7 +1760,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 ////////////////////////////////////////////////////////////////////////////
             }*/
         }
-        calc_current_spread->reinitialize();
+        //calc_current_spread->reinitialize();
         ////////////////////////////////////////////////////////////////////////////
         timers->spreading_7_2->stop();
         ////////////////////////////////////////////////////////////////////////////
@@ -1506,12 +1787,22 @@ void SMem_Manager::invalidate_trajectories(uint64_t lti_parent_id, std::map<uint
     {//for every edge change in smem, we need to properly invalidate trajectories used in spreading.
         if (delta_child->second > 0)
         {
-            for (int i = 1; i < 11; i++)
+            std::packaged_task<void()> pt_invalidateFromLTI([this, lti_parent_id]{
+                auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti);
+                for (int i = 1; i < 11; i++)
+                {
+                    sql->bind(i, lti_parent_id);
+                    //As it turns out, sqlite is smart about unioning ors that all have a single index.
+                }
+                sql->exec();
+            });
+            JobQueue->post(pt_invalidateFromLTI).wait();
+            /*for (int i = 1; i < 11; i++)
             {
                 SQL->trajectory_invalidate_from_lti->bind_int(i, lti_parent_id);
                 //As it turns out, sqlite is smart about unioning ors that all have a single index.
             }
-            SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+            SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);*/
         }
         else if (delta_child->second < 0)
         {
@@ -1523,34 +1814,73 @@ void SMem_Manager::invalidate_trajectories(uint64_t lti_parent_id, std::map<uint
     while (!negative_children->empty())
     {//For negative edge changes, only trajectories that used that edge need to be removed.
         //sqlite command to delete trajectories involving parent to delta_children->front();
-        for (int i = 1; i < 11; i++)
+        uint64_t front = negative_children->front();
+        std::packaged_task<void()> pt_invalidateEdge([this, lti_parent_id, front]{
+            auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_edge);
+            for (int i = 1; i < 11; i++)
+            {
+                sql->bind(2*i-1, lti_parent_id);
+                sql->bind(1*i, front);
+            }
+            sql->exec();
+        });
+        JobQueue->post(pt_invalidateEdge).wait();
+        /*for (int i = 1; i < 11; i++)
         {
             SQL->trajectory_invalidate_edge->bind_int(2*i-1, lti_parent_id);
             SQL->trajectory_invalidate_edge->bind_int(1*i, negative_children->front());
-        }
-        SQL->trajectory_invalidate_edge->execute(soar_module::op_reinit);
+        }*/
+        //SQL->trajectory_invalidate_edge->execute(soar_module::op_reinit);
         negative_children->pop_front();
     }
     delete negative_children;
 }
 
+//I could later change the below helper functions to merely post the job and return the posted job so that it could later be waited on.
+
 void SMem_Manager::invalidate_from_lti(uint64_t invalid_parent)
 {
-    for (int i = 1; i < 11; i++)
+    std::packaged_task<void()> pt_invalidFromLTI([this, invalid_parent]{
+        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti);
+        for (int i = 1; i < 11; i++)
+        {//A changing edge weight is treated as an invalidation of cases that could have used that edge.
+            sql->bind(i,invalid_parent);
+        }
+        sql->exec();
+    });
+    JobQueue->post(pt_invalidFromLTI).wait();
+    /*for (int i = 1; i < 11; i++)
     {//A changing edge weight is treated as an invalidation of cases that could have used that edge.
         SQL->trajectory_invalidate_from_lti->bind_int(i,invalid_parent);
     }
-    SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);
+    SQL->trajectory_invalidate_from_lti->execute(soar_module::op_reinit);*/
 }
 
 void SMem_Manager::add_to_invalidate_from_lti_table(uint64_t invalid_parent)
 {
-    SQL->trajectory_invalidate_from_lti_add->bind_int(1, invalid_parent);
-    SQL->trajectory_invalidate_from_lti_add->execute(soar_module::op_reinit);
+    std::packaged_task<void()> pt_invalidFromLTIAdd([this, invalid_parent]{
+        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_add);
+        sql->bind(1, invalid_parent);
+        sql->exec();
+    });
+    JobQueue->post(pt_invalidFromLTIAdd).wait();
+    /*SQL->trajectory_invalidate_from_lti_add->bind_int(1, invalid_parent);
+    SQL->trajectory_invalidate_from_lti_add->execute(soar_module::op_reinit);*/
 }
 
 void SMem_Manager::batch_invalidate_from_lti()
 {
-    SQL->trajectory_invalidate_from_lti_table->execute(soar_module::op_reinit);
-    SQL->trajectory_invalidate_from_lti_clear->execute(soar_module::op_reinit);
+    std::packaged_task<void()> pt_invalidFromTable([this]{
+        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_table);
+        sql->exec();
+    });
+    JobQueue->post(pt_invalidFromTable).wait();
+
+    std::packaged_task<void()> pt_invalidClear([this]{
+        auto sql = sqlite_thread_guard(SQL->trajectory_invalidate_from_lti_clear);
+        sql->exec();
+    });
+    JobQueue->post(pt_invalidClear).wait();
+    /*SQL->trajectory_invalidate_from_lti_table->execute(soar_module::op_reinit);
+    SQL->trajectory_invalidate_from_lti_clear->execute(soar_module::op_reinit);*/
 }

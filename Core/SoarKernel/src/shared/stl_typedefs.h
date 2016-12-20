@@ -148,7 +148,7 @@ typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
-
+typedef std::list<ltm_object*>                                  ltm_list;
 typedef std::set<ltm_object*>                                   ltm_set;
 typedef std::list<ltm_value*>                                   ltm_slot;
 typedef std::map<Symbol*, ltm_slot*>                            ltm_slot_map;
