@@ -469,12 +469,12 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                 #endif
                 return true;
             }
-            #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationMemory->increment_stat_could_not_repair();
-            #endif
         }
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_could_not_repair();
+        #endif
         return false;
     }
     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
