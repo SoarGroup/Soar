@@ -597,19 +597,21 @@ void Explanation_Based_Chunker::make_clones_of_results()
         {
             lClonedPref->prev_clone->next_clone = lClonedPref;
         }
-//        {
-//            preference* tempCond = lClonedPref;
-//            while (tempCond->prev_clone) tempCond = tempCond->prev_clone;
-//            dprint(DT_CLONES, "Clone list: \n");
-//            while (tempCond)
-//            {
-//                dprint(DT_CLONES, "%p --> \n", tempCond);
-//                tempCond = tempCond->next_clone;
-//            }
-//
-//        }
-//        assert((!lClonedPref->next_clone || (lClonedPref->inst == lClonedPref->next_clone->inst)) && (!lClonedPref->prev_clone || (lClonedPref->inst == lClonedPref->prev_clone->inst)));
+
     }
+}
+
+void Explanation_Based_Chunker::remove_clones_of_results()
+{
+    preference* lNext, *lResultPref;
+
+    for (lResultPref = m_chunk_inst->preferences_generated; lResultPref != NIL; lResultPref = lNext)
+    {
+        lNext = lResultPref->inst_next;
+//        dprint(DT_DEBUG, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
+        possibly_deallocate_preference_and_clones(thisAgent, lResultPref);
+    }
+    m_chunk_inst->preferences_generated = NIL;
 }
 
 bool Explanation_Based_Chunker::can_learn_from_instantiation()
@@ -699,7 +701,7 @@ void Explanation_Based_Chunker::deallocate_failed_chunk()
     m_rhs = NULL;
 }
 
-void Explanation_Based_Chunker::add_chunk_to_rete()
+bool Explanation_Based_Chunker::add_chunk_to_rete()
 {
     byte rete_addition_result;
     production* duplicate_rule = NULL;
@@ -737,7 +739,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
 
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
-
+        return true;
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
         if (m_inst->prod)
         {
@@ -751,8 +753,6 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         }
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
-        excise_production(thisAgent, m_prod, false, false);
-        m_chunk_inst->in_ms = false;
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
@@ -766,11 +766,7 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
                 thisAgent->reason_for_stopping = "Warning:  Justification did not match working memory.  Potential issue.";
                 print_current_built_rule("Justification that did not match WM: ");
             }
-            excise_production(thisAgent, m_prod, false);
-            m_chunk_inst->in_ms = false;
         } else {
-            /* The one place I've seen this occur is when an smem retrieval that came out of the rule firing creates wme's that violate the chunk.
-             * Another possible cause is a variablization issue */
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
             assert(m_prod);
             thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
@@ -784,9 +780,11 @@ void Explanation_Based_Chunker::add_chunk_to_rete()
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
-        /* Don't think this can happen either */
+        /* Don't think this can happen */
         assert(false);
     }
+    m_chunk_inst->in_ms = false;
+    return false;
 }
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
@@ -1060,26 +1058,37 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
-    add_chunk_to_rete();
+    bool lAddedSuccessfully = add_chunk_to_rete();
 
     /* --- deallocate chunks conds and variablized conditions --- */
     deallocate_condition_list(thisAgent, m_vrblz_top);
     m_vrblz_top = NULL;
 
-    /* --- assert the preferences --- */
-    m_chunk_inst->next = (*custom_inst_list);
-    (*custom_inst_list) = m_chunk_inst;
-
-    /* So that we don't deallocate the chunk instantiation we're chunking on next */
-    m_chunk_inst = NULL;
-    clean_up();
-
-    if (!max_chunks_reached)
+    if (lAddedSuccessfully)
     {
-        dprint(DT_MILESTONES, "Calling chunk instantiation for chunk instantiation START\n");
-        set_learning_for_instantiation(*custom_inst_list);
-        build_chunk_or_justification(*custom_inst_list, custom_inst_list);
-        dprint(DT_MILESTONES, "Chunk instantiation bottom-up call DONE.\n");
+        /* --- assert the preferences --- */
+        m_chunk_inst->next = (*custom_inst_list);
+        (*custom_inst_list) = m_chunk_inst;
+
+        /* So that we don't deallocate the chunk instantiation we're chunking on next */
+        m_chunk_inst = NULL;
+        clean_up();
+
+        if (!max_chunks_reached)
+        {
+            dprint(DT_MILESTONES, "Calling chunk instantiation for chunk instantiation START\n");
+            set_learning_for_instantiation(*custom_inst_list);
+            build_chunk_or_justification(*custom_inst_list, custom_inst_list);
+            dprint(DT_MILESTONES, "Chunk instantiation bottom-up call DONE.\n");
+        }
+    } else {
+        dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
+        m_chunk_inst->in_newly_created = false;
+        excise_production(thisAgent, m_chunk_inst->prod);
+        m_chunk_inst->prod = NULL;
+        remove_clones_of_results();
+        m_chunk_inst = NULL;
+        clean_up();
     }
 }
 

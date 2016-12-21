@@ -814,42 +814,28 @@ void init_instantiation(agent*          thisAgent,
     preference* p;
     goal_stack_level level;
 
-    production_add_ref(inst->prod);
+    /* We don't add a prod refcount for justifications so that they will be
+     * excised when they no longer match or no longer have preferences asserted */
+    if (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE)
+    {
+        production_add_ref(inst->prod);
+    }
 
     find_match_goal(inst);
-
     level = inst->match_goal_level;
-
-    /* Note: since we'll never backtrace through instantiations at the top
-     level, it might make sense to not increment the reference counts
-     on the wmes and preferences here if the instantiation is at the top
-     level.  As it stands now, we could gradually accumulate garbage at
-     the top level if we have a never-ending sequence of production
-     firings at the top level that chain on each other's results.  (E.g.,
-     incrementing a counter on every decision cycle.)  I'm leaving it this
-     way for now, because if we go to S-Support, we'll (I think) need to
-     save these around (maybe). */
-
-    /* KJC 6/00:  maintaining all the top level ref cts does have a big
-     impact on memory pool usage and also performance (due to malloc).
-     (See tests done by Scott Wallace Fall 99.)  Therefore added
-     preprocessor macro so that by unsetting macro the top level ref cts are not
-     incremented.  It's possible that in some systems, these ref cts may
-     be desireable: they can be added by defining DO_TOP_LEVEL_REF_CTS
-     */
 
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-#ifdef DO_TOP_LEVEL_REF_CTS
-            wme_add_ref(cond->bt.wme_);
-#else
-            if (level > TOP_GOAL_LEVEL)
-            {
+            #ifdef DO_TOP_LEVEL_REF_CTS
                 wme_add_ref(cond->bt.wme_);
-            }
-#endif
+            #else
+                if (level > TOP_GOAL_LEVEL)
+                {
+                    wme_add_ref(cond->bt.wme_);
+                }
+            #endif
             /* --- if trace is for a lower level, find one for this level --- */
             if (cond->bt.trace)
             {
@@ -857,17 +843,17 @@ void init_instantiation(agent*          thisAgent,
                 {
                     cond->bt.trace =  find_clone_for_level(cond->bt.trace, level);
                 }
-#ifdef DO_TOP_LEVEL_REF_CTS
-                if (cond->bt.trace)
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-#else
-                if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
-                {
-                    preference_add_ref(cond->bt.trace);
-                }
-#endif
+                #ifdef DO_TOP_LEVEL_REF_CTS
+                    if (cond->bt.trace)
+                    {
+                        preference_add_ref(cond->bt.trace);
+                    }
+                #else
+                    if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
+                    {
+                        preference_add_ref(cond->bt.trace);
+                    }
+                #endif
             }
         }
         cond->inst = inst;
@@ -877,8 +863,7 @@ void init_instantiation(agent*          thisAgent,
     {
         for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
         {
-            insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p,
-                                  all_of_goal_next, all_of_goal_prev);
+            insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
             p->on_goal_list = true;
         }
     }
@@ -892,9 +877,7 @@ void init_instantiation(agent*          thisAgent,
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
 {
-    return ((inst)->prod
-            && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM
-                                     + (inst)->prod->type] || ((inst)->prod->trace_firings)));
+    return ((inst)->prod && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
 /* -----------------------------------------------------------------------
  Create Instantiation
@@ -1259,8 +1242,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                                 continue;
                             }
                             bool has_active_clones = false;
-                            for (clone = cond->bt.trace->next_clone;
-                                    clone != NIL; clone = clone->next_clone)
+                            for (clone = cond->bt.trace->next_clone; clone != NIL; clone = clone->next_clone)
                             {
                                 if (clone->reference_count)
                                 {
@@ -1271,8 +1253,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             {
                                 continue;
                             }
-                            for (clone = cond->bt.trace->prev_clone;
-                                    clone != NIL; clone = clone->prev_clone)
+                            for (clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone)
                             {
                                 if (clone->reference_count)
                                 {
@@ -1306,8 +1287,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             /* --- remove it from the list of bt.trace's for its match goal --- */
                             if (cond->bt.trace->on_goal_list)
                             {
-                                remove_from_dll(cond->bt.trace->inst->match_goal->id->preferences_from_goal,
-                                                cond->bt.trace, all_of_goal_next, all_of_goal_prev);
+                                remove_from_dll(cond->bt.trace->inst->match_goal->id->preferences_from_goal, cond->bt.trace, all_of_goal_next, all_of_goal_prev);
                             }
 
                             /* --- remove it from the list of bt.trace's from that instantiation --- */
@@ -1458,22 +1438,11 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* --- remove inst from list of instantiations of this production --- */
     remove_from_dll(inst->prod->instantiations, inst, next, prev);
 
-    /* --- if retracting a justification, excise it --- */
-    /*
-     * if the reference_count on the production is 1 (or less) then the
-     * only thing supporting this justification is the instantiation, hence
-     * it has already been excised, and doing it again is wrong.
-     */
     production* prod = inst->prod;
-    if ((prod->type == JUSTIFICATION_PRODUCTION_TYPE) &&
-        (prod->reference_count > 1))
+
+    if (prod->type == CHUNK_PRODUCTION_TYPE)
     {
-        excise_production(thisAgent, prod, false, true);
-    }
-    else if (prod->type == CHUNK_PRODUCTION_TYPE)
-    {
-        rl_param_container::apoptosis_choices apoptosis =
-            thisAgent->RL->rl_params->apoptosis->get_value();
+        rl_param_container::apoptosis_choices apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
 
         // we care about production history of chunks if...
         // - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
@@ -1753,8 +1722,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    insert_at_head_of_dll(goal->id->preferences_from_goal, pref,
-                          all_of_goal_next, all_of_goal_prev);
+    insert_at_head_of_dll(goal->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
     pref->on_goal_list = true;
     preference_add_ref(pref);
 
