@@ -458,7 +458,6 @@ void chunk_record::visualize()
         x1 = i1->get_instantiationID();
         x2 = chunkID;
         x3 = lCond->get_conditionID();
-        dprint(DT_DEBUG, "Connecting %u %u %u.\n", x1, x2, x3);
         visualizer->viz_connect_inst_to_chunk(x1, x2, x3);
 //        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), chunkID, lCond->get_conditionID());
     }

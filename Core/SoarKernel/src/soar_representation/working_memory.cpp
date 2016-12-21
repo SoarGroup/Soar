@@ -148,9 +148,9 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     //    assert(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
     //           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
     //           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL)));
-    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
-           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
-           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
+//    dprint_noprefix(DT_DEBUG, "%s", !(((!w->id->is_sti()) || (w->id->id->level != NO_WME_LEVEL)) &&
+//           ((!w->attr->is_sti()) || (w->attr->id->level != NO_WME_LEVEL)) &&
+//           ((!w->value->is_sti()) || (w->value->id->level != NO_WME_LEVEL))) ? "Missing ID level in WME!\n" : "");
 
 
     dprint(DT_WME_CHANGES, "Adding wme %w to wmes_to_add\n", w);

@@ -672,7 +672,6 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     if (tests_to_restore)
     {
-        dprint_saved_test_list(DT_DEBUG, tests_to_restore);
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
