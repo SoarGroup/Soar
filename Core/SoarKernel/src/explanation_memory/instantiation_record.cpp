@@ -213,9 +213,12 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
             //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", static_cast<int64_t>(match_level), static_cast<int64_t>((*it)->get_level()));
             //            }
             //            path_to_base->pop_back();
+            dprint(DT_EXPLAIN_PATHS, "...creating identity path for i%u (%y) at level %d\n", lParentInst->instantiationID, lParentInst->production_name, static_cast<int64_t>(match_level));
         } else {
-            dprint(DT_EXPLAIN_PATHS, "...not recursing because no parent or parent != match level\n");
-            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), static_cast<int64_t>(match_level));
+            dprint(DT_EXPLAIN_PATHS, "...not recursing because %s: %d%s%d\n", lParentInst ? "parent inst level != match level for " : "no parent instantiation! ", (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), (lParentInst ? " != " : " "), static_cast<int64_t>(match_level));
+            condition_record* lCond = (*it);
+            dprint(DT_EXPLAIN_PATHS, "   pref: %p\n", (*it)->cached_pref);
+            dprint(DT_EXPLAIN_PATHS, "   tests: (%t ^%t %t)\n", lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
         }
     }
 }
