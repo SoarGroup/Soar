@@ -223,6 +223,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                         sql->bind(1, pLTI_ID);
                         sql->exec();
                     }
+
+                    return prevN;
                 });
 
                 prev_access_n -= JobQueue->post(pt_historyRemove).get();
@@ -315,6 +317,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                     sql->bind(1, pLTI_ID);
                     sql->exec();
                 }
+
+                return prevN;
             });
 
             prev_access_n -= JobQueue->post(pt_historyRemove).get();
@@ -454,6 +458,8 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
             {
                 return sql->getColumn(1).getDouble();
             }
+
+            return 0.0;
         });
 
         spread = JobQueue->post(pt_actLTIFake).get();

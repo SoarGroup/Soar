@@ -123,7 +123,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>
 {
     // adjust attr, attr/value counts
     // pairs first, accumulate distinct attributes and pair count
-    std::packaged_task<uint64_t()> count([this,pLTI_ID] {
+    std::packaged_task<uint64_t()> count([this,pLTI_ID,old_children] {
         uint64_t pair_count = 0;
         uint64_t child_attr = 0;
         std::set<uint64_t> distinct_attr;
@@ -151,7 +151,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>
             {
                 if (old_children != NULL)
                 {
-                    count_child_connection(old_children, SQL->web_all->column_int(2));
+                    count_child_connection(old_children, sql->column_int(2));
                 }
                 // adjust in opposite direction ( adjust, attribute, lti )
                 auto wlfu = sqlite_thread_guard(SQL->wmes_lti_frequency_update);
