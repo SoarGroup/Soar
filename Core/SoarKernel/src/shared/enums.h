@@ -87,6 +87,7 @@ enum TraceMode
     DT_RETE_PNODE_ADD           = 51,
     DT_WATERFALL                = 52,
     DT_GDS_HIGH                 = 53,
+    DT_RHS_FUN_VARIABLIZATION   = 54,
     num_trace_modes
 };
 

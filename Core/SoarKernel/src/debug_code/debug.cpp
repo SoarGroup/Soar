@@ -74,6 +74,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
+    mode_info[DT_RHS_FUN_VARIABLIZATION].prefix =       strdup("RHS Func| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
@@ -393,8 +394,8 @@ void debug_test(int type)
             dprint_constraints(DT_DEBUG);
             dprint_merge_map(DT_DEBUG);
             dprint_ovar_to_o_id_map(DT_DEBUG);
-            dprint_o_id_substitution_map(DT_DEBUG);
-            dprint_o_id_to_ovar_debug_map(DT_DEBUG);
+            dprint_unification_map(DT_DEBUG);
+            dprint_identity_debug_map(DT_DEBUG);
             dprint_tables(DT_DEBUG);
             break;
         }

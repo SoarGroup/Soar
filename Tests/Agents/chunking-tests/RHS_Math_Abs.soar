@@ -55,3 +55,9 @@ sp {make-chunk-abs
    (<ss> ^result (abs (+ <n> <n>))
          ^result2 (abs <l>))
    }
+
+sp {done
+    (state <s> ^result ^result2)
+-->
+    (interrupt)
+    }

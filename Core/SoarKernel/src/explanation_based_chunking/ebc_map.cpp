@@ -109,7 +109,7 @@ void Explanation_Based_Chunker::cleanup_after_instantiation_creation(uint64_t pI
 void Explanation_Based_Chunker::cleanup_debug_mappings()
 {
     dprint(DT_EBC_CLEANUP, "Cleaning up debug symbol mappings of size %d.\n", identities_to_clean_up->size());
-    dprint_o_id_to_ovar_debug_map(DT_EBC_CLEANUP);
+    dprint_identity_debug_map(DT_EBC_CLEANUP);
 
     Symbol* lSym;
     uint64_t lID;

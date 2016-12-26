@@ -71,11 +71,13 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value pRhs_val, bo
         cons* fl = rhs_value_to_funcall_list(pRhs_val);
         cons* c;
 
+        dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall %r\n", pRhs_val);
+        dprint_unification_map(DT_RHS_FUN_VARIABLIZATION);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            dprint(DT_RHS_VARIABLIZATION, "Variablizing RHS value %r\n", static_cast<char*>(c->first));
+            dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall argument %r\n", static_cast<char*>(c->first));
             variablize_rhs_symbol(static_cast<char*>(c->first), pShouldCachedMatchValue);
-            dprint(DT_RHS_VARIABLIZATION, "Variablized RHS value is now %r\n", static_cast<char*>(c->first));
+            dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
         /* Overall function does not have an identity */
         return NULL_IDENTITY_SET;
@@ -530,7 +532,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
 
 action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result)
 {
-    dprint_o_id_substitution_map(DT_RHS_VARIABLIZATION);
+    dprint_unification_map(DT_RHS_VARIABLIZATION);
     action* returnAction = variablize_result_into_actions(result);
     return returnAction;
 }
@@ -698,9 +700,9 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
         for (c = fl->rest; c != NULL; c = c->rest)
         {
-            dprint(DT_REINSTANTIATE, "Reversing variablization of funcall RHS value %r\n", static_cast<char*>(c->first));
+            dprint(DT_RHS_FUN_VARIABLIZATION, "Reversing variablization of funcall RHS value %r\n", static_cast<char*>(c->first));
             reinstantiate_rhs_symbol(static_cast<char*>(c->first));
-            dprint(DT_REINSTANTIATE, "... RHS value is now %r\n", static_cast<char*>(c->first));
+            dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS value is now %r\n", static_cast<char*>(c->first));
         }
         return;
     }

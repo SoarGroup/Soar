@@ -192,8 +192,8 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
     }
 
     /* Unify identity in this instantiation with final identity */
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
-    dprint_o_id_substitution_map(DT_ADD_IDENTITY_SET_MAPPING);
+//    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
+//    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
 }
 
 void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
@@ -207,13 +207,15 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
     {
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            dprint(DT_RHS_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
             if (rhs_value_is_funcall(static_cast<char*>(c->first)))
             {
+                dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
                 literalize_RHS_function_args(static_cast<char*>(c->first));
             } else {
+                dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r ", static_cast<char*>(c->first));
                 assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
                 rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+                dprint_noprefix(DT_RHS_FUN_VARIABLIZATION, "[%y %u]\n", rs->referent, rs->o_id);
                 if (rs->o_id && !rs->referent->is_sti())
                 {
                     add_identity_unification(rs->o_id, 0);

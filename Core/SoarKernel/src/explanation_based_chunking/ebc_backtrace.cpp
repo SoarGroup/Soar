@@ -242,7 +242,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_BACKTRACE, " Checking operationality of condition %l\n", c);
+            dprint(DT_BACKTRACE, "Checking operationality of condition of of instantiation %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
@@ -262,7 +262,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
         else
         {
-            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
+            dprint(DT_BACKTRACE, "Adding negated condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -347,7 +347,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         thisAgent->outputManager->set_print_test_format(true, true);
-        dprint(DT_BACKTRACE, "Backtracing through local condition %l...\n", cond);
+        dprint(DT_BACKTRACE, "Backtracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
         thisAgent->outputManager->clear_print_test_format();
         bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 

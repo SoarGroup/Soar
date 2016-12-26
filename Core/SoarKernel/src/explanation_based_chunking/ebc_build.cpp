@@ -703,6 +703,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     trace_locals(grounds_level);
     outputManager->clear_print_test_format();
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
+    dprint_unification_map(DT_BACKTRACE);
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
     dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 

@@ -38,8 +38,8 @@
     #define dprint_constraints(mode) ((void)0)
     #define dprint_merge_map(mode) ((void)0)
     #define dprint_ovar_to_o_id_map(mode) ((void)0)
-    #define dprint_o_id_substitution_map(mode) ((void)0)
-    #define dprint_o_id_to_ovar_debug_map(mode) ((void)0)
+    #define dprint_unification_map(mode) ((void)0)
+    #define dprint_identity_debug_map(mode) ((void)0)
 
 #else
 
@@ -79,8 +79,8 @@
     #define dprint_constraints(mode) thisAgent->explanationBasedChunker->print_constraints (mode)
     #define dprint_merge_map(mode) thisAgent->explanationBasedChunker->print_merge_map (mode)
     #define dprint_ovar_to_o_id_map(mode) thisAgent->explanationBasedChunker->print_instantiation_identities_map (mode)
-    #define dprint_o_id_substitution_map(mode) thisAgent->explanationBasedChunker->print_unification_map (mode)
-    #define dprint_o_id_to_ovar_debug_map(mode) thisAgent->explanationBasedChunker->print_identity_to_var_debug_map (mode)
+    #define dprint_unification_map(mode) thisAgent->explanationBasedChunker->print_unification_map (mode)
+    #define dprint_identity_debug_map(mode) thisAgent->explanationBasedChunker->print_identity_to_var_debug_map (mode)
 
 #endif
 
