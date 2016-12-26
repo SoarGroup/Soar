@@ -37,8 +37,22 @@ uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
     return pID;
 }
 
+
+//void Explanation_Based_Chunker::unify_identity(test t)
+//{
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+//    uint64_t old_t = t->identity;
+//    if (old_t == 8238)
+//        dprint(DT_DEBUG, "Found.\n");
+//    t->identity = get_identity(t->identity);
+//    if (old_t != t->identity)
+//        dprint(DT_DEBUG, "Identity %u unified to %u.\n", old_t, t->identity);
+//}
+
 void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
 {
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+
     rhs_value lRHS;
     if (lPref->identities.id) lPref->identities.id = get_identity(lPref->identities.id);
     if (lPref->identities.attr) lPref->identities.attr = get_identity(lPref->identities.attr);
@@ -213,6 +227,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
                                                          const identity_triple o_ids_to_replace,
                                                          const rhs_triple rhs_funcs)
 {
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     test lId = 0, lAttr = 0, lValue = 0;
     lId = parent_cond->data.tests.id_test->eq_test;
     lAttr = parent_cond->data.tests.attr_test->eq_test;

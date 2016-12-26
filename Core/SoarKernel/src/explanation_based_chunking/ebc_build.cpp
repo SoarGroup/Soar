@@ -575,7 +575,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
         dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
         lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr,
                             lResultPref->value, lResultPref->referent,
-                            lResultPref->clone_identities, lResultPref->rhs_funcs, true);
+                            lResultPref->clone_identities, true);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
@@ -585,6 +585,23 @@ void Explanation_Based_Chunker::make_clones_of_results()
         }
         lClonedPref->inst = m_chunk_inst;
         dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
+
+        /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
+        if (lResultPref->cloned_rhs_funcs.id)
+        {
+            lClonedPref->rhs_funcs.id = lResultPref->cloned_rhs_funcs.id;
+            lResultPref->cloned_rhs_funcs.id = NULL;
+        }
+        if (lResultPref->cloned_rhs_funcs.attr)
+        {
+            lClonedPref->rhs_funcs.attr = lResultPref->cloned_rhs_funcs.attr;
+            lResultPref->cloned_rhs_funcs.attr = NULL;
+        }
+        if (lResultPref->cloned_rhs_funcs.value)
+        {
+            lClonedPref->rhs_funcs.value = lResultPref->cloned_rhs_funcs.value;
+            lResultPref->cloned_rhs_funcs.value = NULL;
+        }
 
         /* --- put it onto the list for chunk_inst --- */
         insert_at_head_of_dll(m_chunk_inst->preferences_generated, lClonedPref, inst_next, inst_prev);
@@ -598,7 +615,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
             lClonedPref->prev_clone->next_clone = lClonedPref;
         }
 
-    }
+        }
 }
 
 void Explanation_Based_Chunker::remove_clones_of_results()

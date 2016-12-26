@@ -538,9 +538,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             oid_referent = rhs_value_to_o_id(rule_action->referent);
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent,
-                            identity_triple(oid_id, oid_attr, oid_value, oid_referent),
-                            rhs_triple(f_id, f_attr, f_value));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_triple(oid_id, oid_attr, oid_value, oid_referent));
+    newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
+    newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
+    newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
     newPref->parent_action = a;
     return newPref;
 

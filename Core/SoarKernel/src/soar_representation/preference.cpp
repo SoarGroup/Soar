@@ -22,16 +22,11 @@
    with the given id/attribute/value/referent.  (Referent is only used
    for binary preferences.)  The preference is not yet added to preference
    memory, however.
-
-   The last three parameters are original variable names used by the chunker
-   and are optional/have default nil values.
 -------------------------------------------------------------------*/
 
-preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr,
-                            Symbol* value, Symbol* referent,
-                            const identity_triple o_ids,
-                            const rhs_triple rhs_funcs,
-                            bool pUnify_identities )
+preference* make_preference(agent* thisAgent, PreferenceType type, 
+                            Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
+                            const identity_triple o_ids, bool pUnify_identities )
 {
     preference* p;
 
@@ -84,11 +79,18 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
     p->clone_identities.value = p->identities.value;
     p->clone_identities.referent = p->identities.referent;
 
-    p->rhs_funcs.id = copy_rhs_value(thisAgent, rhs_funcs.id, pUnify_identities);
-    p->rhs_funcs.attr = copy_rhs_value(thisAgent, rhs_funcs.attr, pUnify_identities);
-    p->rhs_funcs.value = copy_rhs_value(thisAgent, rhs_funcs.value, pUnify_identities);
+    /* We set these to NULL an leave the code creating this preference responsible
+     * for allocating these rhs_values if needed. These rhs values are used to
+     * store the variablization identities of variables used in the rhs functions */
+    p->rhs_funcs.id = NULL;
+    p->rhs_funcs.attr = NULL;
+    p->rhs_funcs.value = NULL;
+    p->cloned_rhs_funcs.id = NULL;
+    p->cloned_rhs_funcs.attr = NULL;
+    p->cloned_rhs_funcs.value = NULL;
 
     dprint(DT_PREFS, "Created preference %p\n", p);
+
 
     return p;
 
@@ -126,6 +128,10 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
+
+    p->cloned_rhs_funcs.id = NULL;
+    p->cloned_rhs_funcs.attr = NULL;
+    p->cloned_rhs_funcs.value = NULL;
 
     /* Don't want this information or have the other things cleaned up*/
     p->inst = NULL;
@@ -262,6 +268,9 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);
     if (pref->rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
+    if (pref->cloned_rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.id);
+    if (pref->cloned_rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.attr);
+    if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
 
     /*  free the memory */
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);

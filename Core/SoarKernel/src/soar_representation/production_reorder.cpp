@@ -154,7 +154,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         std::string unSymString("");
         action* lAction;
         Symbol* lSym;
-        thisAgent->outputManager->set_print_indents("   ");
+        thisAgent->outputManager->set_print_indents("        ");
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
@@ -675,6 +675,7 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
+            // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print(thisAgent,  "      :\n");
             // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
             // print_saved_test_list(thisAgent, tests_to_restore);
@@ -913,38 +914,38 @@ cons* collect_root_variables(agent* thisAgent,
     /* --- make sure each root var has some condition with goal/impasse --- */
     std::string errorStr;
 
-    for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
-    {
-        found_goal_impasse_test = false;
-        dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
-
-        for (cond = cond_list; cond != NIL; cond = cond->next)
+        for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
+            found_goal_impasse_test = false;
+            dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+
+            for (cond = cond_list; cond != NIL; cond = cond->next)
+            {
             if (cond->type != POSITIVE_CONDITION) continue;
             if ((cond->data.tests.id_test->eq_test->data.referent == (*it)->variable_sym) &&
                 test_includes_goal_or_impasse_id_test(cond->data.tests.id_test, true, true))
-            {
-                found_goal_impasse_test = true;
-                dprint_noprefix(DT_REORDERER, "found\n");
-                break;
+                {
+                        found_goal_impasse_test = true;
+                        dprint_noprefix(DT_REORDERER, "found\n");
+                        break;
+                    }
             }
-        }
-        if (! found_goal_impasse_test)
-        {
-            dprint_noprefix(DT_REORDERER, "not found\n");
-            if (add_ungrounded)
+            if (! found_goal_impasse_test)
             {
+                dprint_noprefix(DT_REORDERER, "not found\n");
+                if (add_ungrounded)
+                {
                 chunk_element* lNewUngroundedSym;
                 thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
-                chunk_element* lOldMatchedSym = (*it);
-                lNewUngroundedSym->variable_sym = (*it)->variable_sym;
-                lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                lNewUngroundedSym->identity = (*it)->identity;
-                dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
-                ungrounded_syms->push_back(lNewUngroundedSym);
-            } else {
-                thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
-                    thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
+                    chunk_element* lOldMatchedSym = (*it);
+                    lNewUngroundedSym->variable_sym = (*it)->variable_sym;
+                    lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
+                    lNewUngroundedSym->identity = (*it)->identity;
+                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
+                    ungrounded_syms->push_back(lNewUngroundedSym);
+                } else {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
+                           thisAgent->name_of_production_being_reordered, (*it)->variable_sym);
                 if (thisAgent->outputManager->settings[OM_WARNINGS] || thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
                 {
                     thisAgent->outputManager->printa(thisAgent, errorStr.c_str());
@@ -1628,19 +1629,19 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             {
                 add_bound_variables_in_test(thisAgent, cond->data.tests.id_test, tc, &roots);
                 if (roots) break;
+                }
             }
-        }
-        if (!roots)
+    if (!roots)
+    {
+        thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
+        thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
-            thisAgent->outputManager->display_ebc_error(thisAgent, ebc_failed_no_roots, thisAgent->name_of_production_being_reordered);
-            thisAgent->explanationBasedChunker->set_failure_type(ebc_failed_no_roots);
-            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
-            {
-                thisAgent->stop_soar = true;
+            thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with no conditions that match a goal state.";
-            }
-            return false;
         }
+        return false;
+    }
     }
 
     remove_isa_state_tests_for_non_roots(thisAgent, lhs_top, roots);
