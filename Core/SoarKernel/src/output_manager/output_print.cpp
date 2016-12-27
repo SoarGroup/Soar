@@ -337,7 +337,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case 'i':
+                    case 'd':
                     {
                         destString += std::to_string(va_arg(args, int64_t));
                     }
@@ -357,6 +357,29 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                             test_to_string(t, destString);
                         } else {
                             destString += '#';
+                        }
+                    }
+                    break;
+
+                    case '-':
+                    case '=':
+                    {
+                        indent_amount = 0;
+                        next_position = (this->get_printer_output_column(thisAgent) + destString.length());
+                        for (next_column = 0; next_column < MAX_COLUMNS; next_column++)
+                        {
+                            if (next_position < m_column_indent[next_column]) {
+                                indent_amount = (m_column_indent[next_column] - next_position);
+                                break;
+                            }
+                        }
+                        if (indent_amount > 0) {
+                            if (ch == '-')
+                            {
+                                destString.append(indent_amount , ' ');
+                            } else {
+                                destString.append(indent_amount , '.');
+                            }
                         }
                     }
                     break;
@@ -535,13 +558,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case 'd':
-                    {
-                        long argument = va_arg(args, long);
-                        destString += std::to_string(argument);
-                    }
-                    break;
-
                     case 'f':
                     {
                         if (thisAgent->output_settings->printer_output_column != 1)
@@ -609,12 +625,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case '8':
-                    {
-                        WM_to_string(thisAgent, destString);
-                    }
-                    break;
-
                     case 'c':
                     {
                         destString += static_cast<char>(va_arg(args, int));
@@ -627,28 +637,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case '-':
-                    case '=':
-                    {
-                        indent_amount = 0;
-                        next_position = (this->get_printer_output_column(thisAgent) + destString.length());
-                        for (next_column = 0; next_column < MAX_COLUMNS; next_column++)
-                        {
-                            if (next_position < m_column_indent[next_column]) {
-                                indent_amount = (m_column_indent[next_column] - next_position);
-                                break;
-                            }
-                        }
-                        if (indent_amount > 0) {
-                            if (ch == '-')
-                            {
-                                destString.append(indent_amount , ' ');
-                            } else {
-                                destString.append(indent_amount , '.');
-                            }
-                        }
-                    }
-                    break;
                     default:
                     {
                         destString += '%';

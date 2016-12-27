@@ -1251,7 +1251,7 @@ void reorder_simplified_conditions(agent* thisAgent,
                                           Without the tie set we can't check the
                                           canonical order. */
         }
-        dprint(DT_REORDERER, "...cost is %i\n", min_cost);
+        dprint(DT_REORDERER, "...cost is %d\n", min_cost);
 
         /* --- if min_cost==MAX_COST, print error message --- */
         if ((min_cost == MAX_COST) &&

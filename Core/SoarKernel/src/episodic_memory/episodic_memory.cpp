@@ -371,7 +371,7 @@ inline void epmem_reverse_hash_str(agent* thisAgent, epmem_hash_id s_id_lookup, 
     (void)res; // quells compiler warning
     if (res != soar_module::row)
     {
-        dprint(DT_DEBUG,  "epmem_reverse_hash_str crashing on s_id %i\n", s_id_lookup);
+        dprint(DT_DEBUG,  "epmem_reverse_hash_str crashing on s_id %u\n", s_id_lookup);
         epmem_close(thisAgent);
     }
     assert(res == soar_module::row);

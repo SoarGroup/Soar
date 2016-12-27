@@ -97,23 +97,22 @@
  *    Format strings for Soar printing:
  *
  *       %c   character
- *       %i   int64_t
+ *       %d   int64_t
  *       %u   uint64_t
- *       %d   short
  *       %s   string
  *       %f   fresh line (adds newline if not at column 1)
- *       %m   coluMn
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
  *
  *       %a   action
  *       %l   condition
  *       %n   funcall list
- *       %7   instantiation
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s)
+ *       %o   symbol's original variable(s) from debug table
  *       %t   test
- *       %g   identity information for test
+ *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
@@ -124,5 +123,4 @@
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
- *       %8   Working Memory
    ------------------------------------*/

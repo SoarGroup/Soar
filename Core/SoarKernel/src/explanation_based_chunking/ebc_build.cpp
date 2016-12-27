@@ -1102,7 +1102,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     } else {
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
         m_chunk_inst->in_newly_created = false;
-        excise_production(thisAgent, m_chunk_inst->prod);
+        excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
         remove_clones_of_results();
         m_chunk_inst = NULL;

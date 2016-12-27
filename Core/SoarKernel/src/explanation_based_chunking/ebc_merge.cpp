@@ -100,12 +100,12 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
 
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
-    dprint_header(DT_MERGE, PrintAfter, "# of conditions = %i\n", old_num_conds);
+    dprint_header(DT_MERGE, PrintAfter, "# of conditions = %d\n", old_num_conds);
 
     condition* found_cond, *next_cond, *last_cond = NULL;
     for (condition* cond = top_cond; cond; ++current_cond)
     {
-        dprint(DT_MERGE, "Processing condition %i: %l\n", current_cond, cond);
+        dprint(DT_MERGE, "Processing condition %d: %l\n", current_cond, cond);
         next_cond = cond->next;
         if (cond->type == POSITIVE_CONDITION)
         {
@@ -177,8 +177,8 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
     dprint_noprefix(DT_MERGE, "%1", top_cond);
     new_num_conds = count_conditions(top_cond);
     cond_diff = old_num_conds - new_num_conds;
-    dprint(DT_MERGE, "# of conditions = %i\n", new_num_conds);
-    dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %i conditions! (%i - %i)\n" : "No decrease in number of conditions. [%i = (%i - %i)]\n"), cond_diff, old_num_conds, new_num_conds);
+    dprint(DT_MERGE, "# of conditions = %d\n", new_num_conds);
+    dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %d conditions! (%d - %d)\n" : "No decrease in number of conditions. [%d = (%d - %d)]\n"), cond_diff, old_num_conds, new_num_conds);
 
     clear_merge_map();
 }

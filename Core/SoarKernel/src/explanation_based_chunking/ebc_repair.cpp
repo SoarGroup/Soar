@@ -365,13 +365,13 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
         lDanglingSymInfo = *it;
-        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %i...\n", lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym,
+        dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %d...\n", lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym,
             lDanglingSymInfo->identity, static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level));
         if(lDanglingSymInfo->instantiated_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->instantiated_sym->id->level;
         } else {
-            dprint(DT_REPAIR, "...symbol is at Lower level %i than current target level of %i...\n",
+            dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n",
                 static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level), static_cast<int64_t>(targetLevel));
         }
         add_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->identity, "dangling symbol");

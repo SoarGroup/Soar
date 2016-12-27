@@ -30,6 +30,7 @@
     #define dprint_varnames(mode, var_names) ((void)0)
     #define dprint_varnames_node(mode, var_names_node) ((void)0)
     #define dprint_all_inst(mode) ((void)0)
+    #define dprint_partial_matches(mode, p_p_node) ((void)0)
 
     #define dprint_variablization_table(mode, ...) ((void)0)
     #define dprint_tables(mode) ((void)0)
@@ -71,6 +72,7 @@
     #define dprint_varnames_node(mode, var_names_node) Output_Manager::Get_OM().print_varnames_node (mode, var_names_node)
     #define dprint_varnames(mode, var_names) Output_Manager::Get_OM().print_varnames (mode, var_names)
     #define dprint_all_inst(mode) Output_Manager::Get_OM().print_all_inst (mode)
+    #define dprint_partial_matches(mode, p_p_node) Output_Manager::Get_OM().print_partial_matches (mode, p_p_node)
 
     #define dprint_variablization_table(mode) thisAgent->explanationBasedChunker->print_variablization_table (mode)
     #define dprint_tables(mode) thisAgent->explanationBasedChunker->print_tables (mode)

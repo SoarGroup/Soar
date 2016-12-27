@@ -96,6 +96,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 
     mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
+    mode_info[DT_GDS_HIGH].prefix =                     strdup("GDS High| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
@@ -136,7 +137,7 @@ bool symbol_matches_string(Symbol* sym, const char* match)
     std::string strName(sym->to_string());
     if (strName == match)
     {
-//        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
+//        dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, "");
         return true;
     }
     return false;
@@ -154,8 +155,8 @@ bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
     std::string strName(sym->to_string());
     if (strName == DEBUG_CHECK_SYMBOL)
     {
-        //    dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
-        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
+        //    dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
+        dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, "");
         return true;
     }
 #endif

@@ -247,6 +247,8 @@ class Output_Manager
         void debug_print_production(TraceMode mode, production* prod);
 
         void print_identifiers(TraceMode mode);
+        void print_msc(TraceMode mode, ms_change* p_ms_change);
+        void print_partial_matches(TraceMode mode, rete_node* pNode);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);
         void print_varnames(TraceMode mode, varnames* var_names);
@@ -283,23 +285,22 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *    Format strings for Soar printing:
  *
  *       %c   character
- *       %i   int64_t
+ *       %d   int64_t
  *       %u   uint64_t
- *       %d   short
  *       %s   string
  *       %f   fresh line (adds newline if not at column 1)
- *       %m   coluMn
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
  *
  *       %a   action
  *       %l   condition
  *       %n   funcall list
- *       %7   instantiation
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s)
+ *       %o   symbol's original variable(s) from debug table
  *       %t   test
- *       %g   identity information for test
+ *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
@@ -310,6 +311,33 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
- *       %8   Working Memory
+ *
+ *   Alphabetical
+ *
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
+ *       %1   condition list
+ *       %2   action list
+ *       %3   cons list of conditions
+ *       %4   condition action lists (2 args: cond, action)
+ *       %5   condition preference lists (2 args: cond, preference)
+ *       %6   condition results lists (2 args: cond, preference)
+ *       %7   instantiation
+ *       %a   action
+ *       %c   character
+ *       %d   int64_t
+ *       %f   fresh line (adds newline if not at column 1)
+ *       %g   variablization identity of test
+ *       %h   like %g but with second argument containing symbol to use if STI
+ *       %l   condition
+ *       %n   funcall list
+ *       %o   symbol's original variable(s) from debug table
+ *       %p   preference
+ *       %r   rhs value
+ *       %s   string
+ *       %t   test
+ *       %u   uint64_t
+ *       %w   wme
+ *       %y   symbol
    ------------------------------------*/
 #endif /* OUTPUT_MANAGER_H_ */
