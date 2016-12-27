@@ -1143,7 +1143,7 @@ void copy_non_identical_test(agent* thisAgent, test* t, test add_me, bool consid
                 }
         }
         dprint(DT_MERGE, "          ...found test to copy: %t\n", add_me);
-        add_test(thisAgent, t, copy_test(thisAgent, add_me));
+        add_test(thisAgent, t, copy_test(thisAgent, add_me), true);
     }
 }
 

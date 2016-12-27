@@ -222,13 +222,13 @@ void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRela
         assert(attachment_info->cond);
         if (attachment_info->field == VALUE_ELEMENT)
         {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, false);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, true);
         } else if (attachment_info->field == ATTR_ELEMENT)
         {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test, false);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test, true);
         } else
         {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test, false);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test, true);
         }
         #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_constraints_attached();
