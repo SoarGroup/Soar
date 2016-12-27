@@ -496,8 +496,10 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     {
         result->clone_identities.id = lO_id;
     } else {
+        result->clone_identities.id = lO_id;
         result->cloned_rhs_funcs.id = a->id;
-        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
+//        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
+        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, true);
     }
 
     lO_id = variablize_rhs_symbol(a->attr);
@@ -505,8 +507,10 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     {
         result->clone_identities.attr = lO_id;
     } else {
+        result->clone_identities.attr = lO_id;
         result->cloned_rhs_funcs.attr = a->attr;
-        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
+//        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
+        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, true);
     }
 
     lO_id = variablize_rhs_symbol(a->value);
@@ -514,8 +518,10 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     {
         result->clone_identities.value = lO_id;
     } else {
+        result->clone_identities.value = lO_id;
         result->cloned_rhs_funcs.value = a->value;
-        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
+//        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
+        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, true);
     }
 
     if (preference_is_binary(result->type))
