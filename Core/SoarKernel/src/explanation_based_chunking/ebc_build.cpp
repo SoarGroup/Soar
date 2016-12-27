@@ -762,12 +762,11 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
+        return false;
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             thisAgent->explanationMemory->increment_stat_justification_did_not_match();
-            assert(m_prod);
-            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
@@ -776,8 +775,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             }
         } else {
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
-            assert(m_prod);
-            thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
@@ -786,23 +783,18 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             }
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
-        /* Chunking used to not excise chunks that didn't match working memory.  By returning true we retains
-         * that behavior.
-         *
-         * Note:  To me, it seems like it shouldn't be possible for a chunk not to match WM, but perhaps
-         * this can easily happen because of o-supported WMEs whose instantiations no longer match.
-         * Should make a test case, perhaps with a negative condition or a negated conjunction of conditions that
-         * create an o-supported wme then no longer hold. Agent we're debugging on 12/28/16 doesn't match because of a
-         * negated condition. */
-//        m_chunk_inst->in_ms = false;
-//        return true;
-    } else {
-        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
-        /* Don't think this can happen */
-        assert(false);
+
+        assert(m_prod);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+
+        m_chunk_inst->in_ms = false;
+        return true;
     }
-    m_chunk_inst->in_ms = false;
-    return false;
+
+    /* Don't think this can happen */
+    dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
+    assert(false);
+
 }
 
 void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)

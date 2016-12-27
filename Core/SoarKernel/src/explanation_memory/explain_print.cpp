@@ -399,6 +399,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Number of rule firings re-visited and skipped          %-%u\n", stats.seen_instantations_backtraced);
 
     outputManager->printa_sf(thisAgent, "\nConditions merged                                    %- %u\n", stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged                               %-?\n");
     outputManager->printa_sf(thisAgent, "Constraints collected                                  %-%u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                                   %-%u\n", stats.constraints_attached);
 
@@ -426,6 +427,8 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "- Analyzed reasoning of operators selected probabilistically   %-?\n");
     outputManager->printa_sf(thisAgent, "- Tested knowledge retrieved from semantic memory              %-?\n");
     outputManager->printa_sf(thisAgent, "- Tested knowledge retrieved from episodic memory              %-?\n");
+    outputManager->printa_sf(thisAgent, "Learned chunk that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Learned justification that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
 
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                 Potential Persistence Issues Detected\n");
@@ -440,8 +443,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "Ignored duplicate of existing rule                                 %-%u\n", stats.duplicates);
     outputManager->printa_sf(thisAgent, "Ignored rule with partially-operational conditions/actions         %-%u\n", stats.ungrounded_justifications_ignored);
-    outputManager->printa_sf(thisAgent, "Ignored chunk that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Ignored justification that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-CHUNKS exceeded in a decision cycle            %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-DUPES exceeded for rule this decision cycle    %-%u\n", stats.max_dupes);
 }
