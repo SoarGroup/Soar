@@ -11,8 +11,6 @@ sp {init
    (<s> ^wme hustle
         ^foo bar
         ^value 3)
-   (<ss> ^mz <m> ^loop <ss>)
-   (<m> ^loop2 <ss> ^loop3 <m>)
 }
 
 sp {propose

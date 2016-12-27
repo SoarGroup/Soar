@@ -701,7 +701,7 @@ void ChunkTest::Repair_NOR_Temporal_Constraint()
 
 void ChunkTest::RHS_Math()
 {
-    build_and_check_chunk("RHS_Math.soar", 8, 2);
+    build_and_check_chunk("RHS_Math.soar", 8, 1);
 }
 
 void ChunkTest::Repair_Unconnected_RHS_ID()

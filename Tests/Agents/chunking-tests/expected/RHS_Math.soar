@@ -12,12 +12,3 @@ sp {answer*apply*snc*t3-1
     (<s2> ^copied-math 23 +)
     (<s2> ^bar <c1> +)
 }
-
-sp {answer*init*t1-1
-    (state <s1> ^superstate nil)
-    -->
-    (<s1> ^mz <m1> +)
-    (<s1> ^loop <s1> +)
-    (<m1> ^loop2 <s1> +)
-    (<m1> ^loop3 <m1> +)
-}
