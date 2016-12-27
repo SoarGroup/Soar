@@ -4005,8 +4005,8 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
         if (p_node->b.p.tentative_retractions)
         {
-            dprint(DT_DEBUG, "Refracted instantiation did not match!  Printing partial matches...\n");
-            dprint_partial_matches(DT_DEBUG, p_node);
+            dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
+            dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
 
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
             msc = p_node->b.p.tentative_retractions;
