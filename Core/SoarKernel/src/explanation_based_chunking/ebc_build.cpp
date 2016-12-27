@@ -573,9 +573,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
     {
         /* --- copy the preference --- */
         dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
-        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr,
-                            lResultPref->value, lResultPref->referent,
-                            lResultPref->clone_identities, true);
+        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr, lResultPref->value, lResultPref->referent, lResultPref->clone_identities, true);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
@@ -615,20 +613,24 @@ void Explanation_Based_Chunker::make_clones_of_results()
             lClonedPref->prev_clone->next_clone = lClonedPref;
         }
 
-        }
+    }
 }
 
-void Explanation_Based_Chunker::remove_clones_of_results()
+void Explanation_Based_Chunker::remove_chunk_instantiation()
 {
     preference* lNext, *lResultPref;
+    bool lRemoved;
 
+    m_chunk_inst->in_ms = false;
     for (lResultPref = m_chunk_inst->preferences_generated; lResultPref != NIL; lResultPref = lNext)
     {
         lNext = lResultPref->inst_next;
-//        dprint(DT_DEBUG, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
-        possibly_deallocate_preference_and_clones(thisAgent, lResultPref);
+        assert(lResultPref->reference_count == 0);
+        dprint(DT_EBC_CLEANUP, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
+        lRemoved = remove_preference_from_clones(thisAgent, lResultPref);
+        assert(lRemoved);
     }
-    m_chunk_inst->preferences_generated = NIL;
+    m_chunk_inst = NULL;
 }
 
 bool Explanation_Based_Chunker::can_learn_from_instantiation()
@@ -636,19 +638,11 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
     preference* pref;
 
     /* --- if it only matched an attribute impasse, don't chunk --- */
-    if (! m_inst->match_goal)
-    {
-        return false;
-    }
+    if (! m_inst->match_goal) return false;
 
     /* --- if no preference is above the match goal level, exit --- */
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
-    {
-        if (pref->id->id->level < m_inst->match_goal_level)
-        {
-            break;
-        }
-    }
+        if (pref->id->id->level < m_inst->match_goal_level) break;
 
     /* Note that in Soar 9.3.4, chunking would not create a chunk for a
      * a result if another result was also being returned to an even higher
@@ -658,11 +652,7 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
      * agents. Documenting here in case this ever needs to changed back or made
      * an option. */
 
-    if (!pref)
-    {
-        return false;
-    }
-    return true;
+    return (pref != NULL);
 }
 
 void Explanation_Based_Chunker::perform_dependency_analysis()
@@ -796,6 +786,16 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             }
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
+        /* Chunking used to not excise chunks that didn't match working memory.  By returning true we retains
+         * that behavior.
+         *
+         * Note:  To me, it seems like it shouldn't be possible for a chunk not to match WM, but perhaps
+         * this can easily happen because of o-supported WMEs whose instantiations no longer match.
+         * Should make a test case, perhaps with a negative condition or a negated conjunction of conditions that
+         * create an o-supported wme then no longer hold. Agent we're debugging on 12/28/16 doesn't match because of a
+         * negated condition. */
+//        m_chunk_inst->in_ms = false;
+//        return true;
     } else {
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
         /* Don't think this can happen */
@@ -1104,8 +1104,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
         m_chunk_inst->in_newly_created = false;
         excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
-        remove_clones_of_results();
-        m_chunk_inst = NULL;
+        remove_chunk_instantiation();
         clean_up();
     }
 }

@@ -202,7 +202,7 @@ class Explanation_Based_Chunker
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
         void            make_clones_of_results();
-        void            remove_clones_of_results();
+        void            remove_chunk_instantiation();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
