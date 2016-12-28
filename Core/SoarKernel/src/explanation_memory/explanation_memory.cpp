@@ -65,6 +65,9 @@ void Explanation_Memory::initialize_counters()
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
     stats.merged_conditions = 0;
+    stats.merged_disjunctions = 0;
+    stats.merged_disjunction_values = 0;
+    stats.eliminated_disjunction_values = 0;
     stats.chunks_attempted = 0;
     stats.chunks_succeeded = 0;
     stats.justifications_attempted = 0;

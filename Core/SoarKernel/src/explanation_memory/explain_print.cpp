@@ -399,7 +399,9 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Number of rule firings re-visited and skipped          %-%u\n", stats.seen_instantations_backtraced);
 
     outputManager->printa_sf(thisAgent, "\nConditions merged                                    %- %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Disjunction tests merged                               %-?\n");
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged                               %-%u\n", stats.merged_disjunctions);
+    outputManager->printa_sf(thisAgent, "- Duplicate values kept                                %-%u\n", stats.merged_disjunction_values);
+    outputManager->printa_sf(thisAgent, "- Impossible values eliminated                         %-%u\n", stats.eliminated_disjunction_values);
     outputManager->printa_sf(thisAgent, "Constraints collected                                  %-%u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                                   %-%u\n", stats.constraints_attached);
 
@@ -491,6 +493,9 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", current_discussed_chunk->stats.constraints_attached);
     outputManager->printa_sf(thisAgent, "Duplicates chunks later created            %-%u\n", current_discussed_chunk->stats.duplicates);
     outputManager->printa_sf(thisAgent, "Conditions merged                          %-%u\n", current_discussed_chunk->stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged                   %-%u\n", current_discussed_chunk->stats.merged_disjunctions);
+    outputManager->printa_sf(thisAgent, "- Duplicate values kept                    %-%u\n", current_discussed_chunk->stats.merged_disjunction_values);
+    outputManager->printa_sf(thisAgent, "- Impossible values eliminated             %-%u\n", current_discussed_chunk->stats.eliminated_disjunction_values);
 }
 
 void Explanation_Memory::print_chunk_list(short pNumToPrint)

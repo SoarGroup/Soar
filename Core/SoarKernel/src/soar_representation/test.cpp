@@ -12,6 +12,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "ebc_repair.h"
+#include "explanation_memory.h"
 #include "output_manager.h"
 #include "instantiation.h"
 #include "preference.h"
@@ -216,14 +217,19 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
     tc_number lTC = get_new_tc_number(thisAgent);
     tc_number lTC2 = get_new_tc_number(thisAgent);
 
+    int dest_count, new_count, final_count;
+    final_count = dest_count = new_count = 0;
+
     for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_new->rest)
     {
         static_cast<Symbol*>(c_new->first)->tc_num = lTC;
+        ++dest_count;
     }
 
     for (c_new = new_test->data.disjunction_list; c_new != NULL; c_new = c_next)
     {
         lSym = static_cast<Symbol*>(c_new->first);
+        ++new_count;
         c_next = c_new->rest;
         if (lSym->tc_num == lTC)
         {
@@ -252,8 +258,15 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
             c_first = c_new;
         }
         c_last = c_new;
+        ++final_count;
     }
     destination->data.disjunction_list = c_first;
+    #ifdef BUILD_WITH_EXPLAINER
+    thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
+    thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
+    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
+    #endif
+
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)

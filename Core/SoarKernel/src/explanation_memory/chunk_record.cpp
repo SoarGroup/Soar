@@ -53,6 +53,9 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.did_not_match_wm                  = false;
     stats.num_grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
+    stats.merged_disjunctions               = 0;
+    stats.merged_disjunction_values         = 0;
+    stats.eliminated_disjunction_values     = 0;
     stats.instantations_backtraced          = 0;
     stats.seen_instantations_backtraced     = 0;
     stats.constraints_attached              = 0;

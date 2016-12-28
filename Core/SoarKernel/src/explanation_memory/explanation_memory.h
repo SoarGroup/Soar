@@ -32,6 +32,9 @@ typedef struct chunking_stats_struct {
         uint64_t            max_dupes;
         uint64_t            tested_local_negation;
         uint64_t            merged_conditions;
+        uint64_t            merged_disjunctions;
+        uint64_t            eliminated_disjunction_values;
+        uint64_t            merged_disjunction_values;
         uint64_t            chunks_attempted;
         uint64_t            chunks_succeeded;
         uint64_t            justifications_attempted;
@@ -101,7 +104,10 @@ class Explanation_Memory
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
         void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
-        void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions++; };
+        void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions += pCount; };
+        void increment_stat_merged_disjunctions() { stats.merged_disjunctions++; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunctions++; };
+        void increment_stat_eliminated_disjunction_values(int pCount = 1) { stats.eliminated_disjunction_values += pCount; if (current_recording_chunk) current_recording_chunk->stats.eliminated_disjunction_values += pCount; };
+        void increment_stat_merged_disjunction_values(int pCount = 1) { stats.merged_disjunction_values += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunction_values += pCount; };
         void increment_stat_chunks_attempted() { stats.chunks_attempted++; };
         void increment_stat_chunks_succeeded() { stats.chunks_succeeded++; };
         void increment_stat_justifications_attempted() { stats.justifications_attempted++; };

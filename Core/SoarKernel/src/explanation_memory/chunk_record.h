@@ -26,6 +26,9 @@ typedef struct chunk_stats_struct {
         bool                did_not_match_wm;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
+        uint64_t            merged_disjunctions;
+        uint64_t            eliminated_disjunction_values;
+        uint64_t            merged_disjunction_values;
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
         uint64_t            constraints_attached;
