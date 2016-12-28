@@ -797,7 +797,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
 
 }
 
-void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list)
+void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiation** new_inst_list)
 {
     preference*         pref;
     bool                lChunkValidated = true;
@@ -809,6 +809,18 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
     #endif
 
+    /* --- If we're over MAX_CHUNKS, abort chunk --- */
+    if (chunks_this_d_cycle >= max_chunks)
+    {
+        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+        #ifdef BUILD_WITH_EXPLAINER
+        thisAgent->explanationMemory->increment_stat_max_chunks();
+        #endif
+        m_extra_results = NULL;
+        m_inst = NULL;
+        return;
+    }
+
     m_inst = inst;
     m_chunk_new_i_id = 0;
     m_failure_type = ebc_success;
@@ -818,12 +830,6 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     local_timer.start();
     #endif
-
-//    dprint(DT_DEBUG, "Chunk number %u\n", chunk_count);
-//    if (this->chunk_count == 6)
-//    {
-//        dprint(DT_DEBUG, "Chunk found.\n");
-//    }
 
     get_results_for_instantiation();
     if (!m_results) {
@@ -838,18 +844,7 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     m_reliable = true;
     m_vrblz_top = NULL;
 
-    /* --- If we're over MAX_CHUNKS, abort chunk --- */
-    if (chunks_this_d_cycle >= max_chunks)
-    {
-        thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
-        max_chunks_reached = true;
-        #ifdef BUILD_WITH_EXPLAINER
-        thisAgent->explanationMemory->increment_stat_max_chunks();
-        #endif
-        m_extra_results = NULL;
-        m_inst = NULL;
-        return;
-    }
+
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -1077,20 +1072,18 @@ void Explanation_Based_Chunker::build_chunk_or_justification(instantiation* inst
     if (lAddedSuccessfully)
     {
         /* --- assert the preferences --- */
-        m_chunk_inst->next = (*custom_inst_list);
-        (*custom_inst_list) = m_chunk_inst;
+        m_chunk_inst->next = (*new_inst_list);
+        (*new_inst_list) = m_chunk_inst;
 
         /* So that we don't deallocate the chunk instantiation we're chunking on next */
         m_chunk_inst = NULL;
         clean_up();
 
-        if (!max_chunks_reached)
-        {
-            dprint(DT_MILESTONES, "Calling chunk instantiation for chunk instantiation START\n");
-            set_learning_for_instantiation(*custom_inst_list);
-            build_chunk_or_justification(*custom_inst_list, custom_inst_list);
-            dprint(DT_MILESTONES, "Chunk instantiation bottom-up call DONE.\n");
-        }
+        dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
+        set_learning_for_instantiation(*new_inst_list);
+        learn_EBC_rule(*new_inst_list, new_inst_list);
+        dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
+
     } else {
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
         m_chunk_inst->in_newly_created = false;

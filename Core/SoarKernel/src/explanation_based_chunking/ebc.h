@@ -34,7 +34,6 @@ class Explanation_Based_Chunker
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
         uint64_t                max_chunks, max_dupes;
-        bool                    max_chunks_reached;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
         cons*     chunk_free_problem_spaces;
@@ -42,7 +41,7 @@ class Explanation_Based_Chunker
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
-        void build_chunk_or_justification(instantiation* inst, instantiation** custom_inst_list);
+        void learn_EBC_rule(instantiation* inst, instantiation** new_inst_list);
 
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */

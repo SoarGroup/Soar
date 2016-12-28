@@ -1128,7 +1128,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     dprint(DT_PRINT_INSTANTIATIONS,  "%fcreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* --- build chunks/justifications if necessary --- */
-    thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &(thisAgent->newly_created_instantiations));
+    thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
 
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);

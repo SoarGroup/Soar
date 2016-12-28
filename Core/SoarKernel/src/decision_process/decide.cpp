@@ -3480,9 +3480,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         {
             if (rhs_value_is_reteloc(a->id))
             {
-                sym = get_symbol_from_rete_loc(
-                          rhs_value_to_reteloc_levels_up(a->id),
-                          rhs_value_to_reteloc_field_num(a->id), tok, w);
+                sym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(a->id), rhs_value_to_reteloc_field_num(a->id), tok, w);
             }
         }
         assert(sym != NIL);
@@ -3492,8 +3490,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         {
             if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                                   "*** Waterfall: aborting firing because (%y * *)", sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "*** Waterfall: aborting firing because (%y * *)", sym);
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
                       static_cast<int64_t>(sym->id->level), static_cast<int64_t>(thisAgent->change_level));
@@ -3518,8 +3515,7 @@ void do_preference_phase(agent* thisAgent)
         if (thisAgent->current_phase == APPLY_PHASE)   /* it's always IE for PROPOSE */
         {
             xml_begin_tag(thisAgent, kTagSubphase);
-            xml_att_val(thisAgent, kPhase_Name,
-                        kSubphaseName_FiringProductions);
+            xml_att_val(thisAgent, kPhase_Name, kSubphaseName_FiringProductions);
             switch (thisAgent->FIRING_TYPE)
             {
                 case PE_PRODS:
@@ -3555,26 +3551,14 @@ void do_preference_phase(agent* thisAgent)
     thisAgent->change_level = thisAgent->highest_active_level;
     thisAgent->next_change_level = thisAgent->highest_active_level;
 
-    // Temporary list to buffer deallocation of some preferences until
-    // the inner elaboration loop is over.
+    // Temporary list to buffer deallocation of some preferences until the inner elaboration loop is over.
     preference_list bufdeallo;
 
     // inner elaboration cycle
     for (;;)
     {
         thisAgent->change_level = thisAgent->next_change_level;
-
-//        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//        {
-//            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
-//                static_cast<int64_t>(thisAgent->active_level));
-//            if (thisAgent->active_goal)
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
-//            }
-//            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
-//        }
-
+        dprint(DT_WATERFALL, "\n--- Inner Elaboration Phase, active level %d goal %y ---\n", static_cast<int64_t>(thisAgent->active_level), thisAgent->active_goal);
         dprint(DT_DEALLOCATE_INST, "Clearing newly_created_instantiations...\n");
         thisAgent->newly_created_instantiations = NIL;
 
@@ -3585,18 +3569,7 @@ void do_preference_phase(agent* thisAgent)
         bool once = true;
         while (postpone_assertion(thisAgent, &prod, &tok, &w))
         {
-//            if(!tok)
-//                dprint(DT_DEBUG, "Found.\n");
-
             assertionsExist = true;
-
-            if (thisAgent->explanationBasedChunker->max_chunks_reached)
-            {
-                consume_last_postponed_assertion(thisAgent);
-                thisAgent->system_halted = true;
-                soar_invoke_callbacks(thisAgent, AFTER_HALT_SOAR_CALLBACK, 0);
-                return;
-            }
 
             if (prod->type == JUSTIFICATION_PRODUCTION_TYPE)
             {
@@ -3634,33 +3607,24 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->active_goal == NIL)
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,
-//                      " inner elaboration loop doesn't have active goal.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop doesn't have active goal.\n");
             break;
         }
 
         if (thisAgent->active_goal->id->lower_goal == NIL)
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop at bottom goal.\n");
             break;
         }
 
         if (thisAgent->current_phase == APPLY_PHASE)
         {
-            thisAgent->active_goal = highest_active_goal_apply(thisAgent,
-                                     thisAgent->active_goal->id->lower_goal, true);
+            thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->active_goal->id->lower_goal, true);
         }
         else
         {
             assert(thisAgent->current_phase == PROPOSE_PHASE);
-            thisAgent->active_goal = highest_active_goal_propose(thisAgent,
-                                     thisAgent->active_goal->id->lower_goal, true);
+            thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->active_goal->id->lower_goal, true);
         }
 
         if (thisAgent->active_goal != NIL)
@@ -3669,11 +3633,7 @@ void do_preference_phase(agent* thisAgent)
         }
         else
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,
-//                      " inner elaboration loop finished but not at quiescence.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop finished but not at quiescence.\n");
             break;
         }
     } // end inner elaboration loop

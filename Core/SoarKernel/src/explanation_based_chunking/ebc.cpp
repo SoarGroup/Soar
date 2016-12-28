@@ -110,7 +110,6 @@ void Explanation_Based_Chunker::reinit()
     m_failure_type                      = ebc_success;
     m_rule_type                         = ebc_no_rule;
     m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
-    max_chunks_reached                  = false;
 
 //    chunk_history += "Soar re-initialization performed.\n";
 }
