@@ -1331,13 +1331,10 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
 
     if (!epmem_wmes)
     {
-        // otherwise, we submit the fake instantiation to backtracing
-        // such as to potentially produce justifications that can follow
-        // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
-        dprint(DT_MILESTONES, "Calling chunk instantiation from _epem_process_buffered_wme_list...\n");
-        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-        thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &my_justification_list);
+        dprint(DT_MILESTONES, "Asserting preferences of new architectural instantiation in _epem_process_buffered_wme_list...\n");
+//        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
+//        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &my_justification_list);
 
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)
