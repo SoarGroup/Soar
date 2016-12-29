@@ -477,12 +477,19 @@ production* make_production(agent*          thisAgent,
 
 void deallocate_production(agent* thisAgent, production* prod)
 {
+    if (!prod) return;
     if (prod->instantiations)
     {
-        char msg[BUFFER_MSG_SIZE];
-        strncpy(msg, "Internal error: deallocating prod. that still has inst's\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
+        /* Soar used to abort here, but I think this can easily happen with the
+         * excise command, so we'll try clearing out the production pointers from
+         * the remaining instantiations instead. */
+        dprint(DT_DEALLOCATE_PROD, "Instantiations still exist based on production %y, which is being excised!  Should only happen with manual excise command.\n", prod->name);
+        for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
+        {
+            dprint(DT_DEALLOCATE_PROD, "Clearing production pointer from instantiation %u (%y).\n", lInst->i_id, lInst->prod_name);
+            assert(lInst->prod == prod);
+            lInst->prod = NULL;
+        }
     }
     dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Deallocating production %y (p %u).\n", prod->name, prod->p_id);
 

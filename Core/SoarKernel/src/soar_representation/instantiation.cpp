@@ -1436,29 +1436,33 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         pref = next;
     }
 
-    /* --- remove inst from list of instantiations of this production --- */
-    remove_from_dll(inst->prod->instantiations, inst, next, prev);
-
-    production* prod = inst->prod;
-
-    if (prod->type == CHUNK_PRODUCTION_TYPE)
+    /* prod may not exist if rule was manually excised */
+    if (inst->prod)
     {
-        rl_param_container::apoptosis_choices apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
+        /* --- remove inst from list of instantiations of this production --- */
+        remove_from_dll(inst->prod->instantiations, inst, next, prev);
 
-        // we care about production history of chunks if...
-        // - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
-        // - we are dealing with an RL rule that...
-        //   - has not been updated by RL AND
-        //   - is not in line to be updated by RL
-        if (apoptosis != rl_param_container::apoptosis_none)
+        production* prod = inst->prod;
+
+        if (prod->type == CHUNK_PRODUCTION_TYPE)
         {
-            if ((!prod->rl_rule
+            rl_param_container::apoptosis_choices apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
+
+            // we care about production history of chunks if...
+            // - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
+            // - we are dealing with an RL rule that...
+            //   - has not been updated by RL AND
+            //   - is not in line to be updated by RL
+            if (apoptosis != rl_param_container::apoptosis_none)
+            {
+                if ((!prod->rl_rule
                     && (apoptosis == rl_param_container::apoptosis_chunks))
                     || (prod->rl_rule
                         && (static_cast<int64_t>(prod->rl_update_count) == 0)
                         && (prod->rl_ref_count == 0)))
-            {
-                thisAgent->RL->rl_prods->reference_object(prod, 1);
+                {
+                    thisAgent->RL->rl_prods->reference_object(prod, 1);
+                }
             }
         }
     }
