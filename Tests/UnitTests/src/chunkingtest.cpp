@@ -15,7 +15,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_CHUNKING_TESTS
 
-//        CPPUNIT_TEST(GamesAgent_Sanity1);
+        /* This agent is J Kirk's game learning agent.  It causes a bad crash around dc 346.  It seems to be
+         * variablizing a list of results that is at least 400 elements long. */
+        // CPPUNIT_TEST(GamesAgent_Sanity1);
 
         CPPUNIT_TEST(SMem_Chunked_Query);
         CPPUNIT_TEST(SMem_Chunked_Query2);
@@ -261,26 +263,30 @@ void ChunkTest::close_log()
 void ChunkTest::save_chunks(const char* path)
 {
     std::string lCmdName;
-    {
+    #ifdef SAVE_LOG_FILES
         lCmdName = "output command-to-file unit_test_chunks_";
         lCmdName += path;
         lCmdName.resize(lCmdName.size() - 5);
-        lCmdName += ".soar print -fc";
-    }
-//  lCmdName("output command-to-file unit_test_chunks");
+        lCmdName += ".soar print -frc";
+    #else
+        lCmdName = "output command-to-file unit_test_chunks.soar print -fcr";
+    #endif
     agent_command(lCmdName.c_str());
 }
+
 
 void ChunkTest::source_saved_chunks(const char* path)
 {
     std::string lCmdName;
-    {
+    #ifdef SAVE_LOG_FILES
         lCmdName = "source unit_test_chunks_";
         lCmdName += path;
-    }
-//  lCmdName("source unit_test_chunks");
+    #else
+        lCmdName = "source unit_test_chunks.soar";
+    #endif
     agent_command(lCmdName.c_str());
 }
+
 void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks)
 {
     start_log(path.c_str());

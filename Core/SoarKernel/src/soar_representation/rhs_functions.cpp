@@ -268,6 +268,11 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, cons* args, voi
    of the current local time.
 -------------------------------------------------------------------- */
 
+Symbol* dc_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
+{
+    return thisAgent->symbolManager->make_int_constant(thisAgent->decision_phases_count);
+}
+
 Symbol* timestamp_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
     time_t now;
@@ -883,6 +888,10 @@ void init_built_in_rhs_functions(agent* thisAgent)
       interrupt_rhs_function_code,
       0, false, true, 0);
     */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),
+                     dc_rhs_function_code,
+                     0, true, false, 0);
+
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"),
                      make_constant_symbol_rhs_function_code,
                      -1, true, false, 0);

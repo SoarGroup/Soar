@@ -1,59 +1,21 @@
+srand 23
 
-# Procedural Memory
-max-chunks 1000
-max-elaborations 500
-#max-nil-output-cycles 100
-
-watch 1
-## semantic memory parameters
+learn --only
 smem --set learning on
 smem --set initial-variable-id 999000
-alias mem production memory-usage
-alias pfc print -fc
-max-goal-depth 100
-alias stcyc stats --cycle
-alias statsm stats -M
-#stats --track 
-### requires new SMem
-#smem --set activation-mode maximal-constraint 
-
-#epmem --off
-#exp -a
-#### set episodic learning on - Don't need it now for parsing work
 epmem --off
-#epmem --set learning on
-#epmem --set trigger dc
-#epmem --set phase output
 
-#indifferent-selection -g
-#indifferent-selection -e 0
 decide indifferent-selection -x
-#decide set-random-seed
 
+max-chunks 1000
+max-elaborations 500
+max-goal-depth 100
+watch 1
 
 multi-attributes object 20
 multi-attributes preposition 10
 multi-attributes property 9
 multi-attributes relation 8
-
-#multi-attributes find 25
-#multi-attributes relationships 25
-#multi-attributes relation 500
-#multi-attributes goal-possible-match-set 360
-#multi-attributes goal-found-possible 25
-#multi-attributes goal-possible-match 500
-#multi-attributes name 1
-
-#### set chunking paramenter
-learn --only
-
-#save-backtraces --enable
-
-#max-goal-depth 50
-
-#svs --enable
-#svs connect_viewer 2000
-
 
 sp {evaluate-operator*elaborate*state*look-ahead-operator*merge*copy
     :default
@@ -13382,22 +13344,6 @@ sp {apply*wait-for-response*add*next-sentence-number
     (<ts> ^current-sentence-number <csn> +)
 }
 
-sp {apply*wait-for-response*stop*max-sentence
-    (state <s> ^operator <o*1>)
-    (<o*1> ^name wait-for-response)
-    (<s> ^top-state <ts>)
-    (<ts> ^max-sentence-number <csn>)
-    (<ts> ^current-sentence-number { > <csn> <c*1> })
-    -->
-    (write (cmd |ctf stats.txt stats|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))(write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))(write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))(write (cmd |ctf solution.txt print (* ^dcount *) -d 2|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))(write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))(write (cmd |ctf solution.txt print (* ^dcount *) -d 2|))(write (cmd |ctf chunks.txt pfc|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))(write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))(write (cmd |ctf solution.txt print (* ^dcount *) -d 2|))(write (cmd |ctf chunks.txt pfc|))(write (cmd |ctf s1.txt print s1 -d 3|))
-    (write (cmd |ctf stats.txt stats|))(write (cmd |ctf statsm.txt statsm|))(write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))(write (cmd |ctf solution.txt print (* ^dcount *) -d 2|))(write (cmd |ctf chunks.txt pfc|))(write (cmd |ctf s1.txt print s1 -d 3|))(halt)
-}
-
 sp {apply*interpet-message*remove*current-sentence-number
     (state <s> ^top-state <ts>)
     (<ts> ^game-scripting true)
@@ -14958,7 +14904,7 @@ sp {comprehension*propose*record-decision-counts*rule
     (<s*1> ^{ << not-merged-receiver not-merged-assigner >> <a*1> } <nm>)
     (<nm> -^decision-count <d*1>)
     -->
-    (<nm> ^decision-count (int (cmd stats |-d|)) +)
+    (<nm> ^decision-count (dc) +)
 }
 
 sp {comprehension*compare*record-decision-counts
@@ -14976,7 +14922,7 @@ sp {comprehension*apply*record-decision-counts
     (<op> ^name record-decision-counts)
     (<op> ^not-merged <nm>)
     -->
-    (<nm> ^decision-count (int (cmd stats |-d|)) +)
+    (<nm> ^decision-count (dc) +)
 }
 
 sp {comprehension*propose*record-decision-counts*receiver
@@ -17831,7 +17777,7 @@ sp {comprehension*apply*next-word*decision-count-threshold
     (<seg> ^decision-count-threshold <dct>)
     -->
     (<seg> ^decision-count-threshold <dct> -)
-    (<seg> ^decision-count-threshold (+ 300 (int (cmd stats |-d|))) +)
+    (<seg> ^decision-count-threshold (+ 300 (dc)) +)
 }
 
 sp {comprehension*apply*next-word*decision-count-threshold*initial
@@ -17840,7 +17786,7 @@ sp {comprehension*apply*next-word*decision-count-threshold*initial
     (<s> ^operator <o*1>)
     (<o*1> ^name next-word)
     -->
-    (<seg> ^decision-count-threshold (+ 300 (int (cmd stats |-d|))) +)
+    (<seg> ^decision-count-threshold (+ 300 (dc)) +)
 }
 
 sp {comprehension*propose*next-word
@@ -33102,8 +33048,6 @@ sp {apply*clean-up-after-learning*capture-data
     -->
     (<ts> ^dialog-context <dc> -)
     (<s> ^old-context <dc> +)
-    (write (cmd |ctf -a pertaskstats.txt stats|))
-    (write (cmd |ctf -a pertaskstats.txt stats|))(write (cmd |ctf -a smemuse.txt smem --stats mem-usage|))
 }
 
 sp {finished-game-teaching*propose*clean-up-after-learning*no
@@ -33199,20 +33143,6 @@ sp {finished-game-teaching*propose*setup-search*yes
     (<o> ^game-name <name> +)
 }
 
-sp {finished-game-teaching*apply*setup-search*printtime
-    (state <s> ^name finished-game-teaching)
-   -{ (<s> ^top-state <t*1>)
-      (<t*1> ^dialog-context <d*1>)
-      (<d*1> ^structure <s*1>)
-      (<s*1> ^multiplayer true)}
-    (<s> ^operator <o*2>)
-    (<o*2> ^name setup-search)
-    (<s> ^superstate <s*2>)
-    (<s*2> ^operator <o*1>)
-    (<o*1> ^response yes)
-    -->
-    (write (cmd |ctf endlearntime.txt stats|))
-}
 
 sp {finished-game-teaching*propose*setup-search*game-replay
     (state <s> ^name finished-game-teaching)
