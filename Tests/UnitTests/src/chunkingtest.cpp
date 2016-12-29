@@ -15,6 +15,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 
 #ifdef DO_CHUNKING_TESTS
 
+//        CPPUNIT_TEST(GamesAgent_Sanity1);
+
         CPPUNIT_TEST(SMem_Chunked_Query);
         CPPUNIT_TEST(SMem_Chunked_Query2);
         CPPUNIT_TEST(SMem_Chunk_Direct);
@@ -34,15 +36,23 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Chunked_Justification_with_extras);
         CPPUNIT_TEST(Conflated_Constants);
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
+        #ifndef SKIP_SLOW_TESTS
+            CPPUNIT_TEST(Demo_Arithmetic);
+        #endif
         CPPUNIT_TEST(Demo_Blocks_World_Hierarchical);
+        CPPUNIT_TEST(Demo_Blocks_World_Hierarchical_Look_Ahead);
         CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead);
         CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation);
+        CPPUNIT_TEST(Demo_Blocks_World_Operator_Subgoaling);
         CPPUNIT_TEST(Demo_Eight_Puzzle);
+        CPPUNIT_TEST(Demo_MaC_Planning);
         CPPUNIT_TEST(Demo_RL_Unit);
+        CPPUNIT_TEST(Demo_ToH_Recursive);
         CPPUNIT_TEST(Demo_Water_Jug_Hierarchy);
         CPPUNIT_TEST(Demo_Water_Jug_Look_Ahead);
         CPPUNIT_TEST(Demo_Water_Jug_Tie);
         CPPUNIT_TEST(Disjunction_Merge);
+        CPPUNIT_TEST(Duplicates);
         CPPUNIT_TEST(Faux_Operator);
         CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
@@ -63,6 +73,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(NCC_with_Relational_Constraint);
         CPPUNIT_TEST(No_Topstate_Match);
         CPPUNIT_TEST(Opaque_State_Barrier);
+        CPPUNIT_TEST(PRIMS_Sanity1);
+        CPPUNIT_TEST(PRIMS_Sanity2);
         CPPUNIT_TEST(Promoted_STI);
         CPPUNIT_TEST(Reorderer_Bad_Conjunction);
         CPPUNIT_TEST(Repair_Unconnected_RHS_ID);
@@ -81,7 +93,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(STI_Variablization);
         CPPUNIT_TEST(STI_with_referents);
         CPPUNIT_TEST(Superstate_Identity_Opaque);
-        CPPUNIT_TEST(testLearn);   // bug 1145
+        CPPUNIT_TEST(Chunk_All_Only_Except);   // bug 1145
         CPPUNIT_TEST(Ungrounded_in_BT_Constraint);
         CPPUNIT_TEST(Ungrounded_Mixed);
         CPPUNIT_TEST(Ungrounded_Relational_Constraint);
@@ -91,9 +103,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Unify_Children_Results);
         CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
         CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
-//        #ifndef SKIP_SLOW_TESTS
-                CPPUNIT_TEST(Demo_Arithmetic);
-//        #endif
 
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -107,83 +116,95 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void source(const std::string& path);
         void build_and_check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
         void build_and_check_chunk_clean(const std::string& path, int64_t decisions, int64_t expected_chunks);
-        void STI_Variablization();
-        void STI_Variablization_Same_Type();
+        void agent_command(const char* pCmd);
+        void start_log(const char* path);
+        void continue_log(const char* path);
+        void close_log();
         void All_Test_Types();
-        void Conflated_Constants();
-        void Chunk_Operator_Tie_Impasse();
-        void Chunk_Operator_Tie_Item_Links();
-        void Ungrounded_Relational_Constraint();
-        void Vrblzd_Constraint_on_Ungrounded();
-        void Simple_Literalization();
-        void Constraint_Prop_from_Base_Conds();
-        void BUNCPS_7_with_Constraints();
-        void Literalization_with_Constraints();
-        void Ungrounded_in_BT_Constraint();
-        void RHS_Unbound_Multivalue();
-        void Rete_Bug_Deep_vs_Top();
-        void Rete_Bug_Deep_vs_Deep();
-        void Ungrounded_STIs();
-        void Ungrounded_Mixed();
-        void Ungrounded_STI_Promotion();
-        void NC_with_RC_and_Local_Variable();
-        void NCC_Simple_Literals();
-        void NC_Simple_No_Exist();
-        void NC_with_Relational_Constraint();
-        void NCC_2_Conds_Simple_Literals();
-        void NCC_with_Relational_Constraint();
-        void NCC_Complex();
-        void NCC_from_Backtrace();
-        void RL_Variablization();
         void BUNCPS_0();
         void BUNCPS_1();
         void BUNCPS_2();
         void BUNCPS_3();
-        void Maintain_Instantiation_Specific_Identity();
         void BUNCPS_4();
-        void Justification_RC_not_Ungrounded_STIs();
         void BUNCPS_5();
         void BUNCPS_6_Four_Level();
-        void Superstate_Identity_Opaque();
-        void Simple_Constraint_Prop();
-        void Literalization_of_NC_and_NCC();
-        void Literalization_with_BT_Constraints();
-        void Literalization_with_BT_Constraints2();
-        void Unify_through_Two_Traces_Four_Deep();
-        void STI_with_referents();
-        void Chunked_Justification_with_extras();
-        void No_Topstate_Match();
-        void Repair_NOR_Temporal_Constraint();
-        void RHS_Math();
-        void Repair_Unconnected_RHS_ID();
-        void Promoted_STI();
+        void BUNCPS_7_with_Constraints();
+        void Chunk_Operator_Tie_Impasse();
+        void Chunk_Operator_Tie_Item_Links();
         void Chunk_RL_Proposal();
-        void NC_Disjunction();
-        void RHS_Math_Mixed();
-        void RHS_Math_Abs();
-        void Reorderer_Bad_Conjunction();
-        void Opaque_State_Barrier();
-        void Unify_Ambiguous_Output();
-        void Faux_Smem_Operator_RHS();
-        void Faux_Operator();
-        void SMem_Chunk_Direct();
-        void SMem_Chunked_Query();
-        void Result_On_Operator();
-        void Unify_Children_Results();
-        void Demo_Blocks_World_Hierarchical();
-        void testLearn();
-        void SMem_Chunked_Query2();
+        void Chunk_Superstate_Operator_Preference();
+        void Chunked_Justification_with_extras();
+        void Conflated_Constants();
+        void Constraint_Prop_from_Base_Conds();
         void Demo_Arithmetic();
-        void Demo_Blocks_World_Look_Ahead();
+        void Demo_Blocks_World_Hierarchical_Look_Ahead();
+        void Demo_Blocks_World_Hierarchical();
         void Demo_Blocks_World_Look_Ahead_State_Evaluation();
+        void Demo_Blocks_World_Look_Ahead();
+        void Demo_Blocks_World_Operator_Subgoaling();
         void Demo_Eight_Puzzle();
+        void Demo_MaC_Planning();
         void Demo_RL_Unit();
+        void Demo_ToH_Recursive();
         void Demo_Water_Jug_Hierarchy();
         void Demo_Water_Jug_Look_Ahead();
         void Demo_Water_Jug_Tie();
         void Disjunction_Merge();
-        void Chunk_Superstate_Operator_Preference();
+        void Duplicates();
+        void Faux_Operator();
+        void Faux_Smem_Operator_RHS();
+        void GamesAgent_Sanity1();
+        void Justification_RC_not_Ungrounded_STIs();
         void Justifications_Get_New_Identities();
+        void Literalization_of_NC_and_NCC();
+        void Literalization_with_BT_Constraints();
+        void Literalization_with_BT_Constraints2();
+        void Literalization_with_Constraints();
+        void Maintain_Instantiation_Specific_Identity();
+        void NC_Disjunction();
+        void NC_Simple_No_Exist();
+        void NC_with_RC_and_Local_Variable();
+        void NC_with_Relational_Constraint();
+        void NCC_2_Conds_Simple_Literals();
+        void NCC_Complex();
+        void NCC_from_Backtrace();
+        void NCC_Simple_Literals();
+        void NCC_with_Relational_Constraint();
+        void No_Topstate_Match();
+        void Opaque_State_Barrier();
+        void PRIMS_Sanity1();
+        void PRIMS_Sanity2();
+        void Promoted_STI();
+        void Reorderer_Bad_Conjunction();
+        void Repair_NOR_Temporal_Constraint();
+        void Repair_Unconnected_RHS_ID();
+        void Result_On_Operator();
+        void Rete_Bug_Deep_vs_Deep();
+        void Rete_Bug_Deep_vs_Top();
+        void RHS_Math_Abs();
+        void RHS_Math_Mixed();
+        void RHS_Math();
+        void RHS_Unbound_Multivalue();
+        void RL_Variablization();
+        void Simple_Constraint_Prop();
+        void Simple_Literalization();
+        void SMem_Chunk_Direct();
+        void SMem_Chunked_Query();
+        void SMem_Chunked_Query2();
+        void STI_Variablization_Same_Type();
+        void STI_Variablization();
+        void STI_with_referents();
+        void Superstate_Identity_Opaque();
+        void Chunk_All_Only_Except();
+        void Ungrounded_in_BT_Constraint();
+        void Ungrounded_Mixed();
+        void Ungrounded_Relational_Constraint();
+        void Ungrounded_STI_Promotion();
+        void Ungrounded_STIs();
+        void Unify_Ambiguous_Output();
+        void Unify_Children_Results();
+        void Unify_through_Two_Traces_Four_Deep();
+        void Vrblzd_Constraint_on_Ungrounded();
 
         sml::Kernel* pKernel;
         sml::Agent* pAgent;
@@ -251,24 +272,59 @@ void ChunkTest::build_and_check_chunk(const std::string& path, int64_t decisions
     }
 #endif
 }
+void ChunkTest::agent_command(const char* pCmd)
+{
+    sml::ClientAnalyzedXML response;
+    pAgent->ExecuteCommandLineXML(pCmd, &response);
+    CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+}
+
+void ChunkTest::start_log(const char* path)
+{
+    std::string lCmdName("output log ");
+    lCmdName += path;
+    lCmdName.resize(lCmdName.size() - 5);
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
+}
+
+void ChunkTest::continue_log(const char* path)
+{
+    std::string lCmdName("output log -A ");
+    lCmdName += path;
+    lCmdName.resize(lCmdName.size() - 5);
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
+}
+
+void ChunkTest::close_log()
+{
+    std::string lCmdName("output log -c");
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
+}
 
 void ChunkTest::build_and_check_chunk_clean(const std::string& path, int64_t decisions, int64_t expected_chunks)
 {
+    start_log(path.c_str());
     source(path.c_str());
+    #ifdef TURN_EXPLAINER_ON
+        agent_command("explain all on");
+        agent_command("explain just on");
+    #endif
     pAgent->RunSelf(decisions, sml::sml_DECISION);
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("output command-to-file unit_test_chunks.soar print -fc", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
+    close_log();
+    agent_command("output command-to-file unit_test_chunks.soar print -fc");
     tearDown();
     setUp();
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("source unit_test_chunks.soar", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
+    continue_log(path.c_str());
+    agent_command("source unit_test_chunks.soar");
     {
         sml::ClientAnalyzedXML response;
         pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
@@ -281,32 +337,31 @@ void ChunkTest::build_and_check_chunk_clean(const std::string& path, int64_t dec
             sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
             excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
             std::ostringstream outStringStream("");
-            outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
-//            std::cout << outStringStream.str() << "\n";
-//            sml::ClientAnalyzedXML response2;
-//            pAgent->ExecuteCommandLineXML("output command-to-file failed.soar print -f", &response2);
-//            pAgent->ExecuteCommandLineXML("saverules", &response2);
-
+            outStringStream << "--> Expecting to verify " << expected_chunks << " chunks: " << ignored << " matched but " << sourced << " did not.  ";
+            std::string outString = outStringStream.str();
+            std::cout << outString;
+            #ifdef SAVE_LOG_FILES
+                agent_command((std::string("output log --add |") + outString + std::string("|")).c_str());
+            #endif
             throw CPPUnit_Assert_Failure(outStringStream.str());
+        } else {
+            #ifdef SAVE_LOG_FILES
+                agent_command("output log -a Success!!!  All expected rules were learned!!!");
+            #endif
         }
     }
+
     #ifdef INIT_AFTER_RUN
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("soar init", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("run 100", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("soar init", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
+        #ifdef SAVE_LOG_FILES
+            agent_command("output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+        #endif
+        agent_command("soar init");
+        agent_command("trace 0");
+        agent_command("run 100");
+        agent_command("trace 1");
+        agent_command("soar init");
     #endif
+    close_log();
 }
 
 void ChunkTest::setUp()
@@ -329,16 +384,8 @@ void ChunkTest::setUp()
     /* The following may not be necessary.  May have been something I was using to print
      * some debug trace messages while the unit tests were running.   */
     #ifndef CONFIGURE_SOAR_FOR_UNIT_TESTS
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("output console off", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
-    {
-        sml::ClientAnalyzedXML response;
-        pAgent->ExecuteCommandLineXML("output callbacks on", &response);
-        CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
-    }
+    agent_command("output console off");
+    agent_command("output callbacks on");
     #endif
 
     succeeded = false;
@@ -355,9 +402,9 @@ void ChunkTest::tearDown()
 }
 
 
-void ChunkTest::testLearn()
+void ChunkTest::Chunk_All_Only_Except()
 {
-    source("testLearn.soar");
+    source("Chunk_All_Only_Except.soar");
     pAgent->ExecuteCommandLine("chunk except");
     pKernel->RunAllAgentsForever();
     {
@@ -836,4 +883,44 @@ void ChunkTest::Disjunction_Merge()
 void ChunkTest::Justifications_Get_New_Identities()
 {
     build_and_check_chunk_clean("Justifications_Get_New_Identities.soar", 4, 1);
+}
+
+void ChunkTest::Demo_Blocks_World_Hierarchical_Look_Ahead()
+{
+    build_and_check_chunk_clean("Demo_Blocks_World_Hierarchical_Look_Ahead.soar", 70, 4);
+}
+
+void ChunkTest::Demo_Blocks_World_Operator_Subgoaling()
+{
+    build_and_check_chunk_clean("Demo_Blocks_World_Operator_Subgoaling.soar", 6, 1);
+}
+
+void ChunkTest::Demo_MaC_Planning()
+{
+    build_and_check_chunk_clean("Demo_MaC_Planning.soar", 138, 58);
+}
+
+void ChunkTest::Demo_ToH_Recursive()
+{
+    build_and_check_chunk_clean("Demo_ToH_Recursive.soar", 23, 10);
+}
+
+void ChunkTest::PRIMS_Sanity1()
+{
+    build_and_check_chunk_clean("PRIMS_Sanity1.soar", 795, 23);
+}
+
+void ChunkTest::PRIMS_Sanity2()
+{
+    build_and_check_chunk_clean("PRIMS_Sanity2.soar", 728, 22);
+}
+
+void ChunkTest::GamesAgent_Sanity1()
+{
+    build_and_check_chunk_clean("GamesAgent_Sanity1.soar", 4539, 14);
+}
+
+void ChunkTest::Duplicates()
+{
+    build_and_check_chunk_clean("Duplicates.soar", 5, 2);
 }
