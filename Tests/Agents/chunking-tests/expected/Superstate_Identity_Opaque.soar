@@ -1,8 +1,9 @@
-sp {answer*chunk*make*snc*t2-1
-    (state <s1> ^superstate nil)
-    (<s1> ^foo2 { <> homer <c3> })
-    (<s1> ^foo { <> simpson <c1> })
-    (<s1> ^foo { <> bart <c2> })
+sp {answer*make*StateNoChange*t2-1
+    (state <s1> ^superstate nil ^foo2 { <> homer <c3> } ^foo { <> bart <c2> }
+          ^foo { <> simpson <c1> })
     -->
     (<s1> ^test-done true +)
 }
+
+
+

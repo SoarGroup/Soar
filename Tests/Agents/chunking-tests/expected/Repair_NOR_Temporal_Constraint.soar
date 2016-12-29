@@ -1,31 +1,26 @@
-sp {answer*apply*query*success*2*OpNoChange*t6-3
-    (state <s1> ^step 2)
-    (<s1> ^superstate nil)
-    (<s1> ^operator <o1>)
+sp {answer*apply*query*success*2*OpNoChange*t4-3
+    (state <s1> ^step 2 ^superstate nil ^operator <o1> ^result <l2>
+          ^result <l1>)
     (<o1> ^name top-op)
-    (<s1> ^result <l1>)
-    (<s1> ^result <l2>)
     (<l2> ^foo <c1>)
     -->
     (<s1> ^result2 <c1> +)
 }
 
-sp {answer*elab*query*success*2*OpNoChange*t5-2
-    (state <s1> ^step 2)
-    (<s1> ^superstate nil)
-    (<s1> ^operator <o1>)
+sp {answer*elab*query*success*2*OpNoChange*t4-2
+    (state <s1> ^step 2 ^superstate nil ^operator <o1> ^result <l1>)
     (<o1> ^name top-op)
-    (<s1> ^result <l1>)
     -->
     (<l1> ^foo bar +)
 }
 
 sp {answer*apply*query*success*1*OpNoChange*t4-1
-    (state <s1> ^step 1)
-    (<s1> ^superstate nil)
-    (<s1> ^operator <o1>)
+    (state <s1> ^step 1 ^superstate nil ^operator <o1>)
     (<o1> ^name top-op)
     -->
     (<s1> ^result <l1> +)
     (<l1> ^D Y +)
 }
+
+
+

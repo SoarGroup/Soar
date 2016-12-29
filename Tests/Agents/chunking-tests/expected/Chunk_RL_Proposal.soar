@@ -11,3 +11,4 @@ sp {answer*propose*snc*t1-1
     (<s1> ^operator <o1> = <c1>)
     (<o1> ^name rl-proposal +)
 }
+

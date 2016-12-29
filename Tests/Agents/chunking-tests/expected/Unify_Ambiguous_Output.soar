@@ -1,8 +1,9 @@
-sp {answer*make-chunk*snc*t2-1
+sp {answer*make-chunk*StateNoChange*t2-1
     (state <s1> ^superstate nil)
     -->
-    (<s1> ^result-marco <y1> +)
-    (<s1> ^result-foo <x1> +)
+    (<s1> ^result-marco <y1> + ^result-foo <x1> + ^result-marco2 <y1> +)
     (<x1> ^bastard-child of-foo +)
-    (<s1> ^result-marco2 <y1> +)
 }
+
+
+
