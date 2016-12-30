@@ -340,7 +340,7 @@ Symbol* accept_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_
 
 
 Symbol*
-lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+get_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* sym, * returnSym;
 
@@ -365,6 +365,50 @@ lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 
     returnSym = thisAgent->symbolManager->make_int_constant(sym->id->LTI_ID);
     return returnSym;
+}
+
+Symbol*
+set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    Symbol* sym, *ltiIDSym, *returnSym;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa(thisAgent,  "Error: '@' rhs function called with no arguments.\n");
+        return NIL;
+    }
+
+    sym = static_cast<Symbol*>(args->first);
+    if (!sym->is_sti())
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: '@' rhs function cannot accept %y because it is not a Soar identifier\n", sym);
+        return NIL;
+    }
+
+    if (args->rest)
+    {
+        if (args->rest->rest)
+        {
+            thisAgent->outputManager->printa(thisAgent,  "Error: '@' rhs function takes exactly 2 arguments.\n");
+            return NIL;
+        }
+        ltiIDSym = static_cast<Symbol*>(args->rest->first);
+        if (!sym->is_int())
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: '@' rhs function cannot accept %y as an LTI ID because it is not an integer\n", sym);
+            return NIL;
+        }
+
+    }
+    else
+    {
+        thisAgent->outputManager->printa(thisAgent,  "Error: '@' rhs function takes exactly 2 arguments.\n");
+        return NIL;
+    }
+
+    sym->id->LTI_ID = ltiIDSym->ic->value;
+
+    return sym;
 }
 
 /* ---------------------------------------------------------------------
@@ -874,71 +918,27 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
 void init_built_in_rhs_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code,
-                     -1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code,
-                     0, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), lti_id_rhs_function_code,
-                     1, true, false, 0);
-    /*
-      Replaced with a gSKI rhs function
-      add_rhs_function (thisAgent, make_str_constant (thisAgent, "interrupt"),
-      interrupt_rhs_function_code,
-      0, false, true, 0);
-    */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),
-                     dc_rhs_function_code,
-                     0, true, false, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"),
-                     make_constant_symbol_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),
-                     timestamp_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),
-                     trim_rhs_function_code,
-                     1,
-                     true,
-                     false,
-                     0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"),
-                     capitalize_symbol_rhs_function_code,
-                     1,
-                     true,
-                     false,
-                     0);
-    /* AGR 520  begin */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code,
-                     4, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code,
-                     1, true, false, 0);
-    /* AGR 520  end   */
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"),
-                     dont_learn_rhs_function_code,
-                     1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"),
-                     force_learn_rhs_function_code,
-                     1, false, true, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"),
-                     deep_copy_rhs_function_code,
-                     1, true, false, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"),
-                     count_rhs_function_code,
-                     -1, false, true, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"),
-                     wait_rhs_function_code,
-                     1, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), set_lti_id_rhs_function_code, 2, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("lti-id"), get_lti_id_rhs_function_code, 1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"), dont_learn_rhs_function_code,  1, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"), force_learn_rhs_function_code, 1, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0);
 
     init_built_in_rhs_math_functions(thisAgent);
+
 }
 
 void remove_built_in_rhs_functions(agent* thisAgent)
