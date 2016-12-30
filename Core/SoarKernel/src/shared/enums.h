@@ -88,6 +88,8 @@ enum TraceMode
     DT_WATERFALL                = 52,
     DT_GDS_HIGH                 = 53,
     DT_RHS_FUN_VARIABLIZATION   = 54,
+    DT_DEEP_COPY                = 55,
+    DT_RHS_LTI_LINKING          = 56,
     num_trace_modes
 };
 

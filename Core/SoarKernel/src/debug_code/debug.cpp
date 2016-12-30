@@ -57,6 +57,11 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
 
 void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        mode_info[i].prefix = NULL;
+    }
+
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
 
@@ -119,6 +124,17 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_PREFS].prefix =                        strdup("Prefs   | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
     mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
+    mode_info[DT_DEEP_COPY].prefix =                    strdup("DeepCopy| ");
+    mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
+
+    /* In case we forget to add a trace prefix */
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        if (mode_info[i].prefix == NULL)
+        {
+            mode_info[i].prefix =              strdup("???     | ");
+        }
+    }
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);

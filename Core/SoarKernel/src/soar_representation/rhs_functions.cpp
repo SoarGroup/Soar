@@ -701,14 +701,10 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, cons* args, void* /*user
 /* ====================================================================
                   RHS Deep copy recursive helper functions
 ====================================================================  */
-void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
+void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
                                 std::unordered_map<Symbol*, Symbol*>& processedSymbols);
 
-void recursive_wme_copy(agent* thisAgent,
-                        Symbol* parent_id,
-                        wme* curwme,
+void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
                         std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
 
@@ -736,10 +732,7 @@ void recursive_wme_copy(agent* thisAgent,
             made_new_attr_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent,
-                                   curwme->attr,
-                                   new_attr,
-                                   processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->attr, new_attr, processedSymbols);
     }
 
     /* Handling the case where the value is an id symbol */
@@ -759,14 +752,10 @@ void recursive_wme_copy(agent* thisAgent,
             made_new_value_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent,
-                                   curwme->value,
-                                   new_value,
-                                   processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->value, new_value, processedSymbols);
     }
 
-    /* Making the new wme (Note just reusing the wme data structure, these
-       wme's actually get converted into preferences later).*/
+    /* Making the new wme (Note just reusing the wme data structure, these wme's actually get converted into preferences later).*/
     wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
 
     /* TODO: We need a serious reference counting audit of the kernel But I think
@@ -787,53 +776,31 @@ void recursive_wme_copy(agent* thisAgent,
 
 }
 
-void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
+void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
                                 std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
     /* If this symbol has already been processed then ignore it and return */
-    if (processedSymbols.find(id_to_process) != processedSymbols.end())
-    {
-        return;
-    }
+    if (processedSymbols.find(id_to_process) != processedSymbols.end()) return;
+
     processedSymbols.insert(std::pair<Symbol*, Symbol*>(id_to_process, parent_id));
 
     /* Iterating over the normal slot wmes */
-    for (slot* curslot = id_to_process->id->slots;
-            curslot != 0;
-            curslot = curslot->next)
+    for (slot* curslot = id_to_process->id->slots; curslot != 0; curslot = curslot->next)
     {
-
         /* Iterating over the wmes in this slot */
-        for (wme* curwme = curslot->wmes;
-                curwme != 0;
-                curwme = curwme->next)
+        for (wme* curwme = curslot->wmes; curwme != 0; curwme = curwme->next)
         {
-
-            recursive_wme_copy(thisAgent,
-                               parent_id,
-                               curwme,
-                               processedSymbols);
-
+            recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
         }
-
     }
 
     /* Iterating over input wmes */
-    for (wme* curwme = id_to_process->id->input_wmes;
-            curwme != 0;
-            curwme = curwme->next)
+    for (wme* curwme = id_to_process->id->input_wmes; curwme != 0; curwme = curwme->next)
     {
-
-        recursive_wme_copy(thisAgent,
-                           parent_id,
-                           curwme,
-                           processedSymbols);
-
+        recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
     }
-
 }
+
 /* ====================================================================
                   RHS Deep copy function
 ====================================================================  */
@@ -852,11 +819,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
-    recursive_deep_copy_helper(thisAgent,
-                               baseid,
-                               retval,
-                               processedSymbols);
-
+    recursive_deep_copy_helper(thisAgent, baseid,  retval, processedSymbols);
 
     return retval;
 }
@@ -876,8 +839,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
     for (; args != NIL; args = args->rest)
     {
         arg = static_cast<symbol_struct*>(args->first);
-        /* --- Note use of false here--print the symbol itself, not a rereadable
-           version of it --- */
+        /* --- Note use of false here--print the symbol itself, not a rereadable version of it --- */
         string = arg->to_string();
         (*thisAgent->dyn_counters)[ string ]++;
     }

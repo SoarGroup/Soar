@@ -921,9 +921,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->GDS_evaluated_already = false;
     inst->prod_name = prod ? prod->name : thisAgent->symbolManager->soarSymbols.architecture_inst_symbol;
     thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-    dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n",
-        inst->prod_name, inst->i_id);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) and adding to newly_created_instantiations...\n", inst->i_id, inst->prod_name);
+    dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
+    dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
 //    {
 //        debug_trace_set(DT_UNIFY_SINGLETONS, true);
@@ -933,10 +932,10 @@ void create_instantiation(agent* thisAgent, production* prod,
 //    }
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "\nCreating instantiation of rule %y\n", inst->prod_name);
-        char buf[256];
-        SNPRINTF(buf, 254, "Creating instantiation of rule %s", inst->prod_name->to_string(true));
-        xml_generate_verbose(thisAgent, buf);
+        std::string lStr;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "\nNew match of %y.  Creating instantiation.\n", inst->prod_name);
+        thisAgent->outputManager->printa(thisAgent, lStr.c_str());
+        xml_generate_verbose(thisAgent, lStr.c_str());
     }
 
     thisAgent->production_being_fired = inst->prod;
@@ -1028,16 +1027,10 @@ void create_instantiation(agent* thisAgent, production* prod,
         /* This while loop was added for deep copy.  Normally only executed once.  SoarTech changed */
         while (pref)
         {
-            /* The parser assumes that any rhs preference of the form
-             *
-             * (<s> ^operator <o> = <x>)
-             *
-             * is a binary indifferent preference, because it assumes <x> is an
-             * operator. However, it could be the case that <x> is actually bound to
-             * a number, which would make this a numeric indifferent preference. The
-             * parser had no way of easily figuring this out, but it's easy to check
-             * here. */
-            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && (pref->referent->is_float() || pref->referent->is_int()))
+            /* The parser cannot determine if a rhs preference (<s> ^operator <o> = <x>) is a binary or
+             * numeric indifferent preference until it matches, so we set it here. */
+            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
+                && (pref->referent->is_float() || pref->referent->is_int()))
             {
                 pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
             }
@@ -1055,7 +1048,6 @@ void create_instantiation(agent* thisAgent, production* prod,
             else
             {
                 pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
-                /* REW: end   09.15.96 */
             }
 
             /* These STL lists get information from the deep-copy rhs function so that 
