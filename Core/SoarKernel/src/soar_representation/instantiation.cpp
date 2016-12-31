@@ -880,6 +880,139 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
 {
     return ((inst)->prod && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
+
+void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
+{
+    preference* pref;
+
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
+    pref->o_supported = true;
+    thisAgent->symbolManager->symbol_add_ref(pref->id);
+    thisAgent->symbolManager->symbol_add_ref(pref->attr);
+    thisAgent->symbolManager->symbol_add_ref(pref->value);
+    pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
+
+    pref->inst = inst;
+    pref->inst_next = pref->inst_prev = NULL;
+    pref->in_tm = inTM;
+    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
+}
+
+void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
+{
+    pref->inst = inst;
+
+    /* The parser cannot determine if a rhs preference (<s> ^operator <o> = <x>) is a binary or
+     * numeric indifferent preference until it matches, so we set it here. */
+    if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
+        && (pref->referent->is_float() || pref->referent->is_int()))
+    {
+        pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+    }
+
+    if (inst->prod->declared_support == DECLARED_O_SUPPORT)
+    {
+        pref->o_supported = true;
+    }
+    else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
+    {
+        pref->o_supported = false;
+    }
+    else
+    {
+        pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
+    }
+    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
+}
+
+void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
+{
+
+    wme* tempwme;
+    goal_stack_level glbDeepCopyWMELevel = 0;
+
+    glbDeepCopyWMELevel = pref->id->id->level;
+
+    deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
+    pref->rhs_funcs.value = NULL;
+
+    while (thisAgent->WM->glbDeepCopyWMEs)
+    {
+        tempwme = thisAgent->WM->glbDeepCopyWMEs;
+        if (tempwme->id->id->level == NO_WME_LEVEL)
+        {
+            tempwme->id->id->level = glbDeepCopyWMELevel;
+        }
+        if (tempwme->attr->is_sti() && tempwme->attr->id->level == NO_WME_LEVEL)
+        {
+            tempwme->attr->id->level = glbDeepCopyWMELevel;
+        }
+        if (tempwme->value->is_sti() && tempwme->value->id->level == NO_WME_LEVEL)
+        {
+            tempwme->value->id->level = glbDeepCopyWMELevel;
+        }
+
+        /* Could generate identitites for deep-copied items here */
+        pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, tempwme->id, tempwme->attr, tempwme->value, NULL);
+        thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
+        deallocate_wme(thisAgent, tempwme);
+        add_pref_to_inst(thisAgent, pref, inst);
+    }
+
+}
+
+void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
+{
+    condition * cond;
+
+    cond = make_condition(thisAgent,
+        make_test(thisAgent, pWME->id , EQUALITY_TEST),
+        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
+        make_test(thisAgent, pWME->value, EQUALITY_TEST));
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
+    cond->prev = prev_cond;
+    cond->next = NULL;
+    if (prev_cond != NULL)
+    {
+        prev_cond->next = cond;
+    }
+    else
+    {
+        inst->top_of_instantiated_conditions = cond;
+        inst->bottom_of_instantiated_conditions = cond;
+    }
+    cond->test_for_acceptable_preference = pWME->acceptable;
+    cond->bt.wme_ = pWME;
+    cond->inst = inst;
+
+    #ifndef DO_TOP_LEVEL_REF_CTS
+    if (inst->match_goal_level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        wme_add_ref(pWME);
+    }
+
+    cond->bt.level = pWME->id->id->level;
+    cond->bt.trace = pWME->preference;
+    assert(cond->bt.wme_->preference == cond->bt.trace);
+    if (cond->bt.trace)
+    {
+        #ifndef DO_TOP_LEVEL_REF_CTS
+        if (inst->match_goal_level > TOP_GOAL_LEVEL)
+        #endif
+        {
+            preference_add_ref(cond->bt.trace);
+        }
+    }
+
+    cond->bt.OSK_prefs = NULL;
+    prev_cond = cond;
+}
+
 /* -----------------------------------------------------------------------
  Create Instantiation
 
@@ -942,12 +1075,8 @@ void create_instantiation(agent* thisAgent, production* prod,
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
-    AddAdditionalTestsMode additional_test_mode;
-    if (prod->type == TEMPLATE_PRODUCTION_TYPE) {
-        additional_test_mode = JUST_INEQUALITIES;
-    } else  {
-        additional_test_mode = ALL_ORIGINALS;
-    }
+    AddAdditionalTestsMode additional_test_mode = (prod->type == TEMPLATE_PRODUCTION_TYPE) ? JUST_INEQUALITIES: ALL_ORIGINALS;
+
     /* --- build the instantiated conditions, and bind LHS variables --- */
         p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
             &(inst->top_of_instantiated_conditions),
@@ -996,7 +1125,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     inst->preferences_cached = NULL;
     need_to_do_support_calculations = false;
     a2 = rhs_vars;
-    goal_stack_level glbDeepCopyWMELevel = 0;
 
     for (a = prod->action_list; a != NIL; a = a->next)
     {
@@ -1017,68 +1145,15 @@ void create_instantiation(agent* thisAgent, production* prod,
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
 
         }
-
-        /* If glbDeepCopyWMEs exists it must have been the rhs function executed, so
-         * save the goal stack level for preferences that it generates. */
-        if (pref && thisAgent->WM->glbDeepCopyWMEs)
+        if (pref)
         {
-            glbDeepCopyWMELevel = pref->id->id->level;
-        }
-        /* This while loop was added for deep copy.  Normally only executed once.  SoarTech changed */
-        while (pref)
-        {
-            /* The parser cannot determine if a rhs preference (<s> ^operator <o> = <x>) is a binary or
-             * numeric indifferent preference until it matches, so we set it here. */
-            if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-                && (pref->referent->is_float() || pref->referent->is_int()))
+            add_pref_to_inst(thisAgent, pref, inst);
+            if (thisAgent->WM->glbDeepCopyWMEs)
             {
-                pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-            }
-
-            pref->inst = inst;
-            insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
-            if (inst->prod->declared_support == DECLARED_O_SUPPORT)
-            {
-                pref->o_supported = true;
-            }
-            else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
-            {
-                pref->o_supported = false;
-            }
-            else
-            {
-                pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
-            }
-
-            /* These STL lists get information from the deep-copy rhs function so that 
-             * we can generateto the preferences for the wme's copied */
-
-            if (thisAgent->WM->glbDeepCopyWMEs != 0)
-            {
-                wme* tempwme = thisAgent->WM->glbDeepCopyWMEs;
-                if (tempwme->id->id->level == NO_WME_LEVEL)
-                {
-                    tempwme->id->id->level = glbDeepCopyWMELevel;
-                }
-                if (tempwme->attr->is_sti() && tempwme->attr->id->level == NO_WME_LEVEL)
-                {
-                    tempwme->attr->id->level = glbDeepCopyWMELevel;
-                }
-                if (tempwme->value->is_sti() && tempwme->value->id->level == NO_WME_LEVEL)
-                {
-                    tempwme->value->id->level = glbDeepCopyWMELevel;
-                }
-
-                /* Could generate identitites for deep-copied items here */
-                pref = make_preference(thisAgent, a->preference_type, tempwme->id, tempwme->attr, tempwme->value, NULL);
-                thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
-                deallocate_wme(thisAgent, tempwme);
-            }
-            else
-            {
-                pref = 0;
+                add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
+
         if (a2)
         {
             a2 = a2->next;
@@ -1094,16 +1169,14 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
 
     /* --- fill in lots of other stuff --- */
-    init_instantiation(thisAgent, inst,
-                                    need_to_do_support_calculations, NIL);
+    init_instantiation(thisAgent, inst, need_to_do_support_calculations, NIL);
 
     /* --- print trace info: printing preferences --- */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
      the o-support info for the preferences we're about to print */
     if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
-        for (pref = inst->preferences_generated; pref != NIL;
-                pref = pref->inst_next)
+        for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
         {
             thisAgent->outputManager->printa(thisAgent,  " ");
             print_preference(thisAgent, pref);
@@ -1463,75 +1536,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     inst->in_ms = false;
     dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
-}
-
-void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
-{
-    preference* pref;
-
-    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
-    pref->o_supported = true;
-    thisAgent->symbolManager->symbol_add_ref(pref->id);
-    thisAgent->symbolManager->symbol_add_ref(pref->attr);
-    thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
-    pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
-    pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
-
-    pref->inst = inst;
-    pref->inst_next = pref->inst_prev = NULL;
-    pref->in_tm = inTM;
-    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
-}
-
-void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
-{
-    condition * cond;
-
-    cond = make_condition(thisAgent,
-        make_test(thisAgent, pWME->id , EQUALITY_TEST),
-        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
-        make_test(thisAgent, pWME->value, EQUALITY_TEST));
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
-    cond->prev = prev_cond;
-    cond->next = NULL;
-    if (prev_cond != NULL)
-    {
-        prev_cond->next = cond;
-    }
-    else
-    {
-        inst->top_of_instantiated_conditions = cond;
-        inst->bottom_of_instantiated_conditions = cond;
-    }
-    cond->test_for_acceptable_preference = pWME->acceptable;
-    cond->bt.wme_ = pWME;
-    cond->inst = inst;
-
-    #ifndef DO_TOP_LEVEL_REF_CTS
-    if (inst->match_goal_level > TOP_GOAL_LEVEL)
-    #endif
-    {
-        wme_add_ref(pWME);
-    }
-
-    cond->bt.level = pWME->id->id->level;
-    cond->bt.trace = pWME->preference;
-    assert(cond->bt.wme_->preference == cond->bt.trace);
-    if (cond->bt.trace)
-    {
-        #ifndef DO_TOP_LEVEL_REF_CTS
-        if (inst->match_goal_level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            preference_add_ref(cond->bt.trace);
-        }
-    }
-
-    cond->bt.OSK_prefs = NULL;
-    prev_cond = cond;
 }
 
 instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions)
