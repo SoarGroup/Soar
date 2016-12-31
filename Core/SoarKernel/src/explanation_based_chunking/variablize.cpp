@@ -423,16 +423,11 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
 
 action* Explanation_Based_Chunker::variablize_result_into_actions(preference* result)
 {
-    action* a;
 
-    if (!result)
-    {
-        return NIL;
-    }
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lO_id = 0;
 
-    a = make_action(thisAgent);
+    action* a = make_action(thisAgent);
     a->type = MAKE_ACTION;
     a->preference_type = result->type;
 
@@ -532,14 +527,31 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
 
     dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
 
-    a->next = variablize_results_into_actions(result->next_result);
     return a;
 }
 
 action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result)
 {
     dprint_unification_map(DT_RHS_VARIABLIZATION);
-    action* returnAction = variablize_result_into_actions(result);
+
+    action* returnAction, *lAction, *lLastAction;
+    preference* lPref;
+
+    returnAction = lAction = lLastAction = NULL;
+
+    for (lPref = result; lPref; lPref = lPref->next_result)
+    {
+        lAction = variablize_result_into_actions(lPref);
+        if (!returnAction)
+        {
+            returnAction = lAction;
+        }
+        if (lLastAction)
+        {
+            lLastAction->next = lAction;
+        }
+        lLastAction = lAction;
+    }
     return returnAction;
 }
 
