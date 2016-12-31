@@ -207,7 +207,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
     {
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            if (rhs_value_is_funcall(static_cast<char*>(c->first)))
+            if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
             {
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
                 literalize_RHS_function_args(static_cast<char*>(c->first));
@@ -248,7 +248,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         }
         add_identity_unification(o_ids_to_replace.id, lId->identity);
     }
-    else if (rhs_value_is_funcall(rhs_funcs.id))
+    else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
         literalize_RHS_function_args(rhs_funcs.id);
     }
@@ -267,7 +267,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         }
         add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
     }
-    else if (rhs_value_is_funcall(rhs_funcs.attr))
+    else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
         literalize_RHS_function_args(rhs_funcs.attr);
     }
@@ -286,7 +286,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         }
         add_identity_unification(o_ids_to_replace.value, lValue->identity);
     }
-    else if (rhs_value_is_funcall(rhs_funcs.value))
+    else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
         literalize_RHS_function_args(rhs_funcs.value);
     }

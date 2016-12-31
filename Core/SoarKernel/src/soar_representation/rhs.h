@@ -123,6 +123,9 @@ inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv);
 }
+
+bool rhs_value_is_literalizing_function(rhs_value rv);
+
 inline Symbol*    rhs_value_to_symbol(rhs_value rv)
 {
     return reinterpret_cast<rhs_symbol>(rv)->referent;

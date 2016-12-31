@@ -11,6 +11,7 @@
  *
  * ================================================================= */
 #include "rhs.h"
+#include "rhs_functions.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -556,5 +557,18 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
     return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID);
+}
+
+bool rhs_value_is_literalizing_function(rhs_value rv)
+{
+    cons* fl;
+    rhs_function* rf;
+    if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        rf = static_cast<rhs_function_struct*>(fl->first);
+        return rf->literalize_arguments;
+    }
+    return false;
 }
 

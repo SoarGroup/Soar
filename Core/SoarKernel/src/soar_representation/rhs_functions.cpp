@@ -70,7 +70,8 @@ void add_rhs_function(agent* thisAgent,
                       int num_args_expected,
                       bool can_be_rhs_value,
                       bool can_be_stand_alone_action,
-                      void* user_data)
+                      void* user_data,
+                      bool literalize_arguments)
 {
     rhs_function* rf;
 
@@ -102,6 +103,7 @@ void add_rhs_function(agent* thisAgent,
     rf->can_be_rhs_value = can_be_rhs_value;
     rf->can_be_stand_alone_action = can_be_stand_alone_action;
     rf->user_data = user_data;
+    rf->literalize_arguments = can_be_rhs_value ? literalize_arguments : false;
 //    rf->cached_print_str = NULL;
 //    rf->thisAgent = thisAgent;
 }
@@ -881,24 +883,43 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
 void init_built_in_rhs_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), set_lti_id_rhs_function_code, 2, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("lti-id"), get_lti_id_rhs_function_code, 1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"), dont_learn_rhs_function_code,  1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"), force_learn_rhs_function_code, 1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0);
+    /* The last argument to add_rhs_function determines whether EBC literalizes the arguments of the function, i.e. forces the identity sets
+     * of any arguments that are variables to map to the null identity set.  This will cause any variables that map to that identity set to
+     * to not be variablized in the final chunk.
+     *
+     * Currently, ONLY MATH FUNCTIONS cause literalization of their arguments.
+     *
+     *   - One could argue that make-constant-symbol, trim, capitalize_symbol should also literalize arguments, but it seems unlikely that
+     *     their products would affect behavior.  Moreover, an agent that used those functions to print a lot of trace messages could end
+     *     up literalizing a lot of variables unnecessarily.
+     *   - One could also argue that ifeq should be literalized since it could return an identifier. It looks the original author of ifeq
+     *     made it for pretty printing and not a way to get conditional rhs actions, which we probably don't want to support.  So I grouped
+     *     this with the other text producing rhs functions that don't cause literalization.
+     *
+     * Technically, we only need to literalize the arguments of a rhs function if another condition later tests that the value produced meets a
+     * constraint.  If they don't have constraints, we could actually compose the functions used into the variablized rhs actions of the final
+     * chunk.  If we add that capability to EBC down the line, the semantics of this parameter will change to indicate whether to compose (if no
+     * constraints) or literalize (if later constraints on value exist).  If we add that, we should definitely include if-eq, make-constant-symbol,
+     * trim, and capitalize_symbol, so that they can be composed into the learned rule rather than be hard-coded (possibly inaccurate) strings. */
+
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), set_lti_id_rhs_function_code, 2, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("lti-id"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"), dont_learn_rhs_function_code,  1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"), force_learn_rhs_function_code, 1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
 
     init_built_in_rhs_math_functions(thisAgent);
 
