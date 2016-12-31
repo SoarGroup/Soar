@@ -102,6 +102,8 @@ typedef struct wme_struct
     struct gds_struct* gds;
     struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
 
+    struct wme_struct* deep_copied_wme;
+
     epmem_node_id epmem_id;
     uint64_t epmem_valid;
 

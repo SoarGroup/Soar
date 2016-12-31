@@ -112,6 +112,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->output_link = NIL;
     w->tc = 0;
     w->chunker_bt_last_ground_cond = NULL;
+    w->deep_copied_wme = NULL;
 
     w->next = NIL;
     w->prev = NIL;

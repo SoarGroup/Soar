@@ -772,6 +772,7 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
     }
 
     thisAgent->WM->glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
+    thisAgent->WM->glbDeepCopyWMEs->deep_copied_wme = curwme;
     thisAgent->WM->glbDeepCopyWMEs->next = oldGlobalWme;
 
 }

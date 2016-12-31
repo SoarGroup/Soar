@@ -881,6 +881,56 @@ inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
     return ((inst)->prod && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM + (inst)->prod->type] || ((inst)->prod->trace_firings)));
 }
 
+void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
+{
+    condition * cond;
+
+    cond = make_condition(thisAgent,
+        make_test(thisAgent, pWME->id , EQUALITY_TEST),
+        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
+        make_test(thisAgent, pWME->value, EQUALITY_TEST));
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
+    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
+    cond->prev = prev_cond;
+    cond->next = NULL;
+    if (prev_cond != NULL)
+    {
+        prev_cond->next = cond;
+    }
+    else
+    {
+        inst->top_of_instantiated_conditions = cond;
+        inst->bottom_of_instantiated_conditions = cond;
+    }
+    cond->test_for_acceptable_preference = pWME->acceptable;
+    cond->bt.wme_ = pWME;
+    cond->inst = inst;
+
+    #ifndef DO_TOP_LEVEL_REF_CTS
+    if (inst->match_goal_level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        wme_add_ref(pWME);
+    }
+
+    cond->bt.level = pWME->id->id->level;
+    cond->bt.trace = pWME->preference;
+    assert(cond->bt.wme_->preference == cond->bt.trace);
+    if (cond->bt.trace)
+    {
+        #ifndef DO_TOP_LEVEL_REF_CTS
+        if (inst->match_goal_level > TOP_GOAL_LEVEL)
+        #endif
+        {
+            preference_add_ref(cond->bt.trace);
+        }
+    }
+
+    cond->bt.OSK_prefs = NULL;
+    prev_cond = cond;
+}
+
 void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
 {
     preference* pref;
@@ -932,6 +982,7 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
 
     wme* tempwme;
     goal_stack_level glbDeepCopyWMELevel = 0;
+    condition* prev_cond = NULL;
 
     glbDeepCopyWMELevel = pref->id->id->level;
 
@@ -941,6 +992,8 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
     while (thisAgent->WM->glbDeepCopyWMEs)
     {
         tempwme = thisAgent->WM->glbDeepCopyWMEs;
+
+        /* Set the id levels.  Root and any re-visited STIs will already have it set */
         if (tempwme->id->id->level == NO_WME_LEVEL)
         {
             tempwme->id->id->level = glbDeepCopyWMELevel;
@@ -954,63 +1007,25 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
             tempwme->value->id->level = glbDeepCopyWMELevel;
         }
 
-        /* Could generate identitites for deep-copied items here */
+        /* Add a condition that tests the WME that the deep copied preference is based on */
+        add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, tempwme->deep_copied_wme);
+
+        /* Add the copied preference */
         pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, tempwme->id, tempwme->attr, tempwme->value, NULL);
+
+        /* We set the identities of the preferences so that they are dependent on the explanation behind
+         * the working memory elements that they were copied from */
+        pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->id, inst->i_id);
+        pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->attr, inst->i_id);
+        pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->value, inst->i_id);
+        pref->in_tm = false;
+
+        /* Now add a preferences that will create the deep-copied WME */
+        add_pref_to_inst(thisAgent, pref, inst);
+
         thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
         deallocate_wme(thisAgent, tempwme);
-        add_pref_to_inst(thisAgent, pref, inst);
     }
-
-}
-
-void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
-{
-    condition * cond;
-
-    cond = make_condition(thisAgent,
-        make_test(thisAgent, pWME->id , EQUALITY_TEST),
-        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
-        make_test(thisAgent, pWME->value, EQUALITY_TEST));
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
-    cond->prev = prev_cond;
-    cond->next = NULL;
-    if (prev_cond != NULL)
-    {
-        prev_cond->next = cond;
-    }
-    else
-    {
-        inst->top_of_instantiated_conditions = cond;
-        inst->bottom_of_instantiated_conditions = cond;
-    }
-    cond->test_for_acceptable_preference = pWME->acceptable;
-    cond->bt.wme_ = pWME;
-    cond->inst = inst;
-
-    #ifndef DO_TOP_LEVEL_REF_CTS
-    if (inst->match_goal_level > TOP_GOAL_LEVEL)
-    #endif
-    {
-        wme_add_ref(pWME);
-    }
-
-    cond->bt.level = pWME->id->id->level;
-    cond->bt.trace = pWME->preference;
-    assert(cond->bt.wme_->preference == cond->bt.trace);
-    if (cond->bt.trace)
-    {
-        #ifndef DO_TOP_LEVEL_REF_CTS
-        if (inst->match_goal_level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            preference_add_ref(cond->bt.trace);
-        }
-    }
-
-    cond->bt.OSK_prefs = NULL;
-    prev_cond = cond;
 }
 
 /* -----------------------------------------------------------------------
@@ -1586,7 +1601,6 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
 
     // create pConds
     {
-        condition* cond = NULL;
         condition* prev_cond = NULL;
 
         add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->smem_link_wme);
