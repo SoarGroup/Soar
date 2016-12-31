@@ -553,6 +553,9 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
             idSym->tc_num = tc;
         }
     }
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_vrblz_top);
+
 }
 
 /* --------------------------------------------------------------------
@@ -660,19 +663,20 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     preference* pref;
     goal_stack_level grounds_level = m_inst->match_goal_level - 1;
 
+    outputManager->set_print_test_format(true, false);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
+
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
     grounds = NIL;
     locals = NIL;
 
-#ifdef BUILD_WITH_EXPLAINER
+    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
-#endif
+    #endif
 
-    /* --- backtrace through the instantiation that produced each result --- */
-    outputManager->set_print_test_format(true, false);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
-    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
+    /* Backtrace through the instantiation that produced each result --- */
     for (pref = m_results; pref != NIL; pref = pref->next_result)
     {
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -691,14 +695,13 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     }
 
     trace_locals(grounds_level);
+
     outputManager->clear_print_test_format();
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
     dprint_unification_map(DT_BACKTRACE);
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
     dprint(DT_BACKTRACE, "Locals:\n%3", locals);
 
-//    dprint(DT_BACKTRACE, "Dependency analysis complete. Conditions compiled:\n%3", grounds);
-//    dprint(DT_VARIABLIZATION_MANAGER, "Results:\n%6", pref);
 }
 
 void Explanation_Based_Chunker::deallocate_failed_chunk()
@@ -886,7 +889,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     #endif
 
-    /* set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
+    /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
         Symbol* g;
         for (g = m_inst->match_goal->id->higher_goal; g && g->id->allow_bottom_up_chunks; g = g->id->higher_goal)
@@ -902,10 +905,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
     #endif
 
-    /* --- Backtracing done.  Collect the grounds into the chunk condition lists --- */
+    /* Collect the grounds into the chunk condition lists */
     create_initial_chunk_condition_lists();
 
-    /* --- If there aren't any grounds, abort chunk --- */
+    /* If there aren't any conditions, abort chunk */
     if (!m_vrblz_top)
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -947,36 +950,31 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         thisAgent->explanationMemory->cancel_chunk_record();
     }
     #endif
-    set_up_rule_name();
 
+    /* Create the name of the rule based on the type and circumstances of the problem-solving */
+    set_up_rule_name();
 
     #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
     #endif
 
+    /* Variablize the LHS */
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-
     variablize_condition_list(m_vrblz_top);
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_vrblz_top);
 
-//    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
+    //if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
 
-    merge_conditions(m_vrblz_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after merging: \n%1", m_vrblz_top);
+    /* Merge redundant conditions (same identity sets in each element) */
+    merge_conditions();
 
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
+    /* Variablize the RHS preferences into actions */
+    m_rhs = variablize_results_into_actions();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_results before variablizing: \n%6", NULL, m_results);
-
-    m_rhs = variablize_results_into_actions(m_results);
-
-    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", m_rhs);
-
-    /* m_rhs has identities here for rhs functions*/
+    /* Add isa_goal tests for first conditions seen with a goal identifier */
     add_goal_or_impasse_tests();
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_vrblz_top);
-
+    /* Validate connectedness of chunk, repair if necessary and then re-order conditions to reduce match costs */
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
     if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
     {
@@ -985,6 +983,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
     clear_rhs_var_to_match_map();
 
+    /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
+     * is a repair failure.  Unless there's a bug in the repair code, all rules should be reparable. */
     if (!lChunkValidated)
     {
         if (m_rule_type == ebc_chunk)
@@ -1016,18 +1016,23 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         }
     }
 
-    /* reinstantiate_current_rule will return an instantiated list of conditions based on the
-     * variablized conditions.  This is used for the chunk's instantiation m_chunk_inst, which
-     * is submitted to the RETE and then chunked over if necessary for bottom up chunking.
+    /* Perform re-instantiation
      *
-     * Note: If the rule being formed is a justification, this is where it happens.  Both
-     * m_vrblz_top and m_rhs will both become instantiated as well.  Until this point,
-     * everything was equivalent for both chunks and justifications. - MMA 11-23-16 */
+     * The next step in EBC will create an instantiated list of conditions based on the
+     * variablized conditions.  This is used as the instantiation for the chunk at the goal
+     * level (m_chunk_inst).  After being submitted to the RETE, it is then chunked over
+     * if necessary for bottom up chunking.
+     *
+     * Note:  Until this point, justification and chunk learning has been nearly identical.
+     * The only difference is that a justification has not had its conditions re-ordered.
+     * This changes during re-instantiation.  If the rule being formed is a justification,
+     * both m_vrblz_top and m_rhs will become instantiated as well. */
 
     l_inst_top = reinstantiate_current_rule();
     l_inst_bottom = l_inst_top;
     while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
 
+    /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
 
     #ifdef BUILD_WITH_EXPLAINER
@@ -1036,9 +1041,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         m_prod->explain_its_chunks = true;
     }
     #endif
-    /* We don't want to accidentally delete it.  Production struct is now responsible for it. */
-    m_prod_name = NULL;
+    m_prod_name = NULL;     /* Production struct is now responsible for the production name, so clear local pointer so we don't accidentally delete. */
 
+
+    /* Fill out the instantiation for the chunk */
     m_chunk_inst->top_of_instantiated_conditions    = NULL;
     m_chunk_inst->bottom_of_instantiated_conditions = NULL;
     m_chunk_inst->preferences_cached = NULL;
@@ -1056,35 +1062,35 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->explain_status                    = explain_unrecorded;
     m_chunk_inst->explain_depth                     = 0;
     m_chunk_inst->explain_tc_num                    = 0;
-
     make_clones_of_results();
     init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
+    /* Add to RETE */
     bool lAddedSuccessfully = add_chunk_to_rete();
-
-    /* --- deallocate chunks conds and variablized conditions --- */
-    deallocate_condition_list(thisAgent, m_vrblz_top);
-    m_vrblz_top = NULL;
 
     if (lAddedSuccessfully)
     {
-        /* --- assert the preferences --- */
+        /* --- Add chunk instantiation to list of newly generated instantiations --- */
         m_chunk_inst->next = (*new_inst_list);
         (*new_inst_list) = m_chunk_inst;
 
-        /* So that we don't deallocate the chunk instantiation we're chunking on next */
+        /* Clean up.  (Now that m_chunk_inst s on the list of insts to be asserted, we
+         *             set it to to null because so that clean_up() won't delete it.) */
         m_chunk_inst = NULL;
         clean_up();
 
+        /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
+         * which is what would have been created if the chunk had fired on its goal level */
         dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
         set_learning_for_instantiation(*new_inst_list);
         learn_EBC_rule(*new_inst_list, new_inst_list);
         dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
 
     } else {
+        /* Clean up failed chunk completely*/
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
         m_chunk_inst->in_newly_created = false;
         excise_production(thisAgent, m_chunk_inst->prod, false, true);

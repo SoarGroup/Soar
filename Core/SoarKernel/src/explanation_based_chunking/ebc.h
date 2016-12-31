@@ -232,7 +232,7 @@ class Explanation_Based_Chunker
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv);
-        void merge_conditions(condition* top_cond);
+        void merge_conditions();
 
         /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
@@ -250,7 +250,7 @@ class Explanation_Based_Chunker
 
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result);
-        action* variablize_results_into_actions(preference* result);
+        action* variablize_results_into_actions();
         uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);

@@ -113,4 +113,11 @@ int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);
 bool        canonical_cond_greater(condition* c1, condition* c2);
 
+inline int64_t count_conditions(condition* top_cond)
+{
+    int64_t count = 0;
+    for (condition* cond = top_cond; cond; cond = cond->next, count++) {}
+    return count;
+}
+
 #endif

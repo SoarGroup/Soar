@@ -77,7 +77,7 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
  *
  *    Requires: Variablized condition list that does not have any conjunctive
  *              tests containing multiple equality tests
- *    Modifies: top_cond list (may delete entries and move non-equality tests
+ *    Modifies: m_vrblz_top list (may delete entries and move non-equality tests
  *              to other conditions)
  *    Effects:  This function merges redundant conditions in a condition list
  *              by combining constraints of conditions that share identical
@@ -86,24 +86,17 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
  *              on the unified variables, not the wmes matched.
  * -- */
 
-inline int64_t count_conditions(condition* top_cond)
-{
-    int64_t count = 0;
-    for (condition* cond = top_cond; cond; cond = cond->next, count++) {}
-    return count;
-}
-
-void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
+void Explanation_Based_Chunker::merge_conditions()
 {
 //    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || !ebc_settings[SETTING_EBC_MERGE]) return;
     if (!ebc_settings[SETTING_EBC_MERGE]) return;
 
-    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", top_cond);
-    int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(top_cond);
+    dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", m_vrblz_top);
+    int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(m_vrblz_top);
     dprint_header(DT_MERGE, PrintAfter, "# of conditions = %d\n", old_num_conds);
 
     condition* found_cond, *next_cond, *last_cond = NULL;
-    for (condition* cond = top_cond; cond; ++current_cond)
+    for (condition* cond = m_vrblz_top; cond; ++current_cond)
     {
         dprint(DT_MERGE, "Processing condition %d: %l\n", current_cond, cond);
         next_cond = cond->next;
@@ -138,11 +131,11 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
                      *    as a previously seen condition.  -- */
                     assert(false);
                     dprint(DT_MERGE, "...deleting head of list.\n");
-                    top_cond = cond->next;
+                    m_vrblz_top = cond->next;
                     deallocate_condition(thisAgent, cond);
-                    if (top_cond->next)
+                    if (m_vrblz_top->next)
                     {
-                        top_cond->next->prev = top_cond;
+                        m_vrblz_top->next->prev = m_vrblz_top;
                     }
                     /* -- This will cause last_cond to be set to  NULL, indicating we're
                      *    at the head of the list -- */
@@ -174,11 +167,14 @@ void Explanation_Based_Chunker::merge_conditions(condition* top_cond)
         dprint(DT_MERGE, "...done merging this constraint.\n");
     }
     dprint_header(DT_MERGE, PrintBefore, "Final merged conditions:\n");
-    dprint_noprefix(DT_MERGE, "%1", top_cond);
-    new_num_conds = count_conditions(top_cond);
+    dprint_noprefix(DT_MERGE, "%1", m_vrblz_top);
+    new_num_conds = count_conditions(m_vrblz_top);
     cond_diff = old_num_conds - new_num_conds;
     dprint(DT_MERGE, "# of conditions = %d\n", new_num_conds);
     dprint(DT_MERGE, ((cond_diff > 0) ? "Conditions decreased by %d conditions! (%d - %d)\n" : "No decrease in number of conditions. [%d = (%d - %d)]\n"), cond_diff, old_num_conds, new_num_conds);
 
     clear_merge_map();
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after merging: \n%1", m_vrblz_top);
+
 }

@@ -530,8 +530,10 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     return a;
 }
 
-action* Explanation_Based_Chunker::variablize_results_into_actions(preference* result)
+action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
+    dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
+    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
     dprint_unification_map(DT_RHS_VARIABLIZATION);
 
     action* returnAction, *lAction, *lLastAction;
@@ -539,7 +541,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions(preference* r
 
     returnAction = lAction = lLastAction = NULL;
 
-    for (lPref = result; lPref; lPref = lPref->next_result)
+    for (lPref = m_results; lPref; lPref = lPref->next_result)
     {
         lAction = variablize_result_into_actions(lPref);
         if (!returnAction)
@@ -552,6 +554,9 @@ action* Explanation_Based_Chunker::variablize_results_into_actions(preference* r
         }
         lLastAction = lAction;
     }
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", m_rhs);
+
     return returnAction;
 }
 
