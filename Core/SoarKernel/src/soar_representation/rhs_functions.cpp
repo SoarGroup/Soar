@@ -104,8 +104,6 @@ void add_rhs_function(agent* thisAgent,
     rf->can_be_stand_alone_action = can_be_stand_alone_action;
     rf->user_data = user_data;
     rf->literalize_arguments = can_be_rhs_value ? literalize_arguments : false;
-//    rf->cached_print_str = NULL;
-//    rf->thisAgent = thisAgent;
 }
 
 rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
@@ -902,49 +900,58 @@ void init_built_in_rhs_functions(agent* thisAgent)
      * constraints) or literalize (if later constraints on value exist).  If we add that, we should definitely include if-eq, make-constant-symbol,
      * trim, and capitalize_symbol, so that they can be composed into the learned rule rather than be hard-coded (possibly inaccurate) strings. */
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, set_lti_id_rhs_function_code, 2, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("lti-id"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0, false);
+    /* Stand-alone RHS functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"), dont_learn_rhs_function_code,  1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"), force_learn_rhs_function_code, 1, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("link-stm-to-ltm"), set_lti_id_rhs_function_code, 2, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
+
+    /* RHS functions that return a simple value */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, get_lti_id_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0, false);
+
+    /* RHS functions that are more elaborate */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
+
+    thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
 
     init_built_in_rhs_math_functions(thisAgent);
-    thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol);
-
 }
 
 void remove_built_in_rhs_functions(agent* thisAgent)
 {
-
-    // DJP-FREE: These used to call make_str_constant, but the symbols must already exist and if we call make here again we leak a reference.
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("crlf"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("make-constant-symbol"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("count"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("dont-learn"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("force-learn"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("count"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+
+    remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("crlf"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("dc"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("make-constant-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
+
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
 
     remove_built_in_rhs_math_functions(thisAgent);
+
 }

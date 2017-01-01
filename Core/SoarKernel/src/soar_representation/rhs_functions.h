@@ -42,8 +42,6 @@ typedef struct rhs_function_struct
     Symbol* name;
     rhs_function_routine f;
     int num_args_expected;     /* -1 means it can take any number of args */
-//    agent* thisAgent;
-//    char* cached_print_str;
     bool can_be_rhs_value;
     bool can_be_stand_alone_action;
     bool literalize_arguments;

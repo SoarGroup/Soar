@@ -254,19 +254,16 @@ bool legal_to_execute_action(action* a, tc_number tc)
         {
             return false;
         }
-        if (rhs_value_is_funcall(a->attr) &&
-                (! all_vars_in_rhs_value_bound(a->attr, tc)))
+        if (rhs_value_is_funcall(a->attr) && !all_vars_in_rhs_value_bound(a->attr, tc))
         {
             return false;
         }
-        if (rhs_value_is_funcall(a->value) &&
-                (! all_vars_in_rhs_value_bound(a->value, tc)))
+        if (rhs_value_is_funcall(a->value) && !all_vars_in_rhs_value_bound(a->value, tc))
         {
             return false;
         }
         if (preference_is_binary(a->preference_type) &&
-                rhs_value_is_funcall(a->referent) &&
-                (! all_vars_in_rhs_value_bound(a->referent, tc)))
+            rhs_value_is_funcall(a->referent) && !all_vars_in_rhs_value_bound(a->referent, tc))
         {
             return false;
         }
