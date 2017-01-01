@@ -170,7 +170,8 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 {
                     lNewUngroundedSym->instantiated_sym = lSym;
                 } else {
-                    lNewUngroundedSym->instantiated_sym = thisAgent->explanationBasedChunker->get_match_for_rhs_var(lSym);
+                    assert(lSym->is_variable() && lSym->var->instantiated_sym);
+                    lNewUngroundedSym->instantiated_sym = lSym->var->instantiated_sym;
                 }
                 lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
                 dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);

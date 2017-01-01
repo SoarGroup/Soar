@@ -58,7 +58,6 @@ class Explanation_Based_Chunker
         uint64_t get_instantiation_count() { return inst_id_counter; };
         uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
         Symbol * get_ovar_for_o_id(uint64_t o_id);
-        Symbol*  get_match_for_rhs_var(Symbol* pRHS_var);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -180,10 +179,6 @@ class Explanation_Based_Chunker
          * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
-        /* Used by repair manager if it needs to find original matched value for
-         * variablized rhs item. */
-        sym_to_sym_map*            rhs_var_to_match_map;
-
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
@@ -254,14 +249,13 @@ class Explanation_Based_Chunker
         /* Variablization methods */
         action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
         action* variablize_results_into_actions();
-        uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, bool pShouldCachedMatchValue = false, bool pShouldLinkLTI = false, tc_number lti_link_tc = 0);
+        uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
         void wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
         sym_identity_info* get_variablization(uint64_t index_id);
-        void add_matched_sym_for_rhs_var(Symbol* pRHS_var, Symbol* pMatched_sym);
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
@@ -283,7 +277,6 @@ class Explanation_Based_Chunker
         void clear_o_id_substitution_map();
         void clear_singletons();
         void clear_data();
-        void clear_rhs_var_to_match_map() { rhs_var_to_match_map->clear(); };
 
 };
 

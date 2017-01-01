@@ -981,7 +981,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         lChunkValidated = reorder_and_validate_chunk();
         dprint(DT_VARIABLIZATION_MANAGER, "Conditions after re-ordering and repair:\n%1", m_vrblz_top);
     }
-    clear_rhs_var_to_match_map();
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
      * is a repair failure.  Unless there's a bug in the repair code, all rules should be reparable. */

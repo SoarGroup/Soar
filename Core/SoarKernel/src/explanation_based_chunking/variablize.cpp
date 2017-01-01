@@ -59,20 +59,8 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
  *           For RL rules, identity may be NULL
  *
  * ========================================================================= */
-void Explanation_Based_Chunker::wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID)
-{
-    assert(rhs_value_is_symbol(pRhs_val));
-    cons* funcall_list = NULL;
-    dprint(DT_RHS_LTI_LINKING, "Wrapping rhs value into rhs function (@ %r %u)\n", pRhs_val, pLTI_ID);
-    push(thisAgent, lti_link_function, funcall_list);
-    push(thisAgent, pRhs_val, funcall_list);
-    push(thisAgent, thisAgent->symbolManager->make_int_constant(pLTI_ID), funcall_list);
-    funcall_list = destructively_reverse_list(funcall_list);
-    pRhs_val = funcall_list_to_rhs_value(funcall_list);
-    dprint(DT_RHS_LTI_LINKING, "rhs_value is now %r\n", pRhs_val);
-}
 
-uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, bool pShouldCachedMatchValue, bool pShouldLinkLTI, tc_number lti_link_tc)
+uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc)
 {
     char prefix[2];
     Symbol* var;
@@ -90,7 +78,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, b
         {
             lRhsValue = static_cast<rhs_value>(c->first);
             dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall argument %r\n", lRhsValue);
-            variablize_rhs_symbol(lRhsValue, pShouldCachedMatchValue, false);
+            variablize_rhs_symbol(lRhsValue);
             assert(c->first == lRhsValue);
             dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
@@ -132,12 +120,8 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, b
         uint64_t lMatchedSym_LTI_ID = NULL_IDENTITY_SET;
 
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization->variable_sym);
-        /* Save (1) match info for unifying across extra results and (2) whether an LTI link exists */
-        if (pShouldCachedMatchValue)
-        {
-            add_matched_sym_for_rhs_var(found_variablization->variable_sym, rs->referent);
-        }
-        if (rs->referent->is_sti() && (rs->referent->tc_num != lti_link_tc))
+        /* MToDo | Add test that symbol is local to the substate analyzed */
+        if (rs->referent->is_sti() && lti_link_tc && (rs->referent->tc_num != lti_link_tc))
         {
             lMatchedSym_LTI_ID = rs->referent->id->LTI_ID;
             rs->referent->tc_num = lti_link_tc;
@@ -148,8 +132,10 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, b
         rs->referent = found_variablization->variable_sym;
         rs->o_id = found_variablization->identity;
 
-        if (lMatchedSym_LTI_ID && pShouldLinkLTI)
+        if (lMatchedSym_LTI_ID)
         {
+            /* Add to list of variables that we will later create news actions for, which will link new matches
+             * to the same LTM */
 //            wrap_with_lti_link(pRhs_val, lMatchedSym_LTI_ID);
         }
         return rs->o_id;
@@ -439,10 +425,10 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     dprint(DT_RL_VARIABLIZATION, "Variablizing action: %a\n", rhs);
 
     tc_number lti_link_tc = get_new_tc_number(thisAgent);
-    variablize_rhs_symbol(rhs->id, true, true, lti_link_tc);
-    variablize_rhs_symbol(rhs->attr, false, true, lti_link_tc);
-    variablize_rhs_symbol(rhs->value, false, true, lti_link_tc);
-    variablize_rhs_symbol(rhs->referent, false, true, lti_link_tc);
+    variablize_rhs_symbol(rhs->id, lti_link_tc);
+    variablize_rhs_symbol(rhs->attr, lti_link_tc);
+    variablize_rhs_symbol(rhs->value, lti_link_tc);
+    variablize_rhs_symbol(rhs->referent, lti_link_tc);
 
     dprint(DT_RL_VARIABLIZATION, "Created variablized action: %a\n", rhs);
 
@@ -514,29 +500,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
     dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
-    lO_id = variablize_rhs_symbol(a->value, false, true, lti_link_tc);
-    if (!result->rhs_funcs.value)
-    {
-        result->clone_identities.value = lO_id;
-    } else {
-        result->clone_identities.value = lO_id;
-        result->cloned_rhs_funcs.value = a->value;
-//        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
-        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, true);
-    }
-
-    lO_id = variablize_rhs_symbol(a->attr, false, false, lti_link_tc);
-    if (!result->rhs_funcs.attr)
-    {
-        result->clone_identities.attr = lO_id;
-    } else {
-        result->clone_identities.attr = lO_id;
-        result->cloned_rhs_funcs.attr = a->attr;
-//        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
-        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, true);
-    }
-
-    lO_id = variablize_rhs_symbol(a->id, false, false, lti_link_tc);
+    lO_id = variablize_rhs_symbol(a->id, lti_link_tc);
     if (!result->rhs_funcs.id)
     {
         result->clone_identities.id = lO_id;
@@ -547,9 +511,31 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, true);
     }
 
+    lO_id = variablize_rhs_symbol(a->attr, lti_link_tc);
+    if (!result->rhs_funcs.attr)
+    {
+        result->clone_identities.attr = lO_id;
+    } else {
+        result->clone_identities.attr = lO_id;
+        result->cloned_rhs_funcs.attr = a->attr;
+//        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
+        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, true);
+    }
+
+    lO_id = variablize_rhs_symbol(a->value, lti_link_tc);
+    if (!result->rhs_funcs.value)
+    {
+        result->clone_identities.value = lO_id;
+    } else {
+        result->clone_identities.value = lO_id;
+        result->cloned_rhs_funcs.value = a->value;
+//        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
+        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, true);
+    }
+
     if (preference_is_binary(result->type))
     {
-        lO_id = variablize_rhs_symbol(a->referent, false, true, lti_link_tc);
+        lO_id = variablize_rhs_symbol(a->referent, lti_link_tc);
         result->clone_identities.referent = lO_id;
     }
 
@@ -803,3 +789,15 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
     return returnConds;
 }
 
+void Explanation_Based_Chunker::wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID)
+{
+    assert(rhs_value_is_symbol(pRhs_val));
+    cons* funcall_list = NULL;
+    dprint(DT_RHS_LTI_LINKING, "Wrapping rhs value into rhs function (@ %r %u)\n", pRhs_val, pLTI_ID);
+    push(thisAgent, lti_link_function, funcall_list);
+    push(thisAgent, pRhs_val, funcall_list);
+    push(thisAgent, thisAgent->symbolManager->make_int_constant(pLTI_ID), funcall_list);
+    funcall_list = destructively_reverse_list(funcall_list);
+    pRhs_val = funcall_list_to_rhs_value(funcall_list);
+    dprint(DT_RHS_LTI_LINKING, "rhs_value is now %r\n", pRhs_val);
+}
