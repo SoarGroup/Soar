@@ -393,9 +393,9 @@ set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
             return NIL;
         }
         ltiIDSym = static_cast<Symbol*>(args->rest->first);
-        if (!sym->is_int())
+        if (!ltiIDSym->is_int())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "Error: '@' rhs function cannot accept %y as an LTI ID because it is not an integer\n", sym);
+            thisAgent->outputManager->printa_sf(thisAgent, "Error: '@' rhs function cannot accept %y as an LTI ID because it is not an integer\n", ltiIDSym);
             return NIL;
         }
 
