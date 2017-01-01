@@ -41,6 +41,19 @@
 
 using namespace soar_module;
 
+inline bool symbol_matches_string(Symbol* sym, const char* match)
+{
+    return (sym->to_string() == match);
+}
+inline bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
+{
+    return (symbol_matches_string(w->id, match_id) && symbol_matches_string(w->attr, match_attr) && symbol_matches_string(w->value, match_value));
+}
+inline bool id_matches_string(uint64_t lID, uint64_t lID_to_match)
+{
+    return (lID == lID_to_match);
+}
+
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)
@@ -145,74 +158,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 
 debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
 {
-}
-
-#include "sqlite3.h"
-bool symbol_matches_string(Symbol* sym, const char* match)
-{
-    std::string strName(sym->to_string());
-    if (strName == match)
-    {
-//        dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, "");
-        return true;
-    }
-    return false;
-}
-bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
-{
-    return (symbol_matches_string(w->id, match_id) &&
-            symbol_matches_string(w->attr, match_attr) &&
-            symbol_matches_string(w->value, match_value));
-}
-
-bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
-{
-#ifdef DEBUG_CHECK_SYMBOL
-    std::string strName(sym->to_string());
-    if (strName == DEBUG_CHECK_SYMBOL)
-    {
-        //    dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
-        dprint(DT_DEBUG, "%sFound %s(%u) | %s\n", message, strName.c_str(), sym->reference_count, "");
-        return true;
-    }
-#endif
-    return false;
-}
-
-bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
-{
-#ifdef DEBUG_CHECK_SYMBOL
-    cons* c;
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            if (t->type == EQUALITY_TEST)
-            {
-                if (static_cast<test>(c->first)->original_test)
-                {
-                    return (check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, message) || check_symbol(thisAgent, static_cast<test>(c->first)->original_test->data.referent, message));
-                }
-                else
-                {
-                    return (check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, message));
-                }
-            }
-        }
-    }
-    else if (t->type == EQUALITY_TEST)
-    {
-        if (t->original_test)
-        {
-            return (check_symbol(thisAgent, t->data.referent, message) || check_symbol_in_test(thisAgent, t->original_test, message));
-        }
-        else
-        {
-            return (check_symbol(thisAgent, t->data.referent, message));
-        }
-    }
-#endif
-    return false;
 }
 
 #ifdef DEBUG_REFCOUNT_DB

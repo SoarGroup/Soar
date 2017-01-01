@@ -29,24 +29,22 @@
 
 
 extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
-
 extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
-extern void debug_init_db(agent* thisAgent);
-
-extern void debug_store_refcount(Symbol* sym, bool isAdd);
-extern void debug_destroy_for_refcount(agent* delete_agent);
-
-extern void debug_test(int type = 1);
 extern void debug_trace_set(int dt_num, bool pEnable);
 extern void debug_trace_on();
 extern void debug_trace_off();
 
-extern std::string get_stacktrace(const char* prefix = NULL);
-extern bool check_symbol(agent* thisAgent, Symbol* sym, const char* message = "ChkSym | ");
-extern bool check_symbol_in_test(agent* thisAgent, test t, const char* message = "ChkSym | ");
+bool symbol_matches_string(Symbol* sym, const char* match);
+bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
+bool id_matches_string(uint64_t lID, uint64_t lID_to_match);
 
-extern bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
-extern bool symbol_matches_string(Symbol* sym, const char* match);
+extern std::string get_stacktrace(const char* prefix = NULL);
+
+extern void debug_test(int type = 1);
+
+extern void debug_init_db(agent* thisAgent);
+extern void debug_store_refcount(Symbol* sym, bool isAdd);
+extern void debug_destroy_for_refcount(agent* delete_agent);
 
 /**
  * @brief Contains the parameters for the debug command
