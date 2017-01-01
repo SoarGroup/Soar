@@ -121,7 +121,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
 
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization->variable_sym);
         /* MToDo | Add test that symbol is local to the substate analyzed */
-        if (rs->referent->is_lti() && lti_link_tc && (rs->referent->tc_num != lti_link_tc))
+        if (rs->referent->is_lti() && lti_link_tc && (rs->referent->id->level == m_inst->match_goal_level) && (rs->referent->tc_num != lti_link_tc))
         {
             dprint(DT_RHS_LTI_LINKING, "Found RHS symbol with LTI link during variablization: %y and LTI %u \n", rs->referent, rs->referent->id->LTI_ID);
             lMatchedSym_with_LTI_Link = pRhs_val;
@@ -831,17 +831,4 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
     }
 
     return returnConds;
-}
-
-void Explanation_Based_Chunker::wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID)
-{
-    assert(rhs_value_is_symbol(pRhs_val));
-    cons* funcall_list = NULL;
-    dprint(DT_RHS_LTI_LINKING, "Wrapping rhs value into rhs function (@ %r %u)\n", pRhs_val, pLTI_ID);
-    push(thisAgent, lti_link_function, funcall_list);
-    push(thisAgent, pRhs_val, funcall_list);
-    push(thisAgent, thisAgent->symbolManager->make_int_constant(pLTI_ID), funcall_list);
-    funcall_list = destructively_reverse_list(funcall_list);
-    pRhs_val = funcall_list_to_rhs_value(funcall_list);
-    dprint(DT_RHS_LTI_LINKING, "rhs_value is now %r\n", pRhs_val);
 }

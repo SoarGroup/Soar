@@ -255,7 +255,6 @@ class Explanation_Based_Chunker
         action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
         uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
         void add_LTM_linking_actions(action* pLastAction);
-        void wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
