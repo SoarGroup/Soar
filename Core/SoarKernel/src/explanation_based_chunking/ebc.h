@@ -179,6 +179,10 @@ class Explanation_Based_Chunker
          * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
+        /* List of STIs created in the substate that are linked to LTMs.  Used
+         * to add link-stm-to-ltm actions */
+        rhs_value_list*               local_linked_STIs;
+
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
@@ -247,9 +251,10 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
         action* variablize_results_into_actions();
+        action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
         uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
+        void add_LTM_linking_actions(action* pLastAction);
         void wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);

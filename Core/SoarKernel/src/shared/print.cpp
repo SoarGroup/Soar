@@ -397,6 +397,7 @@ void print_action_list(agent* thisAgent, action* actions,
         if (a->type == FUNCALL_ACTION)
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
+            lStr.clear();
             thisAgent->outputManager->rhs_value_to_string(a->value, lStr);
             xml_begin_tag(thisAgent, kTagAction);
             thisAgent->outputManager->printa(thisAgent, lStr.c_str());

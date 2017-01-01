@@ -364,9 +364,7 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     if (a->type == FUNCALL_ACTION)
     {
         if (m_pre_string) destString += m_pre_string;
-        destString += "(rhs_function ";
         rhs_value_to_string(a->value, destString);
-        destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';

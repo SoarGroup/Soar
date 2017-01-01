@@ -117,13 +117,14 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     }
     if (found_variablization)
     {
-        uint64_t lMatchedSym_LTI_ID = NULL_IDENTITY_SET;
+        rhs_value lMatchedSym_with_LTI_Link = NULL;
 
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization->variable_sym);
         /* MToDo | Add test that symbol is local to the substate analyzed */
-        if (rs->referent->is_sti() && lti_link_tc && (rs->referent->tc_num != lti_link_tc))
+        if (rs->referent->is_lti() && lti_link_tc && (rs->referent->tc_num != lti_link_tc))
         {
-            lMatchedSym_LTI_ID = rs->referent->id->LTI_ID;
+            dprint(DT_RHS_LTI_LINKING, "Found RHS symbol with LTI link during variablization: %y and LTI %u \n", rs->referent, rs->referent->id->LTI_ID);
+            lMatchedSym_with_LTI_Link = pRhs_val;
             rs->referent->tc_num = lti_link_tc;
         }
 
@@ -132,11 +133,11 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         rs->referent = found_variablization->variable_sym;
         rs->o_id = found_variablization->identity;
 
-        if (lMatchedSym_LTI_ID)
+        /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
+        if (lMatchedSym_with_LTI_Link)
         {
-            /* Add to list of variables that we will later create news actions for, which will link new matches
-             * to the same LTM */
-//            wrap_with_lti_link(pRhs_val, lMatchedSym_LTI_ID);
+            dprint(DT_RHS_LTI_LINKING, "Adding %r to local_linked_STIs\n", lMatchedSym_with_LTI_Link);
+            local_linked_STIs->push_back(lMatchedSym_with_LTI_Link);
         }
         return rs->o_id;
     }
@@ -544,6 +545,42 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     return a;
 }
 
+void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
+{
+    dprint(DT_RHS_LTI_LINKING, "Adding linked local STIs...\n");
+    assert(pLastAction);
+
+    rhs_symbol lRSym = NULL;
+    rhs_value lRV = NULL, lIntRV = NULL, lNewFuncallList = NULL;
+    action* lAction = NULL;
+
+    cons* funcall_list;
+
+    for (auto it = local_linked_STIs->begin(); it != local_linked_STIs->end(); it++)
+    {
+        lRSym = rhs_value_to_rhs_symbol(*it);
+        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->o_id);
+        lRV = copy_rhs_value(thisAgent, (*it));
+
+        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y to LTI ID %u", lRSym->referent, lRSym->referent->var->instantiated_sym->id->LTI_ID);
+
+        funcall_list = NULL;
+        push(thisAgent, lti_link_function, funcall_list);
+        push(thisAgent, lRV, funcall_list);
+        push(thisAgent, lIntRV, funcall_list);
+        funcall_list = destructively_reverse_list(funcall_list);
+        lNewFuncallList = funcall_list_to_rhs_value(funcall_list);
+        lAction = make_action(thisAgent);
+        lAction->type = FUNCALL_ACTION;
+        lAction->value = lNewFuncallList;
+        pLastAction->next = lAction;
+        pLastAction = lAction;
+        dprint(DT_RHS_LTI_LINKING, "Added new action %a\n", lAction);
+    }
+    dprint_noprefix(DT_RHS_LTI_LINKING, "\n");
+
+}
+
 action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
@@ -552,6 +589,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
 
+    local_linked_STIs->clear();
     thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
     tc_number lti_link_tc = get_new_tc_number(thisAgent);
     returnAction = lAction = lLastAction = NULL;
@@ -564,7 +602,13 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
         lLastAction = lAction;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", m_rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", returnAction);
+
+    if (!local_linked_STIs->empty())
+    {
+        add_LTM_linking_actions(lLastAction);
+        dprint(DT_VARIABLIZATION_MANAGER, "Actions after adding LTM linking actions: \n%2", returnAction);
+    }
     return returnAction;
 }
 

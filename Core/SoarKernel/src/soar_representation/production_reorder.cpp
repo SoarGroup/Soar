@@ -158,7 +158,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
-            if (add_ungrounded && rhs_value_is_symbol(lAction->id))
+            if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);

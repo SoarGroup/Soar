@@ -51,6 +51,8 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
     cond_merge_map = new triple_merge_map();
+    local_linked_STIs = new rhs_value_list();
+
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
@@ -74,6 +76,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete unification_map;
     delete id_to_rule_sym_debug_map;
     delete chunk_history;
+    delete local_linked_STIs;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);

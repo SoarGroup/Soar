@@ -979,7 +979,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
     {
         lChunkValidated = reorder_and_validate_chunk();
-        dprint(DT_VARIABLIZATION_MANAGER, "Conditions after re-ordering and repair:\n%1", m_vrblz_top);
+        dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_vrblz_top, m_rhs);
     }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
