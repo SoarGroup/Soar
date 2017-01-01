@@ -14,6 +14,7 @@ typedef struct predefined_sym_struct {
            system startup time and never deallocate them.
            ------------------------------------------------------------- */
 
+        Symbol*             at_symbol;
         Symbol*             attribute_symbol;
         Symbol*             choices_symbol;
         Symbol*             conflict_symbol;

@@ -592,6 +592,7 @@ Symbol* Symbol_Manager::make_float_constant(double value)
 
 void Symbol_Manager::create_predefined_symbols()
 {
+    soarSymbols.at_symbol = make_str_constant("@");
     soarSymbols.problem_space_symbol = make_str_constant("problem-space");
     soarSymbols.state_symbol = make_str_constant("state");
     soarSymbols.operator_symbol = make_str_constant("operator");
@@ -705,6 +706,7 @@ void Symbol_Manager::create_predefined_symbols()
 
 void Symbol_Manager::release_predefined_symbols()
 {
+    symbol_remove_ref(&(soarSymbols.at_symbol));
     symbol_remove_ref(&(soarSymbols.problem_space_symbol));
     symbol_remove_ref(&(soarSymbols.state_symbol));
     symbol_remove_ref(&(soarSymbols.operator_symbol));
