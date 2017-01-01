@@ -905,7 +905,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0, false);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), set_lti_id_rhs_function_code, 2, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, set_lti_id_rhs_function_code, 2, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("lti-id"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0, false);
@@ -922,6 +922,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
 
     init_built_in_rhs_math_functions(thisAgent);
+    thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol);
 
 }
 

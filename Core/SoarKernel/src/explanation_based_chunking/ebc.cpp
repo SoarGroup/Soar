@@ -18,6 +18,7 @@
 #include "production.h"
 #include "print.h"
 #include "rhs.h"
+#include "rhs_functions.h"
 #include "soar_instance.h"
 #include "soar_TraceNames.h"
 #include "test.h"
@@ -59,7 +60,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();
-
+    lti_link_function = NULL;
     reinit();
 }
 

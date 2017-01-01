@@ -35,6 +35,9 @@ class Explanation_Based_Chunker
         bool                    ebc_settings[num_ebc_settings];
         uint64_t                max_chunks, max_dupes;
 
+        /* Cached pointer to lti link rhs function since it may be used often */
+        rhs_function*           lti_link_function;
+
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
         cons*     chunk_free_problem_spaces;
         cons*     chunky_problem_spaces;   /* AGR MVL1 */
@@ -249,9 +252,10 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        action* variablize_result_into_actions(preference* result);
+        action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
         action* variablize_results_into_actions();
-        uint64_t variablize_rhs_symbol(rhs_value pRhs_val, bool pShouldCachedMatchValue = false);
+        uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, bool pShouldCachedMatchValue = false, bool pShouldLinkLTI = false, tc_number lti_link_tc = 0);
+        void wrap_with_lti_link(rhs_value &pRhs_val, uint64_t pLTI_ID);
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
