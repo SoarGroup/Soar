@@ -8,23 +8,23 @@
 #include <sstream>
 
 #define CONFIGURE_SOAR_FOR_UNIT_TESTS
-#define INIT_AFTER_RUN
+//#define INIT_AFTER_RUN
 #define TURN_EXPLAINER_ON
-//#define SAVE_LOG_FILES
+#define SAVE_LOG_FILES
 
-#define DO_ALIAS_TESTS
+//#define DO_ALIAS_TESTS
 #define DO_CHUNKING_TESTS
-#define DO_ELEMENTXML_TESTS
-#define DO_EPMEM_TESTS
-#define DO_FULL_TESTS
-#define DO_IO_TESTS
-#define DO_SMEM_TESTS
-#define DO_MISC_TESTS
-#define DO_MULTIAGENT_TESTS
-#define DO_SANITY_TESTS
-#define DO_TOKENIZER_TESTS
-#define SKIP_SLOW_TESTS
-#define SKIP_JAVA_DEBUGGER_TEST
+//#define DO_ELEMENTXML_TESTS
+//#define DO_EPMEM_TESTS
+//#define DO_FULL_TESTS
+//#define DO_IO_TESTS
+//#define DO_SMEM_TESTS
+//#define DO_MISC_TESTS
+//#define DO_MULTIAGENT_TESTS
+//#define DO_SANITY_TESTS
+//#define DO_TOKENIZER_TESTS
+//#define SKIP_SLOW_TESTS
+//#define SKIP_JAVA_DEBUGGER_TEST
 
 #define CPPUNIT_STR_STR(x) #x
 #define CPPUNIT_STR(x) CPPUNIT_STR_STR(x)

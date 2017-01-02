@@ -6,7 +6,5 @@ sp {answer*apply*sub-op*make-chunk*StateNoChange*t4-1
     (<s1> ^result <l3> +)
     (<l3> ^result1 <l4> + ^result2 <l1> +)
     (<l4> ^value bar +)
+    (link-stm-to-ltm <l4> 1)
 }
-
-
-

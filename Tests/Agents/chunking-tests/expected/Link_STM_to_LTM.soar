@@ -1,0 +1,27 @@
+sp {answer*step*4*OpNoChange*t4-1
+    (state <s1> ^superstate nil)
+    (<s1> -^substate-done <s*1>)
+    (<s1> ^result1 <l1>)
+    -->
+    (<s1> ^result2 <l3> +)
+    (<l3> ^qualities <l2> +)
+    (<l2> ^first Smooth +)
+    (<l3> ^number 33 +)
+    (<l3> ^name |scottie pippen| +)
+    (<s1> ^result3 <l1> +)
+    (link-stm-to-ltm <l2> 3)
+    (link-stm-to-ltm <l3> 33)
+}
+
+sp {answer*step*2*OpNoChange*t3-1
+    (state <s1> ^superstate nil)
+    (<s1> -^substate-done <s*1>)
+    -->
+    (<s1> ^result1 <l2> +)
+    (<l2> ^qualities <l1> +)
+    (<l1> ^first GOT +)
+    (<l2> ^number 23 +)
+    (<l2> ^name |michael jordan| +)
+    (link-stm-to-ltm <l1> 2)
+    (link-stm-to-ltm <l2> 23)
+}

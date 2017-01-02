@@ -19,92 +19,93 @@ class ChunkTest : public CPPUNIT_NS::TestCase
          * variablizing a list of results that is at least 400 elements long. */
         // CPPUNIT_TEST(GamesAgent_Sanity1);
 
-        CPPUNIT_TEST(SMem_Chunked_Query);
-        CPPUNIT_TEST(SMem_Chunked_Query2);
-        CPPUNIT_TEST(SMem_Chunk_Direct);
-        CPPUNIT_TEST(All_Test_Types);
-        CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
-        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
-        CPPUNIT_TEST(BUNCPS_2);
-        CPPUNIT_TEST(BUNCPS_3);
-        CPPUNIT_TEST(BUNCPS_4);
-        CPPUNIT_TEST(BUNCPS_5);
-        CPPUNIT_TEST(BUNCPS_6_Four_Level);
-        CPPUNIT_TEST(BUNCPS_7_with_Constraints);
-        CPPUNIT_TEST(Chunk_Operator_Tie_Impasse);
-        CPPUNIT_TEST(Chunk_Operator_Tie_Item_Links);
-        CPPUNIT_TEST(Chunk_RL_Proposal);
-        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
-        CPPUNIT_TEST(Chunked_Justification_with_extras);
-        CPPUNIT_TEST(Conflated_Constants);
-        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
-        #ifndef SKIP_SLOW_TESTS
-            CPPUNIT_TEST(Demo_Arithmetic);
-        #endif
-        CPPUNIT_TEST(Demo_Blocks_World_Hierarchical);
-        CPPUNIT_TEST(Demo_Blocks_World_Hierarchical_Look_Ahead);
-        CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead);
-        CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation);
-        CPPUNIT_TEST(Demo_Blocks_World_Operator_Subgoaling);
-        CPPUNIT_TEST(Demo_Eight_Puzzle);
-        CPPUNIT_TEST(Demo_MaC_Planning);
-        CPPUNIT_TEST(Demo_RL_Unit);
-        CPPUNIT_TEST(Demo_ToH_Recursive);
-        CPPUNIT_TEST(Demo_Water_Jug_Hierarchy);
-        CPPUNIT_TEST(Demo_Water_Jug_Look_Ahead);
-        CPPUNIT_TEST(Demo_Water_Jug_Tie);
-        CPPUNIT_TEST(Disjunction_Merge);
-        CPPUNIT_TEST(Duplicates);
-        CPPUNIT_TEST(Faux_Operator);
+//        CPPUNIT_TEST(SMem_Chunked_Query);
+//        CPPUNIT_TEST(SMem_Chunked_Query2);
+//        CPPUNIT_TEST(SMem_Chunk_Direct);
+//        CPPUNIT_TEST(All_Test_Types);
+//        CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
+//        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
+//        CPPUNIT_TEST(BUNCPS_2);
+//        CPPUNIT_TEST(BUNCPS_3);
+//        CPPUNIT_TEST(BUNCPS_4);
+//        CPPUNIT_TEST(BUNCPS_5);
+//        CPPUNIT_TEST(BUNCPS_6_Four_Level);
+//        CPPUNIT_TEST(BUNCPS_7_with_Constraints);
+//        CPPUNIT_TEST(Chunk_Operator_Tie_Impasse);
+//        CPPUNIT_TEST(Chunk_Operator_Tie_Item_Links);
+//        CPPUNIT_TEST(Chunk_RL_Proposal);
+//        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
+//        CPPUNIT_TEST(Chunked_Justification_with_extras);
+//        CPPUNIT_TEST(Conflated_Constants);
+//        CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
+//        #ifndef SKIP_SLOW_TESTS
+//            CPPUNIT_TEST(Demo_Arithmetic);
+//        #endif
+//        CPPUNIT_TEST(Demo_Blocks_World_Hierarchical);
+//        CPPUNIT_TEST(Demo_Blocks_World_Hierarchical_Look_Ahead);
+//        CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead);
+//        CPPUNIT_TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation);
+//        CPPUNIT_TEST(Demo_Blocks_World_Operator_Subgoaling);
+//        CPPUNIT_TEST(Demo_Eight_Puzzle);
+//        CPPUNIT_TEST(Demo_MaC_Planning);
+//        CPPUNIT_TEST(Demo_RL_Unit);
+//        CPPUNIT_TEST(Demo_ToH_Recursive);
+//        CPPUNIT_TEST(Demo_Water_Jug_Hierarchy);
+//        CPPUNIT_TEST(Demo_Water_Jug_Look_Ahead);
+//        CPPUNIT_TEST(Demo_Water_Jug_Tie);
+//        CPPUNIT_TEST(Disjunction_Merge);
+//        CPPUNIT_TEST(Duplicates);
+//        CPPUNIT_TEST(Faux_Operator);
         CPPUNIT_TEST(Faux_Smem_Operator_RHS);
-        CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
-        CPPUNIT_TEST(Justifications_Get_New_Identities);
-        CPPUNIT_TEST(Literalization_of_NC_and_NCC);
-        CPPUNIT_TEST(Literalization_with_BT_Constraints);
-        CPPUNIT_TEST(Literalization_with_BT_Constraints2);
-        CPPUNIT_TEST(Literalization_with_Constraints);
-        CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
-        CPPUNIT_TEST(NC_Disjunction);
-        CPPUNIT_TEST(NC_Simple_No_Exist);
-        CPPUNIT_TEST(NC_with_RC_and_Local_Variable);
-        CPPUNIT_TEST(NC_with_Relational_Constraint);
-        CPPUNIT_TEST(NCC_2_Conds_Simple_Literals);
-        CPPUNIT_TEST(NCC_Complex);
-        CPPUNIT_TEST(NCC_from_Backtrace);
-        CPPUNIT_TEST(NCC_Simple_Literals);
-        CPPUNIT_TEST(NCC_with_Relational_Constraint);
-        CPPUNIT_TEST(No_Topstate_Match);
-        CPPUNIT_TEST(Opaque_State_Barrier);
-        CPPUNIT_TEST(PRIMS_Sanity1);
-        CPPUNIT_TEST(PRIMS_Sanity2);
-        CPPUNIT_TEST(Promoted_STI);
-        CPPUNIT_TEST(Reorderer_Bad_Conjunction);
-        CPPUNIT_TEST(Repair_Unconnected_RHS_ID);
-        CPPUNIT_TEST(Repair_NOR_Temporal_Constraint);
-        CPPUNIT_TEST(Result_On_Operator);
-        CPPUNIT_TEST(Rete_Bug_Deep_vs_Deep);
-        CPPUNIT_TEST(Rete_Bug_Deep_vs_Top);
-        CPPUNIT_TEST(RHS_Math_Abs);
-        CPPUNIT_TEST(RHS_Math_Mixed);
-        CPPUNIT_TEST(RHS_Math);
-        CPPUNIT_TEST(RHS_Unbound_Multivalue);
-        CPPUNIT_TEST(RL_Variablization);
-        CPPUNIT_TEST(Simple_Constraint_Prop);
-        CPPUNIT_TEST(Simple_Literalization);
-        CPPUNIT_TEST(STI_Variablization_Same_Type);
-        CPPUNIT_TEST(STI_Variablization);
-        CPPUNIT_TEST(STI_with_referents);
-        CPPUNIT_TEST(Superstate_Identity_Opaque);
-        CPPUNIT_TEST(Chunk_All_Only_Except);   // bug 1145
-        CPPUNIT_TEST(Ungrounded_in_BT_Constraint);
-        CPPUNIT_TEST(Ungrounded_Mixed);
-        CPPUNIT_TEST(Ungrounded_Relational_Constraint);
-        CPPUNIT_TEST(Ungrounded_STI_Promotion);
-        CPPUNIT_TEST(Ungrounded_STIs);
-        CPPUNIT_TEST(Unify_Ambiguous_Output);
-        CPPUNIT_TEST(Unify_Children_Results);
-        CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
-        CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
+//        CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
+//        CPPUNIT_TEST(Justifications_Get_New_Identities);
+//        CPPUNIT_TEST(Link_STM_to_LTM);
+//        CPPUNIT_TEST(Literalization_of_NC_and_NCC);
+//        CPPUNIT_TEST(Literalization_with_BT_Constraints);
+//        CPPUNIT_TEST(Literalization_with_BT_Constraints2);
+//        CPPUNIT_TEST(Literalization_with_Constraints);
+//        CPPUNIT_TEST(Maintain_Instantiation_Specific_Identity);
+//        CPPUNIT_TEST(NC_Disjunction);
+//        CPPUNIT_TEST(NC_Simple_No_Exist);
+//        CPPUNIT_TEST(NC_with_RC_and_Local_Variable);
+//        CPPUNIT_TEST(NC_with_Relational_Constraint);
+//        CPPUNIT_TEST(NCC_2_Conds_Simple_Literals);
+//        CPPUNIT_TEST(NCC_Complex);
+//        CPPUNIT_TEST(NCC_from_Backtrace);
+//        CPPUNIT_TEST(NCC_Simple_Literals);
+//        CPPUNIT_TEST(NCC_with_Relational_Constraint);
+//        CPPUNIT_TEST(No_Topstate_Match);
+//        CPPUNIT_TEST(Opaque_State_Barrier);
+//        CPPUNIT_TEST(PRIMS_Sanity1);
+//        CPPUNIT_TEST(PRIMS_Sanity2);
+//        CPPUNIT_TEST(Promoted_STI);
+//        CPPUNIT_TEST(Reorderer_Bad_Conjunction);
+//        CPPUNIT_TEST(Repair_Unconnected_RHS_ID);
+//        CPPUNIT_TEST(Repair_NOR_Temporal_Constraint);
+//        CPPUNIT_TEST(Result_On_Operator);
+//        CPPUNIT_TEST(Rete_Bug_Deep_vs_Deep);
+//        CPPUNIT_TEST(Rete_Bug_Deep_vs_Top);
+//        CPPUNIT_TEST(RHS_Math_Abs);
+//        CPPUNIT_TEST(RHS_Math_Mixed);
+//        CPPUNIT_TEST(RHS_Math);
+//        CPPUNIT_TEST(RHS_Unbound_Multivalue);
+//        CPPUNIT_TEST(RL_Variablization);
+//        CPPUNIT_TEST(Simple_Constraint_Prop);
+//        CPPUNIT_TEST(Simple_Literalization);
+//        CPPUNIT_TEST(STI_Variablization_Same_Type);
+//        CPPUNIT_TEST(STI_Variablization);
+//        CPPUNIT_TEST(STI_with_referents);
+//        CPPUNIT_TEST(Superstate_Identity_Opaque);
+//        CPPUNIT_TEST(Chunk_All_Only_Except);   // bug 1145
+//        CPPUNIT_TEST(Ungrounded_in_BT_Constraint);
+//        CPPUNIT_TEST(Ungrounded_Mixed);
+//        CPPUNIT_TEST(Ungrounded_Relational_Constraint);
+//        CPPUNIT_TEST(Ungrounded_STI_Promotion);
+//        CPPUNIT_TEST(Ungrounded_STIs);
+//        CPPUNIT_TEST(Unify_Ambiguous_Output);
+//        CPPUNIT_TEST(Unify_Children_Results);
+//        CPPUNIT_TEST(Unify_through_Two_Traces_Four_Deep);
+//        CPPUNIT_TEST(Vrblzd_Constraint_on_Ungrounded);
 
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -116,7 +117,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
     protected:
 
         void source(const std::string& path);
-        void check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks);
+        void check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);
         void agent_command(const char* pCmd);
         void start_log(const char* path);
         void continue_log(const char* path);
@@ -157,10 +158,11 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Disjunction_Merge()                               { check_chunk("Disjunction_Merge.soar", 5, 1); }
         void Duplicates()                                      { check_chunk("Duplicates.soar", 5, 2); }
         void Faux_Operator()                                   { check_chunk("Faux_Operator.soar", 8, 3); }
-        void Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1); }
+        void Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1, true); }
         void GamesAgent_Sanity1()                              { check_chunk("GamesAgent_Sanity1.soar", 4539, 14); }
         void Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs.soar", 8, 1); }
         void Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities.soar", 4, 1); }
+        void Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM.soar", 6, 2); }
         void Literalization_of_NC_and_NCC()                    { check_chunk("Literalization_of_NC_and_NCC.soar", 8, 1); }
         void Literalization_with_BT_Constraints()              { check_chunk("Literalization_with_BT_Constraints.soar", 8, 1); }
         void Literalization_with_BT_Constraints2()             { check_chunk("Literalization_with_BT_Constraints2.soar", 8, 2); }
@@ -287,7 +289,7 @@ void ChunkTest::source_saved_chunks(const char* path)
     agent_command(lCmdName.c_str());
 }
 
-void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks)
+void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t expected_chunks, bool directSourceChunks)
 {
     start_log(path.c_str());
     source(path.c_str());
@@ -297,12 +299,15 @@ void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t 
     #endif
     pAgent->RunSelf(decisions, sml::sml_DECISION);
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
-    close_log();
-    save_chunks(path.c_str());
-    tearDown();
-    setUp();
-    continue_log(path.c_str());
-    source_saved_chunks(path.c_str());
+    if (!directSourceChunks)
+    {
+        close_log();
+        save_chunks(path.c_str());
+        tearDown();
+        setUp();
+        continue_log(path.c_str());
+        source_saved_chunks(path.c_str());
+    }
     {
         sml::ClientAnalyzedXML response;
         pAgent->ExecuteCommandLineXML((std::string("source test_agents/chunking-tests/expected/") + path).c_str(), &response);
