@@ -475,7 +475,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
 Symbol* Symbol_Manager::make_str_constant(char const* name)
 {
     strSymbol* sym;
-
     sym = static_cast<strSymbol*>(find_str_constant(name));
     if (sym)
     {
@@ -592,6 +591,7 @@ Symbol* Symbol_Manager::make_float_constant(double value)
 
 void Symbol_Manager::create_predefined_symbols()
 {
+    soarSymbols.crlf_symbol = make_str_constant("\n");
     soarSymbols.at_symbol = make_str_constant("@");
     soarSymbols.problem_space_symbol = make_str_constant("problem-space");
     soarSymbols.state_symbol = make_str_constant("state");
@@ -706,6 +706,7 @@ void Symbol_Manager::create_predefined_symbols()
 
 void Symbol_Manager::release_predefined_symbols()
 {
+    symbol_remove_ref(&(soarSymbols.crlf_symbol));
     symbol_remove_ref(&(soarSymbols.at_symbol));
     symbol_remove_ref(&(soarSymbols.problem_space_symbol));
     symbol_remove_ref(&(soarSymbols.state_symbol));

@@ -207,7 +207,9 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
 
 Symbol* crlf_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
-    return thisAgent->symbolManager->make_str_constant("\n");
+    thisAgent->symbolManager->symbol_add_ref(thisAgent->symbolManager->soarSymbols.crlf_symbol);
+    return thisAgent->symbolManager->soarSymbols.crlf_symbol;
+
 }
 
 /* --------------------------------------------------------------------
@@ -407,8 +409,7 @@ set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
     }
 
     sym->id->LTI_ID = ltiIDSym->ic->value;
-
-    return sym;
+    return NIL;
 }
 
 /* ---------------------------------------------------------------------

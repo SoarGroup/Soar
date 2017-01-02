@@ -15,6 +15,7 @@ typedef struct predefined_sym_struct {
            ------------------------------------------------------------- */
 
         Symbol*             at_symbol;
+        Symbol*             crlf_symbol;
         Symbol*             attribute_symbol;
         Symbol*             choices_symbol;
         Symbol*             conflict_symbol;
