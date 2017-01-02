@@ -2555,6 +2555,7 @@ bool find_var_location(Symbol* var, rete_node_level current_depth,
     dummy = var->var->rete_binding_locations->first;
     result->levels_up = current_depth - dummy_to_varloc_depth(dummy);
     result->field_num = dummy_to_varloc_field_num(dummy);
+    //dprint(DT_DEBUG, "find_var_location returning %d %d", result->levels_up, result->field_num);
     return true;
 }
 
@@ -3837,9 +3838,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     action* a;
     byte production_addition_result;
 
-    //dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
-    //dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
-    //dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
+    dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
+    dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
+    dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
 
     /* --- build the network for all the conditions --- */
     build_network_for_condition_list(thisAgent, lhs_top, 1, thisAgent->dummy_top_node,

@@ -152,6 +152,6 @@ namespace cli
  * declaring them here so that we don't need to include debug.h everywhere.*/
 extern bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
 extern bool symbol_matches_string(Symbol* sym, const char* match);
-extern bool id_matches_string(uint64_t lID, uint64_t lID_to_match);
+extern bool id_matches(uint64_t lID, uint64_t lID_to_match);
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

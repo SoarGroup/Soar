@@ -456,9 +456,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     }
     if (!lId->is_sti())
     {
-        thisAgent->outputManager->printa_sf(thisAgent,
-                           "Error: RHS makes a preference for %y (not an identifier)\n",
-                           lId);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: RHS of action %a makes a preference for %y (not an identifier)\n", a, lId);
+        //lAttr = instantiate_rhs_value(thisAgent, a->attr, 1, 'a', tok, w);
+        //lValue = instantiate_rhs_value(thisAgent, a->value, 1, 'v', tok, w);
+        //dprint(DT_DEBUG, "(%r ^%r %r) (%r ^%r %r)\n", a->id, a->attr, a->value, lId, lAttr, lValue);
         goto abort_execute_action;
     }
 
@@ -491,9 +492,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             && (a->preference_type != REJECT_PREFERENCE_TYPE))
             && (!(lId->id->isa_goal && (lAttr == thisAgent->symbolManager->soarSymbols.operator_symbol))))
     {
-        thisAgent->outputManager->printa_sf(thisAgent,
-                           "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.",
-                           lId, lAttr);
+        thisAgent->outputManager->printa_sf(thisAgent, "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.", lId, lAttr);
         goto abort_execute_action;
     }
     /* Populate identity and rhs_function stuff */
@@ -1092,11 +1091,14 @@ void create_instantiation(agent* thisAgent, production* prod,
 
     AddAdditionalTestsMode additional_test_mode = (prod->type == TEMPLATE_PRODUCTION_TYPE) ? JUST_INEQUALITIES: ALL_ORIGINALS;
 
+    //id_matches(inst->i_id, 6);
+
     /* --- build the instantiated conditions, and bind LHS variables --- */
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-            inst->i_id, additional_test_mode);
+    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+        &(inst->top_of_instantiated_conditions),
+        &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+        inst->i_id, additional_test_mode);
+
     /* --- record the level of each of the wmes that was positively tested --- */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {

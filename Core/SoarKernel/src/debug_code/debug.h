@@ -36,7 +36,7 @@ extern void debug_trace_off();
 
 bool symbol_matches_string(Symbol* sym, const char* match);
 bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
-bool id_matches_string(uint64_t lID, uint64_t lID_to_match);
+bool id_matches(uint64_t lID, uint64_t lID_to_match);
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 
