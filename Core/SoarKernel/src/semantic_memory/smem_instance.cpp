@@ -359,8 +359,11 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             dprint_noprefix(DT_SMEM_INSTANCE, "%y\n", value_sym);
             if (depth > 1)
             {
-                visited->insert((*iterator)->id->LTI_ID);
-                install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node            }
+                //visited->insert((*iterator)->id->LTI_ID);
+                //install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
+                dprint(DT_SMEM_INSTANCE, "Depth parameter > 1, so adding children of %y to add list.\n", value_sym);
+                children.insert(value_sym);
+            }
         }
         else
         {
@@ -401,4 +404,3 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     timers->ncb_retrieval->stop();
     ////////////////////////////////////////////////////////////////////////////
 }
-

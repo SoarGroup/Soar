@@ -151,7 +151,7 @@ void SMem_Manager::disconnect_ltm(uint64_t pLTI_ID, std::map<uint64_t, uint64_t>
             {
                 if (old_children != NULL)
                 {
-                    count_child_connection(old_children, sql->column_int(2));
+                    count_child_connection(old_children, sql->getColumn(2).getInt64());
                 }
                 // adjust in opposite direction ( adjust, attribute, lti )
                 auto wlfu = sqlite_thread_guard(SQL->wmes_lti_frequency_update);
@@ -345,15 +345,14 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         });
 
                         if (!JobQueue->post(lti_child).get())
+                        {
                             lti_new.insert(std::make_pair(attr_hash, value_lti));
-<<<<<<< HEAD
-=======
+
                             if (new_children != NULL)
                             {
                                 count_child_connection(new_children, value_lti);
                             }
                         }
->>>>>>> origin/new_smem_with_edge_weight_spread
                     }
 
                     // provide trace output
@@ -443,7 +442,6 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
 
     // update edge counter
-<<<<<<< HEAD
     std::packaged_task<void()> updateEdgeCounter([this,new_edges,pLTI_ID] {
         auto sql = sqlite_thread_guard(SQL->act_lti_child_ct_set);
         sql->bind(1, new_edges);
@@ -452,33 +450,35 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     });
 
     JobQueue->post(updateEdgeCounter).wait();
-=======
-    {
-        SQL->act_lti_child_ct_set->bind_int(1, new_edges);
-        SQL->act_lti_child_ct_set->bind_int(2, pLTI_ID);
-        SQL->act_lti_child_ct_set->execute(soar_module::op_reinit);
-    }
-    {
-        SQL->act_lti_child_lti_ct_set->bind_int(1, new_lti_edges);
-        SQL->act_lti_child_lti_ct_set->bind_int(2, pLTI_ID);
-        SQL->act_lti_child_lti_ct_set->execute(soar_module::op_reinit);
-    }
+    std::packaged_task<void()> updateLTIEdgeCounter([this,new_lti_edges,pLTI_ID] {
+        auto sql = sqlite_thread_guard(SQL->act_lti_child_lti_ct_set);
+        sql->bind(1, new_lti_edges);
+        sql->bind(2, pLTI_ID);
+        sql->exec();
+    });
 
-    //For now, on a change to the network for an lti, I reset the edge weights.
-    {
-        double fan = 1.0/((double)new_lti_edges);
-        SQL->web_update_all_lti_child_edges->bind_double(1,fan);
-        SQL->web_update_all_lti_child_edges->bind_int(2,pLTI_ID);
-        SQL->web_update_all_lti_child_edges->execute(soar_module::op_reinit);
-    }
+    JobQueue->post(updateLTIEdgeCounter).wait();
+
+    double fan = 1.0/((double)new_lti_edges);
+    std::packaged_task<void()> updateLTIChildEdges([this,fan,pLTI_ID] {
+        auto sql = sqlite_thread_guard(SQL->web_update_all_lti_child_edges);
+        sql->bind(1, fan);
+        sql->bind(2, pLTI_ID);
+        sql->exec();
+    });
+
+    JobQueue->post(updateLTIChildEdges).wait();
+
 
     //Put the initialization of the entry in the prohibit table here.
     //This doesn't create a prohibt. It creates an entry in the prohibit tracking table.
-    {
-        SQL->prohibit_add->bind_int(1,pLTI_ID);
-        SQL->prohibit_add->execute(soar_module::op_reinit);
-    }
->>>>>>> origin/new_smem_with_edge_weight_spread
+    std::packaged_task<void()> prohibitAdd([this,pLTI_ID] {
+        auto sql = sqlite_thread_guard(SQL->prohibit_add);
+        sql->bind(1, pLTI_ID);
+        sql->exec();
+    });
+    JobQueue->post(prohibitAdd).wait();
+
 
     // now we can safely activate the lti
     if (activate)
@@ -514,29 +514,30 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        std::packaged_task<void()> check_and_add([this,p] {
+        std::packaged_task<void()> check_and_add([this,p, pLTI_ID, web_act] {
             bool result;
 
             {
-<<<<<<< HEAD
+
                 auto sql = sqlite_thread_guard(SQL->wmes_constant_frequency_check);
                 sql->bind(1, p->first);
                 sql->bind(2, p->second);
                 result = sql->executeStep();
             }
-=======
-                // insert
-                {
-                    // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    SQL->web_add->bind_int(1, pLTI_ID);
-                    SQL->web_add->bind_int(2, p->first);
-                    SQL->web_add->bind_int(3, p->second);
-                    SQL->web_add->bind_int(4, SMEM_AUGMENTATIONS_NULL);
-                    SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->bind_double(6, 0.0);
-                    SQL->web_add->execute(soar_module::op_reinit);
-                }
->>>>>>> origin/new_smem_with_edge_weight_spread
+
+            // insert
+            {
+                // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
+                auto sql = sqlite_thread_guard(SQL->web_add);
+                sql->bind(1, pLTI_ID);
+                sql->bind(2, p->first);
+                sql->bind(3, p->second);
+                sql->bind(4, SMEM_AUGMENTATIONS_NULL);
+                sql->bind(5, web_act);
+                sql->bind(6, 0.0);
+                sql->exec();
+            }
+
 
             if (!result)
             {
@@ -578,29 +579,30 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
         // update counter
         // check if counter exists (and add if does not): attribute_s_id, val
-        std::packaged_task<void()> check_and_add([this,p] {
+        std::packaged_task<void()> check_and_add([this,p, web_act, new_lti_edges, pLTI_ID] {
             bool result;
 
             {
-<<<<<<< HEAD
+
                 auto sql = sqlite_thread_guard(SQL->wmes_lti_frequency_check);
                 sql->bind(1, p->first);
                 sql->bind(2, p->second);
                 result = sql->executeStep();
             }
-=======
-                // insert
-                {
-                    // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
-                    SQL->web_add->bind_int(1, pLTI_ID);
-                    SQL->web_add->bind_int(2, p->first);
-                    SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
-                    SQL->web_add->bind_int(4, p->second);
-                    SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->bind_double(6, 1.0/((double)new_lti_edges));
-                    SQL->web_add->execute(soar_module::op_reinit);
-                }
->>>>>>> origin/new_smem_with_edge_weight_spread
+
+            // insert
+            {
+                // lti_id, attribute_s_id, val_const, value_lti_id, activation_value
+                auto sql = sqlite_thread_guard(SQL->web_add);
+                sql->bind(1, pLTI_ID);
+                sql->bind(2, p->first);
+                sql->bind(3, SMEM_AUGMENTATIONS_NULL);
+                sql->bind(4, p->second);
+                sql->bind(5, web_act);
+                sql->bind(6, 1.0/((double)new_lti_edges));
+                sql->exec();
+            }
+
 
             if (!result)
             {
@@ -653,11 +655,9 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
 
         JobQueue->post(check_and_add).wait();
     }
-<<<<<<< HEAD
 
     // update local edge count
     statistics->edges->set_value(statistics->edges->get_value() + (const_new.size() + lti_new.size()));
-=======
     if (old_children != NULL)
     {
         delete old_children;
@@ -666,7 +666,6 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     {
         delete new_children;
     }
->>>>>>> origin/new_smem_with_edge_weight_spread
 }
 
 void SMem_Manager::store_new(Symbol* pSTI, smem_storage_type store_type, bool pOverwriteOldLinkToLTM, tc_number tc)

@@ -417,7 +417,7 @@ bool SMem_Manager::CLI_query(const char* ltms_str, std::string** err_msg, std::s
             meta_wmes.clear();
         }
 
-        delete prohibit;
+        //delete prohibit;
     }
 
     /*
@@ -1169,8 +1169,9 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
 uint64_t SMem_Manager::spread_size()
 {
-    SQL->calc_spread_size_debug_cmd->execute();
-    uint64_t number_spread_elements = SQL->calc_spread_size_debug_cmd->column_int(0);
-    SQL->calc_spread_size_debug_cmd->reinitialize();
-    return number_spread_elements;
+    std::packaged_task<uint64_t()> size([this]() {
+        auto sql = sqlite_thread_guard(SQL->calc_spread_size_debug_cmd);
+        return sql->getColumn(0).getUInt64();
+    });
+    return JobQueue->post(size).get();
 }

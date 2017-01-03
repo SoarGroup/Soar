@@ -49,62 +49,68 @@ std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_web_crawl(smem_weighted
     return sql;
 }
 
-soar_module::sqlite_statement* SMem_Manager::setup_web_crawl_spread(smem_weighted_cue_element* el)
+std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_web_crawl_spread(smem_weighted_cue_element* el)
 {
-    soar_module::sqlite_statement* q = NULL;
+    std::shared_ptr<sqlite_thread_guard> q;
 
     // first, point to correct query and setup
     // query-specific parameters
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        q = SQL->web_attr_all_spread;
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_spread);
+        (*q)->bind(1, el->attr_hash);
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        q = SQL->web_const_all_spread;
-        q->bind_int(2, el->value_hash);
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_const_all_spread);
+        (*q)->bind(2, el->value_hash);
+        (*q)->bind(1, el->attr_hash);
     }
     else if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        q = SQL->web_lti_all_spread;
-        q->bind_int(2, el->value_lti);
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_lti_all_spread);
+        (*q)->bind(2, el->value_lti);
+        (*q)->bind(1, el->attr_hash);
     }
 
     // all require hash as first parameter
-    q->bind_int(1, el->attr_hash);
+    //q->bind(1, el->attr_hash);
 
     return q;
 }
 
-soar_module::sqlite_statement* SMem_Manager::setup_cheap_web_crawl(smem_weighted_cue_element* el)
+std::shared_ptr<sqlite_thread_guard> SMem_Manager::setup_cheap_web_crawl(smem_weighted_cue_element* el)
 {
-    soar_module::sqlite_statement* q = NULL;
+    std::shared_ptr<sqlite_thread_guard> q;
 
     // first, point to correct query and setup
     // query-specific parameters
     if (el->element_type == attr_t)
     {
         // attribute_s_id=?
-        q = SQL->web_attr_all_cheap;
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_attr_all_cheap);
+        (*q)->bind(1, el->attr_hash);
     }
     else if (el->element_type == value_const_t)
     {
         // attribute_s_id=? AND value_constant_s_id=?
-        q = SQL->web_const_all_cheap;
-        q->bind_int(2, el->value_hash);
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_const_all_cheap);
+        (*q)->bind(2, el->value_hash);
+        (*q)->bind(1, el->attr_hash);
     }
     else if (el->element_type == value_lti_t)
     {
         // attribute_s_id=? AND value_lti_id=?
-        q = SQL->web_lti_all_cheap;
-        q->bind_int(2, el->value_lti);
+        q = std::make_shared<sqlite_thread_guard>(SQL->web_lti_all_cheap);
+        (*q)->bind(2, el->value_lti);
+        (*q)->bind(1, el->attr_hash);
     }
 
     // all require hash as first parameter
-    q->bind_int(1, el->attr_hash);
+    //q->bind(1, el->attr_hash);
 
     return q;
 }
@@ -372,9 +378,9 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
     prohibit.insert(prohibit_lti.begin(), prohibit_lti.end());
     //Under the philosophy that activation only matters in the service of a query, we defer processing prohibits until now..
     id_set::iterator prohibited_lti_p;
-    for (prohibited_lti_p = prohibit->begin(); prohibited_lti_p != prohibit->end(); ++prohibited_lti_p)
+    for (prohibited_lti_p = prohibit.begin(); prohibited_lti_p != prohibit.end(); ++prohibited_lti_p)
     {
-        std::packaged_task<bool()> pt_ProhibitCheck([] {
+        std::packaged_task<bool()> pt_ProhibitCheck([this, prohibited_lti_p] {
             auto sql = sqlite_thread_guard(SQL->prohibit_check);
 
             sql->bind(1, *prohibited_lti_p);
@@ -384,7 +390,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         bool prohibited = JobQueue->post(pt_ProhibitCheck).get();
         if (prohibited)
         {
-            std::packaged_task<void()> pt_ProhibitSet([]{
+            std::packaged_task<void()> pt_ProhibitSet([this, prohibited_lti_p]{
                 auto sql = sqlite_thread_guard(SQL->prohibit_set);
 
                 sql->bind(1, *prohibited_lti_p);
@@ -396,7 +402,7 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         }
     }
 
-    smem_weighted_cue_list weighted_cue;
+    //smem_weighted_cue_list weighted_cue;
     bool good_cue = true;
 
     uint64_t king_id = NIL;
@@ -423,13 +429,13 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
     if (settings->spreading->get_value() == on)
     {
         timers->spreading->start();
-        q = setup_cheap_web_crawl(*cand_set);
+        auto q = setup_cheap_web_crawl(*cand_set);
         std::set<uint64_t> to_update;
         int num_answers = 0;
         while ((*q)->executeStep() && num_answers < 400)
         {//TODO: The 400 there should actually reflect the size of the context's recipients.
             num_answers++;
-            to_update.insert(q->column_int(0));
+            to_update.insert((*q)->getColumn(0).getInt64());
         }
         timers->spreading->stop();
         if (num_answers >= 400)
@@ -502,11 +508,11 @@ void SMem_Manager::process_query_SQL(smem_weighted_cue_list weighted_cue, bool n
         }
         auto spread_q = setup_web_crawl_spread(*cand_set);
         //uint64_t highest_so_far = 0;
-        while (spread_q->execute() == soar_module::row)
+        while ((*spread_q)->executeStep())
         {
-            plentiful_parents.push(std::make_pair<double, uint64_t>(spread_q->column_double(1), spread_q->column_int(0)));
+            plentiful_parents.push(std::make_pair<double, uint64_t>((*spread_q)->getColumn(1).getDouble(), (*spread_q)->getColumn(0).getInt64()));
         }
-        spread_q->reinitialize();
+        //spread_q->reinitialize();
         bool first_element = false;
         while ((match_ids->size() < number_to_retrieve || needFullSearch) && ((more_rows) || (!plentiful_parents.empty())))
         {
