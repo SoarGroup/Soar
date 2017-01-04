@@ -11,7 +11,7 @@
 #define INIT_AFTER_RUN
 #define TURN_EXPLAINER_ON
 //#define SAVE_LOG_FILES
-//#define SKIP_SLOW_TESTS
+#define SKIP_SLOW_TESTS
 #define SKIP_JAVA_DEBUGGER_TEST
 
 #define DO_ALIAS_TESTS
