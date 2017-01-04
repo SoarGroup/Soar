@@ -33,7 +33,6 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
-    symbol_matches_string(condition_tests.value->eq_test->data.referent, "A18");
     set_matched_wme_for_cond(pCond);
 
     if (pCond->bt.level)
