@@ -58,7 +58,7 @@ sp {apply*chunk*check-smem*success
    (write (crlf) |Copied fake operator to top state | <retrieved> (crlf))
 }
 
-/* Another version we're experimenting with trying to figure out why RETE is returning the wrong field num for some actions when creating an instantiation of last 2 rules */
+#/* Another version we're experimenting with trying to figure out why RETE is returning the wrong field num for some actions when creating an instantiation of last 2 rules */
 # sp {propose*get-smem-top
 #    (state <s> ^type state -^impasse)
 # -->

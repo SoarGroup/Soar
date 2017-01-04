@@ -338,17 +338,12 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
     {
         for (condition* cond = top_cond; cond != NIL; cond = cond->next)
         {
-            if (cond->type == POSITIVE_CONDITION)
+            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
                 dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
                 variablize_equality_tests(cond->data.tests.id_test);
                 variablize_equality_tests(cond->data.tests.attr_test);
                 variablize_equality_tests(cond->data.tests.value_test);
-            }
-            else if (cond->type == NEGATIVE_CONDITION)
-            {
-                dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS NC equality test for id in: %l\n", cond);
-                variablize_equality_tests(cond->data.tests.id_test);
             }
         }
     }

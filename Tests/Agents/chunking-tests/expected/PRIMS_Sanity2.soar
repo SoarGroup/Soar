@@ -1,17 +1,17 @@
-sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t476-2
-    (state <s1> ^rootstate <s2> ^props-can-evaluate <c2>
-          ^props-instructions <l1>)
-    (<s2> -^name <blah>)
-    (<l1> ^lti-name <c2> ^{ << condition action >> <c1> } _P23)
+sp {answer*set*props*symbol*status*response*propagate*fail*OpNoChange*t476-1
+    (state <s1> ^rootstate <s2> ^operator <o1> ^props-instructions <l1>)
+    (<s2> -^<c2> <blah>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^{ << condition action >> <c1> } |_P1|)
     -->
     (<l1> ^status fail +)
 }
 
-sp {answer*set*props*symbol*status*response*propagate*fail*OpNoChange*t476-1
-    (state <s1> ^rootstate <s2> ^operator <o1> ^props-instructions <l1>)
-    (<s2> -^name <blah>)
-    (<o1> ^name instruction ^symbol <l1>)
-    (<l1> ^{ << condition action >> <c1> } |_P1|)
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t476-2
+    (state <s1> ^rootstate <s2> ^props-instructions <l1>
+          ^props-can-evaluate <c2>)
+    (<s2> -^<c3> <blah>)
+    (<l1> ^lti-name <c2> ^{ << condition action >> <c1> } _P23)
     -->
     (<l1> ^status fail +)
 }
@@ -69,22 +69,6 @@ sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t356-1
     (<s1> ^props-blink true + ^props-flag reset-prohibits +)
 }
 
-sp {answer*apply*props*symbol*success*OpNoChange*t355-1
-    (state <s2> ^evals <e1> ^operator <o1> ^props-instructions <l1>
-          ^rootstate <s1> ^const <l2>
-          ^name { << props-eval instruction >> <c5> })
-    (<e1> -^evaluated _P102 ^passed <c10>)
-    (<o1> ^name instruction ^symbol <l1>)
-    (<s1> ^cheese <c1> ^name <c3>)
-    (<l2> ^1 <c3>)
-    (<l1> ^lti-name <c11> ^{ << condition action >> <c2> } _P10
-          ^{ << condition action >> <c4> } |_P1|
-          ^{ << condition action >> <c8> } <c9>
-          ^{ << condition action >> <c6> } <c7>)
-    -->
-    (<e1> ^evaluated <c11> + ^passed <c10> - ^passed (+ 1 <c10>) +)
-}
-
 sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t332-1
     (state <s1> ^operator <o1> ^props-instructions <l1> ^smem <c2>)
     (<o1> ^name props-combine-search ^lti-name <c1>)
@@ -134,23 +118,6 @@ sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t259-1
     -->
     (<l2> ^props-result success +)
     (<s1> ^props-blink true + ^props-flag reset-prohibits +)
-}
-
-sp {answer*apply*props*symbol*success*OpNoChange*t258-1
-    (state <s2> ^evals <e1> ^operator <o2> ^props-instructions <l2>
-          ^rootstate <s1> ^const <l1>
-          ^name { << props-eval instruction >> <c5> })
-    (<e1> -^evaluated _P71 ^passed <c10>)
-    (<o2> ^name instruction ^symbol <l2>)
-    (<l1> ^1 <c1> ^2 <c3>)
-    (<s1> ^name <c1> ^operator <o1>)
-    (<o1> ^name <c3>)
-    (<l2> ^lti-name <c11> ^{ << condition action >> <c4> } |_P7|
-          ^{ << condition action >> <c2> } |_P1|
-          ^{ << condition action >> <c8> } <c9>
-          ^{ << condition action >> <c6> } <c7>)
-    -->
-    (<e1> ^evaluated <c11> + ^passed <c10> - ^passed (+ 1 <c10>) +)
 }
 
 sp {answer*apply*props*success*action*indifferent*t215-3
@@ -244,4 +211,35 @@ sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t30-1
 }
 
 
+sp {answer*apply*props*symbol*success*OpNoChange*t261-1
+    (state <s2> ^operator <o2> ^props-instructions <l2> ^evals <e1>
+          ^const <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c5> })
+    (<o2> ^name instruction ^symbol <l2>)
+    (<l2> ^lti-name <c11> ^{ << condition action >> <c2> } |_P7|
+          ^{ << condition action >> <c4> } |_P1|
+          ^{ << condition action >> <c6> } <c7>
+          ^{ << condition action >> <c8> } <c9>)
+    (<e1> -^evaluated <c11> ^passed <c10>)
+    (<l1> ^2 <c1> ^1 <c3>)
+    (<s1> ^name <c3> ^operator <o1>)
+    (<o1> ^name <c1>)
+    -->
+    (<e1> ^evaluated <c11> + ^passed <c10> - ^passed (+ 1 <c10>) +)
+}
 
+sp {answer*apply*props*symbol*success*OpNoChange*t355-1
+    (state <s2> ^operator <o1> ^props-instructions <l1> ^evals <e1>
+          ^const <l2> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c5> })
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^lti-name <c11> ^{ << condition action >> <c2> } _P10
+          ^{ << condition action >> <c4> } |_P1|
+          ^{ << condition action >> <c6> } <c7>
+          ^{ << condition action >> <c8> } <c9>)
+    (<e1> -^evaluated <c11> ^passed <c10>)
+    (<l2> ^1 <c3>)
+    (<s1> ^name <c3> ^cheese <c1>)
+    -->
+    (<e1> ^evaluated <c11> + ^passed <c10> - ^passed (+ 1 <c10>) +)
+}

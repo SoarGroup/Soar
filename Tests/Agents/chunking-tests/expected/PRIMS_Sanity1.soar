@@ -1,8 +1,25 @@
-sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t534-1
-    (state <s1> ^rootstate <s2> ^props-can-evaluate <c3>
-          ^props-instructions <l2> ^const <l1>
-          ^name { << props-eval instruction >> <c1> })
-    (<s2> -^name <blah>)
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t452-1
+    (state <s1> ^rootstate <s2> ^const <l1> ^props-instructions <l2>
+          ^props-can-evaluate <c3> ^name { << props-eval instruction >> <c1> })
+    (<s2> -^<c4> <blah>)
+    (<l2> ^lti-name <c3> ^{ << condition action >> <c2> } _P102)
+    -->
+    (<l2> ^status fail +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t520-1
+    (state <s1> ^rootstate <s2> ^const <l1> ^props-instructions <l2>
+          ^props-can-evaluate <c3> ^name { << props-eval instruction >> <c1> })
+    (<s2> -^cheese <val>)
+    (<l2> ^lti-name <c3> ^{ << condition action >> <c2> } _P102)
+    -->
+    (<l2> ^status fail +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t584-1
+    (state <s1> ^rootstate <s2> ^const <l1> ^props-instructions <l2>
+          ^props-can-evaluate <c3> ^name { << props-eval instruction >> <c1> })
+    (<s2> -^<c4> <blah>)
     (<l2> ^lti-name <c3> ^{ << condition action >> <c2> } _P23)
     -->
     (<l2> ^status fail +)
@@ -18,15 +35,6 @@ sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t512-1
     (<c5> ^attr <c4> + ^sym1 |_P1| + ^sym2 |_P2| + ^newname _P23 +)
 }
 
-sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t479-1
-    (state <s1> ^rootstate <s2> ^props-can-evaluate <c3>
-          ^props-instructions <l2> ^const <l1>
-          ^name { << props-eval instruction >> <c1> })
-    (<s2> -^name <blah>)
-    (<l2> ^lti-name <c3> ^{ << condition action >> <c2> } _P102)
-    -->
-    (<l2> ^status fail +)
-}
 
 sp {answer*3*apply*props*success*action*best*StateNoChange*t434-12
     (state <s1> ^name props-eval ^rootstate <s2> ^rule-name <c1>)
