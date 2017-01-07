@@ -1,0 +1,7 @@
+sp {answer*make-chunk*Tie*t1-1
+    (state <s1> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^prob <c2>)
+    (<o1> ^prob { < <c2> <c1> })
+    -->
+    (<s1> ^operator <o1> = (abs (+ 1 <c1>)) ^operator <o2> = (abs (+ 1 <c2>)))
+}
