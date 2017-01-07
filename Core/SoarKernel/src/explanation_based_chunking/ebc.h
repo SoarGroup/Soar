@@ -170,7 +170,7 @@ class Explanation_Based_Chunker
         id_set*                    identities_to_clean_up;
 
         id_to_id_map*              unification_map;
-        identity_triple            local_singleton_superstate_identity;
+        identity_quadruple            local_singleton_superstate_identity;
 
         constraint_list*           constraints;
         attachment_points_map*     attachment_points;
@@ -219,8 +219,8 @@ class Explanation_Based_Chunker
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
-                const identity_triple o_ids_to_replace,
-                const rhs_triple rhs_funcs,
+                const identity_quadruple o_ids_to_replace,
+                const rhs_quadruple rhs_funcs,
                 uint64_t bt_depth,
                 BTSourceType bt_type);
         void report_local_negation(condition* c);
@@ -230,7 +230,7 @@ class Explanation_Based_Chunker
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
-        void unify_backtraced_conditions(condition* parent_cond, const identity_triple o_ids_to_replace, const rhs_triple rhs_funcs);
+        void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv);

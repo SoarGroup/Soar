@@ -157,8 +157,8 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
-                                     const identity_triple o_ids_to_replace,
-                                     const rhs_triple rhs_funcs,
+                                     const identity_quadruple o_ids_to_replace,
+                                     const rhs_quadruple rhs_funcs,
                                      uint64_t bt_depth,
                                      BTSourceType bt_type)
 {

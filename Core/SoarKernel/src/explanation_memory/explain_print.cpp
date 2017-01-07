@@ -247,7 +247,7 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
         }
 //        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
 //        outputManager->printa(thisAgent, " ^");
@@ -295,7 +295,7 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }

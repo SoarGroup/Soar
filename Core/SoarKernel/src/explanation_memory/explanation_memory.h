@@ -171,7 +171,7 @@ class Explanation_Memory
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
-        identity_triple         current_explained_ids;
+        identity_quadruple         current_explained_ids;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);

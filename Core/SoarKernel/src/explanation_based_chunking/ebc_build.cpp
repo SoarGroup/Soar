@@ -603,6 +603,11 @@ void Explanation_Based_Chunker::make_clones_of_results()
             lClonedPref->rhs_funcs.value = lResultPref->cloned_rhs_funcs.value;
             lResultPref->cloned_rhs_funcs.value = NULL;
         }
+        if (lResultPref->cloned_rhs_funcs.referent)
+        {
+            lClonedPref->rhs_funcs.referent = lResultPref->cloned_rhs_funcs.referent;
+            lResultPref->cloned_rhs_funcs.referent = NULL;
+        }
 
         /* --- put it onto the list for chunk_inst --- */
         insert_at_head_of_dll(m_chunk_inst->preferences_generated, lClonedPref, inst_next, inst_prev);

@@ -546,7 +546,7 @@ bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID
 bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
 {
     std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    identity_triple lWatchIdentities;
+    identity_quadruple lWatchIdentities;
 
     iter_inst = all_conditions->find(pConditionID);
     if (iter_inst == all_conditions->end())

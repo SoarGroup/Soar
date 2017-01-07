@@ -447,7 +447,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     lValue = NIL;
     lReferent = NIL;
     uint64_t oid_id = 0, oid_attr = 0, oid_value = 0, oid_referent = 0;
-    rhs_value f_id = 0, f_attr = 0, f_value = 0;
+    rhs_value f_id = 0, f_attr = 0, f_value = 0, f_referent = 0;
 
     lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
     if (!lId)
@@ -533,14 +533,20 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         }
         if (rule_action->referent)
         {
-            assert(!rhs_value_is_funcall(rule_action->referent));
-            oid_referent = rhs_value_to_o_id(rule_action->referent);
+            if (rhs_value_is_funcall(rule_action->referent))
+            {
+                f_referent = rule_action->referent;
+                rule_action->referent = NULL;
+            } else {
+                oid_referent = rhs_value_to_o_id(rule_action->referent);
+            }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_triple(oid_id, oid_attr, oid_value, oid_referent));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent));
     newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
     newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
     newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
+    newPref->rhs_funcs.referent = copy_rhs_value(thisAgent, f_referent);
     newPref->parent_action = a;
     return newPref;
 
@@ -1735,7 +1741,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
-                           cand->value, NIL, identity_triple(state_sym_identity, 0, superop_sym_identity));
+                           cand->value, NIL, identity_quadruple(state_sym_identity, 0, superop_sym_identity));
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);

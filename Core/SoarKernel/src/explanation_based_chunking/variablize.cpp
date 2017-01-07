@@ -482,14 +482,19 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     }
     if (preference_is_binary(result->type))
     {
-        iter = (*unification_map).find(result->identities.referent);
-        if (iter != (*unification_map).end())
+        if (!result->rhs_funcs.referent)
         {
-            lO_id = iter->second;
+            iter = (*unification_map).find(result->identities.referent);
+            if (iter != (*unification_map).end())
+            {
+                lO_id = iter->second;
+            } else {
+                lO_id = result->identities.referent;
+            }
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
         } else {
-            lO_id = result->identities.referent;
+            a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
         }
-        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
     }
 
     dprint_set_indents(DT_RHS_VARIABLIZATION, "");
@@ -532,7 +537,15 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     if (preference_is_binary(result->type))
     {
         lO_id = variablize_rhs_symbol(a->referent, lti_link_tc);
-        result->clone_identities.referent = lO_id;
+        if (!result->rhs_funcs.value)
+        {
+            result->clone_identities.referent = lO_id;
+        } else {
+            result->clone_identities.referent = lO_id;
+            result->cloned_rhs_funcs.referent = a->value;
+    //        a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
+            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent, true);
+        }
     }
 
     dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
