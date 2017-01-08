@@ -865,9 +865,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         return;
     }
 
-    /* --- Assign a new instantiation ID for this chunk --- */
-    set_new_chunk_id();
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+    /* Set up a new instantiation and ID for this chunk's refracted match */
+    init_instantiation(thisAgent, m_chunk_inst, NULL);
+    m_chunk_inst->tested_local_negation             = m_inst->tested_local_negation;
+    m_chunk_inst->creates_deep_copy                 = m_inst->creates_deep_copy;
+    m_chunk_inst->creates_ltm_instance              = m_inst->creates_ltm_instance;
+    m_chunk_new_i_id = m_chunk_inst->i_id;
 
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
@@ -879,7 +882,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_new_i_id);
             debug_trace_on();
         }
-#endif
+    #endif
 
     dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
 //    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
@@ -1056,23 +1059,17 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
 
     /* Fill out the instantiation for the chunk */
-    m_chunk_inst->top_of_instantiated_conditions    = NULL;
-    m_chunk_inst->bottom_of_instantiated_conditions = NULL;
-    m_chunk_inst->preferences_cached = NULL;
     m_chunk_inst->top_of_instantiated_conditions    = l_inst_top;
     m_chunk_inst->bottom_of_instantiated_conditions = l_inst_bottom;
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
-    m_chunk_inst->GDS_evaluated_already             = false;
-    m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
-    m_chunk_inst->in_ms                             = true;  /* set true for now, we'll find out later... */
+    m_chunk_inst->in_ms                             = true;                     /* set true for now, we'll find out later... */
     m_chunk_inst->in_newly_created                  = true;
-    m_chunk_inst->in_newly_deleted                  = false;
-    m_chunk_inst->explain_status                    = explain_unrecorded;
-    m_chunk_inst->explain_depth                     = 0;
-    m_chunk_inst->explain_tc_num                    = 0;
+    m_chunk_inst->tested_local_negation             = m_tested_local_negation;
+    m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
+    m_chunk_inst->creates_ltm_instance              = m_tested_ltm_recall;
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 

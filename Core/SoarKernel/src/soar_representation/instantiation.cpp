@@ -1027,7 +1027,7 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
     }
 }
 
-void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL)
+void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod, struct token_struct* tok, wme* w)
 {
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
     inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
@@ -1056,8 +1056,9 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
 
-    inst->prod_name = prod ? prod->name : backup_name;
-    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+    inst->prod_name = prod ? prod->name : backup_name ? backup_name : NULL;
+    if (inst->prod_name) thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+
 }
 
 /* -----------------------------------------------------------------------

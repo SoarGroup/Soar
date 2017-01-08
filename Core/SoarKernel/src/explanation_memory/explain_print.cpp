@@ -423,7 +423,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Chunk used negated reasoning about sub-state                       %-%u\n", stats.tested_local_negation);
     outputManager->printa_sf(thisAgent, "Chunk tested knowledge retrieved from long-term memory             %-%u\n", stats.tested_ltm_recall);
     outputManager->printa_sf(thisAgent, "Chunk learned that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification used negated reasoning about sub-state               %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "Justification used negated reasoning about sub-state               %-%u\n", stats.tested_local_negation_just);
     outputManager->printa_sf(thisAgent, "Justification tested knowledge retrieved from long-term memory     %-%u\n", stats.tested_ltm_recall_just);
     outputManager->printa_sf(thisAgent, "Justification learned that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
 

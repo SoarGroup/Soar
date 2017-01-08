@@ -47,7 +47,7 @@ typedef struct instantiation_struct
 } instantiation;
 
 void                init_instantiation_pool(agent* thisAgent);
-
+void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL);
 void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
 void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
 void                retract_instantiation(agent* thisAgent, instantiation* inst);
