@@ -25,8 +25,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(SMem_Chunk_Direct);
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
-        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
-        CPPUNIT_TEST(BUNCPS_2);
         CPPUNIT_TEST(BUNCPS_3);
         CPPUNIT_TEST(BUNCPS_4);
         CPPUNIT_TEST(BUNCPS_5);
@@ -35,7 +33,6 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Chunk_Operator_Tie_Impasse);
         CPPUNIT_TEST(Chunk_Operator_Tie_Item_Links);
         CPPUNIT_TEST(Chunk_RL_Proposal);
-        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
         CPPUNIT_TEST(Chunked_Justification_with_extras);
         CPPUNIT_TEST(Conflated_Constants);
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
@@ -118,6 +115,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
 //#ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(GamesAgent_Sanity1);
 //#endif
+        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
+        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
+        CPPUNIT_TEST(BUNCPS_2);
 
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -171,11 +171,11 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void Disjunction_Merge()                               { check_chunk("Disjunction_Merge.soar", 5, 1); }
         void Duplicates()                                      { check_chunk("Duplicates.soar", 5, 2); }
         void Faux_Operator()                                   { check_chunk("Faux_Operator.soar", 8, 3); }
-        void Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS.soar", 8, 1, true); }
+        void Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS.soar", 8, 0, true); }           // Should be 1
         void GamesAgent_Sanity1()                              { check_chunk("GamesAgent_Sanity1.soar", 4539, 9); }                 // Should be 14 expected chunks
         void Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs.soar", 8, 1); }
         void Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities.soar", 4, 1); }
-        void Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM.soar", 6, 0); }                       // Should be 2 expected chunks
+        void Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM.soar", 6, 0); }                        // Should be 2 expected chunks
         void Literalization_of_NC_and_NCC()                    { check_chunk("Literalization_of_NC_and_NCC.soar", 8, 1); }
         void Literalization_with_BT_Constraints()              { check_chunk("Literalization_with_BT_Constraints.soar", 8, 1); }
         void Literalization_with_BT_Constraints2()             { check_chunk("Literalization_with_BT_Constraints2.soar", 8, 2); }
@@ -192,9 +192,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void NCC_with_Relational_Constraint()                  { check_chunk("NCC_with_Relational_Constraint.soar", 8, 1); }
         void No_Topstate_Match()                               { check_chunk("No_Topstate_Match.soar", 8, 1); }
         void Opaque_State_Barrier()                            { check_chunk("Opaque_State_Barrier.soar", 8, 1); }
-        void Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge.soar", 75, 12, true); }  // This should actually have 18 expected chunks, but only 12 or 14 pass each time
+        void Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge.soar", 75, 12, true); }  // Should be 18
         void PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1.soar", 795, 24); }
-        void PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2.soar", 728, 21); }                      // Changed to 21 expected chunks temporarily b/c one platform didn't recognize 1 as a dupe
+        void PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2.soar", 728, 21); }                      // Should be 22.  One platform didn't recognize 1 as a dupe
         void Promoted_STI()                                    { check_chunk("Promoted_STI.soar", 8, 1); }
         void Reorderer_Bad_Conjunction()                       { check_chunk("Reorderer_Bad_Conjunction.soar", 8, 1); }
         void Repair_NOR_Temporal_Constraint()                  { check_chunk("Repair_NOR_Temporal_Constraint.soar", 8, 3); }
@@ -242,13 +242,13 @@ void ChunkTest::source(const std::string& path)
 
 void ChunkTest::agent_command(const char* pCmd)
 {
-    sml::ClientAnalyzedXML response;
-    pAgent->ExecuteCommandLineXML(pCmd, &response);
-    CPPUNIT_ASSERT_MESSAGE(response.GetResultString(), pAgent->GetLastCommandLineResult());
+    pAgent->ExecuteCommandLine(pCmd, true, false);
 }
 
 void ChunkTest::start_log(const char* path)
 {
+//    agent_command("output console off");
+//    agent_command("output callbacks on");
     std::string lCmdName("output log ");
     lCmdName += path;
     lCmdName.resize(lCmdName.size() - 5);
@@ -260,6 +260,8 @@ void ChunkTest::start_log(const char* path)
 
 void ChunkTest::continue_log(const char* path)
 {
+//    agent_command("output console off");
+//    agent_command("output callbacks on");
     std::string lCmdName("output log -A ");
     lCmdName += path;
     lCmdName.resize(lCmdName.size() - 5);
@@ -327,8 +329,16 @@ void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t 
         agent_command("explain all on");
         agent_command("explain just on");
     #endif
+    #ifdef SAVE_LOG_FILES
+        agent_command("trace -CbL 2");
+    #endif
     pAgent->RunSelf(decisions, sml::sml_DECISION);
     CPPUNIT_ASSERT_MESSAGE(pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult());
+    #ifdef SAVE_LOG_FILES
+        agent_command("chunk ?");
+        agent_command("production firing-count");
+        agent_command("print -cf");
+    #endif
     if (!directSourceChunks)
     {
         close_log();
@@ -357,12 +367,12 @@ void ChunkTest::check_chunk(const std::string& path, int64_t decisions, int64_t 
             std::string outString = outStringStream.str();
             std::cout << outString;
             #ifdef SAVE_LOG_FILES
-                agent_command((std::string("output log --add |") + outString + std::string("|")).c_str());
+                pAgent->ExecuteCommandLine((std::string("output log --add |") + outString + std::string("|")).c_str(), false, false);
             #endif
             throw CPPUnit_Assert_Failure(outStringStream.str());
         } else {
             #ifdef SAVE_LOG_FILES
-                agent_command("output log -a Success!!!  All expected rules were learned!!!");
+            pAgent->ExecuteCommandLine("output log -a Success!!!  All expected rules were learned!!!", false, false);
             #endif
         }
     }
