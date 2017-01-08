@@ -492,7 +492,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     #ifdef BUILD_WITH_EXPLAINER
     if (has_local_negation)
     {
-        thisAgent->explanationMemory->increment_stat_tested_local_negation();
+        m_tested_local_negation = true;
+        thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
     }
     #endif
 
@@ -849,10 +850,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
-    m_reliable = true;
-    m_vrblz_top = NULL;
-
-
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -904,6 +901,11 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     /* Determine which WMEs in the topstate were relevent to problem-solving */
+    m_reliable = true;
+    m_tested_deep_copy = false;
+    m_tested_local_negation = false;
+    m_tested_ltm_recall = false;
+    m_tested_quiescence = false;
     perform_dependency_analysis();
 
     #ifdef BUILD_WITH_EXPLAINER
@@ -954,6 +956,11 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     {
         thisAgent->explanationMemory->cancel_chunk_record();
     }
+    if (m_tested_deep_copy) thisAgent->explanationMemory->increment_stat_tested_deep_copy(m_rule_type);
+    if (m_tested_local_negation) thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
+    if (m_tested_ltm_recall) thisAgent->explanationMemory->increment_stat_tested_ltm_recall(m_rule_type);
+    if (m_tested_quiescence) thisAgent->explanationMemory->increment_stat_tested_quiescence();
+
     #endif
 
     /* Create the name of the rule based on the type and circumstances of the problem-solving */

@@ -1038,9 +1038,9 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
 
     inst->backtrace_number = 0;
     inst->reliable = true;
-    inst->tested_quiescence = false;
     inst->tested_local_negation = false;
-    inst->expanded_deep_copy = false;
+    inst->creates_deep_copy = false;
+    inst->creates_ltm_instance = false;
 
     inst->in_ms = false;
     inst->in_newly_created = false;
@@ -1186,6 +1186,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             add_pref_to_inst(thisAgent, pref, inst);
             if (thisAgent->WM->glbDeepCopyWMEs)
             {
+                inst->creates_deep_copy = true;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
@@ -1579,6 +1580,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
+    inst->creates_ltm_instance = true;
 
     thisAgent->SMem->clear_instance_mappings();
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);

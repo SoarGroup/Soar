@@ -46,11 +46,15 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
+    stats.tested_deep_copy                  = false;
+    stats.tested_quiescence                 = false;
+    stats.tested_ltm_recall                 = false;
     stats.reverted                          = false;
     stats.lhs_unconnected                   = false;
     stats.rhs_unconnected                   = false;
     stats.repair_failed                     = false;
     stats.did_not_match_wm                  = false;
+    stats.rhs_arguments_literalized         = 0;
     stats.num_grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
     stats.merged_disjunctions               = 0;
