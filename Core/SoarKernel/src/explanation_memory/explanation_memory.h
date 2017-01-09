@@ -111,10 +111,10 @@ class Explanation_Memory
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
-        void increment_stat_tested_local_negation(LearnedRuleType pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.rhs_arguments_literalized_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
-        void increment_stat_rhs_arguments_literalized(LearnedRuleType pType) { if (pType == ebc_chunk) stats.rhs_arguments_literalized++; else stats.rhs_arguments_literalized_just++; if (current_recording_chunk) current_recording_chunk->stats.rhs_arguments_literalized++; };
-        void increment_stat_tested_deep_copy(LearnedRuleType pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
-        void increment_stat_tested_ltm_recall(LearnedRuleType pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
+        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.rhs_arguments_literalized_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
+        void increment_stat_rhs_arguments_literalized(ebc_rule_type pType) { if (pType == ebc_chunk) stats.rhs_arguments_literalized++; else stats.rhs_arguments_literalized_just++; if (current_recording_chunk) current_recording_chunk->stats.rhs_arguments_literalized++; };
+        void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
+        void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
         void increment_stat_tested_quiescence() { stats.tested_quiescence++; if (current_recording_chunk) current_recording_chunk->stats.tested_quiescence = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions += pCount; };
         void increment_stat_merged_disjunctions() { stats.merged_disjunctions++; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunctions++; };

@@ -276,7 +276,7 @@ void Explanation_Based_Chunker::add_additional_constraints()
         return;
     }
 
-    find_attachment_points(m_vrblz_top);
+    find_attachment_points(m_lhs);
     dprint_attachment_points(DT_CONSTRAINTS);
     dprint_constraints(DT_CONSTRAINTS);
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)

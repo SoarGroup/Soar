@@ -29,9 +29,9 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
     {
         outputManager->printa_sf(thisAgent, "\nsp {%y\n   ", m_prod_name);
     }
-    if (m_vrblz_top)
+    if (m_lhs)
     {
-        print_condition_list(thisAgent, m_vrblz_top, 2, false);
+        print_condition_list(thisAgent, m_lhs, 2, false);
     }
     if (m_rhs)
     {

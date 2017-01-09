@@ -598,7 +598,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
     preference* lPref;
 
     local_linked_STIs->clear();
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
     tc_number lti_link_tc = get_new_tc_number(thisAgent);
     returnAction = lAction = lLastAction = NULL;
 
@@ -696,7 +696,7 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
     condition* last_cond, *lCond, *inst_top;
     last_cond = inst_top = lCond = NULL;
 
-    for (condition* cond = m_vrblz_top; cond != NIL; cond = cond->next)
+    for (condition* cond = m_lhs; cond != NIL; cond = cond->next)
     {
         dprint(DT_REINSTANTIATE, "Reversing variablization of condition: %l\n", cond);
 
@@ -825,11 +825,11 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 
 condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
-    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_lhs);
 
-    condition* returnConds = reinstantiate_condition_list(m_vrblz_top);
+    condition* returnConds = reinstantiate_condition_list(m_lhs);
 
-    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_lhs);
 
     if (m_rule_type == ebc_justification)
     {

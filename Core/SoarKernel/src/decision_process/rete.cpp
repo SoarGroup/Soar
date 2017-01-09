@@ -3953,7 +3953,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
     a different instantiation and a different type of support than the
-    original, chunk-creating instantion. */
+    original, chunk-creating instantiation. */
 
 
     /* --- handle initial refraction by adding it to tentative_retractions --- */

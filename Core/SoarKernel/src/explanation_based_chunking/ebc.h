@@ -33,7 +33,7 @@ class Explanation_Based_Chunker
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
-        LearnedRuleType         m_rule_type;
+        ebc_rule_type           m_rule_type;
         uint64_t                max_chunks, max_dupes;
 
         /* Cached pointer to lti link rhs function since it may be used often */
@@ -72,7 +72,7 @@ class Explanation_Based_Chunker
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
-        void set_rule_type(LearnedRuleType pRuleType) {m_rule_type = pRuleType; };
+        void set_rule_type(ebc_rule_type pRuleType) {m_rule_type = pRuleType; };
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
         /* RL templates utilize the EBChunker variablization code when building
@@ -135,7 +135,6 @@ class Explanation_Based_Chunker
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
-        bool                quiescence_t_flag;
         uint64_t            m_current_bt_inst_id;
 
         /* Flags for potentialissues encountered during dependency analysis */
@@ -157,7 +156,7 @@ class Explanation_Based_Chunker
         /* Intermediate rule structures */
         instantiation*      m_inst;
         preference*         m_results;
-        condition*          m_vrblz_top;
+        condition*          m_lhs;
         action*             m_rhs;
         production*         m_prod;
         instantiation*      m_chunk_inst;

@@ -506,7 +506,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         first_vrblz->next = NIL;
     }
 
-    m_vrblz_top = first_vrblz;
+    m_lhs = first_vrblz;
 
     if (first_vrblz)
     {
@@ -538,7 +538,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     bool isa_goal, isa_impasse;
 
     tc = get_new_tc_number(thisAgent);
-    for (cc = m_vrblz_top; cc != NIL; cc = cc->next)
+    for (cc = m_lhs; cc != NIL; cc = cc->next)
     {
         if (cc->type != POSITIVE_CONDITION)
         {
@@ -555,7 +555,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
         }
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_lhs);
 
 }
 
@@ -712,8 +712,8 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
 void Explanation_Based_Chunker::deallocate_failed_chunk()
 {
-    deallocate_condition_list(thisAgent, m_vrblz_top);
-    m_vrblz_top = NULL;
+    deallocate_condition_list(thisAgent, m_lhs);
+    m_lhs = NULL;
     deallocate_action_list(thisAgent, m_rhs);
     m_rhs = NULL;
 }
@@ -723,7 +723,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     byte rete_addition_result;
     production* duplicate_rule = NULL;
 
-    rete_addition_result = add_production_to_rete(thisAgent, m_prod, m_vrblz_top, m_chunk_inst, m_should_print_name, duplicate_rule);
+    rete_addition_result = add_production_to_rete(thisAgent, m_prod, m_lhs, m_chunk_inst, m_should_print_name, duplicate_rule);
 
     if (m_should_print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
@@ -735,7 +735,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
         } else {
@@ -794,7 +794,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
 
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
 
         m_chunk_inst->in_ms = false;
         return true;
@@ -919,7 +919,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     create_initial_chunk_condition_lists();
 
     /* If there aren't any conditions, abort chunk */
-    if (!m_vrblz_top)
+    if (!m_lhs)
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
@@ -939,7 +939,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_lhs);
 
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
@@ -974,9 +974,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     #endif
 
     /* Variablize the LHS */
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-    variablize_condition_list(m_vrblz_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_vrblz_top);
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+    variablize_condition_list(m_lhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
     //if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
 
@@ -994,7 +994,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
     {
         lChunkValidated = reorder_and_validate_chunk();
-        dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_vrblz_top, m_rhs);
+        dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_lhs, m_rhs);
     }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
@@ -1047,7 +1047,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
 
     /* Create the production that will be added to the RETE */
-    m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
+    m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
 
     #ifdef BUILD_WITH_EXPLAINER
     if (m_inst->prod && m_inst->prod->explain_its_chunks)
@@ -1120,9 +1120,9 @@ void Explanation_Based_Chunker::clean_up ()
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }
-    if (m_vrblz_top)
+    if (m_lhs)
     {
-        deallocate_condition_list(thisAgent, m_vrblz_top);
+        deallocate_condition_list(thisAgent, m_lhs);
     }
     if (m_prod_name)
     {
@@ -1132,7 +1132,7 @@ void Explanation_Based_Chunker::clean_up ()
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_vrblz_top                         = NULL;
+    m_lhs                         = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;
