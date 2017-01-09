@@ -776,6 +776,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+            thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
@@ -784,6 +785,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             }
         } else {
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
+            thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
