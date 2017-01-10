@@ -244,6 +244,8 @@ namespace cli
 
             void Run_DC(agent* thisAgent, int run_count);
             void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
+            void SaveOutputSettings();
+            void RestoreOutputSettings();
 
             void SetTrapPrintCallbacks(bool setting);
 
@@ -315,6 +317,9 @@ namespace cli
             std::list<std::string>  m_TotalExcisedDuringSource;
             int                     m_NumTotalProductionsIgnored;
             cli::Parser             m_Parser;
+            bool                    m_callbacks_were_enabled;
+            bool                    m_console_was_enabled;
+            bool                    m_output_was_enabled;
     };
 } // namespace cli
 

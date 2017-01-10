@@ -70,6 +70,14 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
 
 }
 
+void OM_Parameters::update_params_for_settings(agent* thisAgent)
+{
+    warnings->set_value(thisAgent->outputManager->settings[OM_WARNINGS] ? on : off);
+    stdout_enabled->set_value(thisAgent->outputManager->is_printing_to_stdout() ? on : off);
+    callback_enabled->set_value(thisAgent->output_settings->callback_mode ? on : off);
+    enabled->set_value(thisAgent->output_settings->print_enabled ? on : off);
+}
+
 void OM_Parameters::update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam, sml::KernelSML* pKernelSML)
 {
     if (pChangedParam == warnings)
