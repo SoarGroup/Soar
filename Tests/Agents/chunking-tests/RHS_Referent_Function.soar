@@ -1,0 +1,28 @@
+srand 23
+chunk always
+
+sp {init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test 0.5 0.7)
+}
+
+sp {propose
+    (state <s> ^superstate nil
+               ^test <foo>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^prob <foo>)
+}
+
+
+sp {make-chunk
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o1> +
+          ^operator <o2> +)
+    (<o1> ^prob <a>)
+    (<o2> ^prob { > <a> <b> })
+-->
+    (<ss> ^operator <o1> = (abs (+ 1 <a>))
+          ^operator <o2> = (abs (+ 1 <b>)))
+}

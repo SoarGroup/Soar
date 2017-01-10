@@ -33,6 +33,7 @@ class Explanation_Based_Chunker
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
         bool                    ebc_settings[num_ebc_settings];
+        ebc_rule_type           m_rule_type;
         uint64_t                max_chunks, max_dupes;
 
         /* Cached pointer to lti link rhs function since it may be used often */
@@ -71,7 +72,7 @@ class Explanation_Based_Chunker
          * based on the global learning settings and whether the state chunky */
         bool set_learning_for_instantiation(instantiation* inst);
         void set_failure_type(EBCFailureType pFailure_type) {m_failure_type = pFailure_type; };
-        void set_rule_type(LearnedRuleType pRuleType) {m_rule_type = pRuleType; };
+        void set_rule_type(ebc_rule_type pRuleType) {m_rule_type = pRuleType; };
         void reset_chunks_this_d_cycle() { chunks_this_d_cycle = 0; justifications_this_d_cycle = 0;};
 
         /* RL templates utilize the EBChunker variablization code when building
@@ -134,32 +135,40 @@ class Explanation_Based_Chunker
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
-        bool                quiescence_t_flag;
         uint64_t            m_current_bt_inst_id;
 
+        /* Flags for potentialissues encountered during dependency analysis */
+        bool                m_reliable;
+        bool                m_tested_quiescence;
+        bool                m_tested_local_negation;
+        bool                m_tested_deep_copy;
+        bool                m_tested_ltm_recall;
+
         /* Variables used by result building methods */
-        bool                m_learning_on_for_instantiation;
-        LearnedRuleType     m_rule_type;
-        instantiation*      m_inst;
-        preference*         m_results;
         goal_stack_level    m_results_match_goal_level;
-        uint64_t            m_chunk_new_i_id;
         tc_number           m_results_tc;
         preference*         m_extra_results;
-        bool                m_reliable;
-        condition*          m_vrblz_top;
+
+        /* Variables to indicate current type of rule learning */
+        bool                m_learning_on_for_instantiation;
+        uint64_t            m_chunk_new_i_id;
+
+        /* Intermediate rule structures */
+        instantiation*      m_inst;
+        preference*         m_results;
+        condition*          m_lhs;
         action*             m_rhs;
         production*         m_prod;
         instantiation*      m_chunk_inst;
+
+        /* Temporary structures */
         Symbol*             m_prod_name;
         ProductionType      m_prod_type;
         bool                m_should_print_name, m_should_print_prod;
         EBCFailureType      m_failure_type;
 
-        /* -- The following are the core tables used by EBC during
-         *    instantiation creation, identity analysis, condition
-         *    formation and variablization.  The data stored within
-         *    them is temporary and cleared after use. -- */
+        /* Core tables used by EBC during identity assignment during instantiation
+         * creation. The data stored within them is temporary and cleared after use. */
 
         sym_to_id_map*             instantiation_identities;
         id_to_sym_id_map*          identity_to_var_map;
@@ -169,9 +178,11 @@ class Explanation_Based_Chunker
         id_to_sym_map*             id_to_rule_sym_debug_map;
         id_set*                    identities_to_clean_up;
 
+        /* Map to unify variable identities into identity sets */
         id_to_id_map*              unification_map;
-        identity_triple            local_singleton_superstate_identity;
+        identity_quadruple         local_singleton_superstate_identity;
 
+        /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
         attachment_points_map*     attachment_points;
 
@@ -179,8 +190,7 @@ class Explanation_Based_Chunker
          * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
-        /* List of STIs created in the substate that are linked to LTMs.  Used
-         * to add link-stm-to-ltm actions */
+        /* List of STIs created in the substate that are linked to LTMs.  Used to add link-stm-to-ltm actions */
         rhs_value_list*               local_linked_STIs;
 
         /* Explanation/identity generation methods */
@@ -219,8 +229,8 @@ class Explanation_Based_Chunker
                 instantiation* inst,
                 goal_stack_level grounds_level,
                 condition* trace_cond,
-                const identity_triple o_ids_to_replace,
-                const rhs_triple rhs_funcs,
+                const identity_quadruple o_ids_to_replace,
+                const rhs_quadruple rhs_funcs,
                 uint64_t bt_depth,
                 BTSourceType bt_type);
         void report_local_negation(condition* c);
@@ -230,7 +240,7 @@ class Explanation_Based_Chunker
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
-        void unify_backtraced_conditions(condition* parent_cond, const identity_triple o_ids_to_replace, const rhs_triple rhs_funcs);
+        void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv);

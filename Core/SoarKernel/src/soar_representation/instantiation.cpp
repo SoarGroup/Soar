@@ -447,7 +447,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     lValue = NIL;
     lReferent = NIL;
     uint64_t oid_id = 0, oid_attr = 0, oid_value = 0, oid_referent = 0;
-    rhs_value f_id = 0, f_attr = 0, f_value = 0;
+    rhs_value f_id = 0, f_attr = 0, f_value = 0, f_referent = 0;
 
     lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
     if (!lId)
@@ -533,14 +533,20 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         }
         if (rule_action->referent)
         {
-            assert(!rhs_value_is_funcall(rule_action->referent));
-            oid_referent = rhs_value_to_o_id(rule_action->referent);
+            if (rhs_value_is_funcall(rule_action->referent))
+            {
+                f_referent = rule_action->referent;
+                rule_action->referent = NULL;
+            } else {
+                oid_referent = rhs_value_to_o_id(rule_action->referent);
+            }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_triple(oid_id, oid_attr, oid_value, oid_referent));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent));
     newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
     newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
     newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
+    newPref->rhs_funcs.referent = copy_rhs_value(thisAgent, f_referent);
     newPref->parent_action = a;
     return newPref;
 
@@ -782,7 +788,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 }
 
 /* -----------------------------------------------------------------------
- Fill In New Instantiation Stuff
+ Finalize New Instantiation Stuff
 
  This routine fills in a newly created instantiation structure with
  various information.   At input, the instantiation should have:
@@ -800,15 +806,11 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  updates reference counts on bt.pref and bt.wmetraces and wmes
  - for each preference_generated, adds that pref to the list of all
  pref's for the match goal
- - fills in backtrace_number;
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
 
-void init_instantiation(agent*          thisAgent,
-                        instantiation*  inst,
-                        bool            need_to_do_support_calculations,
-                        instantiation*  original_inst)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst)
 {
     condition* cond;
     preference* p;
@@ -867,8 +869,6 @@ void init_instantiation(agent*          thisAgent,
             p->on_goal_list = true;
         }
     }
-    inst->backtrace_number = 0;
-
     if (need_to_do_support_calculations)
     {
         calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
@@ -1027,6 +1027,40 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
     }
 }
 
+void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod, struct token_struct* tok, wme* w)
+{
+    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
+    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
+    inst->next = inst->prev = NULL;
+    inst->prod = prod;
+    inst->rete_token = tok;
+    inst->rete_wme = w;
+
+    inst->backtrace_number = 0;
+    inst->reliable = true;
+    inst->tested_local_negation = false;
+    inst->creates_deep_copy = false;
+    inst->creates_ltm_instance = false;
+
+    inst->in_ms = false;
+    inst->in_newly_created = false;
+    inst->in_newly_deleted = false;
+    inst->GDS_evaluated_already = false;
+
+    inst->top_of_instantiated_conditions = NULL;
+    inst->bottom_of_instantiated_conditions = NULL;
+    inst->preferences_generated = NULL;
+    inst->preferences_cached = NULL;
+
+    inst->explain_status = explain_unrecorded;
+    inst->explain_depth = 0;
+    inst->explain_tc_num = 0;
+
+    inst->prod_name = prod ? prod->name : backup_name ? backup_name : NULL;
+    if (inst->prod_name) thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+
+}
+
 /* -----------------------------------------------------------------------
  Create Instantiation
 
@@ -1034,8 +1068,7 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
  newly_created_instantiations.  It also calls chunk_instantiation() to
  do any necessary chunk or justification building.
  ----------------------------------------------------------------------- */
-void create_instantiation(agent* thisAgent, production* prod,
-                          struct token_struct* tok, wme* w)
+void create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w)
 {
     instantiation* inst;
     condition* cond;
@@ -1051,23 +1084,12 @@ void create_instantiation(agent* thisAgent, production* prod,
         assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
     #endif
 
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
+    init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
-    inst->prod = prod;
-    inst->rete_token = tok;
-    inst->rete_wme = w;
-    inst->reliable = true;
-    inst->in_ms = true;
     inst->in_newly_created = true;
-    inst->in_newly_deleted = false;
-    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
-    inst->explain_status = explain_unrecorded;
-    inst->explain_depth = 0;
-    inst->explain_tc_num = 0;
-    inst->GDS_evaluated_already = false;
-    inst->prod_name = prod ? prod->name : thisAgent->symbolManager->soarSymbols.architecture_inst_symbol;
-    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+    inst->in_ms = true;
+
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
     dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
 //    if ((inst->i_id == 83) || (inst->i_id == 83))
@@ -1138,8 +1160,6 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
 
     /* --- execute the RHS actions, collect the results --- */
-    inst->preferences_generated = NULL;
-    inst->preferences_cached = NULL;
     need_to_do_support_calculations = false;
     a2 = rhs_vars;
 
@@ -1167,6 +1187,7 @@ void create_instantiation(agent* thisAgent, production* prod,
             add_pref_to_inst(thisAgent, pref, inst);
             if (thisAgent->WM->glbDeepCopyWMEs)
             {
+                inst->creates_deep_copy = true;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
@@ -1186,7 +1207,7 @@ void create_instantiation(agent* thisAgent, production* prod,
     }
 
     /* --- fill in lots of other stuff --- */
-    init_instantiation(thisAgent, inst, need_to_do_support_calculations, NIL);
+    finalize_instantiation(thisAgent, inst, need_to_do_support_calculations, NIL);
 
     /* --- print trace info: printing preferences --- */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
@@ -1530,18 +1551,15 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         {
             rl_param_container::apoptosis_choices apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
 
-            // we care about production history of chunks if...
-            // - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
-            // - we are dealing with an RL rule that...
-            //   - has not been updated by RL AND
-            //   - is not in line to be updated by RL
+            /* We care about production history of chunks if we have either
+             * - A non-RL rule and all chunks are subject to apoptosis OR
+             * - An RL rule that has not been updated by RL AND is not in line to be updated by RL
+             */
             if (apoptosis != rl_param_container::apoptosis_none)
             {
-                if ((!prod->rl_rule
-                    && (apoptosis == rl_param_container::apoptosis_chunks))
-                    || (prod->rl_rule
-                        && (static_cast<int64_t>(prod->rl_update_count) == 0)
-                        && (prod->rl_ref_count == 0)))
+                if (  (!prod->rl_rule && (apoptosis == rl_param_container::apoptosis_chunks))
+                    || (prod->rl_rule && (static_cast<int64_t>(prod->rl_update_count) == 0)
+                                      && (prod->rl_ref_count == 0)))
                 {
                     thisAgent->RL->rl_prods->reference_object(prod, 1);
                 }
@@ -1560,48 +1578,23 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
 
     instantiation* inst;
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
-    inst->prod = NULL;
-    inst->next = inst->prev = NULL;
-    inst->rete_token = NULL;
-    inst->rete_wme = NULL;
+    init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
-    inst->reliable = true;
-    inst->backtrace_number = 0;
-    inst->in_ms = false;
-    inst->in_newly_created = false;
-    inst->in_newly_deleted = false;
-    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
-    inst->GDS_evaluated_already = false;
-    inst->top_of_instantiated_conditions = NULL;
-    inst->bottom_of_instantiated_conditions = NULL;
-    inst->preferences_cached = NULL;
-    inst->explain_status = explain_unrecorded;
-    inst->explain_depth = 0;
-    inst->explain_tc_num = 0;
-    inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
-    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+    inst->creates_ltm_instance = true;
 
     thisAgent->SMem->clear_instance_mappings();
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
 
-    // create preferences
-    inst->preferences_generated = NULL;
+    // create RHS
     {
-        /* May need to change this depending on whether it's a query or retrieval */
-        /* Add these wmes to pActions.  Same for conds
-         * I don't think these are right value elements!*/
-//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_retrieved, (*(pActions->begin()))->id, true);
-//        add_pref_to_arch_inst(thisAgent, inst, pState->id->smem_result_header, thisAgent->symbolManager->soarSymbols.smem_sym_success, (*(pConds->begin()))->value, true);
-
         for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
         {
             add_pref_to_arch_inst(thisAgent, inst, (*a_it)->id, (*a_it)->attr, (*a_it)->value);
         }
     }
 
-    // create pConds
+    // create LHS
     {
         condition* prev_cond = NULL;
 
@@ -1682,8 +1675,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     }
 
     /* --- make the fake instantiation --- */
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
-    inst->i_id = thisAgent->explanationBasedChunker->get_new_inst_id();
+    init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 
     /* --- make the fake conditions --- */
     cond = make_condition(thisAgent);
@@ -1735,7 +1727,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
-                           cand->value, NIL, identity_triple(state_sym_identity, 0, superop_sym_identity));
+                           cand->value, NIL, identity_quadruple(state_sym_identity, 0, superop_sym_identity));
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
@@ -1746,28 +1738,12 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     pref->inst = inst;
     pref->inst_next = pref->inst_prev = NIL;
 
-    /* -- Fill in the fake instantiation info -- */
-    inst->preferences_generated = pref;
-    inst->preferences_cached = NULL;
-    inst->prod = NIL;
-    inst->next = inst->prev = NIL;
-    inst->rete_token = NIL;
-    inst->rete_wme = NIL;
+    /* -- Fill in more instantiation info -- */
     inst->match_goal = goal;
     inst->match_goal_level = goal->id->level;
-    inst->reliable = true;
-    inst->backtrace_number = 0;
-    inst->in_ms = false;
-    inst->in_newly_created = false;
-    inst->in_newly_deleted = false;
-    inst->explain_status = explain_unrecorded;
-    inst->explain_depth = 0;
-    inst->explain_tc_num = 0;
-    inst->prod_name = thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol;
-    thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-
     inst->top_of_instantiated_conditions = cond;
     inst->bottom_of_instantiated_conditions = cond;
+    inst->preferences_generated = pref;
 
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
 

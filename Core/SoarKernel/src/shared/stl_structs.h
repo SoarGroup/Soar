@@ -21,24 +21,25 @@ typedef struct test_triple_struct
         test_triple_struct(test new_id = NULL, test new_attr = NULL, test new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
 } test_triple;
 
-typedef struct identity_triple_struct
+typedef struct identity_quadruple_struct
 {
         uint64_t id;
         uint64_t attr;
         uint64_t value;
         uint64_t referent;
 
-        identity_triple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
-} identity_triple;
+        identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} identity_quadruple;
 
-typedef struct rhs_triple_struct
+typedef struct rhs_quadruple_struct
 {
         rhs_value id;
         rhs_value attr;
         rhs_value value;
+        rhs_value referent;
 
-        rhs_triple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL): id(new_id), attr(new_attr), value(new_value) {}
-} rhs_triple;
+        rhs_quadruple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL, rhs_value new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} rhs_quadruple;
 
 typedef struct sym_identity_struct {
         uint64_t    identity;

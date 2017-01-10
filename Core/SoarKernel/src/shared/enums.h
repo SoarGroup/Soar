@@ -93,7 +93,7 @@ enum TraceMode
     num_trace_modes
 };
 
-enum LearnedRuleType {
+enum ebc_rule_type {
     ebc_no_rule,
     ebc_chunk,
     ebc_justification,

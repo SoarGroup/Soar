@@ -63,12 +63,24 @@ void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
         lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
         deallocate_rhs_value(thisAgent, lPref->rhs_funcs.id);
         lPref->rhs_funcs.id = lRHS;
+    }
+    if (lPref->rhs_funcs.attr)
+    {
         lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
         deallocate_rhs_value(thisAgent, lPref->rhs_funcs.attr);
         lPref->rhs_funcs.attr = lRHS;
+    }
+    if (lPref->rhs_funcs.value)
+    {
         lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
         deallocate_rhs_value(thisAgent, lPref->rhs_funcs.value);
         lPref->rhs_funcs.value = lRHS;
+    }
+    if (lPref->rhs_funcs.referent)
+    {
+        lRHS = copy_rhs_value(thisAgent, lPref->rhs_funcs.referent, true);
+        deallocate_rhs_value(thisAgent, lPref->rhs_funcs.referent);
+        lPref->rhs_funcs.referent = lRHS;
     }
 
 }
@@ -219,6 +231,9 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
                 if (rs->o_id && !rs->referent->is_sti())
                 {
                     add_identity_unification(rs->o_id, 0);
+                    #ifdef BUILD_WITH_EXPLAINER
+                    thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
+                    #endif
                 }
             }
         }
@@ -226,8 +241,8 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
 }
 
 void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
-                                                         const identity_triple o_ids_to_replace,
-                                                         const rhs_triple rhs_funcs)
+                                                         const identity_quadruple o_ids_to_replace,
+                                                         const rhs_quadruple rhs_funcs)
 {
 //    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     test lId = 0, lAttr = 0, lValue = 0;
@@ -294,7 +309,26 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
     }
+    assert(!o_ids_to_replace.referent);
+//    if (o_ids_to_replace.referent)
+//    {
+//        if (lValue->identity)
+//        {
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
+//                get_ovar_for_o_id(lValue->identity), lValue->identity);
+//        } else {
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
+//        }
+//        add_identity_unification(o_ids_to_replace.value, lValue->identity);
+//    }
+//    else
+    if (rhs_value_is_literalizing_function(rhs_funcs.referent))
+    {
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
+        literalize_RHS_function_args(rhs_funcs.referent);
+    }
 }
+
 /* Requires: pCond is a local condition */
 void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condition* pCond)
 {

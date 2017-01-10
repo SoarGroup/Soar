@@ -492,7 +492,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     #ifdef BUILD_WITH_EXPLAINER
     if (has_local_negation)
     {
-        thisAgent->explanationMemory->increment_stat_tested_local_negation();
+        m_tested_local_negation = true;
+        thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
     }
     #endif
 
@@ -505,7 +506,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         first_vrblz->next = NIL;
     }
 
-    m_vrblz_top = first_vrblz;
+    m_lhs = first_vrblz;
 
     if (first_vrblz)
     {
@@ -537,7 +538,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
     bool isa_goal, isa_impasse;
 
     tc = get_new_tc_number(thisAgent);
-    for (cc = m_vrblz_top; cc != NIL; cc = cc->next)
+    for (cc = m_lhs; cc != NIL; cc = cc->next)
     {
         if (cc->type != POSITIVE_CONDITION)
         {
@@ -554,7 +555,7 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
         }
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after add goal tests: \n%1", m_lhs);
 
 }
 
@@ -602,6 +603,11 @@ void Explanation_Based_Chunker::make_clones_of_results()
         {
             lClonedPref->rhs_funcs.value = lResultPref->cloned_rhs_funcs.value;
             lResultPref->cloned_rhs_funcs.value = NULL;
+        }
+        if (lResultPref->cloned_rhs_funcs.referent)
+        {
+            lClonedPref->rhs_funcs.referent = lResultPref->cloned_rhs_funcs.referent;
+            lResultPref->cloned_rhs_funcs.referent = NULL;
         }
 
         /* --- put it onto the list for chunk_inst --- */
@@ -706,8 +712,8 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
 void Explanation_Based_Chunker::deallocate_failed_chunk()
 {
-    deallocate_condition_list(thisAgent, m_vrblz_top);
-    m_vrblz_top = NULL;
+    deallocate_condition_list(thisAgent, m_lhs);
+    m_lhs = NULL;
     deallocate_action_list(thisAgent, m_rhs);
     m_rhs = NULL;
 }
@@ -717,7 +723,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     byte rete_addition_result;
     production* duplicate_rule = NULL;
 
-    rete_addition_result = add_production_to_rete(thisAgent, m_prod, m_vrblz_top, m_chunk_inst, m_should_print_name, duplicate_rule);
+    rete_addition_result = add_production_to_rete(thisAgent, m_prod, m_lhs, m_chunk_inst, m_should_print_name, duplicate_rule);
 
     if (m_should_print_prod && (rete_addition_result != DUPLICATE_PRODUCTION))
     {
@@ -729,7 +735,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
         } else {
@@ -770,6 +776,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
             thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+            thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
@@ -778,6 +785,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             }
         } else {
             thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
+            thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
                 thisAgent->stop_soar = true;
@@ -788,7 +796,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
 
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_vrblz_top, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
 
         m_chunk_inst->in_ms = false;
         return true;
@@ -797,7 +805,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     /* Don't think this can happen */
     dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
     assert(false);
-
+    return false;
 }
 
 void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiation** new_inst_list)
@@ -844,10 +852,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
-    m_reliable = true;
-    m_vrblz_top = NULL;
-
-
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -863,9 +867,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         return;
     }
 
-    /* --- Assign a new instantiation ID for this chunk --- */
-    set_new_chunk_id();
-    thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &m_chunk_inst);
+    /* Set up a new instantiation and ID for this chunk's refracted match */
+    init_instantiation(thisAgent, m_chunk_inst, NULL);
+    m_chunk_inst->tested_local_negation             = m_inst->tested_local_negation;
+    m_chunk_inst->creates_deep_copy                 = m_inst->creates_deep_copy;
+    m_chunk_inst->creates_ltm_instance              = m_inst->creates_ltm_instance;
+    m_chunk_new_i_id = m_chunk_inst->i_id;
 
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
@@ -877,7 +884,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_new_i_id);
             debug_trace_on();
         }
-#endif
+    #endif
 
     dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
 //    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
@@ -899,6 +906,11 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     /* Determine which WMEs in the topstate were relevent to problem-solving */
+    m_reliable = true;
+    m_tested_deep_copy = false;
+    m_tested_local_negation = false;
+    m_tested_ltm_recall = false;
+    m_tested_quiescence = false;
     perform_dependency_analysis();
 
     #ifdef BUILD_WITH_EXPLAINER
@@ -909,7 +921,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     create_initial_chunk_condition_lists();
 
     /* If there aren't any conditions, abort chunk */
-    if (!m_vrblz_top)
+    if (!m_lhs)
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
@@ -929,7 +941,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_vrblz_top);
+    dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_lhs);
 
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
@@ -949,6 +961,11 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     {
         thisAgent->explanationMemory->cancel_chunk_record();
     }
+    if (m_tested_deep_copy) thisAgent->explanationMemory->increment_stat_tested_deep_copy(m_rule_type);
+    if (m_tested_local_negation) thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
+    if (m_tested_ltm_recall) thisAgent->explanationMemory->increment_stat_tested_ltm_recall(m_rule_type);
+    if (m_tested_quiescence) thisAgent->explanationMemory->increment_stat_tested_quiescence();
+
     #endif
 
     /* Create the name of the rule based on the type and circumstances of the problem-solving */
@@ -959,9 +976,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     #endif
 
     /* Variablize the LHS */
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
-    variablize_condition_list(m_vrblz_top);
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_vrblz_top);
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+    variablize_condition_list(m_lhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
     //if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
 
@@ -979,7 +996,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
     {
         lChunkValidated = reorder_and_validate_chunk();
-        dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_vrblz_top, m_rhs);
+        dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_lhs, m_rhs);
     }
 
     /* Handle rule learning failure.  With the addition of rule repair, this should only happen when there
@@ -1032,7 +1049,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
 
     /* Create the production that will be added to the RETE */
-    m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_vrblz_top, &m_rhs, false, NULL);
+    m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
 
     #ifdef BUILD_WITH_EXPLAINER
     if (m_inst->prod && m_inst->prod->explain_its_chunks)
@@ -1044,25 +1061,19 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
 
     /* Fill out the instantiation for the chunk */
-    m_chunk_inst->top_of_instantiated_conditions    = NULL;
-    m_chunk_inst->bottom_of_instantiated_conditions = NULL;
-    m_chunk_inst->preferences_cached = NULL;
     m_chunk_inst->top_of_instantiated_conditions    = l_inst_top;
     m_chunk_inst->bottom_of_instantiated_conditions = l_inst_bottom;
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
-    m_chunk_inst->GDS_evaluated_already             = false;
-    m_chunk_inst->i_id                              = m_chunk_new_i_id;
     m_chunk_inst->reliable                          = m_reliable;
-    m_chunk_inst->in_ms                             = true;  /* set true for now, we'll find out later... */
+    m_chunk_inst->in_ms                             = true;                     /* set true for now, we'll find out later... */
     m_chunk_inst->in_newly_created                  = true;
-    m_chunk_inst->in_newly_deleted                  = false;
-    m_chunk_inst->explain_status                    = explain_unrecorded;
-    m_chunk_inst->explain_depth                     = 0;
-    m_chunk_inst->explain_tc_num                    = 0;
+    m_chunk_inst->tested_local_negation             = m_tested_local_negation;
+    m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
+    m_chunk_inst->creates_ltm_instance              = m_tested_ltm_recall;
     make_clones_of_results();
-    init_instantiation(thisAgent, m_chunk_inst, true, m_inst);
+    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
@@ -1111,9 +1122,9 @@ void Explanation_Based_Chunker::clean_up ()
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }
-    if (m_vrblz_top)
+    if (m_lhs)
     {
-        deallocate_condition_list(thisAgent, m_vrblz_top);
+        deallocate_condition_list(thisAgent, m_lhs);
     }
     if (m_prod_name)
     {
@@ -1123,7 +1134,7 @@ void Explanation_Based_Chunker::clean_up ()
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_vrblz_top                         = NULL;
+    m_lhs                         = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;

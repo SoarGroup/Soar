@@ -482,14 +482,19 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     }
     if (preference_is_binary(result->type))
     {
-        iter = (*unification_map).find(result->identities.referent);
-        if (iter != (*unification_map).end())
+        if (!result->rhs_funcs.referent)
         {
-            lO_id = iter->second;
+            iter = (*unification_map).find(result->identities.referent);
+            if (iter != (*unification_map).end())
+            {
+                lO_id = iter->second;
+            } else {
+                lO_id = result->identities.referent;
+            }
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
         } else {
-            lO_id = result->identities.referent;
+            a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
         }
-        a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
     }
 
     dprint_set_indents(DT_RHS_VARIABLIZATION, "");
@@ -532,7 +537,15 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
     if (preference_is_binary(result->type))
     {
         lO_id = variablize_rhs_symbol(a->referent, lti_link_tc);
-        result->clone_identities.referent = lO_id;
+        if (!result->rhs_funcs.value)
+        {
+            result->clone_identities.referent = lO_id;
+        } else {
+            result->clone_identities.referent = lO_id;
+            result->cloned_rhs_funcs.referent = a->value;
+    //        a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
+            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent, true);
+        }
     }
 
     dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
@@ -585,7 +598,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
     preference* lPref;
 
     local_linked_STIs->clear();
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NIL);
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
     tc_number lti_link_tc = get_new_tc_number(thisAgent);
     returnAction = lAction = lLastAction = NULL;
 
@@ -683,7 +696,7 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
     condition* last_cond, *lCond, *inst_top;
     last_cond = inst_top = lCond = NULL;
 
-    for (condition* cond = m_vrblz_top; cond != NIL; cond = cond->next)
+    for (condition* cond = m_lhs; cond != NIL; cond = cond->next)
     {
         dprint(DT_REINSTANTIATE, "Reversing variablization of condition: %l\n", cond);
 
@@ -812,11 +825,11 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 
 condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
-    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_lhs);
 
-    condition* returnConds = reinstantiate_condition_list(m_vrblz_top);
+    condition* returnConds = reinstantiate_condition_list(m_lhs);
 
-    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_vrblz_top);
+    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_lhs);
 
     if (m_rule_type == ebc_justification)
     {

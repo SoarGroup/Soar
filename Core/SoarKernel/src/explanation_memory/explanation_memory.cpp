@@ -64,6 +64,14 @@ void Explanation_Memory::initialize_counters()
     stats.max_chunks = 0;
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
+    stats.rhs_arguments_literalized = 0;
+    stats.tested_deep_copy = 0;
+    stats.tested_quiescence = 0;
+    stats.tested_ltm_recall = 0;
+    stats.tested_local_negation_just = 0;
+    stats.rhs_arguments_literalized_just = 0;
+    stats.tested_deep_copy_just = 0;
+    stats.tested_ltm_recall_just = 0;
     stats.merged_conditions = 0;
     stats.merged_disjunctions = 0;
     stats.merged_disjunction_values = 0;
@@ -546,7 +554,7 @@ bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID
 bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
 {
     std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    identity_triple lWatchIdentities;
+    identity_quadruple lWatchIdentities;
 
     iter_inst = all_conditions->find(pConditionID);
     if (iter_inst == all_conditions->end())

@@ -633,7 +633,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.s_context_variable = make_variable("<s>");
     soarSymbols.o_context_variable = make_variable("<o>");
 
-    soarSymbols.fake_instantiation_symbol = make_str_constant("Memory System Instantiation");
+    soarSymbols.fake_instantiation_symbol = make_str_constant("Memory System Recall");
     soarSymbols.architecture_inst_symbol = make_str_constant("Architecture");
     soarSymbols.sti_symbol = make_str_constant("[STI]");
 

@@ -31,6 +31,14 @@ typedef struct chunking_stats_struct {
         uint64_t            max_chunks;
         uint64_t            max_dupes;
         uint64_t            tested_local_negation;
+        uint64_t            tested_quiescence;
+        uint64_t            tested_deep_copy;
+        uint64_t            tested_ltm_recall;
+        uint64_t            rhs_arguments_literalized;
+        uint64_t            tested_local_negation_just;
+        uint64_t            tested_deep_copy_just;
+        uint64_t            tested_ltm_recall_just;
+        uint64_t            rhs_arguments_literalized_just;
         uint64_t            merged_conditions;
         uint64_t            merged_disjunctions;
         uint64_t            eliminated_disjunction_values;
@@ -103,7 +111,11 @@ class Explanation_Memory
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
-        void increment_stat_tested_local_negation() { stats.tested_local_negation++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
+        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.rhs_arguments_literalized_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
+        void increment_stat_rhs_arguments_literalized(ebc_rule_type pType) { if (pType == ebc_chunk) stats.rhs_arguments_literalized++; else stats.rhs_arguments_literalized_just++; if (current_recording_chunk) current_recording_chunk->stats.rhs_arguments_literalized++; };
+        void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
+        void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
+        void increment_stat_tested_quiescence() { stats.tested_quiescence++; if (current_recording_chunk) current_recording_chunk->stats.tested_quiescence = true; };
         void increment_stat_merged_conditions(int pCount = 1) { stats.merged_conditions += pCount; if (current_recording_chunk) current_recording_chunk->stats.merged_conditions += pCount; };
         void increment_stat_merged_disjunctions() { stats.merged_disjunctions++; if (current_recording_chunk) current_recording_chunk->stats.merged_disjunctions++; };
         void increment_stat_eliminated_disjunction_values(int pCount = 1) { stats.eliminated_disjunction_values += pCount; if (current_recording_chunk) current_recording_chunk->stats.eliminated_disjunction_values += pCount; };
@@ -171,7 +183,7 @@ class Explanation_Memory
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
-        identity_triple         current_explained_ids;
+        identity_quadruple         current_explained_ids;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);

@@ -101,7 +101,7 @@ void Explanation_Based_Chunker::reinit()
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_vrblz_top                         = NULL;
+    m_lhs                         = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;
