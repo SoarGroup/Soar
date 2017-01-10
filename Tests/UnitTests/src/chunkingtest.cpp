@@ -192,9 +192,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         void NCC_with_Relational_Constraint()                  { check_chunk("NCC_with_Relational_Constraint.soar", 8, 1); }
         void No_Topstate_Match()                               { check_chunk("No_Topstate_Match.soar", 8, 1); }
         void Opaque_State_Barrier()                            { check_chunk("Opaque_State_Barrier.soar", 8, 1); }
-        void Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge.soar", 75, 12, true); }  // Should be 18
-        void PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1.soar", 795, 24); }
-        void PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2.soar", 728, 21); }                      // Should be 22.  One platform didn't recognize 1 as a dupe
+        void Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge.soar", 75, 13); }        // Should be 18
+        void PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1.soar", 795, 0); }                      // Was 24 before concat rhs variabl change
+        void PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2.soar", 728, 0); }                      // Was 22 before concat rhs variabl change
         void Promoted_STI()                                    { check_chunk("Promoted_STI.soar", 8, 1); }
         void Reorderer_Bad_Conjunction()                       { check_chunk("Reorderer_Bad_Conjunction.soar", 8, 1); }
         void Repair_NOR_Temporal_Constraint()                  { check_chunk("Repair_NOR_Temporal_Constraint.soar", 8, 3); }

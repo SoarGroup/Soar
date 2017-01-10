@@ -64,6 +64,25 @@
 
 using namespace soar_TraceNames;
 
+/* The last argument to add_rhs_function determines whether EBC literalizes the arguments of the function, i.e. forces the identity sets
+ * of any arguments that are variables to map to the null identity set.  This will cause any variables that map to that identity set to
+ * to not be variablized in the final chunk.
+ *
+ * Currently, ONLY MATH FUNCTIONS cause literalization of their arguments.
+ *
+ *   - One could argue that make-constant-symbol, trim, capitalize_symbol should also literalize arguments, but it seems unlikely that
+ *     their products would affect behavior.  Moreover, an agent that used those functions to print a lot of trace messages could end
+ *     up literalizing a lot of variables unnecessarily.
+ *   - One could also argue that ifeq should be literalized since it could return an identifier. It looks the original author of ifeq
+ *     made it for pretty printing and not a way to get conditional rhs actions, which we probably don't want to support.  So I grouped
+ *     this with the other text producing rhs functions that don't cause literalization.
+ *
+ * Technically, we only need to literalize the arguments of a rhs function if another condition later tests that the value produced meets a
+ * constraint.  If they don't have constraints, we could actually compose the functions used into the variablized rhs actions of the final
+ * chunk.  If we add that capability to EBC down the line, the semantics of this parameter will change to indicate whether to compose (if no
+ * constraints) or literalize (if later constraints on value exist).  If we add that, we should definitely include if-eq, make-constant-symbol,
+ * trim, and capitalize_symbol, so that they can be composed into the learned rule rather than be hard-coded (possibly inaccurate) strings. */
+
 void add_rhs_function(agent* thisAgent,
                       Symbol* name,
                       rhs_function_routine f,
@@ -882,24 +901,7 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
 void init_built_in_rhs_functions(agent* thisAgent)
 {
-    /* The last argument to add_rhs_function determines whether EBC literalizes the arguments of the function, i.e. forces the identity sets
-     * of any arguments that are variables to map to the null identity set.  This will cause any variables that map to that identity set to
-     * to not be variablized in the final chunk.
-     *
-     * Currently, ONLY MATH FUNCTIONS cause literalization of their arguments.
-     *
-     *   - One could argue that make-constant-symbol, trim, capitalize_symbol should also literalize arguments, but it seems unlikely that
-     *     their products would affect behavior.  Moreover, an agent that used those functions to print a lot of trace messages could end
-     *     up literalizing a lot of variables unnecessarily.
-     *   - One could also argue that ifeq should be literalized since it could return an identifier. It looks the original author of ifeq
-     *     made it for pretty printing and not a way to get conditional rhs actions, which we probably don't want to support.  So I grouped
-     *     this with the other text producing rhs functions that don't cause literalization.
-     *
-     * Technically, we only need to literalize the arguments of a rhs function if another condition later tests that the value produced meets a
-     * constraint.  If they don't have constraints, we could actually compose the functions used into the variablized rhs actions of the final
-     * chunk.  If we add that capability to EBC down the line, the semantics of this parameter will change to indicate whether to compose (if no
-     * constraints) or literalize (if later constraints on value exist).  If we add that, we should definitely include if-eq, make-constant-symbol,
-     * trim, and capitalize_symbol, so that they can be composed into the learned rule rather than be hard-coded (possibly inaccurate) strings. */
+    /* Note that there are four RHS functions that are defined in sml_RhsFunction.cpp instead of here in the kernel:  concat, exec, cmd and interrupt */
 
     /* Stand-alone RHS functions */
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0, false);
@@ -925,6 +927,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
+    /* EBC Manager caches this rhs function since it may re-use it many times */
     thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
 
     init_built_in_rhs_math_functions(thisAgent);

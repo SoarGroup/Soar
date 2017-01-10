@@ -56,6 +56,16 @@ namespace sml
             virtual bool         IsValueReturned() const = 0;
             
             /**
+            * Returns true if the RHS function returns a value other than 0 from Execute
+            */
+            virtual bool         CanBeStandAlone() const = 0;
+
+            /**
+            * Returns true if the RHS function returns a value other than 0 from Execute
+            */
+            virtual bool         LiteralizeArguments() const = 0;
+
+            /**
              * Executes the RHS function given the set of symbols
              *
              * You should NOT release the symbol values that are passed in.
@@ -82,6 +92,14 @@ namespace sml
             {
                 return false;
             }
+            bool CanBeStandAlone() const
+            {
+                return true;
+            }
+            bool LiteralizeArguments() const
+            {
+                return false;
+            }
             
             virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
     };
@@ -103,7 +121,14 @@ namespace sml
             {
                 return true;
             }
-            
+            bool CanBeStandAlone() const
+            {
+                return false;
+            }
+            bool LiteralizeArguments() const
+            {
+                return false;
+            }
             virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
     };
     
@@ -124,7 +149,14 @@ namespace sml
             {
                 return true;
             }
-            
+            bool CanBeStandAlone() const
+            {
+                return true;
+            }
+            bool LiteralizeArguments() const
+            {
+                return false;
+            }
             virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
     };
     
@@ -145,7 +177,14 @@ namespace sml
             {
                 return true;
             }
-            
+            bool CanBeStandAlone() const
+            {
+                return true;
+            }
+            bool LiteralizeArguments() const
+            {
+                return false;
+            }
             virtual Symbol* Execute(std::vector<Symbol*>* pArguments) ;
     };
     
