@@ -516,11 +516,11 @@ lti_count_num_appearances_remove(std::move(other.lti_count_num_appearances_remov
 likelihood_cond_count_find(std::move(other.likelihood_cond_count_find)),
 likelihood_cond_count_insert(std::move(other.likelihood_cond_count_insert)),
 lti_count_num_appearances_insert(std::move(other.lti_count_num_appearances_insert)),
-calc_spread(std::move(other.calc_spread)),
+//calc_spread(std::move(other.calc_spread)),
 calc_spread_size_debug_cmd(std::move(other.calc_spread_size_debug_cmd)),
-delete_old_context(std::move(other.delete_old_context)),
+//delete_old_context(std::move(other.delete_old_context)),
 delete_old_spread(std::move(other.delete_old_spread)),
-add_new_context(std::move(other.add_new_context)),
+//add_new_context(std::move(other.add_new_context)),
 select_fingerprint(std::move(other.select_fingerprint)),
 add_fingerprint(std::move(other.add_fingerprint)),
 delete_old_uncommitted_spread(std::move(other.delete_old_uncommitted_spread)),
@@ -665,11 +665,11 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     likelihood_cond_count_find = std::move(other.likelihood_cond_count_find);
     likelihood_cond_count_insert = std::move(other.likelihood_cond_count_insert);
     lti_count_num_appearances_insert = std::move(other.lti_count_num_appearances_insert);
-    calc_spread = std::move(other.calc_spread);
+    //calc_spread = std::move(other.calc_spread);
     calc_spread_size_debug_cmd = std::move(other.calc_spread_size_debug_cmd);
-    delete_old_context = std::move(other.delete_old_context);
+    //delete_old_context = std::move(other.delete_old_context);
     delete_old_spread = std::move(other.delete_old_spread);
-    add_new_context = std::move(other.add_new_context);
+    //add_new_context = std::move(other.add_new_context);
     select_fingerprint = std::move(other.select_fingerprint);
     add_fingerprint = std::move(other.add_fingerprint);
     delete_old_uncommitted_spread = std::move(other.delete_old_uncommitted_spread);

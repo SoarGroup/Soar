@@ -176,11 +176,11 @@ class smem_statement_container : public SMemExperimental::statement_container
         SQLite::Statement likelihood_cond_count_find;
         SQLite::Statement likelihood_cond_count_insert;
         SQLite::Statement lti_count_num_appearances_insert;
-        SQLite::Statement calc_spread;
+        //SQLite::Statement calc_spread;
         SQLite::Statement calc_spread_size_debug_cmd;
-        SQLite::Statement delete_old_context;
+        //SQLite::Statement delete_old_context;
         SQLite::Statement delete_old_spread;
-        SQLite::Statement add_new_context;
+        //SQLite::Statement add_new_context;
         SQLite::Statement select_fingerprint;
         SQLite::Statement add_fingerprint;
         SQLite::Statement delete_old_uncommitted_spread;
