@@ -219,10 +219,13 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
     {
         for (c = fl->rest; c != NIL; c = c->rest)
         {
-            if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
+            if (rhs_value_is_funcall(static_cast<char*>(c->first)))
             {
-                dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
-                literalize_RHS_function_args(static_cast<char*>(c->first));
+                if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
+                {
+                    dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
+                    literalize_RHS_function_args(static_cast<char*>(c->first));
+                }
             } else {
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r ", static_cast<char*>(c->first));
                 assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
