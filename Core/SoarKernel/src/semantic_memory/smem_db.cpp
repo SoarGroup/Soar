@@ -394,7 +394,8 @@ prepare_delete_committed_fingerprint(*DB,"INSERT INTO smem_to_delete (lti_id) VA
 delete_committed_fingerprint(*DB,"DELETE FROM smem_uncommitted_spread WHERE lti_id IN (SELECT lti_id FROM smem_to_delete)"),
 delete_committed_fingerprint_2(*DB,"DELETE FROM smem_to_delete"),
 add_committed_fingerprint(*DB,"INSERT INTO smem_committed_spread (lti_id,num_appearances_i_j,num_appearances,lti_source) VALUES (?,?,?,?)"),
-delete_commit_of_negative_fingerprint(*DB,"DELETE FROM smem_committed_spread WHERE lti_id=? AND lti_source=?")
+delete_commit_of_negative_fingerprint(*DB,"DELETE FROM smem_committed_spread WHERE lti_id=? AND lti_source=?"),
+lti_count_num_appearances_init(*DB, "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j")
 {}
 
 smem_statement_container::smem_statement_container(smem_statement_container&& other)
@@ -540,7 +541,9 @@ calc_current_spread(std::move(other.calc_current_spread)),
 vis_lti(std::move(other.vis_lti)),
 vis_lti_act(std::move(other.vis_lti_act)),
 vis_value_const(std::move(other.vis_value_const)),
-vis_value_lti(std::move(other.vis_value_lti))
+vis_value_lti(std::move(other.vis_value_lti)),
+
+lti_count_num_appearances_init(std::move(other.lti_count_num_appearances_init))
 {}
 
 smem_statement_container& smem_statement_container::operator=(smem_statement_container&& other)
@@ -690,6 +693,8 @@ smem_statement_container& smem_statement_container::operator=(smem_statement_con
     vis_lti_act = std::move(other.vis_lti_act);
     vis_value_const = std::move(other.vis_value_const);
     vis_value_lti = std::move(other.vis_value_lti);
+
+    lti_count_num_appearances_init = std::move(other.lti_count_num_appearances_init);
 
     return *this;
 }

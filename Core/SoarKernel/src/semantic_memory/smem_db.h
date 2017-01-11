@@ -196,6 +196,7 @@ class smem_statement_container : public SMemExperimental::statement_container
         SQLite::Statement add_committed_fingerprint;
         SQLite::Statement list_current_spread;
         SQLite::Statement calc_current_spread;
+        SQLite::Statement lti_count_num_appearances_init;
 
         smem_statement_container(SMem_Manager* SMem);
 

@@ -902,36 +902,37 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     }
 }
 
-/*void SMem_Manager::calc_spread_trajectories()
+void SMem_Manager::calc_spread_trajectories()
 {
-    attach();
-    soar_module::sqlite_statement* lti_all = SQL->lti_all;
-    uint64_t lti_id;
-    int j = 0;
-    //smem_delete_trajectory_indices();//This is for efficiency.
-    //It's super inefficient to maintain the database indexing during this batch processing
-    //It's way better to delete and rebuild. However, for testing and small DBs, it's fine. I'm testing... so... it's commented for now.
-    // - scijones (Yell at me if you see this.)
-    double p1 = settings->spreading_continue_probability->get_value();
-    std::map<uint64_t, std::list<std::pair<uint64_t, double>>*> lti_trajectories;
-    while (lti_all->execute() == soar_module::row)
-    {//loop over all ltis.
-        lti_id = lti_all->column_int(0);
-        trajectory_construction(lti_id,lti_trajectories,0,true);
-    }
-    lti_all->reinitialize();
-    //smem_create_trajectory_indices();//TODO: Fix this and the above commend about it. YELL AT ME.
-    //Cleanup the map.
-    for (std::map<uint64_t,std::list<std::pair<uint64_t, double>>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
-    {
-        delete to_delete->second;
-    }
-    soar_module::sqlite_statement* lti_count_num_appearances = new soar_module::sqlite_statement(DB,
-            "INSERT INTO smem_trajectory_num (lti_id, num_appearances) SELECT lti_j, SUM(num_appearances_i_j) FROM smem_likelihoods GROUP BY lti_j");
-    lti_count_num_appearances->prepare();
-    lti_count_num_appearances->execute(soar_module::op_reinit);
-    delete lti_count_num_appearances;
-}*/
+    std::packaged_task<void()> pt_calcTrajectories([this] {
+        attach();
+        auto lti_all = sqlite_thread_guard(SQL->lti_all);
+        uint64_t lti_id;
+        int j = 0;
+        //smem_delete_trajectory_indices();//This is for efficiency.
+        //It's super inefficient to maintain the database indexing during this batch processing
+        //It's way better to delete and rebuild. However, for testing and small DBs, it's fine. I'm testing... so... it's commented for now.
+        // - scijones (Yell at me if you see this.)
+        double p1 = settings->spreading_continue_probability->get_value();
+        std::map<uint64_t, std::list<std::pair<uint64_t, double>>*> lti_trajectories;
+        while (lti_all->executeStep())
+        {//loop over all ltis.
+            lti_id = lti_all->getColumn(0).getUInt64();
+            trajectory_construction(lti_id,lti_trajectories,0,true);
+        }
+
+        //smem_create_trajectory_indices();//TODO: Fix this and the above commend about it. YELL AT ME.
+        //Cleanup the map.
+        for (std::map<uint64_t,std::list<std::pair<uint64_t, double>>*>::iterator to_delete = lti_trajectories.begin(); to_delete != lti_trajectories.end(); ++to_delete)
+        {
+            delete to_delete->second;
+        }
+
+        auto sql = sqlite_thread_guard(SQL->lti_count_num_appearances_init);
+        sql->exec();
+    });
+    JobQueue->post(pt_calcTrajectories).wait();
+}
 
 /*inline soar_module::sqlite_statement* SMem_Manager::setup_manual_web_crawl(smem_weighted_cue_element* el, uint64_t lti_id)
 {
