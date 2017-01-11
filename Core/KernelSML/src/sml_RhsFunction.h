@@ -54,15 +54,7 @@ namespace sml
             * Returns true if the RHS function returns a value other than 0 from Execute
             */
             virtual bool         IsValueReturned() const = 0;
-            
-            /**
-            * Returns true if the RHS function returns a value other than 0 from Execute
-            */
             virtual bool         CanBeStandAlone() const = 0;
-
-            /**
-            * Returns true if the RHS function returns a value other than 0 from Execute
-            */
             virtual bool         LiteralizeArguments() const = 0;
 
             /**

@@ -993,7 +993,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     /* Validate connectedness of chunk, repair if necessary and then re-order conditions to reduce match costs */
     thisAgent->name_of_production_being_reordered = m_prod_name->sc->name;
-    if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS]))
+    if ((m_rule_type == ebc_chunk) || (ebc_settings[SETTING_EBC_REORDER_JUSTIFICATIONS]))
     {
         lChunkValidated = reorder_and_validate_chunk();
         dprint(DT_VARIABLIZATION_MANAGER, "Variablized rule after re-ordering and repair:\n%1\n-->\n%2", m_lhs, m_rhs);
@@ -1014,21 +1014,23 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_chunks_reverted();
             #endif
-        } else if (ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS]){
-            thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
-            deallocate_failed_chunk();
-            #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationMemory->cancel_chunk_record();
-            #endif
-            clean_up();
-            #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
-            #endif
-            return;
         } else {
-            #ifdef BUILD_WITH_EXPLAINER
-            thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
-            #endif
+            if (ebc_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS]){
+                thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+                deallocate_failed_chunk();
+                #ifdef BUILD_WITH_EXPLAINER
+                thisAgent->explanationMemory->cancel_chunk_record();
+                #endif
+                clean_up();
+                #ifdef BUILD_WITH_EXPLAINER
+                thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
+                #endif
+                return;
+            } else {
+                #ifdef BUILD_WITH_EXPLAINER
+                thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
+                #endif
+            }
         }
     }
 
