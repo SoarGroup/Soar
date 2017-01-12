@@ -48,11 +48,9 @@ const std::string GraphViz_Visualizer::get_next_filename() {
         while (!fileNameFound)
         {
             lFileName = lFileNameBase + std::to_string(++m_file_count) + std::string(".gv");
-            dprint(DT_DEBUG, "Checking if %s exists...\n", lFileName.c_str());
             fileNameFound = !fileExists(lFileName.c_str());
         }
         lFileName = lFileNameBase + std::to_string(m_file_count);
-        dprint(DT_DEBUG, "Returning new file %s.\n", lFileName.c_str());
         return lFileName;
     }
     return thisAgent->visualizationManager->settings->file_name->get_value();
