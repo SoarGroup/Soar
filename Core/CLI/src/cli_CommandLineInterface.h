@@ -188,6 +188,10 @@ namespace cli
         private:
 
             /* Previous top-level commands that are now sub-commands */
+            bool AddSaveSetting(bool pShouldAdd, const char* pAddString);
+            bool AddSaveSettingOnOff(bool pIsOn, const char* pAddString);
+            bool AddSaveSettingInt(const char* pAddString, const uint64_t pInt);
+            bool AddSaveText(const char* pAddString);
             bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
             bool DoAllocate(const std::string& pool, int blocks);
             bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);

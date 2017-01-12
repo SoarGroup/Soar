@@ -20,17 +20,21 @@
 
 #include "agent.h"
 #include "cmd_settings.h"
-#include "misc.h"
+#include "decider.h"
+#include "ebc.h"
+#include "episodic_memory.h"
 #include "lexer.h"
+#include "misc.h"
 #include "output_manager.h"
 #include "parser.h"
 #include "print.h"
 #include "production.h"
+#include "rete.h"
 #include "semantic_memory.h"
 #include "soar_rand.h"
-#include "symbol.h"
 #include "symbol_manager.h"
-#include "rete.h"
+#include "symbol.h"
+
 
 #include <algorithm>
 #include <assert.h>
@@ -77,6 +81,38 @@ bool CommandLineInterface::DoLoad(std::vector<std::string>& argv, const std::str
         thisAgent->command_params->load_params->print_settings(thisAgent);
     }
     return false;
+}
+
+bool CommandLineInterface::AddSaveSetting(bool pShouldAdd, const char* pAddString)
+{
+    if (!pShouldAdd) return true;
+    std::string* err = new std::string(pAddString);
+    if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+    return true;
+}
+
+bool CommandLineInterface::AddSaveSettingOnOff(bool pIsOn, const char* pAddString)
+{
+    std::string* err = new std::string(pAddString);
+    err->append(pIsOn ? " on" : " off");
+    if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+    return true;
+}
+
+bool CommandLineInterface::AddSaveSettingInt(const char* pAddString, const uint64_t pInt)
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+    std::string* err = new std::string(pAddString);
+    thisAgent->outputManager->sprint_sf((*err), " %u", pInt);
+    if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+    return true;
+}
+
+bool CommandLineInterface::AddSaveText(const char* pAddString)
+{
+    std::string* err = new std::string(pAddString);
+    if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+    return true;
 }
 
 bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::string& pCmd)
@@ -140,26 +176,61 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
             std::string export_text;
             std::string* err = new std::string("");
             std::vector< std::string > lCmdVector;
+            bool result = true;
 
             if (!DoCLog(LOG_NEW, &lFile, 0, true)) return false;
-            err->assign("# Procedural Memory\n\n");
-            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+
+            /* Save various settings that may be required to run properly.  These aren't exhaustive */
+            {
+                AddSaveText("# Settings\n");
+                if (!AddSaveSetting(thisAgent->SMem->enabled(), "smem -e")) return false;
+                if (!AddSaveSetting(epmem_enabled(thisAgent), "epmem -e")) return false;
+                if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS], "chunk always")) return false;
+                if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER], "chunk never")) return false;
+                if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY], "chunk only")) return false;
+                if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT], "chunk except")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY], "chunk bottom-only")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK], "chunk add-osk")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_LHS], "chunk lhs-repair")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS], "chunk rhs-repair")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS], "chunk allow-local-negations")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NO_LTM_LINKS], "chunk dont-add-ltm-links")) return false;
+                if (!AddSaveSettingInt("chunk max-chunks", thisAgent->explanationBasedChunker->max_chunks)) return false;
+                if (!AddSaveSettingInt("chunk max-dupes", thisAgent->explanationBasedChunker->max_dupes)) return false;
+                if (!AddSaveSettingInt("soar max-elaborations", thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])) return false;
+                if (!AddSaveSettingInt("soar max-goal-depth", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH])) return false;
+                if (!AddSaveSettingOnOff(thisAgent->Decider->settings[DECIDER_WAIT_SNC], "soar wait-snc")) return false;
+            }
+
+            /* Save all rules except justifications */
+            AddSaveText("\n# Procedural Memory\n");
             if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
             lCmdVector.push_back("print");
             lCmdVector.push_back("-fai");
             if (!DoCommandToFile(LOG_NEWAPPEND, lFile, lCmdVector)) return false;
-            bool result = thisAgent->SMem->export_smem(0, export_text, &(err));
+
+            /* Save semantic memory */
             if (!DoCLog(LOG_NEWAPPEND, &lFile, 0, true)) return false;
-            err->assign("# Semantic Memory\n\n");
-            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
-            if (!DoCLog(LOG_ADD, 0, &export_text, true)) return false;
-            err->assign("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
-            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
-            err->assign("# Settings\n\n");
-            if (!DoCLog(LOG_ADD, 0, err, true)) return false;
+            if (thisAgent->SMem->enabled())
+            {
+                result = thisAgent->SMem->export_smem(0, export_text, &(err));
+                AddSaveText("# Semantic Memory\n");
+                if (!DoCLog(LOG_ADD, 0, &export_text, true)) return false;
+            } else {
+                AddSaveText("# Semantic memory is not enabled.  Did not save.");
+            }
+
+            /* Save episodic memory.  Not implemented, but idea is to back up db
+             * with same name as agent. */
+            if (epmem_enabled(thisAgent))
+            {
+                AddSaveText("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
+            } else {
+                AddSaveText("# Episodic memory is not enabled.  Did not save.");
+            }
             if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
 
-            PrintCLIMessage("Procedural and long-term memory written to file.  (Does not include episodic memories.)");
+            PrintCLIMessage("Procedural memory, semantic memory and settings written to file.");
             delete err;
             return result;
         }
