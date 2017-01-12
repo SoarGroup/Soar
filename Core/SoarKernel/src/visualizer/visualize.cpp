@@ -28,6 +28,36 @@
 #include "visualize_wm.h"
 #include "visualize_settings.h"
 
+// Test if a path exists
+bool fileExists(const char* path)
+{
+#ifdef _WIN32
+    DWORD a = GetFileAttributes(path);
+    return a != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat st;
+    return (stat(path, &st) == 0);
+#endif
+}
+const std::string GraphViz_Visualizer::get_next_filename() {
+    if (!thisAgent->visualizationManager->settings->use_same_file->get_value())
+    {
+        std::string lFileNameBase = thisAgent->visualizationManager->settings->file_name->get_value();
+        std::string lFileName;
+        bool fileNameFound = false;
+        while (!fileNameFound)
+        {
+            lFileName = lFileNameBase + std::to_string(++m_file_count) + std::string(".gv");
+            dprint(DT_DEBUG, "Checking if %s exists...\n", lFileName.c_str());
+            fileNameFound = !fileExists(lFileName.c_str());
+        }
+        lFileName = lFileNameBase + std::to_string(m_file_count);
+        dprint(DT_DEBUG, "Returning new file %s.\n", lFileName.c_str());
+        return lFileName;
+    }
+    return thisAgent->visualizationManager->settings->file_name->get_value();
+}
+
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
