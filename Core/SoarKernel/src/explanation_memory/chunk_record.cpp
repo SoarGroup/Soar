@@ -192,7 +192,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         }
         lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
-        cond->inst = chunkInstantiation;
+        //cond->inst = chunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 

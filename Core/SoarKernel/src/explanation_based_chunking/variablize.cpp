@@ -721,12 +721,12 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
                     reinstantiate_test(ncond->data.tests.value_test);
                 }
             }
-            lCond = copy_condition(thisAgent, cond, false, false);
-            lCond->inst = cond->inst;
+            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
         } else {
-            lCond = copy_condition(thisAgent, cond, false, false);
-            lCond->inst = cond->inst;
+            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {

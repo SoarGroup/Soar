@@ -438,8 +438,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
         c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
-        c_vrblz->inst = m_chunk_inst;
-        add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
+        c_vrblz->inst = ground->inst;
+         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
@@ -468,7 +468,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 print_condition(thisAgent, cc->cond);
             }
             c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
-            c_vrblz->inst = m_chunk_inst;
+            c_vrblz->inst = cc->cond->inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
         }
