@@ -99,7 +99,8 @@
  *       %d   int64_t
  *       %u   uint64_t
  *       %s   string
- *       %f   fresh line (adds newline if not at column 1)
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
  *       %-   fill to next column indent with spaces
  *       %=   fill to next column indent with periods
  *
@@ -122,4 +123,33 @@
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
+ *
+ *   Alphabetical
+ *
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
+ *       %1   condition list
+ *       %2   action list
+ *       %3   cons list of conditions
+ *       %4   condition action lists (2 args: cond, action)
+ *       %5   condition preference lists (2 args: cond, preference)
+ *       %6   condition results lists (2 args: cond, preference)
+ *       %7   instantiation
+ *       %a   action
+ *       %c   character
+ *       %d   int64_t
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
+ *       %g   variablization identity of test
+ *       %h   like %g but with second argument containing symbol to use if STI
+ *       %l   condition
+ *       %n   funcall list
+ *       %o   symbol's original variable(s) from debug table
+ *       %p   preference
+ *       %r   rhs value
+ *       %s   string
+ *       %t   test
+ *       %u   uint64_t
+ *       %w   wme
+ *       %y   symbol
    ------------------------------------*/

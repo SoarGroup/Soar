@@ -122,9 +122,14 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
             }
             return true;
         }
-        else if (my_param == thisAgent->explanationMemory->settings->list_all)
+        else if (my_param == thisAgent->explanationMemory->settings->list_chunks)
         {
-            thisAgent->explanationMemory->print_all_chunks();
+            thisAgent->explanationMemory->print_all_chunks(true);
+            return true;
+        }
+        else if (my_param == thisAgent->explanationMemory->settings->list_justifications)
+        {
+            thisAgent->explanationMemory->print_all_chunks(false);
             return true;
         }
         else if (my_param == thisAgent->explanationMemory->settings->record_chunk)

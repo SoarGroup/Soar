@@ -23,6 +23,7 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 {
     thisAgent                   = myAgent;
     name                        = NULL;
+    type                        = ebc_no_rule;
     chunkID                     = pChunkID;
     chunkInstantiation          = NULL;
     chunkInstantiationID        = 0;
@@ -152,6 +153,17 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
         lChunkCondInst = cond->inst;
+        if ((type == ebc_no_rule) && (cond->type == POSITIVE_CONDITION) )
+        {
+            if (cond->data.tests.id_test->eq_test->data.referent->is_sti())
+            {
+                type = ebc_justification;
+                thisAgent->explanationMemory->stats.justifications_explained++;
+            } else {
+                type = ebc_chunk;
+                thisAgent->explanationMemory->stats.chunks_explained++;
+            }
+        }
         if (lChunkCondInst)
         {
             dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);

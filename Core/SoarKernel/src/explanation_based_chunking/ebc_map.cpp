@@ -91,7 +91,7 @@ uint64_t Explanation_Based_Chunker::get_existing_o_id(Symbol* orig_var, uint64_t
     auto iter_sym = instantiation_identities->find(orig_var);
     if (iter_sym != instantiation_identities->end())
     {
-        dprint(DT_IDENTITY_GENERATION, "%f...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
+        dprint(DT_IDENTITY_GENERATION, "%e...get_existing_o_id found mapping for %y in instantiation %u.  Returning existing o_id o%u\n", orig_var, pI_id, iter_sym->second);
         return iter_sym->second;
     }
 
@@ -157,7 +157,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_o_id(Symbol* orig_var, uint64_
                 (*id_to_rule_sym_debug_map)[ovar_id_counter] = thisAgent->symbolManager->generate_new_variable("A");
             }
         #endif
-        dprint(DT_IDENTITY_GENERATION, "%f...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
+        dprint(DT_IDENTITY_GENERATION, "%e...Created and returning new o_id o%u for orig var %y in instantiation %u.\n", ovar_id_counter, orig_var, pI_id);
         return ovar_id_counter;
     } else {
         return existing_o_id;

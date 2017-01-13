@@ -65,6 +65,7 @@ class chunk_record
         agent*                  thisAgent;
 
         Symbol*                 name;
+        ebc_rule_type           type;
         uint64_t                chunkID;
         instantiation*          chunkInstantiation;
         uint64_t                chunkInstantiationID;

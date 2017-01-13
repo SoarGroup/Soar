@@ -236,7 +236,7 @@ id_set* instantiation_record::get_lhs_identities()
             top = excised_production->get_lhs();
             assert(top);
         } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
         }
     } else {
         p_node_to_conditions_and_rhs(thisAgent, originalProduction->p_node, NIL, NIL, &top, &bottom, NULL);

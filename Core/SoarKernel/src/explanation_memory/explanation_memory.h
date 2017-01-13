@@ -61,6 +61,8 @@ typedef struct chunking_stats_struct {
         uint64_t            justifications_repaired;
         uint64_t            ungrounded_justifications_added;
         uint64_t            ungrounded_justifications_ignored;
+        uint64_t            chunks_explained;
+        uint64_t            justifications_explained;
 } chunking_stats;
 
 
@@ -154,7 +156,7 @@ class Explanation_Memory
         void print_global_stats();
         void print_chunk_stats();
         void print_all_watched_rules();
-        void print_all_chunks();
+        void print_all_chunks(bool pChunks);
         void print_formation_explanation();
         void print_identity_set_explanation();
         void print_constraints_enforced();
@@ -183,7 +185,7 @@ class Explanation_Memory
         tc_number               backtrace_number;
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
-        identity_quadruple         current_explained_ids;
+        identity_quadruple      current_explained_ids;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
@@ -196,7 +198,7 @@ class Explanation_Memory
 
         void                    discuss_chunk(chunk_record* pChunkRecord);
         void                    clear_chunk_from_instantiations();
-        void                    print_chunk_list(short pNumToPrint = 0);
+        void                    print_chunk_list(short pNumToPrint = 0, bool pChunks = true);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
 

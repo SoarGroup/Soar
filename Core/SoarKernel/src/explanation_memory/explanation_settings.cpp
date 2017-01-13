@@ -14,7 +14,8 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     all = new soar_module::boolean_param("all", off, new soar_module::f_predicate<boolean>());
     include_justifications = new soar_module::boolean_param("justifications", off, new soar_module::f_predicate<boolean>());
     only_print_chunk_identities = new soar_module::boolean_param("only-chunk-identities", on, new soar_module::f_predicate<boolean>());
-    list_all = new soar_module::boolean_param("list", on, new soar_module::f_predicate<boolean>());
+    list_chunks = new soar_module::boolean_param("list-chunks", on, new soar_module::f_predicate<boolean>());
+    list_justifications = new soar_module::boolean_param("list-justifications", on, new soar_module::f_predicate<boolean>());
     record_chunk = new soar_module::boolean_param("record", on, new soar_module::f_predicate<boolean>());
     explain_chunk = new soar_module::boolean_param("chunk", on, new soar_module::f_predicate<boolean>());
     explain_instantiation = new soar_module::boolean_param("instantiations", on, new soar_module::f_predicate<boolean>());
@@ -32,7 +33,8 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     add(all);
     add(include_justifications);
     add(only_print_chunk_identities);
-    add(list_all);
+    add(list_chunks);
+    add(list_justifications);
     add(record_chunk);
     add(explain_chunk);
     add(explain_instantiation);

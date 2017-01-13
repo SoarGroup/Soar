@@ -328,7 +328,7 @@ void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 55);
     outputManager->set_column_indent(1, 54);
-    outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
+    outputManager->printa_sf(thisAgent,    "%e=======================================================\n");
     outputManager->printa(thisAgent,    "                       Explainer Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
@@ -345,7 +345,11 @@ void Explanation_Memory::print_explain_summary()
 
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Chunks available for discussion:");
-    print_chunk_list(10);
+    print_chunk_list(10, true);
+
+    outputManager->printa(thisAgent, "\n");
+    outputManager->printa_sf(thisAgent, "Justifications available for discussion:");
+    print_chunk_list(10, false);
 
     outputManager->printa(thisAgent, "\n");
 
@@ -372,13 +376,14 @@ void Explanation_Memory::print_all_watched_rules()
 }
 
 
-void Explanation_Memory::print_all_chunks()
+void Explanation_Memory::print_all_chunks(bool pChunks)
 {
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 0);
     outputManager->set_column_indent(1, 4);
-    outputManager->printa(thisAgent, "Chunks available for discussion:\n");
-    print_chunk_list(0);
+    outputManager->printa_sf (thisAgent, pChunks ? "%u chunks available for discussion:\n" : "%u justifications available for discussion:\n",
+                                         pChunks ? stats.chunks_explained : stats.justifications_explained);
+    print_chunk_list(0, pChunks);
 }
 
 void Explanation_Memory::print_global_stats()
@@ -512,22 +517,37 @@ void Explanation_Memory::print_chunk_stats() {
     outputManager->printa_sf(thisAgent, "- Impossible values eliminated             %-%u\n", current_discussed_chunk->stats.eliminated_disjunction_values);
 }
 
-void Explanation_Memory::print_chunk_list(short pNumToPrint)
+void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
 {
     short lNumPrinted = 0;
+    uint64_t total_rules;
+    ebc_rule_type desired_type;
+    if (pChunks)
+    {
+        total_rules = stats.chunks_explained;
+        desired_type = ebc_chunk;
+    } else {
+        total_rules = stats.justifications_explained;
+        desired_type = ebc_justification;
+    }
+
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         Symbol* d1 = it->first;
         chunk_record* d2 = it->second;
-        outputManager->printa_sf(thisAgent, "%-%-%y (c%u)\n", it->first, it->second->chunkID);
+
+        if (d2->type != desired_type) continue;
+
+        outputManager->printa_sf(thisAgent, "%-%-%y (c %u)\n", it->first, it->second->chunkID);
         if (pNumToPrint && (++lNumPrinted >= pNumToPrint))
         {
             break;
         }
     }
-    if (pNumToPrint && ((*chunks).size() > pNumToPrint))
+
+    if (pNumToPrint && (total_rules > pNumToPrint))
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d chunks.  Type 'explain list' to see the other %d chunks.\n", pNumToPrint, ( (*chunks).size() - pNumToPrint));
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules learned.  Type 'explain list' to see the other %d %s.\n", pNumToPrint, ( total_rules - pNumToPrint), pChunks ? "chunks" : "justifications");
     }
 }
 

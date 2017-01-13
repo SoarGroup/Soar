@@ -6377,7 +6377,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",  node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%e   RETE: putting [%y] into ms_o_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6392,7 +6392,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",  node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%e   RETE: putting [%y] into ms_i_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6559,7 +6559,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         {
             ms_change* assertion;
-            thisAgent->outputManager->printa_sf(thisAgent, "%f Retractions list:\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%e Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;  assertion; assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
@@ -6568,7 +6568,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (thisAgent->nil_goal_retractions)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "%fCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "%eCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions; assertion; assertion = assertion->next_in_level)
                 {
@@ -6589,7 +6589,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%f%y: ", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%e%y: ", node->b.p.prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -6599,7 +6599,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
         #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "%eWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
             node->b.p.prod ? node->b.p.prod->name : NULL);
         xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
         #endif
@@ -6607,7 +6607,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     }
     #endif
 
-    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "%eWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
         node->b.p.prod ? node->b.p.prod->name : NULL);
     xml_generate_warning(thisAgent, "Warning: Soar can't find an existing instantiation to retract.  Soar memory may be corrupt.");
 

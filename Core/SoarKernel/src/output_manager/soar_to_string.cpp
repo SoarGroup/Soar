@@ -560,7 +560,7 @@ void Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_con
 
 void Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString)
 {
-    sprinta_sf(thisAgent, destString, "%sInstantiation (i%u) matched %y in state %y (level %d)\n", 
+    sprinta_sf(thisAgent, destString, "%sInstantiation (i %u) matched %y in state %y (level %d)\n",
         m_pre_string, inst->i_id, inst->prod_name, inst->match_goal, inst->match_goal_level);
     cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, destString);
 }
@@ -610,7 +610,7 @@ void Output_Manager::print_msc(TraceMode mode, ms_change* p_ms_change)
     print_sf(" (pnode %s):\n", p_ms_change->p_node ? "exists" : "is NULL");
     if (p_ms_change->w) print_sf("wme = %w\n", p_ms_change->w);
     if (p_ms_change->tok && p_ms_change->tok->w) print_sf("token wme = %w\n", p_ms_change->tok->w);
-    if (p_ms_change->inst) print_sf("inst = %y (i%u)\n", p_ms_change->inst->prod_name, p_ms_change->inst->i_id);
+    if (p_ms_change->inst) print_sf("inst = %y (i %u)\n", p_ms_change->inst->prod_name, p_ms_change->inst->i_id);
     print_sf("List links:  Normal = %s/%s, of_node = %s/%s, in_level %s/%s\n",
         YesNoStrForMSC(p_ms_change->prev), YesNoStrForMSC(p_ms_change->next),
         YesNoStrForMSC(p_ms_change->prev_of_node), YesNoStrForMSC(p_ms_change->next_of_node),

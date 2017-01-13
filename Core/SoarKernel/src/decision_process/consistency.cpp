@@ -448,11 +448,11 @@ void print_assertion(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eAssertion: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fAssertion exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eAssertion exists but has no p_node");
     }
 }
 
@@ -461,11 +461,11 @@ void print_retraction(agent* thisAgent, ms_change* msc)
 
     if (msc->p_node)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction: %y", msc->p_node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eRetraction: %y", msc->p_node->b.p.prod->name);
     }
     else
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%fRetraction exists but has no p_node");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eRetraction exists but has no p_node");
     }
 }
 /* ---------------------------------------------------------------------- */

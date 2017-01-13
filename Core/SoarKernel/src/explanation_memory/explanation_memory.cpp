@@ -94,6 +94,8 @@ void Explanation_Memory::initialize_counters()
     stats.justifications_repaired = 0;
     stats.ungrounded_justifications_added = 0;
     stats.ungrounded_justifications_ignored = 0;
+    stats.chunks_explained = 0;
+    stats.justifications_explained = 0;
 }
 
 void Explanation_Memory::clear_explanations()
@@ -438,7 +440,7 @@ bool Explanation_Memory::toggle_production_watch(production* pProduction)
     } else {
         pProduction->explain_its_chunks = true;
         ++num_rules_watched;
-        outputManager->printa_sf(thisAgent, "%fNow watching any chunks formed by rule '%y'\n", pProduction->name);
+        outputManager->printa_sf(thisAgent, "%eNow watching any chunks formed by rule '%y'\n", pProduction->name);
     }
     return true;
 }

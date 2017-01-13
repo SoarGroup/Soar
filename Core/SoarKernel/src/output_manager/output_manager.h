@@ -288,7 +288,8 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %d   int64_t
  *       %u   uint64_t
  *       %s   string
- *       %f   fresh line (adds newline if not at column 1)
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
  *       %-   fill to next column indent with spaces
  *       %=   fill to next column indent with periods
  *
@@ -326,7 +327,8 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %a   action
  *       %c   character
  *       %d   int64_t
- *       %f   fresh line (adds newline if not at column 1)
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
  *       %g   variablization identity of test
  *       %h   like %g but with second argument containing symbol to use if STI
  *       %l   condition
