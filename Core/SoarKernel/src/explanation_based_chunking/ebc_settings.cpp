@@ -34,8 +34,10 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_ALLOW_PROB] = true;
     pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
-    pEBC_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] = false;
-    pEBC_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS] = false;
+    pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = false;
+    pEBC_settings[SETTING_EBC_NO_LTM_LINKS] = false;
+    /* This setting doesn't have a parameter to toggle.  Just keeping so we can toggle for experimenting */
+    pEBC_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS] = false;
 
     pMaxChunks = 50;
     pMaxDupes = 3;
@@ -109,10 +111,10 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     mechanism_repair_lhs = new soar_module::boolean_param("lhs-repair", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_lhs);
 
-    mechanism_repair_justifications = new soar_module::boolean_param("repair-justifications", setting_on(SETTING_EBC_REPAIR_JUSTIFICATIONS), new soar_module::f_predicate<boolean>());
-    add(mechanism_repair_justifications);
-    mechanism_no_bad_justifications = new soar_module::boolean_param("dont-add-bad-justifications", setting_on(SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS), new soar_module::f_predicate<boolean>());
-    add(mechanism_no_bad_justifications);
+    mechanism_reorder_justifications = new soar_module::boolean_param("repair-justifications", setting_on(SETTING_EBC_REORDER_JUSTIFICATIONS), new soar_module::f_predicate<boolean>());
+    add(mechanism_reorder_justifications);
+    mechanism_no_ltm_links = new soar_module::boolean_param("dont-add-ltm-links", setting_on(SETTING_EBC_NO_LTM_LINKS), new soar_module::f_predicate<boolean>());
+    add(mechanism_no_ltm_links);
 
     soar_module::boolean_param* mechanism_no_bad_justifications;
     soar_module::boolean_param* mechanism_repair_justifications;
@@ -231,13 +233,13 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_MERGE] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_repair_justifications)
+    else if (pChangedParam == mechanism_reorder_justifications)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_no_bad_justifications)
+    else if (pChangedParam == mechanism_no_ltm_links)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NO_LTM_LINKS] = pChangedParam->get_value();
     }
 //    else if (pChangedParam == mechanism_user_singletons)
 //    {
@@ -336,8 +338,8 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
     mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
 //    mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
-    mechanism_repair_justifications->set_value(pEBC_settings[SETTING_EBC_REPAIR_JUSTIFICATIONS] ? on : off);
-    mechanism_no_bad_justifications->set_value(pEBC_settings[SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS] ? on : off);
+    mechanism_reorder_justifications->set_value(pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] ? on : off);
+    mechanism_no_ltm_links->set_value(pEBC_settings[SETTING_EBC_NO_LTM_LINKS] ? on : off);
 
     allow_missing_negative_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] ? on : off);
 //    allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);

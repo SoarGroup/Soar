@@ -141,6 +141,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     Symbol* math;
     uint64_t depth;
     bool update_LTI_Links = false;
+    bool link_to_ltm = true;
     symbol_list prohibit;
     symbol_list store;
 
@@ -385,6 +386,20 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                             path = cmd_bad;
                         }
                     }
+                    else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_link_to_ltm)
+                    {
+                        if (((*w_p)->value->symbol_type == STR_CONSTANT_SYMBOL_TYPE) &&
+                            (((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes) ||
+                                ((*w_p)->value == thisAgent->symbolManager->soarSymbols.no)) &&
+                                ((path == blank_slate) || (path == cmd_retrieve) || (path == cmd_query)))
+                        {
+                            link_to_ltm = ((*w_p)->value == thisAgent->symbolManager->soarSymbols.yes);
+                        }
+                        else
+                        {
+                            path = cmd_bad;
+                        }
+                    }
                     else if ((*w_p)->attr == thisAgent->symbolManager->soarSymbols.smem_sym_depth)
                     {
                         if ((*w_p)->value->symbol_type == INT_CONSTANT_SYMBOL_TYPE)
@@ -546,7 +561,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                 dprint(DT_SMEM_INSTANCE, "SMem Manager installing recall buffer.\n");
                 // process preference assertion en masse
-                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes);
+                install_recall_buffer(state, cue_wmes, meta_wmes, retrieval_wmes, !link_to_ltm);
 
                 // clear cache
                 {

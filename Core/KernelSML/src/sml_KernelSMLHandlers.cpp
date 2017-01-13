@@ -99,7 +99,7 @@ void KernelSML::BuildCommandMap()
     m_CommandMap[sml_Names::kCommand_SVSQuery] = &sml::KernelSML::HandleSVSQuery;
 }
 
-bool fileExists(const char* path)
+bool fileExistsAndIsDir(const char* path)
 {
 #ifdef _WIN32
     DWORD a = GetFileAttributes(path);
@@ -223,7 +223,7 @@ std::string searchForFile(std::string& pFileName)
         }
         directory += pFileName;
         normalize_separators(directory);
-        if (fileExists(directory.c_str()))
+        if (fileExistsAndIsDir(directory.c_str()))
         {
             found_settings = true;
         }
@@ -240,7 +240,7 @@ std::string searchForFile(std::string& pFileName)
             }
             directory += pFileName;
             normalize_separators(directory);
-            if (fileExists(directory.c_str()))
+            if (fileExistsAndIsDir(directory.c_str()))
             {
                 found_settings = true;
             }
@@ -256,7 +256,7 @@ std::string searchForFile(std::string& pFileName)
         }
         directory += pFileName;
         normalize_separators(directory);
-        if (fileExists(directory.c_str()))
+        if (fileExistsAndIsDir(directory.c_str()))
         {
             found_settings = true;
         }

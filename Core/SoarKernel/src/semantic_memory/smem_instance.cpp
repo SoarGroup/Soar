@@ -22,7 +22,7 @@
 #include "working_memory.h"
 #include "working_memory_activation.h"
 
-void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
+void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta, bool stripLTILinks)
 {
     if (my_list.empty())
     {
@@ -61,7 +61,11 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
                 continue;
             }
         }
-
+        if (stripLTILinks)
+        {
+            pref->id->id->LTI_ID = 0;
+            if (pref->value->is_lti()) pref->value->id->LTI_ID = 0;
+        }
         pref = pref->inst_next;
     }
 
@@ -120,12 +124,12 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     }
 }
 
-void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
+void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, bool stripLTILinks)
 {
     dprint(DT_SMEM_INSTANCE, "Installing meta wme buffer.\n");
-    install_buffered_triple_list(state, cue_wmes, meta_wmes, true);
+    install_buffered_triple_list(state, cue_wmes, meta_wmes, true, false);
     dprint(DT_SMEM_INSTANCE, "Installing retrieved wme buffer.\n");
-    install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false);
+    install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false, stripLTILinks);
 }
 
 void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
@@ -365,7 +369,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
                 install_memory(state, (*iterator)->id->LTI_ID, (*iterator), (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth - 1, visited);
             }
         }
-        dprint(DT_SMEM_INSTANCE, "Done installng memory called for %y %u %y.\n", state, pLTI_ID, sti);
+        dprint(DT_SMEM_INSTANCE, "Done installing memory called for %y %u %y.\n", state, pLTI_ID, sti);
 
     if (triggered)
     {

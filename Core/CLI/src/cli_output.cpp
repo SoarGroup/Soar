@@ -335,6 +335,31 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
 
     return ret;
 }
+
+void CommandLineInterface::SaveOutputSettings()
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    m_callbacks_were_enabled = thisAgent->output_settings->callback_mode;
+    m_output_was_enabled = thisAgent->output_settings->print_enabled;
+    m_console_was_enabled = thisAgent->outputManager->is_printing_to_stdout();
+
+    thisAgent->output_settings->callback_mode = true;
+    thisAgent->output_settings->print_enabled = true;
+    thisAgent->outputManager->set_printing_to_stdout(false);
+    thisAgent->outputManager->m_params->update_params_for_settings(thisAgent);
+}
+
+void CommandLineInterface::RestoreOutputSettings()
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    thisAgent->output_settings->callback_mode = m_callbacks_were_enabled;
+    thisAgent->output_settings->print_enabled = m_output_was_enabled ;
+    thisAgent->outputManager->set_printing_to_stdout(m_console_was_enabled);
+    thisAgent->outputManager->m_params->update_params_for_settings(thisAgent);
+}
+
 bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent)
 {
     std::ios_base::openmode openmode = std::ios_base::out;
@@ -367,6 +392,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
                 m_LogFilename = filename;
             }
+            SaveOutputSettings();
             break;
 
         case LOG_ADD:
@@ -386,6 +412,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
             delete m_pLogFile;
             m_pLogFile = 0;
             m_LogFilename.clear();
+            RestoreOutputSettings();
             break;
 
         default:

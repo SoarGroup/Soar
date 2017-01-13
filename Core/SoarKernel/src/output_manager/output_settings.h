@@ -48,6 +48,7 @@ class OM_Parameters: public soar_module::param_container
 
         void update_bool_setting(agent* thisAgent, soar_module::boolean_param* pChangedParam, sml::KernelSML* pKernelSML);
         void update_int_setting(agent* thisAgent, soar_module::integer_param* pChangedParam);
+        void update_params_for_settings(agent* thisAgent);
 
 };
 

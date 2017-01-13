@@ -299,6 +299,8 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");
     outputManager->printa_sf(thisAgent, "add-osk                     %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_OSK->get_value()), "Learn from operator selection knowledge");
     outputManager->printa_sf(thisAgent, "merge                       %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
+    outputManager->printa_sf(thisAgent, "dont-add-ltm-links          %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_no_ltm_links->get_value()), "Don't create LTM links in chunks");
+    outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_reorder_justifications->get_value()), "Re-order justifications (experimental)");
     outputManager->printa_sf(thisAgent, "lhs-repair                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_lhs->get_value()), "Add grounding conditions for unconnected LHS identifiers");
     outputManager->printa_sf(thisAgent, "rhs-repair                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_rhs->get_value()), "Add grounding conditions for unconnected RHS identifiers");
 //    outputManager->printa_sf(thisAgent, "*variablize-identity (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_identity_analysis->get_value()), "Variablize symbols based on identity analysis");
@@ -312,12 +314,6 @@ void Explanation_Based_Chunker::print_chunking_settings()
 //    outputManager->printa_sf(thisAgent, "*allow-opaque (disabled)     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
 //    outputManager->printa_sf(thisAgent, "*allow-uncertain-operators (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
 //    outputManager->printa_sf(thisAgent, "*allow-conflated-reasoning (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Tests a WME that has multiple reasons it exists");
-
-    #ifndef SOAR_RELEASE_VERSION
-    outputManager->printa_sf(thisAgent, "------------------- Experimental -------------------\n");
-    outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_justifications->get_value()), "Repair justification with identifiers not linked to a state ");
-    outputManager->printa_sf(thisAgent, "dont-add-bad-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_no_bad_justifications->get_value()), "Don't add justifications with identifiers not linked to a state ");
-    #endif
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- chunk <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help chunk\n");
