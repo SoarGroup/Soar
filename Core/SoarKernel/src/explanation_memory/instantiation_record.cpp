@@ -265,6 +265,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         /* Print header */
         outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y at level %d)\n",
             instantiationID, production_name, static_cast<int64_t>(match_level));
+        outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n\n");
         outputManager->set_print_test_format(false, true);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -597,7 +598,7 @@ void instantiation_record::viz_wm_instantiation()
                     lInNegativeConditions = true;
                 }
             }
-            lCond->visualize_for_wm_trace();
+            lCond->visualize_for_wm_trace(match_level);
         }
         if (lInNegativeConditions)
         {
@@ -682,7 +683,7 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            lCond->visualize_for_explanation_trace(print_cond);
+            lCond->visualize_for_explanation_trace(print_cond, match_level);
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;
