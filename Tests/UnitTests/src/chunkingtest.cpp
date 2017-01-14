@@ -25,6 +25,8 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(SMem_Chunk_Direct);
         CPPUNIT_TEST(All_Test_Types);
         CPPUNIT_TEST(BUNCPS_0);  // BUNCPS = Bottom-up Non-Chunky Problem Spaces
+        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
+        CPPUNIT_TEST(BUNCPS_2);
         CPPUNIT_TEST(BUNCPS_3);
         CPPUNIT_TEST(BUNCPS_4);
         CPPUNIT_TEST(BUNCPS_5);
@@ -34,6 +36,7 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Chunk_Operator_Tie_Item_Links);
         CPPUNIT_TEST(Chunk_RL_Proposal);
         CPPUNIT_TEST(Chunked_Justification_with_extras);
+        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
         CPPUNIT_TEST(Conflated_Constants);
         CPPUNIT_TEST(Constraint_Prop_from_Base_Conds);
         #ifndef SKIP_SLOW_TESTS
@@ -54,8 +57,10 @@ class ChunkTest : public CPPUNIT_NS::TestCase
         CPPUNIT_TEST(Disjunction_Merge);
         CPPUNIT_TEST(Duplicates);
         CPPUNIT_TEST(Faux_Operator);
+        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
         CPPUNIT_TEST(Justification_RC_not_Ungrounded_STIs);
         CPPUNIT_TEST(Justifications_Get_New_Identities);
+        CPPUNIT_TEST(Link_STM_to_LTM);          // Decreased expected to 0.  At least make sure it runs.
         CPPUNIT_TEST(Literalization_of_NC_and_NCC);
         CPPUNIT_TEST(Literalization_with_BT_Constraints);
         CPPUNIT_TEST(Literalization_with_BT_Constraints2);
@@ -110,14 +115,9 @@ class ChunkTest : public CPPUNIT_NS::TestCase
          * back a wrong field value for an identifier.  I'm not sure if that's the source of the problem, but it is
          * definitely a bug.
          * */
-        CPPUNIT_TEST(Link_STM_to_LTM);          // Decreased expected to 0.  At least make sure it runs.
-        CPPUNIT_TEST(Faux_Smem_Operator_RHS);
 //#ifndef SKIP_SLOW_TESTS
         CPPUNIT_TEST(GamesAgent_Sanity1);
 //#endif
-        CPPUNIT_TEST(Chunk_Superstate_Operator_Preference);
-        CPPUNIT_TEST(BUNCPS_1);  // (most came from problems found testing on Kirk's game learning agents)
-        CPPUNIT_TEST(BUNCPS_2);
 
 #endif
         CPPUNIT_TEST_SUITE_END();

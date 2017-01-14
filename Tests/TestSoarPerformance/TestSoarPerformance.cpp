@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "sml_Client.h"
 #include "sml_Connection.h"
+#include "soar_instance.h"
 
 #define QUIET_MODE
 //#define BRIEF_MODE
@@ -125,6 +126,7 @@ void Test1(int numTrials, StatsTracker* pSt, const vector<string>& commands)
 #endif
         Kernel* kernel = Kernel::CreateKernelInNewThread();
         Agent* agent = kernel->CreateAgent("Soar1");
+        configure_for_unit_tests();
 
 #ifndef QUIET_MODE
         agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
