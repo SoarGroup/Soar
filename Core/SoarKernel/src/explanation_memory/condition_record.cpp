@@ -158,35 +158,21 @@ bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSe
 {
     cons* c;
 
-    switch (t->type)
+    if (!t) return false;
+    t = t->eq_test;
+    if (!t) return false;
+
+    if (t->identity)
     {
-        case EQUALITY_TEST:
-            if (t->identity)
-            {
-                id_set::const_iterator it;
-                it = pIDSet->find(t->identity);
-                if (it != pIDSet->end())
-                {
-                    return true;
-                }
-            }
-
-            return false;
-            break;
-        case CONJUNCTIVE_TEST:
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                if (test_contains_identity_in_set(thisAgent, static_cast<test>(c->first), pIDSet))
-                {
-                    return true;
-                }
-            }
-            return false;
-            break;
-
-        default:  /* relational tests other than equality */
-            return false;
+        id_set::const_iterator it;
+        it = pIDSet->find(t->identity);
+        if (it != pIDSet->end())
+        {
+            return true;
+        }
     }
+
+    return false;
 }
 
 bool condition_record::contains_identity_from_set(const id_set* pIDSet)

@@ -2575,38 +2575,27 @@ void bind_variables_in_test(agent* thisAgent,
                             rete_node_level depth,
                             byte field_num,
                             bool dense,
-                            cons** varlist,
-                            test main_eq_test = NULL)
+                            cons** varlist)
 {
     Symbol* referent;
     cons* c;
 
-    if (!t)
+    if (!t) return;
+    t = t->eq_test;
+    if (!t) return;
+
+    referent = t->data.referent;
+    if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
     {
         return;
     }
-    if (t->type == EQUALITY_TEST)
+    if (!dense && var_is_bound(referent))
     {
-        referent = t->data.referent;
-        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-        {
-            return;
-        }
-        if (!dense && var_is_bound(referent))
-        {
-            return;
-        }
-        push_var_binding(thisAgent, referent, depth, field_num);
-        push(thisAgent, referent, *varlist);
         return;
     }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            bind_variables_in_test(thisAgent, static_cast<test>(c->first), depth, field_num, dense, varlist, t->eq_test);
-        }
-    }
+    push_var_binding(thisAgent, referent, depth, field_num);
+    push(thisAgent, referent, *varlist);
+    return;
 }
 
 /* -------------------------------------------------------------------
@@ -2827,26 +2816,16 @@ varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
     cons* c;
     Symbol* referent;
 
-    if (!t)
-    {
-        return starting_vn;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        referent = t->data.referent;
-        if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
-            if (! var_is_bound(referent))
-            {
-                starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
-            }
-        return starting_vn;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<test>(c->first),
-                          starting_vn);
-    }
+    if (!t) return starting_vn;
+    t = t->eq_test;
+    if (!t) return starting_vn;
+
+    referent = t->data.referent;
+    if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
+        if (! var_is_bound(referent))
+        {
+            starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
+        }
     return starting_vn;
 }
 
@@ -4176,36 +4155,15 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         cond = cond->prev;
     }
 
-    if (where_field_num == 0)
-    {
-        t = cond->data.tests.id_test;
-    }
-    else if (where_field_num == 1)
-    {
-        t = cond->data.tests.attr_test;
-    }
-    else
-    {
-        t = cond->data.tests.value_test;
-    }
+    if (where_field_num == 0)       t = cond->data.tests.id_test;
+    else if (where_field_num == 1)  t = cond->data.tests.attr_test;
+    else                            t = cond->data.tests.value_test;
 
-    if (!t)
-    {
-        goto abort_var_bound_in_reconstructed_conds;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        return t->data.referent;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return static_cast<test>(c->first)->data.referent;
-            }
-    }
+    if (!t) goto abort_var_bound_in_reconstructed_conds;
+    t = t->eq_test;
+    if (!t) goto abort_var_bound_in_reconstructed_conds;
+
+    return t->data.referent;
 
 abort_var_bound_in_reconstructed_conds:
     {
@@ -4232,36 +4190,16 @@ test var_test_bound_in_reconstructed_conds(
         cond = cond->prev;
     }
 
-    if (where_field_num == 0)
-        {
-        t = cond->data.tests.id_test;
-        }
-    else if (where_field_num == 1)
-        {
-        t = cond->data.tests.attr_test;
-        }
-            else
-            {
-        t = cond->data.tests.value_test;
-            }
+    if (where_field_num == 0)       t = cond->data.tests.id_test;
+    else if (where_field_num == 1)  t = cond->data.tests.attr_test;
+    else                            t = cond->data.tests.value_test;
 
-    if (!t)
-        {
-        goto abort_var_test_bound_in_reconstructed_conds;
-                    }
-    if (t->type == EQUALITY_TEST)
-                {
-        return t;
-                    }
-    else if (t->type == CONJUNCTIVE_TEST)
-                {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return static_cast<test>(c->first);
-            }
-        }
+    if (!t) goto abort_var_test_bound_in_reconstructed_conds;
+    t = t->eq_test;
+    if (!t) goto abort_var_test_bound_in_reconstructed_conds;
+
+    return t;
+
 
 abort_var_test_bound_in_reconstructed_conds:
         {
@@ -9000,7 +8938,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
         id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, true, &removed_goal_test, &removed_impasse_test);
-        thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
+        thisAgent->id_test_to_match = copy_test(thisAgent, id_test->eq_test);
 
         /* --- collect all cond's whose id test matches this one --- */
         conds_for_this_id = dc;

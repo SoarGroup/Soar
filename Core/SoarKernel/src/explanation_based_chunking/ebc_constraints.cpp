@@ -39,17 +39,10 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
         return;
     }
 
-    test equality_test = NULL, ctest;
+    assert(t->eq_test);
+    test ctest;
     cons* c;
-    for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-    {
-        if (static_cast<test>(c->first)->type == EQUALITY_TEST)
-        {
-            equality_test = static_cast<test>(c->first);
-            break;
-        }
-    }
-    assert(equality_test);
+
     constraint* new_constraint = NULL;
     for (c = t->data.conjunct_list; c != NIL; c = c->rest)
     {
@@ -64,7 +57,7 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
             case SAME_TYPE_TEST:
             case DISJUNCTION_TEST:
                 thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
-                new_constraint->eq_test = equality_test;
+                new_constraint->eq_test = t->eq_test;
                 new_constraint->constraint_test = ctest;
                 dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
                 constraints->push_back(new_constraint);

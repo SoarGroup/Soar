@@ -333,23 +333,11 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
              *           occurred before with { <var> <var2> } where they match different
              *           symbols? --- */
             dprint_noprefix(DT_REORDERER, "\n");
+
             dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
-            sym = NIL;
-            for (c = ct->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                subtest = static_cast<test>(c->first);
-                if (subtest && (subtest->type == EQUALITY_TEST))
-                {
-                    if (subtest->data.referent->is_constant() && sym && sym->is_variable())
-                    {
-                        dprint(DT_REORDERER, "...found equality test on %y.  Skipping because we already have variable index.\n", subtest->data.referent);
-                        continue;
-                    }
-                    sym = subtest->data.referent;
-                    sym_identity = subtest->identity;
-                    dprint(DT_REORDERER, "...found equality symbol on %y.  Setting as index.\n", sym);
-                }
-            }
+            sym = ct->eq_test->data.referent;
+            sym_identity = ct->eq_test->identity;
+            dprint(DT_REORDERER, "...Setting equality symbol %y as index.\n", sym);
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
             {
@@ -411,8 +399,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                 test tempTest = static_cast<test>(ct->data.conjunct_list->first);
                 free_cons(thisAgent, ct->data.conjunct_list);
                 ct->data.conjunct_list = NULL;
-                /* Switch type to a goal_id test, so that deallocate won't try to deallocate
-                 * anything extra */
+                /* Switch type to a goal_id test, so that deallocate won't try to deallocate anything extra */
                 ct->type = GOAL_ID_TEST;
                 deallocate_test(thisAgent, ct);
                 *t = tempTest;
@@ -992,32 +979,18 @@ bool test_covered_by_bound_vars(test t, tc_number tc, cons* extra_vars)
     cons* c;
     Symbol* referent;
 
-    if (!t)
-    {
-        return false;
-    }
+    if (!t) return false;
+    t = t->eq_test;
+    if (!t) return false;
 
-    if (t->type == EQUALITY_TEST)
+    referent = t->data.referent;
+    if (referent->is_constant_or_marked_variable(tc))
     {
-        referent = t->data.referent;
-        if (referent->is_constant_or_marked_variable(tc))
-        {
-            return true;
-        }
-        if (extra_vars)
-        {
-            return member_of_list(referent, extra_vars);
-        }
-        return false;
+        return true;
     }
-
-    if (t->type == CONJUNCTIVE_TEST)
+    if (extra_vars)
     {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_covered_by_bound_vars(static_cast<test>(c->first), tc, extra_vars))
-            {
-                return true;
-            }
+        return member_of_list(referent, extra_vars);
     }
     return false;
 }

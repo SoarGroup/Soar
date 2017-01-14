@@ -295,23 +295,17 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
             }
             else if (destination->type == CONJUNCTIVE_TEST)
             {
-                cons* c;
-                test check_test;
-                for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
+                if (destination->eq_test)
                 {
-                    check_test = static_cast<test>(c->first);
-                    if (check_test->type == EQUALITY_TEST)
+                    if (destination->eq_test->data.referent == new_test->data.referent)
                     {
-                        if (check_test->data.referent == new_test->data.referent)
+                        if (!destination->eq_test->identity && new_test->identity)
                         {
-                            if (!check_test->identity && new_test->identity)
-                            {
-                                /* This is the special case */
-                                check_test->identity = new_test->identity;
-                                dprint(DT_ADD_EXPLANATION_TRACE, "Copying identity to equality test for add_relational_test special case %t: %u\n", check_test, check_test->identity);
-                                deallocate_test(thisAgent, new_test);
-                                return;
-                            }
+                            /* This is the special case */
+                            destination->eq_test->identity = new_test->identity;
+                            dprint(DT_ADD_EXPLANATION_TRACE, "Copying identity to equality test for add_relational_test special case %t: %u\n", destination->eq_test, destination->eq_test->identity);
+                            deallocate_test(thisAgent, new_test);
+                            return;
                         }
                     }
                 }

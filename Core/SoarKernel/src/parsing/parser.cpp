@@ -640,7 +640,7 @@ void fill_in_id_tests(agent* thisAgent, condition* conds, test t)
     if (positive_c)    /* --- there is at least one positive condition --- */
     {
         /* --- add just the equality test to most of the conditions --- */
-        equality_test_from_t = copy_of_equality_test_found_in_test(thisAgent, t);
+        equality_test_from_t = copy_test(thisAgent, t->eq_test);
         for (c = conds; c != NIL; c = c->next)
         {
             if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -692,7 +692,7 @@ void fill_in_attr_tests(agent* thisAgent, condition* conds, test t)
     if (positive_c)    /* --- there is at least one positive condition --- */
     {
         /* --- add just the equality test to most of the conditions --- */
-        equality_test_from_t = copy_of_equality_test_found_in_test(thisAgent, t);
+        equality_test_from_t = copy_test(thisAgent, t->eq_test);
         for (c = conds; c != NIL; c = c->next)
         {
             if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
@@ -1062,7 +1062,7 @@ test parse_head_of_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_l
         }
         else
         {
-            check_for_symconstant = copy_of_equality_test_found_in_test(thisAgent, id_test);
+            check_for_symconstant = copy_test(thisAgent, id_test->eq_test);
             sym = check_for_symconstant->data.referent;
             deallocate_test(thisAgent, check_for_symconstant);  /* RBD added 3/28/95 */
 
@@ -1202,7 +1202,7 @@ condition* parse_conds_for_one_id(agent* thisAgent, Lexer* lexer, char first_let
     if (dest_id_test)
     {
         *dest_id_test = id_test;
-        equality_test_from_id_test = copy_of_equality_test_found_in_test(thisAgent, id_test);
+        equality_test_from_id_test = copy_test(thisAgent, id_test->eq_test);
         fill_in_id_tests(thisAgent, conds, equality_test_from_id_test);
         deallocate_test(thisAgent, equality_test_from_id_test);
     }

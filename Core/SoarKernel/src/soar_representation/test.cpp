@@ -643,30 +643,17 @@ uint32_t hash_test(agent* thisAgent, test t)
    parameters) in the given test, and returns true if one is found.
 ---------------------------------------------------------------- */
 
-bool test_includes_goal_or_impasse_id_test(test t,
-        bool look_for_goal,
-        bool look_for_impasse)
+bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse)
 {
     cons* c;
 
-    if (t->type == EQUALITY_TEST)
-    {
-        return false;
-    }
-    if (look_for_goal && (t->type == GOAL_ID_TEST))
-    {
-        return true;
-    }
-    if (look_for_impasse && (t->type == IMPASSE_ID_TEST))
-    {
-        return true;
-    }
+    if (t->type == EQUALITY_TEST) return false;
+    if (look_for_goal && (t->type == GOAL_ID_TEST)) return true;
+    if (look_for_impasse && (t->type == IMPASSE_ID_TEST)) return true;
     if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_includes_goal_or_impasse_id_test(static_cast<test>(c->first),
-                    look_for_goal,
-                    look_for_impasse))
+            if (test_includes_goal_or_impasse_id_test(static_cast<test>(c->first), look_for_goal, look_for_impasse))
             {
                 return true;
             }
@@ -675,42 +662,7 @@ bool test_includes_goal_or_impasse_id_test(test t,
     return false;
 }
 
-/* ----------------------------------------------------------------
-   Looks through a test, and returns a new copy of the first equality
-   test it finds.  Signals an error if there is no equality test in
-   the given test.
----------------------------------------------------------------- */
-
-test copy_of_equality_test_found_in_test(agent* thisAgent, test t)
-{
-    cons* c;
-    char msg[BUFFER_MSG_SIZE];
-
-    if (!t)
-    {
-        strncpy(msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        return copy_test(thisAgent, t);
-    }
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return copy_test(thisAgent, static_cast<test>(c->first));
-            }
-    }
-    strncpy(msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
-    abort_with_fatal_error(thisAgent, msg);
-    return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-test equality_test_found_in_test(test t)
+test find_eq_test(test t)
 {
     cons* c;
 
@@ -808,7 +760,6 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
             //            referent = t->data.referent;
             //            break;
         case EQUALITY_TEST:
-        case SMEM_LINK_TEST:
             referent = t->data.referent;
             break;
         default:
@@ -855,10 +806,7 @@ char first_letter_from_test(test t)
     cons* c;
     char ch;
 
-    if (!t)
-    {
-        return '*';
-    }
+    if (!t) return '*';
 
     switch (t->type)
     {
@@ -866,19 +814,10 @@ char first_letter_from_test(test t)
             return first_letter_from_symbol(t->data.referent);
         case CONJUNCTIVE_TEST:
             return first_letter_from_symbol(t->eq_test->data.referent);
-//            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-//            {
-//                ch = first_letter_from_test(static_cast<test>(c->first));
-//                if (ch != '*')
-//                {
-//                    return ch;
-//                }
-//            }
         case GOAL_ID_TEST:
             return 's';
         case IMPASSE_ID_TEST:
             return 'i';
-            return '*';
         default:  /* disjunction tests, and relational tests other than equality */
             return '*';
     }
@@ -1112,7 +1051,7 @@ cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
         /* -- There are no remaining tests in conjunct list, so return NULL --*/
         return NULL;
     } else {
-        (*t)->eq_test = equality_test_found_in_test(*t);
+        (*t)->eq_test = find_eq_test(*t);
     }
 
     return next;
