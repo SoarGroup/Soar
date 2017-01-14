@@ -976,22 +976,10 @@ cons* collect_root_variables(agent* thisAgent,
 
 bool test_covered_by_bound_vars(test t, tc_number tc, cons* extra_vars)
 {
-    cons* c;
-    Symbol* referent;
-
-    if (!t) return false;
-    t = t->eq_test;
-    if (!t) return false;
-
-    referent = t->data.referent;
-    if (referent->is_constant_or_marked_variable(tc))
-    {
-        return true;
-    }
-    if (extra_vars)
-    {
-        return member_of_list(referent, extra_vars);
-    }
+    assert(t && t->eq_test);
+    Symbol* referent = t->eq_test->data.referent;
+    if (referent->is_constant_or_marked_variable(tc))   return true;
+    if (extra_vars)                                     return member_of_list(referent, extra_vars);
     return false;
 }
 
@@ -1006,10 +994,7 @@ int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol* sym)
     multi_attribute* m = thisAgent->multi_attributes;
     while (m)
     {
-        if (m->symbol == sym)
-        {
-            return m->value;
-        }
+        if (m->symbol == sym) return m->value;
         m = m->next;
     }
     return 1;
@@ -1022,10 +1007,7 @@ int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol* sym)
    variables.
 ------------------------------------------------------------- */
 
-int64_t cost_of_adding_condition(agent* thisAgent,
-                                 condition* cond,
-                                 tc_number tc,
-                                 cons* root_vars_not_bound_yet)
+int64_t cost_of_adding_condition(agent* thisAgent, condition* cond, tc_number tc, cons* root_vars_not_bound_yet)
 {
     cons* c;
     int64_t result;

@@ -666,7 +666,6 @@ test find_eq_test(test t)
 {
     cons* c;
 
-    assert(t);
     if (t->type == EQUALITY_TEST)
     {
         return t;

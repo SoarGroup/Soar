@@ -85,12 +85,14 @@ void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool consi
 
 inline bool test_has_referent(test t)
 {
-    return ((t->type != CONJUNCTIVE_TEST) &&
-            (t->type != GOAL_ID_TEST) &&
-            (t->type != IMPASSE_ID_TEST) &&
-            (t->type != DISJUNCTION_TEST) &&
-            (t->type != SMEM_LINK_UNARY_TEST) &&
-            (t->type != SMEM_LINK_UNARY_NOT_TEST));
+    return ((t->type != CONJUNCTIVE_TEST) && (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) && (t->type != DISJUNCTION_TEST) &&
+            (t->type != SMEM_LINK_UNARY_TEST) && (t->type != SMEM_LINK_UNARY_NOT_TEST));
 };
 
+inline bool test_can_be_transitive_constraint(test t)
+{
+    return ((t->type != EQUALITY_TEST) && (t->type != CONJUNCTIVE_TEST) &&
+            (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST));
+};
 #endif /* TEST_H_ */

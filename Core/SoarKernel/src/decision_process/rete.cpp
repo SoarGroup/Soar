@@ -2578,24 +2578,13 @@ void bind_variables_in_test(agent* thisAgent,
                             cons** varlist)
 {
     Symbol* referent;
-    cons* c;
 
-    if (!t) return;
-    t = t->eq_test;
-    if (!t) return;
-
-    referent = t->data.referent;
-    if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-    {
-        return;
-    }
-    if (!dense && var_is_bound(referent))
-    {
-        return;
-    }
+    assert(t && t->eq_test);
+    referent = t->eq_test->data.referent;
+    if (!referent->is_variable()) return;
+    if (!dense && var_is_bound(referent)) return;
     push_var_binding(thisAgent, referent, depth, field_num);
     push(thisAgent, referent, *varlist);
-    return;
 }
 
 /* -------------------------------------------------------------------
@@ -2813,19 +2802,13 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
 varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
                                        varnames* starting_vn)
 {
-    cons* c;
-    Symbol* referent;
+    assert(t && t->eq_test);
 
-    if (!t) return starting_vn;
-    t = t->eq_test;
-    if (!t) return starting_vn;
-
-    referent = t->data.referent;
-    if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
-        if (! var_is_bound(referent))
-        {
-            starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
-        }
+    Symbol* referent = t->eq_test->data.referent;
+    if (referent->is_variable() && !var_is_bound(referent))
+    {
+        starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
+    }
     return starting_vn;
 }
 
@@ -4147,7 +4130,6 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         rete_node_level where_levels_up)
 {
     test t;
-    cons* c;
 
     while (where_levels_up)
     {
@@ -4161,7 +4143,6 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
 
     if (!t) goto abort_var_bound_in_reconstructed_conds;
     t = t->eq_test;
-    if (!t) goto abort_var_bound_in_reconstructed_conds;
 
     return t->data.referent;
 
@@ -4182,7 +4163,6 @@ test var_test_bound_in_reconstructed_conds(
     rete_node_level where_levels_up)
 {
     test t;
-    cons* c;
 
     while (where_levels_up)
     {
@@ -4195,11 +4175,8 @@ test var_test_bound_in_reconstructed_conds(
     else                            t = cond->data.tests.value_test;
 
     if (!t) goto abort_var_test_bound_in_reconstructed_conds;
-    t = t->eq_test;
-    if (!t) goto abort_var_test_bound_in_reconstructed_conds;
 
-    return t;
-
+    return t->eq_test;
 
 abort_var_test_bound_in_reconstructed_conds:
         {
@@ -4251,8 +4228,7 @@ void rete_node_to_conditions(agent* thisAgent,
     cond = make_condition(thisAgent);
     if (real_parent_node(node) == cutoff)
     {
-        cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this
-                                             will get replaced by NIL later */
+        cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this will get replaced by NIL later */
         *dest_top_cond = cond;
     }
     else

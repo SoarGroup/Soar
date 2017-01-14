@@ -156,30 +156,17 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
 
 bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)
 {
-    cons* c;
-
-    if (!t) return false;
-    t = t->eq_test;
-    if (!t) return false;
-
-    if (t->identity)
-    {
-        id_set::const_iterator it;
-        it = pIDSet->find(t->identity);
-        if (it != pIDSet->end())
-        {
-            return true;
-        }
-    }
-
+    if (!t || !t->eq_test || !t->eq_test->identity) return false;
+    auto it = pIDSet->find(t->eq_test->identity);
+    if (it != pIDSet->end()) return true;
     return false;
 }
 
 bool condition_record::contains_identity_from_set(const id_set* pIDSet)
 {
     bool returnVal = (test_contains_identity_in_set(thisAgent, condition_tests.value, pIDSet) ||
-        test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
-        test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
+                      test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
+                      test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
 
     dprint(DT_EXPLAIN_PATHS, "condition_record::contains_identity_from_set returning %s.\n", returnVal ? "TRUE" : "FALSE");
 

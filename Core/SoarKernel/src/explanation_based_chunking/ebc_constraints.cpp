@@ -31,42 +31,26 @@ void Explanation_Based_Chunker::clear_cached_constraints()
 
 void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 {
-    /* -- Only conjunctive tests can have relational tests here.  Otherwise,
-     *    should be an equality test. -- */
-    if (t->type != CONJUNCTIVE_TEST)
-    {
-        assert(t->type == EQUALITY_TEST);
-        return;
-    }
+    /* Only conjunctive tests can have relational tests here */
+    if (t->type != CONJUNCTIVE_TEST) return;
 
-    assert(t->eq_test);
     test ctest;
-    cons* c;
-
     constraint* new_constraint = NULL;
-    for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+
+    for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
     {
         ctest = static_cast<test>(c->first);
-        switch (ctest->type)
+        if (test_can_be_transitive_constraint(ctest))
         {
-            case GREATER_TEST:
-            case GREATER_OR_EQUAL_TEST:
-            case LESS_TEST:
-            case LESS_OR_EQUAL_TEST:
-            case NOT_EQUAL_TEST:
-            case SAME_TYPE_TEST:
-            case DISJUNCTION_TEST:
-                thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
-                new_constraint->eq_test = t->eq_test;
-                new_constraint->constraint_test = ctest;
-                dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
-                constraints->push_back(new_constraint);
-                #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_constraints_collected();
-                #endif
-                break;
-            default:
-                break;
+            assert(t->eq_test);
+            thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
+            new_constraint->eq_test = t->eq_test;
+            new_constraint->constraint_test = ctest;
+            dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
+            constraints->push_back(new_constraint);
+            #ifdef BUILD_WITH_EXPLAINER
+            thisAgent->explanationMemory->increment_stat_constraints_collected();
+            #endif
         }
     }
 }
