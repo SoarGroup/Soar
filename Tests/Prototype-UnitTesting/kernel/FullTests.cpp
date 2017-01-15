@@ -593,9 +593,9 @@ void FullTests_Parent::testAgent()
 	
 	// Register for a String event
 	bool stringEventHandlerReceived(false);
-	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_TCL_LIBRARY_MESSAGE, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("cli tcl on", NULL));
-	no_agent_assertTrue_msg("puts hello world", agent->GetLastCommandLineResult());
+	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_LOAD_LIBRARY, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("load-library TestExternalLibraryLib", NULL));
+	no_agent_assertTrue_msg("echo hello world", agent->GetLastCommandLineResult());
 	no_agent_assertTrue(stringEventHandlerReceived);
 	stringEventHandlerReceived = false;
 	no_agent_assertTrue(m_pKernel->UnregisterForStringEvent(stringCall));
@@ -1274,7 +1274,8 @@ void FullTests_Parent::testStopSoarVsInterrupt()
 		no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
 	}
 	
-	agent->ExecuteCommandLine("ex -a"); // side effect: init-soar
+	agent->ExecuteCommandLine("ex -a");
+    agent->ExecuteCommandLine("soar init");
 	no_agent_assertTrue(agent->GetLastCommandLineResult());
 	
 	loadProductions(SoarHelper::GetResource("testinterrupt.soar"));

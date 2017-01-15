@@ -70,23 +70,23 @@ int main(int argc, char** argv)
 	
 	// Pass
 //	TEST_DECLARATION(AgentTest);
+	//    TEST_DECLARATION(AliasTest);
 //	TEST_DECLARATION(BasicTests);
-//	TEST_DECLARATION(FunctionalTests);
 //	TEST_DECLARATION(EpMemFunctionalTests);
 //    TEST_DECLARATION(ElementXMLTest);
+//    TEST_DECLARATION(FullTests);
+////    TEST_DECLARATION(FullTestsRemote);
+//    TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
+//    TEST_DECLARATION(FullTestsClientThread);
+	//  TEST_DECLARATION(FunctionalTests);
 //    TEST_DECLARATION(IOTests);
 //    TEST_DECLARATION(MiscTests);
 //    TEST_DECLARATION(MultiAgentTest);
 //    TEST_DECLARATION(TokenizerTest);
+	//  TEST_DECLARATION(WmaFunctionalTests);
 
-    TEST_DECLARATION(AliasTest);
-//    TEST_DECLARATION(WmaFunctionalTests);
-//    TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
-//    TEST_DECLARATION(FullTestsClientThread);
-//    TEST_DECLARATION(FullTests);
-//    TEST_DECLARATION(FullTestsRemote);
-//	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
-//	TEST_DECLARATION(SMemFunctionalTests);
+	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
+	TEST_DECLARATION(SMemFunctionalTests);
 //	TEST_DECLARATION(ChunkingTests);
 	
 	size_t successCount = 0;
