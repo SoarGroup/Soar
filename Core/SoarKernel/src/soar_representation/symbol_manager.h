@@ -47,7 +47,7 @@ class Symbol_Manager {
         Symbol* make_str_constant(char const* name);
         Symbol* make_int_constant(int64_t value);
         Symbol* make_float_constant(double value);
-        Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL);
+        Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL, bool prohibit_S = true);
         Symbol* generate_new_str_constant(const char* prefix, uint64_t* counter);
 
         void deallocate_symbol_list_removing_references(cons*& sym_list);

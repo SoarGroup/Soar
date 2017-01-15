@@ -50,6 +50,7 @@ class soar_interface
         
         wme*         make_id_wme(Symbol* id, const std::string& attr);
         wme*         make_id_wme(Symbol* id, Symbol* attr);
+        wme*         make_svs_wme(Symbol* id);
         
         wme*         make_wme(Symbol* id, Symbol* attr, Symbol* val);
         wme*         make_wme(Symbol* id, const std::string& attr, Symbol* val);

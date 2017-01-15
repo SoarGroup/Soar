@@ -381,7 +381,7 @@ Symbol* Symbol_Manager::make_variable(const char* name)
     return sym;
 }
 
-Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number)
+Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number, bool prohibit_S)
 {
 
     idSymbol* sym;
@@ -390,6 +390,10 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
         if (islower(name_letter))
         {
             name_letter = static_cast<char>(toupper(name_letter));
+        }
+        if (prohibit_S && (name_letter == 'S'))
+        {
+            name_letter = 'I';
         }
     }
     else

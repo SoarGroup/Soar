@@ -1970,7 +1970,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 {
     Symbol* impasseID;
 
-    impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level);
+    impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level, 0, false);
     post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
     add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
@@ -2006,7 +2006,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             thisAgent->symbolManager->symbol_remove_ref(&my_time_sym);
         }
 
-        Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('S', level);
+        Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('L', level);
         Symbol* lsmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
         Symbol* lsmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
         impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header);

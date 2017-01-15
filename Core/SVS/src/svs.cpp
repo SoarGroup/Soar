@@ -204,7 +204,7 @@ void svs_state::init()
     common_syms& cs = si->get_common_syms();
     
     state->get_id_name(name);
-    svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
+    svs_link = si->get_wme_val(si->make_svs_wme(state));
     cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
     scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
     if (!scn)

@@ -82,6 +82,16 @@ wme* soar_interface::make_id_wme(Symbol* id, Symbol* attr)
     return w;
 }
 
+wme* soar_interface::make_svs_wme(Symbol* id)
+{
+    Symbol* val;
+
+    val = thisAgent->symbolManager->make_new_identifier('v', id->id->level);
+    wme* w = soar_module::add_module_wme(thisAgent, id, cs.svs, val);
+    thisAgent->symbolManager->symbol_remove_ref(&val);
+    return w;
+}
+
 void soar_interface::remove_wme(wme* w)
 {
     soar_module::remove_module_wme(thisAgent, w);
