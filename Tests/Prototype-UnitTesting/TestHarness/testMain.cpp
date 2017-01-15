@@ -82,10 +82,10 @@ int main(int argc, char** argv)
 //    TEST_DECLARATION(IOTests);
 //    TEST_DECLARATION(MiscTests);
 //    TEST_DECLARATION(MultiAgentTest);
+	//  TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 //    TEST_DECLARATION(TokenizerTest);
 	//  TEST_DECLARATION(WmaFunctionalTests);
 
-	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
 //	TEST_DECLARATION(ChunkingTests);
 	

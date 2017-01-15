@@ -468,7 +468,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	assertNonZeroSize_msg("No CSoar db!", db);
 	agent->ExecuteCommandLine(std::string("smem --set path \"" + db + "\"").c_str());
 	agent->ExecuteCommandLine("smem --set database file");
-	agent->ExecuteCommandLine("smem --set append-database on");
+	agent->ExecuteCommandLine("smem --set append on");
 	agent->ExecuteCommandLine("smem --init");
 
 	std::string actualResult = agent->ExecuteCommandLine("smem --print");
@@ -526,12 +526,12 @@ void SMemFunctionalTests::testMultiAgent()
 
 void SMemFunctionalTests::testISupport()
 {
-	runTest("smem-i-support", 6);
+	runTest("smem-i-support", 5);
 }
 
 void SMemFunctionalTests::testISupportWithLearning()
 {
 	std::string result = agent->ExecuteCommandLine("chunk always") ;
 
-	runTest("smem-i-support", 6);
+	runTest("smem-i-support", 5);
 }
