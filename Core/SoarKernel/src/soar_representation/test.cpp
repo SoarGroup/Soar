@@ -261,11 +261,9 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         ++final_count;
     }
     destination->data.disjunction_list = c_first;
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
     thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
     thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-    #endif
 
 }
 

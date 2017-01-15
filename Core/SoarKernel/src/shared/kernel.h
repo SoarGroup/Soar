@@ -47,7 +47,6 @@
 #ifndef NO_TIMING_STUFF               /* Tracks additional statistics on how much time is spent in various parts of the system. */
     //#define DETAILED_TIMING_STATS
 #endif
-#define BUILD_WITH_EXPLAINER
 
 /*  rete stat tracking (may be broken right now though bug might be superficial) */
 //#define TOKEN_SHARING_STATS           /* get statistics on token counts with and without sharing */

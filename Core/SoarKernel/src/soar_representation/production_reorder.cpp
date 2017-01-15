@@ -190,9 +190,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Attempted to add rule with ungrounded action action(s).  Repair required.";
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
-        #endif
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -1565,9 +1563,7 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_lhs_unconnected();
-        #endif
 
         return false;
     }

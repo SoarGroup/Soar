@@ -445,9 +445,7 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->FIRING_TYPE = IE_PRODS;
     do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
 
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->re_init();
-    #endif
 
     thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();

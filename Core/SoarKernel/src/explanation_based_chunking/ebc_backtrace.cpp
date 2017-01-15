@@ -218,19 +218,15 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
-        #endif
         dprint(DT_BACKTRACE, "... already backtraced through.\n");
         m_current_bt_inst_id = last_bt_inst_id;
         return;
     }
 
     inst->backtrace_number = backtrace_number;
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_bt_instantiation(inst, bt_type);
     thisAgent->explanationMemory->increment_stat_instantations_backtraced();
-    #endif
 
     if (!inst->reliable) m_reliable = false;
     if (inst->tested_local_negation) m_tested_local_negation = true;

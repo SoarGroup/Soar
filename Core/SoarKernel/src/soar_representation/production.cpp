@@ -510,13 +510,11 @@ void excise_production(agent* thisAgent, production* prod, bool print_sharp_sign
     dprint_header(DT_DEALLOCATE_PROD, PrintBoth, "Excising production %y (p %u).\n", prod->name, prod->p_id);
     /* When excising, the explainer needs to save the production before we excise it from
      * the RETE.  Otherwise, it won't be able to reconstruct the cached conditions/actions */
-    #ifdef BUILD_WITH_EXPLAINER
     if (cacheProdForExplainer && prod->save_for_justification_explanation && thisAgent->explanationMemory->is_any_enabled())
     {
         dprint(DT_DEALLOCATE_PROD, "Caching production for %y (p %u) before excising.\n", prod->name, prod->p_id);
         thisAgent->explanationMemory->save_excised_production(prod);
     }
-    #endif
     if (thisAgent->explanationMemory->is_any_enabled())
     {
         thisAgent->explanationMemory->excise_production_id(prod->p_id);

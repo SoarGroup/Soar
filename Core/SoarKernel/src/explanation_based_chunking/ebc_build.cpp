@@ -489,13 +489,11 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         thisAgent->memoryManager->free_with_pool(MP_chunk_cond, cc);
     }
 
-    #ifdef BUILD_WITH_EXPLAINER
     if (has_local_negation)
     {
         m_tested_local_negation = true;
         thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
     }
-    #endif
 
     if (prev_vrblz)
     {
@@ -678,9 +676,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     grounds = NIL;
     locals = NIL;
 
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
-    #endif
 
     /* Backtrace through the instantiation that produced each result --- */
     for (pref = m_results; pref != NIL; pref = pref->next_result)
@@ -824,9 +820,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (chunks_this_d_cycle >= max_chunks)
     {
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_chunks, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_chunks();
-        #endif
         m_extra_results = NULL;
         m_inst = NULL;
         return;
@@ -859,9 +853,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_max_dupes, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             thisAgent->outputManager->printa_sf(thisAgent, "         Rule that has reached the max-dupes limit: %y\n", m_inst->prod_name);
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_max_dupes();
-        #endif
         m_extra_results = NULL;
         m_inst = NULL;
         return;
@@ -892,9 +884,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 //    {
 //        dprint(DT_DEBUG, "Chunk found.\n");
 //    }
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_chunk_record(m_inst);
-    #endif
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -913,9 +903,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_tested_quiescence = false;
     perform_dependency_analysis();
 
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
-    #endif
 
     /* Collect the grounds into the chunk condition lists */
     create_initial_chunk_condition_lists();
@@ -928,10 +916,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_no_conditions, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
             thisAgent->outputManager->printa_sf(thisAgent, "\nRule firing that led to invalid chunk: %y\n", m_inst->prod_name);
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
-        #endif
     if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
@@ -956,7 +942,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         }
     }
 
-    #ifdef BUILD_WITH_EXPLAINER
     if ((m_rule_type == ebc_justification) && !thisAgent->explanationMemory->isRecordingJustifications())
     {
         thisAgent->explanationMemory->cancel_chunk_record();
@@ -966,14 +951,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (m_tested_ltm_recall) thisAgent->explanationMemory->increment_stat_tested_ltm_recall(m_rule_type);
     if (m_tested_quiescence) thisAgent->explanationMemory->increment_stat_tested_quiescence();
 
-    #endif
-
     /* Create the name of the rule based on the type and circumstances of the problem-solving */
     set_up_rule_name();
 
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
-    #endif
 
     /* Variablize the LHS */
     thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
@@ -1011,25 +992,17 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
             }
-            #ifdef BUILD_WITH_EXPLAINER
             thisAgent->explanationMemory->increment_stat_chunks_reverted();
-            #endif
         } else {
             if (ebc_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS]){
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
                 deallocate_failed_chunk();
-                #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->cancel_chunk_record();
-                #endif
                 clean_up();
-                #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
-                #endif
                 return;
             } else {
-                #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
-                #endif
             }
         }
     }
@@ -1053,12 +1026,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
 
-    #ifdef BUILD_WITH_EXPLAINER
     if (m_inst->prod && m_inst->prod->explain_its_chunks)
     {
         m_prod->explain_its_chunks = true;
     }
-    #endif
     m_prod_name = NULL;     /* Production struct is now responsible for the production name, so clear local pointer so we don't accidentally delete. */
 
 

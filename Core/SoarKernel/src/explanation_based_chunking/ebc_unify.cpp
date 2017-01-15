@@ -234,9 +234,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
                 if (rs->o_id && !rs->referent->is_sti())
                 {
                     add_identity_unification(rs->o_id, 0);
-                    #ifdef BUILD_WITH_EXPLAINER
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
-                    #endif
                 }
             }
         }

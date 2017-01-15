@@ -399,9 +399,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
         }
     }
 
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->increment_stat_grounding_conds_added(m_repair_WMEs.size());
-    #endif
 
     /* Create conditions based on set of wme's compiled */
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
@@ -464,17 +462,13 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
                     thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repaired);
                     print_current_built_rule("Repaired rule:");
                 }
-                #ifdef BUILD_WITH_EXPLAINER
                 thisAgent->explanationMemory->increment_stat_chunks_repaired();
-                #endif
                 return true;
             }
         }
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_could_not_repair();
-        #endif
         return false;
     }
     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);

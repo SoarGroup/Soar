@@ -38,9 +38,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity, get_ovar_for_o_id(pIdentity), lVarInfo->variable_sym);
-    #endif
     return lVarInfo;
 }
 
