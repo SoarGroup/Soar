@@ -64,15 +64,6 @@ public:
 	TEST(testLessNoSolution, -1)
 	void testLessNoSolution();
 	
-	TEST(testMirroring, -1)
-	void testMirroring();
-	
-	TEST(testMergeAdd, -1)
-	void testMergeAdd();
-	
-	TEST(testMergeNone, -1)
-	void testMergeNone();
-	
 	TEST(testSimpleStoreMultivaluedAttribute, -1)
 	void testSimpleStoreMultivaluedAttribute();
 	

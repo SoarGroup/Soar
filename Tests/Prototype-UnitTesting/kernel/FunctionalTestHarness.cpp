@@ -32,7 +32,7 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	runner->output << "Loaded Productions for " << sourceName << ":" << std::endl;
 	runner->output << result << std::endl;
 	
-	result = agent->ExecuteCommandLine("set-stop-phase --apply");
+	result = agent->ExecuteCommandLine("soar stop-phase apply");
 	runner->output << "Set Stop Phase: " << result << std::endl;
 }
 

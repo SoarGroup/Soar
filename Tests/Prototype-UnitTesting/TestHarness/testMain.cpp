@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 	
 	for (TestCategory* category : tests)
 	{
-		std::cout << std::endl << "================================================" << std::endl << "Running " << category->getCategoryName() << std::endl << "================================================" << std::endl;
+		std::cout << "======== " << category->getCategoryName() << " ========" << std::endl;
 		
 		for (TestCategory::TestCategory_test test : category->getTests())
 		{
@@ -136,13 +136,12 @@ int main(int argc, char** argv)
 			}
 			else if (!runner->failed)
 			{
-				std::cout << "Done" << std::endl;
+				std::cout << "✅" << std::endl;
 				std::cout.flush();
 			}
 			else if (runner->failed)
 			{
-				std::cout << "Failed" << std::endl << "================================================" << std::endl << "Reason: ";
-				std::cout << runner->failureMessage << std::endl << std::endl;
+				std::cout << "😈 " << runner->failureMessage << std::endl;
 				std::cout.flush();
 				
 				failedTests.push_back(category->getCategoryName() + ": " + std::get<2>(test));
@@ -158,7 +157,7 @@ int main(int argc, char** argv)
 				std::cout.flush();
 			}
 			
-			if (ShowTestOutput || runner->failed)
+			if (ShowTestOutput && runner->failed)
 			{
 				std::cout << std::get<2>(test) << " Output:" << std::endl;
 				std::cout << runner->output.str() << "================================================" << std::endl << std::endl;

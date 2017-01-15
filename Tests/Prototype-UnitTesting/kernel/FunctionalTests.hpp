@@ -22,9 +22,6 @@ public:
 	TEST(testWaterJug,5000)
 	void testWaterJug();
 	
-	TEST(testWaterJugLookAhead,10000)
-	void testWaterJugLookAhead();
-	
 	TEST(testWaterJugHierarchy,10000)
 	void testWaterJugHierarchy();
 	
@@ -44,19 +41,13 @@ public:
 	void testBlocksWorldOperatorSubgoaling();
 	
 	TEST(testBlocksWorldLookAhead,10000)
-	void testBlocksWorldLookAhead();
-	
-	TEST(testBlocksWorldLookAhead2, -1)
-	void testBlocksWorldLookAhead2();
-	
-	TEST(testBlocksWorldLookAheadRandom,10000)
-	void testBlocksWorldLookAheadRandom();
+	void testBlocksWorldLookAhead(); // MMA:  Unit test fails.  Expected equal values (40, 35) but was unequal.
 	
 	TEST(testArithmetic,80000)
 	void testArithmetic();
 	
 	TEST(testCountTest,80000)
-	void testCountTest();
+	void testCountTest(); // MMA:  Unit test fails.  Agent needs updating for EBC
 };
 
 

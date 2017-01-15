@@ -29,7 +29,7 @@ void AgentTest::testDefaultStopPhaseIsApply()
 
 void AgentTest::testSetStopPhaseSetsTheStopPhaseProperty()
 {
-	agent->ExecuteCommandLine("set-stop-phase --before --decision");
+	agent->ExecuteCommandLine("soar stop-phase decision");
 	assertEquals(std::get<0>(SoarHelper::getStopPhase(agent)), SoarHelper::StopPhase::DECISION);
 }
 
@@ -40,5 +40,5 @@ void AgentTest::testGetGoalStack()
 	const std::vector<std::string> gs = SoarHelper::getGoalStack(agent);
 	assertEquals(size_t(4), gs.size());
 	
-	assertEquals_vector(gs, std::vector<std::string>({"S1", "S5", "S9", "S13"}));
+	assertEquals_vector(gs, std::vector<std::string>({"S1", "S2", "S3", "S4"}));
 }

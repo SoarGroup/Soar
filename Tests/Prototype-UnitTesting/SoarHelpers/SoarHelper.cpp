@@ -45,10 +45,7 @@ int SoarHelper::getINNER_E_CYCLE_COUNT(sml::Agent* agent)
 
 int SoarHelper::getUserProductionCount(sml::Agent* agent)
 {
-	std::string chunkPrefix = agent->ExecuteCommandLine("chunk-name-format -p");
-	chunkPrefix = chunkPrefix.substr(8, 5);
-	
-	std::string rules = agent->ExecuteCommandLine("p");
+	std::string rules = agent->ExecuteCommandLine("p -u");
 	
 	std::stringstream ss(rules);
 	std::string line;
@@ -57,8 +54,7 @@ int SoarHelper::getUserProductionCount(sml::Agent* agent)
 	
 	while (std::getline(ss, line, '\n'))
 	{
-		if (line.find(chunkPrefix) != 0)
-			++count;
+		++count;
 	}
 	
 	return count;
@@ -66,10 +62,7 @@ int SoarHelper::getUserProductionCount(sml::Agent* agent)
 
 int SoarHelper::getChunkProductionCount(sml::Agent* agent)
 {
-	std::string chunkPrefix = agent->ExecuteCommandLine("chunk-name-format -p");
-	chunkPrefix = chunkPrefix.substr(8, 5);
-	
-	std::string rules = agent->ExecuteCommandLine("p");
+	std::string rules = agent->ExecuteCommandLine("p -c");
 	
 	std::stringstream ss(rules);
 	std::string line;
@@ -78,8 +71,7 @@ int SoarHelper::getChunkProductionCount(sml::Agent* agent)
 	
 	while (std::getline(ss, line, '\n'))
 	{
-		if (line.find(chunkPrefix) == 0)
-			++count;
+		++count;
 	}
 	
 	return count;

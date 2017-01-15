@@ -109,24 +109,6 @@ void SMemFunctionalTests::testLessNoSolution()
 	runTest("testLessNoSolution", 1);
 }
 
-void SMemFunctionalTests::testMirroring()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMirroring", 4);
-}
-
-void SMemFunctionalTests::testMergeAdd()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeAdd", 4);
-}
-
-void SMemFunctionalTests::testMergeNone()
-{
-	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
-	runTest("testMergeNone", 4);
-}
-
 void SMemFunctionalTests::testSimpleStoreMultivaluedAttribute()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);

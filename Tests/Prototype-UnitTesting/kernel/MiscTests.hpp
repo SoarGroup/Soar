@@ -16,7 +16,7 @@ class MiscTests : public FunctionalTestHarness
 public:
 	TEST_CATEGORY(MiscTests);
 	
-	TEST(testInstiationDeallocationStackOverflow, -1)
+//	TEST(testInstiationDeallocationStackOverflow, -1)
 	void testInstiationDeallocationStackOverflow();
 	TEST(test_clog, -1)
 	void test_clog();

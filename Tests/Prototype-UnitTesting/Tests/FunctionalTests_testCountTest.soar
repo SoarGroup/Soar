@@ -1,6 +1,7 @@
 # This is the source used for TestSoarPerformance in the UM 9.0.0
 # distribution of Soar. Courtesy of John Laird and Bob Marinier
 chunk always
+max-elaborations 1000000
 
 sp {elaborate*state*name
    (state <s> ^superstate.operator.name <name>)
@@ -438,6 +439,4 @@ sp {count-test*apply*test-complete
 -->
    (<ct> ^test-complete true)
 }
-
-max-elaborations 1000000
 

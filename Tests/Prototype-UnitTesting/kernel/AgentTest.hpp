@@ -35,10 +35,10 @@ public:
 	void testDefaultStopPhaseIsApply();
 	
 	TEST(testSetStopPhaseSetsTheStopPhaseProperty, -1)
-	void testSetStopPhaseSetsTheStopPhaseProperty();
+	void testSetStopPhaseSetsTheStopPhaseProperty(); // MMA:  Unit test fails.  Expected equal values (APPLYOUTPUT, DECISIONAPPLYOUTPUT) but was unequal
 	
 	TEST(testGetGoalStack, -1)
-	void testGetGoalStack();
+	void testGetGoalStack(); // MMA:  Unit test fails.  Expected equal values ([S1, S3, S5, S7], [S1, S5, S9, S13]) but was unequal
 };
 
 #endif /* AgentTest_cpp */
