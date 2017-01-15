@@ -96,9 +96,10 @@ void AliasTest::testDefaults()
 	std::vector< std::string > init;
 	init.push_back("init");
 	assertTrue(aliases->Expand(init));
-	assertTrue(init.size() == 1);
-	assertTrue(init.front() == "init-soar");
-	
+	assertTrue(init.size() == 2);
+	assertTrue(init[0] == "soar");
+	assertTrue(init[1] == "init");
+
 	std::vector< std::string > varprint;
 	varprint.push_back("varprint");
 	assertTrue(aliases->Expand(varprint));
@@ -132,20 +133,22 @@ void AliasTest::testDefaults()
 	std::vector< std::string > stop;
 	stop.push_back("stop");
 	assertTrue(aliases->Expand(stop));
-	assertTrue(stop.size() == 1);
-	assertTrue(stop.front() == "stop-soar");
+    assertTrue(stop.size() == 2);
+    assertTrue(stop[0] == "soar");
+    assertTrue(stop[1] == "stop");
 	
 	std::vector< std::string > interrupt;
 	interrupt.push_back("interrupt");
 	assertTrue(aliases->Expand(interrupt));
-	assertTrue(interrupt.size() == 1);
-	assertTrue(interrupt.front() == "stop-soar");
-	
+    assertTrue(interrupt.size() == 2);
+    assertTrue(interrupt[0] == "soar");
+    assertTrue(interrupt[1] == "stop");
+
 	std::vector< std::string > w;
 	w.push_back("w");
 	assertTrue(aliases->Expand(w));
 	assertTrue(w.size() == 1);
-	assertTrue(w.front() == "watch");
+	assertTrue(w.front() == "trace");
 }
 
 void AliasTest::testSimpleCommand()
