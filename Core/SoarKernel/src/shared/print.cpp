@@ -693,7 +693,9 @@ void print_wme(agent* thisAgent, wme* w)
 
     if (wma_enabled(thisAgent))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, " [%f]", wma_get_wme_activation(thisAgent, w, true));
+        char buf[51];
+        SNPRINTF(buf, 50, " [%0.2g]", wma_get_wme_activation(thisAgent, w, true));
+        thisAgent->outputManager->printa(thisAgent, buf);
     }
 
     if (w->acceptable)
