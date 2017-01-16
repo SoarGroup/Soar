@@ -125,11 +125,7 @@ public:
 	
 	TEST(testReadCSoarDB, -1)
 	void testReadCSoarDB();
-	
-	// CSoar doesn't use Garbage Collection
-//	TEST(testSimpleStoreGC, -1)
-//	void testSimpleStoreGC();
-	
+
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();
 };
