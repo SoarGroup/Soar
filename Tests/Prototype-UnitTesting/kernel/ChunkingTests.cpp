@@ -10,256 +10,177 @@
 #include "sml_ClientAnalyzedXML.h"
 #include "SoarHelper.hpp"
 
-void ChunkingTests::build_and_check_chunk(const std::string& name, int decisions, int expected_chunks)
-{
-	runTest(name, decisions);
-	
-	sml::ClientAnalyzedXML response;
-	
-	std::string sourceName = this->getCategoryName() + "_" + name + "_expected" + ".soar";
-	
-	std::string path = SoarHelper::GetResource(sourceName);
-	assertNonZeroSize_msg("Could not find test file '" + sourceName + "'", path);
-	
-	agent->ExecuteCommandLineXML(std::string("source \"" + path + "\"").c_str(), &response);
-	int sourced, excised, ignored;
-	ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
-	sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
-	excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
-	
-	std::ostringstream outStringStream("");
-	outStringStream << "--> Expected to ignore " << expected_chunks << ": Src = " << sourced << ", Exc = " << excised << ", Ign = " << ignored;
-	
-	assertEquals_msg(ignored, expected_chunks, outStringStream.str());
-}
+//#define SAVE_LOG_FILES
+//#define TURN_EXPLAINER_ON
+#define INIT_AFTER_RUN
 
 void ChunkingTests::setUp()
 {
-	FunctionalTestHarness::setUp();
+    FunctionalTestHarness::setUp();
+    configure_for_unit_tests();
 }
 
 void ChunkingTests::tearDown(bool caught)
 {
-	FunctionalTestHarness::tearDown(caught);
+    FunctionalTestHarness::tearDown(caught);
 }
 
-void ChunkingTests::testAll_Test_Types()
+void ChunkingTests::source(const std::string& pTestName)
 {
-	/*
-	 # Tests:
-	 # - All relational test types with integers
-	 # - Includes literal relational test and disjunction
-	 # - RHS actions that are variablized
-	 #-  RHS actions with literals that are the same symbols
-	 #   as were variablized.
-	 */
-	
-	build_and_check_chunk("testAll_Test_Types", 5, 1);
+    sml::ClientAnalyzedXML response;
+
+    std::string sourceName = this->getCategoryName() + "_" + pTestName + ".soar";
+    std::string lPath = SoarHelper::GetResource(sourceName);
+    assertNonZeroSize_msg("Could not find test file '" + sourceName + "'", lPath);
+    agent->ExecuteCommandLineXML(std::string("source \"" + lPath + "\"").c_str(), &response);
 }
 
-void ChunkingTests::testUngrounded_Relational_Constraint()
+void ChunkingTests::agent_command(const char* pCmd)
 {
-	build_and_check_chunk("testUngrounded_Relational_Constraint", 3, 1);
+    agent->ExecuteCommandLine(pCmd, true, false);
 }
 
-void ChunkingTests::testVrblzd_Constraint_on_Ungrounded()
+void ChunkingTests::start_log(const char* pTestName)
 {
-	build_and_check_chunk("testVrblzd_Constraint_on_Ungrounded", 4, 1);
+    std::string lCmdName("output log ");
+    lCmdName += pTestName;
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
 }
 
-void ChunkingTests::testLiteralization_with_Constraints()
+void ChunkingTests::continue_log(const char* pTestName)
 {
-	build_and_check_chunk("testLiteralization_with_Constraints", 3, 1);
+    std::string lCmdName("output log -A ");
+    lCmdName += pTestName;
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
 }
 
-void ChunkingTests::testConflated_Constants()
+void ChunkingTests::close_log()
 {
-	build_and_check_chunk("testConflated_Constants", 3, 1);
+    std::string lCmdName("output log -c");
+    #ifdef SAVE_LOG_FILES
+        agent_command(lCmdName.c_str());
+    #endif
 }
 
-void ChunkingTests::testSuperstate_Identity_Opaque()
+void ChunkingTests::save_chunks(const char* pTestName)
 {
-	build_and_check_chunk("testSuperstate_Identity_Opaque", 2, 1);
+    std::string lCmdName;
+    #ifdef SAVE_LOG_FILES
+        lCmdName = "output command-to-file unit_test_chunks_";
+        lCmdName += pTestName;
+        lCmdName += ".soar print -frc";
+    #else
+        lCmdName = "output command-to-file unit_test_chunks.soar print -fcr";
+    #endif
+    agent_command(lCmdName.c_str());
 }
 
-void ChunkingTests::testUngrounded_in_BT_Constraint()
+
+void ChunkingTests::save_chunks_internal(const char* pTestName)
 {
-	build_and_check_chunk("testUngrounded_in_BT_Constraint", 3, 2);
+    std::string lCmdName;
+    #ifdef SAVE_LOG_FILES
+        lCmdName = "output command-to-file unit_test_chunks_";
+        lCmdName += pTestName;
+        lCmdName += ".soar print -frci";
+    #else
+        lCmdName = "output command-to-file unit_test_chunks.soar print -fcri";
+    #endif
+    agent_command(lCmdName.c_str());
 }
 
-void ChunkingTests::testSTI_Variablization()
+
+void ChunkingTests::source_saved_chunks(const char* pTestName)
 {
-	build_and_check_chunk("testSTI_Variablization", 3, 1);
+    std::string lCmdName;
+    #ifdef SAVE_LOG_FILES
+        lCmdName = "source unit_test_chunks_";
+        lCmdName += pTestName;
+        lCmdName += ".soar";
+    #else
+        lCmdName = "source unit_test_chunks.soar";
+    #endif
+    agent_command(lCmdName.c_str());
 }
 
-void ChunkingTests::testSTI_Variablization_Same_Type()
+void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks)
 {
-	build_and_check_chunk("testSTI_Variablization_Same_Type", 3, 1);
-}
+    start_log(pTestName);
+    source(pTestName);
+    #ifdef TURN_EXPLAINER_ON
+        agent_command("explain all on");
+        agent_command("explain just on");
+    #endif
+    #ifdef SAVE_LOG_FILES
+        agent_command("trace -CbL 2");
+    #endif
+    agent->RunSelf(decisions, sml::sml_DECISION);
+    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+    #ifdef SAVE_LOG_FILES
+        agent_command("chunk ?");
+        agent_command("production firing-count");
+        agent_command("print -cf");
+    #endif
+    if (!directSourceChunks)
+    {
+        close_log();
+        save_chunks(pTestName);
+        tearDown(false);
+        setUp();
+        continue_log(pTestName);
+        source_saved_chunks(pTestName);
+    }
+    {
+        sml::ClientAnalyzedXML response;
 
-void ChunkingTests::testRHS_Unbound_Multivalue()
-{
-	build_and_check_chunk("testRHS_Unbound_Multivalue", 3, 2);
-}
+        std::string sourceName = this->getCategoryName() + "_" + pTestName + "_expected" + ".soar";
 
-void ChunkingTests::testRete_Bug_Deep_vs_Top()
-{
-	build_and_check_chunk("testRete_Bug_Deep_vs_Top", 3, 1);
-}
+        std::string lPath = SoarHelper::GetResource(sourceName);
+        assertNonZeroSize_msg("Could not find test file '" + sourceName + "'", lPath);
 
-void ChunkingTests::testRete_Bug_Deep_vs_Deep()
-{
-	build_and_check_chunk("testRete_Bug_Deep_vs_Deep", 3, 1);
-}
+        agent->ExecuteCommandLineXML(std::string("source \"" + lPath + "\"").c_str(), &response);
+        int sourced, excised, ignored;
+        ignored = response.GetArgInt(sml::sml_Names::kParamIgnoredProductionCount, -1);
+        sourced = response.GetArgInt(sml::sml_Names::kParamSourcedProductionCount, -1);
+        excised = response.GetArgInt(sml::sml_Names::kParamExcisedProductionCount, -1);
+        std::ostringstream outStringStream("");
+        if (ignored < expected_chunks)
+        {
+            outStringStream << "Only learned " << ignored << " of the expected " << expected_chunks << ". " << (sourced - ignored) << " were not what we expected.";
+            #ifdef SAVE_LOG_FILES
+            agent->ExecuteCommandLine((std::string("output log --add |") + outStringStream.str().c_str() + std::string("|")).c_str(), false, false);
+            agent_command("print -cf");
+            #endif
+        } else {
+            std::cout << " " << ignored << " ";
+            #ifdef SAVE_LOG_FILES
+            agent->ExecuteCommandLine("output log -a Success!!!  All expected rules were learned!!!", false, false);
+            #endif
+//            if (ignored > expected_chunks)
+//            {
+//                std::cout << std::endl << "Learned more chunks than expected! " << expected_chunks << " < " << ignored;
+//            }
+        }
 
-void ChunkingTests::testUngrounded_STIs()
-{
-	build_and_check_chunk("testUngrounded_STIs", 2, 1);
-}
+        assertTrue_msg(outStringStream.str().c_str(), ignored >= expected_chunks);
 
-void ChunkingTests::testUngrounded_Mixed()
-{
-	build_and_check_chunk("testUngrounded_Mixed", 3, 1);
-}
+    }
 
-void ChunkingTests::testUngrounded_STI_Promotion()
-{
-	build_and_check_chunk("testUngrounded_STI_Promotion", 3, 1);
-}
-
-void ChunkingTests::testNC_with_RC_and_Local_Variable()
-{
-	build_and_check_chunk("testNC_with_RC_and_Local_Variable", 3, 1);
-}
-
-void ChunkingTests::testNCC_Simple_Literals()
-{
-	build_and_check_chunk("testNCC_Simple_Literals", 3, 1);
-}
-
-void ChunkingTests::testNC_Simple_No_Exist()
-{
-	build_and_check_chunk("testNC_Simple_No_Exist", 3, 1);
-}
-
-void ChunkingTests::testNC_with_Relational_Constraint()
-{
-	build_and_check_chunk("testNC_with_Relational_Constraint", 3, 1);
-}
-
-void ChunkingTests::testNCC_2_Conds_Simple_Literals()
-{
-	build_and_check_chunk("testNCC_2_Conds_Simple_Literals", 3, 1);
-}
-
-void ChunkingTests::testNCC_with_Relational_Constraint()
-{
-	build_and_check_chunk("testNCC_with_Relational_Constraint", 3, 1);
-}
-
-void ChunkingTests::testNCC_Complex()
-{
-	build_and_check_chunk("testNCC_Complex", 3, 1);
-}
-
-void ChunkingTests::testNCC_from_Backtrace()
-{
-	build_and_check_chunk("testNCC_from_Backtrace", 3, 1);
-}
-
-void ChunkingTests::testRL_Variablization()
-{
-	build_and_check_chunk("testRL_Variablization", 2, 5);
-}
-
-void ChunkingTests::testBUNCPS_0()
-{
-	build_and_check_chunk("testBUNCPS_0", 5, 1);
-}
-
-void ChunkingTests::testProhibit_Fake_Instantiation_LTIs()
-{
-	build_and_check_chunk("testProhibit_Fake_Instantiation_LTIs", 6, 1);
-}
-
-void ChunkingTests::testBUNCPS_1()
-{
-	build_and_check_chunk("testBUNCPS_1", 5, 1);
-}
-
-void ChunkingTests::testBUNCPS_2()
-{
-	build_and_check_chunk("testBUNCPS_2", 5, 1);
-}
-
-void ChunkingTests::testBUNCPS_3()
-{
-	build_and_check_chunk("testBUNCPS_3", 4, 1);
-}
-
-void ChunkingTests::testMaintain_Instantiation_Specific_Identity()
-{
-	build_and_check_chunk("testMaintain_Instantiation_Specific_Identity", 2, 1);
-}
-
-void ChunkingTests::testBUNCPS_4()
-{
-	build_and_check_chunk("testBUNCPS_4", 5, 1);
-}
-
-void ChunkingTests::testJustification_RC_not_Ungrounded_STIs()
-{
-	build_and_check_chunk("testJustification_RC_not_Ungrounded_STIs", 6, 1);
-}
-
-void ChunkingTests::testBUNCPS_5()
-{
-	build_and_check_chunk("testBUNCPS_5", 6, 1);
-}
-
-void ChunkingTests::testBUNCPS_6_Four_Level()
-{
-	build_and_check_chunk("testBUNCPS_6_Four_Level", 4, 2);
-}
-
-void ChunkingTests::testBUNCPS_7_with_Constraints()
-{
-	build_and_check_chunk("testBUNCPS_7_with_Constraints", 4, 1);
-}
-
-void ChunkingTests::testSimple_Literalization()
-{
-	/* Literalization and constraint maintenance */
-	build_and_check_chunk("testSimple_Literalization", 3, 1);
-}
-
-void ChunkingTests::testConstraint_Prop_from_Base_Conds()
-{
-	/* Constraint maintenance from base conditions */
-	build_and_check_chunk("testConstraint_Prop_from_Base_Conds", 3, 1);
-}
-
-void ChunkingTests::testSimple_Constraint_Prop()
-{
-	build_and_check_chunk("testSimple_Constraint_Prop", 3, 1);
-}
-
-void ChunkingTests::testLiteralization_of_NC_and_NCC()
-{
-	build_and_check_chunk("testLiteralization_of_NC_and_NCC", 3, 1);
-}
-
-void ChunkingTests::testLiteralization_with_BT_Constraints()
-{
-	build_and_check_chunk("testLiteralization_with_BT_Constraints", 3, 1);
-}
-
-void ChunkingTests::testLiteralization_with_BT_Constraints2()
-{
-	build_and_check_chunk("testLiteralization_with_BT_Constraints2", 3, 2);
-}
-
-void ChunkingTests::testUnify_through_Two_Traces_Four_Deep()
-{
-	build_and_check_chunk("testUnify_through_Two_Traces_Four_Deep", 3, 1);
+    #ifdef INIT_AFTER_RUN
+        #ifdef SAVE_LOG_FILES
+            agent_command("output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+        #endif
+        agent_command("soar init");
+        agent_command("trace 0");
+        agent_command("run 100");
+        agent_command("trace 1");
+        agent_command("soar init");
+    #endif
+    close_log();
 }

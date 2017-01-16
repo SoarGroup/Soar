@@ -48,7 +48,6 @@ void SMemFunctionalTests::testMaxQuery()
 	runTest("testMax", 1);
 }
 
-
 void SMemFunctionalTests::testMaxMixedTypes()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
@@ -174,10 +173,10 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 
 //	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+6.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+5.000])\n\n";
 	result = agent->ExecuteCommandLine("print @");
-    std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+0.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^location @4 ^name foo [+1.000])\n(@4 ^x 2 ^y 3 ^z 1 [+2.000])\n";
+    std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+0.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^location @4 ^name foo [+1.000])\n(@4 ^x 2 ^y 3 ^z 1 [+2.000])\n ";
 
 	//assertTrue_msg(std::string("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid smem: \n") + expected + std::string("\n\nresult:\n\n" + result), result == expected);
-    assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency: Invalid Activation Values", result == expected);
+    assertTrue_msg("The activation values are not what we expected!", result == expected);
 }
 
 void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery()
@@ -191,10 +190,10 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 
 //	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+2.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+5.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+3.000])\n\n";
 	result = agent->ExecuteCommandLine("print @");
-    std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+0.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+1.000])\n(@4 ^location @3 ^name foo [+0.000])\n";
+    std::string expected = "(@1 ^x 1 ^y 2 ^z 3 [+0.000])\n(@2 ^location @1 ^name foo [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+1.000])\n(@4 ^location @3 ^name foo [+0.000])\n ";
 
     //assertTrue_msg(std::string("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid smem: \n") + expected + std::string("\n\nresult:\n\n" + result), result == expected);
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery: Invalid Activation Values", result == expected);
+    assertTrue_msg("The activation values are not what we expected!", result == expected);
 
 }
 
@@ -209,10 +208,10 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 
 //	std::string expected = "========================================\n            Semantic Memory             \n========================================\n(@L1 ^x 1 ^y 2 ^z 3 [+1.000])\n(@L2 ^x 2 ^y 3 ^z 1 [+2.000])\n(@X1 ^location @L1 ^name foo [+1.000])\n(@X2 ^location @L2 ^name foo [+2.000])\n\n";
 	result = agent->ExecuteCommandLine("print @");
-    std::string expected = "(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+1.000])\n(@4 ^location @3 ^name foo [+1.000])\n";
+    std::string expected = "(@1 ^location @2 ^name foo [+0.000])\n(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n(@3 ^x 2 ^y 3 ^z 1 [+1.000])\n(@4 ^location @3 ^name foo [+1.000])\n ";
 
     //assertTrue_msg(std::string("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid smem: \n") + expected + std::string("\n\nresult:\n\n" + result), result == expected);
-	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency: Invalid Activation Values", result == expected);
+	assertTrue_msg("The activation values are not what we expected!", result == expected);
 
 }
 

@@ -15,27 +15,11 @@ class EpMemFunctionalTests : public FunctionalTestHarness {
 public:
 	TEST_CATEGORY(EpMemFunctionalTests);
 	
-//	TEST(testCountEpMem, -1) // MMA Crashing: testReadCSoarDB: Assertion failed: (temp_stmt->get_status() == ready), function structure, file Core/SoarKernel/src/shared/soar_db.h, line 520
+//	TEST(testCountEpMem, -1) // Crashing: Assertion failed: (temp_stmt->get_status() == ready), function structure, file Core/SoarKernel/src/shared/soar_db.h, line 520
 	void testCountEpMem();
 	
 	TEST(testHamilton, -1)
 	void testHamilton();
-	
-	// CSoar does not have a filter command for epmem
-//	TEST(testFilterEpMem, -1)
-	void testFilterEpMem();
-	
-	// CSoar does not have an add command for epmem
-//	TEST(testAddCommand, -1)
-	void testAddCommand();
-	
-	// CSoar does not have inclusions for epmem
-//	TEST(testInclusions, -1)
-	void testInclusions();
-	
-	// CSoar does not have deliberate storage for epmem
-//	TEST(testDeliberateStorage, -1)
-	void testDeliberateStorage();
 	
 	TEST(testKB, -1)
 	void testKB();

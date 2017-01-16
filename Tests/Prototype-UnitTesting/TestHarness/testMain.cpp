@@ -66,28 +66,24 @@ int main(int argc, char** argv)
 	
 	std::vector<TestCategory*> tests;
 	
-	// DEFINE ALL TESTS HERE
-	
-	// Pass
 	TEST_DECLARATION(AgentTest);
 	TEST_DECLARATION(AliasTest);
 	TEST_DECLARATION(BasicTests);
+    TEST_DECLARATION(ChunkingTests);
 	TEST_DECLARATION(EpMemFunctionalTests);
 	TEST_DECLARATION(ElementXMLTest);
 	TEST_DECLARATION(FullTests);
-	//TEST_DECLARATION(FullTestsRemote);
 	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
 	TEST_DECLARATION(FullTestsClientThread);
+//    TEST_DECLARATION(FullTestsRemote);
 	TEST_DECLARATION(FunctionalTests);
 	TEST_DECLARATION(IOTests);
 	TEST_DECLARATION(MiscTests);
 	TEST_DECLARATION(MultiAgentTest);
 	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
+    TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(TokenizerTest);
 	TEST_DECLARATION(WmaFunctionalTests);
-
-	TEST_DECLARATION(SMemFunctionalTests);
-//	TEST_DECLARATION(ChunkingTests);
 	
 	size_t successCount = 0;
 	size_t testCount = 0;

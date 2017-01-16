@@ -20,167 +20,120 @@ void EpMemFunctionalTests::testCountEpMem()
 	runTest("testCountEpMem", 1693);
 }
 
-
 void EpMemFunctionalTests::testHamilton()
 {
 	runTest("testHamilton", 2);
 }
-
-
-void EpMemFunctionalTests::testFilterEpMem()
-{
-	runTest("testFilterEpMem", 103);
-}
-
-
-void EpMemFunctionalTests::testAddCommand()
-{
-	runTest("testAddCommand", 27);
-}
-
-void EpMemFunctionalTests::testInclusions()
-{
-	runTest("testInclusions", 5);
-}
-
-
-void EpMemFunctionalTests::testDeliberateStorage()
-{
-	runTest("testDeliberateStorage", 7);
-}
-
 
 void EpMemFunctionalTests::testKB()
 {
 	runTest("testKB", 246);
 }
 
-
 void EpMemFunctionalTests::testSingleStoreRetrieve()
 {
 	runTest("testSingleStoreRetrieve", 2);
 }
-
 
 void EpMemFunctionalTests::testOddEven()
 {
 	runTest("testOddEven", 12);
 }
 
-
 void EpMemFunctionalTests::testBeforeEpMem()
 {
 	runTest("testBeforeEpMem", 12);
 }
-
 
 void EpMemFunctionalTests::testAfterEpMem()
 {
 	runTest("testAfterEpMem", 12);
 }
 
-
 void EpMemFunctionalTests::testAllNegQueriesEpMem()
 {
 	runTest("testAllNegQueriesEpMem", 12);
 }
-
 
 void EpMemFunctionalTests::testBeforeAfterProhibitEpMem()
 {
 	runTest("testBeforeAfterProhibitEpMem", 12);
 }
 
-
 void EpMemFunctionalTests::testMaxDoublePrecision_Irrational()
 {
 	runTest("testMaxDoublePrecision-Irrational", 4);
 }
-
 
 void EpMemFunctionalTests::testMaxDoublePrecisionEpMem()
 {
 	runTest("testMaxDoublePrecisionEpMem", 4);
 }
 
-
 void EpMemFunctionalTests::testNegativeEpisode()
 {
 	runTest("testNegativeEpisode", 12);
 }
-
 
 void EpMemFunctionalTests::testNonExistingEpisode()
 {
 	runTest("testNonExistingEpisode", 12);
 }
 
-
 void EpMemFunctionalTests::testSimpleFloatEpMem()
 {
 	runTest("testSimpleFloatEpMem", 4);
 }
-
 
 void EpMemFunctionalTests::testCyclicQuery()
 {
 	runTest("testCyclicQuery", 4);
 }
 
-
 void EpMemFunctionalTests::testWMELength_OneCycle()
 {
 	runTest("testWMELength_OneCycle", 4);
 }
-
 
 void EpMemFunctionalTests::testWMELength_FiveCycle()
 {
 	runTest("testWMELength_FiveCycle", 7);
 }
 
-
 void EpMemFunctionalTests::testWMELength_InfiniteCycle()
 {
 	runTest("testWMELength_InfiniteCycle", 12);
 }
-
 
 void EpMemFunctionalTests::testWMELength_MultiCycle()
 {
 	runTest("testWMELength_MultiCycle", 12);
 }
 
-
 void EpMemFunctionalTests::testWMActivation_Balance0()
 {
 	runTest("testWMActivation_Balance0", 5);
 }
-
 
 void EpMemFunctionalTests::testEpMemEncodeOutput_NoWMA()
 {
 	runTest("testEpMemEncodeOutput_NoWMA", 4);
 }
 
-
 void EpMemFunctionalTests::testEpMemEncodeOutput_WMA()
 {
 	runTest("testEpMemEncodeOutput_WMA", 4);
 }
-
 
 void EpMemFunctionalTests::testEpMemEncodeSelection_NoWMA()
 {
 	runTest("testEpMemEncodeSelection_NoWMA", 5);
 }
 
-
 void EpMemFunctionalTests::testEpMemEncodeSelection_WMA()
 {
 	runTest("testEpMemEncodeSelection_WMA", 5);
 }
-
 
 void EpMemFunctionalTests::testEpMemYRemoval()
 {
