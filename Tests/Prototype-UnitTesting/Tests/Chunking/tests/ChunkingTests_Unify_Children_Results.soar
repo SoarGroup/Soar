@@ -1,0 +1,117 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {top-state*propose*init-agent
+  (state <s> ^superstate nil)
+-->
+  (<s> ^goal <goal>
+       ^object <obj1> <obj2>)
+  (<goal> ^finished false ^has-property <gp1> <gp2>)
+  (<gp1> ^name pantry)
+  (<gp2> ^type room)
+  (<obj1> ^name pantry ^type room)
+  (<obj2> ^type room)
+}
+
+sp {top-state*propose*find-matches
+  (state <s> ^superstate nil
+             ^goal.finished false)
+-->
+  (<s> ^operator <o> + =)
+  (<o> ^name find-matches-for-goal)
+}
+
+# Test is over when a results structure has been created on the top-state
+sp {top-state*propose*finish-test
+  (state <s> ^superstate nil
+             ^results <results>)
+-->
+  (<s> ^operator <o> + >)
+  (<o> ^name finish-test)
+}
+
+sp {top-state*apply*finish-test
+  (state <s> ^superstate nil
+             ^goal <goal>
+              ^operator.name finish-test)
+    (<goal> ^finished false)
+-->
+    
+    (<goal> ^finished false -)
+    (<goal> ^finished true +)
+    (interrupt)
+}
+
+sp {substate*elaborate*substate-results
+  (state <s> ^superstate <ss>)
+  (<ss> ^superstate nil
+        ^goal.finished false)
+  -->
+  (<s> ^substate-results <substate-results>)
+}
+
+sp {substate*elaborate*items*from*superstate
+  (state <s> ^superstate.superstate nil
+              ^superstate <ss>)
+  (<ss> ^goal <goal>
+        ^object <obj1>
+        - ^results)
+  (<goal> ^finished false
+          ^has-property <p1>
+          ^has-property {<p2> > <p1>})
+  -->
+  (<s> ^goal <goal>
+       ^object <obj1>
+       ^has-property <p1>
+       ^has-property <p2>)
+}
+
+# Each predicate is ground independently 
+sp {substate*propose*find-object-with-property
+  (state <s> ^superstate.superstate nil
+              ^has-property <desc>
+              -^found-property <desc>)
+-->
+  (<s> ^operator <o> + =)
+  (<o> ^name find-object-with-property
+        ^has-property <desc>)
+}
+
+# Here, we connect the argument description on the predicate
+#  to an object in the world, 
+# and create the grounded predicate on the results id
+sp {substate*apply*find-object-with-property
+  (state <s> ^superstate.superstate nil
+             ^operator <o>
+             ^object <obj>
+             ^substate-results <substate-results>)
+  (<o> ^name find-object-with-property
+       ^has-property <desc>)
+  (<desc> ^<attr> <val1>)
+  (<obj> ^<attr> <val1>)
+-->
+  (<s> ^found-property <desc>)
+  (<substate-results> ^match <match-info>)
+  (<match-info> ^has-property <desc> ^matched-object <obj> ^self-link-test <substate-results>)
+}
+
+sp {substate*propose*copy-result
+  (state <s> ^superstate.superstate nil
+              ^substate-results <substate-results>)
+-->
+  (<s> ^operator <o> + <)
+  (<o> ^name copy-result)
+}
+
+sp {substate*apply*copy-result
+  (state <s> ^superstate.superstate nil
+              ^operator.name copy-result
+              ^substate-results <substate-results>
+              ^superstate <ss>)
+  (<ss> ^operator <o>)
+-->
+  (<ss> ^results <substate-results>)
+}

@@ -1,0 +1,57 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.  Stopping.|)
+    (interrupt)
+}
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^sti <tp> 
+         ^sti2 <tp2>
+         ^constant 23
+         ^constant2 33)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^operator <o> +)}
+
+sp {apply
+    (state <s> ^operator
+               ^superstate <ss>)
+-->
+    (<s> ^substate-output <ungrounded>
+         ^substate-output-c 23
+         ^substate-output-c2 33)}
+
+sp {make
+    (state <s> ^operator
+               ^substate-output { <> <var-grounded> <> <var-grounded2> <var-ungrounded> }
+               ^substate-output-c { <> <var-grounded-c2> <var-ungrounded-c> }
+               ^substate-output-c2 { > <var-grounded-c> <var-ungrounded-c2> }
+               ^substate-output-c2 { > <var-ungrounded-c> <var-grounded-c2> }
+               ^superstate <ss>)
+    (<ss> ^sti <var-grounded>
+          ^sti2 { <> <var-grounded> <var-grounded2>}
+          ^constant <var-grounded-c>
+          ^constant2 <var-grounded-c2>)
+-->
+    (<ss> ^result1u <var-ungrounded>
+          ^result2 <var-grounded>
+          ^result3 <var-grounded2>
+          ^result4u <var-ungrounded-c>
+          ^result5u <var-ungrounded-c>
+          ^result6 <var-grounded-c>
+          ^result7 <var-grounded-c2>)
+    }
+

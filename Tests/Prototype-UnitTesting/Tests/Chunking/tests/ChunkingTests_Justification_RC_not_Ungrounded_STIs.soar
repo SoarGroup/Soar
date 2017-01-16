@@ -1,0 +1,79 @@
+# Test for bug that crashed Soar when chunker tried to clean up redundancies in justification and thought
+# ungrounded STIs were found when in realitiy it was simply not variablized.
+
+chunk always
+chunk only
+
+watch --learn 2
+
+sp {all*elaborate*name
+   (state <s1> ^superstate.operator.name <n2>)
+-->
+   (<s1> ^name <n2>)
+}
+sp {all*elaborate*topstate
+   (state <s> ^superstate.topstate <ts>)
+-->
+   (<s> ^topstate <ts>)
+}
+
+sp {all*elaborate*condition
+   (state <s> ^superstate.condition <co>)
+-->
+   (<s> ^condition <co>)
+}
+
+sp {init*state
+   (state <s1> ^superstate nil)
+-->
+   (<s1> ^object <n1> 
+        ^topstate <s1>
+        ^condition <c1>)
+   (<c1> ^name block ^result <n1> <n2>)
+   (<n1> ^id 6 ^type block ^num 10)
+   (<n2> ^id 5 ^type block ^num 8)
+}
+
+sp {turn-learning-on
+(state <s> ^superstate.superstate nil)
+-->
+    (force-learn <s>)
+    (<s> ^name learn-state)
+}
+
+sp {learn-state*propose*resolve-conditions
+(state <s> ^name learn-state
+          -^result)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name resolve-conditions)
+}
+
+
+sp {eval-condition*propose*condition-match
+    (state <s1> ^name resolve-conditions ^condition <c1>)
+    (<c1> ^name <word>) 
+    -->
+    (<s1> ^operator <o1> + =)
+    (<o1> ^name condition-match + ^type <word> +)
+}
+
+sp {condition-match*elaborate*matching-argument-object
+(state <s> ^name condition-match
+           ^topstate <ts>
+           ^superstate <ss>)
+    (<ss> ^condition <c> ^operator.type <word>) 
+    (<c> ^result <o>
+         ^result {<o2> <> <o>}) #crash because of this test
+    (<o> ^type <word> ^num <n> ^id <id>)
+-->
+    (<ts> ^result <o1>)
+    (<o1> ^object <o> ^object <o2>)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate.superstate.superstate nil)
+-->
+#    (success)
+    (interrupt)
+}

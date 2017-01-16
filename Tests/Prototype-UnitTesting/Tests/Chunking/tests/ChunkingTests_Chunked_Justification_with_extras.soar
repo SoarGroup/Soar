@@ -1,0 +1,145 @@
+chunk only
+smem --set learning on
+
+# Elaborate substate with superoperator name
+sp {elaborate*state*name*from*superoperator
+  (state <s> ^superstate.operator.name <name>)
+-->
+  (<s> ^name <name>)
+}
+
+# One red object, one blue object
+sp {top-state*elaborate*world
+  (state <s> ^superstate nil)
+-->
+  (<s> ^world <w>)
+  (<w> ^object <o1> <o2>)
+  (<o1> ^color red)
+  (<o2> ^color blue)
+}
+
+# The goal we want has the red object
+sp {top-state*elaborate*goal-info
+  (state <s> ^superstate nil)
+-->
+  (<s> ^goal-info.object.color red)
+}
+
+#### state no-change ####
+
+# Turn chunking on
+sp {state*no-change*force-learn
+  (state <s> ^impasse no-change
+             ^attribute state)
+-->
+  (force-learn <s>)
+}
+
+# propose create-goal
+sp {state*no-change*propose*create-goal
+  (state <s> ^impasse no-change
+             ^attribute state)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name create-goal)
+}
+
+sp {create-goal*elaborate*world
+  (state <s> ^name create-goal
+             ^superstate.superstate.world <w>)
+-->
+  (<s> ^world <w>)
+}
+
+sp {create-goal*elaborate*goal-info
+  (state <s> ^name create-goal
+             ^superstate.superstate.goal-info <info>)
+-->
+  (<s> ^goal-info <info>)
+}
+
+###### operator create-base ######
+# Creates the empty goal
+sp {create-goal*propose*create-base
+  (state <s> ^name create-goal
+             ^goal-info <info>
+             -^goal)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name create-base)
+}
+
+sp {create-goal*apply*create-base
+  (state <s> ^name create-goal
+             ^operator.name create-base)
+-->
+  (<s> ^goal <base>)
+}
+
+###### operator match-object ######
+# match the object on the goal-info 
+#   against the world and add the result
+#   to the goal
+
+sp {create-goal*propose*match-object
+  (state <s> ^name create-goal
+             ^goal <goal>)
+  (<goal> -^object)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name match-object)
+}
+
+sp {create-goal*apply*match-object
+  (state <s> ^name create-goal
+             ^operator.name match-object
+             ^goal <goal>
+             ^goal-info.object.<prop> <val>
+             ^world.object <wobj>)
+  (<wobj> ^<prop> <val>)
+-->
+  (<goal> ^object <wobj>)
+}
+
+###### operator copy-result ######
+# Once the goal is complete
+#   copy it to the topstate
+# This creates the result
+
+sp {create-goal*propose*copy-result
+  (state <s> ^name create-goal
+             ^goal.object)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name copy-result)
+}
+
+sp {create-goal*apply*copy-result
+  (state <s> ^name create-goal
+             ^operator.name copy-result
+             ^goal <goal>
+             ^superstate.superstate <ss>)
+-->
+  (<ss> ^goal <goal>)
+}
+
+###### operator finish #######
+# when the goal exists on top-state,
+#   pause the agent 
+# (also stops the state no-change)
+
+sp {top-state*propose*finish
+  (state <s> ^superstate nil
+             ^goal <goal>)
+-->
+  (<s> ^operator <o> +)
+  (<o> ^name finish)
+}
+
+sp {top-state*apply*finish
+  (state <s> ^superstate nil
+             ^operator.name finish)
+-->
+  (interrupt)
+}
+

@@ -1,0 +1,48 @@
+##!
+# @file
+#
+# @created mazzin 20160422
+srand 23
+chunk always
+
+# Tests for crash that occurred if some rule did not match in top state before a chunk is formed
+
+#sp {init-superstate
+#    (state <s> ^superstate nil)
+#-->
+#    (dont-learn <s>)
+#}
+#
+sp {test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (interrupt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^local <l>)
+    (<l> ^type substate)
+}
+
+sp {propose
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)
+}
+
+sp {make-chunk
+    (state <s> ^operator.name test
+               ^local <l>
+               ^superstate <ss>)
+  -{(<s> ^operator <o>)
+    (<o> ^name not-test
+         -^type)
+   }
+    (<l> ^type substate)
+-->
+    (<ss> ^test-done true)
+}

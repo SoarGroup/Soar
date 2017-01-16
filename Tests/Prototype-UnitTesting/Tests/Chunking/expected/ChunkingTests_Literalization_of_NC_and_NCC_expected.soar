@@ -1,0 +1,9 @@
+sp {answer*chunk*make-chunk*snc*t2-1
+    (state <s1> ^word object)
+    (<s1> -^prefix object)
+   -{ (<s1> ^suffix object)
+      (<s1> ^word { <> object <fantasy-object> })}
+    (<s1> ^superstate nil)
+    -->
+    (<s1> ^result object +)
+}

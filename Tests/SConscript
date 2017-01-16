@@ -5,7 +5,6 @@
 import os
 Import('env', 'InstallDir')
 
-# subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
 subdirs = ['TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
 
 if (os.sys.platform == 'win32' and env["MSVC_VERSION"] == "14.0") or (os.sys.platform != 'win32'):

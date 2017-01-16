@@ -1,0 +1,23 @@
+sp {answer*make-chunk*StateNoChange*t4-3
+    (state <s1> ^superstate nil ^word2 <c3> ^word <c2>
+          ^word { >= object <> not-object <= object <> <c3> <c1> })
+    -->
+    (<s1> ^result1 <c1> + ^result2 <c1> + ^result3 <c3> +)
+}
+
+sp {answer*make-chunk*StateNoChange*t4-2
+    (state <s2> ^superstate <s1>)
+    (<s1> ^superstate nil ^word2 <c3> ^word <c2>
+          ^word { >= object <> not-object <= object <> <c3> <c1> })
+    -->
+    (<s1> ^result1 <c1> + ^result2 <c1> + ^result3 <c3> +)
+}
+
+sp {answer*make-chunk*StateNoChange*t4-1
+    (state <s3> ^superstate <s2>)
+    (<s2> ^superstate <s1>)
+    (<s1> ^superstate nil ^word2 <c3> ^word <c2>
+          ^word { >= object <> not-object <= object <> <c3> <c1> })
+    -->
+    (<s1> ^result1 <c1> + ^result2 <c1> + ^result3 <c3> +)
+}

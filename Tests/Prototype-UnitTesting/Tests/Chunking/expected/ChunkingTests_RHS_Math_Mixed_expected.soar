@@ -1,0 +1,48 @@
+sp {answer*make-chunk-3*snc*t2-4
+    (state <s1> ^z 4)
+    (<s1> ^y 3)
+    (<s1> ^x 2)
+    (<s1> ^superstate nil)
+    (<s1> ^x <c1>)
+    -->
+    (<s1> ^result (|/| 9 <c1>) +)
+}
+
+sp {answer*make-chunk-4*snc*t2-3
+    (state <s1> ^z 4)
+    (<s1> ^y 3)
+    (<s1> ^x 2)
+    (<s1> ^superstate nil)
+    (<s1> ^c <c4>)
+    (<s1> ^b <c3>)
+    (<s1> ^a <c2>)
+    (<s1> ^x <c1>)
+    -->
+    (<s1> ^result (|/| 9 <c1>) +)
+    (<s1> ^x 2 +)
+    (<s1> ^y 3 +)
+    (<s1> ^z 4 +)
+    (<s1> ^other-sum 9 +)
+    (<s1> ^more-math (* 9 <c2> <c3> <c4>) +)
+}
+
+sp {answer*make-chunk-2*snc*t2-2
+    (state <s1> ^z 4)
+    (<s1> ^y 3)
+    (<s1> ^x 2)
+    (<s1> ^superstate nil)
+    -->
+    (<s1> ^x 2 +)
+    (<s1> ^y 3 +)
+    (<s1> ^z 4 +)
+    (<s1> ^sum 9 +)
+}
+
+sp {answer*make-chunk-1*snc*t2-1
+    (state <s1> ^superstate nil)
+    (<s1> ^z <c3>)
+    (<s1> ^y <c2>)
+    (<s1> ^x <c1>)
+    -->
+    (<s1> ^result (+ <c1> <c2> <c3>) +)
+}

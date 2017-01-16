@@ -1,0 +1,12 @@
+sp {answer*chunk*condition-match*elaborate*matching-argument-object*snc*t4-1
+    (state <s1> ^superstate nil)
+    (<s1> ^topstate <s2>)
+    (<s1> ^condition <c2>)
+    (<c2> ^arg <a1>)
+    (<a1> ^result <n1>)
+    (<n1> ^value <c1>)
+    (<c2> ^name { >= valuation <> 2 <c3> })
+    -->
+    (<s2> ^result <r1> +)
+    (<r1> ^<r2> <c1> +)
+}

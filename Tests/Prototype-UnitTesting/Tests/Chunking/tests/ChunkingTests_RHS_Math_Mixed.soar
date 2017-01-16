@@ -1,0 +1,73 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^x 2 ^y 3 ^z 4
+        ^a 5 ^b 6 ^c 7)
+}
+
+sp {propose
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^operator <o> +)
+}
+
+sp {apply-intermediate
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<ss> ^x <x> ^y <y> ^z <z>)
+-->
+   (<s> ^intermediate (+ <x> <y> <z>)
+        ^x2 <x> ^y2 <y> ^z2 <z>)
+   }
+
+sp {make-chunk-1
+   (state <s> ^operator <o>
+              ^superstate <ss>)
+   (<ss> ^x <x> ^y <y> ^z <z>)
+-->
+   (<ss> ^result (+ <x> <y> <z>))
+   }
+
+sp {make-chunk-2
+   (state <s> ^operator <o>
+              ^intermediate <a>
+              ^superstate <ss>
+              ^x2 <x2> ^y2 <y2> ^z2 <z2>)
+-->
+   (<ss> ^x <x2> ^y <y2> ^z <z2> ^sum <a>)
+   }
+
+sp {make-chunk-3
+   (state <s> ^operator <o>
+              ^intermediate <a>
+              ^superstate <ss>)
+   (<ss> ^x <x>)
+-->
+   (<ss> ^result (/ <a> <x>))
+   }
+
+sp {make-chunk-4
+   (state <s> ^operator <o>
+              ^intermediate <sum>
+              ^superstate <ss>
+              ^x2 <x2> ^y2 <y2> ^z2 <z2>)
+   (<ss> ^x <x> ^a <a> ^b <b> ^c <c>)
+-->
+   (<ss> ^result (/ <sum> <x>)
+         ^x <x2> ^y <y2> ^z <z2> 
+         ^other-sum <sum>
+         ^more-math (* <sum> <a> <b> <c>))
+}
+
+sp {apply*test-done
+   (state <s> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}

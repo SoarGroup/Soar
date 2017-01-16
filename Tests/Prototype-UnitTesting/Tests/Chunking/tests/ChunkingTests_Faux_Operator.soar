@@ -1,0 +1,77 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {propose-real-operator
+   (state <s> ^superstate nil
+             -^done)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name real-operator)
+}
+
+sp {apply-create-top-struct
+   (state <s> ^operator.name real-operator)
+-->
+   (<s> ^top-struct <ts>)
+}
+
+#sp {apply-faux-operator
+#   (state <s> ^operator.name real-operator
+#              ^top-struct <ts> )
+#-->
+#   (<ts> ^foo.name faux-operator)
+#   (<s> ^done true)
+#}
+#
+#sp {apply-faux-operator2
+#   (state <s> ^operator.name real-operator
+#              ^top-struct <ts> )
+#-->
+#   (<ts> ^operator.name faux-operator)
+#}
+
+sp {apply-faux-operator
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator.name real-operator
+         ^top-struct <ts> )
+-->
+   (<ts> ^foo.name faux-operator)
+   (<ss> ^done true)
+}
+
+sp {apply-faux-operator2
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator.name real-operator
+         ^top-struct <ts> )
+-->
+   (<ts> ^operator.name faux-operator)
+}            
+
+sp {propose-real-operator2
+   (state <s> ^superstate nil
+             ^done)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name real-operator ^sub-name clean)
+} 
+
+sp {apply-clean-top-struct
+   (state <s> ^operator.sub-name clean
+              ^top-struct <ts>)
+   (<ts> ^<attrib> <value>)
+-->
+#   (<ts> ^<attrib> <value> -)
+   (<s> ^done2 true)
+}
+ 
+sp {propose-real-operator3
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil ^done2 true)
+-->
+   (<ss> ^operator <o> + >)
+   (<o> ^name real-operator2)
+}
+    

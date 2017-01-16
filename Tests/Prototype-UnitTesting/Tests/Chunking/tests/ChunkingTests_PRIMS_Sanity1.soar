@@ -1,0 +1,3814 @@
+chunk only
+srand 23
+smem --set activation-mode base-level
+smem --set learning on
+
+# Procedural Memory
+
+
+sp {propose*ets*instruction*search*backup
+    (state <s> ^props-flag impasse)
+    (<s> ^name ets)
+    -->
+    (write |    Well, well, well. I see I've run out of instructions. Goodnight.| (crlf))
+    (write |    Well, well, well. I see I've run out of instructions. Goodnight.| (crlf))(halt)
+}
+
+sp {apply*ets*init
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name init-ets)
+    -->
+    (<s> ^name ets +)
+}
+
+sp {propose*ets*init
+    (state <s> ^superstate nil)
+    (<s> -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name init-ets +)
+}
+
+sp {apply*props*combine*search*merge*pair
+    (state <s> ^operator <o>)
+    (<o> ^name props-merge-pair)
+    (<s> ^new <new>)
+    (<o> ^sym2 <s2>)
+    (<o> ^sym1 <s1>)
+    (<s> ^attr <attr>)
+    (<o> ^literalize <l*1>)
+    (<new> ^lti-name <name>)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-instructions <ins>)
+    (<ins> ^<attr> <s2>)
+    (<ins> ^<attr> <s1>)
+    (<ss> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ss> ^props-to-combine <cc> +)
+    (<cc> ^attr <attr> +)
+    (<cc> ^sym1 <s1> +)
+    (<cc> ^sym2 <s2> +)
+    (<cc> ^newname <name> +)
+    (force-learn <s>)
+}
+
+sp {propose*props*combine*search*merge*pair
+    (state <s> ^name props-combine-search)
+    (<s> ^new <new>)
+    (<s> ^symbol2 <s2>)
+    (<s> ^symbol1 <s1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-merge-pair +)
+    (<o> ^sym1 <s1> +)
+    (<o> ^sym2 <s2> +)
+    (<o> ^literalize (concat <s1> <s2>) +)
+}
+
+sp {apply*props*combine*search*combine*pair
+    (state <s> ^operator <o>)
+    (<o> ^name props-combine-pair)
+    (<s> ^pair <p>)
+    (<p> ^attr <attr>)
+    (<s> ^attr <attr>)
+    (<p> ^prop-combine <snew>)
+    (<p> ^ins <ins>)
+    (<p> ^symbol2 <s2>)
+    (<p> ^symbol1 <s1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^new <p> +)
+    (<p> ^symbol1 <s1> -)
+    (<p> ^symbol2 <s2> -)
+    (<p> ^prop-combine <snew> -)
+    (<p> ^attr <attr> -)
+    (<p> ^ins <ins> -)
+    (<p> ^<attr> <s1> +)
+    (<p> ^<attr> <s2> +)
+    (<p> ^prop-type composite +)
+    (<p> ^lti-name <snew> +)
+    (<scmd> ^pre-store <p> +)
+}
+
+sp {propose*props*combine*search*combine*pair
+    (state <s> ^name props-combine-search)
+    (<s> -^new <n*1>)
+    (<s> ^pair <p>)
+    (<p> ^symbol2 <s2>)
+    (<p> ^symbol1 <s1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-combine-pair +)
+}
+
+sp {set*props*combine*search*cancel*reset
+    :o-support
+    (state <s> ^props-flag combine-prohibit)
+    (<s> ^name props-combine-search)
+    (<s> ^pair <p>)
+    (<s> ^attr <attr>)
+    (<s> ^ins <ins>)
+    (<s> ^symbol2 <s2>)
+    (<s> ^symbol1 <s1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^prohibit-list <pl>)
+    -->
+    (<s> ^pair <p> -)
+    (<s> ^symbol1 <s1> -)
+    (<s> ^symbol2 <s2> -)
+    (<s> ^attr <attr> -)
+    (<s> ^ins <ins> -)
+    (<s> ^props-flag combine-prohibit -)
+    (<pl> ^prohibit <p> +)
+}
+
+sp {set*props*combine*search*cancel
+    :o-support
+    (state <s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^superstate <ss>)
+    (<ss> ^name props-combine-search)
+    (<ss> ^pair <p>)
+    -->
+    (<ss> ^props-flag combine-prohibit +)
+    (write |       Prohibit iteration: retrieved invalid combo pair...| (crlf))
+}
+
+sp {apply*props*combine*search*retrieve*fail
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-combine-retrieve-fail)
+    (<s> ^lti-name <name>)
+    (<s> ^superstate <ss>)
+    -->
+    (<ss> ^props-quiescent <name> +)
+}
+
+sp {propose*props*combine*search*retrieve*fail
+    (state <s> ^name props-combine-search)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^failure <f*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-combine-retrieve-fail +)
+}
+
+sp {apply*props*combine*search*check*pair
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-combine-verify)
+    (<s> ^attr <attr>)
+    (<s> ^symbol2 <s2>)
+    (<s> ^symbol1 <s1>)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-instructions <ins>)
+    (<ins> ^<attr> <s2>)
+    (<ins> ^<attr> <s1>)
+    (<ss> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^props-flag combine-valid +)
+}
+
+sp {propose*props*combine*search*check*pair
+    (state <s> ^name props-combine-search)
+    (<s> -^props-flag combine-valid)
+    (<s> ^pair <p*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-combine-verify +)
+}
+
+sp {apply*props*combine*search*retrieve*pair
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-pair)
+    (<o> ^pair <pair>)
+    (<pair> ^attr <attr>)
+    (<pair> ^ins <ins>)
+    (<pair> ^symbol2 <s2>)
+    (<pair> ^symbol1 <s1>)
+    -->
+    (<s> ^pair <pair> +)
+    (<s> ^symbol1 <s1> +)
+    (<s> ^symbol2 <s2> +)
+    (<s> ^ins <ins> +)
+    (<s> ^attr <attr> +)
+}
+
+sp {propose*props*combine*search*retrieve*pair
+    (state <s> ^name props-combine-search)
+    (<s> -^pair <p*1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> ^success <cue>)
+    (<sres> ^retrieved <pair>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-retrieve-pair +)
+    (<o> ^pair <pair> +)
+}
+
+sp {apply*props*combine*search*query*pair
+    (state <s> ^name props-combine-search)
+    (<s> ^operator <o>)
+    (<o> ^name props-load-pair)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<q> ^symbol1 <sym1> +)
+    (<q> ^prop-combine <any> +)
+}
+
+sp {propose*props*combine*search*query*pair
+    (state <s> ^name props-combine-search)
+    (<s> -^pair <p*1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> -^{ << success failure >> <a*1> } <v*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-load-pair +)
+}
+
+sp {set*props*combine*search*cascade*prohibits
+    :o-support
+    (state <s> ^name props-combine-search)
+    (<s> ^smem <s*3>)
+    (<s*3> ^prohibit-list <pl>)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^smem <s*2>)
+    (<s*2> ^prohibit-list <p*1>)
+    (<p*1> ^prohibit <prbt>)
+    (<prbt> ^prop-combine <p*2>)
+    -->
+    (<pl> ^prohibit <prbt> +)
+}
+
+sp {elaborate*props*state*combine*search
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>)
+    (<o> ^name props-combine-search)
+    (<o> ^lti-name <symname>)
+    -->
+    (<s> ^name props-combine-search +)
+    (<s> ^lti-name <symname> +)
+}
+
+sp {apply*props*sub*buffer*fill*partial*result
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-buffer-finalize)
+    (<o> ^oldid2 <oldid2>)
+    (<o> ^val <val>)
+    (<o> ^oldattr2 <oldattr2>)
+    (<o> ^id2 <id2>)
+    (<o> ^id1 <id1>)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^ins <ins>)
+    -->
+    (<id1> ^<attr1> <val> +)
+    (<ins> ^end-id1 <id1> -)
+    (<ins> ^buff-id2 <id2> -)
+    (<ins> ^buff-attr2 <attr2> -)
+    (<ins> ^id2 <oldid2> -)
+    (<ins> ^id2 <id2> +)
+    (<ins> ^attr2 <oldattr2> -)
+    (<ins> ^attr2 <attr2> +)
+    (<ins> ^oldattr2 <oldattr2> +)
+}
+
+sp {propose*props*sub*buffer*fill*partial*result
+    (state <s> ^literalize <l>)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^buff-attr2 <attr2>)
+    (<ins> ^end-id1 <id1>)
+    (<ins> ^buff-id2 <id2>)
+    (<ins> ^oldattr1 <attr1>)
+    (<ins> ^id2 <oldid2>)
+    (<ins> ^attr2 <oldattr2>)
+    (<oldid2> ^<oldattr2> <val>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-buffer-finalize +)
+    (<o> ^ins <ins> +)
+    (<o> ^id1 <id1> +)
+    (<o> ^attr1 <attr1> +)
+    (<o> ^val <val> +)
+    (<o> ^id2 <id2> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^oldid2 <oldid2> +)
+    (<o> ^oldattr2 <oldattr2> +)
+}
+
+sp {apply*props*sub*return*result*add*buffer*arg1
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-return-result)
+    (<o> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type add)
+    (<u> ^sub <sub>)
+    (<sub> ^buff-chaining <bc>)
+    (<sub> ^curr-id <res>)
+    (<sub> ^curr-attr <curr>)
+    (<bc> ^id2 <nid2>)
+    (<bc> ^id1 <nid1>)
+    (<bc> ^attr2 <nattr2>)
+    (<bc> ^attr1 <nattr1>)
+    (<sym> ^attr1 <attr1>)
+    -->
+    (<sym> ^id1 <nid1> +)
+    (<sym> ^attr1 <attr1> -)
+    (<sym> ^attr1 <nattr1> +)
+    (<sym> ^end-id1 <res> +)
+    (<sym> ^buff-id2 <nid2> +)
+    (<sym> ^buff-attr2 <nattr2> +)
+    (<sym> ^oldattr1 <attr1> +)
+    (<sub> ^curr-attr <curr> -)
+    (<sub> ^buff-chaining <ins> -)
+    (<s> ^props-sub <u> -)
+}
+
+sp {apply*props*sub*return*result
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-return-result)
+    (<o> ^sub <sub>)
+    (<sub> -^buff-chaining <b*1>)
+    (<sub> ^curr-id <res>)
+    (<sub> ^curr-attr <attr>)
+    (<sub> ^target-arg <arg>)
+    (<o> ^sym <sym>)
+    (<o> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    -->
+    (<sym> ^<arg> <res> +)
+    (<sub> ^curr-attr <attr> -)
+    (<s> ^props-sub <u> -)
+}
+
+sp {propose*props*sub*return*result
+    (state <s> ^props-sub <u>)
+    (<u> ^iterated true)
+    (<u> ^sub <sub>)
+    (<sub> ^curr-id <c*1>)
+    (<sub> ^curr-attr <c*2>)
+    (<s> ^literalize <l>)
+    (<u> ^symbol <sym>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-return-result +)
+    (<o> ^literalize <l> +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+}
+
+sp {apply*props*sub*chain*iterate*fail
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-fail)
+    (<o> ^sym <sym>)
+    (<o> ^literalize <l*1>)
+    -->
+    (<sym> ^status fail +)
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug*unsupported
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^curr-id <id>)
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^name <n*1>)}
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr operator)
+    (<u> ^symbol <sym>)
+    (<sym> -^prop-type { << action negation >> <p*1> })
+    (<sym> -^id2 <i*2>)
+    (<sym> -^id1 <i*1>)
+    (<sub> ^target-attr <tattr>)
+    (<sym> ^<tattr> name)
+    (<sym> ^attr2 <a*1>)
+    (<s> ^const <const>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-fail +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize <l> +)
+    (write |WARNING: PROPS condition s.operator.name failed due to lack of said structure, but the value 
+    tested against uses a dot-notation chain. This is unsupported at this time and may cause infinite loops.| (crlf))
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug*name
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr operator)
+    (<u> ^symbol <sym>)
+    (<sym> -^prop-type { << action negation >> <p*1> })
+    (<sub> ^target-attr <tattr>)
+    (<sym> ^<tattr> name)
+    (<sym> ^id2 <const>)
+    (<s> ^const <const>)
+    (<node> ^chain-next <next-node>)
+    (<sub> ^curr-id <id>)
+    (<sym> ^attr2 <cnum>)
+    (<const> ^<cnum> <opname>)
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^name <opname>)}
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-fail +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize (concat <l> <cnum>) +)
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr operator)
+    (<u> ^symbol <sym>)
+    (<sym> -^prop-type { << action negation >> <p*1> })
+    (<node> ^chain-next <next-node>)
+    (<sub> ^curr-id <id>)
+    (<sub> ^target-attr <tattr>)
+    (<sym> ^<tattr> { <> name <attr> })
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^<attr> <a*1>)}
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-fail +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize (concat <l> <attr>) +)
+}
+
+sp {propose*props*sub*chain*iterate*fail
+    (state <s> ^literalize <l>)
+   -{ (<s> ^operator <o1> +)
+      (<o1> ^name props-sub-chain-iterate)}
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<u> ^symbol <sym>)
+    (<sym> -^prop-type { << action negation >> <p*1> })
+    (<sub> ^curr-id <id>)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr <attr>)
+    (<id> -^<attr> <a*1>)
+    (<s> ^rootstate <rs>)
+   -{ (<sub> ^curr-id <rs>)
+      (<node> ^chain-attr operator)}
+    (<node> ^chain-next <next-node>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-fail +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize (concat <l> <attr>) +)
+}
+
+sp {apply*props*sub*chain*iterate*special*success
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-special-success)
+    (<o> ^id <id>)
+    (<o> ^attr <attr>)
+    (<o> ^sym <sym>)
+    (<o> ^literalize <l*1>)
+    -->
+    (<sym> ^status success +)
+    (write |  *** Absence success: | <id> | ^| <attr> | already gone.| (crlf))
+}
+
+sp {propose*props*sub*chain*iterate*special*success
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> ^curr-id <id>)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr <attr>)
+    (<id> -^<attr> <a*1>)
+    (<node> ^chain-next <next-node>)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type { << negation remove >> <p*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-special-success +)
+    (<o> ^id <id> +)
+    (<o> ^attr <attr> +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize (concat <l> <attr>) +)
+}
+
+sp {apply*props*sub*chain*iterate*iterated
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-sub-chain-iterate)
+    (<s> ^props-sub <u>)
+    -->
+    (<u> ^iterated true +)
+}
+
+sp {apply*props*sub*chain*iterate*create
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^create-val <val>)
+    (<o> ^create-attr <attr>)
+    (<o> ^create-id <id>)
+    -->
+    (<id> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*buff
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^buff-val2 <val>)
+    (<o> ^buff-attr <attr>)
+    (<o> ^buff-id1 <id1>)
+    (<o> ^sub <sub>)
+    (<o> ^buff-id2 <id2>)
+    -->
+    (<sub> ^buff-chaining <new-inst> +)
+    (<new-inst> ^id1 <id1> +)
+    (<new-inst> ^attr1 <attr> +)
+    (<new-inst> ^id2 <id2> +)
+    (<new-inst> ^attr2 <attr> +)
+    (<id2> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*ops
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^ops-target <idn>)
+    (<o> ^ops-val <val>)
+    (<o> ^ops-attr <attr>)
+    (<o> ^ops-id <op>)
+    (<o> ^sym <sym>)
+    (<o> ^literalize <l>)
+    -->
+    (<sym> ^ops <ops> +)
+    (<ops> ^op <op> +)
+    (<ops> ^op-target <idn> +)
+    (<op> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*literalize
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^literalize <l>)
+    (<s> ^literalize { <> <l> <ol> })
+    -->
+    (<s> ^literalize <ol> -)
+    (<s> ^literalize <l> +)
+}
+
+sp {apply*props*sub*chain*iterate*attr
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^next-node <next-node>)
+    (<o> ^curr-node <node>)
+    (<o> ^sub <sub>)
+    (<sub> ^curr-attr <node>)
+    -->
+    (<sub> ^curr-attr <node> -)
+    (<sub> ^curr-attr <next-node> +)
+}
+
+sp {apply*props*sub*chain*iterate*id
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate)
+    (<o> ^next-id <next-id>)
+    (<o> ^curr-id <id>)
+    (<o> ^sub <sub>)
+    (<sub> ^curr-id <id>)
+    -->
+    (<sub> ^curr-id <id> -)
+    (<sub> ^curr-id <next-id> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*mid*new
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^buff-chaining <b*1>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^target-arg id1)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr props$const)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type add)
+    (<node> ^chain-next { <> done <next> })
+    (<next> ^chain-next <close>)
+    (<sub> ^curr-id <id>)
+    (<next> ^chain-attr <const-arg>)
+    (<s> ^const <const>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^name2 iterate-find-operator-mid-new +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+    (<o> ^curr-id <id> +)
+    (<o> ^next-id <new-id> +)
+    (<o> ^curr-node <node> +)
+    (<o> ^next-node <close> +)
+    (<o> ^literalize (concat <l> <const-arg>) +)
+    (<o> ^buff-id1 <id> +)
+    (<o> ^buff-id2 <new-id> +)
+    (<o> ^buff-attr operator +)
+    (<o> ^buff-val2 <op-new> +)
+    (<o> ^create-id <op-new> +)
+    (<o> ^create-attr name +)
+    (<o> ^create-val <name> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*mid*exists
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^buff-chaining <b*1>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^target-arg id1)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr props$const)
+    (<node> ^chain-next { <> done <next> })
+    (<next> ^chain-next <close>)
+    (<sub> ^curr-id <id>)
+    (<next> ^chain-attr <const-arg>)
+    (<u> ^symbol <sym>)
+    (<s> ^const <const>)
+    (<sym> ^prop-type { << add remove >> <p*1> })
+    (<id> ^operator <so> +)
+    (<so> ^name <name>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^name2 iterate-find-operator-mid-exists +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+    (<o> ^curr-id <id> +)
+    (<o> ^next-id <new-id> +)
+    (<o> ^curr-node <node> +)
+    (<o> ^next-node <close> +)
+    (<o> ^literalize (concat <l> <const-arg>) +)
+    (<o> ^buff-id1 <id> +)
+    (<o> ^buff-id2 <new-id> +)
+    (<o> ^buff-attr operator +)
+    (<o> ^buff-val2 <so> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*end
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-next done)
+    (<node> ^chain-attr props$const)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type proposal)
+    (<sub> ^curr-id <id>)
+    (<sub> ^target-attr <tattr>)
+    (<s> ^const <const>)
+    (<sym> ^<tattr> <const-arg>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+    (<o> ^curr-node <node> +)
+    (<o> ^next-node <next-node> +)
+    (<o> ^literalize (concat <l> <tattr> <const-arg>) +)
+    (<o> ^ops-id <op-new> +)
+    (<o> ^ops-attr name +)
+    (<o> ^ops-val <name> +)
+    (<o> ^ops-target <tattr> +)
+}
+
+sp {propose*props*sub*chain*iterate*create*extend
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type add)
+    (<sub> ^buff-chaining <b*1>)
+    (<sub> ^curr-id <id>)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-attr <attr>)
+    (<id> -^<attr> <a*1>)
+    (<node> ^chain-next <next-node>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+    (<o> ^literalize (concat <l> <attr>) +)
+    (<o> ^create-id <id> +)
+    (<o> ^create-attr <attr> +)
+    (<o> ^create-val <new> +)
+}
+
+sp {propose*props*sub*chain*iterate*create*chain
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^buff-chaining <b*1>)
+    (<sub> -^curr-id props$rootstate)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<u> ^symbol <sym>)
+    (<sym> ^prop-type add)
+    (<sub> ^curr-id <id>)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-next <next-node>)
+    (<node> ^chain-attr { <> props$const <attr> })
+    (<sym> ^attr2 <oldattr>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^sub <sub> +)
+    (<o> ^sym <sym> +)
+    (<o> ^curr-id <id> +)
+    (<o> ^next-id <new> +)
+    (<o> ^curr-node <node> +)
+    (<o> ^next-node <next-node> +)
+    (<o> ^literalize (concat <l> <attr> <oldattr>) +)
+    (<o> ^buff-id1 <id> +)
+    (<o> ^buff-id2 <new-id> +)
+    (<o> ^buff-attr <attr> +)
+    (<o> ^buff-val2 <new> +)
+    (write |  *** Buffer creating wme: | <id> | ^| <attr> | | <new> (crlf))
+}
+
+sp {propose*props*sub*chain*iterate*normal
+    (state <s> ^literalize <l>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^status fail)
+    (<sub> -^status success)
+    (<sub> -^curr-attr done)
+    (<sub> ^curr-id <id>)
+    (<sub> ^curr-attr <node>)
+    (<node> ^chain-next <next-node>)
+    (<node> ^chain-attr <attr>)
+    (<id> ^<attr> <next-id>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +)
+    (<o> ^sub <sub> +)
+    (<o> ^curr-id <id> +)
+    (<o> ^next-id <next-id> +)
+    (<o> ^curr-node <node> +)
+    (<o> ^next-node <next-node> +)
+    (<o> ^literalize (concat <l> <attr>) +)
+}
+
+sp {prefer*props*sub*iterate*normal
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-sub-chain-iterate)
+    (<s> ^operator <o1> +)
+    (<o1> -^buff-id1 <b*1>)
+    (<o1> ^name props-sub-chain-iterate)
+    (<o2> ^buff-id1 <b*2>)
+    (<s> ^props-sub <u>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {apply*props*sub*replace*keywords*rootstate
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-replace-keywords)
+    (<s> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<o> ^rootstate <rs>)
+    (<sub> ^<attr> props$rootstate)
+    -->
+    (<sub> ^<attr> props$rootstate -)
+    (<sub> ^<attr> <rs> +)
+}
+
+sp {propose*props*sub*replace*keywords
+    (state <s> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<s> ^rootstate <rs>)
+    (<sub> ^<att> props$rootstate)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<s> ^operator <o> =)
+    (<o> ^name props-sub-replace-keywords +)
+    (<o> ^rootstate <rs> +)
+}
+
+sp {apply*props*sub*chain*receive*replace
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-receive)
+    (<o> ^oldsub <sub1>)
+    (<s> ^props-sub <u>)
+    (<u> ^sub <sub1>)
+    (<o> ^result <sub2>)
+    -->
+    (<u> ^sub <sub1> -)
+    (<sub2> ^curr-attr <sub2> +)
+}
+
+sp {apply*props*sub*chain*received*all
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-receive)
+    (<s> ^props-sub <u>)
+    (<o> ^result <sub>)
+    (<sub> ^depth { <= 2 <d*1> })
+    -->
+    (<sub> ^curr-attr <sub> +)
+}
+
+sp {apply*props*sub*chain*receive
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-receive)
+    (<s> ^literalize <ol>)
+    (<s> ^props-sub <u>)
+    (<o> ^result <sub>)
+    (<sub> ^chain-attr <attr>)
+    -->
+    (<u> ^sub <sub> +)
+    (<s> ^literalize <ol> -)
+    (<s> ^literalize (concat <attr>) +)
+}
+
+sp {propose*props*sub*chain*receive*depth
+    (state <s> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<r*1> ^retrieved { <> <sub> <lti> })
+    (<smem> ^command <c*1>)
+    (<c*1> ^retrieve <r*2>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-receive +)
+    (<o> ^result <lti> +)
+    (<o> ^oldsub <sub> +)
+}
+
+sp {propose*props*sub*chain*receive*normal
+    (state <s> ^props-sub <u>)
+    (<s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<r*1> ^retrieved <lti>)
+    (<smem> ^command <c*1>)
+    (<c*1> ^query <q*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-receive +)
+    (<o> ^result <lti> +)
+}
+
+sp {apply*props*sub*chain*load*depth
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-depth)
+    (<o> ^sub <sub>)
+    (<sub> ^depth <d>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^retrieve <sub> +)
+    (<scmd> ^depth <d> +)
+}
+
+sp {propose*props*sub*chain*load*depth
+    (state <s> ^props-sub <u>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^{ << success failure >> <a*1> } <v*1>)}
+    (<u> ^sub <sub>)
+    (<sub> -^curr-attr <c*1>)
+    (<sub> ^depth { > 2 <d*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-depth +)
+    (<o> ^sub <sub> +)
+}
+
+sp {apply*props*sub*chain*query
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-query)
+    (<o> ^sub <symname>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<scmd> ^depth 2 +)
+    (<q> ^lti-name <symname> +)
+}
+
+sp {propose*props*sub*chain*query
+    (state <s> ^props-sub <u>)
+    (<u> -^sub <s*2>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    (<u> ^subname <symname>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-sub-chain-query +)
+    (<o> ^sub <symname> +)
+}
+
+sp {prefer*props*sub*chain*iterate*find*op*exists
+    (state <s> ^operator <o2> +)
+    (<o2> ^name2 iterate-find-operator-mid-new)
+    (<s> ^operator <o1> +)
+    (<o1> ^name2 iterate-find-operator-mid-exists)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*iterate
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-sub-return-result)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-sub-chain-iterate)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*fail
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-sub-chain-fail)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-sub-chain-iterate props-sub-return-result >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*replace*keywords
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-sub-replace-keywords)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-sub-chain-iterate props-sub-return-result >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*load
+    (state <s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-sub-replace-keywords props-sub-chain-iterate >> <n*2> })
+    (<s> ^operator <o1> +)
+    (<o1>
+          ^name { << props-sub-chain-query props-sub-chain-depth props-sub-chain-receive >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {elaborate*props*sub*target*attr1
+    (state <s1> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<sub> ^target-arg id2)
+    -->
+    (<sub> ^target-attr attr2 +)
+}
+
+sp {elaborate*props*sub*target*attr2
+    (state <s1> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<sub> ^target-arg id1)
+    -->
+    (<sub> ^target-attr attr1 +)
+}
+
+sp {elaborate*props*sub*class*action
+    (state <s1> ^props-instructions <p1>)
+    (<p1> ^prop-type { << add remove proposal >> <c1> })
+    (<p1> ^{ << sub1 sub2 >> <a*1> } <c2>)
+    -->
+    (<p1> ^prop-type action +)
+}
+
+sp {elaborate*props*sub*class*proposal
+    (state <s1> ^props-instructions <p1>)
+    (<p1>
+          ^prop-type { << acceptable indifferent better worse require >> <c1> })
+    (<p1> ^{ << sub1 sub2 >> <a*1> } <c2>)
+    -->
+    (<p1> ^prop-type proposal +)
+}
+
+sp {apply*props*count*return*count
+    (state <s> ^operator <o>)
+    (<o> ^name props-count-return-count)
+    (<s> ^container <cont>)
+    (<o> ^total <tot>)
+    -->
+    (<cont> ^total <tot> +)
+}
+
+sp {propose*props*count*return*count
+    (state <s> ^name props-count-instruction-parts)
+   -{ (<s> ^items <i*1>)
+      (<i*1> ^{ << condition action >> <a*1> } <sym>)
+      (<s> -^counted <sym>)}
+    (<s> ^total <tot>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-count-return-count +)
+    (<o> ^total <tot> +)
+}
+
+sp {apply*props*count*iterate
+    (state <s> ^operator <o>)
+    (<o> ^name props-count-symbol)
+    (<s> ^total <tot>)
+    (<o> ^sym <sym>)
+    -->
+    (<s> ^total <tot> -)
+    (<s> ^total (+ 1 <tot>) +)
+    (<s> ^counted <sym> +)
+}
+
+sp {propose*props*count*iterate
+    (state <s> ^name props-count-instruction-parts)
+    (<s> ^items <ins>)
+    (<ins> ^{ << condition action >> <a*1> } <sym>)
+    (<s> -^counted <sym>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-count-symbol +)
+    (<o> ^sym <sym> +)
+}
+
+sp {set*props*state*count
+    :o-support
+    (state <s> ^superstate <s*1>)
+    (<s> -^total <t*1>)
+    (<s*1> ^operator <oo>)
+    (<oo> ^name props-count-instruction-parts)
+    (<oo> ^container <cont>)
+    (<oo> ^items <ins>)
+    -->
+    (<s> ^name props-count-instruction-parts +)
+    (<s> ^items <ins> +)
+    (<s> ^container <cont> +)
+    (<s> ^total 0 +)
+}
+
+sp {elaborate*props*instruction*learning*on*combo*top
+    (state <s> ^name instruction)
+    (<s> ^instructions <ins>)
+    (<ins> ^prop-type instruction-rhs)
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-begin-instructions-query)
+    (<s> ^evalstate <es>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    (<ins> -^{ << condition action >> <a*2> } { <> <s1> <s2> })
+    -->
+    (force-learn <es>)
+    (force-learn <es>)(write |*** LEARNING PRODUCTION | <es> | ***| (crlf))
+}
+
+sp {apply*props*success*action*require
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^ops <ops>)
+    (<ops> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type require)
+    (<ops> ^op <op1>)
+    (<i> ^id1 <id1>)
+    -->
+    (<id1> ^operator <op1> +)
+    (<id1> ^operator <op1> !)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*worst
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<o> ^item <i>)
+    (<i> -^attr2 <a*2>)
+    (<i> ^ops <ops>)
+    (<ops> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type worse)
+    (<ops> ^op <op1>)
+    (<s> ^props-buffer-copy <bff>)
+    (<i> ^id1 <id1>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    -->
+    (<id1> ^operator <op1> +)
+    (<id1> ^operator <op1> <)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*best
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<o> ^item <i>)
+    (<i> -^attr2 <a*2>)
+    (<i> ^ops <ops>)
+    (<ops> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type better)
+    (<ops> ^op <op1>)
+    (<s> ^props-buffer-copy <bff>)
+    (<i> ^id1 <id1>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    -->
+    (<id1> ^operator <op1> +)
+    (<id1> ^operator <op1> >)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*worse
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^ops <ops2>)
+    (<ops2> ^op-target attr2)
+    (<i> ^ops <ops1>)
+    (<ops1> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type worse)
+    (<ops2> ^op <op2>)
+    (<i> ^id2 <id2>)
+    (<id2> ^operator <op2> +)
+    (<ops1> ^op <op1>)
+    (<i> ^id1 <id1>)
+    (<id1> ^operator <op1> +)
+    -->
+    (<id1> ^operator <op1> < <op2>)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*better
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^ops <ops2>)
+    (<ops2> ^op-target attr2)
+    (<i> ^ops <ops1>)
+    (<ops1> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type better)
+    (<ops2> ^op <op2>)
+    (<i> ^id2 <id2>)
+    (<id2> ^operator <op2> +)
+    (<ops1> ^op <op1>)
+    (<i> ^id1 <id1>)
+    (<id1> ^operator <op1> +)
+    -->
+    (<id1> ^operator <op1> > <op2>)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*indifferent
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^ops <ops>)
+    (<ops> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type acceptable)
+    (<ops> ^op <o1>)
+    (<i> ^id1 <id1>)
+    -->
+    (<id1> ^operator <o1> +)
+    (<id1> ^operator <o1> =)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*acceptable
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<o> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^ops <ops>)
+    (<ops> ^op-target attr1)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type acceptable)
+    (<ops> ^op <o1>)
+    (<i> ^id1 <id1>)
+    (<o1> ^name <op-name>)
+   -{ (<o> ^item <ii>)
+      (<ii> ^id1 <id1>)
+      (<ii> ^ops <o*1>)
+      (<o*1> ^op <o*2>)
+      (<o*2> ^name <op-name>)
+      (<ii> ^action <a*2>)
+      (<a*2> ^prop-type { << indifferent better worse require >> <p*1> })}
+    -->
+    (<id1> ^operator <o1> +)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*remove
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<s> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type remove)
+    (<i> ^id1 <id1>)
+    (<i> ^attr1 <attr1>)
+    (<i> ^literalize <l*1>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<id1> ^<attr1> <val> -)
+    (<rs> ^props-blink true +)
+    (<rs> ^props-active-rule <name> +)
+    (<ins> ^props-result success +)
+}
+
+sp {apply*props*success*action*add*new
+    (state <s> ^operator <o>)
+    (<o> ^name props-success-apply)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^rule-name <name>)
+    (<s> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    (<o> ^item <i>)
+    (<i> ^action <a*1>)
+    (<a*1> ^prop-type add)
+    (<i> ^id2 <id2>)
+    (<i> ^id1 <id1>)
+    (<i> ^attr2 <attr2>)
+    (<i> ^attr1 <attr1>)
+    (<i> ^literalize <l*1>)
+    (<id2> ^<attr2> <val>)
+    -->
+    (<id1> ^<attr1> <val> +)
+    (<rs> ^props-blink true +)
+    (<rs> ^props-active-rule <name> +)
+    (<ins> ^props-result success +)
+}
+
+sp {elaborate*props*success*apply*ground*ids*ops
+    (state <s> ^operator <o> +)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<bff> ^action <ins>)
+    (<o> ^item <i>)
+    (<i> ^action <ins>)
+    (<ins> ^ops <ops>)
+    -->
+    (<i> ^ops <ops> +)
+}
+
+sp {elaborate*props*success*apply*literalize*2arg
+    (state <s> ^operator <o> +)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<bff> ^action <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^item <i> +)
+    (<i> ^action <ins> +)
+    (<i> ^id1 <id1> +)
+    (<i> ^id2 <id2> +)
+    (<i> ^attr1 <attr1> +)
+    (<i> ^attr2 <attr2> +)
+    (<i> ^literalize (concat <attr1> <attr2>) +)
+}
+
+sp {elaborate*props*success*apply*literalize*1arg
+    (state <s> ^operator <o> +)
+    (<o> ^name props-success-apply)
+    (<s> ^props-buffer-copy <bff>)
+    (<bff> ^action <ins>)
+    (<ins> -^attr2 <attr2>)
+    (<ins> ^id1 <id1>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^item <i> +)
+    (<i> ^action <ins> +)
+    (<i> ^attr1 <attr1> +)
+    (<i> ^id1 <id1> +)
+    (<i> ^literalize (concat <attr1>) +)
+}
+
+sp {propose*props*success*apply*buffer
+    (state <s> ^props-flag flushing)
+    (<s> ^rootstate <rs>)
+    (<s> ^instructions <ins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-success-apply +)
+    (<o> ^rootstate <rs> +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*success*clean*buffer*op*transfer
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-success)
+    (<s> ^props-buffer <bff>)
+    (<bff> ^action <a2>)
+    (<a2> ^ops <o*3>)
+    (<o*3> ^op <op2>)
+    (<bff> ^action { <> <a2> <a1> })
+    (<a1> ^ops <o*2>)
+    (<o*2> ^op <op1>)
+    (<op2> ^name <name>)
+    (<op1> ^name <name>)
+    (<a1>
+          ^prop-type { << acceptable indifferent better worse require >> <p*1> })
+    (<op2> ^{ <> name <attr> } <val>)
+    -->
+    (<op1> ^<attr> <val> +)
+}
+
+sp {apply*props*success*clean*buffer*op*convert
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-success)
+    (<s> ^props-buffer <bff>)
+    (<bff> ^action <a>)
+    (<a> -^buff-id2 <b*1>)
+    (<a> ^attr2 operator)
+    (<a> ^attr1 operator)
+    (<a> ^id2 <id2>)
+    (<id2> ^operator <onew>)
+    (<id2> ^{ <> operator <other> } <val>)
+    -->
+    (<a> ^ops <ops> +)
+    (<ops> ^op <onew> +)
+    (<ops> ^op-target attr1 +)
+    (<onew> ^<other> <val> +)
+}
+
+sp {apply*props*success*clean*buffer*store
+    (state <s> ^props-buffer-copy <p*1>)
+   -{ (<s> ^props-buffer <p*2>)
+      (<p*2> ^action <a*1>)}
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-success-buffer-flush)
+    (<s> ^evalstate <es>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^store <bff> +)
+    (<s> ^props-flag flushing +)
+}
+
+sp {apply*props*success*clean*buffer*transfer
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-success-buffer-flush)
+    (<s> ^props-buffer-copy <bc>)
+    (<s> ^props-buffer <bff>)
+    (<bff> ^action <a>)
+    -->
+    (<bff> ^action <a> -)
+    (<bc> ^action <a> +)
+}
+
+sp {propose*props*success*clean*buffer
+    (state <s> ^name instruction)
+    (<s> ^cancel <c*1>)
+    (<s> ^props-buffer-copy <p*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-success-buffer-flush +)
+}
+
+sp {apply*props*result*affirm*success*lhs*opnochange
+    (state <s> ^instructions <ins>)
+    (<ins> ^prop-type instruction-lhs)
+    (<s> ^superstate <ss>)
+    (<ss> ^impasse no-change)
+    (<ss> ^attribute operator)
+    (<s> ^evalstate <es>)
+    (<ss> ^superstate <es>)
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-success)
+    -->
+    (<ins> ^props-result success +)
+    (<ss> ^props-blink true +)
+    (<ss> ^props-flag reset-prohibits +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*result*affirm*success*lhs
+    (state <s> ^instructions <ins>)
+    (<ins> ^prop-type instruction-lhs)
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-success)
+    (<s> ^evalstate <es>)
+    (<s> ^superstate <ss>)
+   -{ (<ss> ^impasse no-change)
+      (<ss> ^attribute operator)
+      (<ss> ^superstate <es>)}
+    (<ins> ^name <name>)
+    -->
+    (<ins> ^props-result success +)
+    (<es> ^props-blink true +)
+    (<es> ^props-flag reset-prohibits +)
+    (<es> ^rule-name <name> +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*result*affirm*success
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-success)
+    (<s> ^props-buffer <bff>)
+    (<bff> ^action <a*1>)
+    -->
+    (<s> ^props-flag flushing +)
+    (<s> ^props-buffer-copy <bff> +)
+}
+
+sp {propose*props*result*affirm*success*opnochange
+    (state <s> ^evals <evals>)
+    (<s> -^props-flag apply-actions)
+    (<s> ^superstate <ss>)
+    (<ss> ^impasse no-change)
+    (<ss> ^attribute operator)
+    (<s> ^evalstate <sss>)
+    (<ss> ^superstate <sss>)
+    (<evals> ^total { > 0 <tval> })
+    (<evals> ^passed { >= <tval> <p*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-result-affirm-success +)
+}
+
+sp {propose*props*result*affirm*success
+    (state <s> ^evals <evals>)
+    (<s> -^props-flag apply-actions)
+    (<s> ^evalstate <ss>)
+    (<s> ^superstate <ss>)
+    (<evals> ^total { > 0 <tval> })
+    (<evals> ^passed { >= <tval> <p*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-result-affirm-success +)
+}
+
+sp {elaborate*props*result*affirm*failure
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^status fail)
+    (<ins> ^prop-type { << instruction-lhs instruction-rhs >> <p*1> })
+    -->
+    (<ins> ^props-result failure +)
+}
+
+sp {apply*props*symbol*require
+    (state <s> ^operator <o>)
+    (<o> ^name prop-require)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*worst
+    (state <s> ^operator <o>)
+    (<o> ^name prop-worst)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*best
+    (state <s> ^operator <o>)
+    (<o> ^name prop-best)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*worse
+    (state <s> ^operator <o>)
+    (<o> ^name prop-worse)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*better
+    (state <s> ^operator <o>)
+    (<o> ^name prop-better)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*indifferent
+    (state <s> ^operator <o>)
+    (<o> ^name prop-indifferent)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+    (<ins> ^prop-type indifferent +)
+}
+
+sp {apply*props*symbol*acceptable
+    (state <s> ^operator <o>)
+    (<o> ^name prop-acceptable)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*remove
+    (state <s> ^operator <o>)
+    (<o> ^name prop-remove)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*add
+    (state <s> ^operator <o>)
+    (<o> -^name prop-acceptable)
+    (<o> ^name prop-add)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<s> ^props-buffer <bff>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success +)
+    (<ins> ^literalize none +)
+}
+
+sp {apply*props*symbol*existence*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-existence)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> -^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*existence
+    (state <s> ^operator <o>)
+    (<o> ^name prop-existence)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val>) +)
+}
+
+sp {apply*props*symbol*negation*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-negation)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*negation
+    (state <s> ^operator <o>)
+    (<o> ^name prop-negation)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> -^<attr1> <val>)
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <attr1>) +)
+}
+
+sp {apply*props*symbol*greater*equal*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-equal)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { >= <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*greater*equal
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-equal)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { <= <val1> <val2> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*less*equal*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-equal)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { <= <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*less*equal
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-equal)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { >= <val1> <val2> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*greater*than*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-than)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { > <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*greater*than
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-than)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { < <val1> <val2> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*less*than*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-than)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { < <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*less*than
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-than)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { > <val1> <val2> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*teq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-teq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> -^<attr2> { <=> <val1> <val2> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*teq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-teq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <=> <val2> <val1> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*neq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-neq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*neq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-neq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <> <val2> <val1> })
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val2>) +)
+}
+
+sp {apply*props*symbol*eq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-eq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <> <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*eq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-eq)
+    (<o> ^attr2 <attr2>)
+    (<o> ^attr1 <attr1>)
+    (<o> ^literalize <l*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^id1 <id1>)
+    (<id2> ^<attr2> <val>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status success +)
+    (<ins> ^literalize (concat <val>) +)
+}
+
+sp {propose*props*symbol*require
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type require)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-require +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*worst
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> -^attr2 <a*2>)
+    (<ins> ^prop-type worse)
+    (<ins> ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-worst +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*best
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> -^attr2 <a*2>)
+    (<ins> ^prop-type better)
+    (<ins> ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-best +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*worse
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type worse)
+    (<ins> ^attr2 <a*2>)
+    (<ins> ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-worse +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*better
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type better)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-better +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*indifferent
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> -^attr2 <attr2>)
+    (<ins> ^prop-type add)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-indifferent +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*acceptable
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type acceptable)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-acceptable +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*remove
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type remove)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-remove +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*add
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type add)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-add +)
+    (<o> ^prop action +)
+}
+
+sp {propose*props*symbol*existence
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type existence)
+    (<ins> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-existence +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*negation
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type negation)
+    (<ins> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-negation +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*greater*equal
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type greater-equal)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-greater-equal +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*less*equal
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type less-equal)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-less-equal +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*greater*than
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type greater-than)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-greater-than +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*less*than
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type less-than)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-less-than +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*teq
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type type-equality)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-teq +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*neq
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type inequality)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-neq +)
+    (<o> ^prop condition +)
+}
+
+sp {propose*props*symbol*eq
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^prop-type equality)
+    (<ins> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^symbol <ins> +)
+    (<o> ^name prop-eq +)
+    (<o> ^prop condition +)
+}
+
+sp {elaborate*props*print*prop
+    (state <s> ^operator <o>)
+    (<o> ^prop <any>)
+    (<o> ^symbol <ins>)
+    (<ins> ^lti-name <name>)
+    -->
+    (write |    EVALUATING PROP | <ins> |:| <name>)
+}
+
+sp {apply*props*sub*props
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub)
+    (<o> ^symname <symname>)
+    (<o> ^symbol <ins>)
+    -->
+    (<s> ^props-sub <u> +)
+    (<u> ^symbol <ins> +)
+    (<u> ^subname <symname> +)
+}
+
+sp {propose*props*sub*props*action*arg2
+    (state <s> ^name instruction)
+    (<s> -^props-instructions <p*1>)
+    (<s> ^instructions <ins>)
+    (<ins> -^id2 <i*1>)
+   -{ (<s> ^props-sub <p*2>)
+      (<p*2> ^symbol <ins>)}
+    (<ins> ^sub2 <symname>)
+    (<ins> ^attr2 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-sub +)
+    (<o> ^symbol <ins> +)
+    (<o> ^symname <symname> +)
+}
+
+sp {propose*props*sub*props*action*arg1
+    (state <s> ^name instruction)
+    (<s> -^props-instructions <p*1>)
+    (<s> ^instructions <ins>)
+    (<ins> -^id1 <i*1>)
+   -{ (<s> ^props-sub <p*2>)
+      (<p*2> ^symbol <ins>)}
+    (<ins> ^sub1 <symname>)
+    (<ins> ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-sub +)
+    (<o> ^symbol <ins> +)
+    (<o> ^symname <symname> +)
+}
+
+sp {propose*props*sub*props*condition*arg2
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> -^id2 <i*1>)
+   -{ (<s> ^props-sub <p*1>)
+      (<p*1> ^symbol <ins>)}
+    (<ins> ^sub2 <symname>)
+    (<ins> ^attr2 <a*1>)
+    (<s> ^instructions <pins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-sub +)
+    (<o> ^symbol <ins> +)
+    (<o> ^symname <symname> +)
+}
+
+sp {propose*props*sub*props*condition*arg1
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <ins>)
+    (<ins> -^id1 <i*1>)
+   -{ (<s> ^props-sub <p*1>)
+      (<p*1> ^symbol <ins>)}
+    (<ins> ^sub1 <symname>)
+    (<ins> ^attr1 <a*1>)
+    (<s> ^instructions <pins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-sub +)
+    (<o> ^symbol <ins> +)
+    (<o> ^symname <symname> +)
+}
+
+sp {elaborate*props*symbol*2arg*sub*buf
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> ^oldattr2 <oat2>)
+    (<ins> ^oldattr1 <oat1>)
+    (<ins> ^id2 <i*2>)
+    (<ins> ^id1 <i*1>)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    (<ins> ^{ << sub1 sub2 >> <a*1> } <v*1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^literalize (concat <oat1> <oat2> <attr1> <attr2>) +)
+}
+
+sp {elaborate*props*symbol*1arg*sub*buf
+    (state <s> ^literalize <l>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^attr2 <attr2>)
+    (<ins> ^oldattr1 <oat1>)
+    (<ins> ^sub1 <s*1>)
+    (<ins> ^id1 <i*1>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^literalize (concat <oat1> <attr1>) +)
+}
+
+sp {elaborate*props*symbol*2arg*sub
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^oldattr2 <oat2>)
+    (<ins> -^oldattr1 <oat1>)
+    (<ins> ^id2 <i*2>)
+    (<ins> ^id1 <i*1>)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    (<ins> ^{ << sub1 sub2 >> <a*1> } <v*1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^literalize (concat <attr1> <attr2>) +)
+}
+
+sp {elaborate*props*symbol*1arg*sub
+    (state <s> ^literalize <l>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^attr2 <attr2>)
+    (<ins> -^oldattr1 <oat1>)
+    (<ins> ^sub1 <s*1>)
+    (<ins> ^id1 <i*1>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^literalize (concat <attr1>) +)
+}
+
+sp {elaborate*props*symbol*2arg*const
+    (state <s> ^const <c>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1>)
+    (<ins> ^id2 <c>)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    (<c> ^<attr2> <val>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^literalize (concat <attr1> <attr2> <val>) +)
+}
+
+sp {elaborate*props*symbol*2arg*noconst
+    (state <s> ^const <c>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1>)
+    (<ins> ^id2 <c>)
+    (<ins> ^attr2 <attr2>)
+    (<c> -^<attr2> <val>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^literalize (concat <attr1> <attr2>) +)
+}
+
+sp {elaborate*props*symbol*2arg
+    (state <s> ^const <c>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1>)
+    (<ins> -^id2 <c>)
+    (<ins> ^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^attr2 <attr2> +)
+    (<o> ^literalize (concat <attr1> <attr2>) +)
+}
+
+sp {elaborate*props*symbol*1arg
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^sub1 <s*1>)
+    (<ins> -^attr2 <attr2>)
+    (<ins> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> +)
+    (<o> ^literalize (concat <attr1>) +)
+}
+
+sp {set*props*symbol*status*response*propagate*success*consting
+    :o-support
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <pins>)
+    (<pins> ^status success)
+    (<pins> ^id2 <const>)
+    (<s> ^const <const>)
+    (<pins> ^literalize <l*1>)
+    (<s> ^evals <evals>)
+    (<pins> ^lti-name <symname>)
+    (<evals> -^evaluated <symname>)
+    (<evals> ^passed <pval>)
+    -->
+    (<evals> ^evaluated <symname> +)
+    (<evals> ^passed <pval> -)
+    (<evals> ^passed (+ 1 <pval>) +)
+}
+
+sp {set*props*symbol*status*response*propagate*success*noconsting
+    :o-support
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <pins>)
+    (<pins> ^status success)
+    (<s> ^const <const>)
+    (<pins> -^id2 <const>)
+    (<s> ^evals <evals>)
+    (<pins> ^lti-name <symname>)
+    (<evals> -^evaluated <symname>)
+    (<evals> ^passed <pval>)
+    -->
+    (<evals> ^evaluated <symname> +)
+    (<evals> ^passed <pval> -)
+    (<evals> ^passed (+ 1 <pval>) +)
+}
+
+sp {set*props*symbol*status*response*propagate*fail
+    :o-support
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <pins>)
+    (<pins> ^status fail)
+    (<s> ^instructions <ins>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*generic*fail*arg2
+    (state <s> ^name instruction)
+    (<s> ^operator <o>)
+    (<o> ^prop condition)
+    (<o> ^symbol <ins>)
+    (<ins> ^id2 <id2>)
+    (<ins> ^attr2 <attr2>)
+    (<id2> -^<attr2> <any>)
+    -->
+    (<ins> ^status fail +)
+    (write |*** FAILED | <ins> |, CAN'T FIND: | <id2> | ^| <attr2> (crlf))
+}
+
+sp {apply*props*symbol*generic*fail*arg1
+    (state <s> ^name instruction)
+    (<s> ^operator <o>)
+    (<o> -^name prop-existence)
+    (<o> -^name prop-negation)
+    (<o> ^prop condition)
+    (<o> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<ins> ^attr1 <attr1>)
+    (<id1> -^<attr1> <blah>)
+    -->
+    (<ins> ^status fail +)
+    (write |*** FAILED | <ins> |, CAN'T FIND: | <id1> | ^| <attr1> (crlf))
+}
+
+sp {reject*props*symbol*fulfilled*condition
+    (state <s> ^name instruction)
+    (<s> ^evals <evals>)
+    (<evals> ^total <tval>)
+    (<evals> ^passed { >= <tval> <pval> })
+    (<s> ^instructions <i*1>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <s*1>)
+    (<s*1> ^lti-name <symname>)
+    (<i*1> ^{ << condition action >> <a*1> } <symname>)
+    -->
+    (<s> ^operator <o> -)
+}
+
+sp {reject*props*symbol*evaluated*condition
+    (state <s> ^name instruction)
+    (<s> ^evals <e*1>)
+    (<e*1> ^evaluated <symname>)
+    (<s> ^operator <o> +)
+    (<o> ^symbol <s*1>)
+    (<s*1> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> -)
+}
+
+sp {propose*props*symbol*composite
+    (state <s> ^name instruction)
+    (<s> ^props-instructions <pins>)
+    (<pins> -^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name instruction +)
+    (<o> ^symbol <pins> +)
+}
+
+sp {apply*props*symbol*success
+    (state <s> ^operator <o>)
+    (<o> ^name props-success)
+    (<o> ^p-pval <p-pval>)
+    (<o> ^p-track <p-track>)
+    (<o> ^sym <symname>)
+    -->
+    (<p-track> ^evaluated <symname> +)
+    (<p-track> ^passed <p-pval> -)
+    (<p-track> ^passed (+ 1 <p-pval>) +)
+}
+
+sp {propose*props*symbol*success
+    (state <s> ^name instruction)
+    (<s> ^evals <evals>)
+    (<evals> ^total <tval>)
+    (<evals> ^passed { >= <tval> > 0 <pval> })
+    (<s> ^instructions <i*1>)
+    (<i*1> ^lti-name <symname>)
+    (<s> ^superstate <ss>)
+    (<ss> ^evals <par-evals>)
+    (<par-evals> -^evaluated <symname>)
+    (<par-evals> ^passed <par-pval>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-success +)
+    (<o> ^sym <symname> +)
+    (<o> ^p-track <par-evals> +)
+    (<o> ^p-pval <par-pval> +)
+}
+
+sp {set*props*flag*counted*done
+    :o-support
+    (state <s> ^props-flag counting)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    (<ins> -^{ << condition action >> <a*2> } { <> <s1> <v*1> })
+    -->
+    (<s> ^props-flag counting -)
+}
+
+sp {set*props*flag*counted*quiescence
+    :o-support
+    (state <s> ^props-flag counting)
+   -{ (<s> ^props-instructions <ins>)
+      (<ins> ^lti-name <name>)
+      (<s> -^props-quiescent <name>)}
+    -->
+    (<s> ^props-flag counting -)
+}
+
+sp {apply*props*increase*counts
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*2>)
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-increase-counts)
+    (<ins> ^lti-name <symname>)
+    (<s> ^props-temp-counts <cs>)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^count <cnt>)
+    (<cnt> ^symbol2 <s2>)
+    (<cnt> ^symbol1 <s1>)
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2>)
+      (<c> ^symbol1 <s1>)}
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    (<cnt> ^value <val>)
+    (<ins> ^{ << condition action >> <a*2> } <s2>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    -->
+    (<cnt> ^value (+ 1 <val>) +)
+    (<cnt> ^value <val> -)
+    (<scmd> ^pre-store <pc> +)
+    (<scmd> ^pre-store <cnt> +)
+    (<cs> ^count <cnew> +)
+    (<cnew> ^symbol1 <s1> +)
+    (<cnew> ^symbol2 <s2> +)
+}
+
+sp {propose*props*increase*counts
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*3>)
+    (<s> ^props-temp-counts <cs>)
+    (<ins> ^prop-type { << instruction-lhs instruction-rhs >> <p*2> })
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^count <cnt>)
+    (<cnt> ^symbol2 <s2>)
+    (<cnt> ^symbol1 <s1>)
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2>)
+      (<c> ^symbol1 <s1>)}
+    (<cnt> ^value <val>)
+    (<ins> ^{ << condition action >> <a*2> } <s2>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-increase-counts +)
+}
+
+sp {apply*props*init*counts
+    (state <s> ^operator <o>)
+    (<o> ^name props-init-symbol-counts)
+    (<o> ^sym2 <s2>)
+    (<o> ^sym1 <s1>)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <tpc>)
+    -->
+    (<tpc> ^count <ynew> +)
+    (<ynew> ^symbol1 <s1> +)
+    (<ynew> ^symbol2 <s2> +)
+    (<ynew> ^value 0 +)
+}
+
+sp {propose*props*init*counts
+    (state <s> ^props-temp-counts <cs>)
+    (<s> -^instructions <i*1>)
+    (<s> ^props-instructions <ins>)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<ins> ^{ << condition action >> <a*2> } <s2>)
+    (<ins> ^{ << condition action >> <a*1> } { < <s2> <s1> })
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2>)
+      (<c> ^symbol1 <s1>)}
+   -{ (<pc> ^count <c>)
+      (<c> ^symbol2 <s2>)
+      (<c> ^symbol1 <s1>)}
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-init-symbol-counts +)
+    (<o> ^sym1 <s1> +)
+    (<o> ^sym2 <s2> +)
+}
+
+sp {apply*props*combine*do
+    (state <s> ^operator <o>)
+    (<o> ^name props-combine-do)
+    (<o> ^to-combine <ptc>)
+    (<s> ^props-to-combine <ptc>)
+    (<ptc> ^newname <name>)
+    (<ptc> ^sym2 <s2>)
+    (<ptc> ^sym1 <s1>)
+    (<ptc> ^attr <attr>)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^<attr> <s2>)
+    (<ins> ^<attr> <s1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ins> ^<attr> <s1> -)
+    (<ins> ^<attr> <s2> -)
+    (<ins> ^<attr> <name> +)
+    (<scmd> ^pre-store <ins> +)
+    (<s> ^props-to-combine <ptc> -)
+}
+
+sp {propose*props*combine*do
+    (state <s> ^props-to-combine <ptc>)
+    (<ptc> ^sym2 <s2>)
+    (<ptc> ^sym1 <s1>)
+    (<ptc> ^attr <attr>)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^<attr> <s2>)
+    (<ins> ^<attr> <s1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<s> ^operator <o> >)
+    (<o> ^name props-combine-do +)
+    (<o> ^to-combine <ptc> +)
+}
+
+sp {propose*props*combine*symbols
+    (state <s> ^props-instructions <ins>)
+    (<s> -^instructions <i*1>)
+    (<ins> ^lti-name <symname>)
+    (<s> -^props-quiescent <symname>)
+    (<ins> ^prop-type { << instruction-lhs instruction-rhs >> <p*1> })
+    (<ins> ^{ << condition action >> <a*2> } <v*1>)
+    (<ins> ^{ << condition action >> <a*1> } { <> <v*1> <s1> })
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-combine-search +)
+    (<o> ^lti-name <symname> +)
+}
+
+sp {apply*props*prep*combine
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-prep-combine)
+    (<s> ^props-quiescent <symname>)
+    (<s> ^props-instructions <ins>)
+    (<ins> ^lti-name <symname>)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^threshold <th>)
+    (<pc> ^count <c>)
+    (<c> ^value <th>)
+    (<c> ^symbol2 <s2>)
+    (<c> ^symbol1 <s1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    (<ins> ^{ << condition action >> <a*1> } <s2>)
+    (<ins> ^{ << condition action >> <attr> } <s1>)
+    -->
+    (<c> ^symbol1 <s1> -)
+    (<c> ^symbol2 <s2> -)
+    (<c> ^value <th> -)
+    (<pc> ^count <c> -)
+    (<scmd> ^pre-store <pc> +)
+    (<scmd> ^pre-store <c> +)
+    (<scmd> ^pre-store <new> +)
+    (<new> ^symbol1 <s1> +)
+    (<new> ^symbol2 <s2> +)
+    (<new> ^attr <attr> +)
+    (<new> ^ins <ins> +)
+    (<new> ^prop-combine (make-constant-symbol <s2>) +)
+    (<s> ^props-prepped <symname> +)
+    (<s> ^props-quiescent <symname> -)
+}
+
+sp {propose*props*prep*combine
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^lti-name <symname>)
+    (<s> -^props-prepped <symname>)
+    (<ins> ^prop-type { << instruction-lhs instruction-rhs >> <p*2> })
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^threshold <th>)
+    (<pc> ^count <c>)
+    (<c> ^symbol2 <s2>)
+    (<c> ^symbol1 <s1>)
+    (<c> ^value { >= <th> <val> })
+    (<ins> ^{ << condition action >> <a*2> } <s2>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-prep-combine +)
+}
+
+sp {apply*props*symbols*count*single
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-count-instruction-parts)
+    (<s> ^evals <evals>)
+    (<s> ^instructions <ins>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>)
+    (<ins> -^{ << condition action >> <a*2> } { <> <s1> <v*1> })
+    -->
+    (<evals> ^total 1 +)
+}
+
+sp {apply*props*symbols*count*zero
+    (state <s> ^evals <evals>)
+   -{ (<s> ^instructions <i*1>)
+      (<i*1> ^{ << condition action >> <a*1> } <v*1>)}
+    (<s> ^operator <o*1>)
+    (<o*1> ^name props-count-instruction-parts)
+    -->
+    (<evals> ^total 0 +)
+}
+
+sp {propose*props*symbols*count
+    (state <s> ^name instruction)
+    (<s> ^evals <evals>)
+    (<evals> -^total <t*1>)
+    (<s> ^instructions <ins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-count-instruction-parts +)
+    (<o> ^items <ins> +)
+    (<o> ^container <evals> +)
+}
+
+sp {set*props*instruction*format*substitute*const
+    (state <s> ^operator <o>)
+    (<o> ^name props-receive-symbol)
+    (<o> ^const <c>)
+    (<s> ^{ << props-instructions instructions >> <a*1> } <ins>)
+    (<ins> ^<something> props$const)
+    -->
+    (<ins> ^<something> props$const -)
+    (<ins> ^<something> <c> +)
+}
+
+sp {set*props*instruction*format*substitute*rootstate
+    (state <s> ^operator <o>)
+    (<o> ^name props-receive-symbol)
+    (<o> ^rootstate <rs>)
+    (<s> ^{ << props-instructions instructions >> <a*1> } <ins>)
+    (<ins> ^<something> props$rootstate)
+    -->
+    (<ins> ^<something> props$rootstate -)
+    (<ins> ^<something> <rs> +)
+}
+
+sp {apply*props*instructions*receive*type*indifferent
+    (state <s> ^operator <o>)
+    (<o> ^name props-receive-symbol)
+    (<o> ^instructions <ins>)
+    (<ins> -^attr2 <a*2>)
+    (<ins> ^prop-type add)
+    (<ins> ^attr1 <a*1>)
+    -->
+    (<ins> ^prop-type indifferent +)
+}
+
+sp {apply*props*instruction*receive
+    (state <s> ^operator <o>)
+    (<o> ^name props-receive-symbol)
+    (<o> ^instructions <lti>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^props-instructions <lti> +)
+}
+
+sp {propose*props*instruction*receive
+    (state <s> ^name instruction)
+    (<s> ^const <c>)
+    (<s> ^rootstate <rs>)
+    (<s> ^instructions <i*1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> ^success <q>)
+    (<q> ^lti-name <l*1>)
+    (<sres> ^retrieved <lti>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-receive-symbol +)
+    (<o> ^rootstate <rs> +)
+    (<o> ^const <c> +)
+    (<o> ^instructions <lti> +)
+}
+
+sp {apply*props*symbol*load
+    (state <s> ^operator <o>)
+    (<o> ^name props-load-symbol)
+    (<o> ^sym <symname>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<scmd> ^depth 2 +)
+    (<q> ^lti-name <symname> +)
+}
+
+sp {propose*props*symbol*load
+    (state <s> ^name instruction)
+    (<s> ^instructions <ins>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> -^failure <f*1>)
+    (<sres> -^success <s*2>)
+    (<ins> ^{ << condition action >> <a*1> } <symname>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <symname>)}
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-load-symbol +)
+    (<o> ^sym <symname> +)
+}
+
+sp {apply*props*instruction*begin*force-learn
+    (state <s> ^operator <o>)
+    (<o> ^top true)
+    (<o> ^name props-begin-instructions-query)
+    -->
+    (write | *** ENABLING LEARNING SUBSTATE : | <s> | ***| (crlf))
+    (write | *** ENABLING LEARNING SUBSTATE : | <s> | ***| (crlf))(force-learn <s>)
+}
+
+sp {apply*props*instruction*begin*init*buffer
+    (state <s> ^operator <o*1>)
+    (<s> -^props-buffer <p*1>)
+    (<o*1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^props-buffer <bff> +)
+}
+
+sp {apply*props*instruction*begin*init*literalize
+    (state <s> ^operator <o*1>)
+    (<s> -^literalize <l*1>)
+    (<o*1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^literalize |_| +)
+}
+
+sp {apply*props*instruction*begin*write*name
+    (state <s> ^operator <o>)
+    (<o> ^name props-begin-instructions-query)
+    (<o> ^instructions <ins>)
+    (<ins> ^name <name>)
+    -->
+    (write |  (| <name> |)| (crlf))
+}
+
+sp {apply*props*instruction*begin*retrieve
+    (state <s> ^operator <o>)
+    (<o> ^name props-begin-instructions-query)
+    (<o> ^instructions <lti>)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^props-instructions <lti>)
+    -->
+    (<s> ^instructions <lti> +)
+    (<s> ^name instruction +)
+    (<s> ^props-flag participating +)
+    (<s> ^evals <evals> +)
+    (<evals> ^passed 0 +)
+    (write |  EVALUATING INSTRUCTIONS | <lti> (crlf))
+}
+
+sp {propose*props*instruction*begin
+    (state <s> ^impasse no-change)
+    (<s> -^evals <e*1>)
+    (<s> ^attribute operator)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <oo>)
+    (<oo> ^name instruction)
+    (<oo> ^symbol <ins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-begin-instructions-query +)
+    (<o> ^instructions <ins> +)
+}
+
+sp {propose*props*instruction*begin*top
+    (state <s> ^impasse no-change)
+    (<s> -^evals <e*1>)
+    (<s> ^attribute state)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-can-evaluate <id>)
+    (<ss> ^props-instructions <ins>)
+    (<ins> ^lti-name <id>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> =)
+    (<o> ^name props-begin-instructions-query +)
+    (<o> ^top true +)
+    (<o> ^instructions <ins> +)
+}
+
+sp {apply*props*enable*eval
+    (state <s> ^operator <o>)
+    (<o> ^name props-enable-evaluation)
+    (<o> ^instructions <i*1>)
+    (<i*1> ^lti-name <id>)
+    -->
+    (<s> ^props-can-evaluate <id> +)
+}
+
+sp {propose*props*enable*eval
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^{ << status props-result >> <a*1> } <v*1>)
+    (<s> -^name instruction)
+    (<ins> ^lti-name <id>)
+    (<s> -^props-can-evaluate <id>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-enable-evaluation +)
+    (<o> ^instructions <ins> +)
+}
+
+sp {prefer*props*symbol*unevaluated
+    (state <s> ^operator <o2> +)
+    (<o2> ^name instruction)
+    (<s> ^operator <o1> +)
+    (<o1> -^status <s*1>)
+    (<o1> ^name instruction)
+    (<o2> ^symbol <sym2>)
+    (<o1> ^symbol <sym1>)
+    (<o2> ^status <s*2>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*success*apply
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-result-affirm-success)
+    (<s> ^operator <o1> +)
+    (<o1>
+          ^name { << props-success-apply props-success-buffer-load props-success-buffer-flush >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*success*action*buffer
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-result-affirm-success)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-prep-action-buffer)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instruction*props
+    (state <s> ^operator <o2> +)
+    (<o2> ^name instruction)
+    (<o2> ^symbol <s*2>)
+    (<s> ^operator <o1> +)
+    (<o1> ^prop <any>)
+    (<o1> ^symbol <s*1>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instruction*props*worst
+    (state <s> ^operator <o2> +)
+    (<o2> ^prop <any>)
+    (<o2> ^symbol <s*1>)
+    -->
+    (<s> ^operator <o2> <)
+}
+
+sp {prefer*props*instruction*symbols*worst
+    (state <s> ^operator <o2> +)
+    (<o2> ^name instruction)
+    (<o2> ^symbol <s*1>)
+    -->
+    (<s> ^operator <o2> <)
+}
+
+sp {prefer*props*count*parts
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-count-instruction-parts)
+    (<s> ^operator <o2> +)
+    (<o2> ^name { << props-load-symbol props-sub >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*retrieve*buffer
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-query-action-buffer)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-count-instruction-parts props-load-symbol props-sub >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*init*counts
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-init-symbol-counts)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-increase-counts props-enable-evaluation props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*combine
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-combine-search)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-enable-evaluation props-init-symbol-counts props-increase-counts props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*combine*prep
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-prep-combine)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-enable-evaluation props-count-instruction-parts props-combine-search >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*increase*counts
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-increase-counts)
+    (<s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-enable-evaluation props-prep-combine props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*load*symbol
+    (state <s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-increase-counts props-init-symbol-counts props-prep-combine props-combine-search props-sub >> <n*2> })
+    (<s> ^operator <o1> +)
+    (<o1> ^name { << props-load-symbol props-receive-symbol >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*load*instructions
+    (state <s> ^operator <o2> +)
+    (<o2>
+          ^name { << props-count-instruction-parts props-init-symbol-counts >> <n*2> })
+    (<s> ^operator <o1> +)
+    (<o1>
+          ^name { << props-load-instructions props-receive-instructions >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*begin*instructions
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-begin-instructions)
+    (<s> ^operator <o2> +)
+    (<o2> ^name { << props-load-instructions props-load-symbol >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {elaborate*props*failure*blink
+    (state <s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^rootstate <rs>)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name props-result-affirm-fail)
+    -->
+    (<rs> ^props-blink true +)
+}
+
+sp {reject*blink*competed
+    (state <s> ^operator <o1> +)
+    (<o1> ^name props-blink)
+    (<s> ^props-blink <any>)
+    (<s> ^operator <o2> +)
+    (<o2> ^name { <> props-blink <n*1> })
+    -->
+    (<s> ^operator <o1> ~)
+}
+
+sp {apply*props*blink
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-blink)
+    (<s> ^props-blink <any>)
+    -->
+    (<s> ^props-blink <any> -)
+}
+
+sp {propose*props*blink
+    (state <s> ^props-blink <p*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> <)
+    (<o> ^name props-blink +)
+}
+
+sp {set*props*lhs*fail*cleanup
+    :o-support
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^props-result failure)
+    (<s> ^evalstate <e*1>)
+    (<e*1> ^smem <s*1>)
+    (<s*1> ^command <c*1>)
+    (<c*1> ^prohibit <ins>)
+    -->
+    (<s> ^props-instructions <ins> -)
+}
+
+sp {apply*props*fail*search*prohibit
+    (state <s> ^operator <o>)
+    (<o> ^name props-result-fail)
+    (<o> ^ins <ins>)
+    (<ins> ^name <name>)
+    (<s> ^superstate <ss>)
+    -->
+    (<ss> ^props-blink true +)
+    (write |    RETRACTING | <name> (crlf) | | (crlf))
+}
+
+sp {propose*props*fail*search*prohibit
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^props-result failure)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-prohibits <pp>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    (<s> ^superstate <ss>)
+    -->
+    (<pp> ^prohibit <ins> +)
+    (<scmd> ^pre-store <pp> +)
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-result-fail +)
+    (<o> ^ins <ins> +)
+}
+
+sp {set*props*success*search*end*unprohibit
+    :o-support
+    (state <s> ^props-flag reset-prohibits)
+    (<s> ^props-static <p*1>)
+    (<p*1> ^prop-prohibits <pl>)
+    (<pl> ^prohibit <prbt>)
+    (<prbt> -^props-result success)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<pl> ^prohibit <prbt> -)
+    (<scmd> ^pre-store <pl> +)
+}
+
+sp {set*props*flag*clean*reset-prohibits
+    :o-support
+    (state <s> ^props-flag reset-prohibits)
+    (<s> ^smem <s*1>)
+    (<s*1> ^prohibit-list <pl>)
+   -{ (<pl> ^prohibit <prbt>)
+      (<s> -^props-instructions <prbt>)}
+    -->
+    (<s> ^props-flag reset-prohibits -)
+}
+
+sp {set*props*clean*flag*prepped
+    :o-support
+    (state <s> ^props-prepped <name>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <name>)}
+    -->
+    (<s> ^props-prepped <name> -)
+}
+
+sp {set*props*clean*flag*quiescent
+    :o-support
+    (state <s> ^props-quiescent <name>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <name>)}
+    -->
+    (<s> ^props-quiescent <name> -)
+}
+
+sp {set*props*clean*prop*temp*counts
+    :o-support
+    (state <s> ^props-temp-counts <ptc>)
+    (<ptc> ^count <c>)
+    (<c> ^symbol2 <s2>)
+    (<c> ^symbol1 <s1>)
+   -{ (<s> ^props-instructions <ins>)
+      (<ins> ^{ << condition action >> <a*2> } <s2>)
+      (<ins> ^{ << condition action >> <a*1> } <s1>)}
+    -->
+    (<ptc> ^count <c> -)
+}
+
+sp {elaborate*props*consts*cascade
+    (state <s> ^superstate <ss>)
+    (<ss> ^const <c>)
+    (<ss> ^name { << props-eval instruction >> <n*1> })
+    -->
+    (<s> ^const <c> +)
+}
+
+sp {elaborate*props*consts
+    (state <s> ^props-instructions <p*1>)
+    (<p*1> ^const <q>)
+    (<s> -^const { <> <q> <c*1> })
+    -->
+    (<s> ^const <q> +)
+}
+
+sp {elaborate*props*buffer
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^props-buffer <pb>)
+    -->
+    (<s> ^props-buffer <pb> +)
+}
+
+sp {elaborate*props*evalstate*cascade
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^evalstate <es>)
+    -->
+    (<s> ^evalstate <es> +)
+}
+
+sp {elaborate*props*evalstate
+    (state <s> ^superstate <ss>)
+    (<ss> ^name props-eval)
+    -->
+    (<s> ^evalstate <ss> +)
+}
+
+sp {elaborate*props*rootstate*cascade*deep
+    (state <s> ^superstate <ss>)
+    (<s> -^rootstate <s>)
+    (<ss> ^rootstate <rs>)
+    -->
+    (<s> ^rootstate <rs> +)
+}
+
+sp {elaborate*props*rootstate*cascade
+    (state <s> ^superstate <ss>)
+    (<s> -^rootstate <s>)
+    (<ss> ^rootstate <ss>)
+    -->
+    (<s> ^rootstate <ss> +)
+}
+
+sp {elaborate*props*rootstate
+    (state <s> ^superstate <ss>)
+   -{ (<s> ^impasse no-change)
+      (<s> ^attribute operator)}
+   -{ (<s> ^impasse no-change)
+      (<ss> ^impasse no-change)
+      (<ss> ^attribute operator)
+      (<s> ^attribute state)}
+    (<s> -^props-flag participating)
+    (<s> -^name props-eval)
+    -->
+    (<s> ^rootstate <s> +)
+}
+
+sp {elaborate*props*temp*counts
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*1>)
+    (<s> -^instructions <i*1>)
+    -->
+    (<s> ^props-temp-counts <tnew> +)
+}
+
+sp {elaborate*props*prohibit*list
+    (state <s> ^props-static <p*1>)
+    (<p*1> ^prop-prohibits <pp>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^prohibit-list <pl>)
+    (<pp> ^prohibit <prbt>)
+    -->
+    (<pl> ^prohibit <prbt> +)
+}
+
+sp {elaborate*props*flag*participating
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^props-flag participating)
+    -->
+    (<s> ^props-flag participating +)
+}
+
+sp {elaborate*props*flag*deliberating
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*1>)
+    (<ins> -^status <s*1>)
+    -->
+    (<s> ^props-flag deliberating +)
+}
+
+sp {apply*props*retrieve*rhs
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-rhs)
+    (<o> ^instructions <lti>)
+    (<lti> ^name <name>)
+    (<s> ^superstate <ss>)
+    -->
+    (<ss> ^props-instructions <lti> +)
+    (<ss> ^props-blink true +)
+    (write |  FIRING | <name> | - | <lti> (crlf))
+}
+
+sp {propose*props*retrieve*rhs
+    (state <s> ^name props-retrieve-rhs)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <ins>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-retrieve-rhs +)
+    (<o> ^instructions <ins> +)
+}
+
+sp {apply*props*query*rhs
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-query-rhs)
+    (<s> ^smem <s*1>)
+    (<s> ^retrieve <name>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<scmd> ^depth 2 +)
+    (<q> ^prop-type instruction-rhs +)
+    (<q> ^name <name> +)
+}
+
+sp {propose*props*query*rhs
+    (state <s> ^name props-retrieve-rhs)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    (<s> ^retrieve <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-query-rhs +)
+}
+
+sp {apply*props*begin*rhs
+    (state <s> ^operator <o>)
+    (<o> ^name props-begin-rhs)
+    (<o> ^retrieve <name>)
+    -->
+    (<s> ^name props-retrieve-rhs +)
+    (<s> ^retrieve <name> +)
+}
+
+sp {propose*props*begin*rhs
+    (state <s> ^impasse no-change)
+    (<s> -^name <n*1>)
+    (<s> ^attribute state)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-instructions <lhs>)
+    (<lhs> ^props-result success)
+    (<lhs> ^prop-type instruction-lhs)
+    (<lhs> ^name <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-begin-rhs +)
+    (<o> ^retrieve <name> +)
+}
+
+sp {apply*props*retrieve*lhs*reject*used
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-lhs)
+    (<s> ^rootstate <rs>)
+    (<rs> ^props-active-rule <name>)
+    (<o> ^instructions <ins>)
+    (<ins> ^name <name>)
+    -->
+    (<ins> ^props-result failure +)
+    (write |RULE | <name> | ALREADY IN USE| (crlf))
+}
+
+sp {apply*props*retrieve*lhs
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-lhs)
+    (<o> ^instructions <lti>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    (<lti> ^name <name>)
+    -->
+    (<s> ^props-instructions <lti> +)
+    (write |   RETRIEVED | <lti> | - | <name> (crlf))
+}
+
+sp {propose*props*retrieve*lhs
+    (state <s> ^smem <smem>)
+   -{ (<smem> ^conds <c*2>)
+      (<c*2> ^counted <c*3>)}
+    (<s> -^name instruction)
+    (<smem> ^result <r*1>)
+    (<r*1> ^retrieved <ins>)
+    (<smem> ^command <c*1>)
+    (<c*1> ^query <q*1>)
+    (<q*1> ^prop-type instruction-lhs)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-retrieve-lhs +)
+    (<o> ^instructions <ins> +)
+}
+
+sp {set*props*clean*quit*instructions
+    :o-support
+    (state <s> ^props-flag impasse)
+    (<s> ^props-instructions <any>)
+    -->
+    (<s> ^props-instructions <any> -)
+}
+
+sp {set*props*clean*quit*quiescent
+    :o-support
+    (state <s> ^props-flag impasse)
+    (<s> ^props-quiescent <any>)
+    -->
+    (<s> ^props-quiescent <any> -)
+}
+
+sp {propose*props*search*lhs*quit
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-query-lhs)
+    (<s> ^rootstate <rs>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^failure <cue>)
+    -->
+    (<rs> ^props-flag impasse +)
+    (<rs> ^props-blink true +)
+    (write |*** NO MORE INSTRUCTIONS TO TRY - YOU'VE REACHED A PROPER STATE NO-CHANGE ***| (crlf))
+}
+
+sp {apply*props*query*lhs
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-query-lhs)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<scmd> ^depth 2 +)
+    (<q> ^prop-type instruction-lhs +)
+}
+
+sp {propose*props*begin*lhs
+    (state <s> ^name props-eval)
+    (<s> -^props-flag deliberating)
+    (<s> -^props-instructions <p*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> <)
+    (<o> ^name props-query-lhs +)
+}
+
+sp {reject*props*rhs*completed
+    (state <s> ^operator <o> +)
+    (<o> ^name props-begin-rhs)
+    (<o> ^retrieve <name>)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-instructions <rhs>)
+    (<rhs> ^prop-type instruction-rhs)
+    (<rhs> ^name <name>)
+    (<ss> ^props-instructions <lhs>)
+    (<lhs> ^prop-type instruction-lhs)
+    (<lhs> ^name <name>)
+    (<rhs> ^props-result <p*2>)
+    (<lhs> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o> -)
+    (<o> ^rejected true +)
+}
+
+sp {reject*props*instructions*completed
+    (state <s> ^operator <o> +)
+    (<o> ^name props-begin-instructions-query)
+    (<o> ^instructions <i*1>)
+    (<i*1> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o> -)
+    (<o> ^rejected true +)
+}
+
+sp {prefer*props*instructions
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-begin-instructions-query)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-begin-instructions-query)
+    (<o2> ^instructions <i2>)
+    (<o1> ^instructions <i1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^prohibit-list <pl>)
+    (<pl> -^prohibit <i1>)
+    (<pl> ^prohibit <i2>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instructions*rhs
+    (state <s> ^operator <o2> +)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^prohibit-list <p*1>)
+      (<p*1> ^prohibit <il>)}
+    (<o2> ^name props-begin-rhs)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-begin-instructions-query)
+    (<o1> ^instructions <i*1>)
+    (<i*1> ^prop-type instruction-rhs)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instructions*lhs
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*1>)
+    (<s> ^operator <o2> +)
+    (<o2> ^name props-begin-lhs)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*rhs
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-begin-lhs)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-begin-rhs)
+    (<o1> ^retrieve <name>)
+    (<s> ^superstate <ss>)
+   -{ (<ss> ^props-instructions <rhs>)
+      (<rhs> ^prop-type instruction-rhs)
+      (<rhs> ^name <name>)
+      (<rhs> ^props-result <p*1>)}
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*lhs
+    (state <s> ^operator <o2> +)
+    (<o2> ^name props-begin-rhs)
+    (<s> ^operator <o1> +)
+    (<o1> ^name props-begin-lhs)
+    (<o2> ^retrieve <name>)
+    (<s> ^superstate <ss>)
+    (<ss> ^props-instructions <rhs>)
+    (<rhs> ^prop-type instruction-rhs)
+    (<rhs> ^name <name>)
+    (<rhs> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {apply*props*eval*retrieve*static
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-static)
+    (<o> ^static <x>)
+    -->
+    (<s> ^props-static <x> +)
+}
+
+sp {propose*props*eval*retrieve*static
+    (state <s> ^name props-eval)
+    (<s> -^props-static <p*1>)
+    (<s> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <x>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-retrieve-static +)
+    (<o> ^static <x> +)
+}
+
+sp {apply*props*eval*query*static
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name props-load-static)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> +)
+    (<scmd> ^depth 3 +)
+    (<q> ^props-static props-static +)
+}
+
+sp {propose*props*eval*query*static
+    (state <s> ^name props-eval)
+    (<s> -^props-static <p*1>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> >)
+    (<o> ^name props-load-static +)
+}
+
+sp {elaborate*props*eval*state
+    (state <s> ^impasse no-change)
+   -{ (<s> ^superstate <s*1>)
+      (<s*1> ^name props-eval)}
+    (<s> ^attribute state)
+    -->
+    (<s> ^name props-eval +)
+}
+
+sp {apply*lib*store*prestore
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name lib-auto-smem-pre-store)
+    (<s> ^smem <s*1>)
+    (<s*1> ^command <scmd>)
+    (<scmd> ^pre-store <ps>)
+    -->
+    (<scmd> ^store <ps> +)
+    (<scmd> ^pre-store <ps> -)
+}
+
+sp {propose*lib*store*prestore
+    (state <s> ^smem <s*1>)
+    (<s*1> ^pre-store-ready <p*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> !)
+    (<o> ^name lib-auto-smem-pre-store +)
+}
+
+sp {elaborate*lib*prestore*ready
+    (state <s> ^smem <smem>)
+    (<smem> ^command <c*1>)
+    (<c*1> ^pre-store <p*1>)
+    -->
+    (<smem> ^pre-store-ready true +)
+}
+
+sp {elaborate*lib*prohibit*list*commands
+    (state <s> ^smem <smem>)
+    (<smem> ^command <scmd>)
+    (<scmd> -^pre-store <p*2>)
+    (<scmd> -^store <s*1>)
+    (<smem> ^prohibit-list <p*1>)
+    (<p*1> ^prohibit <p>)
+    -->
+    (<scmd> ^prohibit <p> +)
+}
+
+sp {elaborate*lib*prohibit*list
+    (state <s> ^smem <smem>)
+    -->
+    (<smem> ^prohibit-list <pl> +)
+}
+
+sp {set*clean*query*depth
+    :o-support
+    (state <s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<smem> ^command <sc>)
+    (<sc> ^depth <d>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^depth <d> -)
+}
+
+sp {set*clean*stores
+    :o-support
+    (state <s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<smem> ^command <sc>)
+    (<sc> ^store <cue>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^store <cue> -)
+}
+
+sp {set*clean*queries
+    :o-support
+    (state <s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<smem> ^command <sc>)
+    (<sc> ^query <q>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^query <q> -)
+}
+
+sp {set*clean*retrieves
+    :o-support
+    (state <s> ^smem <smem>)
+    (<smem> ^result <r*1>)
+    (<smem> ^command <sc>)
+    (<sc> ^retrieve <q>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^retrieve <q> -)
+}
+
+
+
+# Semantic Memory
+
+
+smem --add {
+(@1 ^props-static props-static ^prop-prohibits @3 ^prop-counts @2)
+(@30 ^name propose*remove*cheese ^prop-type instruction-rhs ^const @28 ^action _P11 ^lti-name |_Z8|)
+(@2 ^threshold 2)
+(@4 ^name propose*add*cheese ^prop-type instruction-lhs ^const @5 ^condition |_P1| |_P2| ^lti-name |_Z1|)
+(@5 ^1 ets ^3 add-cheddar ^2 add-brie)
+(@6 ^prop-type equality ^lti-name |_P1| ^attr1 name ^attr2 1 ^id1 props$rootstate ^id2 props$const)
+(@7 ^prop-type negation ^lti-name |_P2| ^attr1 cheese ^id1 props$rootstate)
+(@8 ^name propose*add*cheese ^prop-type instruction-rhs ^const @5 ^action |_P3| |_P4| |_P5| |_P6| ^lti-name |_Z2|)
+(@9 ^prop-type acceptable ^lti-name |_P3| ^attr1 2 ^sub1 |_U1|)
+(@10 ^depth 1 ^lti-name |_U1| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@11 ^prop-type add ^lti-name |_P4| ^attr1 2 ^sub1 |_U2|)
+(@12 ^depth 1 ^lti-name |_U2| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@13 ^prop-type acceptable ^lti-name |_P5| ^attr1 3 ^sub1 |_U3|)
+(@14 ^depth 1 ^lti-name |_U3| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@15 ^prop-type add ^lti-name |_P6| ^attr1 3 ^sub1 |_U4|)
+(@16 ^depth 1 ^lti-name |_U4| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@17 ^name apply*brie ^prop-type instruction-lhs ^const @18 ^condition |_P1| |_P7| ^lti-name |_Z3|)
+(@18 ^1 ets ^3 brie ^2 add-brie)
+(@19 ^prop-type equality ^lti-name |_P7| ^attr1 name ^attr2 2 ^id2 props$const ^sub1 |_U5|)
+(@20 ^depth 1 ^lti-name |_U5| ^target-arg id1 ^chain-attr operator ^curr-id props$rootstate ^chain-next done)
+(@21 ^name apply*brie ^prop-type instruction-rhs ^const @18 ^action |_P8| |_P9| ^lti-name |_Z4|)
+(@25 ^1 ets ^3 cheddar ^2 add-cheddar)
+(@26 ^name apply*cheddar ^prop-type instruction-rhs ^const @25 ^action |_P8| |_P9| ^lti-name |_Z6|)
+(@22 ^prop-type add ^lti-name |_P8| ^attr1 cheese ^attr2 3 ^id1 props$rootstate ^id2 props$const)
+(@23 ^prop-type add ^lti-name |_P9| ^attr1 hasmade ^attr2 3 ^id1 props$rootstate ^id2 props$const)
+(@24 ^name apply*cheddar ^prop-type instruction-lhs ^const @25 ^condition |_P1| |_P7| ^lti-name |_Z5|)
+(@27 ^name propose*remove*cheese ^prop-type instruction-lhs ^const @28 ^condition |_P1| _P10 ^lti-name |_Z7|)
+(@28 ^1 ets ^2 remove-cheese)
+(@29 ^prop-type existence ^lti-name _P10 ^attr1 cheese ^id1 props$rootstate)
+(@36 ^prop-type remove ^lti-name _P12 ^attr1 cheese ^id1 props$rootstate)
+(@31 ^prop-type better ^lti-name _P11 ^attr1 2 ^sub1 |_U6|)
+(@32 ^depth 1 ^lti-name |_U6| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@33 ^name apply*remove*cheese ^prop-type instruction-lhs ^const @34 ^condition |_P1| |_P7| ^lti-name |_Z9|)
+(@34 ^1 ets ^2 remove-cheese)
+(@35 ^name apply*remove*cheese ^prop-type instruction-rhs ^const @34 ^action _P12 ^lti-name _Z10)
+}
+
+# Episodic memory
+
+#epmem --set database file
+#epmem --set path "agent_epmem.db"
+
+
+# Settings
+
+

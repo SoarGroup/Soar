@@ -1,0 +1,15 @@
+sp {answer*start-chunking*StateNoChange*t2-2
+    (state <s1> ^object1 object ^superstate nil ^object2 <c2> ^object1 <c1>)
+    -->
+    (<s1> ^result1u ungrounded + ^result1b <c2> + ^result1c <c1> +)
+}
+
+sp {answer*start-chunking-partial-lit*StateNoChange*t2-1
+    (state <s1> ^superstate nil ^object2 <c3> ^object1 <c2>
+          ^object1 { >= <c1> <c1> })
+    -->
+    (<s1> ^result2a ungrounded + ^result2b <c3> + ^result2c <c2> +)
+}
+
+
+

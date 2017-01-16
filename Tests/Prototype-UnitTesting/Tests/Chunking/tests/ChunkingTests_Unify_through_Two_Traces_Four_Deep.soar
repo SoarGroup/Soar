@@ -1,0 +1,87 @@
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object
+        ^word2 not-object)
+
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word <w>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word <w>)
+}
+
+sp {apply*1
+    (state <s> ^operator <o>
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
+    (<ss> ^word <w>)
+    (<o> ^word <w>)
+    -->
+    (<s> ^sub-result1 <w> +)
+}
+
+sp {apply*2
+    (state <s> ^sub-result1 { <> not-object <w> }
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
+    (<ss> ^word <w2>)
+    -->
+    (<s> ^sub-result2 <w> +)
+}
+
+sp {apply*3
+    (state <s> ^sub-result2 { <= object <w> })
+    -->
+    (<s> ^sub-result3 <w> +)
+}
+
+sp {apply*4
+    (state <s> ^sub-result3 <w>)
+    -->
+    (<s> ^sub-result4 <w> +)
+}
+
+sp {apply*3b
+    (state <s> ^sub-result2 <w>)
+    -->
+    (<s> ^sub-result3b <w> +)
+}
+
+sp {apply*4b
+    (state <s> ^sub-result3b { >= object <w> })
+    -->
+    (<s> ^sub-result4b <w> +)
+}
+
+sp {make-chunk
+    (state <s> ^operator <o>
+               ^sub-result4 <r>
+               ^sub-result4b <r>
+               ^superstate <ss2>)
+    (<ss2> ^superstate <ss3>)
+    (<ss3> ^superstate <ss>)
+    (<o> ^word {<> <not-object> <object> })
+    (<ss> ^word2 <not-object>)
+    -->
+    (<ss> ^result1 <r> +
+          ^result2 <object>
+          ^result3 <not-object>)
+}

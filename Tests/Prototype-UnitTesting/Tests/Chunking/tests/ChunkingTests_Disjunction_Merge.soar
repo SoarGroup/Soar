@@ -1,0 +1,74 @@
+chunk always
+watch --learn 2
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^word object
+        ^word2 not-object2
+        ^num1 1
+        ^num2 2
+        ^num3 3)
+
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Too deep.|)
+    (interrupt)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil
+          ^word { <> word-propose <w> })
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^word <w>)
+}
+
+sp {apply*loose*constraint
+    (state <s> ^superstate <ss>
+               ^operator <o>)
+    (<ss> ^word2 << not-object2 not-object3 >> <w2>
+          ^num1 { << 1 >> <num> }
+          ^num2 { << 2 >> <num2> }
+          ^num3 { << 2 3 >> <num3> }
+          ^num3 { << 1 2 3 >> <num4> })
+    (<o> ^word { << object 7 >> << object 8 >> << object >> <no> })
+    -->
+    (<s> ^sub-result <num> +
+         ^sub-result2 <num2> +
+         ^sub-result3 <num3> +
+         ^sub-result4 <num4> +
+         ^sub-result-w2 <w2> +)
+}
+
+sp {make-chunk
+    (state <s> ^superstate <ss>
+               ^operator <o>
+               ^sub-result { << 1 >> <r> }
+               ^sub-result2 { << 2 3 >> <r2> }
+               ^sub-result3 { << 4 2 3 >> <r3> }
+               ^sub-result4 { << 1 4 2 3 5 >> <r4> }
+               ^sub-result-w2 { << Michael Jordan not-object2 >> <rw2> })
+    (<ss> ^num2 { << 2 3 >> <r2> })
+    (<o> ^word {<> word-make << 1 2 3 object >> <object> })
+    -->
+    (<ss> ^result (concat <r> <r2> <r3> <r4> <rw2> <object>) +)
+}
+
+#sp {chunk*make-chunk*StateNoChange*t2-1
+#    :chunk
+#    (state <s1> ^superstate nil)
+#    (<s1> ^num3 { << 1 2 3 4 5 >> <c6> })
+#    (<s1> ^num3 { << 2 3 4 >> <c5> })
+#    (<s1> ^num2 { << 2 3 >> <c4> })
+#    (<s1> ^num1 { << 1 2 3 >> <c3> })
+#    (<s1> ^word2 { << Michael Jordan not-object2 >> <c2> })
+#    (<s1> ^word2 { << not-object2 not-object3 >> <c1> })
+#    (<s1> ^word { << 1 2 3 object 8 7 >> <> word-make <> word-propose <c7> })
+#    -->
+#    (<s1> ^result (concat <c3> <c4> <c5> <c6> <c2> <c7>) +)
+#}

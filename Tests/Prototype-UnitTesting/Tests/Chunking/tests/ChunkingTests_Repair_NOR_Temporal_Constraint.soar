@@ -1,0 +1,87 @@
+# Tests:
+# - 
+
+srand 23
+smem --enable
+chunk always
+
+smem --add {(<t1> ^D X )}
+smem --add {(<t2> ^D Y )}
+
+sp {init
+    (state <s> ^superstate nil -^result)
+-->
+    (<s> ^step 1)
+}
+
+sp {init2
+    (state <s> ^superstate nil ^result -^result2)
+-->
+    (<s> ^step 2)
+}
+
+sp {done
+    (state <s> ^superstate nil ^result ^result2)
+-->
+    (interrupt)
+}
+
+sp {propose*top-op
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name top-op )
+}
+
+sp {propose*query-lti
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil ^operator.name top-op)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name query-lti)
+    (write (crlf) |Proposing query operator | <o> )
+}
+
+sp {apply*query
+    (state <s> ^operator.name query-lti
+               ^smem.command <command>)
+-->
+    (<command> ^query <q> ^depth 5)
+    (<q> ^D <x>)
+    (write (crlf) |Query command initiated.| )
+}
+
+sp {apply*query*success*1
+    (state <s> ^operator.name query-lti
+               ^smem.result <sres>
+               ^superstate <ss>)
+    (<ss> ^step 1)
+    (<sres> ^success
+            ^retrieved <res>)
+-->
+    (<ss> ^result <res>)
+    (write (crlf) |Query successful and result created: | <res> )
+}
+
+sp {elab*query*success*2
+    (state <s> ^smem.result <sres>
+               ^superstate <ss>)
+    (<ss> ^step 2)
+    (<sres> ^success
+            ^retrieved <res>)
+-->
+    (<s> ^retrieved-copy <res>)
+    (<res> ^foo bar)
+}
+
+sp {apply*query*success*2
+    (state <s> ^operator.name query-lti
+               ^retrieved-copy <sres>
+               ^superstate <ss>)
+    (<ss> ^step 2
+          ^result <old-res>)
+    (<sres> ^foo <res>)
+-->
+    (<ss> ^result2 <res>)
+    (write (crlf) |Query 2 successful and result created: | <res> )
+}

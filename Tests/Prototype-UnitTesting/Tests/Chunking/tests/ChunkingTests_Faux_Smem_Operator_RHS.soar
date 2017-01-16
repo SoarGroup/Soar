@@ -1,0 +1,115 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+smem --set learning on
+smem -a {(<l1> ^operator <l2>)}
+
+sp {propose*get-smem-top
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name get-fake)
+}              
+
+sp {propose*get-smem
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name get-fake)
+}              
+
+sp {apply*check-smem
+   (state <s> ^operator.name get-fake
+              ^smem.command <command>)
+-->
+   (<command> ^query <q>)
+   (<q> ^operator <e>)
+}
+
+sp {apply*check-smem*success-top
+      (state <s> ^superstate nil
+                 ^operator.name get-fake
+                 ^smem <smem>)
+   (<smem> ^command <command> ^result <result>)
+   (<command> ^query <q>)
+   (<result> ^retrieved <retrieved> ^success <q>)
+   (<retrieved> ^<operator> <fake-op>)
+-->
+   (<s> ^<operator> <fake-op>
+        ^top-retrieve <retrieved>)
+   (<command> ^query <q> -)
+   (write  |Copied fake operator | <retrieved> (crlf))
+}
+
+sp {apply*chunk*check-smem*success
+   (state <s> ^operator.name get-fake
+              ^superstate <ss>
+              ^smem <smem>)
+   (<smem> ^command <command> ^result <result>)
+   (<command> ^query <q>)
+   (<result> ^retrieved <retrieved> ^success <q>)
+   (<retrieved> ^<operator> <fake-op>)
+   -->
+   (<ss> ^<operator> <fake-op>
+         ^substate-retrieved <retrieved>)
+   (<command> ^query <q> -)
+   (write (crlf) |Copied fake operator to top state | <retrieved> (crlf))
+}
+
+#/* Another version we're experimenting with trying to figure out why RETE is returning the wrong field num for some actions when creating an instantiation of last 2 rules */
+# sp {propose*get-smem-top
+#    (state <s> ^type state -^impasse)
+# -->
+#    (<s> ^top-state true ^operator <o> + =)
+#    (<o> ^name get-fake)
+# }              
+# 
+# sp {propose*get-smem
+#    (state <s> ^superstate <ss>)
+#    (<ss> -^impasse)
+# -->
+#    (<s> ^operator <o> + =)
+#    (<o> ^name get-fake)
+# }              
+# 
+# sp {apply*check-smem
+#    (state <s> ^operator.name get-fake
+#               ^smem.command <command>)
+# -->
+#    (<command> ^query <q>)
+#    (<q> ^operator <e>)
+# }
+# 
+# sp {apply*check-smem*success-top
+#       (state <s> ^top-state true
+#                  ^operator.name get-fake
+#                  ^smem <smem>)
+#    (<smem> ^command <command> ^result <result>)
+#    (<command> ^query <q>)
+#    (<result> ^retrieved <retrieved> ^success <q>)
+#    (<retrieved> ^<op> <fake-op>)
+# -->
+#    (<s> ^<op> <fake-op>
+#         ^top-retrieve <retrieved>)
+#    (<command> ^query <q> -)
+#    (write  |Copied fake operator | <retrieved> (crlf))
+# }
+# 
+# sp {apply*chunk*check-smem*success
+#    (state <s> ^superstate <ss>
+#               ^operator <o>
+#               ^smem <smem>)
+#    (<o> ^name get-fake)
+#    (<smem> ^command <command> ^result <result>)
+#    (<command> ^query <q>)
+#    (<result> ^retrieved <retrieved> ^success <q>)
+#    (<retrieved> ^<op> <fake-op>)
+#    -->
+#    (<ss> ^<op> <fake-op>
+#          ^substate-retrieved <retrieved>)
+#    (<command> ^query <q> -)
+#    (write (crlf) |Copied fake operator to top state | <retrieved> (crlf))
+#    (interrupt)
+# }

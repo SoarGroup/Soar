@@ -1,0 +1,60 @@
+chunk flagged
+srand 7
+
+sp {all*elaborate*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {init*state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name rosie ^foo 1 ^foo 2)
+}
+
+sp {eval-condition*propose*condition-match
+    (state <s> ^name rosie ^foo <f>)
+    -->
+    (<s> ^operator <o1> + )
+    (<o1> ^name condition-match + ^type <f>)
+}
+
+sp {chunk-preferences*force-learn
+   (state <s> ^superstate <ss>
+              ^attribute operator
+              ^impasse tie)
+   (<ss> ^name rosie)
+-->
+   (force-learn <s>)
+}
+
+sp {chunk-preferences*chunk-delay
+   (state <s> ^superstate  <ss>
+              ^attribute operator
+              ^impasse tie)
+   (<ss> ^name rosie)
+-->
+   (<s> ^name chunk-delay
+        ^linkstate <ss>)
+}
+
+sp {chunk-delay*chunk-preferences
+   (state <s> ^superstate <ss> ^attribute state ^choices none ^impasse no-change)
+   (<ss> ^linkstate <ls> ^name chunk-delay)
+-->
+   (<s> ^name chunk-preferences
+        ^linkstate <ls>)
+}
+
+sp {chunk-parameters*preference*prefer*single-operators*2args
+   (state <s> ^name chunk-preferences
+              ^linkstate <ss>)
+   (<ss> ^operator <o1> + ^operator <o2> +)
+   (<o1> ^type {<f1> > <f2>})
+   (<o2> ^type <f2>)
+-->
+   (<ss> ^operator <o1> > <o2>)
+   (interrupt)
+}
+

@@ -1,0 +1,5 @@
+sp {answer*apply*promote*t1-1
+    (state <s1> ^foo <b1>)
+    -->
+    (<b1> ^promoted <h1> +)
+}

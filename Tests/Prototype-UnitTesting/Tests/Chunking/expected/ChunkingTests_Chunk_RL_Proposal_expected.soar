@@ -1,0 +1,14 @@
+sp {answer*propose-literal*snc*t1-2
+    (state <s1> ^superstate nil ^foo <c1>)
+    -->
+    (<s1> ^operator <o1> = 0.)
+    (<o1> ^name rl-proposal +)
+}
+
+sp {answer*propose*snc*t1-1
+    (state <s1> ^superstate nil ^foo <c1>)
+    -->
+    (<s1> ^operator <o1> = <c1>)
+    (<o1> ^name rl-proposal +)
+}
+

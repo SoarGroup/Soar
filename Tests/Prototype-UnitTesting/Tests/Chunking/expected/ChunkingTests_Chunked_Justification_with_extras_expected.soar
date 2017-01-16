@@ -1,0 +1,12 @@
+sp {answer*chunk*create-goal*apply*copy-result*t6-1
+    :chunk
+    (state <s1> ^goal-info <g1>)
+    (<s1> ^world <w1>)
+    (<g1> ^object <c1>)
+    (<w1> ^object <c2>)
+    (<c1> ^<c3> <c4>)
+    (<c2> ^<c3> <c4>)
+    -->
+    (<s1> ^goal <b1> +)
+    (<b1> ^object <o1> +)
+}

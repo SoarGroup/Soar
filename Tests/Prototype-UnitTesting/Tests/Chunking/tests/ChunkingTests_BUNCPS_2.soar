@@ -1,0 +1,76 @@
+chunk always
+chunk only
+
+sp {all*elaborate*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+sp {all*elaborate*topstate
+   (state <s> ^superstate.topstate <ts>)
+-->
+   (<s> ^topstate <ts>)
+}
+
+sp {all*elaborate*condition
+   (state <s> ^superstate.condition <co>)
+-->
+   (<s> ^condition <co>)
+}
+
+sp {init*state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^object <N712> 
+        ^topstate <s>
+        ^condition <cond>)
+   (<cond> ^name block ^arg.result <N712>)
+   (<N712> ^id 6 ^type block)
+}
+
+sp {turn-learning-on
+(state <s> ^superstate.superstate nil)
+-->
+    (force-learn <s>)
+    (<s> ^name learn-state)
+}
+
+sp {learn-state*propose*resolve-conditions
+(state <s> ^name learn-state
+          -^result)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name resolve-conditions)
+}
+
+
+sp {eval-condition*propose*condition-match
+    (state <s1> ^name resolve-conditions ^condition <c1>)
+    (<c1> ^name <v>)
+    -->
+    (<s1> ^operator <o1> + =)
+    (<o1> ^name condition-match + ^type <v> +)
+}
+
+sp {condition-match*elaborate*matching-argument-object
+(state <s> ^name condition-match
+           ^topstate <ts>
+          #^topstate.condition <c> #swap with V to fix
+           ^superstate.condition <c>
+           ^superstate.operator.type <word>)
+    (<c> ^name { <> foo <word> } ^arg.result <o>)
+    (<o> ^type <word>)
+-->
+    (<ts> ^result <o1>)
+    (<o1> ^object <o>)
+}
+
+sp {propose*stop
+   (state <s> ^result)
+-->
+#    (success)
+    (interrupt)
+}
+
+#run
+#ctf expected/chunk30.soar print -cf

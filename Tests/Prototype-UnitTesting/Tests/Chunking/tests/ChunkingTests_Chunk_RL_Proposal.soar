@@ -1,0 +1,30 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^foo 0.1)
+}
+
+sp {propose
+   (state <s> ^superstate <ss>)
+   (state <ss> ^superstate nil
+               ^foo <foo>)
+      -->
+   (<ss> ^operator <o> = <foo>)
+   (<o> ^name rl-proposal)
+}
+
+sp {propose-literal
+   (state <s> ^superstate <ss>)
+   (state <ss> ^superstate nil
+               ^foo <foo>)
+      -->
+   (<ss> ^operator <o> = 0.0)
+   (<o> ^name rl-proposal)
+}
+

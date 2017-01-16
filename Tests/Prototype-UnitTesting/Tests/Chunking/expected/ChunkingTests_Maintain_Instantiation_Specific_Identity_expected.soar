@@ -1,0 +1,8 @@
+sp {answer*apply*StateNoChange*t2-1
+    (state <s1> ^superstate nil ^item2 <c2> ^item1 <c3> ^item1 <c1>)
+    -->
+    (<s1> ^result 33 + ^result2 <c3> +)
+}
+
+
+

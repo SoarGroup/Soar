@@ -1,0 +1,76 @@
+chunk always
+chunk only
+
+sp {all*elaborate*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+sp {all*elaborate*topstate
+   (state <s> ^superstate.topstate <ts>)
+-->
+   (<s> ^topstate <ts>)
+}
+sp {all*elaborate*condition
+   (state <s> ^superstate.condition <ts>)
+-->
+   (<s> ^condition <ts>)
+}
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^object <N71> ^object <N77> ^object <N78>
+        ^object <N79> ^object <N711> ^object <N712> ^topstate <s>
+        ^condition.name red)
+   
+(<N71> ^category location ^id 6 ^linguistic-desc <D51>)
+(<D51> ^word yellow)
+
+(<N77> ^category block ^id 1 ^linguistic-desc <D57>)
+(<D57> ^word red)
+(<N78> ^category block ^id 2 ^linguistic-desc <D58>)
+(<D58> ^word red)
+(<N79> ^category block ^id 3 ^linguistic-desc <D59>)
+(<D59> ^word green)
+(<N711> ^category location ^id 4 ^linguistic-desc <D511>)
+(<D511> ^word purple)
+(<N712> ^category location ^id 5 ^linguistic-desc <D512>)
+(<D512> ^word red)
+}
+
+sp {turn-learning-on
+(state <s> ^superstate.superstate nil)
+-->
+    (force-learn <s>)
+    (<s> ^name learn-state)
+}
+
+sp {learn-state*propose*condition-match
+(state <s> ^name learn-state
+           ^condition <c>)
+    (<c> ^name {<name> << red blue >>})
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name condition-match)
+}
+
+sp {condition-match*elaborate*results
+(state <s> ^name condition-match
+           ^condition.name <name>
+           ^topstate <ss>)
+    (<ss> ^object <o>)
+    (<o> ^linguistic-desc.word <name>)
+-->
+    (<ss> ^result <o1>)
+    (<o1> ^object <o>)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate.superstate.superstate.superstate nil)
+-->
+#    (success)
+    (interrupt)
+}
+
+#run
+#ctf expected/chunk27.soar print -cf

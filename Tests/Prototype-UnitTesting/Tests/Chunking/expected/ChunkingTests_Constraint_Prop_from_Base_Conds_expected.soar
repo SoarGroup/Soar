@@ -1,0 +1,9 @@
+sp {answer*apply-create-chunk*StateNoChange*t2-1
+    (state <s1> ^superstate nil ^data2 { >= 2 <c1> } ^data <c1> ^data2 <c4>
+          ^data <c3> ^data { < <c1> <> <c1> <c2> })
+    -->
+    (<s1> ^big <c1> + ^small <c2> +)
+}
+
+
+

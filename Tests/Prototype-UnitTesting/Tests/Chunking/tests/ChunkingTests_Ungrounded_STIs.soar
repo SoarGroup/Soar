@@ -1,0 +1,44 @@
+# Test where RHS item should not be variablized and is never variablized on LHS (like example 14 with identifiers)
+# RHS should still be a variable b/c it becomes an unground one
+# was 16
+
+srand 23
+chunk always
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-param <tp> <tp2> <tp3>
+         ^test-param2 <tp3>)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
+
+sp {apply13a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+-->
+    (<s> ^substate-output <ungrounded>)}
+
+sp {apply13b
+    (state <s> ^name substate
+               ^operator.name test
+               ^substate-output <var-ungrounded>
+               ^superstate <ss>)
+-->
+    (<ss> ^result13a <var-ungrounded>
+          ^test-done 1)}
+
+#run
+#ctf expected/chunk13.soar print -cf

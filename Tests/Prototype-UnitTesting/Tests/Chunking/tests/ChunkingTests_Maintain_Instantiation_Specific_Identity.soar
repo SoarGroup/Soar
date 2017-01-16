@@ -1,0 +1,46 @@
+# Test to make sure that chunking doesn't unify variables with the same name
+# but different instantiations, which orig var id propagation should prevent.
+
+chunk always
+#learn -P
+#watch --backtracing
+#watch --learn 2
+#save-backtraces --enable
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^item1 23 ^item2 33)
+}
+
+sp {propose
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil
+         ^item2 <value2>
+         ^item1 <value>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name make-chunk)}
+
+sp {ungrounded
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^item3 33)
+}
+
+sp {apply
+   (state <s> ^operator <o>
+              ^item3 <value>
+              ^superstate <ss>)
+   (<ss> ^item1 <value2>)
+   (<o> ^name make-chunk)
+-->
+   (<ss> ^result <value> ^result2 <value2>)}
+
+sp {apply*test-done
+   (state <s> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}
+

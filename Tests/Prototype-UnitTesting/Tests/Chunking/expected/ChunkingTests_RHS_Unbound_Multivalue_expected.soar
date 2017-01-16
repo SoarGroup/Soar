@@ -1,0 +1,7 @@
+sp {answer*apply10*onc*t3-2
+    (state <s1> ^superstate nil ^test-param2 <p2> ^test-param <p1>)
+    -->
+    (<s1> ^result10a <p1> + ^result10b <p2> + ^test-done 1 +)
+}
+
+

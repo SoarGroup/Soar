@@ -1,0 +1,47 @@
+# Tests variablization of referent
+
+srand 23
+chunk always
+
+sp {init*state
+    (state <s> ^superstate nil)
+-->
+    (<s> ^attr1 foo ^attr2 bar)
+}
+
+sp {propose-level1-a
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name winner ^type awesome)
+}
+
+sp {propose-level1-b
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name participant ^type silly)
+}
+
+sp {propose-level1-c
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name participant2 ^type sleepy)
+}
+
+sp {make-chunk
+    (state <s> ^superstate <ts>)
+    (<ts> ^operator { <> <o2> <o1> } + 
+                    <o2> +)
+    (<o2> ^name winner)
+-->
+    (<ts> ^operator <o2> > <o1>)
+}
+
+sp {propose*stop
+    (state <s> ^operator.name winner)
+-->
+ #    (success)
+    (interrupt)
+}

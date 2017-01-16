@@ -1,0 +1,34 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^foo bar)
+}
+
+sp {propose*top
+   (state <s2> ^superstate nil)
+-->
+   (<s2> ^operator <o> +)
+   (<o> ^name top)
+}
+
+sp {propose
+   (state <s2> ^superstate.operator)
+-->
+   (<s2> ^operator <o> +)
+   (<o> ^name substate)
+}
+
+sp {make*chunk*result_on_op
+   (state <s2> ^superstate <ss>)
+   (<ss> ^superstate nil 
+         ^foo <bar> 
+         ^operator <o>)
+-->
+   (<o> ^foo <bar>)
+}
