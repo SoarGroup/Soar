@@ -859,6 +859,7 @@ void SMem_Manager::close()
         // de-allocate common statements
         delete SQL;
         delete thisAgent->lastCue;
+        thisAgent->lastCue = NULL;
 
         // close the database
         DB->disconnect();

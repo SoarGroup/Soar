@@ -107,12 +107,6 @@ void MiscTests::test_echo()
 	agent->ExecuteCommandLine("echo >");
 	assertTrue_msg("greater than", agent->GetLastCommandLineResult());
 	
-//	agent->ExecuteCommandLine("echo |");
-//	assertTrue_msg("pipe", agent->GetLastCommandLineResult());
-//
-//	agent->ExecuteCommandLine("echo |#");
-//	assertTrue_msg("pipe and pound", agent->GetLastCommandLineResult());
-//
 	agent->ExecuteCommandLine("echo |#|");
 	assertTrue_msg("pound in pipes", agent->GetLastCommandLineResult());
 	

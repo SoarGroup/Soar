@@ -3,8 +3,6 @@
 epmem --set learning on
 smem --set learning on
 
-chunk never
-
 sp {elaboration*original-number-to-factor-mod-two
    (state <s> ^original-number-to-factor <n>)
 -->
@@ -1310,6 +1308,21 @@ sp {apply*retrieve-factor
         ^factor <factor-lti>)
 -->
    (<sc> ^retrieve <factor-lti>)
+}
+
+# Copy the factors
+sp {apply*retrieve-factor*copy
+    (state <s>  ^operator <o>
+                ^smem.result <sr>
+                ^factorization-object <factor-object>)
+    (<factor-object> ^factor <factor-lti>)
+    (<sr>   ^retrieved <lti>
+            ^success <factor-lti>)
+    (<o> ^name retrieve-factor
+         ^factor <factor-lti>)
+    (<lti> ^<attr> <value>)
+-->
+    (<factor-lti> ^<attr> <value>)
 }
 
 # This removes any previous retrieve so we don't

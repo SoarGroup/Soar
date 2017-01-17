@@ -670,13 +670,10 @@ bool SMem_Manager::clear()
 
 void SMem_Manager::reinit()
 {
-    if (thisAgent->SMem->connected())
+    if (thisAgent->SMem->connected() && (thisAgent->SMem->settings->database->get_value() == smem_param_container::file))
     {
-        if (thisAgent->SMem->settings->append_db->get_value() == off)
-        {
-            close();
-            init_db();
-        }
+        close();
+        init_db();
     }
 }
 

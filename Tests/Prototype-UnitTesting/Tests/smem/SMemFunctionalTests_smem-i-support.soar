@@ -51,6 +51,16 @@ sp {apply*retrieve-lti
    (<scmd> ^retrieve <lti>)
 }
 
+sp {apply*retrieve-lti*copy
+    (state <s>  ^superstate.operator.lti <lti2>
+                ^smem.result <sr>)
+    (<sr>   ^retrieved <lti>
+            ^success <lti2>)
+    (<lti>  ^<attr> <value>)
+-->
+    (<lti2> ^<attr> <value>)
+}
+
 sp {success
    (state <s> ^superstate.superstate.superstate.superstate nil)
 -->

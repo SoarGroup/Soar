@@ -1298,6 +1298,21 @@ sp {apply*retrieve-factor
    (<sc> ^retrieve <factor-lti>)
 }
 
+# Copy the factors
+sp {apply*retrieve-factor*copy
+    (state <s>  ^operator <o>
+                ^smem.result <sr>
+                ^factorization-object <factor-object>)
+    (<factor-object> ^factor <factor-lti>)
+    (<sr>   ^retrieved <lti>
+            ^success <factor-lti>)
+    (<o> ^name retrieve-factor
+         ^factor <factor-lti>)
+    (<lti> ^<attr> <value>)
+-->
+    (<factor-lti> ^<attr> <value>)
+}
+
 # This removes any previous retrieve so we don't
 # get 'bad-cmd' errors from smem since we can't
 # do simultaneous retrieves.

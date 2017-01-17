@@ -50,7 +50,7 @@ public:
 	
 	// If you would like to test the Soar Debugger Spawning, uncomment below.
 	// It may or may not work but should unless you're running without a GUI.
-//	TEST(testSoarDebugger, -1)
+	TEST(testSoarDebugger, -1)
 	void testSoarDebugger();
 	
 	void source(const std::string& path);

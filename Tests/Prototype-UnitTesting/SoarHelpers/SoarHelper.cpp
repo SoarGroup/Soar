@@ -45,7 +45,7 @@ int SoarHelper::getINNER_E_CYCLE_COUNT(sml::Agent* agent)
 
 int SoarHelper::getUserProductionCount(sml::Agent* agent)
 {
-	std::string rules = agent->ExecuteCommandLine("p -u");
+	std::string rules = agent->ExecuteCommandLine("print --user");
 	
 	std::stringstream ss(rules);
 	std::string line;
@@ -62,7 +62,7 @@ int SoarHelper::getUserProductionCount(sml::Agent* agent)
 
 int SoarHelper::getChunkProductionCount(sml::Agent* agent)
 {
-	std::string rules = agent->ExecuteCommandLine("p -c");
+	std::string rules = agent->ExecuteCommandLine("print --chunks");
 	
 	std::stringstream ss(rules);
 	std::string line;
@@ -125,20 +125,14 @@ int SoarHelper::parseForCount(std::string search, std::string countString)
 
 std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* agent)
 {
-	std::istringstream iss(agent->ExecuteCommandLine("set-stop-phase"));
+	std::istringstream iss(agent->ExecuteCommandLine("soar stop-phase"));
 	
-	std::string s_before;
 	std::string s_phase;
 	std::string temp;
 	
-	iss >> temp >> s_before >> s_phase >> temp;
+	iss >> temp >> temp >> s_phase;
 	
-	bool before = false;
 	StopPhase phase = StopPhase::INPUT;
-	
-	if (s_before == "before")
-		before = true;
-	
 	if (s_phase == "input")
 		phase = StopPhase::INPUT;
 	else if (s_phase == "proposal")
@@ -150,29 +144,25 @@ std::tuple<SoarHelper::StopPhase, bool> SoarHelper::getStopPhase(sml::Agent* age
 	else if (s_phase == "output")
 		phase = StopPhase::OUTPUT;
 	
-	return std::make_tuple(phase, before);
+	return std::make_tuple(phase, true);
 }
 
 void SoarHelper::setStopPhase(sml::Agent* agent, StopPhase phase, bool before)
 {
-	std::string s_before = "--before";
 	std::string s_phase = "--input";
 	
-	if (before == false)
-		s_before = "--after";
-	
 	if (phase == StopPhase::INPUT)
-		s_phase = "--input";
+		s_phase = "input";
 	else if (phase == StopPhase::PROPOSAL)
-		s_phase = "--proposal";
+		s_phase = "proposal";
 	else if (phase == StopPhase::DECISION)
-		s_phase = "--decision";
+		s_phase = "decision";
 	else if (phase == StopPhase::APPLY)
-		s_phase = "--apply";
+		s_phase = "apply";
 	else if (phase == StopPhase::OUTPUT)
-		s_phase = "--output";
+		s_phase = "output";
 	
-	agent->ExecuteCommandLine(std::string("set-stop-phase " + s_before + s_phase).c_str());
+	agent->ExecuteCommandLine(std::string("soar stop-phase " + s_phase).c_str());
 }
 
 std::vector<std::string> SoarHelper::getGoalStack(sml::Agent* agent)

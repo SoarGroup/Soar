@@ -41,7 +41,7 @@ public:
     TEST(testChunk_Superstate_Operator_Preference, -1);
     TEST(testConflated_Constants, -1);
     TEST(testConstraint_Prop_from_Base_Conds, -1);
-//    TEST(testDemo_Arithmetic, -1);
+    TEST(testDemo_Arithmetic, -1);
     TEST(testDemo_Blocks_World_Hierarchical, -1);
     TEST(testDemo_Blocks_World_Hierarchical_Look_Ahead, -1);
     TEST(testDemo_Blocks_World_Look_Ahead, -1);

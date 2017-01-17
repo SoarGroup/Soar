@@ -64,7 +64,7 @@ public:
 	TEST(testLessNoSolution, -1)
 	void testLessNoSolution();
 	
-	TEST(testSimpleStoreMultivaluedAttribute, -1)
+    TEST(testSimpleStoreMultivaluedAttribute, -1)
 	void testSimpleStoreMultivaluedAttribute();
 	
 	TEST(testSimpleFloat, -1)
@@ -97,7 +97,6 @@ public:
 	TEST(testISupportWithLearning, -1)
 	void testISupportWithLearning();
 
-public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationRecency, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationRecency();
 	
@@ -107,10 +106,6 @@ public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationFrequency, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationFrequency();
 	
-private:
-	bool checkActivationValues(std::string activationString, std::vector<double> lowEndExpectations, std::vector<double> highEndExpectations, const char* file, const int line);
-	
-public:
 	TEST(testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable, -1)
 	void testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable();
 	

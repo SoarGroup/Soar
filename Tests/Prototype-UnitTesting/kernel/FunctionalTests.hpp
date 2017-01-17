@@ -41,13 +41,13 @@ public:
 	void testBlocksWorldOperatorSubgoaling();
 	
 	TEST(testBlocksWorldLookAhead,10000)
-	void testBlocksWorldLookAhead(); // MMA:  Unit test fails.  Expected equal values (40, 35) but was unequal.
+	void testBlocksWorldLookAhead();
 	
 	TEST(testArithmetic,80000)
 	void testArithmetic();
 	
 	TEST(testCountTest,80000)
-	void testCountTest(); // MMA:  Unit test fails.  Agent needs updating for EBC
+	void testCountTest();
 };
 
 
