@@ -144,6 +144,6 @@ sp {success
     (state <s> ^superstate nil ^goal <goal>)
 -->
     (write (crlf) |Test finished.|)
-    (exec succeeded)
+    (succeeded)
     (interrupt)
 }

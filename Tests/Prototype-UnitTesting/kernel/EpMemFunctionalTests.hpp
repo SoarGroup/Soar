@@ -15,6 +15,24 @@ class EpMemFunctionalTests : public FunctionalTestHarness {
 public:
 	TEST_CATEGORY(EpMemFunctionalTests);
 	
+    TEST(testReadCSoarDB, -1)
+    void testReadCSoarDB();
+
+    TEST(testEpmemUnit_1, -1)
+    TEST(testEpmemUnit_2, -1)
+    TEST(testEpmemUnit_3, -1)
+    TEST(testEpmemUnit_4, -1)
+    TEST(testEpmemUnit_5, -1)
+    TEST(testEpmemUnit_6, -1)
+    TEST(testEpmemUnit_7, -1)
+    TEST(testEpmemUnit_8, -1)
+    TEST(testEpmemUnit_9, -1)
+    TEST(testEpmemUnit_10, -1)
+    TEST(testEpmemUnit_11, -1)
+    TEST(testEpmemUnit_12, -1)
+    TEST(testEpmemUnit_13, -1)
+    //TEST(testEpmemUnit_14, -1)  /* This test should no longer pass with the new 9.6.0 model of smem */
+
 //	TEST(testCountEpMem, -1) // Crashing: Assertion failed: (temp_stmt->get_status() == ready), function structure, file Core/SoarKernel/src/shared/soar_db.h, line 520
 	void testCountEpMem();
 	
@@ -90,26 +108,32 @@ public:
 	TEST(testEpMemYRemoval, -1)
 	void testEpMemYRemoval();
 	
-//	TEST(testEpMemSoarGroupTests, -1); // MMA Crashing: Assertion failed: (temp_stmt->get_status() == ready), function structure, file Core/SoarKernel/src/shared/soar_db.h, line 520
-	void testEpMemSoarGroupTests();
-	
-//	TEST(testReadCSoarDB, -1) // MMA Crashing: Assertion failed: (temp_stmt->get_status() == ready), function structure, file Core/SoarKernel/src/shared/soar_db.h, line 520
-	void testReadCSoarDB();
-	
 	TEST(testMultiAgent, -1)
 	void testMultiAgent();
 	
-	TEST(testEpMemUnit, -1)
-	void testEpMemUnit();
-	
-	TEST(testHamiltonian, -1);
+	TEST(testHamiltonian, -1)
 	void testHamiltonian();
 	
-	TEST(testSVS, -1);
+	TEST(testSVS, -1)
 	void testSVS();
 	
-	TEST(testSVSHard, -1);
+	TEST(testSVSHard, -1)
 	void testSVSHard();
+
+	void testEpmemUnit_1();
+    void testEpmemUnit_2();
+    void testEpmemUnit_3();
+    void testEpmemUnit_4();
+    void testEpmemUnit_5();
+    void testEpmemUnit_6();
+    void testEpmemUnit_7();
+    void testEpmemUnit_8();
+    void testEpmemUnit_9();
+    void testEpmemUnit_10();
+    void testEpmemUnit_11();
+    void testEpmemUnit_12();
+    void testEpmemUnit_13();
+    void testEpmemUnit_14();
 };
 
 #endif /* FunctionalTests_EpMem_cpp */

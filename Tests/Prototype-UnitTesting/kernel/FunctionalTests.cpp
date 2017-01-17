@@ -60,17 +60,10 @@ void FunctionalTests::testArithmetic()
 
 void FunctionalTests::testCountTest()
 {
-	runTest("testCountTest", 45047);
+	runTest("testCountTest", 25042);
 	assertEquals(42, SoarHelper::getUserProductionCount(agent));
-	assertEquals(15012, SoarHelper::getChunkProductionCount(agent));
-	assertEquals(115134, SoarHelper::getE_CYCLE_COUNT(agent));
+	assertEquals(6, SoarHelper::getChunkProductionCount(agent));
+	assertEquals(85133, SoarHelper::getE_CYCLE_COUNT(agent));
 	assertEquals(40038, SoarHelper::getPE_CYCLE_COUNT(agent));
-	assertEquals(120144, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
-	
-//	runTest("testCountTest", 25042);
-//	assertEquals(42, SoarHelper::getUserProductionCount(agent));
-//	assertEquals(6, SoarHelper::getChunkProductionCount(agent));
-//	assertEquals(85133, SoarHelper::getE_CYCLE_COUNT(agent));
-//	assertEquals(40038, SoarHelper::getPE_CYCLE_COUNT(agent));
-//	assertEquals(95151, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
+	assertEquals(95151, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
 }

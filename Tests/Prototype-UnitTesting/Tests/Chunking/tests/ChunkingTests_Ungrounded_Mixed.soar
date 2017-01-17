@@ -20,7 +20,7 @@ sp {apply*test-done
     (state <s> ^superstate nil ^test-done)
 -->
     (write (crlf) |Chunk produced. Test completed.|)
-    (exec succeeded)
+    (succeeded)
     (interrupt)
 }
 

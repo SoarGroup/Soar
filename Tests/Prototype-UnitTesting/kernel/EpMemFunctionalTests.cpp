@@ -140,11 +140,6 @@ void EpMemFunctionalTests::testEpMemYRemoval()
 	runTest("testYRemoval", 9);
 }
 
-void EpMemFunctionalTests::testEpMemSoarGroupTests()
-{
-	runTest("testEpMemSoarGroupTests", 140);
-}
-
 void EpMemFunctionalTests::testReadCSoarDB()
 {
 	agent->InitSoar();
@@ -158,13 +153,13 @@ void EpMemFunctionalTests::testReadCSoarDB()
 	
 	std::string actualResult = agent->ExecuteCommandLine("epmem --print 4");
 	
-	std::string expectedResult =	std::string("========================================\n") +
-									std::string("               Episode 4                \n") +
-									std::string("========================================\n") +
-									std::string("(<id0> ^counter 2 ^io <id1> ^name Factorization ^needs-factorization true ^number-to-factor 2 ^number-to-factor-int 2 ^operator <id2> ^operator* <id2> ^reward-link <id3> ^superstate nil ^type state ^using-epmem true)\n") +
-									std::string("(<id1> ^input-link <id5> ^output-link <id4>)\n") +
-									std::string("(<id2> ^name factor-number ^number-to-factor 2)\n\n");
-	
+	std::string expectedResult =
+	    std::string("========================================\n") +
+	    std::string("               Episode 4                \n") +
+	    std::string("========================================\n") +
+	    std::string("(<id0> ^counter 2 ^io <id1> ^name Factorization ^needs-factorization true ^number-to-factor 2 ^number-to-factor-int 2 ^operator <id2> ^operator* <id2> ^reward-link <id3> ^superstate nil ^type state)\n") +
+	    std::string("(<id1> ^input-link <id5> ^output-link <id4>)\n") +
+	    std::string("(<id2> ^name factor-number ^number-to-factor 2)\n\n");
 	assertTrue_msg("Unexpected output from CSoar database!", actualResult == expectedResult);
 }
 
@@ -215,11 +210,6 @@ void EpMemFunctionalTests::testMultiAgent()
 	}
 }
 
-void EpMemFunctionalTests::testEpMemUnit()
-{
-	runTest("epmem_unit", 140);
-}
-
 void EpMemFunctionalTests::testHamiltonian()
 {
 	runTest("hamiltonian", 2);
@@ -233,4 +223,74 @@ void EpMemFunctionalTests::testSVS()
 void EpMemFunctionalTests::testSVSHard()
 {
 	runTest("svs_hard", 2);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_1()
+{
+    runTest("epmem_unit_test_1", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_2()
+{
+    runTest("epmem_unit_test_2", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_3()
+{
+    runTest("epmem_unit_test_3", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_4()
+{
+    runTest("epmem_unit_test_4", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_5()
+{
+    runTest("epmem_unit_test_5", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_6()
+{
+    runTest("epmem_unit_test_6", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_7()
+{
+    runTest("epmem_unit_test_7", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_8()
+{
+    runTest("epmem_unit_test_8", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_9()
+{
+    runTest("epmem_unit_test_9", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_10()
+{
+    runTest("epmem_unit_test_10", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_11()
+{
+    runTest("epmem_unit_test_11", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_12()
+{
+    runTest("epmem_unit_test_12", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_13()
+{
+    runTest("epmem_unit_test_13", 113);
+}
+
+void EpMemFunctionalTests::testEpmemUnit_14()
+{
+    runTest("epmem_unit_test_14", 113);
 }
