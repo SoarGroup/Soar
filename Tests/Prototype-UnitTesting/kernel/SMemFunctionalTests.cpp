@@ -13,6 +13,16 @@
 #include "symbol_manager.h"
 #include "working_memory.h"
 
+void SMemFunctionalTests::setUp()
+{
+    FunctionalTestHarness::setUp();
+}
+
+void SMemFunctionalTests::tearDown(bool caught)
+{
+    FunctionalTestHarness::tearDown(caught);
+}
+
 void SMemFunctionalTests::testSimpleCueBasedRetrieval()
 {
 	SoarHelper::setStopPhase(agent, SoarHelper::StopPhase::OUTPUT);
@@ -173,16 +183,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency functional test did not halt", halted);
 
-    result = agent->ExecuteCommandLine("print @1");
+    result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+1.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+2.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 }
@@ -196,16 +206,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationRecency_Witho
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationRecency_WithoutActivateOnQuery functional test did not halt", halted);
 
-    result = agent->ExecuteCommandLine("print @1");
+    result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 
@@ -220,16 +230,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationFrequency()
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationFrequency functional test did not halt", halted);
 
-    result = agent->ExecuteCommandLine("print @1");
+    result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+1.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+1.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 }
@@ -245,16 +255,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
 
     std::string result, expected;
-	result = agent->ExecuteCommandLine("print @1");
+	result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+0.370])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [+1.258])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 }
@@ -268,16 +278,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Nai
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Naive functional test did not halt", halted);
 
     std::string result, expected;
-    result = agent->ExecuteCommandLine("print @1");
+    result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+0.792])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [-0.347])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 }
@@ -292,16 +302,16 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Inc
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Incremental functional test did not halt", halted);
 
-    result = agent->ExecuteCommandLine("print @1");
+    result = agent->ExecuteCommandLine("print @1 -d 1");
     expected = "(@1 ^location @2 ^name foo [+0.792])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @2");
+    result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @3");
+    result = agent->ExecuteCommandLine("print @3 -d 1");
     expected = "(@3 ^location @4 ^name bar [-0.549])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
-    result = agent->ExecuteCommandLine("print @4");
+    result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
 }
@@ -312,7 +322,7 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 
 	std::string result, expected;
 	agent->RunSelf(1223);
-	result = agent->ExecuteCommandLine("p s1 -i");
+	result = agent->ExecuteCommandLine("p s1 -i -d 1");
 
 	expected =  std::string("(10143: S1 ^counter 50)\n") +
                 std::string("(4: S1 ^epmem E1)\n") +
@@ -328,7 +338,6 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
                 std::string("(24: S1 ^using-smem true)\n");
 
     assertTrue_msg("Didn't stop where expected!", result == expected);
-
 	agent->ExecuteCommandLine("smem --backup backup.sqlite");
 	agent->ExecuteCommandLine("smem --clear");
 
@@ -336,7 +345,7 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	assertTrue_msg("smem --clear didn't empty long-term memory!", result.length() == 0);
 
     agent->ExecuteCommandLine("soar init");
-	result = agent->ExecuteCommandLine("p s1 -i");
+	result = agent->ExecuteCommandLine("p s1 -i -d 1");
     expected =  std::string("(4: S1 ^epmem E1)\n") +
                 std::string("(15: S1 ^io I1)\n") +
                 std::string("(3: S1 ^reward-link R1)\n") +
@@ -353,7 +362,7 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	result = agent->RunSelf(2278);
 	assertTrue_msg(std::string("After loading backup db and running, agent did not halt."), halted);
 
-	result = agent->ExecuteCommandLine("p @197");
+	result = agent->ExecuteCommandLine("p @197 -d 1");
     expected = "(@197 ^complete true ^factor @48 @198 ^number 100 [+573.000])\n";
 	assertTrue_msg("testFactorization: Test did not get the correct result!", result == result);
 	
@@ -373,7 +382,7 @@ void SMemFunctionalTests::testReadCSoarDB()
 	agent->ExecuteCommandLine("smem --init");
 
 	std::string actualResult = agent->ExecuteCommandLine("print @");
-	//std::string actualResult = agent->ExecuteCommandLine("print @1");
+	//std::string actualResult = agent->ExecuteCommandLine("print @1 -d 1");
 
 	std::string expectedResult = "(@1 ^complete true ^factor @2 ^number 2 [+0.000])\n(@2 ^multiplicity 1 ^value 2 [+0.000])\n(@3 ^complete true ^factor @4 ^number 3 [+0.000])\n(@4 ^multiplicity 1 ^value 3 [+0.000])\n(@5 ^complete true ^factor @6 ^number 4 [+0.000])\n(@6 ^multiplicity 2 ^value 2 [+0.000])\n";
 

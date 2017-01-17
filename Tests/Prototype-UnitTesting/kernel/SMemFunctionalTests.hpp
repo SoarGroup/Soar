@@ -15,8 +15,14 @@ class SMemFunctionalTests : public FunctionalTestHarness
 {
 public:
 	TEST_CATEGORY(SMemFunctionalTests);
-	
-	TEST(testSimpleCueBasedRetrieval, -1)
+
+    void before() { setUp(); }
+    void setUp();
+
+    void after(bool caught) { tearDown(caught); }
+    void tearDown(bool caught);
+
+    TEST(testSimpleCueBasedRetrieval, -1)
 	void testSimpleCueBasedRetrieval();
 	
 	TEST(testSimpleNonCueBasedRetrieval, -1)

@@ -26,7 +26,7 @@ bool is_DT_mode_enabled(TraceMode mode);
     std::string get_stacktrace(const char* prefix);
 #endif
 
-class Symbol_Manager {
+class EXPORT Symbol_Manager {
 
         friend Output_Manager;
 

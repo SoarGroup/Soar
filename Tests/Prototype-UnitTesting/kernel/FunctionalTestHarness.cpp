@@ -106,6 +106,7 @@ void FunctionalTestHarness::setUp()
 	failed = false;
 	
 	kernel = sml::Kernel::CreateKernelInCurrentThread(true);
+    configure_for_unit_tests();
 	agent = kernel->CreateAgent("soar1");
 	
 	// /BEGIN WARN WARN:
@@ -120,6 +121,7 @@ void FunctionalTestHarness::setUp()
 	
 	internal_kernel = connection->GetKernelSML();
 	internal_agent = internal_kernel->GetAgentSML("soar1")->GetSoarAgent();
+	configure_agent_for_unit_tests(internal_agent);
 	
 	soar_add_callback(internal_agent,
 					  AFTER_DECISION_CYCLE_CALLBACK,

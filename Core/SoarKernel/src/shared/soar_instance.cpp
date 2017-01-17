@@ -252,17 +252,19 @@ void Soar_Instance::CLI_Debug_Print(const char* text)
 
 void configure_for_unit_tests()
 {
-    agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     Soar_Instance::Get_Soar_Instance().configure_for_unit_tests();
     Output_Manager::Get_OM().set_output_params_global(false);
     debug_set_mode_info(Output_Manager::Get_OM().mode_info, false);
+}
 
+void configure_agent_for_unit_tests(agent* testAgent)
+{
+    agent* thisAgent = testAgent ? testAgent : Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(false);
     }
 }
-
 /* -- The following is a bit of a hack used to get Tcl access
  *    to Soar data structures via SWIG proxy functions. -- */
 

@@ -17,7 +17,6 @@
 void ChunkingTests::setUp()
 {
     FunctionalTestHarness::setUp();
-    configure_for_unit_tests();
 }
 
 void ChunkingTests::tearDown(bool caught)
