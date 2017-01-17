@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(FullTests);
 	TEST_DECLARATION(FullTestsClientThreadFullyOptimized);
 	TEST_DECLARATION(FullTestsClientThread);
-	TEST_DECLARATION(FullTestsRemote);
+//	TEST_DECLARATION(FullTestsRemote);
 	TEST_DECLARATION(FunctionalTests);
 	TEST_DECLARATION(IOTests);
 	TEST_DECLARATION(MiscTests);
