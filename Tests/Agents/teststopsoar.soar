@@ -1,6 +1,0 @@
-max-goal-depth 100
-sp {stop-soar
-	(state <s> ^superstate nil)
--->
-	(cmd stop-soar)
-}

@@ -1,9 +1,0 @@
-# A+ B+ A > B
-
-sp {pref-semantics-test*propose*last-better
-   (state <s> ^name pref-semantics-test
-             -^last-better)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name last-better)
-}

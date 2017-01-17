@@ -5,7 +5,7 @@
 import os
 Import('env', 'InstallDir')
 
-subdirs = ['TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
+subdirs = ['TestExternalLibrary']
 
 if (os.sys.platform == 'win32' and env["MSVC_VERSION"] == "14.0") or (os.sys.platform != 'win32'):
 	subdirs.append('Prototype-UnitTesting')
@@ -15,7 +15,6 @@ for d in subdirs:
 	script = os.path.join(d, 'SConscript')
 	tests.extend(SConscript(script))
 
-agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
 prototype_unittesting_tests = InstallDir(env, '$OUT_DIR/Tests/', 'Prototype-UnitTesting/Tests')
 
-env.Alias('tests', tests + agents + prototype_unittesting_tests)
+env.Alias('tests', tests + prototype_unittesting_tests)

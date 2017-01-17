@@ -29,14 +29,14 @@ src = [Glob('kernel/*/*.cpp'), Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), 
 
 # print "src1: ", src
 # print "src2: ", src2
-put_obj = clone.Program(target = 'Prototype-UnitTesting', source = src)
+put_obj = clone.Program(target = 'UnitTests', source = src)
 t = env.Install('$OUT_DIR', put_obj)
 
-# t = env.Install('$OUT_DIR', clone.Program('Prototype-UnitTesting', src))
+# t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
 
 if 'MSVSProject' in env['BUILDERS']:
 	proj = env.MSVSProject(
-		target = '#prototype-unittesting' + env['MSVSPROJECTSUFFIX'],
+		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
 		srcs = [ str(s) for s in src ],
 		buildtarget = t,
 		variant = g_msvs_variant,
