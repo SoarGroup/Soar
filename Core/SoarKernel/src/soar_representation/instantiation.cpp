@@ -1453,14 +1453,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         ++riter;
 
         dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
-        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
-
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-        /* Setting deallocate_condition_list()'s pCleanUpIdentity argument to true
-         * will build up a set of identities to clean up.  We call this to actually
-         * remove entries from the debug symbol map */
-        thisAgent->explanationBasedChunker->cleanup_debug_mappings();
-        #endif
+        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
         if (temp->prod)
         {

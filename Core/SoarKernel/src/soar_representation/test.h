@@ -63,7 +63,7 @@ test find_eq_test(test t);
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
-void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity = false);
+void deallocate_test(agent* thisAgent, test t);
 
 test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
 

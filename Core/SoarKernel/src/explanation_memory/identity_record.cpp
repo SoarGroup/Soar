@@ -83,7 +83,6 @@ void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t
         {
             add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
-            thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
             add_identities_in_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
             add_identities_in_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
@@ -251,11 +250,7 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
 
     if (printHeader)
     {
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-                outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%-    Original variables %- Mapping Type\n");
-        #else
-                outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%- Mapping Type\n");
-        #endif
+        outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%- Mapping Type\n");
     }
     for (auto it = pMapList->begin(); it != pMapList->end(); ++it)
     {
@@ -287,9 +282,6 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             outputManager->printa_sf(thisAgent, "%-| %-|");
 
         }
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-            outputManager->printa_sf(thisAgent, "%-| %y -> %y", lMapping->from_symbol, lMapping->to_symbol);
-        #endif
         switch (lMapping->mappingType)
         {
             case IDS_no_existing_mapping:

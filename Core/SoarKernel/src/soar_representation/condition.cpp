@@ -45,7 +45,7 @@ void deallocate_condition(agent* thisAgent, condition*& cond)
     cond = NULL;
 }
 
-void deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity)
+void deallocate_condition_list(agent* thisAgent, condition*& cond_list)
 {
     condition* c;
 
@@ -55,15 +55,15 @@ void deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCl
         cond_list = cond_list->next;
         if (c->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            deallocate_condition_list(thisAgent, c->data.ncc.top, pCleanUpIdentity);
+            deallocate_condition_list(thisAgent, c->data.ncc.top);
         }
         else     /* positive and negative conditions */
         {
 //            dprint(DT_DEALLOCATES, "Deallocating condition: %l\n", c);
 
-            deallocate_test(thisAgent, c->data.tests.id_test, pCleanUpIdentity);
-            deallocate_test(thisAgent, c->data.tests.attr_test, pCleanUpIdentity);
-            deallocate_test(thisAgent, c->data.tests.value_test, pCleanUpIdentity);
+            deallocate_test(thisAgent, c->data.tests.id_test);
+            deallocate_test(thisAgent, c->data.tests.attr_test);
+            deallocate_test(thisAgent, c->data.tests.value_test);
         }
         thisAgent->memoryManager->free_with_pool(MP_condition, c);
     }

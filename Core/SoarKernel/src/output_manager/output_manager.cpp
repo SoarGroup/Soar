@@ -17,7 +17,6 @@
 #include "debug.h"
 #include "dprint.h"
 #include "output_settings.h"
-#include "output_db.h"
 #include "print.h"
 #include "soar_instance.h"
 
@@ -38,10 +37,8 @@ void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
     if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
     {
         callback_mode = false;
-        db_mode = false;
     } else {
         callback_mode = true;
-        db_mode = false;
     }
 }
 
@@ -53,14 +50,12 @@ void Output_Manager::set_output_params_global(bool pDebugEnabled){
         m_print_identity = true;
         m_print_actual_effective = true;
         m_print_identity_effective = true;
-        db_mode = false;
         stdout_mode = true;
     } else {
         m_print_actual = true;
         m_print_identity = false;
         m_print_actual_effective = true;
         m_print_identity_effective = false;
-        db_mode = false;
         stdout_mode = false;
     }
 }
@@ -107,23 +102,14 @@ void Output_Manager::print_output_modes(trace_mode_info mode_info_to_print[num_t
 
 void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
-
     m_Kernel = pKernel;
     m_Soar_Instance = pSoarInstance;
-
-    if (db_mode)
-    {
-        soar_module::sqlite_database* new_db = new soar_module::sqlite_database();
-        m_db = new OM_DB(new_db);
-        m_db->create_db();
-    }
 }
 
 Output_Manager::Output_Manager()
 {
     m_defaultAgent = NIL;
     m_params = new OM_Parameters(NULL, settings);
-    m_db = NIL;
     m_pre_string = strdup("          ");
     m_post_string = NULL;
 
@@ -156,10 +142,6 @@ Output_Manager::~Output_Manager()
     }
 
     delete m_params;
-    if (m_db)
-    {
-        delete m_db;
-    }
 }
 
 

@@ -162,22 +162,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 #endif
 }
 
-debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
-{
-}
-
-#ifdef DEBUG_REFCOUNT_DB
-
-#include "output_manager.h"
-
-void debug_store_refcount(Symbol* sym, bool isAdd)
-{
-    std::string caller_string = get_stacktrace(isAdd ? "add_ref" : "remove_ref");
-    debug_agent->outputManager->store_refcount(sym, caller_string.c_str() , isAdd);
-}
-
-#endif
-
 #ifdef DEBUG_MAC_STACKTRACE
 std::string get_stacktrace(const char* prefix)
 {
