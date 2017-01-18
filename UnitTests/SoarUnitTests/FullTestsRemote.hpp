@@ -89,7 +89,9 @@ public:
 	TEST(testLearn, -1);
 	void testLearn() { this->FullTests_Parent::testLearn(); }
 	
-	TEST(testSVS, -1);
+#ifndef NO_SVS
+    TEST(testSVS, -1)
+#endif
 	void testSVS() { this->FullTests_Parent::testSVS(); }
 	
 	TEST(testPreferenceSemantics, -1);

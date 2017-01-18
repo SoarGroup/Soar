@@ -337,8 +337,10 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
                 std::string("(1: S1 ^type state)\n") +
                 std::string("(24: S1 ^using-smem true)\n");
 
+#ifndef NO_SVS
     assertTrue_msg("Didn't stop where expected!", result == expected);
-	agent->ExecuteCommandLine("smem --backup backup.sqlite");
+#endif
+    agent->ExecuteCommandLine("smem --backup backup.sqlite");
 	agent->ExecuteCommandLine("smem --clear");
 
 	result = agent->ExecuteCommandLine("print @");
@@ -353,8 +355,9 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
                 std::string("(2: S1 ^superstate nil)\n") +
                 std::string("(11: S1 ^svs V1)\n") +
                 std::string("(1: S1 ^type state)\n");
+#ifndef NO_SVS
 	assertTrue_msg("soar init didn't reinit WM!", result == expected);
-
+#endif
 	agent->ExecuteCommandLine("smem --set database file");
     agent->ExecuteCommandLine("smem --set path backup.sqlite");
     agent->ExecuteCommandLine("smem --init");
