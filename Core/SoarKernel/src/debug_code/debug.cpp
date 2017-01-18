@@ -351,25 +351,15 @@ void debug_test(int type)
         case 5:
         {
 //            print_internal_symbols(thisAgent);
-            dprint_identifiers(DT_DEBUG);
             break;
         }
         case 6:
         {
-            dprint_variablization_table(DT_DEBUG);
-            dprint_o_id_tables(DT_DEBUG);
-            dprint_attachment_points(DT_DEBUG);
-            dprint_constraints(DT_DEBUG);
-            dprint_merge_map(DT_DEBUG);
-            dprint_ovar_to_o_id_map(DT_DEBUG);
-            dprint_unification_map(DT_DEBUG);
-            dprint_identity_debug_map(DT_DEBUG);
-            dprint_tables(DT_DEBUG);
             break;
         }
         case 7:
             /* -- Print all instantiations -- */
-            dprint_all_inst(DT_DEBUG);
+            thisAgent->outputManager->print_all_inst(DT_DEBUG);
             break;
         case 8:
         {

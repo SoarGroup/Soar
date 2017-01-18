@@ -1680,10 +1680,10 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     /* --- make the fake conditions --- */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
     superop_sym_identity = cond->data.tests.value_test->identity;
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
@@ -1703,7 +1703,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     last_cond = cond;
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, goal, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
     state_sym_identity = cond->data.tests.id_test->identity;
     cond->data.tests.attr_test = make_test(thisAgent, thisAgent->symbolManager->soarSymbols.superstate_symbol, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);

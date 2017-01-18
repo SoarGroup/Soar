@@ -377,8 +377,6 @@ void destroy_soar_agent(agent* delete_agent)
     remove_trace_format(delete_agent, true, FOR_STATES_TF, NIL);
     remove_trace_format(delete_agent, true, FOR_OPERATORS_TF, NIL);
 
-    dprint_identifiers(DT_ID_LEAKING);
-
     delete delete_agent->output_settings;
     delete_agent->output_settings = NULL;
 

@@ -166,7 +166,7 @@ uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
     {
         return lIter->second;
     } else {
-        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_o_id(pSym, pI_ID);
+        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_identity(pSym, pI_ID);
         sti_to_identity_map[pSym] = lID;
         return lID;
     }

@@ -299,7 +299,6 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s) from debug table
  *       %t   test
  *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
@@ -333,7 +332,6 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %h   like %g but with second argument containing symbol to use if STI
  *       %l   condition
  *       %n   funcall list
- *       %o   symbol's original variable(s) from debug table
  *       %p   preference
  *       %r   rhs value
  *       %s   string

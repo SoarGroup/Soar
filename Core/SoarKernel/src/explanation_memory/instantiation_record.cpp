@@ -404,7 +404,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            outputManager->printa_sf(thisAgent, "(%o%s^%o %o%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%y%s^%y %y%s)%s%-",
                 print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
                 print_cond->test_for_acceptable_preference ? " +" : "",

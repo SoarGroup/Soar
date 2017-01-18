@@ -35,10 +35,10 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
     lVarInfo->variable_sym = variable;
     variable->var->instantiated_sym = pMatched_sym;
-    lVarInfo->identity = this->get_or_create_o_id(variable, m_chunk_new_i_id);
+    lVarInfo->identity = this->get_or_create_identity(variable, m_chunk_new_i_id);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
-    thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity, get_ovar_for_o_id(pIdentity), lVarInfo->variable_sym);
+    thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
     return lVarInfo;
 }
 
@@ -86,11 +86,11 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y(%y o%u).\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id);
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y [%u].\n", rs->referent, rs->o_id);
 
     if (rs->o_id)
     {
-        dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for %u (%y)...\n", rs->o_id, get_ovar_for_o_id(rs->o_id));
+        dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for identity %u...\n", rs->o_id);
         found_variablization = get_variablization(rs->o_id);
     }
     else
@@ -141,9 +141,9 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     }
     else
     {
-        assert(!rs->referent->is_sti());
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
         dprint_variablization_table(DT_RHS_VARIABLIZATION);
+        assert(!rs->referent->is_sti());
     }
     return NULL_IDENTITY_SET;
 }
@@ -495,9 +495,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         }
     }
 
-    dprint_set_indents(DT_RHS_VARIABLIZATION, "");
     dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
-    dprint_clear_indents(DT_RHS_VARIABLIZATION);
 
     lO_id = variablize_rhs_symbol(a->id, lti_link_tc);
     if (!result->rhs_funcs.id)
@@ -783,7 +781,7 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
     if (rs->referent->is_variable())
     {
-        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y (%y/o%u) -> %y.\n", rs->referent, get_ovar_for_o_id(rs->o_id), rs->o_id, rs->referent->var->instantiated_sym);
+        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y [%u] -> %y.\n", rs->referent, rs->o_id, rs->referent->var->instantiated_sym);
         Symbol* oldSym = rs->referent;
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);

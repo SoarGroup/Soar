@@ -46,8 +46,6 @@ void Explanation_Based_Chunker::print_identity_tables(TraceMode mode)
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     print_instantiation_identities_map(mode);
     print_unification_map(mode);
-    print_identity_to_var_debug_map(mode);
-
 }
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
@@ -120,35 +118,12 @@ void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
-        outputManager->printa_sf(thisAgent, "   o%u(%y) = o%u(%y)\n",
-            iter->first, get_ovar_for_o_id(iter->first),
-            iter->second, get_ovar_for_o_id(iter->second));
+        outputManager->printa_sf(thisAgent, "   %u = %u\n", iter->first, iter->second);
     }
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Explanation_Based_Chunker::print_identity_to_var_debug_map(TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, " Identity to Original Sym Debug Map\n");
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-
-    if (id_to_rule_sym_debug_map->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-    }
-
-    id_to_sym_map::iterator iter;
-
-    for (iter = id_to_rule_sym_debug_map->begin(); iter != id_to_rule_sym_debug_map->end(); ++iter)
-    {
-        outputManager->printa_sf(thisAgent, "   o%u = %y\n",  iter->first, iter->second);
-    }
-
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-}
 void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
@@ -163,10 +138,10 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 
     for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
-        outputManager->printa_sf(thisAgent, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+        outputManager->printa_sf(thisAgent, "%u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
     }
-
 }
+
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;

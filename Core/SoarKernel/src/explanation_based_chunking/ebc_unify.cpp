@@ -93,10 +93,9 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 
         if ((iter->second == pOld_o_id) || (pOld_o_id_2 && (iter->second == pOld_o_id_2)))
         {
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %u = %u -> %u = %u.\n", iter->first, iter->second, iter->first, pNew_o_id );
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %y[%u] = %y[%u] -> %y[%u] = %y[%u].\n", get_ovar_for_o_id(iter->first), iter->first, get_ovar_for_o_id(iter->second), iter->second, get_ovar_for_o_id(iter->first), iter->first, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %u = %u -> %u = %u.\n", iter->first, iter->second, iter->first, pNew_o_id);
             (*unification_map)[iter->first] = pNew_o_id;
-            thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_transitive, iter->first, pNew_o_id, get_ovar_for_o_id(iter->first), get_ovar_for_o_id(pNew_o_id));
+            thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_transitive, iter->first, pNew_o_id);
         }
     }
 }
@@ -117,7 +116,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
     if (pNew_o_id == 0)
     {
         /* Do not check if a unification already exists if we're propagating back a literalization */
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding literalization substitution: %y[%u] -> 0.\n", get_ovar_for_o_id(pOld_o_id), pOld_o_id);
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding literalization substitution: %u -> 0.\n", pOld_o_id);
         newID = 0;
     } else {
         /* See if a unification already exists for the new identity propagating back*/
@@ -126,23 +125,21 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
         if (iter == (*unification_map).end())
         {
             /* Map all cases of this identity with its parent identity */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not find existing mapping for %u.  Adding %y[%u] -> %y[%u].\n", pNew_o_id, get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not find existing mapping for %u.  Adding %u -> %u.\n", pNew_o_id, pOld_o_id, pNew_o_id);
             newID = pNew_o_id;
         }
         else if (iter->second == pOld_o_id)
         {
             /* Circular reference */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%y[%u] -> %y[%u]) already exists.  Transitive mapping %y[%u] -> %y[%u] would be self referential.  Not adding.\n",
-                get_ovar_for_o_id(pNew_o_id), pNew_o_id, get_ovar_for_o_id(iter->second), iter->second,
-                get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Transitive mapping %u -> %u would be self referential.  Not adding.\n",
+                pNew_o_id, iter->second, pOld_o_id, iter->second);
             return;
         }
         else
         {
             /* Map all cases of what this identity is already remapped to with its parent identity */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%y[%u] -> %y[%u]) already exists.  Adding transitive mapping %y[%u] -> %y[%u].\n",
-                get_ovar_for_o_id(pNew_o_id), pNew_o_id, get_ovar_for_o_id(iter->second), iter->second,
-                get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(iter->second), iter->second);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Adding transitive mapping %u -> %u.\n",
+                pNew_o_id, iter->second, pOld_o_id, iter->second);
             newID = iter->second;
         }
     }
@@ -159,47 +156,47 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
             {
                 /* The existing identity we're unifying with is already literalized from a different trace.  So,
                  * literalize any tests with identity of parent in this trace */
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, pNew_o_id);
                 (*unification_map)[newID] = 0;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0, get_ovar_for_o_id(newID), NULL);
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0);
 
                 update_unification_table(newID, 0);
             } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %u -> 0.\n", pOld_o_id, pNew_o_id);
             }
         } else {
             if (newID == existing_mapping)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %y[%u] -> %y[%u] already exists.  Skipping.\n", get_ovar_for_o_id(pOld_o_id), pOld_o_id, get_ovar_for_o_id(newID), newID);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %u -> %u already exists.  Skipping.\n", pOld_o_id, newID);
                 return;
             }
             else if (newID == 0)
             {
                 /* The existing identity we're literalizing is already unified with another identity from
                  * a different trace.  So, literalize the identity, that it is already remapped to.*/
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %y[%u] -> 0.\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, existing_mapping);
                 (*unification_map)[existing_mapping] = 0;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0, get_ovar_for_o_id(existing_mapping), NULL);
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0);
                 update_unification_table(existing_mapping, 0, pOld_o_id);
             } else {
                 /* The existing identity we're unifying with is already unified with another identity from
                  * a different trace.  So, unify the identity that it is already remapped to with identity
                  * of the parent in this trace */
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %y[%u] -> %y[%u].\n", pOld_o_id, get_ovar_for_o_id(existing_mapping), existing_mapping, get_ovar_for_o_id(pNew_o_id), pNew_o_id);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %u -> %u.\n", pOld_o_id, existing_mapping, pNew_o_id);
                 (*unification_map)[newID] = existing_mapping;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping, get_ovar_for_o_id(newID), get_ovar_for_o_id(existing_mapping));
+                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping);
                 update_unification_table(newID, existing_mapping);
                 if (pNew_o_id != newID)
                 {
                     (*unification_map)[pNew_o_id] = existing_mapping;
-                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping, get_ovar_for_o_id(pNew_o_id), get_ovar_for_o_id(existing_mapping));
+                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping);
                     update_unification_table(pNew_o_id, existing_mapping);
                 }
             }
         }
     } else {
         (*unification_map)[pOld_o_id] = newID;
-        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID, get_ovar_for_o_id(pOld_o_id), get_ovar_for_o_id(newID));
+        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID);
         update_unification_table(pOld_o_id, newID);
     }
 
@@ -257,10 +254,9 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         if (lId->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id,
-                get_ovar_for_o_id(lId->identity), lId->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", o_ids_to_replace.id, lId->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.id), o_ids_to_replace.id, lId);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", o_ids_to_replace.id, lId);
         }
         add_identity_unification(o_ids_to_replace.id, lId->identity);
     }
@@ -276,10 +272,9 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         if (lAttr->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for attribute element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr,
-                get_ovar_for_o_id(lAttr->identity), lAttr->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for attribute element: %u -> %u\n", o_ids_to_replace.attr, lAttr->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for attribute element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.attr), o_ids_to_replace.attr, lAttr);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for attribute element: %u -> %t\n", o_ids_to_replace.attr, lAttr);
         }
         add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
     }
@@ -295,10 +290,9 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     {
         if (lValue->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
-                get_ovar_for_o_id(lValue->identity), lValue->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %u -> %u\n", o_ids_to_replace.value, lValue->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %u -> %t\n", o_ids_to_replace.value, lValue);
         }
         add_identity_unification(o_ids_to_replace.value, lValue->identity);
     }
@@ -311,18 +305,6 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
     }
     assert(!o_ids_to_replace.referent);
-//    if (o_ids_to_replace.referent)
-//    {
-//        if (lValue->identity)
-//        {
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %y[%u] -> %y[%u]\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value,
-//                get_ovar_for_o_id(lValue->identity), lValue->identity);
-//        } else {
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %y[%u] -> %t\n", get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, lValue);
-//        }
-//        add_identity_unification(o_ids_to_replace.value, lValue->identity);
-//    }
-//    else
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);

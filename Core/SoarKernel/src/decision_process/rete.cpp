@@ -2771,7 +2771,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
+        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp, pI_id);
         dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     }
     else
@@ -2782,7 +2782,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
+            t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp, pI_id);
             dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
         }
     }

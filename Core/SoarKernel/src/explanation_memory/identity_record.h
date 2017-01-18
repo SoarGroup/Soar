@@ -25,7 +25,7 @@ class identity_record
         void    init(agent* myAgent);
         void    clean_up();
 
-        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID, Symbol* pFromSym = NULL, Symbol* pToSym = NULL);
+        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID);
         void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }
         void    generate_identity_sets(uint64_t pInstID, condition* lhs);
         void    map_originals_to_sets();

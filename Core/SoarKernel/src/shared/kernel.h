@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -71,7 +71,7 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-    #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
+//    #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
     #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
 
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
@@ -109,7 +109,6 @@
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s) from debug table
  *       %t   test
  *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
@@ -143,7 +142,6 @@
  *       %h   like %g but with second argument containing symbol to use if STI
  *       %l   condition
  *       %n   funcall list
- *       %o   symbol's original variable(s) from debug table
  *       %p   preference
  *       %r   rhs value
  *       %s   string

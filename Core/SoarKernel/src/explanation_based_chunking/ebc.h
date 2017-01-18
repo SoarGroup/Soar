@@ -57,8 +57,7 @@ class Explanation_Based_Chunker
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
         void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
-        Symbol * get_ovar_for_o_id(uint64_t o_id);
+        uint64_t get_or_create_identity(Symbol* orig_var, uint64_t pI_id);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -92,17 +91,13 @@ class Explanation_Based_Chunker
         void print_merge_map(TraceMode mode);
         void print_instantiation_identities_map(TraceMode mode);
         void print_unification_map(TraceMode mode);
-        void print_identity_to_var_debug_map(TraceMode mode);
 
         void print_chunking_summary();
         void print_chunking_settings();
 
         /* Clean-up */
         void reinit();
-        void cleanup_after_instantiation_creation(uint64_t pI_id);
-        void cleanup_identity_for_debug_mappings(uint64_t pIdentity) {identities_to_clean_up->insert(pIdentity);};
-        void cleanup_debug_mappings();
-
+        void cleanup_after_instantiation_creation(uint64_t pI_id) { instantiation_identities->clear(); }
         void clear_variablization_maps();
 
     private:
@@ -173,11 +168,6 @@ class Explanation_Based_Chunker
         sym_to_id_map*             instantiation_identities;
         id_to_sym_id_map*          identity_to_var_map;
 
-        /* The following are used to print out the original variables when
-         * compiled without SOAR_RELEASE_VERSION enabled */
-        id_to_sym_map*             id_to_rule_sym_debug_map;
-        id_set*                    identities_to_clean_up;
-
         /* Map to unify variable identities into identity sets */
         id_to_id_map*              unification_map;
         identity_quadruple         local_singleton_superstate_identity;
@@ -236,7 +226,6 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
@@ -286,12 +275,11 @@ class Explanation_Based_Chunker
 
         /* Clean-up methods */
         void clear_merge_map();
-        void clear_o_id_to_ovar_debug_map();
-        void clear_rulesym_to_identity_map();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_o_id_substitution_map();
-        void clear_singletons();
+        void clear_o_id_substitution_map()      { unification_map->clear(); }
+        void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
+        void clear_singletons()                 { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
         void clear_data();
 
 };

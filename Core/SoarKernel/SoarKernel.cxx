@@ -15,7 +15,6 @@
 #include <ebc_backtrace.cpp>
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
-#include <ebc_map.cpp>
 #include <ebc_merge.cpp>
 #include <ebc_print.cpp>
 #include <ebc_repair.cpp>

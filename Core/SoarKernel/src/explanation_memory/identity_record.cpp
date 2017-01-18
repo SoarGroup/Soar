@@ -63,7 +63,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_s
                     lNewIDSet->identity = thisAgent->explanationMemory->get_identity_set_counter();
                     lNewIDSet->variable_sym = pTest->data.referent;
                     thisAgent->symbolManager->symbol_add_ref(lNewIDSet->variable_sym);
-                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity, lNewIDSet->variable_sym, lNewIDSet->variable_sym);
+                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity);
 
                 } else {
                     lNewIDSet->identity = NULL_IDENTITY_SET;
@@ -171,14 +171,12 @@ void identity_record::print_original_ebc_mappings()
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%u%-%y %-%u%-%y\n",
-            iter->first, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->first), iter->second, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->second));
+        thisAgent->outputManager->printa_sf(thisAgent, "%u%- %-%u%-\n", iter->first, iter->second);
     }
 }
 
 void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
-                                           uint64_t pFromID,  uint64_t pToID,
-                                           Symbol*  pFromSym, Symbol*  pToSym)
+                                           uint64_t pFromID,  uint64_t pToID)
 {
     identity_mapping_list* lInstMappingList;
 
@@ -193,17 +191,7 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     identity_mapping* lMapping;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
     lMapping->from_identity = pFromID;
-    lMapping->from_symbol = pFromSym;
-    if (pFromSym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(pFromSym);
-    }
     lMapping->to_identity = pToID;
-    lMapping->to_symbol = pToSym;
-    if (pToSym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(pToSym);
-    }
     lMapping->mappingType = pType;
     lInstMappingList->push_back(lMapping);
 }

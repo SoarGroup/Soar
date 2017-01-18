@@ -45,8 +45,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Create data structures used for EBC */
     identity_to_var_map = new id_to_sym_id_map();
     instantiation_identities = new sym_to_id_map();
-    id_to_rule_sym_debug_map = new id_to_sym_map();
-    identities_to_clean_up = new id_set();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
@@ -74,7 +72,6 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete cond_merge_map;
     delete instantiation_identities;
     delete unification_map;
-    delete id_to_rule_sym_debug_map;
     delete chunk_history;
     delete local_linked_STIs;
 
@@ -347,7 +344,6 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
     }
 
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
-//    dprint(DT_DEBUG, "Generated name %s.\n", lName.str().c_str());
     return generated_name;
 }
 void Explanation_Based_Chunker::set_up_rule_name()
@@ -382,4 +378,54 @@ void Explanation_Based_Chunker::set_up_rule_name()
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
+}
+void Explanation_Based_Chunker::clear_data()
+{
+    dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
+    clear_cached_constraints();
+    clear_variablization_maps();
+    clear_merge_map();
+    clear_rulesym_to_identity_map();
+    clear_o_id_substitution_map();
+    clear_attachment_map();
+    clear_singletons();
+}
+
+void Explanation_Based_Chunker::clear_attachment_map()
+{
+    for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    {
+        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
+    }
+    attachment_points->clear();
+}
+
+void Explanation_Based_Chunker::clear_variablization_maps()
+{
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing variablization map...\n");
+    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
+    {
+        thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
+        thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
+    }
+    identity_to_var_map->clear();
+}
+
+uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uint64_t pI_id)
+{
+    int64_t existing_o_id = 0;
+
+    auto iter_sym = instantiation_identities->find(orig_var);
+    if (iter_sym != instantiation_identities->end())
+    {
+        existing_o_id = iter_sym->second;
+    }
+
+    if (!existing_o_id)
+    {
+        increment_counter(ovar_id_counter);
+        (*instantiation_identities)[orig_var] = ovar_id_counter;
+        return ovar_id_counter;
+    }
+    return existing_o_id;
 }
