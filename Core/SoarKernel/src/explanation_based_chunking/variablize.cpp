@@ -687,9 +687,36 @@ void sanity_test_justification (test pTest)
     }
 }
 
-condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
+void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
 {
-    dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of all LHS Condition list:\n");
+    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        reinstantiate_condition(cond);
+    }
+}
+
+void Explanation_Based_Chunker::reinstantiate_condition(condition* cond)
+{
+    if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+    {
+        reinstantiate_test(cond->data.tests.id_test);
+        reinstantiate_test(cond->data.tests.attr_test);
+        reinstantiate_test(cond->data.tests.value_test);
+        //if (cond->type == POSITIVE_CONDITION)
+        //{
+        //    sanity_test_justification(cond->data.tests.id_test);
+        //    sanity_test_justification(cond->data.tests.attr_test);
+        //    sanity_test_justification(cond->data.tests.value_test);
+        //}
+    } else {
+        reinstantiate_condition_list(cond->data.ncc.top);
+    }
+
+}
+
+condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
+{
+    dprint_header(DT_REINSTANTIATE, PrintBoth, "Reversing variablization of condition list\n");
 
     condition* last_cond, *lCond, *inst_top;
     last_cond = inst_top = lCond = NULL;
@@ -700,51 +727,15 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
 
         if (m_rule_type == ebc_justification)
         {
-            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-            {
-                reinstantiate_test(cond->data.tests.id_test);
-                reinstantiate_test(cond->data.tests.attr_test);
-                reinstantiate_test(cond->data.tests.value_test);
-//                if (cond->type == POSITIVE_CONDITION)
-//                {
-//                    sanity_test_justification(cond->data.tests.id_test);
-//                    sanity_test_justification(cond->data.tests.attr_test);
-//                    sanity_test_justification(cond->data.tests.value_test);
-//                }
-            } else {
-                for (condition* ncond = cond->data.ncc.top; ncond != NIL; ncond = ncond->next)
-                {
-                    reinstantiate_test(ncond->data.tests.id_test);
-                    reinstantiate_test(ncond->data.tests.attr_test);
-                    reinstantiate_test(ncond->data.tests.value_test);
-                }
-            }
+            reinstantiate_condition(cond);
             lCond = copy_condition(thisAgent, cond, false, false, false);
             lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
         } else {
             lCond = copy_condition(thisAgent, cond, false, false, false);
-            lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
-            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-            {
-                reinstantiate_test(lCond->data.tests.id_test);
-                reinstantiate_test(lCond->data.tests.attr_test);
-                reinstantiate_test(lCond->data.tests.value_test);
-//                if (cond->type == POSITIVE_CONDITION)
-//                {
-//                    sanity_test_justification(lCond->data.tests.id_test);
-//                    sanity_test_justification(lCond->data.tests.attr_test);
-//                    sanity_test_justification(lCond->data.tests.value_test);
-//                }
-            } else {
-                for (condition* ncond = lCond->data.ncc.top; ncond != NIL; ncond = ncond->next)
-                {
-                    reinstantiate_test(ncond->data.tests.id_test);
-                    reinstantiate_test(ncond->data.tests.attr_test);
-                    reinstantiate_test(ncond->data.tests.value_test);
-                }
-            }
+            lCond->inst = m_chunk_inst;
+            reinstantiate_condition(lCond);
         }
 
         if (last_cond)
@@ -753,13 +744,13 @@ condition* Explanation_Based_Chunker::reinstantiate_condition_list(condition* to
         } else {
             inst_top = lCond;
         }
-            lCond->prev = last_cond;
+        lCond->prev = last_cond;
         last_cond = lCond;
     }
     if (last_cond)
     {
         last_cond->next = NULL;
-        }
+    }
     else
     {
         inst_top = NULL;
@@ -825,7 +816,7 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
     dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_lhs);
 
-    condition* returnConds = reinstantiate_condition_list(m_lhs);
+    condition* returnConds = reinstantiate_lhs(m_lhs);
 
     dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_lhs);
 

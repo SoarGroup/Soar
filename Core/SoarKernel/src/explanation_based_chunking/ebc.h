@@ -273,7 +273,9 @@ class Explanation_Based_Chunker
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
-        condition* reinstantiate_condition_list(condition* top_cond);
+        condition* reinstantiate_lhs(condition* top_cond);
+        void reinstantiate_condition_list(condition* top_cond);
+        void reinstantiate_condition(condition* cond);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
 
