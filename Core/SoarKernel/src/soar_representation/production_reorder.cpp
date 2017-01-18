@@ -78,6 +78,16 @@
 
 bool legal_to_execute_action(action* a, tc_number tc);
 
+bool isNewUngroundedElement(matched_symbol_list* ungrounded_syms, Symbol* pSym, uint64_t pIdentity)
+{
+    for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++)
+    {
+        if (((*it)->instantiated_sym == pSym) && ((*it)->identity == pIdentity))
+            return false;
+    }
+    return true;
+
+}
 bool reorder_action_list(agent* thisAgent, action** action_list,
                          tc_number lhs_tc, matched_symbol_list* ungrounded_syms,
                          bool add_ungrounded)
@@ -162,20 +172,28 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
-                chunk_element* lNewUngroundedSym;
-                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                Symbol* lVarSym, *lInstSym;
+                uint64_t lNewID;
 
-                lNewUngroundedSym->variable_sym = lSym;
+                lVarSym = lSym;
                 if (lSym->is_sti())
                 {
-                    lNewUngroundedSym->instantiated_sym = lSym;
+                    lInstSym = lSym;
                 } else {
                     assert(lSym->is_variable() && lSym->var->instantiated_sym);
-                    lNewUngroundedSym->instantiated_sym = lSym->var->instantiated_sym;
+                    lInstSym = lSym->var->instantiated_sym;
                 }
-                lNewUngroundedSym->identity = rhs_value_to_o_id(lAction->id);
-                dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
-                ungrounded_syms->push_back(lNewUngroundedSym);
+                lNewID = rhs_value_to_o_id(lAction->id);
+                if (isNewUngroundedElement(ungrounded_syms, lInstSym,  lNewID))
+                {
+                    chunk_element* lNewUngroundedSym;
+                    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                    lNewUngroundedSym->variable_sym = lVarSym;
+                    lNewUngroundedSym->instantiated_sym = lInstSym;
+                    lNewUngroundedSym->identity = lNewID;
+                    dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
+                    ungrounded_syms->push_back(lNewUngroundedSym);
+                }
             }
         }
         thisAgent->outputManager->set_print_indents();
@@ -916,7 +934,7 @@ cons* collect_root_variables(agent* thisAgent,
             if (! found_goal_impasse_test)
             {
                 dprint_noprefix(DT_REORDERER, "not found\n");
-                if (add_ungrounded)
+                if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->identity))
                 {
                 chunk_element* lNewUngroundedSym;
                 thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
