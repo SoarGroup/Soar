@@ -7,11 +7,14 @@
 //
 
 #include "AgentTest.hpp"
+#include "soar_instance.h"
 
 void AgentTest::setUp()
 {
 	kernel = sml::Kernel::CreateKernelInCurrentThread(true);
+    configure_for_unit_tests();
 	agent = kernel->CreateAgent("soar1");
+    configure_agent_for_unit_tests(NULL);
 }
 
 void AgentTest::tearDown(bool caught)
