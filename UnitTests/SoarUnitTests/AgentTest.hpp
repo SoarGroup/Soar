@@ -9,12 +9,10 @@
 #ifndef AgentTest_cpp
 #define AgentTest_cpp
 
-#include "TestCategory.hpp"
-
-#include "SoarHelper.hpp"
-
 #include "sml_ClientAgent.h"
 #include "sml_ClientKernel.h"
+#include "SoarHelper.hpp"
+#include "TestCategory.hpp"
 
 class AgentTest : public TestCategory
 {

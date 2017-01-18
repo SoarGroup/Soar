@@ -8,11 +8,7 @@
 
 #include "MiscTests.hpp"
 
-#include "SoarHelper.hpp"
-
 #include "portability.h"
-#include "handlers.hpp"
-
 #include "Export.h"
 
 #include "soar_rand.h"
@@ -22,6 +18,9 @@
 
 #include <string>
 #include <iostream>
+
+#include "SoarHelper.hpp"
+#include "handlers.hpp"
 
 void MiscTests::source(const std::string& file)
 {

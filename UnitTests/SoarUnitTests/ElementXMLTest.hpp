@@ -11,9 +11,8 @@
 
 #include "portability.h"
 
-#include "TestCategory.hpp"
-
 #include <string>
+#include "TestCategory.hpp"
 
 class ElementXMLTest : public TestCategory
 {

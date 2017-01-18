@@ -1,8 +1,7 @@
-#include "portability.h"
-
+#include "handlers.hpp"
 #include "handlers.hpp"
 
-#include "TestHelpers.hpp"
+#include "portability.h"
 
 #include <vector>
 #include <sstream>
@@ -12,8 +11,8 @@
 #include "sml_Utils.h"
 #include "thread_Event.h"
 
-#include "handlers.hpp"
 #include "misc.h"
+#include "TestHelpers.hpp"
 
 void Handlers::MyBoolShutdownHandler(sml::smlSystemEventId, void* pUserData, sml::Kernel*)
 {

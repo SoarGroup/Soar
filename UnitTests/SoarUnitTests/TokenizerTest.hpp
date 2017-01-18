@@ -11,11 +11,10 @@
 
 #include "portability.h"
 
-#include "TestCategory.hpp"
-
 #include "tokenizer.h"
 #include <stdarg.h>
 #include <queue>
+#include "TestCategory.hpp"
 
 struct CallData
 {

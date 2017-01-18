@@ -8,13 +8,13 @@ Import('env', 'g_msvs_variant')
 Import('env', 'InstallDir')
 
 clone = env.Clone()
-scu_src = ['Prototype-UnitTesting.cxx']
-# scu_src = [env.File('Prototype-UnitTesting.cxx')]
+scu_src = ['SoarUnitTests.cxx']
+# scu_src = [env.File('SoarUnitTests.cxx')]
 
-clone.Prepend(CPPPATH = [env.Dir('kernel').srcnode(), env.Dir('kernel/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode(), env.Dir('windows').srcnode()])
+clone.Prepend(CPPPATH = [env.Dir('SoarUnitTests').srcnode(), env.Dir('SoarUnitTests/wma').srcnode(), env.Dir('SoarHelpers').srcnode(), env.Dir('TestHarness').srcnode(), env.Dir('.').srcnode()])
 # clone.Append(LINKFLAGS = ['-v'])
 
-srcdirs = ['kernel/*', 'kernel', 'SoarHelpers', 'TestHarness']
+srcdirs = ['SoarUnitTests/*', 'SoarUnitTests', 'SoarHelpers', 'TestHarness']
 src = []
 if env['SCU']:
 	src = scu_src
@@ -25,7 +25,7 @@ else:
 src2 = []
 
 # SCU is not linking properly, so overwrite with Alex's previous non-scu list until we can figure out why
-src = [Glob('kernel/*/*.cpp'), Glob('kernel/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]
+src = [Glob('SoarUnitTests/*/*.cpp'), Glob('SoarUnitTests/*.cpp'), Glob('SoarHelpers/*.cpp'), Glob('TestHarness/*.cpp')]
 
 # print "src1: ", src
 # print "src2: ", src2
@@ -33,6 +33,10 @@ put_obj = clone.Program(target = 'UnitTests', source = src)
 t = env.Install('$OUT_DIR', put_obj)
 
 # t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
+
+lib = env.SharedLibrary('TestExternalLibraryLib', 'ExampleExternalLibrary/lib.cpp')[0]   # for MSVC, only need the .dll, not .lib or .exp
+prog = env.Program('TestExternalLibrary', 'ExampleExternalLibrary/TestExternalLibrary.cpp')
+t2 = env.Install('$OUT_DIR', [prog, lib])
 
 if 'MSVSProject' in env['BUILDERS']:
 	proj = env.MSVSProject(
@@ -45,4 +49,6 @@ if 'MSVSProject' in env['BUILDERS']:
 	Import('msvs_projs')
 	msvs_projs.append(proj)
 
-Return('t')
+SoarUnitTests_tests = InstallDir(env, '$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')
+
+env.Alias('tests', t + t2 + SoarUnitTests_tests)

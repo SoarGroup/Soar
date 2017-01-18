@@ -8,11 +8,10 @@
 
 #include "FullTests.hpp"
 
-#include "FullTestsRemote.hpp"
+#include "SoarHelper.hpp"
 #include "FullTestsClientThread.hpp"
 #include "FullTestsClientThreadFullyOptimized.hpp"
-
-#include "SoarHelper.hpp"
+#include "FullTestsRemote.hpp"
 
 bool g_Cancel = false;
 

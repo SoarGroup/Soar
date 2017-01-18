@@ -11,8 +11,6 @@
 
 #include "portability.h"
 
-#include "FunctionalTestHarness.hpp"
-
 #include <string>
 #include <vector>
 #include <sstream>
@@ -22,6 +20,8 @@
 #include "sml_Utils.h"
 #include "thread_Event.h"
 #include "sml_Names.h"
+
+#include "FunctionalTestHarness.hpp"
 
 class IOTests : public FunctionalTestHarness
 {

@@ -9,8 +9,6 @@
 #ifndef FullTests_cpp
 #define FullTests_cpp
 
-#include "TestCategory.hpp"
-
 #include "portability.h"
 
 #include <string>
@@ -28,6 +26,7 @@
 #include "soarversion.h"
 
 #include "handlers.hpp"
+#include "TestCategory.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>

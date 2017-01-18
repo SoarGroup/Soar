@@ -11,9 +11,10 @@
 #include <sstream>
 
 #include "portability.h"
+
 #include "portable-dirent.h"
 
-std::string SoarHelper::ResourceDirectory = "./Tests/";
+std::string SoarHelper::ResourceDirectory = "./SoarUnitTests/";
 
 int SoarHelper::getD_CYCLE_COUNT(sml::Agent* agent)
 {

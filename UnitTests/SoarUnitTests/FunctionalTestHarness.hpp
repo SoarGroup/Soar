@@ -9,9 +9,6 @@
 #ifndef FunctionalTestHarness_cpp
 #define FunctionalTestHarness_cpp
 
-#include "TestCategory.hpp"
-#include "TestRunner.hpp"
-
 #include "portability.h"
 
 #include "sml_ClientAgent.h"
@@ -22,6 +19,8 @@
 #include "rhs_functions.h"
 
 #include <string>
+#include "TestCategory.hpp"
+#include "TestRunner.hpp"
 
 class FunctionalTestHarness : public TestCategory
 {

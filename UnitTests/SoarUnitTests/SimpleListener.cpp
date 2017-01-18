@@ -1,6 +1,6 @@
-#include "portability.h"
 #include "SimpleListener.hpp"
 
+#include "portability.h"
 #include <string>
 #include <sstream>
 #include <iostream>

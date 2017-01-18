@@ -6,9 +6,6 @@
 //  Copyright © 2015 University of Michigan – Soar Group. All rights reserved.
 //
 
-#include "TestCategory.hpp"
-#include "TestRunner.hpp"
-
 #include <functional>
 #include <thread>
 #include <condition_variable>
@@ -23,25 +20,26 @@
 // INCLUDE TEST HEADERS HERE
 
 #include "AgentTest.hpp"
-#include "BasicTests.hpp"
-#include "FunctionalTests.hpp"
-#include "EpMemFunctionalTests.hpp"
-#include "SMemEpMemCombinedFunctionalTests.hpp"
-#include "SMemFunctionalTests.hpp"
-#include "WmaFunctionalTests.hpp"
 #include "AliasTest.hpp"
+#include "BasicTests.hpp"
+#include "ChunkingTests.hpp"
 #include "ElementXMLTest.hpp"
+#include "EpMemFunctionalTests.hpp"
 #include "FullTests.hpp"
-#include "FullTestsClientThreadFullyOptimized.hpp"
 #include "FullTestsClientThread.hpp"
+#include "FullTestsClientThreadFullyOptimized.hpp"
 #include "FullTestsRemote.hpp"
+#include "FunctionalTests.hpp"
 #include "IOTests.hpp"
 #include "MiscTests.hpp"
 #include "MultiAgentTest.hpp"
-#include "TokenizerTest.hpp"
-#include "ChunkingTests.hpp"
-
 #include "SimpleListener.hpp"
+#include "SMemEpMemCombinedFunctionalTests.hpp"
+#include "SMemFunctionalTests.hpp"
+#include "TokenizerTest.hpp"
+#include "wma/WmaFunctionalTests.hpp"
+#include "TestCategory.hpp"
+#include "TestRunner.hpp"
 
 #if defined(_WIN32) || defined(WIN32)
 

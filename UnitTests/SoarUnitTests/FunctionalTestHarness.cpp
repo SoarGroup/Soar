@@ -8,11 +8,10 @@
 
 #include "FunctionalTestHarness.hpp"
 
-#include "SoarHelper.hpp"
-
 #include "sml_EmbeddedConnectionSynch.h"
 #include "sml_AgentSML.h"
 #include "symbol_manager.h"
+#include "SoarHelper.hpp"
 
 FunctionalTestHarness::FunctionalTestHarness()
 : haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),

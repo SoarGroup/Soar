@@ -8,10 +8,10 @@
 
 #include "SMemFunctionalTests.hpp"
 
-#include "SoarHelper.hpp"
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
+#include "SoarHelper.hpp"
 
 void SMemFunctionalTests::setUp()
 {

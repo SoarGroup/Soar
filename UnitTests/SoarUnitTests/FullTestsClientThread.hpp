@@ -2,7 +2,6 @@
 #define FullTests_USE_CLIENT_THREAD
 
 #include "FullTests.hpp"
-
 #include "TestCategory.hpp"
 
 class FullTestsClientThread : public FullTests_Parent, public TestCategory

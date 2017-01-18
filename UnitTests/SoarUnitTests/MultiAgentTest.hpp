@@ -9,13 +9,12 @@
 #ifndef MultiAgentTest_cpp
 #define MultiAgentTest_cpp
 
-#include "TestCategory.hpp"
-
 #include <string>
 #include <vector>
 #include <sstream>
 
 #include "sml_Client.h"
+#include "TestCategory.hpp"
 
 class MultiAgentTest : public TestCategory
 {

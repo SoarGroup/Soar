@@ -7,7 +7,9 @@
 //
 
 #include "ChunkingTests.hpp"
+
 #include "sml_ClientAnalyzedXML.h"
+
 #include "SoarHelper.hpp"
 
 //#define SAVE_LOG_FILES
