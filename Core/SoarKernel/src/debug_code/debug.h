@@ -15,7 +15,6 @@
 #define SOARDEBUG_H
 
 #include "kernel.h"
-//#include "soar_module.h"
 
 #ifndef SOAR_RELEASE_VERSION
     /* This can be used to turn off dprints except for a decision cycle range */
@@ -41,10 +40,6 @@ bool id_matches(uint64_t lID, uint64_t lID_to_match);
 extern std::string get_stacktrace(const char* prefix = NULL);
 
 extern void debug_test(int type = 1);
-
-extern void debug_init_db(agent* thisAgent);
-extern void debug_store_refcount(Symbol* sym, bool isAdd);
-extern void debug_destroy_for_refcount(agent* delete_agent);
 
 #endif
 

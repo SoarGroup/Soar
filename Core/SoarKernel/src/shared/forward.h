@@ -67,7 +67,6 @@ class Viz_Parameters;
 class OM_Parameters;
 class OM_DB;
 class AgentOutput_Info;
-class debug_param_container;
 
 class cli_command_params;
 class decide_param_container;

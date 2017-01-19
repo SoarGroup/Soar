@@ -58,23 +58,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
     }
     if (numArgs == 1)
     {
-        if (sub_command[0] == 'g')
-        {
-            std::string parameter_name = argv->at(1);
-            soar_module::param* my_param = thisAgent->debug_params->get(parameter_name.c_str());
-            if (!my_param)
-            {
-                tempString.str("");
-                tempString << "Debug| Invalid parameter: " << parameter_name;
-                SetError(tempString.str().c_str());
-                goto print_syntax;
-            }
-            tempString.str("");
-            tempString << "Debug| " << my_param->get_name() << " = " << my_param->get_string();
-            PrintCLIMessage(&tempString);
-            return true;
-        }
-        else if (sub_command[0] == 'x')
+        if (sub_command[0] == 'x')
         {
             std::string mode = argv->at(1);
             int debug_type;
@@ -143,41 +127,6 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
 
             return DoAllocate(argv->at(1), blocks);
         }
-        else if (sub_command[0] == 's')
-        {
-            std::string parameter_name = argv->at(1);
-            std::string parameter_value = argv->at(2);
-
-            soar_module::param* my_param = thisAgent->debug_params->get(parameter_name.c_str());
-            if (!my_param)
-            {
-                tempString.str("");
-                tempString << "Debug| Invalid parameter: " << parameter_name;
-                SetError(tempString.str().c_str());
-                goto print_syntax;
-            }
-            if (!my_param->validate_string(parameter_value.c_str()))
-            {
-                tempString.str("");
-                tempString << "Debug| Invalid value: " << parameter_value;
-                SetError(tempString.str().c_str());
-                goto print_syntax;
-            }
-
-            bool result = my_param->set_string(parameter_value.c_str());
-
-            if (!result)
-            {
-                SetError("Debug| Could not set parameter!");
-                goto print_syntax;
-            }
-            else
-            {
-                tempString << "Debug| " << my_param->get_name() << " = " << parameter_value.c_str();
-                PrintCLIMessage(&tempString);
-                return true;
-            }
-        }
         else if (sub_command[0] == 'p')
         {
             std::string database_name = argv->at(1);
@@ -193,7 +142,7 @@ bool CommandLineInterface::DoDebug(std::vector< std::string >* argv)
             else
             {
                 tempString.str("");
-                tempString << "Debug | Invalid database parameter: " << sub_command << ".";
+                tempString << "Debug | Invalid database to print: " << sub_command << ".";
                 SetError(tempString.str().c_str());
                 goto print_syntax;
             }

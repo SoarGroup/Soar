@@ -293,10 +293,6 @@ inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_
 
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
-#ifndef SOAR_RELEASE_VERSION
-    void debug_store_refcount(Symbol* sym, bool isAdd);
-#endif
-
 char first_letter_from_symbol(Symbol* sym);
 
 /* -- This function returns a numeric value from a symbol -- */

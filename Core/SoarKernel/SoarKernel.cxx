@@ -34,7 +34,6 @@
 #include <lexer.cpp>
 #include <mem.cpp>
 #include <memory_manager.cpp>
-#include <output_db.cpp>
 #include <output_errors.cpp>
 #include <output_manager.cpp>
 #include <output_print.cpp>
