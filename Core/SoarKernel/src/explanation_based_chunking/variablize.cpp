@@ -117,7 +117,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     {
         rhs_value lMatchedSym_with_LTI_Link = NULL;
 
-        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y.\n", found_variablization->variable_sym);
+        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y with identity %u.\n", found_variablization->variable_sym, found_variablization->identity);
         /* MToDo | Add test that symbol is local to the substate analyzed */
         if (rs->referent->is_lti() && lti_link_tc && (rs->referent->id->level == m_inst->match_goal_level) && (rs->referent->tc_num != lti_link_tc))
         {

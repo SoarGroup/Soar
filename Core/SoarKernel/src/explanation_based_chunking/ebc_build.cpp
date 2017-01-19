@@ -1087,7 +1087,7 @@ void Explanation_Based_Chunker::clean_up ()
 {
     if (m_chunk_new_i_id)
     {
-        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(m_chunk_new_i_id);
+        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
     }
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
