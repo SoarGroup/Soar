@@ -117,6 +117,7 @@ enum Decider_settings {
 
 enum Output_sysparams {
     OM_ECHO_COMMANDS,
+    OM_AGENT_WRITES,
     OM_WARNINGS,
     OM_PRINT_DEPTH,
     num_output_sysparams

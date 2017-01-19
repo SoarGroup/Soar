@@ -198,23 +198,26 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
 
 Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    Symbol* arg;
-    char* string;
-    growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
-
-    for (; args != NIL; args = args->rest)
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
     {
-        arg = static_cast<symbol_struct*>(args->first);
-        /* --- Note use of false here--print the symbol itself, not a rereadable
+        Symbol* arg;
+        char* string;
+        growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+        for (; args != NIL; args = args->rest)
+        {
+            arg = static_cast<symbol_struct*>(args->first);
+            /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
-        string = arg->to_string();
-        add_to_growable_string(thisAgent, &gs, string); // for XML generation
-        thisAgent->outputManager->printa(thisAgent, string);
+            string = arg->to_string();
+            add_to_growable_string(thisAgent, &gs, string); // for XML generation
+            thisAgent->outputManager->printa(thisAgent, string);
+        }
+
+        xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+        free_growable_string(thisAgent, gs);
     }
-
-    xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-
-    free_growable_string(thisAgent, gs);
 
     return NIL;
 }

@@ -31,6 +31,7 @@ class OM_Parameters: public soar_module::param_container
         soar_module::constant_param<soar_module::opt_choices>* opt;
 
         soar_module::integer_param* print_depth;
+        soar_module::boolean_param* agent_writes;
         soar_module::boolean_param* warnings;
         soar_module::boolean_param* echo_commands;
 
