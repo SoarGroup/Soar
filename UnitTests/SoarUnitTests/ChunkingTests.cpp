@@ -153,7 +153,7 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
         std::ostringstream outStringStream("");
         if (ignored < expected_chunks)
         {
-            outStringStream << "Only learned " << ignored << " of the expected " << expected_chunks << ". " << (sourced - ignored) << " were not what we expected.";
+            outStringStream << "Only learned " << ignored << " of the expected " << expected_chunks << ".";
             #ifdef SAVE_LOG_FILES
             agent->ExecuteCommandLine((std::string("output log --add |") + outStringStream.str().c_str() + std::string("|")).c_str(), false, false);
             agent_command("print -cf");

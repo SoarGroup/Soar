@@ -133,12 +133,12 @@ public:
     void testDemo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 37, 6); }
     void testDemo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1); }
     void testDemo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 6); }
-    void testDemo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 138, 58); }
+    void testDemo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 138, 42); }
     void testDemo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 6); }
     void testDemo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 23, 10); }
-    void testDemo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 600, 3); }
-    void testDemo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 600, 16); }
-    void testDemo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 600, 5); }
+    void testDemo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 423, 3); }
+    void testDemo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 102, 16); }
+    void testDemo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 48, 5); }
     void testDisjunction_Merge()                               { check_chunk("Disjunction_Merge", 5, 1); }
     void testDuplicates()                                      { check_chunk("Duplicates", 5, 2); }
     void testFaux_Operator()                                   { check_chunk("Faux_Operator", 8, 3); }
