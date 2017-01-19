@@ -292,7 +292,7 @@ goal_stack_level get_match_goal(condition* top_cond)
 
 Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                               goal_stack_level new_id_level, char new_id_letter,
-                              struct token_struct* tok, wme* w)
+                              struct token_struct* tok, wme* w, bool& wasUnboundVar)
 {
     cons* fl;
     cons* arglist;
@@ -301,6 +301,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     Symbol* result;
     bool nil_arg_found;
 
+    /* We pass back whether this was an unbound var via wasUnboundVar so that the re-orderer
+     * will not consider it unconnected to the LHS if it's a child of an unconnected symbol */
+    wasUnboundVar = false;
     if (rhs_value_is_symbol(rv))
     {
 
@@ -315,6 +318,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         int64_t index;
         Symbol* sym;
 
+        wasUnboundVar = true;
         index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
         if (thisAgent->firer_highest_rhs_unboundvar_index < index)
         {
@@ -360,9 +364,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     for (arg_cons = fl->rest; arg_cons != NIL; arg_cons = arg_cons->rest)
     {
         allocate_cons(thisAgent, &c);
-        c->first = instantiate_rhs_value(thisAgent,
-                                         static_cast<char*>(arg_cons->first), new_id_level,
-                                         new_id_letter, tok, w);
+        bool dummy_was_unbound_var;
+
+        c->first = instantiate_rhs_value(thisAgent, static_cast<char*>(arg_cons->first), new_id_level, new_id_letter, tok, w, dummy_was_unbound_var);
         if (!c->first)
         {
             nil_arg_found = true;
@@ -433,9 +437,11 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     char first_letter;
     preference* newPref;
 
+    bool_quadruple was_unbound_vars;
+
     if (a->type == FUNCALL_ACTION)
     {
-        lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
+        lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w, was_unbound_vars.id);
         if (lValue)
         {
             thisAgent->symbolManager->symbol_remove_ref(&lValue);
@@ -449,7 +455,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     uint64_t oid_id = 0, oid_attr = 0, oid_value = 0, oid_referent = 0;
     rhs_value f_id = 0, f_attr = 0, f_value = 0, f_referent = 0;
 
-    lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
+    lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w, was_unbound_vars.id);
     if (!lId)
     {
         goto abort_execute_action;
@@ -457,13 +463,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     if (!lId->is_sti())
     {
         thisAgent->outputManager->printa_sf(thisAgent, "Error: RHS of action %a makes a preference for %y (not an identifier)\n", a, lId);
-        //lAttr = instantiate_rhs_value(thisAgent, a->attr, 1, 'a', tok, w);
-        //lValue = instantiate_rhs_value(thisAgent, a->value, 1, 'v', tok, w);
-        //dprint(DT_DEBUG, "(%r ^%r %r) (%r ^%r %r)\n", a->id, a->attr, a->value, lId, lAttr, lValue);
         goto abort_execute_action;
     }
 
-    lAttr = instantiate_rhs_value(thisAgent, a->attr, lId->id->level, 'a', tok, w);
+    lAttr = instantiate_rhs_value(thisAgent, a->attr, lId->id->level, 'a', tok, w, was_unbound_vars.attr);
     if (!lAttr)
     {
         goto abort_execute_action;
@@ -471,8 +474,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     first_letter = first_letter_from_symbol(lAttr);
 
-    lValue = instantiate_rhs_value(thisAgent, a->value, lId->id->level,
-                                  first_letter, tok, w);
+    lValue = instantiate_rhs_value(thisAgent, a->value, lId->id->level, first_letter, tok, w, was_unbound_vars.value);
     if (!lValue)
     {
         goto abort_execute_action;
@@ -480,8 +482,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     if (preference_is_binary(a->preference_type))
     {
-        lReferent = instantiate_rhs_value(thisAgent, a->referent, lId->id->level,
-                                         first_letter, tok, w);
+        lReferent = instantiate_rhs_value(thisAgent, a->referent, lId->id->level, first_letter, tok, w, was_unbound_vars.referent);
         if (!lReferent)
         {
             goto abort_execute_action;
@@ -542,7 +543,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), false, was_unbound_vars);
     newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
     newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
     newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);

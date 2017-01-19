@@ -31,6 +31,17 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
+
+typedef struct bool_quadruple_struct
+{
+        bool id;
+        bool attr;
+        bool value;
+        bool referent;
+
+        bool_quadruple_struct(uint64_t new_id = false, uint64_t new_attr = false, uint64_t new_value = false, uint64_t new_referent = false): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} bool_quadruple;
+
 typedef struct rhs_quadruple_struct
 {
         rhs_value id;

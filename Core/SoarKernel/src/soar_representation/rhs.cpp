@@ -117,7 +117,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         {
             lID = thisAgent->explanationBasedChunker->get_identity(lID);
         }
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
     }
 }
 
@@ -467,7 +467,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->o_id : 0;
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, lO_id);
-        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id, rs->was_unbound_var);
     }
 }
 

@@ -20,6 +20,7 @@
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "soar_instance.h"
+#include "symbol.h"
 #include "test.h"
 #include "working_memory.h"
 #include "xml.h"

@@ -26,7 +26,7 @@
 
 preference* make_preference(agent* thisAgent, PreferenceType type, 
                             Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                            const identity_quadruple o_ids, bool pUnify_identities )
+                            const identity_quadruple o_ids, bool pUnify_identities, const bool_quadruple pWas_unbound_vars)
 {
     preference* p;
 
@@ -91,17 +91,17 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->cloned_rhs_funcs.value = NULL;
     p->cloned_rhs_funcs.referent = NULL;
 
+    p->was_unbound_vars.id = pWas_unbound_vars.id;
+    p->was_unbound_vars.attr = pWas_unbound_vars.attr;
+    p->was_unbound_vars.value = pWas_unbound_vars.value;
+    p->was_unbound_vars.referent = pWas_unbound_vars.referent;
+
     dprint(DT_PREFS, "Created preference %p\n", p);
 
-
     return p;
-
-    /* BUGBUG check to make sure the pref doesn't have
-          value or referent .isa_goal or .isa_impasse; */
 }
 
-/* This function just copies the elements of a preferences we need
- * for the EBC explanation mechanism */
+/* This function just copies the elements of a preferences we need for the EBC explanation mechanism */
 preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 {
     preference* p;

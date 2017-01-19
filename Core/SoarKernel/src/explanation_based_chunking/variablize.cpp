@@ -383,20 +383,21 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     char first_letter;
 
     // get the preference value
-    id_sym = instantiate_rhs_value(thisAgent, pRLAction->id, -1, 's', tok, w);
-    attr_sym = instantiate_rhs_value(thisAgent, pRLAction->attr, id_sym->id->level, 'a', tok, w);
+    bool_quadruple was_unbound_vars;
+    id_sym = instantiate_rhs_value(thisAgent, pRLAction->id, -1, 's', tok, w, was_unbound_vars.id);
+    attr_sym = instantiate_rhs_value(thisAgent, pRLAction->attr, id_sym->id->level, 'a', tok, w, was_unbound_vars.attr);
     first_letter = first_letter_from_symbol(attr_sym);
-    val_sym = instantiate_rhs_value(thisAgent, pRLAction->value, id_sym->id->level, first_letter, tok, w);
-    ref_sym = instantiate_rhs_value(thisAgent, pRLAction->referent, id_sym->id->level, first_letter, tok, w);
+    val_sym = instantiate_rhs_value(thisAgent, pRLAction->value, id_sym->id->level, first_letter, tok, w, was_unbound_vars.value);
+    ref_sym = instantiate_rhs_value(thisAgent, pRLAction->referent, id_sym->id->level, first_letter, tok, w, was_unbound_vars.referent);
 
     rhs = make_action(thisAgent);
     rhs->type = MAKE_ACTION;
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, rhs_value_to_o_id(pRLAction->id));
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, rhs_value_to_o_id(pRLAction->attr));
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, rhs_value_to_o_id(pRLAction->value));
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent));
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, rhs_value_to_o_id(pRLAction->id), was_unbound_vars.id);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, rhs_value_to_o_id(pRLAction->attr), was_unbound_vars.attr);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, rhs_value_to_o_id(pRLAction->value), was_unbound_vars.value);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, rhs_value_to_o_id(pRLAction->referent), was_unbound_vars.referent);
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
     thisAgent->symbolManager->symbol_remove_ref(&id_sym);
@@ -448,7 +449,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         } else {
             lO_id = result->identities.id;
         }
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id, result->was_unbound_vars.id);
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
     }
@@ -461,7 +462,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         } else {
             lO_id = result->identities.attr;
         }
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id, result->was_unbound_vars.attr);
     } else {
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
     }
@@ -474,7 +475,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
         } else {
             lO_id = result->identities.value;
         }
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id, result->was_unbound_vars.value);
     } else {
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
     }
@@ -489,7 +490,7 @@ action* Explanation_Based_Chunker::variablize_result_into_actions(preference* re
             } else {
                 lO_id = result->identities.referent;
             }
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id, result->was_unbound_vars.referent);
         } else {
             a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
         }

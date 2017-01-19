@@ -43,7 +43,7 @@ sp {apply*query*success2
               ^superstate <ss>)
 -->
    (<res> ^foo <bar>)
-#   (<bar> ^foo bar) # This crashes Soar 1/18/17
+   (<bar> ^foo bar) # This used to crash Soar 1/18/17
    (write (crlf) |Augmentation result successful: | <res> )
    (interrupt)
 }
