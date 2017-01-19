@@ -19,17 +19,6 @@ class OM_Parameters: public soar_module::param_container
 
         OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]);
 
-        // storage
-        soar_module::constant_param<soar_module::db_choices>* database;
-        soar_module::string_param* path;
-        soar_module::boolean_param* lazy_commit;
-        soar_module::boolean_param* append_db;
-
-        // performance
-        soar_module::constant_param<soar_module::page_choices>* page_size;
-        soar_module::integer_param* cache_size;
-        soar_module::constant_param<soar_module::opt_choices>* opt;
-
         soar_module::integer_param* print_depth;
         soar_module::boolean_param* agent_writes;
         soar_module::boolean_param* warnings;
