@@ -62,7 +62,8 @@ void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "all                        %-%s%-%s\n", capitalizeOnOff(all->get_value()), "Whether to record all rules that are learned");
     outputManager->printa_sf(thisAgent, "justifications             %-%s%-%s\n", capitalizeOnOff(include_justifications->get_value()), "Whether to record justifications");
     outputManager->printa_sf(thisAgent, "record <chunk-name>        %-%-%s\n", "Record any chunks formed from a specific rule");
-    outputManager->printa_sf(thisAgent, "list                       %-%-%s\n", "List all rules learned");
+    outputManager->printa_sf(thisAgent, "list-chunks                %-%-%s\n", "List all rules learned");
+    outputManager->printa_sf(thisAgent, "list-justifications        %-%-%s\n", "List all justifications learned");
     outputManager->printa_sf(thisAgent, "----------- Starting an Explanation -----------\n");
     outputManager->printa_sf(thisAgent, "chunk [<chunk name> | <chunk id> ]     %-%-%s\n", "Start discussing chunk");
     outputManager->printa_sf(thisAgent, "formation                  %-%-%s\n", "Describe initial formation of chunk");
