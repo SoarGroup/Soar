@@ -42,7 +42,8 @@ sp {apply*query*success2
               ^query-result <res>
               ^superstate <ss>)
 -->
-   (<res> ^foo bar)
+   (<res> ^foo <bar>)
+#   (<bar> ^foo bar) # This crashes Soar 1/18/17
    (write (crlf) |Augmentation result successful: | <res> )
    (interrupt)
 }
