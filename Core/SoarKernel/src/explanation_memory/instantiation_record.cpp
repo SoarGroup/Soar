@@ -290,11 +290,10 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
 
             id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
-                lCond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->test_for_acceptable_preference ? " +" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -404,11 +403,10 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            outputManager->printa_sf(thisAgent, "(%y%s^%y %y%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
-                print_cond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                print_cond->test_for_acceptable_preference ? " +" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
@@ -507,11 +505,10 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool printFoote
 
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
-                lCond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->test_for_acceptable_preference ? " +" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,

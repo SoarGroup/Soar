@@ -102,7 +102,8 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 
 void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
-    assert(pOld_o_id);
+    if (pOld_o_id == NULL_IDENTITY_SET) return;
+
     if (pOld_o_id == pNew_o_id)
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Attempting to unify identical conditions for identity %u].  Skipping.\n", pNew_o_id);
@@ -263,6 +264,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
         literalize_RHS_function_args(rhs_funcs.id);
+        add_identity_unification(lId->identity, NULL_IDENTITY_SET);
     }
     else
     {
@@ -281,6 +283,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
         literalize_RHS_function_args(rhs_funcs.attr);
+        add_identity_unification(lAttr->identity, NULL_IDENTITY_SET);
     }
     else
     {
@@ -299,6 +302,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
         literalize_RHS_function_args(rhs_funcs.value);
+        add_identity_unification(lValue->identity, NULL_IDENTITY_SET);
     }
     else
     {
