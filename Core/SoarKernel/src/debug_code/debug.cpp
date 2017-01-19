@@ -103,6 +103,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
+    mode_info[DT_VALIDATE].prefix =                     strdup("Validate| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");

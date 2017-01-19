@@ -424,7 +424,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, true);
         }
         else
         {
@@ -437,7 +437,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
 
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u\n", sym, lO_id, pI_id);
-        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, true);
     }
 
     if (rhs_value_is_funcall(rv))
@@ -528,7 +528,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -536,17 +536,18 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
+    new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
 {
     if (sym)
     {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID);
+    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID, pWasUnbound);
 }
 
 bool rhs_value_is_literalizing_function(rhs_value rv)

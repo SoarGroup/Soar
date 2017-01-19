@@ -103,13 +103,13 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
     first_action = NIL;
     last_action = NIL;
 
-    dprint_header(DT_REORDERER, PrintBoth, "Reordering action list:\n%2", *action_list);
+    dprint_header(DT_VALIDATE, PrintBoth, "Reordering action list:\n%2", *action_list);
     while (remaining_actions)
     {
         /* --- scan through remaining_actions, look for one that's legal --- */
         prev_a = NIL;
         a = remaining_actions;
-        dprint(DT_REORDERER, "Looking for an action with a knowable level...\n");
+        dprint(DT_VALIDATE, "Looking for an action with a knowable level...\n");
         while (true)
         {
             if (!a)
@@ -118,20 +118,20 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             }
             if (legal_to_execute_action(a, lhs_tc))
             {
-                dprint(DT_REORDERER, "...   Found. Levels of %a ARE knowable.\n", a);
+                dprint(DT_VALIDATE, "...   Found. Levels of %a ARE knowable.\n", a);
                 break;
             } else {
-                dprint(DT_REORDERER, "...   Skipping. Levels of %a NOT knowable.\n", a);
+                dprint(DT_VALIDATE, "...   Skipping. Levels of %a NOT knowable.\n", a);
             }
             prev_a = a;
             a = a->next;
         }
         if (!a)
         {
-            dprint(DT_REORDERER, "...no more actions with a knowable level.\n");
+            dprint(DT_VALIDATE, "...no more actions with a knowable level.\n");
             break;
         }
-        dprint(DT_REORDERER, "...moving %a to reordered list.\n", a);
+        dprint(DT_VALIDATE, "...moving %a to reordered list.\n", a);
         /* --- move action a from remaining_actions to reordered list --- */
         if (prev_a)
         {
@@ -152,14 +152,14 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         }
         last_action = a;
         /* --- add new variables from a to new_bound_vars --- */
-        dprint(DT_REORDERER, "...marking vars in %a\n", a);
+        dprint(DT_VALIDATE, "...marking vars in %a\n", a);
         add_all_variables_in_action(thisAgent, a, lhs_tc, &new_bound_vars);
     }
 
     if (remaining_actions)
     {   /* --- there are remaining_actions but none can be legally added --- */
 
-        dprint_header(DT_REORDERER, PrintAfter, "Remaining action list:\n%2", remaining_actions);
+        dprint_header(DT_VALIDATE, PrintAfter, "Remaining action list:\n%2", remaining_actions);
 
         std::string unSymString("");
         action* lAction;
@@ -168,7 +168,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
         for (lAction = remaining_actions; lAction; lAction = lAction->next)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, unSymString, "%a\n", lAction);
-            if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id))
+            if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id) && rhs_value_to_was_unbound_var(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
                 assert(ungrounded_syms && lSym);
@@ -191,7 +191,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                     lNewUngroundedSym->variable_sym = lVarSym;
                     lNewUngroundedSym->instantiated_sym = lInstSym;
                     lNewUngroundedSym->identity = lNewID;
-                    dprint(DT_REPAIR, "Adding ungrounded sym for RHS: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
+                    dprint(DT_VALIDATE, "Adding ungrounded rhs sym: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
@@ -230,7 +230,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
 
     /* --- return final result --- */
     *action_list = first_action;
-    dprint_header(DT_REORDERER, PrintAfter, "Reordering %s.  Final action list:\n%2", result_flag ? "succeeded" : "failed", *action_list);
+    dprint_header(DT_VALIDATE, PrintAfter, "Reordering %s.  Final action list:\n%2", result_flag ? "succeeded" : "failed", *action_list);
     return result_flag;
 }
 
@@ -880,7 +880,7 @@ cons* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.value_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
-            dprint(DT_REORDERER, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
+            dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
         }
     }
@@ -899,7 +899,7 @@ cons* collect_root_variables(agent* thisAgent,
             lSym = cond->data.tests.id_test->eq_test->data.referent;
             assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
-            dprint(DT_REORDERER, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
+            dprint(DT_VALIDATE, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
         }
     }
@@ -917,7 +917,7 @@ cons* collect_root_variables(agent* thisAgent,
         for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
         {
             found_goal_impasse_test = false;
-            dprint(DT_REORDERER, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
+            dprint(DT_VALIDATE, "Looking for isa_state test for root %y/%y...", (*it)->variable_sym, (*it)->instantiated_sym);
 
             for (cond = cond_list; cond != NIL; cond = cond->next)
             {
@@ -935,13 +935,13 @@ cons* collect_root_variables(agent* thisAgent,
                 dprint_noprefix(DT_REORDERER, "not found\n");
                 if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->identity))
                 {
-                chunk_element* lNewUngroundedSym;
-                thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
+                    chunk_element* lNewUngroundedSym;
+                    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                     chunk_element* lOldMatchedSym = (*it);
                     lNewUngroundedSym->variable_sym = (*it)->variable_sym;
                     lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
                     lNewUngroundedSym->identity = (*it)->identity;
-                    dprint(DT_REPAIR, "Adding ungrounded sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
+                    dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 } else {
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
@@ -956,13 +956,13 @@ cons* collect_root_variables(agent* thisAgent,
     }
 
     cons* returnList = NULL;
-    dprint(DT_REORDERER, "Found the following root symbols:  ");
+    dprint(DT_VALIDATE, "Found the following root symbols:  ");
     for (auto it = new_vars_from_id_slot->begin(); it != new_vars_from_id_slot->end(); it++)
     {
-        dprint_noprefix(DT_REORDERER, "%y ", (*it)->variable_sym);
+        dprint_noprefix(DT_VALIDATE, "%y ", (*it)->variable_sym);
         push(thisAgent, (*it)->variable_sym, returnList);
     }
-    dprint_noprefix(DT_REORDERER, "\n");
+    dprint_noprefix(DT_VALIDATE, "\n");
     delete_ungrounded_symbol_list(thisAgent, &new_vars_from_id_slot);
     return returnList;
 }
