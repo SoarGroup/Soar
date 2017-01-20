@@ -25,7 +25,7 @@ soarversionFile.close()
 
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
+DEF_TARGETS = 'kernel cli sml_java debugger headers scripts'.split()
 
 print "================================================================================"
 print "Soar", SOAR_VERSION, "scons build script started."
