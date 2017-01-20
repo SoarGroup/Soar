@@ -53,7 +53,6 @@ extern "C" class EXPORT TclSoarLib
     public:
 
         TclSoarLib(sml::Kernel* pKernel);
-        void init_TclSoarLib();
         ~TclSoarLib();
 
         bool turnOn();
@@ -62,6 +61,9 @@ extern "C" class EXPORT TclSoarLib
         sml::Kernel* m_kernel;
 
     private:
+        pthread_t lib_thread;
+        pthread_mutex_t interp_mutex;
+		pthread_barrier_t interp_barrier;
 
         Tcl_Interp* m_interp;
 
@@ -70,10 +72,13 @@ extern "C" class EXPORT TclSoarLib
 
         bool evaluateDirCommand(const std::string command);
 
+        friend void* launch_tcl(void* lib_ptr);
+
         std::string& EscapeTclString(const char* in, std::string& out);
         int GlobalEval(const std::string& command, std::string& result);
         int GlobalDirEval(const std::string& command, std::string& result);
 };
 } // extern "C"
+
 
 #endif /* TCLSOARLIB_H_ */
