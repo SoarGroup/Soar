@@ -6,7 +6,7 @@ import os, sys, platform
 Import('env', 'InstallDir')
 
 settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
-vs_install = env.Install(env['OUT_DIR'], 'VisualSoar.jar')
+vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar', 'VisualSoar.jartmp')
 if os.name == 'nt':
     jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.bat')
     vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.bat')
