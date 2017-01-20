@@ -78,40 +78,6 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
     {
         if (!pArg2)
         {
-//            bool allEnabled = true;
-//            for (int i=0; i < maxAgentTraces; ++i)
-//            {
-//                if (!thisAgent->output_settings->agent_traces_enabled[i])
-//                {
-//                    allEnabled = false;
-//                    break;
-//                }
-//            }
-//            if (allEnabled)
-//            {
-//                tempStringStream << "All agent trace channels enabled.";
-//            } else {
-//                tempStringStream << "All agent trace channels enabled except ";
-//                bool isFirst = true;
-//                for (int i=0; i < maxAgentTraces; ++i)
-//                {
-//                    if (!thisAgent->output_settings->agent_traces_enabled[i])
-//                    {
-//                        if (!isFirst)
-//                        {
-//                            if (i != (maxAgentTraces - 1))
-//                            {
-//                                tempStringStream << ", " << (i+1);
-//                            }
-//                        } else {
-//                            tempStringStream << i;
-//                            isFirst = false;
-//                        }
-//                    }
-//                }
-//                tempStringStream << ".";
-//            }
-//            PrintCLIMessage(&tempStringStream);
             PrintCLIMessage(thisAgent->outputManager->m_params->get_agent_channel_string(thisAgent).c_str());
             return true;
         } else {
@@ -128,7 +94,7 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
                 }
                 thisAgent->output_settings->agent_traces_enabled[lTraceLevel-1] = ((*pArg3) == "on");
             } else {
-                tempStringStream << "Agent trace channel " << lTraceLevel << " is" ;
+                tempStringStream << "Agent trace channel " << lTraceLevel << " is now" ;
                 PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
             }
         }

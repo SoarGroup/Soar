@@ -187,6 +187,7 @@ void OM_Parameters::print_output_settings(agent* thisAgent)
     outputManager->printa(thisAgent, "-           Output Sub-Commands and Options           -\n");
     outputManager->printa(thisAgent, "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("output", "[? | help]", 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s   %-Controls whether agent trace channel prints\n", concatJustified("agent-trace", "<channel-number> [on | off]", 55).c_str());
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("enabled",enabled->get_string(), 55).c_str(), "Globally turn off all output");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("console", stdout_enabled->get_string(), 55).c_str(), "Send output to std::out for debugging");
