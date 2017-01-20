@@ -23,6 +23,7 @@
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
+#define maxAgentTraces 100
 
 typedef struct trace_mode_info_struct
 {
@@ -52,6 +53,7 @@ class AgentOutput_Info
         bool print_enabled;
         bool callback_mode;
         int  printer_output_column;
+        bool agent_traces_enabled[maxAgentTraces] ;
         void set_output_params_agent(bool pDebugEnabled);
 } ;
 

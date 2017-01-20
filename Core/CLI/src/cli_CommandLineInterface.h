@@ -113,7 +113,7 @@ namespace cli
             bool DoLearn(const LearnBitset& options);
             bool DoLoad(std::vector<std::string>& argv, const std::string& pCmd);
             bool DoLS();
-            bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0);
+            bool DoOutput(std::vector<std::string>& argv, const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0);
             bool DoRedirectedOutputCommand(std::vector<std::string>& argv, bool& had_error);
             bool DoPopD();
             bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);

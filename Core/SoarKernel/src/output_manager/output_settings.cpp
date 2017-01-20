@@ -26,6 +26,8 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
     add(warnings);
     agent_writes = new soar_module::boolean_param("agent-writes", pOutput_sysparams[OM_AGENT_WRITES] ? on : off, new soar_module::f_predicate<boolean>());
     add(agent_writes);
+    agent_traces = new soar_module::boolean_param("agent-trace",on, new soar_module::f_predicate<boolean>());
+    add(agent_traces);
 
     /* Actual values initialized before printing because agent might not be created yet, and it is agent-specific */
     enabled = new soar_module::boolean_param("enabled", off, new soar_module::f_predicate<boolean>());
@@ -113,6 +115,8 @@ void OM_Parameters::print_output_summary(agent* thisAgent)
     {
         outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Printing to std::out", (thisAgent->outputManager->is_printing_to_stdout() ? "Yes" : "No"), 55).c_str());
     }
+    outputManager->printa(thisAgent, get_agent_channel_string(thisAgent).c_str());
+    outputManager->printa(thisAgent, "\n");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Warnings", warnings->get_string(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Agent RHS write output", agent_writes->get_string(), 55).c_str());
@@ -124,6 +128,46 @@ void OM_Parameters::print_output_summary(agent* thisAgent)
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "To enable specific types of trace messages, use the 'watch' command.\n");
     outputManager->printa_sf(thisAgent, "Use 'output ?' for a command overview or 'help output' for the manual page.");
+}
+
+const std::string OM_Parameters::get_agent_channel_string(agent* thisAgent)
+{
+    std::ostringstream tempStringStream;
+    bool allEnabled = true;
+    for (int i=0; i < maxAgentTraces; ++i)
+    {
+        if (!thisAgent->output_settings->agent_traces_enabled[i])
+        {
+            allEnabled = false;
+            break;
+        }
+    }
+    if (allEnabled)
+    {
+        tempStringStream << "All agent trace channels enabled.";
+    } else {
+        tempStringStream << "All agent trace channels enabled except ";
+        bool isFirst = true;
+        for (int i=0; i < maxAgentTraces; ++i)
+        {
+            if (!thisAgent->output_settings->agent_traces_enabled[i])
+            {
+                if (!isFirst)
+                {
+                    if (i != (maxAgentTraces - 1))
+                    {
+                        tempStringStream << ", " << (i+1);
+                    }
+                } else {
+                    tempStringStream << i;
+                    isFirst = false;
+                }
+            }
+        }
+        tempStringStream << ".";
+    }
+
+    return tempStringStream.str();
 }
 
 void OM_Parameters::print_output_settings(agent* thisAgent)

@@ -57,7 +57,7 @@ bool CommandLineInterface::DoRedirectedOutputCommand(std::vector<std::string>& a
     return false;
 }
 
-bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2)
+bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2, const std::string* pArg3)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
@@ -73,6 +73,65 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
     if (!my_param)
     {
         return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
+    }
+    else if (my_param == thisAgent->outputManager->m_params->agent_traces)
+    {
+        if (!pArg2)
+        {
+//            bool allEnabled = true;
+//            for (int i=0; i < maxAgentTraces; ++i)
+//            {
+//                if (!thisAgent->output_settings->agent_traces_enabled[i])
+//                {
+//                    allEnabled = false;
+//                    break;
+//                }
+//            }
+//            if (allEnabled)
+//            {
+//                tempStringStream << "All agent trace channels enabled.";
+//            } else {
+//                tempStringStream << "All agent trace channels enabled except ";
+//                bool isFirst = true;
+//                for (int i=0; i < maxAgentTraces; ++i)
+//                {
+//                    if (!thisAgent->output_settings->agent_traces_enabled[i])
+//                    {
+//                        if (!isFirst)
+//                        {
+//                            if (i != (maxAgentTraces - 1))
+//                            {
+//                                tempStringStream << ", " << (i+1);
+//                            }
+//                        } else {
+//                            tempStringStream << i;
+//                            isFirst = false;
+//                        }
+//                    }
+//                }
+//                tempStringStream << ".";
+//            }
+//            PrintCLIMessage(&tempStringStream);
+            PrintCLIMessage(thisAgent->outputManager->m_params->get_agent_channel_string(thisAgent).c_str());
+            return true;
+        } else {
+            int lTraceLevel;
+            if (!my_param->validate_string(pArg3->c_str()))
+            {
+                return SetError("Agent trace channel setting must be 'on' or 'off'. Use 'output ?' to see a list of valid sub-commands.");
+            }
+            if (pArg3) {
+                if (!from_string(lTraceLevel, (*pArg2)) || (lTraceLevel < 1) || (lTraceLevel > maxAgentTraces))
+                {
+                    tempStringStream << "Agent trace channel must be an integer between 1 and " << maxAgentTraces << ".";
+                    return SetError(tempStringStream.str().c_str());
+                }
+                thisAgent->output_settings->agent_traces_enabled[lTraceLevel-1] = ((*pArg3) == "on");
+            } else {
+                tempStringStream << "Agent trace channel " << lTraceLevel << " is" ;
+                PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
+            }
+        }
     }
     else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
     {
@@ -102,8 +161,7 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
                 tempStringStream << my_param->get_name() << " is now " << pArg2->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
-            /* The following code assumes that all parameters except learn are boolean */
-            if (!strcmp(pArg1->c_str(), "print-depth"))
+            if (my_param == thisAgent->outputManager->m_params->print_depth)
             {
                 thisAgent->outputManager->m_params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
             } else {

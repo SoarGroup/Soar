@@ -26,6 +26,10 @@ AgentOutput_Info::AgentOutput_Info()
 {
     print_enabled = true;
     printer_output_column = 1;
+    for (int i=0; i < maxAgentTraces; ++i)
+    {
+        agent_traces_enabled[i] = true;
+    }
     #ifndef SOAR_RELEASE_VERSION
         set_output_params_agent(true);
     #else
@@ -34,12 +38,12 @@ AgentOutput_Info::AgentOutput_Info()
 }
 
 void AgentOutput_Info::set_output_params_agent(bool pDebugEnabled){
-    if (pDebugEnabled && !(Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()))
+    if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
     {
-        callback_mode = false;
-    } else {
         callback_mode = true;
+        return;
     }
+    callback_mode = !pDebugEnabled;
 }
 
 
