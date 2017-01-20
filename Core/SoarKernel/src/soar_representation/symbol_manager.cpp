@@ -504,6 +504,7 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
         sym->id = NULL;
         sym->var = NULL;
         sym->sc = sym;
+        sym->singleton.possible = false;
         symbol_add_ref(sym);
         add_to_hash_table(thisAgent, str_constant_hash_table, sym);
     }

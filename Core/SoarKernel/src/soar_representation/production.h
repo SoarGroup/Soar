@@ -17,7 +17,7 @@ typedef struct production_struct
     char*                           filename;                   /* name of source file, or NIL. */
     SupportType                     declared_support;
     action*                         action_list;                /* RHS actions */
-    cons*                         rhs_unbound_variables;      /* RHS vars not bound on LHS */
+    cons*                           rhs_unbound_variables;      /* RHS vars not bound on LHS */
     int                             OPERAND_which_assert_list;
     bool                            trace_firings;              /* used by pwatch */
     uint64_t                        reference_count;

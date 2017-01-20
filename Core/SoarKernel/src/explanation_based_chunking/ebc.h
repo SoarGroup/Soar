@@ -165,12 +165,14 @@ class Explanation_Based_Chunker
         /* Core tables used by EBC during identity assignment during instantiation
          * creation. The data stored within them is temporary and cleared after use. */
 
-        sym_to_id_map*             instantiation_identities;
-        id_to_sym_id_map*          identity_to_var_map;
+        sym_to_id_map*      instantiation_identities;
+        id_to_sym_id_map*   identity_to_var_map;
 
         /* Map to unify variable identities into identity sets */
-        id_to_id_map*              unification_map;
-        identity_quadruple         local_singleton_superstate_identity;
+        id_to_id_map*       unification_map;
+        identity_quadruple  local_singleton_superstate_identity;
+        symbol_list*        local_singletons;
+        symbol_list*        singletons;
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;

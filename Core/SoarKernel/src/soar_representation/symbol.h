@@ -149,6 +149,12 @@ struct strSymbol   : public Symbol
     struct production_struct* production;
     agent* thisAgent;
     char* cached_print_str;
+
+    struct {
+    bool possible;                      /* Used by EBC to quickly determine if a WMEs attribute makes it eligible to be a singleton */
+    singleton_element_type  id_type;
+    singleton_element_type  value_type;
+    } singleton;
 };
 struct varSymbol   : public Symbol
 {

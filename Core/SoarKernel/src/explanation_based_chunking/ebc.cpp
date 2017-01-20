@@ -57,6 +57,9 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
+    local_singletons = new symbol_list();
+    singletons = new symbol_list();
+
     local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();
     lti_link_function = NULL;
@@ -74,6 +77,8 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete unification_map;
     delete chunk_history;
     delete local_linked_STIs;
+    delete singletons;
+    delete local_singletons;
 
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);

@@ -101,6 +101,14 @@ enum ebc_rule_type {
     ebc_template
 };
 
+enum singleton_element_type {
+    ebc_identifier,
+    ebc_state,
+    ebc_operator,
+    ebc_constant,
+    ebc_any
+};
+
 enum Decider_settings {
     DECIDER_KEEP_TOP_OPREFS,
     DECIDER_MAX_GP,

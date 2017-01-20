@@ -250,7 +250,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 else                                        /* Another condition that matches the same wme */
                 {
                     add_to_grounds(c);
-                    add_singleton_unification_if_needed(c);
+//                    add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);

@@ -98,5 +98,4 @@ typedef struct attachment_struct
 
 } attachment_point;
 
-
 #endif /* CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_ */
