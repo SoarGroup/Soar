@@ -211,7 +211,8 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
 
             /* Save semantic memory */
             if (!DoCLog(LOG_NEWAPPEND, &lFile, 0, true)) return false;
-            if (thisAgent->SMem->enabled())
+            if (thisAgent->SMem->enabled()) thisAgent->SMem->attach();
+            if (thisAgent->SMem->connected() && (thisAgent->SMem->statistics->nodes->get_value() > 0))
             {
                 result = thisAgent->SMem->export_smem(0, export_text, &(err));
                 AddSaveText("# Semantic Memory\n");
@@ -222,14 +223,15 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
 
             /* Save episodic memory.  Not implemented, but idea is to back up db
              * with same name as agent. */
-            if (epmem_enabled(thisAgent))
-            {
-                AddSaveText("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
-            } else {
-                AddSaveText("# Episodic memory is not enabled.  Did not save.");
-            }
-            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
+//            if (epmem_enabled(thisAgent)) epmem_attach(thisAgent);
+//            if (epmem_connected(thisAgent))
+//            {
+//                AddSaveText("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
+//            } else {
+//                AddSaveText("# Episodic memory is not enabled.  Did not save.");
+//            }
 
+            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
             PrintCLIMessage("Procedural memory, semantic memory and settings written to file.");
             delete err;
             return result;
