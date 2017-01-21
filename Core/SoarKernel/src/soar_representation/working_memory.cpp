@@ -163,7 +163,7 @@ void add_wme_to_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link addition for id %y and value %y.\n", w->id, w->value);
         post_link_addition(thisAgent, w->id, w->value);
-        if (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+        if (w->id->is_state() && (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol))
         {
             w->value->id->isa_operator++;
         }
@@ -195,7 +195,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
         post_link_removal(thisAgent, w->id, w->attr);
     }
     #endif
-    if (w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+    if (w->id->is_state() && w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
         {
             /* Do this afterward so that gSKI can know that this is an operator */
             w->value->id->isa_operator--;
