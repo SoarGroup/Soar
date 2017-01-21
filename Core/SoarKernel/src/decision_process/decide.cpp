@@ -1977,7 +1977,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
     impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level, 0, false);
     post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
-    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol, NIL, false);
+    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol, NIL, true);
 
     if (isa_goal)
     {
@@ -2019,12 +2019,12 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
     }
     else
     {
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL, true);
     }
 
     if (attr)
     {
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL, true);
     }
 
     switch (impasse_type)
@@ -2032,19 +2032,19 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         case NONE_IMPASSE_TYPE:
             break;    /* this happens only when creating the top goal */
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
         case CONFLICT_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case TIE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case NO_CHANGE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
     }
@@ -2808,7 +2808,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         thisAgent->bottom_goal->id->lower_goal = id;
         thisAgent->bottom_goal = id;
         add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.quiescence_symbol,
-                        thisAgent->symbolManager->soarSymbols.t_symbol, NIL, false);
+                        thisAgent->symbolManager->soarSymbols.t_symbol, NIL);
         if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) &&
                 (thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
         {

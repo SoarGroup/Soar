@@ -52,7 +52,7 @@ namespace soar_module
         add_wme_to_wm(thisAgent, w);
         if (isSingleton)
         {
-//            thisAgent->explanationBasedChunker->add_to_singletons(w);
+            thisAgent->explanationBasedChunker->add_to_singletons(w);
         }
         return w;
     }
