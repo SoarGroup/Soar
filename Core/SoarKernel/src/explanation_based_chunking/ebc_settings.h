@@ -18,6 +18,7 @@ class ebc_param_container: public soar_module::param_container
 
         soar_module::constant_param<EBCLearnChoices>* chunk_in_states;
         soar_module::constant_param<chunkNameFormats>* naming_style;
+        soar_module::constant_param<singleton_element_type>* element_type;
 
         soar_module::boolean_param* history_cmd;
         soar_module::boolean_param* stats_cmd;
@@ -42,7 +43,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_repair_rhs;
         soar_module::boolean_param* mechanism_repair_lhs;
         soar_module::boolean_param* mechanism_merge;
-//        soar_module::boolean_param* mechanism_user_singletons;
+        soar_module::boolean_param* mechanism_user_singletons;
 
         soar_module::boolean_param* allow_missing_negative_reasoning;
 //        soar_module::boolean_param* allow_missing_OSK;
@@ -54,6 +55,8 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* never_cmd;
         soar_module::boolean_param* flagged_cmd;
         soar_module::boolean_param* unflagged_cmd;
+
+        soar_module::boolean_param* singleton;
 
         ebc_param_container(agent* new_agent, bool pEBC_settings[], uint64_t& pMaxChunks, uint64_t& pMaxDupes);
         void update_params(bool pEBC_settings[]);

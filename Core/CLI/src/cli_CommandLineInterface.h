@@ -101,7 +101,7 @@ namespace cli
 
             bool DoAlias(std::vector< std::string >* argv = 0, bool doRemove = false);
             bool DoCD(const std::string* pDirectory = 0);
-            bool DoChunk(const std::string* pAttr = 0, const std::string* pVal = 0);
+            bool DoChunk(const std::string* pArg1 = 0, const std::string* pArg2 = 0, const std::string* pArg3 = 0, const std::string* pArg4 = 0);
             bool DoDebug(std::vector< std::string >* argv = 0);
             bool DoDecide(std::vector<std::string>& argv, const std::string& pCmd);
             bool DoDirs();

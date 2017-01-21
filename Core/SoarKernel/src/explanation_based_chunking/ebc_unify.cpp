@@ -371,3 +371,12 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     }
 }
 
+void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+{
+    thisAgent->outputManager->printa_sf(thisAgent, "EBC will now unify super-state conditions that match the pattern (%s ^%y %s).\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+    singletons->insert(attrSym);
+    attrSym->sc->singleton.possible = true;
+    attrSym->sc->singleton.id_type = id_type;
+    attrSym->sc->singleton.value_type = value_type;
+}
+

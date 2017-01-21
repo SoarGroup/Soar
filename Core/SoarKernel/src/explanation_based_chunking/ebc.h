@@ -68,6 +68,7 @@ class Explanation_Based_Chunker
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
         void add_to_singletons(wme* pWME);
         bool wme_is_a_singleton(wme* pWME);
+        void add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -94,6 +95,8 @@ class Explanation_Based_Chunker
         void print_instantiation_identities_map(TraceMode mode);
         void print_unification_map(TraceMode mode);
 
+        void print_singleton_summary();
+        const char* singletonTypeToString(singleton_element_type pType);
         void print_chunking_summary();
         void print_chunking_settings();
 
@@ -173,8 +176,8 @@ class Explanation_Based_Chunker
         /* Map to unify variable identities into identity sets */
         id_to_id_map*       unification_map;
         identity_quadruple  local_singleton_superstate_identity;
-        symbol_list*        local_singletons;
-        symbol_list*        singletons;
+        symbol_set*         local_singletons;
+        symbol_set*         singletons;
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
@@ -287,5 +290,4 @@ class Explanation_Based_Chunker
         void clear_data();
 
 };
-
 #endif /* EBC_MANAGER_H_ */

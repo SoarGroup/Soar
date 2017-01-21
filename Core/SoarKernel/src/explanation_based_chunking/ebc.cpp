@@ -58,8 +58,8 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
-    local_singletons = new symbol_list();
-    singletons = new symbol_list();
+    local_singletons = new symbol_set();
+    singletons = new symbol_set();
 
     local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();

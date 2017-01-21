@@ -106,7 +106,8 @@ enum singleton_element_type {
     ebc_state,
     ebc_operator,
     ebc_constant,
-    ebc_any
+    ebc_any,
+    ebc_num_element_types
 };
 
 enum Decider_settings {

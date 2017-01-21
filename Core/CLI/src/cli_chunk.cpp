@@ -27,28 +27,28 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* pVal)
+bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3, const std::string* pArg4)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
     std::string tempString;
 
-    if (!pAttr)
+    if (!pArg1)
     {
         thisAgent->explanationBasedChunker->print_chunking_summary();
         return true;
     }
     /* Single command argument */
-    soar_module::param* my_param = thisAgent->explanationBasedChunker->ebc_params->get(pAttr->c_str());
+    soar_module::param* my_param = thisAgent->explanationBasedChunker->ebc_params->get(pArg1->c_str());
     if (!my_param)
     {
         /* Command was not a valid ebc_param name, so it must be a single word command */
         /* Check if it's one of the four chunk enable commands.  (Means no ebc_param name
          * can be named enabled, on off, all disabled, none only all-except*/
-        if(thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->validate_string(pAttr->c_str()))
+        if(thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->validate_string(pArg1->c_str()))
         {
-            thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->set_string(pAttr->c_str());
-            tempStringStream << "Learns rules in states: " << pAttr->c_str() << "\n";
+            thisAgent->explanationBasedChunker->ebc_params->chunk_in_states->set_string(pArg1->c_str());
+            tempStringStream << "Learns rules in states: " << pArg1->c_str() << "\n";
             PrintCLIMessage(&tempStringStream);
             thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, NULL);
             return true;
@@ -73,22 +73,55 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
     {
         PrintCLIMessage_Header("Chunking History", 60);
     }
+    else if (my_param == thisAgent->explanationBasedChunker->ebc_params->singleton)
+    {
+        if (!pArg2)
+        {
+            thisAgent->explanationBasedChunker->print_singleton_summary();
+        } else {
+            assert(pArg3 && pArg4);
+            singleton_element_type id_type, value_type;
+            Symbol* attrSym = thisAgent->symbolManager->make_str_constant(pArg3->c_str());
+            if (!attrSym)
+            {
+                return SetError("Invalid attribute element of singleton.  Must be a valid string constant.");
+            }
+            if (thisAgent->explanationBasedChunker->ebc_params->element_type->validate_string(pArg2->c_str()))
+            {
+                thisAgent->explanationBasedChunker->ebc_params->element_type->set_string(pArg2->c_str());
+                id_type = thisAgent->explanationBasedChunker->ebc_params->element_type->get_value();
+            } else {
+                std::cout << thisAgent->explanationBasedChunker->ebc_params->element_type->validate_string(pArg2->c_str());
+                PrintCLIMessage(pArg2->c_str());
+                return SetError("Invalid pattern type for identifier element of singleton.  Must be any, constant, identifier, operator, or state.");
+            }
+            if (value_type && (thisAgent->explanationBasedChunker->ebc_params->element_type->validate_string(pArg4->c_str())))
+            {
+                thisAgent->explanationBasedChunker->ebc_params->element_type->set_string(pArg4->c_str());
+                value_type = thisAgent->explanationBasedChunker->ebc_params->element_type->get_value();
+            } else {
+                return SetError("Invalid pattern type for value element of singleton.  Must be any, constant, identifier, operator, or state.");
+            }
+            thisAgent->explanationBasedChunker->add_new_singleton(id_type, attrSym, value_type);
+            return true;
+        }
+    }
     else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->help_cmd) || (my_param == thisAgent->explanationBasedChunker->ebc_params->qhelp_cmd))
     {
         thisAgent->explanationBasedChunker->print_chunking_settings();
     }
     else {
-        if (!pVal)
+        if (!pArg2)
         {
             tempStringStream << my_param->get_name() << " is" ;
             PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
         } else {
-            if (!my_param->validate_string(pVal->c_str()))
+            if (!my_param->validate_string(pArg2->c_str()))
             {
                 return SetError("Invalid argument for chunking command. Use 'chunk ?' to see a list of valid settings.");
             }
 
-            bool result = my_param->set_string(pVal->c_str());
+            bool result = my_param->set_string(pArg2->c_str());
 
             if (!result)
             {
@@ -96,14 +129,14 @@ bool CommandLineInterface::DoChunk(const std::string* pAttr, const std::string* 
             }
             else
             {
-                tempStringStream << my_param->get_name() << " is now " << pVal->c_str();
+                tempStringStream << my_param->get_name() << " is now " << pArg2->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
             /* The following code assumes that all parameters except learn are boolean */
-            if (!strcmp(pAttr->c_str(), "learn"))
+            if (!strcmp(pArg1->c_str(), "learn"))
             {
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent);
-            } else if (!strcmp(pAttr->c_str(), "max-chunks") || !strcmp(pAttr->c_str(), "max-dupes")) {
+            } else if (!strcmp(pArg1->c_str(), "max-chunks") || !strcmp(pArg1->c_str(), "max-dupes")) {
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, NULL, static_cast<soar_module::integer_param*>(my_param));
             } else {
                 thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
