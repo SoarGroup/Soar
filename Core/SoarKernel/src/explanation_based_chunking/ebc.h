@@ -107,6 +107,7 @@ class Explanation_Based_Chunker
         void reinit();
         void cleanup_after_instantiation_creation() { instantiation_identities->clear(); }
         void clear_variablization_maps();
+        void clear_singletons();
 
     private:
 
@@ -289,7 +290,7 @@ class Explanation_Based_Chunker
         void clear_cached_constraints();
         void clear_o_id_substitution_map()      { unification_map->clear(); }
         void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
-        void clear_singletons()                 { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
+        void clear_local_arch_singletons()      { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
         void clear_data();
 
 };

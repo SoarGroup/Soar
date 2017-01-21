@@ -78,9 +78,9 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete unification_map;
     delete chunk_history;
     delete local_linked_STIs;
-    delete singletons;
     delete local_singletons;
-
+    clear_singletons();
+    delete singletons;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
 }
@@ -394,7 +394,7 @@ void Explanation_Based_Chunker::clear_data()
     clear_rulesym_to_identity_map();
     clear_o_id_substitution_map();
     clear_attachment_map();
-    clear_singletons();
+    clear_local_arch_singletons();
 }
 
 void Explanation_Based_Chunker::clear_attachment_map()

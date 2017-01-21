@@ -1118,7 +1118,7 @@ void Explanation_Based_Chunker::clean_up ()
     clear_cached_constraints();
     clear_o_id_substitution_map();
     clear_attachment_map();
-    clear_singletons();
+    clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)

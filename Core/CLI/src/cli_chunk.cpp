@@ -27,7 +27,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3, const std::string* pArg4, bool doRemove)
+bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3, const std::string* pArg4, bool doRemove, bool doClear)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
@@ -77,7 +77,12 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
     {
         if (!pArg2)
         {
-            thisAgent->explanationBasedChunker->print_singleton_summary();
+            if (doClear) {
+                thisAgent->explanationBasedChunker->clear_singletons();
+                PrintCLIMessage("User-defined singleton WME patterns cleared.");
+            } else {
+                thisAgent->explanationBasedChunker->print_singleton_summary();
+            }
         } else {
             assert(pArg3 && pArg4);
             singleton_element_type id_type, value_type;

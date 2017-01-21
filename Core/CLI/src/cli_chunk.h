@@ -33,11 +33,12 @@ namespace cli
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
-                bool doRemove = false;
+                bool doRemove = false, doClear = false;
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
                     {'r', "remove",             OPTARG_NONE},
+                    {'c', "clear",              OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -56,6 +57,9 @@ namespace cli
                     {
                         case 'r':
                             doRemove = true;
+                            break;
+                        case 'c':
+                            doClear = true;
                             break;
                     }
                 }
@@ -86,7 +90,7 @@ namespace cli
 
                 if (num_args == 1)
                 {
-                    return cli.DoChunk(&arg);
+                    return cli.DoChunk(&arg, NULL, NULL, NULL, false, doClear);
                 }
                 if (num_args == 2)
                 {

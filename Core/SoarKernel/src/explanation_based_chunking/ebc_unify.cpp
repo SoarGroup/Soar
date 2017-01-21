@@ -371,6 +371,7 @@ void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type
 {
     thisAgent->outputManager->printa_sf(thisAgent, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     singletons->insert(attrSym);
+    thisAgent->symbolManager->symbol_add_ref(attrSym);
     attrSym->sc->singleton.possible = true;
     attrSym->sc->singleton.id_type = id_type;
     attrSym->sc->singleton.value_type = value_type;
@@ -387,7 +388,19 @@ void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type,
                                                        "         that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
         singletons->erase(attrSym);
         attrSym->sc->singleton.possible = false;
+        thisAgent->symbolManager->symbol_remove_ref(&attrSym);
     }
+}
+void Explanation_Based_Chunker::clear_singletons()
+{
+    Symbol* lSym;
+    for (auto it = singletons->begin(); it != singletons->end(); ++it)
+    {
+        lSym = (*it);
+        lSym->sc->singleton.possible = false;
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
+    }
+    singletons->clear();
 }
 
 void Explanation_Based_Chunker::add_to_singletons(wme* pWME)

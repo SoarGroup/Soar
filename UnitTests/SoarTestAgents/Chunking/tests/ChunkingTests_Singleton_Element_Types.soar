@@ -15,12 +15,12 @@ chunk always
 #chunk single identifier constant-s constant
 #chunk single identifier constant-f constant
 
-#chunk single operator state-type state
-#chunk single operator operator operator
-#chunk single operator sti identifier
-#chunk single operator constant-i constant
-#chunk single operator constant-s constant
-#chunk single operator constant-f constant
+chunk single operator state-type state
+chunk single operator operator operator
+chunk single operator sti identifier
+chunk single operator constant-i constant
+chunk single operator constant-s constant
+chunk single operator constant-f constant
 
 #chunk single any state-type state
 #chunk single any operator operator
@@ -134,11 +134,11 @@ sp {intermediate-2
           ^constant-f{ <> jordan <c10> }
           ^sti { <> jordan <c11> }
           ^state-type { <> jordan <c14> })
-    (<c5> ^constant-i { <> michael <c15> }
-          ^constant-s { <> michael <c16> }
-          ^constant-f{ <> michael <c17> }
-          ^sti { <> michael <c18> }
-          ^state-type { <> michael <c19> })
+    (<c5> ^constant-i { <> jordan <c15> }
+          ^constant-s { <> jordan <c16> }
+          ^constant-f{ <> jordan <c17> }
+          ^sti { <> jordan <c18> }
+          ^state-type { <> jordan <c19> })
 -->
     (<s> ^substate-flag2 <c4>)
 }
