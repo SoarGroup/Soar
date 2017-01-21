@@ -217,7 +217,7 @@ int main(int argc, char** argv)
                 continue;
             }
 
-            if (excludeTests.size() > 0 && std::find(excludeTests.begin(), excludeTests.end(), category->getCategoryName() + "::" + std::get<2>(test)) != excludeTests.end())
+            if (excludeTests.size() > 0 && std::find(excludeTests.begin(), excludeTests.end(), std::get<2>(test)) != excludeTests.end())
             {
                 ++skipCount;
                 continue;
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
 
                 xml << " />" << std::endl;
 			}
-            else if (runner->failed && (std::find(expectedFailureCategories.begin(), expectedFailureCategories.end(), category->getCategoryName()) != expectedFailureCategories.end() || std::find(expectedFailureTests.begin(), expectedFailureTests.end(), category->getCategoryName() + "::" + std::get<2>(test)) != expectedFailureTests.end()))
+            else if (runner->failed && (std::find(expectedFailureCategories.begin(), expectedFailureCategories.end(), category->getCategoryName()) != expectedFailureCategories.end() || std::find(expectedFailureTests.begin(), expectedFailureTests.end(), std::get<2>(test)) != expectedFailureTests.end()))
             {
                 std::cout << "Failed. Ignoring." << std::endl;
                 std::cout.flush();
