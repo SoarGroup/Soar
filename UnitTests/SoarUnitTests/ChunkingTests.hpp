@@ -41,7 +41,7 @@ public:
     TEST(testChunk_Superstate_Operator_Preference, -1);
     TEST(testConflated_Constants, -1);
     TEST(testConstraint_Prop_from_Base_Conds, -1);
-    TEST(testDemo_Arithmetic, -1);
+//    TEST(testDemo_Arithmetic, -1);
     TEST(testDemo_Blocks_World_Hierarchical, -1);
     TEST(testDemo_Blocks_World_Hierarchical_Look_Ahead, -1);
     TEST(testDemo_Blocks_World_Look_Ahead, -1);
@@ -108,7 +108,7 @@ public:
     TEST(testUnify_Children_Results, -1);
     TEST(testUnify_through_Two_Traces_Four_Deep, -1);
     TEST(testVrblzd_Constraint_on_Ungrounded, -1);
-    TEST(testGamesAgent_Sanity1, -1);
+//    TEST(testGamesAgent_Sanity1, -1);
 
     void testAll_Test_Types()                                  { check_chunk("All_Test_Types", 4, 1); }
     void testBUNCPS_0()                                        { check_chunk("BUNCPS_0", 8, 1); }

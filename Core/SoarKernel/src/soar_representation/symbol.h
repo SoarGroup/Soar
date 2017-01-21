@@ -137,12 +137,15 @@ struct floatSymbol : public Symbol
     agent* thisAgent;
     char* cached_print_str;
 };
+
 struct intSymbol   : public Symbol
+
 {
     int64_t value;
     agent* thisAgent;
     char* cached_print_str;
 };
+
 struct strSymbol   : public Symbol
 {
     char* name;
@@ -151,11 +154,12 @@ struct strSymbol   : public Symbol
     char* cached_print_str;
 
     struct {
-    bool possible;                      /* Used by EBC to quickly determine if a WMEs attribute makes it eligible to be a singleton */
-    singleton_element_type  id_type;
-    singleton_element_type  value_type;
+        bool possible;                      /* Used by EBC to quickly determine if a WMEs attribute makes it eligible to be a singleton */
+        singleton_element_type  id_type;
+        singleton_element_type  value_type;
     } singleton;
 };
+
 struct varSymbol   : public Symbol
 {
     char* name;

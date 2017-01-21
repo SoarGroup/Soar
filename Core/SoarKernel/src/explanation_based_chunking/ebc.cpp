@@ -22,6 +22,7 @@
 #include "soar_instance.h"
 #include "soar_TraceNames.h"
 #include "test.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #include <assert.h>
@@ -433,4 +434,21 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uin
         return ovar_id_counter;
     }
     return existing_o_id;
+}
+
+void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
+{
+    pWME->singleton_status_checked = true;
+    pWME->is_singleton = true;
+}
+
+bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
+{
+    if (pWME->singleton_status_checked) return pWME->is_singleton;
+    if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible) return false;
+    bool lIDPassed = false;
+    bool lValuePassed = false;
+    /* Pattern check the wme */
+    pWME->singleton_status_checked = true;
+    return false;
 }

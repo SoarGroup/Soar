@@ -43,14 +43,17 @@ namespace soar_module
     // Utility functions
     /////////////////////////////////////////////////////////////
 
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value)
+    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton)
     {
         slot* my_slot = make_slot(thisAgent, id, attr);
         wme* w = make_wme(thisAgent, id, attr, value, false);
 
         insert_at_head_of_dll(my_slot->wmes, w, next, prev);
         add_wme_to_wm(thisAgent, w);
-
+        if (isSingleton)
+        {
+//            thisAgent->explanationBasedChunker->add_to_singletons(w);
+        }
         return w;
     }
 

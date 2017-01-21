@@ -1947,7 +1947,7 @@ byte run_preference_semantics(agent* thisAgent,
    (if non-NIL) for backtracing.
 ------------------------------------------------------------------ */
 
-void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p)
+void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p, bool isSingleton = false)
 {
     wme* w;
 
@@ -1955,6 +1955,10 @@ void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, 
     insert_at_head_of_dll(id->id->impasse_wmes, w, next, prev);
     w->preference = p;
     add_wme_to_wm(thisAgent, w);
+    if (isSingleton)
+    {
+        thisAgent->explanationBasedChunker->add_to_singletons(w);
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -1973,8 +1977,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
     impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level, 0, false);
     post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
-    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
-                    NIL);
+    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol, NIL, false);
 
     if (isa_goal)
     {
@@ -1982,12 +1985,12 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(impasseID->id->smem_info));
         thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
         impasseID->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header, true);
 
         impasseID->id->epmem_info->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header, true);
         impasseID->id->epmem_info->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
         soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, impasseID->id->epmem_info->epmem_cmd_header);
         impasseID->id->epmem_info->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
@@ -2009,7 +2012,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('L', level);
         Symbol* lsmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
         Symbol* lsmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header);
+        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header, true);
         impasseID->id->smem_info->cmd_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, lsmem_cmd_header);
         impasseID->id->smem_info->result_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, lsmem_result_header);
 
@@ -2805,7 +2808,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         thisAgent->bottom_goal->id->lower_goal = id;
         thisAgent->bottom_goal = id;
         add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.quiescence_symbol,
-                        thisAgent->symbolManager->soarSymbols.t_symbol, NIL);
+                        thisAgent->symbolManager->soarSymbols.t_symbol, NIL, false);
         if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) &&
                 (thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
         {

@@ -319,23 +319,19 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 /* Requires: pCond is a local condition */
 void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condition* pCond)
 {
-    if (pCond->bt.wme_->id->id->isa_goal)
+    if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
+        (pCond->bt.wme_->id->id->isa_goal) && (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
     {
-        if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
-            (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
+        if (local_singleton_superstate_identity.id == 0)
         {
-            if (local_singleton_superstate_identity.id == 0)
+            dprint(DT_UNIFY_SINGLETONS, "Storing identities for local singleton wme: %l\n", pCond);
+            local_singleton_superstate_identity = { pCond->data.tests.id_test->eq_test->identity, pCond->data.tests.attr_test->eq_test->identity, pCond->data.tests.value_test->eq_test->identity };
+        } else {
+            dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
+            if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity.value)
             {
-                dprint(DT_UNIFY_SINGLETONS, "Storing identities for local singleton wme: %l\n", pCond);
-                local_singleton_superstate_identity = { pCond->data.tests.id_test->eq_test->identity,
-                    pCond->data.tests.attr_test->eq_test->identity, pCond->data.tests.value_test->eq_test->identity };
-            } else {
-                dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
-                if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity.value)
-                {
-                    dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
-                    add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
-                }
+                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
+                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
             }
         }
     }
@@ -346,36 +342,32 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
-    /* Thought we might need to check if this is a proposal, but this seems to already skip unifying proposals. */
-    if (pCond->bt.wme_->id->id->isa_goal)
+    if (wme_is_a_singleton(pCond->bt.wme_))
     {
-        if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
-            (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
+        condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
+        assert(last_cond);
+        dprint(DT_UNIFY_SINGLETONS, "Unifying value element of second condition that matched singleton wme: %l\n", pCond);
+        dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
+        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
-            condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-            assert(last_cond);
-            dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
-            dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
-            if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
-            {
-                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-            }
-        } else if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-            (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_operator) &&
-            (!pCond->test_for_acceptable_preference))
-        {
-            condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-            assert(last_cond);
-            dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
-            dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
-            if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
-            {
-                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-            }
+            dprint(DT_UNIFY_SINGLETONS, "...unifying %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
         }
     }
-
+    /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
+    if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+            (pCond->bt.wme_->value->is_sti() &&  pCond->bt.wme_->value->id->isa_operator) &&
+            (!pCond->test_for_acceptable_preference))
+    {
+        condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
+        assert(last_cond);
+        dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
+        dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
+        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
+        {
+            dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+        }
+    }
 }
 

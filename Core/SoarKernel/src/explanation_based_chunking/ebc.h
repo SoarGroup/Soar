@@ -66,6 +66,8 @@ class Explanation_Based_Chunker
         uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
+        void add_to_singletons(wme* pWME);
+        bool wme_is_a_singleton(wme* pWME);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
