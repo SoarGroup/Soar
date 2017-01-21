@@ -115,15 +115,17 @@ typedef struct EXPORT symbol_struct
     bool        is_string()     { return (symbol_type == STR_CONSTANT_SYMBOL_TYPE); }
     bool        is_int()        { return (symbol_type == INT_CONSTANT_SYMBOL_TYPE); }
     bool        is_float()      { return (symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE); }
+    bool        is_lti();
+    bool        is_state();
+    bool        is_operator();
+    bool        is_top_state();
+
     tc_number   get_tc_num()            { return tc_num; }
     void        set_tc_num(tc_number n) { tc_num = n; }
     bool        is_constant_or_marked_variable(tc_number tc) { return ((symbol_type != VARIABLE_SYMBOL_TYPE) || (tc_num == tc)); }
     bool        is_in_tc(tc_number tc)
                 { if ((symbol_type == VARIABLE_SYMBOL_TYPE) || (symbol_type == IDENTIFIER_SYMBOL_TYPE)) return (tc_num == tc); else return false;}
 
-    bool        is_lti();
-    bool        is_state();
-    bool        is_top_state();
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0);
@@ -167,9 +169,10 @@ struct varSymbol   : public Symbol
     uint64_t gensym_number;
     cons* rete_binding_locations;
     /* instantiated_sym is a temporary pointer that is only guaranteed to be
-     * valid after variablization and while chuking the rule that set its
-     * value.  It is used to revert back to the instantiated value when the
-     * rule is a justification or if chunking fails for some reason. */
+     * valid after variablization and while learning the rule that set its
+     * value.  It is used to create the instantiated version of the conditions
+     * for the rule instantiation and, in the case of justifications, the rule
+     * itself. */
     Symbol* instantiated_sym;
 };
 
@@ -233,19 +236,16 @@ struct idSymbol    : public Symbol
 
     void* rl_trace;
 };
-
 inline bool     Symbol::is_lti()            { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && (id->LTI_ID != NIL)); };
-inline bool     Symbol::is_state()          { return (is_sti() && id->isa_goal);}
-inline bool     Symbol::is_top_state()      { return (is_state() && (id->higher_goal == NULL)); }
+inline bool     Symbol::is_state()          { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && id->isa_goal);}
+inline bool     Symbol::is_operator()       { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && id->isa_operator);}
+inline bool     Symbol::is_top_state()      { return ((symbol_type == IDENTIFIER_SYMBOL_TYPE) && id->isa_goal && (id->higher_goal == NULL)); }
 inline Symbol*  Symbol::get_parent_state()  { return id->higher_goal; }
 
 inline bool Symbol::get_id_name(std::string& n)
 {
     std::stringstream ss;
-    if (!is_sti())
-    {
-        return false;
-    }
+    if (!is_sti()) return false;
     ss << id->name_letter << id->name_number;
     n = ss.str();
     return true;

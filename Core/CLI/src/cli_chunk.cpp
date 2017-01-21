@@ -27,7 +27,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3, const std::string* pArg4)
+bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* pArg2, const std::string* pArg3, const std::string* pArg4, bool doRemove)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
@@ -102,7 +102,12 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
             } else {
                 return SetError("Invalid pattern type for value element of singleton.  Must be any, constant, identifier, operator, or state.");
             }
-            thisAgent->explanationBasedChunker->add_new_singleton(id_type, attrSym, value_type);
+            if (doRemove)
+            {
+                thisAgent->explanationBasedChunker->remove_singleton(id_type, attrSym, value_type);
+            } else {
+                thisAgent->explanationBasedChunker->add_new_singleton(id_type, attrSym, value_type);
+            }
             return true;
         }
     }

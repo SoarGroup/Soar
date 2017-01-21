@@ -322,20 +322,20 @@ void Explanation_Based_Chunker::print_singleton_summary()
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 40);
     outputManager->set_column_indent(1, 55);
-    outputManager->printa(thisAgent, "======== Singleton WME Unification Patterns =======\n");
-    outputManager->printa(thisAgent, "--------------------- Local -----------------------\n");
-    outputManager->printa(thisAgent, "   (<state> ^superstate <state>)\n");
-    outputManager->printa(thisAgent, "\n------------------ Super-state --------------------\n");
-    outputManager->printa(thisAgent, "   (<state> ^superstate <any>)\n");
-    outputManager->printa_sf(thisAgent, "   (<state> ^<operator> <operator>)             %-(unless condition tests acceptable preference)\n");
-    outputManager->printa(thisAgent, "   (<state> ^type <constant>)\n");
-    outputManager->printa(thisAgent, "   (<state> ^impasse <constant>)\n");
-    outputManager->printa(thisAgent, "   (<state> ^smem <identifier>)\n");
-    outputManager->printa(thisAgent, "   (<state> ^epmem <identifier>)\n");
-    outputManager->printa(thisAgent, "\n----------------- User-Defined --------------------\n");
+    outputManager->printa(thisAgent,    "==== Singleton WME Unification Patterns ====\n");
+    outputManager->printa(thisAgent,    "----------------- Local --------------------\n");
+    outputManager->printa(thisAgent,    "   (<state> ^superstate <state>)\n");
+    outputManager->printa(thisAgent,    "\n-------------- Super-state -----------------\n");
+    outputManager->printa(thisAgent,    "   (<state> ^superstate <any>)\n");
+    outputManager->printa_sf(thisAgent, "   (<state> ^operator   <operator>)             %-(unless condition only tests operator proposal)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^type       <constant>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^impasse    <constant>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^smem       <identifier>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^epmem      <identifier>)\n");
+    outputManager->printa(thisAgent,    "   ---------- user-defined ----------\n");
     if (singletons->empty())
     {
-        thisAgent->outputManager->printa(thisAgent, "   None defined.\n");
+        thisAgent->outputManager->printa(thisAgent, "   None.\n");
     }
     else
     {
@@ -347,7 +347,7 @@ void Explanation_Based_Chunker::print_singleton_summary()
         }
     }
     outputManager->printa(thisAgent, "\n\n"
-        "- To add a new pattern:    chunk singleton    <type> <attribute-string> <type>\n"
-        "- To remove a pattern:     chunk singleton -r <type> <attribute-string> <type>\n"
-        "- Valid types:             'any', 'constant, 'identifier', 'operator' or 'state'.  \n");
+        "To add a new pattern:    chunk singleton    <type> attribute <type>\n"
+        "To remove a pattern:     chunk singleton -r <type> attribute <type>\n\n"
+        "   Valid types:          [ any | constant | identifier | operator | state ]  \n");
 }

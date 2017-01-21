@@ -350,22 +350,18 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
-            dprint(DT_UNIFY_SINGLETONS, "...unifying %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
         }
     }
     /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
     if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-            (pCond->bt.wme_->value->is_sti() &&  pCond->bt.wme_->value->id->isa_operator) &&
-            (!pCond->test_for_acceptable_preference))
+        (pCond->bt.wme_->value->is_sti() &&  pCond->bt.wme_->value->id->isa_operator) &&
+        (!pCond->test_for_acceptable_preference))
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
         assert(last_cond);
-//        dprint(DT_UNIFY_SINGLETONS, "Unifying singleton wme already marked: %l\n", pCond);
-//        dprint(DT_UNIFY_SINGLETONS, " Other cond val: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
-//            dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
         }
     }
@@ -373,10 +369,22 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
 
 void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
-    thisAgent->outputManager->printa_sf(thisAgent, "EBC will now unify super-state conditions that match the pattern (%s ^%y %s).\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+    thisAgent->outputManager->printa_sf(thisAgent, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     singletons->insert(attrSym);
     attrSym->sc->singleton.possible = true;
     attrSym->sc->singleton.id_type = id_type;
     attrSym->sc->singleton.value_type = value_type;
 }
 
+void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+{
+    auto it = singletons->find(attrSym);
+    if (it == singletons->end())
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Could not find pattern (%s ^%y %s).  Did not remove.\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+    } else {
+        thisAgent->outputManager->printa_sf(thisAgent, "Removed. Will no longer unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+        singletons->erase(attrSym);
+        attrSym->sc->singleton.possible = false;
+    }
+}
