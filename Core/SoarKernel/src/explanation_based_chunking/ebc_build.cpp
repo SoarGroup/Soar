@@ -137,6 +137,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     if (pref->identities.id && linked_id)
     {
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
+        thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
         add_identity_unification(pref->identities.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */

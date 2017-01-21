@@ -171,6 +171,10 @@ enum IDSet_Mapping_Type {
     IDS_literalize_mappings_exist,
     IDS_unified_with_existing_mappings,
     IDS_unified_with_literalized_identity,
+    IDS_unified_with_local_singleton,
+    IDS_unified_with_singleton,
+    IDS_unified_child_result,
+    IDS_literalized_RHS_function_arg,
     IDS_base_instantiation
 };
 

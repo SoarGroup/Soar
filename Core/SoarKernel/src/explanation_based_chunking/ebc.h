@@ -243,7 +243,7 @@ class Explanation_Based_Chunker
         void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);
-        void literalize_RHS_function_args(const rhs_value rv);
+        void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
         void merge_conditions();
 
         /* Constraint analysis and enforcement methods */

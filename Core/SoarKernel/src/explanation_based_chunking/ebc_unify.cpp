@@ -206,7 +206,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
 //    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
 }
 
-void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
+void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id)
 {
     /* Assign identities of all arguments in rhs fun call to null identity set*/
     cons* fl = rhs_value_to_funcall_list(rv);
@@ -222,7 +222,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
                 if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
                 {
                     dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
-                    literalize_RHS_function_args(static_cast<char*>(c->first));
+                    literalize_RHS_function_args(static_cast<char*>(c->first), inst_id);
                 }
             } else {
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r ", static_cast<char*>(c->first));
@@ -231,6 +231,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv)
                 dprint_noprefix(DT_RHS_FUN_VARIABLIZATION, "[%y %u]\n", rs->referent, rs->o_id);
                 if (rs->o_id && !rs->referent->is_sti())
                 {
+                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->o_id, 0);
                     add_identity_unification(rs->o_id, 0);
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }
@@ -263,7 +264,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
-        literalize_RHS_function_args(rhs_funcs.id);
+        literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
         add_identity_unification(lId->identity, NULL_IDENTITY_SET);
     }
     else
@@ -282,7 +283,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
-        literalize_RHS_function_args(rhs_funcs.attr);
+        literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
         add_identity_unification(lAttr->identity, NULL_IDENTITY_SET);
     }
     else
@@ -301,7 +302,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
-        literalize_RHS_function_args(rhs_funcs.value);
+        literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
         add_identity_unification(lValue->identity, NULL_IDENTITY_SET);
     }
     else
@@ -312,7 +313,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
-        literalize_RHS_function_args(rhs_funcs.referent);
+        literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
     }
 }
 
@@ -331,6 +332,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
             if (pCond->data.tests.value_test->eq_test->identity || local_singleton_superstate_identity.value)
             {
 //                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
                 add_identity_unification(pCond->data.tests.value_test->eq_test->identity, local_singleton_superstate_identity.value);
             }
         }
@@ -350,6 +352,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
+            thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
         }
     }
@@ -362,6 +365,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         assert(last_cond);
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
+            thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
         }
     }
