@@ -88,6 +88,10 @@ namespace cli
                 {
                     return cli.DoChunk(&arg);
                 }
+                if (num_args == 2)
+                {
+                    return cli.DoChunk(&arg, &arg2);
+                }
                 if (num_args == 4)
                 {
                     return cli.DoChunk(&arg, &arg2, &arg3, &arg4, doRemove);
