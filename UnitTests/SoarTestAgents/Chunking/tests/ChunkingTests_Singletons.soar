@@ -1,0 +1,69 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+chunk single state ds constant
+chunk single state dd constant
+chunk single state d any
+
+sp {init-superstate
+   (state <s> ^superstate nil)
+-->
+   (<s> ^d 7 ^dd 5)
+}
+
+sp {e-superstate
+   (state <s> ^superstate nil ^d <d>)
+-->
+   (<s> ^ds <d>)
+}
+
+sp {e-substate
+   (state <s> ^superstate <ss>)
+   (<ss> ^dd <dd>)
+   -->
+   (<s> ^ds <dd> ^dd <dd>)
+}
+sp {e-substate2
+   (state <s> ^superstate <ss>)
+   (<ss> ^ds <dd>)
+   -->
+   (<s> ^ds <dd>)
+}
+sp {e-substate3
+   (state <s> ^superstate <ss>)
+   (<ss> ^d <dd>)
+   -->
+   (<s> ^ds <dd>)
+}
+sp {e-substate-copy
+   (state <s> ^dd <dd> ^superstate <=> <s>)
+-->
+   (<s> ^sdds <dd>)
+}
+
+sp {propose
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil
+         ^d > 5
+         ^ds > 6
+         ^dd > 1)
+   -->
+   (<s> ^operator <o> +)
+}
+
+sp {apply-create-chunk
+   (state <s> ^superstate <ss>
+              ^sdds <sdds>
+              ^ds <sds1>
+              ^ds <sds2>
+              ^operator <o>)
+   (<ss> ^d { < 23 <d> }
+         ^dd { < 33 <dd> }
+         ^ds { < 91 <ds> })
+-->
+   (<ss> ^result-d <d> ^result-ds <ds> ^result-sds <sds2>)
+   (interrupt)
+}
+
