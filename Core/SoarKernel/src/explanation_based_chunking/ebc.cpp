@@ -435,36 +435,3 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uin
     }
     return existing_o_id;
 }
-
-void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
-{
-    pWME->singleton_status_checked = true;
-    pWME->is_singleton = true;
-}
-
-bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
-{
-    if (pWME->singleton_status_checked) return pWME->is_singleton;
-    if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible) return false;
-
-    /* This WME has a valid singleton attribute but has never had it's identifier and
-     * value elements checked, so we see if it matches the pattern defined in the attribute. */
-    bool lIDPassed = false;
-    bool lValuePassed = false;
-    singleton_element_type id_type = pWME->attr->sc->singleton.id_type;
-    singleton_element_type value_type = pWME->attr->sc->singleton.value_type;
-
-    /* Identifier element guaranteed to be an identifier, so we can get rid of a couple of clauses in this disjunct */
-    lIDPassed =     ((id_type == ebc_any) || (id_type == ebc_identifier)  ||
-                    ((id_type == ebc_state)      && pWME->id->is_state()) ||
-                    ((id_type == ebc_operator)   && pWME->id->is_operator()));
-    lValuePassed =  ((id_type == ebc_any) ||
-                    ((id_type == ebc_state)      && pWME->id->is_state()) ||
-                    ((id_type == ebc_identifier) && pWME->id->is_sti()) ||
-                    ((id_type == ebc_constant)   && pWME->id->is_constant()) ||
-                    ((id_type == ebc_operator)   && pWME->id->is_operator()));
-
-    pWME->is_singleton = lIDPassed && lValuePassed;
-    pWME->singleton_status_checked = true;
-    return pWME->is_singleton;
-}

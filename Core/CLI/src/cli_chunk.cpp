@@ -91,8 +91,6 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
                 thisAgent->explanationBasedChunker->ebc_params->element_type->set_string(pArg2->c_str());
                 id_type = thisAgent->explanationBasedChunker->ebc_params->element_type->get_value();
             } else {
-                std::cout << thisAgent->explanationBasedChunker->ebc_params->element_type->validate_string(pArg2->c_str());
-                PrintCLIMessage(pArg2->c_str());
                 return SetError("Invalid pattern type for identifier element of singleton.  Must be any, constant, identifier, operator, or state.");
             }
             if (value_type && (thisAgent->explanationBasedChunker->ebc_params->element_type->validate_string(pArg4->c_str())))

@@ -383,8 +383,47 @@ void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type,
     {
         thisAgent->outputManager->printa_sf(thisAgent, "Could not find pattern (%s ^%y %s).  Did not remove.\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "Removed. Will no longer unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+        thisAgent->outputManager->printa_sf(thisAgent, "Removed. Will no longer unify conditions in super-states that match a WME\n"
+                                                       "         that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
         singletons->erase(attrSym);
         attrSym->sc->singleton.possible = false;
     }
+}
+
+void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
+{
+    pWME->singleton_status_checked = true;
+    pWME->is_singleton = true;
+}
+
+const char* TorF(bool isTrue) { if (isTrue) return "true"; else return "false"; }
+const char* PassorFail(bool isTrue) { if (isTrue) return "Pass"; else return "Fail"; }
+
+bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
+{
+    if (pWME->singleton_status_checked) return pWME->is_singleton;
+    if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible) return false;
+
+    /* This WME has a valid singleton attribute but has never had it's identifier and
+     * value elements checked, so we see if it matches the pattern defined in the attribute. */
+    bool lIDPassed = false;
+    bool lValuePassed = false;
+    singleton_element_type id_type = pWME->attr->sc->singleton.id_type;
+    singleton_element_type value_type = pWME->attr->sc->singleton.value_type;
+
+//    dprint(DT_DEBUG, "(%y ^%y %y) vs [%s ^%y %s] :", pWME->id, pWME->attr, pWME->value, singletonTypeToString(id_type), pWME->attr, singletonTypeToString(value_type));
+    lIDPassed =     ((id_type == ebc_any) ||
+                    ((id_type == ebc_identifier) && !pWME->id->is_state() && !pWME->id->is_operator()) ||
+                    ((id_type == ebc_state)      && pWME->id->is_state()) ||
+                    ((id_type == ebc_operator)   && pWME->id->is_operator()));
+    lValuePassed =  ((value_type == ebc_any) ||
+                    ((value_type == ebc_state)      && pWME->value->is_state()) ||
+                    ((value_type == ebc_identifier) && pWME->value->is_sti() && !pWME->value->is_state() && !pWME->value->is_operator()) ||
+                    ((value_type == ebc_constant)   && pWME->value->is_constant()) ||
+                    ((value_type == ebc_operator)   && pWME->value->is_operator()));
+
+    pWME->is_singleton = lIDPassed && lValuePassed;
+    pWME->singleton_status_checked = true;
+//    dprint_noprefix(DT_DEBUG, "%s! = %s + %s\n", PassorFail(pWME->is_singleton), TorF(lIDPassed), TorF(lValuePassed));
+    return pWME->is_singleton;
 }
