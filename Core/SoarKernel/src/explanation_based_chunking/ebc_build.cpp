@@ -962,7 +962,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     variablize_condition_list(m_lhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
-    //if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
+    #ifdef EBC_SANITY_CHECK_RULES
+    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_lhs);
+    #endif
 
     /* Merge redundant conditions (same identity sets in each element) */
     merge_conditions();
@@ -1018,7 +1020,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * Note:  Until this point, justification and chunk learning has been nearly identical.
      * The only difference is that a justification has not had its conditions re-ordered.
      * This changes during re-instantiation.  If the rule being formed is a justification,
-     * both m_vrblz_top and m_rhs will become instantiated as well. */
+     * both m_lhs and m_rhs will become instantiated as well. */
 
     l_inst_top = reinstantiate_current_rule();
     l_inst_bottom = l_inst_top;

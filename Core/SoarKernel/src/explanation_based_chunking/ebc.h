@@ -8,6 +8,8 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
+//#define EBC_SANITY_CHECK_RULES
+
 #include "kernel.h"
 
 #include "ebc_structs.h"
@@ -51,7 +53,8 @@ class Explanation_Based_Chunker
          * explanation trace. */
         void add_explanation_to_condition(rete_node* node, condition* cond,
                                           node_varnames* nvn, uint64_t pI_id,
-                                          AddAdditionalTestsMode additional_tests);
+                                          AddAdditionalTestsMode additional_tests,
+                                          bool isNegativeCond = false);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
@@ -198,7 +201,8 @@ class Explanation_Based_Chunker
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
-                                                        uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+                                                        uint64_t pI_id, AddAdditionalTestsMode additional_tests,
+                                                        bool isNegativeCond = false);
         /* Chunk building methods */
         Symbol*         generate_name_for_new_rule();
         void            set_up_rule_name();
@@ -274,8 +278,8 @@ class Explanation_Based_Chunker
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
         condition* reinstantiate_lhs(condition* top_cond);
-        void reinstantiate_condition_list(condition* top_cond);
-        void reinstantiate_condition(condition* cond);
+        void reinstantiate_condition_list(condition* top_cond, bool pIsNCC = false);
+        void reinstantiate_condition(condition* cond, bool pIsNCC = false);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
 
