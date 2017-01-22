@@ -1,6 +1,7 @@
-srand 23
-# Singleton types:  any constant identifier state operator
 chunk always
+srand 23
+
+# Singleton types:  any constant identifier state operator
 #chunk single state state-type state
 #chunk single state operator operator
 #chunk single state sti identifier
@@ -15,12 +16,12 @@ chunk always
 #chunk single identifier constant-s constant
 #chunk single identifier constant-f constant
 
-chunk single operator state-type state
-chunk single operator operator operator
-chunk single operator sti identifier
-chunk single operator constant-i constant
-chunk single operator constant-s constant
-chunk single operator constant-f constant
+#chunk single operator state-type state
+#chunk single operator operator operator
+#chunk single operator sti identifier
+#chunk single operator constant-i constant
+#chunk single operator constant-s constant
+#chunk single operator constant-f constant
 
 #chunk single any state-type state
 #chunk single any operator operator
@@ -151,30 +152,3 @@ sp {apply-create-chunk
     (<ss> ^result true)
     #   (interrupt)
 }
-
-#sp {apply-create-chunk-architectural-singletons
-#    (state <s> ^superstate <ss> <ss2>)
-#    (<ss> ^attribute      <c1> <c2>)
-#    (<ss> ^choices        <c3> <c4>)
-#    (<ss> ^epmem          <c5> <c6>)
-#    (<ss> ^impasse        <c7> <c8>)
-#    (<ss> ^quiescence     <c9> <c10>)
-#    (<ss> ^reward-link    <c13> <c14>)
-#    (<ss> ^smem           <c15> <c16>)
-#    (<ss> ^superstate     <c17> <c18>)
-#    (<ss> ^svs            <c19> <c20>)
-#    (<ss> ^type           <c21> <c22>)
-#-->
-#    (<ss> ^result-architectural-singletons true)
-#    (interrupt)
-#}
-
-run
-chunk single state state-type state
-chunk single state operator operator
-chunk single state sti identifier
-chunk single state constant-i constant
-chunk single state constant-s constant
-chunk single state constant-f constant
-run
-p -cf

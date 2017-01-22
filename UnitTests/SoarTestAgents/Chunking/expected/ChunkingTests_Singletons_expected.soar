@@ -1,0 +1,13 @@
+sp {answer*apply-create-chunk*StateNoChange*t2-3
+        (state <s1> ^superstate nil ^d { < 23 > 5 <c2> } ^dd { < 33 > 1 <c1> }
+          ^ds { < 91 > 6 <c3> })
+    -->
+    (<s1> ^result-d <c2> + ^result-ds <c3> + ^result-sds <c1> +)
+}
+
+sp {answer*apply-create-chunk*StateNoChange*t2-1
+        (state <s1> ^superstate nil ^d { < 23 > 5 <c2> } ^dd { < 33 > 1 <c1> }
+          ^ds { < 91 > 6 <c3> })
+    -->
+    (<s1> ^result-d <c2> + ^result-ds <c3> + ^result-sds <c2> +)
+}

@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 
 		for (TestCategory::TestCategory_test test : category->getTests())
         {
-            if (runTests.size() > 0 && std::find(runTests.begin(), runTests.end(), category->getCategoryName() + "::" + std::get<2>(test)) == runTests.end())
+            if (runTests.size() > 0 && std::find(runTests.begin(), runTests.end(), std::get<2>(test)) == runTests.end())
             {
                 continue;
             }
