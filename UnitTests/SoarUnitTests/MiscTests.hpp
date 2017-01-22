@@ -48,10 +48,20 @@ public:
 	TEST(testPreferenceDeallocation, -1)
 	void testPreferenceDeallocation();
 	
+	TEST(testGDS_Failed_Justification_Crash, -1);
+	TEST(testIsupported_Smem_Chunk_Crash, -1);
+	TEST(testNegated_Operator_Crash, -1);
+	TEST(testOp_Augmentation_Crash, -1);
+
+	void testGDS_Failed_Justification_Crash();
+	void testIsupported_Smem_Chunk_Crash();
+	void testNegated_Operator_Crash();
+	void testOp_Augmentation_Crash();
+
 	// If you would like to test the Soar Debugger Spawning, uncomment below.
 	// It may or may not work but should unless you're running without a GUI.
 //	TEST(testSoarDebugger, -1)
-	void testSoarDebugger();
+//	void testSoarDebugger();
 	
 	void source(const std::string& path);
 };

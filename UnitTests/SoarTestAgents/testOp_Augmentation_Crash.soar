@@ -1,0 +1,35 @@
+# This is a toy agent which causes a seg fault crash without error message.
+
+sp {set*init
+	:o-support
+	(state <s> ^superstate nil
+				-^collection)
+-->
+	(<s> ^collection <c>)
+}
+
+sp {propose*test
+	(state <s> ^superstate nil)
+-->
+	(<s> ^operator <o> +)
+	(<o> 	^name test
+			^symbol <sym>)
+}
+sp {apply*test
+	(state <s> ^operator.name test)
+-->
+	(<s> ^status done)
+	(interrupt)
+}
+
+sp {elaborate*use
+    (state <s> ^operator <o> +
+               ^collection <c>)
+    (<o> ^symbol <sym>)					#    TO PREVENT CRASH,
+    (<sym> -^sub)						# <- EITHER REMOVE THIS LINE
+-->
+    (<c> ^used <u>)
+    (<u> ^operator <o>)					# OR RENAME THIS ATTRIBUTE
+}										# (OR REPLACE ^used WITH (<c> ^operator <o>) )
+
+

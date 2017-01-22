@@ -1,0 +1,14 @@
+sp {rule-1
+   (state <s> ^superstate nil)
+-->
+   (<s> ^foo <foo>)
+}
+
+sp {rule-2
+   (state <s> ^foo <foo>)
+   (<foo> -^bar)
+-->
+   (<s> ^baz <b>)
+   (<b> ^operator <o>)
+   #(<s> ^baz.whatever <o>)
+}

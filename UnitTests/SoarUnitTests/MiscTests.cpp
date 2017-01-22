@@ -34,6 +34,30 @@ void MiscTests::testInstiationDeallocationStackOverflow()
 	agent->ExecuteCommandLine("w 0");
 	kernel->RunAllAgentsForever();
 }
+void MiscTests::testGDS_Failed_Justification_Crash()
+{
+    source("testGDS_Failed_Justification_Crash.soar");
+    agent->ExecuteCommandLine("w 0");
+    kernel->RunAllAgentsForever();
+}
+void MiscTests::testIsupported_Smem_Chunk_Crash()
+{
+    source("testIsupported_Smem_Chunk_Crash.soar");
+    agent->ExecuteCommandLine("w 0");
+    kernel->RunAllAgentsForever();
+}
+void MiscTests::testNegated_Operator_Crash()
+{
+    source("testNegated_Operator_Crash.soar");
+    agent->ExecuteCommandLine("w 0");
+    kernel->RunAllAgentsForever();
+}
+void MiscTests::testOp_Augmentation_Crash()
+{
+    source("testOp_Augmentation_Crash.soar");
+    agent->ExecuteCommandLine("w 0");
+    kernel->RunAllAgentsForever();
+}
 
 void MiscTests::test_clog()
 {
@@ -324,21 +348,21 @@ void MiscTests::testPreferenceDeallocation()
 	assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
 }
 
-void MiscTests::testSoarDebugger()
-{
-	bool result = agent->SpawnDebugger();
-	
-	assertTrue(result);
-	
-#ifdef _MSC_VER
-	Sleep(10000);
-#else
-	sleep(10);
-#endif
-	
-	agent->ExecuteCommandLine("run 10");
-	
-	result = agent->KillDebugger();
-	
-	assertTrue(result);
-}
+//void MiscTests::testSoarDebugger()
+//{
+//	bool result = agent->SpawnDebugger();
+//
+//	assertTrue(result);
+//
+//#ifdef _MSC_VER
+//	Sleep(10000);
+//#else
+//	sleep(10);
+//#endif
+//
+//	agent->ExecuteCommandLine("run 10");
+//
+//	result = agent->KillDebugger();
+//
+//	assertTrue(result);
+//}

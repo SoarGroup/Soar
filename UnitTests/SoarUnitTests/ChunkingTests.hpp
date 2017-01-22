@@ -112,6 +112,11 @@ public:
     TEST(Unify_through_Two_Traces_Four_Deep, -1);
     TEST(Vrblzd_Constraint_on_Ungrounded, -1);
     TEST(GamesAgent_Sanity1, -1);
+    TEST(Games_Nccx2_Long_Lived, -1);
+    TEST(Max_Chunks, -1);
+    TEST(Max_Dupes, -1);
+    TEST(No_Grounds, -1);
+    TEST(Rhs_Func_Literalization, -1);
 
     void All_Test_Types();
     void BUNCPS_0();
@@ -203,7 +208,12 @@ public:
     void Unify_Children_Results();
     void Unify_through_Two_Traces_Four_Deep();
     void Vrblzd_Constraint_on_Ungrounded();
-	
+    void Games_Nccx2_Long_Lived();
+    void Max_Chunks();
+    void Max_Dupes();
+    void No_Grounds();
+    void Rhs_Func_Literalization();
+
 private:
     void source(const std::string& path);
     void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);

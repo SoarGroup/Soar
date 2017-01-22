@@ -105,7 +105,11 @@ void ChunkingTests::Unify_Ambiguous_Output()                          { check_ch
 void ChunkingTests::Unify_Children_Results()                          { check_chunk("Unify_Children_Results", 8, 1); }
 void ChunkingTests::Unify_through_Two_Traces_Four_Deep()              { check_chunk("Unify_through_Two_Traces_Four_Deep", 8, 3); }
 void ChunkingTests::Vrblzd_Constraint_on_Ungrounded()                 { check_chunk("Vrblzd_Constraint_on_Ungrounded", 8, 1); }
-
+void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 4); }
+void ChunkingTests::Max_Chunks()                                      { check_chunk("Max_Chunks", 8, 0); }
+void ChunkingTests::Max_Dupes()                                       { check_chunk("Max_Dupes", 8, 0); }
+void ChunkingTests::No_Grounds()                                      { check_chunk("No_Grounds", 8, 0); }
+void ChunkingTests::Rhs_Func_Literalization()                         { check_chunk("Rhs_Func_Literalization", 8, 1); }
 
 void ChunkingTests::setUp()
 {
