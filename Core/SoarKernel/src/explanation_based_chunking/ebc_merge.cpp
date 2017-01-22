@@ -75,7 +75,7 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
  *
  *    Requires: Variablized condition list that does not have any conjunctive
  *              tests containing multiple equality tests
- *    Modifies: m_vrblz_top list (may delete entries and move non-equality tests
+ *    Modifies: m_lhs list (may delete entries and move non-equality tests
  *              to other conditions)
  *    Effects:  This function merges redundant conditions in a condition list
  *              by combining constraints of conditions that share identical
