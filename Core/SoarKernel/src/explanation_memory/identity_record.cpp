@@ -302,6 +302,21 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             case IDS_base_instantiation:
                 outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
                 break;
+            case IDS_unified_with_local_singleton:
+                outputManager->printa_sf(thisAgent, "%-| Unified with local singleton WME set\n");
+                break;
+            case IDS_unified_with_singleton:
+                outputManager->printa_sf(thisAgent, "%-| Unified with singleton WME set\n");
+                break;
+            case IDS_unified_child_result:
+                outputManager->printa_sf(thisAgent, "%-| Unified child result\n");
+                break;
+            case IDS_literalized_RHS_function_arg:
+                outputManager->printa_sf(thisAgent, "%-| Literalized RHS function argument\n");
+                break;
+            default:
+                outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
+                break;
         }
     }
 }
