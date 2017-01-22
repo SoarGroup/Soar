@@ -344,7 +344,7 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
-    if (wme_is_a_singleton(pCond->bt.wme_))
+    if (wme_is_a_singleton(pCond->bt.wme_) || ebc_settings[SETTING_EBC_UNIFY_ALL])
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
         assert(last_cond);
