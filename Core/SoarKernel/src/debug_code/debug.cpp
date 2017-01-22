@@ -41,19 +41,19 @@
 
 using namespace soar_module;
 
-bool symbol_matches_string(Symbol* sym, const char* match)
+bool break_if_symbol_matches_string(Symbol* sym, const char* match)
 {
     if (sym->to_string() == match)
         return true;
     return false;
 }
-bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
+bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
 {
-    if(symbol_matches_string(w->id, match_id) && symbol_matches_string(w->attr, match_attr) && symbol_matches_string(w->value, match_value))
+    if(break_if_symbol_matches_string(w->id, match_id) && break_if_symbol_matches_string(w->attr, match_attr) && break_if_symbol_matches_string(w->value, match_value))
         return true;
     return false;
 }
-bool id_matches(uint64_t lID, uint64_t lID_to_match)
+bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match)
 {
     if (lID == lID_to_match)
         return true;

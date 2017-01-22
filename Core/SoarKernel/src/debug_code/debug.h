@@ -35,9 +35,9 @@ extern void debug_trace_set(int dt_num, bool pEnable);
 extern void debug_trace_on();
 extern void debug_trace_off();
 
-bool symbol_matches_string(Symbol* sym, const char* match);
-bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
-bool id_matches(uint64_t lID, uint64_t lID_to_match);
+bool break_if_symbol_matches_string(Symbol* sym, const char* match);
+bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
+bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 
