@@ -44,7 +44,7 @@ void identity_record::clean_up()
 }
 
 
-void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -75,17 +75,17 @@ void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_s
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {
         if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_conditions(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
-            add_identities_in_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
         }
     }
 }
@@ -95,7 +95,7 @@ void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
     /* Generate identity sets and add mappings for all conditions in chunk */
 
     dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
-    add_identities_in_condition_list(thisAgent, lhs, pInstID, identities_in_chunk, id_to_id_set_mappings);
+    generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, id_to_id_set_mappings);
 }
 
 void identity_record::map_originals_to_sets()
@@ -329,14 +329,6 @@ void identity_record::clear_mappings()
         for (auto it2 = lMapList->begin(); it2 != lMapList->end(); ++it2)
         {
             lMapping = *it2;
-            if (lMapping->from_symbol)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->from_symbol));
-            }
-            if (lMapping->to_symbol)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->to_symbol));
-            }
             thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
         }
         delete lMapList;

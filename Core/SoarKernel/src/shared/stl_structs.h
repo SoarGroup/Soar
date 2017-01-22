@@ -60,8 +60,6 @@ typedef struct sym_identity_struct {
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
         uint64_t            to_identity;
-        Symbol*             from_symbol;
-        Symbol*             to_symbol;
         IDSet_Mapping_Type  mappingType;
 } identity_mapping;
 

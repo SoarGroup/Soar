@@ -12,6 +12,7 @@
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "rhs.h"

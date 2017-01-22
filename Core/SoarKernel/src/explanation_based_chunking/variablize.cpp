@@ -607,13 +607,13 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
         lLastAction = lAction;
     }
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", returnAction);
-
-    if (!local_linked_STIs->empty() && !ebc_settings[SETTING_EBC_ADD_LTM_LINKS])
+    if (!local_linked_STIs->empty() && ebc_settings[SETTING_EBC_ADD_LTM_LINKS])
     {
         add_LTM_linking_actions(lLastAction);
-        dprint(DT_VARIABLIZATION_MANAGER, "Actions after adding LTM linking actions: \n%2", returnAction);
     }
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", returnAction);
+
     return returnAction;
 }
 

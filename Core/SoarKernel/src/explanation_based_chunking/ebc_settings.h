@@ -47,10 +47,10 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_unify_all;
 
         soar_module::boolean_param* allow_missing_negative_reasoning;
-//        soar_module::boolean_param* allow_missing_OSK;
+        soar_module::boolean_param* allow_missing_OSK;
         soar_module::boolean_param* allow_opaque_knowledge;
-//        soar_module::boolean_param* allow_probabilistic_operators;
-//        soar_module::boolean_param* allow_conflated_reasoning;
+        soar_module::boolean_param* allow_probabilistic_operators;
+        soar_module::boolean_param* allow_conflated_reasoning;
 
         soar_module::boolean_param* always_cmd;
         soar_module::boolean_param* never_cmd;

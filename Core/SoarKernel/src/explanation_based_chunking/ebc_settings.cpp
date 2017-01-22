@@ -140,14 +140,14 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
 
     allow_missing_negative_reasoning = new soar_module::boolean_param("allow-local-negations", setting_on(SETTING_EBC_ALLOW_LOCAL_NEGATIONS), new soar_module::f_predicate<boolean>());
     add(allow_missing_negative_reasoning);
-    //allow_missing_OSK = new soar_module::boolean_param("allow-missing-osk", setting_on(SETTING_EBC_ALLOW_OSK), new soar_module::f_predicate<boolean>());
-    //add(allow_missing_OSK);
+    allow_missing_OSK = new soar_module::boolean_param("allow-missing-osk", setting_on(SETTING_EBC_ALLOW_OSK), new soar_module::f_predicate<boolean>());
+    add(allow_missing_OSK);
     allow_opaque_knowledge = new soar_module::boolean_param("allow-opaque", setting_on(SETTING_EBC_ALLOW_OPAQUE), new soar_module::f_predicate<boolean>());
     add(allow_opaque_knowledge);
-    //allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
-    //add(allow_probabilistic_operators);
-    //allow_conflated_reasoning = new soar_module::boolean_param("allow-conflated-reasoning", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
-    //add(allow_conflated_reasoning);
+    allow_probabilistic_operators = new soar_module::boolean_param("allow-uncertain-operators", setting_on(SETTING_EBC_ALLOW_PROB), new soar_module::f_predicate<boolean>());
+    add(allow_probabilistic_operators);
+    allow_conflated_reasoning = new soar_module::boolean_param("allow-conflated-reasoning", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
+    add(allow_conflated_reasoning);
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)
@@ -267,22 +267,22 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = pChangedParam->get_value();
     }
-    //else if (pChangedParam == allow_missing_OSK)
-    //{
-    //    thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_OSK] = pChangedParam->get_value();
-    //}
+    else if (pChangedParam == allow_missing_OSK)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_OSK] = pChangedParam->get_value();
+    }
     else if (pChangedParam == allow_opaque_knowledge)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_OPAQUE] = pChangedParam->get_value();
     }
-    //else if (pChangedParam == allow_probabilistic_operators)
-    //{
-    //    thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
-    //}
-    //else if (pChangedParam == allow_conflated_reasoning)
-    //{
-    //    thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
-    //}
+    else if (pChangedParam == allow_probabilistic_operators)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_PROB] = pChangedParam->get_value();
+    }
+    else if (pChangedParam == allow_conflated_reasoning)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_CONFLATED] = pChangedParam->get_value();
+    }
     else if (pChangedParam == always_cmd)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALWAYS] = true;
@@ -361,8 +361,8 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_add_ltm_links->set_value(pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] ? on : off);
 
     allow_missing_negative_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] ? on : off);
-    //allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);
+    allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);
     allow_opaque_knowledge->set_value(pEBC_settings[SETTING_EBC_ALLOW_OPAQUE] ? on : off);
-    //allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
-    //allow_conflated_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
+    allow_probabilistic_operators->set_value(pEBC_settings[SETTING_EBC_ALLOW_PROB] ? on : off);
+    allow_conflated_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] ? on : off);
 }
