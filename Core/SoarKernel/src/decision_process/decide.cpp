@@ -1223,7 +1223,7 @@ byte run_preference_semantics(agent* thisAgent,
      * - For context-slots at the top level (will never be backtraced through)
      * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
 
-    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
+    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
 
     /* Empty the context-dependent preference set in the slot */
 

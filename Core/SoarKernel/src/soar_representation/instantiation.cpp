@@ -89,7 +89,7 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
         cond->bt.OSK_prefs = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
-            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
+            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
             {
                 if (cond->bt.trace->slot->OSK_prefs)
                 {

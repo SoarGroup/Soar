@@ -23,7 +23,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] = true;
     pEBC_settings[SETTING_EBC_CONSTRAINTS] = true;
     pEBC_settings[SETTING_EBC_RHS_VRBLZ] = true;
-    pEBC_settings[SETTING_EBC_OSK] = false;
+    pEBC_settings[SETTING_EBC_ADD_OSK] = false;
     pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
     pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
     pEBC_settings[SETTING_EBC_MERGE] = true;
@@ -36,7 +36,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_ALLOW_CONFLATED] = true;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_PROMOTION] = true;
     pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = false;
-    pEBC_settings[SETTING_EBC_NO_LTM_LINKS] = false;
+    pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] = true;
+
     /* This setting doesn't have a parameter to toggle.  Just keeping so we can toggle for experimenting */
     pEBC_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS] = false;
 
@@ -115,8 +116,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     //add(mechanism_variablize_rhs_funcs);
     //mechanism_constraints = new soar_module::boolean_param("enforce-constraints", setting_on(SETTING_EBC_CONSTRAINTS), new soar_module::f_predicate<boolean>());
     //add(mechanism_constraints);
-    mechanism_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_OSK), new soar_module::f_predicate<boolean>());
-    add(mechanism_OSK);
+    mechanism_add_OSK = new soar_module::boolean_param("add-osk", setting_on(SETTING_EBC_ADD_OSK), new soar_module::f_predicate<boolean>());
+    add(mechanism_add_OSK);
     mechanism_repair_rhs = new soar_module::boolean_param("rhs-repair", setting_on(SETTING_EBC_REPAIR_RHS), new soar_module::f_predicate<boolean>());
     add(mechanism_repair_rhs);
     mechanism_repair_lhs = new soar_module::boolean_param("lhs-repair", setting_on(SETTING_EBC_REPAIR_LHS), new soar_module::f_predicate<boolean>());
@@ -124,8 +125,8 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
 
     mechanism_reorder_justifications = new soar_module::boolean_param("repair-justifications", setting_on(SETTING_EBC_REORDER_JUSTIFICATIONS), new soar_module::f_predicate<boolean>());
     add(mechanism_reorder_justifications);
-    mechanism_no_ltm_links = new soar_module::boolean_param("dont-add-ltm-links", setting_on(SETTING_EBC_NO_LTM_LINKS), new soar_module::f_predicate<boolean>());
-    add(mechanism_no_ltm_links);
+    mechanism_add_ltm_links = new soar_module::boolean_param("add-ltm-links", setting_on(SETTING_EBC_ADD_LTM_LINKS), new soar_module::f_predicate<boolean>());
+    add(mechanism_add_ltm_links);
 
     soar_module::boolean_param* mechanism_no_bad_justifications;
     soar_module::boolean_param* mechanism_repair_justifications;
@@ -230,9 +231,9 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     //{
     //    thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_CONSTRAINTS] = pChangedParam->get_value();
     //}
-    else if (pChangedParam == mechanism_OSK)
+    else if (pChangedParam == mechanism_add_OSK)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_repair_rhs)
     {
@@ -250,9 +251,9 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = pChangedParam->get_value();
     }
-    else if (pChangedParam == mechanism_no_ltm_links)
+    else if (pChangedParam == mechanism_add_ltm_links)
     {
-        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NO_LTM_LINKS] = pChangedParam->get_value();
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_LTM_LINKS] = pChangedParam->get_value();
     }
     else if (pChangedParam == mechanism_user_singletons)
     {
@@ -350,14 +351,14 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     //mechanism_identity_analysis->set_value(pEBC_settings[SETTING_EBC_IDENTITY_VRBLZ] ? on : off);
     //mechanism_variablize_rhs_funcs->set_value(pEBC_settings[SETTING_EBC_RHS_VRBLZ] ? on : off);
     //mechanism_constraints->set_value(pEBC_settings[SETTING_EBC_CONSTRAINTS] ? on : off);
-    mechanism_OSK->set_value(pEBC_settings[SETTING_EBC_OSK] ? on : off);
+    mechanism_add_OSK->set_value(pEBC_settings[SETTING_EBC_ADD_OSK] ? on : off);
     mechanism_repair_rhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_RHS] ? on : off);
     mechanism_repair_lhs->set_value(pEBC_settings[SETTING_EBC_REPAIR_LHS] ? on : off);
     mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
     mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
     mechanism_unify_all->set_value(pEBC_settings[SETTING_EBC_UNIFY_ALL] ? on : off);
     mechanism_reorder_justifications->set_value(pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] ? on : off);
-    mechanism_no_ltm_links->set_value(pEBC_settings[SETTING_EBC_NO_LTM_LINKS] ? on : off);
+    mechanism_add_ltm_links->set_value(pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] ? on : off);
 
     allow_missing_negative_reasoning->set_value(pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] ? on : off);
     //allow_missing_OSK->set_value(pEBC_settings[SETTING_EBC_ALLOW_OSK] ? on : off);

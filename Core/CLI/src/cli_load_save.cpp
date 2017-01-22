@@ -190,11 +190,11 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
                 if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY], "chunk only")) return false;
                 if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT], "chunk except")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY], "chunk bottom-only")) return false;
-                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK], "chunk add-osk")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK], "chunk add-osk")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_LHS], "chunk lhs-repair")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS], "chunk rhs-repair")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS], "chunk allow-local-negations")) return false;
-                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NO_LTM_LINKS], "chunk dont-add-ltm-links")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_LTM_LINKS], "chunk add-ltm-links")) return false;
                 if (!AddSaveSettingInt("chunk max-chunks", thisAgent->explanationBasedChunker->max_chunks)) return false;
                 if (!AddSaveSettingInt("chunk max-dupes", thisAgent->explanationBasedChunker->max_dupes)) return false;
                 if (!AddSaveSettingInt("soar max-elaborations", thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])) return false;
