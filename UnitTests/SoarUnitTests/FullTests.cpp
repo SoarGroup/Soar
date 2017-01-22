@@ -103,11 +103,11 @@ void FullTests_Parent::createSoar()
 		if (m_Options.useClientThread)
 		{
 			bool optimized = m_Options.fullyOptimized;
-			m_pKernel = sml::Kernel::CreateKernelInCurrentThread(optimized, 0);
+			m_pKernel = sml::Kernel::CreateKernelInCurrentThread(optimized, sml::Kernel::kUseAnyPort);
 		}
 		else
 		{
-			m_pKernel = sml::Kernel::CreateKernelInNewThread(0);
+			m_pKernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kUseAnyPort);
 		}
 	}
 	

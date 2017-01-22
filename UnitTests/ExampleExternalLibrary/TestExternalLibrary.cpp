@@ -31,7 +31,7 @@ void assertMessage(const char* message, bool assertion)
 
 int main(int argc, char** argv)
 {
-    sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread() ;
+    sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kUseAnyPort) ;
     assertMessage("Kernel is null.", pKernel != 0);
     assertMessage(pKernel->GetLastErrorDescription(), pKernel->HadError() == false);
     

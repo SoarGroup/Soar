@@ -160,7 +160,7 @@ void MultiAgentTest::testMaxAgents()
 
 void MultiAgentTest::doTest()
 {
-	pKernel = sml::Kernel::CreateKernelInCurrentThread(true);
+	pKernel = sml::Kernel::CreateKernelInCurrentThread(true, sml::Kernel::kUseAnyPort);
 	no_agent_assertTrue_msg(pKernel->GetLastErrorDescription(), !pKernel->HadError());
 	
 	// We'll require commits, just so we're testing that path

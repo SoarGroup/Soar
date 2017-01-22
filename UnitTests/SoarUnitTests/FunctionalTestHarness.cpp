@@ -104,7 +104,7 @@ void FunctionalTestHarness::setUp()
 	halted = false;
 	failed = false;
 	
-	kernel = sml::Kernel::CreateKernelInCurrentThread(true);
+	kernel = sml::Kernel::CreateKernelInCurrentThread(true, sml::Kernel::kUseAnyPort);
     configure_for_unit_tests();
 	agent = kernel->CreateAgent("soar1");
 	

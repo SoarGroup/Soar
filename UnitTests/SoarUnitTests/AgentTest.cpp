@@ -11,7 +11,7 @@
 
 void AgentTest::setUp()
 {
-	kernel = sml::Kernel::CreateKernelInCurrentThread(true);
+	kernel = sml::Kernel::CreateKernelInCurrentThread(true, sml::Kernel::kUseAnyPort);
     configure_for_unit_tests();
 	agent = kernel->CreateAgent("soar1");
     configure_agent_for_unit_tests(NULL);

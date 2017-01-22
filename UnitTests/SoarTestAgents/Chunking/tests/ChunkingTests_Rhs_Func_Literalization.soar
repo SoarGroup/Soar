@@ -6,7 +6,7 @@ chunk add-osk off
 chunk lhs-repair on
 chunk rhs-repair on
 chunk allow-local-negations on
-chunk dont-add-ltm-links off
+chunk add-ltm-links on
 chunk max-chunks 50
 chunk max-dupes 3
 soar max-elaborations 100
