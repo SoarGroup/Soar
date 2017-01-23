@@ -331,7 +331,9 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
     m_Result.str("");
 
     // Fire off command
+    SaveOutputSettings();
     bool ret = m_Parser.handle_command(argv);
+    RestoreOutputSettings();
 
     if (!m_Result.str().empty())
     {
