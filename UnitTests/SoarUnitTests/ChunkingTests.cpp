@@ -49,7 +49,7 @@ void ChunkingTests::Disjunction_Merge()                               { check_ch
 void ChunkingTests::Duplicates()                                      { check_chunk("Duplicates", 5, 2); }
 void ChunkingTests::Faux_Operator()                                   { check_chunk("Faux_Operator", 8, 3); }
 void ChunkingTests::Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS", 8, 0, true); }           // Should be 1
-void ChunkingTests::GamesAgent_Sanity1()                              { check_chunk("GamesAgent_Sanity1", 4539, 9); }                  // Should be 14 expected chunks
+void ChunkingTests::GamesAgent_Sanity1()                              { check_chunk("GamesAgent_Sanity1", 4539, 8); }                  // Should be 14 expected chunks
 void ChunkingTests::Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs", 8, 1); }
 void ChunkingTests::Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities", 4, 1); }
 void ChunkingTests::Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM", 6, 0); }                        // Should be 2 expected chunks
@@ -105,7 +105,7 @@ void ChunkingTests::Unify_Ambiguous_Output()                          { check_ch
 void ChunkingTests::Unify_Children_Results()                          { check_chunk("Unify_Children_Results", 8, 1); }
 void ChunkingTests::Unify_through_Two_Traces_Four_Deep()              { check_chunk("Unify_through_Two_Traces_Four_Deep", 8, 3); }
 void ChunkingTests::Vrblzd_Constraint_on_Ungrounded()                 { check_chunk("Vrblzd_Constraint_on_Ungrounded", 8, 1); }
-void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 4); }
+void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 3); }
 void ChunkingTests::Max_Chunks()                                      { check_chunk("Max_Chunks", 8, 0); }
 void ChunkingTests::Max_Dupes()                                       { check_chunk("Max_Dupes", 8, 0); }
 void ChunkingTests::No_Grounds()                                      { check_chunk("No_Grounds", 8, 0); }

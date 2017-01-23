@@ -446,7 +446,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
     }
 
-    dprint(DT_BACKTRACE, "...adding negated conditions from backtraced negated set.\n");
+    dprint(DT_BUILD_CHUNK_CONDS, "...adding negated conditions from backtraced negated set.\n");
     /* --- scan through negated conditions and check which ones are connected
        to the grounds --- */
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -468,7 +468,11 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            dprint(DT_BUILD_CHUNK_CONDS, "...adding negated condition %l\n", cc->cond);
+            //c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            // I don't think we need to ever strip literals on NCCs and unbound vars in NCCs
+            // are getting things stripped because they don't have identities
+            c_vrblz = copy_condition(thisAgent, cc->cond, true, false);
             c_vrblz->inst = cc->cond->inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);

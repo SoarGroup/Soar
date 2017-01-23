@@ -421,7 +421,7 @@ extern bool save_rete_net(agent* thisAgent, FILE* dest_file, bool use_rete_net_6
 extern bool load_rete_net(agent* thisAgent, FILE* source_file);
 
 extern void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t);
-extern void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pOnlySTIs = false);
+extern void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pNoConstantIdentities = false);
 
 /* ---------------------------------------------------------------------
 

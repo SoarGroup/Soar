@@ -673,42 +673,51 @@ void sanity_check_conditions(condition* top_cond)
     }
 }
 
-void sanity_test_justification (test pTest)
+void sanity_test_justification (test pTest, bool pIsNCC = false)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
-            sanity_test_justification(static_cast<test>(c->first));
+            sanity_test_justification(static_cast<test>(c->first), pIsNCC);
         }
     } else {
-        assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
+        if (pIsNCC)
+        {
+            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
+
+        } else {
+            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
+        }
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond)
+void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pIsNCC)
 {
     for (condition* cond = top_cond; cond != NIL; cond = cond->next)
     {
-        reinstantiate_condition(cond);
+        reinstantiate_condition(cond, pIsNCC);
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition(condition* cond)
+void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pIsNCC)
 {
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
         reinstantiate_test(cond->data.tests.id_test);
         reinstantiate_test(cond->data.tests.attr_test);
         reinstantiate_test(cond->data.tests.value_test);
-        //if (cond->type == POSITIVE_CONDITION)
-        //{
-        //    sanity_test_justification(cond->data.tests.id_test);
-        //    sanity_test_justification(cond->data.tests.attr_test);
-        //    sanity_test_justification(cond->data.tests.value_test);
-        //}
+        dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
+        #ifdef EBC_SANITY_CHECK_RULES
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            sanity_test_justification(cond->data.tests.id_test, pIsNCC);
+            sanity_test_justification(cond->data.tests.attr_test, pIsNCC);
+            sanity_test_justification(cond->data.tests.value_test, pIsNCC);
+        }
+        #endif
     } else {
-        reinstantiate_condition_list(cond->data.ncc.top);
+        reinstantiate_condition_list(cond->data.ncc.top, true);
     }
 
 }
@@ -813,11 +822,11 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 
 condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
-    dprint(DT_REINSTANTIATE, "m_vrblz_top before reinstantiation: \n%1", m_lhs);
+    dprint(DT_REINSTANTIATE, "m_lhs before reinstantiation: \n%1", m_lhs);
 
     condition* returnConds = reinstantiate_lhs(m_lhs);
 
-    dprint(DT_REINSTANTIATE, "m_vrblz_top after reinstantiation: \n%1", m_lhs);
+    dprint(DT_REINSTANTIATE, "m_lhs after reinstantiation: \n%1", m_lhs);
 
     if (m_rule_type == ebc_justification)
     {
