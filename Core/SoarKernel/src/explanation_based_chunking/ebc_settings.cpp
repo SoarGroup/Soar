@@ -27,7 +27,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_REPAIR_LHS] = true;
     pEBC_settings[SETTING_EBC_REPAIR_RHS] = true;
     pEBC_settings[SETTING_EBC_MERGE] = true;
-    pEBC_settings[SETTING_EBC_USER_SINGLETONS] = false;
+    pEBC_settings[SETTING_EBC_USER_SINGLETONS] = true;
     pEBC_settings[SETTING_EBC_UNIFY_ALL] = false;
     pEBC_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = true;
     pEBC_settings[SETTING_EBC_ALLOW_OSK] = true;
