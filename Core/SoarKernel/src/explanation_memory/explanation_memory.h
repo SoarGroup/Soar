@@ -237,7 +237,7 @@ class Explanation_Memory
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
-        std::set< production_record* >*                         cached_production;
+        production_record_set*                                  cached_production;
         std::unordered_map< uint64_t, production* >*            production_id_map;
 
 };

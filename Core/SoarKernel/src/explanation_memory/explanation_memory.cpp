@@ -47,7 +47,7 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
     production_id_map = new std::unordered_map< uint64_t, production* >();
-    cached_production = new std::set< production_record* >();
+    cached_production = new production_record_set();
 }
 
 void Explanation_Memory::initialize_counters()

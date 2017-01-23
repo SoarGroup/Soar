@@ -358,7 +358,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         }
     }
     /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
-    if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
+    else if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
         (pCond->bt.wme_->value->is_sti() &&  pCond->bt.wme_->value->id->isa_operator) &&
         (!pCond->test_for_acceptable_preference))
     {
