@@ -1,0 +1,100 @@
+chunk always
+srand 1
+
+sp {init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^a <a>)
+    (<a> ^b <b> ^c <c> )
+    (<b> ^a <a> ^d <d>)
+    (<c> ^b <b>)
+    (<d> ^foo bar)
+}
+
+sp {propose
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name deep-copy)}
+
+sp {deep-copy
+    (state <s> ^operator.name deep-copy
+               ^superstate.a <a>)
+-->
+    (<s> ^dc-a (deep-copy <a>))
+}
+
+# Test deep-copy works on top-state
+sp {deep-copy-top
+    (state <s> ^a <a>)
+-->
+    (<s> ^dc-top-a (deep-copy <a>))
+}
+
+## Make a chunk based on deep-copied results
+sp {apply1
+    (state <s> ^operator <o>
+               ^superstate <ss>
+               ^dc-a <a>)
+-->
+    (<ss> ^result1 <a>)
+
+}
+#
+### Make a chunk based on deep-copied results
+sp {apply2
+    (state <s> ^operator <o>
+               ^superstate <ss>
+               ^dc-a <a>)
+    (<o> ^name deep-copy)
+    (<a> ^b <b> ^c <c> )
+    (<b> ^a <a> ^d <d>)
+    (<c> ^b <b>)
+    (<d> ^foo <bar>)
+-->
+    (<ss> ^result2 <a>)
+    (<a> ^b <b> ^c <c> )
+    (<b> ^a <a> ^d <d>)
+    (<c> ^b <b>)
+    (<d> ^foo <bar>)
+}
+
+sp {real-copy
+   (state <s> ^superstate.a <a>)
+-->
+   (<s> ^a-real <a>)
+}
+#
+## Make a chunk that is a deep-copy directly to top-state
+## This rule current fails to create a chunk b/c copied items
+## are added but cannot be grounded by variablized rhs action
+#
+sp {apply3
+    (state <s> ^operator <o>
+               ^superstate <ss>
+               ^a-real <a>)
+    (<o> ^name deep-copy)
+    (<a> ^b <b> ^c <c> )
+    (<b> ^a <a> ^d <d>)
+    (<c> ^b <b>)
+    (<d> ^foo bar)
+-->
+    (<ss> ^result3 (deep-copy <a>))
+}
+
+sp {apply4
+    (state <s> ^operator <o> ^dc-a <a> ^superstate <ss>)
+    (<ss> ^result1 ^result2 ^result3 ^a <a2>)
+-->
+    (<ss> ^result4 <a> ^result4b <a2>)
+}
+
+
+sp {apply*test-done
+    (state <s> ^result3 <r>)
+-->
+    (write (crlf) |Chunk created. Stopping.| <s> | | <r> (crlf))
+    (interrupt)
+}
+

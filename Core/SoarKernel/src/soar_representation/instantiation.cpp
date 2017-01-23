@@ -290,6 +290,21 @@ goal_stack_level get_match_goal(condition* top_cond)
  it will be instantiated with the same gensym.
  ----------------------------------------------------------------------- */
 
+uint64_t get_rhs_function_first_arg_identity(agent* thisAgent, rhs_value rv)
+{
+    cons* fl;
+    rhs_function* rf;
+    rhs_value firstArg;
+
+    fl = rhs_value_to_funcall_list(rv);
+    rf = static_cast<rhs_function_struct*>(fl->first);
+    firstArg =  static_cast<char*>(fl->rest->first);
+    assert(rhs_value_is_symbol(firstArg));
+    uint64_t returnVal = rhs_value_to_o_id(static_cast<char*>(firstArg));
+    thisAgent->explanationBasedChunker->deep_copy_sym_expanded = rhs_value_to_symbol(static_cast<char*>(firstArg));
+    return returnVal;
+}
+
 Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                               goal_stack_level new_id_level, char new_id_letter,
                               struct token_struct* tok, wme* w, bool& wasUnboundVar)
@@ -526,8 +541,16 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         {
             if (rhs_value_is_funcall(rule_action->value))
             {
-                f_value = rule_action->value;
-                rule_action->value = NULL;
+                if (thisAgent->WM->glbDeepCopyWMEs)
+                {
+                    // Extract identity from first argument of rule_action->value
+                    oid_value = get_rhs_function_first_arg_identity(thisAgent, rule_action->value);
+                    deallocate_rhs_value(thisAgent, rule_action->value);
+                    rule_action->value = NULL;
+                } else {
+                    f_value = rule_action->value;
+                    rule_action->value = NULL;
+                }
             } else {
                 oid_value = rhs_value_to_o_id(rule_action->value);
             }
@@ -986,9 +1009,6 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
 
     glbDeepCopyWMELevel = pref->id->id->level;
 
-    deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
-    pref->rhs_funcs.value = NULL;
-
     while (thisAgent->WM->glbDeepCopyWMEs)
     {
         tempwme = thisAgent->WM->glbDeepCopyWMEs;
@@ -1189,6 +1209,9 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             if (thisAgent->WM->glbDeepCopyWMEs)
             {
                 inst->creates_deep_copy = true;
+                thisAgent->SMem->force_add_identity_for_STI(pref->value, pref->identities.value);
+                thisAgent->SMem->force_add_identity_for_STI(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
+                thisAgent->explanationBasedChunker->deep_copy_sym_expanded = NULL;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }

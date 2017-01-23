@@ -37,15 +37,17 @@ public:
     TEST(Chunk_Operator_Tie_Impasse, -1);
     TEST(Chunk_Operator_Tie_Item_Links, -1);
     TEST(Chunk_RL_Proposal, -1);
-    TEST(Chunked_Justification_with_extras, -1);
     TEST(Chunk_Superstate_Operator_Preference, -1);
+    TEST(Chunked_Justification_with_extras, -1);
     TEST(Conflated_Constants, -1);
     TEST(Constraint_Prop_from_Base_Conds, -1);
+    TEST(Constraint_Ungrounded, -1);
+    TEST(Deep_Copy_Identity_Expansion, -1);
     TEST(Demo_Arithmetic, -1);
-    TEST(Demo_Blocks_World_Hierarchical, -1);
     TEST(Demo_Blocks_World_Hierarchical_Look_Ahead, -1);
-    TEST(Demo_Blocks_World_Look_Ahead, -1);
+    TEST(Demo_Blocks_World_Hierarchical, -1);
     TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation, -1);
+    TEST(Demo_Blocks_World_Look_Ahead, -1);
     TEST(Demo_Blocks_World_Operator_Subgoaling, -1);
     TEST(Demo_Eight_Puzzle, -1);
     TEST(Demo_MaC_Planning, -1);
@@ -58,6 +60,8 @@ public:
     TEST(Duplicates, -1);
     TEST(Faux_Operator, -1);
     TEST(Faux_Smem_Operator_RHS, -1);
+    TEST(Games_Nccx2_Long_Lived, -1);
+    TEST(GamesAgent_Sanity1, -1);
     TEST(Justification_RC_not_Ungrounded_STIs, -1);
     TEST(Justifications_Get_New_Identities, -1);
     TEST(Link_STM_to_LTM, -1);          // Decreased expected to 0.  At least make sure it runs.
@@ -66,6 +70,8 @@ public:
     TEST(Literalization_with_BT_Constraints2, -1);
     TEST(Literalization_with_Constraints, -1);
     TEST(Maintain_Instantiation_Specific_Identity, -1);
+    TEST(Max_Chunks, -1);
+    TEST(Max_Dupes, -1);
     TEST(NC_Disjunction, -1);
     TEST(NC_Simple_No_Exist, -1);
     TEST(NC_with_RC_and_Local_Variable, -1);
@@ -75,18 +81,20 @@ public:
     TEST(NCC_from_Backtrace, -1);
     TEST(NCC_Simple_Literals, -1);
     TEST(NCC_with_Relational_Constraint, -1);
+    TEST(No_Grounds, -1);
     TEST(No_Topstate_Match, -1);
-    TEST(Operator_Selection_Knowledge, -1);
     TEST(Opaque_State_Barrier, -1);
+    TEST(Operator_Selection_Knowledge, -1);
     TEST(PRIMS_Sanity1, -1);
     TEST(PRIMS_Sanity2, -1);
     TEST(Promoted_STI, -1);
     TEST(Reorderer_Bad_Conjunction, -1);
-    TEST(Repair_Unconnected_RHS_ID, -1);
     TEST(Repair_NOR_Temporal_Constraint, -1);
+    TEST(Repair_Unconnected_RHS_ID, -1);
     TEST(Result_On_Operator, -1);
     TEST(Rete_Bug_Deep_vs_Deep, -1);
     TEST(Rete_Bug_Deep_vs_Top, -1);
+    TEST(Rhs_Func_Literalization, -1);
     TEST(RHS_Math_Abs, -1);
     TEST(RHS_Math_Mixed, -1);
     TEST(RHS_Math, -1);
@@ -95,9 +103,9 @@ public:
     TEST(RL_Variablization, -1);
     TEST(Simple_Constraint_Prop, -1);
     TEST(Simple_Literalization, -1);
-    TEST(Singletons, -1);
-    TEST(Singletons_Architectural, -1);
     TEST(Singleton_Element_Types, -1);
+    TEST(Singletons_Architectural, -1);
+    TEST(Singletons, -1);
     TEST(STI_Variablization_Same_Type, -1);
     TEST(STI_Variablization, -1);
     TEST(STI_with_referents, -1);
@@ -110,13 +118,6 @@ public:
     TEST(Unify_Ambiguous_Output, -1);
     TEST(Unify_Children_Results, -1);
     TEST(Unify_through_Two_Traces_Four_Deep, -1);
-    TEST(Vrblzd_Constraint_on_Ungrounded, -1);
-    TEST(GamesAgent_Sanity1, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
-    TEST(Max_Chunks, -1);
-    TEST(Max_Dupes, -1);
-    TEST(No_Grounds, -1);
-    TEST(Rhs_Func_Literalization, -1);
 
     void All_Test_Types();
     void BUNCPS_0();
@@ -134,6 +135,7 @@ public:
     void Chunked_Justification_with_extras();
     void Conflated_Constants();
     void Constraint_Prop_from_Base_Conds();
+    void Deep_Copy_Identity_Expansion();
     void Demo_Arithmetic();
     void Demo_Blocks_World_Hierarchical_Look_Ahead();
     void Demo_Blocks_World_Hierarchical();
@@ -207,7 +209,7 @@ public:
     void Unify_Ambiguous_Output();
     void Unify_Children_Results();
     void Unify_through_Two_Traces_Four_Deep();
-    void Vrblzd_Constraint_on_Ungrounded();
+    void Constraint_Ungrounded();
     void Games_Nccx2_Long_Lived();
     void Max_Chunks();
     void Max_Dupes();

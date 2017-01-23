@@ -10,7 +10,7 @@ sp {apply-create-chunk-architectural-singletons
     (<ss> ^reward-link    <c13> <c14>)
     (<ss> ^smem           <c15> <c16>)
     (<ss> ^superstate     <c17> <c18>)
-    (<ss> ^svs            <c19> <c20>)
+#    (<ss> ^svs            <c19> <c20>)
     (<ss> ^type           <c21> <c22>)
 -->
     (<ss> ^result-architectural-singletons true)

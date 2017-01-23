@@ -40,6 +40,7 @@ class Explanation_Based_Chunker
 
         /* Cached pointer to lti link rhs function since it may be used often */
         rhs_function*           lti_link_function;
+        Symbol*                 deep_copy_sym_expanded;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
         cons*     chunk_free_problem_spaces;

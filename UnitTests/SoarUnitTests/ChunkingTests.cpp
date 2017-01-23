@@ -32,6 +32,7 @@ void ChunkingTests::Chunk_Superstate_Operator_Preference()            { check_ch
 void ChunkingTests::Chunked_Justification_with_extras()               { check_chunk("STI_with_referents", 8, 1); }
 void ChunkingTests::Conflated_Constants()                             { check_chunk("Conflated_Constants", 8, 1); }
 void ChunkingTests::Constraint_Prop_from_Base_Conds()                 { check_chunk("Constraint_Prop_from_Base_Conds", 8, 1); }
+void ChunkingTests::Deep_Copy_Identity_Expansion()                    { check_chunk("Deep_Copy_Identity_Expansion", 3, 4); }
 void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 41424, 1); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 70, 4); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 23, 16); }
@@ -104,7 +105,7 @@ void ChunkingTests::Ungrounded_STIs()                                 { check_ch
 void ChunkingTests::Unify_Ambiguous_Output()                          { check_chunk("Unify_Ambiguous_Output", 8, 1); }
 void ChunkingTests::Unify_Children_Results()                          { check_chunk("Unify_Children_Results", 8, 1); }
 void ChunkingTests::Unify_through_Two_Traces_Four_Deep()              { check_chunk("Unify_through_Two_Traces_Four_Deep", 8, 3); }
-void ChunkingTests::Vrblzd_Constraint_on_Ungrounded()                 { check_chunk("Vrblzd_Constraint_on_Ungrounded", 8, 1); }
+void ChunkingTests::Constraint_Ungrounded()                           { check_chunk("Constraint_Ungrounded", 8, 1); }
 void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 3); }
 void ChunkingTests::Max_Chunks()                                      { check_chunk("Max_Chunks", 8, 0); }
 void ChunkingTests::Max_Dupes()                                       { check_chunk("Max_Dupes", 8, 0); }
