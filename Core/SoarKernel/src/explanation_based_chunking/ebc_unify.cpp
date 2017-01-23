@@ -374,6 +374,18 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
 
 void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.type_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot override the architectural singleton for %y.  Ignoring.\n", attrSym);
+        return;
+    }
+
+    if (attrSym->sc->singleton.possible) thisAgent->outputManager->printa_sf(thisAgent, "Clearing previous singleton for %y.\n", attrSym);
     thisAgent->outputManager->printa_sf(thisAgent, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     singletons->insert(attrSym);
     thisAgent->symbolManager->symbol_add_ref(attrSym);
@@ -384,6 +396,16 @@ void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type
 
 void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.type_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
+        (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot remove the architectural singleton for %y.  Ignoring.\n", attrSym);
+        return;
+    }
     auto it = singletons->find(attrSym);
     if (it == singletons->end())
     {
