@@ -926,7 +926,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Rule learned had no conditions.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
         clean_up();
         return;
@@ -943,7 +943,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Problem-solving contained negated reasoning about sub-state structures.";
         }
     }
 
@@ -995,6 +995,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         {
             /* Could not re-order chunk, so we create a justification for the results instead */
             m_rule_type = ebc_justification;
+            thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
+            m_prod_name = generate_name_for_new_rule();
+            m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
             if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
