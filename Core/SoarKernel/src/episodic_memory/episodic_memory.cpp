@@ -985,7 +985,7 @@ void epmem_graph_statement_container::create_graph_tables()
 void epmem_graph_statement_container::create_graph_indices()
 {
 
-    add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_lti ON epmem_nodes (lti_id)");
+    add_structure("CREATE INDEX IF NOT EXISTS epmem_lti ON epmem_nodes (lti_id)");
 
     add_structure("CREATE INDEX IF NOT EXISTS epmem_wmes_constant_now_start ON epmem_wmes_constant_now (start_episode_id)");
     add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_wmes_constant_now_id_start ON epmem_wmes_constant_now (wc_id,start_episode_id DESC)");
@@ -2742,7 +2742,7 @@ inline void _epmem_store_level(agent* thisAgent,
 #endif
                     // Update the node database with the new n_id
                     thisAgent->EpMem->epmem_stmts_graph->add_node->bind_int(1, (*w_p)->value->id->epmem_id);
-                    if ((*w_p)->value->id->LTI_ID)
+                    if (!(*w_p)->value->id->LTI_ID)
                     {
                         thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, 0);
                     } else {
