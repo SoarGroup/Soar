@@ -2755,38 +2755,25 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 }
 
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pOnlySTIs)
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pNoConstantIdentities)
 {
 //    test New;
     cons* c;
     Symbol* temp;
 
-    if (vn == NIL)
+    if (vn == NIL) return;
+    if (pNoConstantIdentities && !t->data.referent->is_sti()) return;
+
+    assert (varnames_is_one_var(vn));
+    temp = varnames_to_one_var(vn);
+    if (!t->data.referent->is_variable())
     {
-        return;
-    }
-    if (pOnlySTIs && !t->data.referent->is_sti())
-    {
-        return;
-    }
-    if (varnames_is_one_var(vn))
-    {
-        temp = varnames_to_one_var(vn);
-        t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
+        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp, pI_id);
         dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+    } else {
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity for varname %y because ungrounded NCC var in inst %u.\n", temp, pI_id);
     }
-    else
-    {
-        /* Not sure if we can have a varlist when this is called from add_additionals.  Should only
-         * be called in cases where there is one equality test.  Remove.*/
-        assert(false);
-        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
-        {
-            temp = static_cast<Symbol*>(c->first);
-            t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
-        }
-    }
+
 }
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions

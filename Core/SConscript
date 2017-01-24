@@ -93,8 +93,13 @@ else:
 
 Export('soarlib');
 
+#settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
+#scripts_install = InstallDir(env, env['OUT_DIR'], '../scripts', '*.*')
+
 lib_install = env.Alias('kernel', env.Install(env['OUT_DIR'], soarlib))
-settings_install = env.Alias('settings', env.Install(env['OUT_DIR'], 'settings.soar'))
+# settings_install = env.Alias('settings', env.Install(env['OUT_DIR'], 'settings.soar'))
+#env.Install(env['OUT_DIR'], 'settings.soar')
+#env.Install(env['OUT_DIR'], '../scripts')
 
 # headers
 headers = []

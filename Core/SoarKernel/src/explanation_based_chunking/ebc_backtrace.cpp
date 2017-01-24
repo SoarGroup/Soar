@@ -228,9 +228,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     thisAgent->explanationMemory->add_bt_instantiation(inst, bt_type);
     thisAgent->explanationMemory->increment_stat_instantations_backtraced();
 
-    if (!inst->reliable) m_reliable = false;
+    if (inst->tested_quiescence) m_tested_quiescence = true;
     if (inst->tested_local_negation) m_tested_local_negation = true;
-    if (inst->creates_ltm_instance) m_tested_ltm_recall = true;
+    if (inst->tested_LTM) m_tested_ltm_recall = true;
     if (inst->creates_deep_copy) m_tested_deep_copy = true;
 
     Symbol* thisID, *value;
@@ -250,7 +250,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 else                                        /* Another condition that matches the same wme */
                 {
                     add_to_grounds(c);
-                    add_singleton_unification_if_needed(c);
+//                    add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);
@@ -393,12 +393,13 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         Symbol* thisValue = cond->data.tests.value_test->eq_test->data.referent;
         if (thisID->id->isa_goal)
         {
-            if ((thisAttr == thisAgent->symbolManager->soarSymbols.quiescence_symbol) &&
+            if (cond->inst->tested_quiescence ||
+               ((thisAttr == thisAgent->symbolManager->soarSymbols.quiescence_symbol) &&
                 (thisValue == thisAgent->symbolManager->soarSymbols.t_symbol) &&
-                (! cond->test_for_acceptable_preference))
+                (! cond->test_for_acceptable_preference)))
             {
-                m_reliable = false;
                 m_tested_quiescence = true;
+                cond->inst->tested_quiescence = true;
             }
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {

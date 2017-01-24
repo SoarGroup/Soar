@@ -190,11 +190,11 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
                 if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY], "chunk only")) return false;
                 if (!AddSaveSetting(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT], "chunk except")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_BOTTOM_ONLY], "chunk bottom-only")) return false;
-                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK], "chunk add-osk")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK], "chunk add-osk")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_LHS], "chunk lhs-repair")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REPAIR_RHS], "chunk rhs-repair")) return false;
                 if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS], "chunk allow-local-negations")) return false;
-                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NO_LTM_LINKS], "chunk dont-add-ltm-links")) return false;
+                if (!AddSaveSettingOnOff(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_LTM_LINKS], "chunk add-ltm-links")) return false;
                 if (!AddSaveSettingInt("chunk max-chunks", thisAgent->explanationBasedChunker->max_chunks)) return false;
                 if (!AddSaveSettingInt("chunk max-dupes", thisAgent->explanationBasedChunker->max_dupes)) return false;
                 if (!AddSaveSettingInt("soar max-elaborations", thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS])) return false;
@@ -211,7 +211,8 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
 
             /* Save semantic memory */
             if (!DoCLog(LOG_NEWAPPEND, &lFile, 0, true)) return false;
-            if (thisAgent->SMem->enabled())
+            if (thisAgent->SMem->enabled()) thisAgent->SMem->attach();
+            if (thisAgent->SMem->connected() && (thisAgent->SMem->statistics->nodes->get_value() > 0))
             {
                 result = thisAgent->SMem->export_smem(0, export_text, &(err));
                 AddSaveText("# Semantic Memory\n");
@@ -222,14 +223,15 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
 
             /* Save episodic memory.  Not implemented, but idea is to back up db
              * with same name as agent. */
-            if (epmem_enabled(thisAgent))
-            {
-                AddSaveText("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
-            } else {
-                AddSaveText("# Episodic memory is not enabled.  Did not save.");
-            }
-            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
+//            if (epmem_enabled(thisAgent)) epmem_attach(thisAgent);
+//            if (epmem_connected(thisAgent))
+//            {
+//                AddSaveText("# Episodic memory\n\n#epmem --set database file\n#epmem --set path \"agent_epmem.db\"\n\n");
+//            } else {
+//                AddSaveText("# Episodic memory is not enabled.  Did not save.");
+//            }
 
+            if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
             PrintCLIMessage("Procedural memory, semantic memory and settings written to file.");
             delete err;
             return result;

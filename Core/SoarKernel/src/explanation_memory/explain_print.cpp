@@ -547,7 +547,8 @@ void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
 
     if (pNumToPrint && (total_rules > pNumToPrint))
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules learned.  Type 'explain list' to see the other %d %s.\n", pNumToPrint, ( total_rules - pNumToPrint), pChunks ? "chunks" : "justifications");
+        std::string typeString = pChunks ? "chunks" : "justifications";
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", pNumToPrint, typeString.c_str(), typeString.c_str(), ( total_rules - pNumToPrint), typeString.c_str());
     }
 }
 

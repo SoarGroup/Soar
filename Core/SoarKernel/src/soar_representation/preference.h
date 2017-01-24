@@ -118,10 +118,11 @@ typedef struct preference_struct
     Symbol*                         value;
     Symbol*                         referent;
 
-    identity_quadruple                 identities;         /* identities for a preferences in relation to instantiation that created*/
-    identity_quadruple                 clone_identities;   /* identities for a result preference in relation to chunk formed*/
-    rhs_quadruple                      rhs_funcs;          /* identities of syms in rhs functions*/
-    rhs_quadruple                      cloned_rhs_funcs;   /* identities of syms in clone prefs rhs functions*/
+    identity_quadruple              identities;         /* identities for a preferences in relation to instantiation that created*/
+    identity_quadruple              clone_identities;   /* identities for a result preference in relation to chunk formed*/
+    bool_quadruple                  was_unbound_vars;
+    rhs_quadruple                   rhs_funcs;          /* identities of syms in rhs functions*/
+    rhs_quadruple                   cloned_rhs_funcs;   /* identities of syms in clone prefs rhs functions*/
     action*                         parent_action;      /* Action that created pref.  Used by the explainer */
 
     struct slot_struct*             slot;
@@ -145,7 +146,7 @@ typedef struct preference_struct
 } preference;
 
 extern preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false);
+                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false, const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
 extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
 inline void preference_add_ref(preference* p) { (p)->reference_count++;}

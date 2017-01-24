@@ -69,13 +69,7 @@ attachment_point* Explanation_Based_Chunker::get_attachment_point(uint64_t pO_id
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
-        dprint(DT_CONSTRAINTS, "...found attachment point: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
-
         return it->second;
-    } else {
-        dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-        dprint_attachment_points(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -83,18 +77,7 @@ attachment_point* Explanation_Based_Chunker::get_attachment_point(uint64_t pO_id
 bool Explanation_Based_Chunker::has_positive_condition(uint64_t pO_id)
 {
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
-    if (it != (*attachment_points).end())
-    {
-        dprint(DT_CONSTRAINTS, "...found positive condition, returning true: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
-
-        return true;
-    } else {
-        dprint(DT_CONSTRAINTS, "...did not find positive condition, returning false for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-//        dprint_attachment_points(DT_CONSTRAINTS);
-//        dprint_o_id_update_map(DT_CONSTRAINTS);
-    }
-    return false;
+    return (it != (*attachment_points).end());
 }
 
 void Explanation_Based_Chunker::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
@@ -102,13 +85,11 @@ void Explanation_Based_Chunker::set_attachment_point(uint64_t pO_id, condition* 
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
-        dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+        dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
         return;
     }
 
-    dprint(DT_CONSTRAINTS, "Recording attachment point: %y(o%u) -> %s of %l\n",
-        get_ovar_for_o_id(pO_id), pO_id, field_to_string(pField), pCond);
+    dprint(DT_CONSTRAINTS, "Recording attachment point: %u -> %s of %l\n", pO_id, field_to_string(pField), pCond);
     attachment_point* new_attachment;
     thisAgent->memoryManager->allocate_with_pool(MP_attachments, &new_attachment);
     new_attachment->cond = pCond;
@@ -135,12 +116,6 @@ void Explanation_Based_Chunker::find_attachment_points(condition* pCond)
             {
                 set_attachment_point(lTest->identity, pCond, ATTR_ELEMENT);
             }
-        }
-        else
-        {
-            dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ?
-                "Skipping for negative condition %l\n" :
-                "Skipping for negative conjunctive condition:\n%l", pCond);
         }
         pCond = pCond->next;
     }
@@ -193,8 +168,6 @@ void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRela
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
     if (attachment_info)
     {
-        dprint(DT_CONSTRAINTS, "Found attachment point in condition %l.\n", attachment_info->cond);
-        assert(attachment_info->cond);
         if (attachment_info->field == VALUE_ELEMENT)
         {
             add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, true);
@@ -250,8 +223,6 @@ void Explanation_Based_Chunker::add_additional_constraints()
     }
 
     find_attachment_points(m_lhs);
-    dprint_attachment_points(DT_CONSTRAINTS);
-    dprint_constraints(DT_CONSTRAINTS);
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;

@@ -137,6 +137,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     if (pref->identities.id && linked_id)
     {
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
+        thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
         add_identity_unification(pref->identities.id, linked_id);
     }
     /* --- follow transitive closure through value, referent links --- */
@@ -445,7 +446,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
     }
 
-    dprint(DT_BACKTRACE, "...adding negated conditions from backtraced negated set.\n");
+    dprint(DT_BUILD_CHUNK_CONDS, "...adding negated conditions from backtraced negated set.\n");
     /* --- scan through negated conditions and check which ones are connected
        to the grounds --- */
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -467,7 +468,11 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 thisAgent->outputManager->printa(thisAgent, "\n-->Moving to grounds: ");
                 print_condition(thisAgent, cc->cond);
             }
-            c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            dprint(DT_BUILD_CHUNK_CONDS, "...adding negated condition %l\n", cc->cond);
+            //c_vrblz = copy_condition(thisAgent, cc->cond, true, should_unify_and_simplify);
+            // I don't think we need to ever strip literals on NCCs and unbound vars in NCCs
+            // are getting things stripped because they don't have identities
+            c_vrblz = copy_condition(thisAgent, cc->cond, true, false);
             c_vrblz->inst = cc->cond->inst;
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
@@ -482,7 +487,6 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 {
                     report_local_negation(cc->cond);
                 }
-                m_reliable = false;
             }
             has_local_negation = true;
         }
@@ -493,6 +497,11 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     {
         m_tested_local_negation = true;
         thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
+        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Problem-solving contained negated reasoning about sub-state structures.";
+        }
     }
 
     if (prev_vrblz)
@@ -861,9 +870,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     /* Set up a new instantiation and ID for this chunk's refracted match */
     init_instantiation(thisAgent, m_chunk_inst, NULL);
-    m_chunk_inst->tested_local_negation             = m_inst->tested_local_negation;
-    m_chunk_inst->creates_deep_copy                 = m_inst->creates_deep_copy;
-    m_chunk_inst->creates_ltm_instance              = m_inst->creates_ltm_instance;
+    m_chunk_inst->tested_local_negation     = m_inst->tested_local_negation;
+    m_chunk_inst->creates_deep_copy         = m_inst->creates_deep_copy;
+    m_chunk_inst->tested_LTM                = m_inst->tested_LTM;
+    m_chunk_inst->tested_quiescence         = m_inst->tested_quiescence;
     m_chunk_new_i_id = m_chunk_inst->i_id;
 
     #ifdef DEBUG_ONLY_CHUNK_ID
@@ -896,7 +906,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     /* Determine which WMEs in the topstate were relevent to problem-solving */
-    m_reliable = true;
+    m_correctness_issue_possible = false;
     m_tested_deep_copy = false;
     m_tested_local_negation = false;
     m_tested_ltm_recall = false;
@@ -921,7 +931,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Rule learned had no conditions.";
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
         clean_up();
         return;
@@ -932,14 +942,18 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
 
-    if ((m_rule_type == ebc_chunk) && !m_reliable)
+    /* Apply EBC correctness and (<s> ^quiescence t) filters that prevents rule learning */
+    if ((m_tested_local_negation && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS]) ||
+        (m_tested_ltm_recall && !ebc_settings[SETTING_EBC_ALLOW_OPAQUE])
+        || m_tested_quiescence)
+    {
+        m_correctness_issue_possible = true;
+    }
+
+    /* Apply EBC correctness filters */
+    if ((m_rule_type == ebc_chunk) && m_correctness_issue_possible)
     {
         m_rule_type = ebc_justification;
-        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking failure:  Problem-solving contained negated reasoning about sub-state structures.";
-        }
     }
 
     if ((m_rule_type == ebc_justification) && !thisAgent->explanationMemory->isRecordingJustifications())
@@ -961,7 +975,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     variablize_condition_list(m_lhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
-    //if (m_rule_type == ebc_chunk) sanity_check_conditions(m_vrblz_top);
+    #ifdef EBC_SANITY_CHECK_RULES
+    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_lhs);
+    #endif
 
     /* Merge redundant conditions (same identity sets in each element) */
     merge_conditions();
@@ -988,6 +1004,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         {
             /* Could not re-order chunk, so we create a justification for the results instead */
             m_rule_type = ebc_justification;
+            thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
+            m_prod_name = generate_name_for_new_rule();
+            m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
             if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
@@ -1017,7 +1036,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * Note:  Until this point, justification and chunk learning has been nearly identical.
      * The only difference is that a justification has not had its conditions re-ordered.
      * This changes during re-instantiation.  If the rule being formed is a justification,
-     * both m_vrblz_top and m_rhs will become instantiated as well. */
+     * both m_lhs and m_rhs will become instantiated as well. */
 
     l_inst_top = reinstantiate_current_rule();
     l_inst_bottom = l_inst_top;
@@ -1039,12 +1058,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
-    m_chunk_inst->reliable                          = m_reliable;
     m_chunk_inst->in_ms                             = true;                     /* set true for now, we'll find out later... */
     m_chunk_inst->in_newly_created                  = true;
     m_chunk_inst->tested_local_negation             = m_tested_local_negation;
     m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
-    m_chunk_inst->creates_ltm_instance              = m_tested_ltm_recall;
+    m_chunk_inst->tested_LTM                        = m_tested_ltm_recall;
+    m_chunk_inst->tested_quiescence                 = m_tested_quiescence;
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
@@ -1087,7 +1106,7 @@ void Explanation_Based_Chunker::clean_up ()
 {
     if (m_chunk_new_i_id)
     {
-        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(m_chunk_new_i_id);
+        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
     }
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
@@ -1118,7 +1137,7 @@ void Explanation_Based_Chunker::clean_up ()
     clear_cached_constraints();
     clear_o_id_substitution_map();
     clear_attachment_map();
-    clear_singletons();
+    clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)

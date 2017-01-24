@@ -1,0 +1,49 @@
+# Tests:
+# - 
+
+srand 23
+smem --enable
+chunk always
+smem --add {(<t1> ^D X )}
+smem --add {(<t2> ^D Y )}
+
+sp {propose*query-lti
+   (state <s> ^superstate.superstate nil
+         - ^status << queried stored >>)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name query-lti)
+   (write (crlf) |Proposing query operator | <o> )
+}
+
+sp {apply*query
+   (state <s> ^operator.name query-lti
+              ^smem.command <command>)
+-->
+   (<command> ^query <q> ^depth 5)
+   (<q> ^D <x>)
+   (write (crlf) |Query command initiated.| )
+}
+
+sp {apply*query*success
+   (state <s> ^operator.name query-lti
+              ^smem.result <sres>
+              ^superstate <ss>)
+   (<sres> ^success
+           ^retrieved <res>)
+-->
+   (<s> ^query-result <res>)
+   (<ss> ^result <res>)
+   (write (crlf) |Query successful: | <res> )
+}
+
+sp {apply*query*success2
+   (state <s> ^operator.name query-lti
+              ^query-result <res>
+              ^superstate <ss>)
+-->
+   (<res> ^foo <bar>)
+   (<bar> ^foo bar) # This used to crash Soar 1/18/17
+   (write (crlf) |Augmentation result successful: | <res> )
+   (interrupt)
+}

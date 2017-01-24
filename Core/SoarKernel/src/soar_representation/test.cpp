@@ -151,7 +151,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
+void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
@@ -179,35 +179,21 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
                 next_c = c->rest;
                 test tt;
                 tt = static_cast<test>(c->first);
-                deallocate_test(thisAgent, static_cast<test>(c->first), pCleanUpIdentity);
+                deallocate_test(thisAgent, static_cast<test>(c->first));
                 free_cons(thisAgent, c);
                 c = next_c;
             }
             break;
         default: /* relational tests other than equality */
-            #ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-            #else
-            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-            #endif
-            #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-            /* The following cleans up the identity->rule variable
-             * mapping that is only used for debugging in a non-release build. */
-            if (pCleanUpIdentity && t->identity)
-            {
-                thisAgent->explanationBasedChunker->cleanup_identity_for_debug_mappings(t->identity);
-            }
-            #endif
-
             break;
     }
-    /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
+    /* -- The eq_test is a cache to prevent repeated searches on conjunctive tests
      *    which was all over the kernel.  We did not copy the test or increment the
      *    refcount, so we don't need to deallocate the test here. -- */
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
-    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test done.\n");
 }
 
 void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)

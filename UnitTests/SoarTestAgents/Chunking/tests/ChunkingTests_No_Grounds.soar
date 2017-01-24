@@ -1,0 +1,39 @@
+chunk always
+
+sp {no-ground
+    (state <s> ^local <top>)
+-->
+    (<top> ^result 23)
+}
+
+sp {propose
+    (state <s> ^attribute state)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name promote)}
+
+sp {apply*create-top
+    (state <s> ^operator.name promote)
+    (<s> -^local)
+-->
+    (<s> ^local <top>)
+}
+
+sp {apply*promote*top
+    (state <s> ^operator.name promote
+               ^superstate <ss>
+               ^local <top>)
+-->
+    (<ss> ^promote <top>)
+}
+
+#sp {init
+#    (state <s> ^superstate nil)
+#-->
+#    (<s> ^x a)
+#    }
+#
+#sp {test
+#   (state <s> ^x <a>)
+#-->
+#   (<s> ^will-fail (+ 1 <a>))}

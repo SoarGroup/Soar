@@ -1,0 +1,55 @@
+# this program triggers a crash (null pointer) in gds_add_wme in both csoar and jsoar
+# specifically, it crashes when trying to add (I1 ^ouput-link I3) to a null gds for a justification instance whose match goal is S1
+# key aspects that seem to be required include:
+#  working in a substate
+#  creating a structure that gets put on the output-link (in the superstate)
+#  elaborating something onto the structure before it gets returned
+#  creating a wme on the substate when the structure is returned to the superstate
+
+sp "propose*create-substate
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name create-substate)
+"
+
+sp "create-substate*propose*create-structure
+   (state <s> ^superstate.operator.name create-substate
+             -^structure)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-structure)
+"
+
+sp "apply*create-structure
+   (state <s> ^operator.name create-structure)
+-->
+   (<s> ^structure <struct>)
+   (<struct> ^foo bar)
+"
+
+sp "elaboration*finished*true
+   (state <s> ^structure <struct>)
+   (<struct> ^foo bar)
+   -->
+   (<struct> ^finished true)
+"
+
+sp "create-substate*propose*create-output
+   (state <s> ^structure <struct>)
+   (<struct> ^finished true)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name create-output
+        ^structure <struct>)
+"
+
+sp "apply*create-output
+   (state <s> ^operator <o>
+              ^superstate.io.output-link <ol>)
+   (<o> ^name create-output
+        ^structure <struct>)
+-->
+   (<ol> ^my-command <struct>)
+   (<s> ^output-created true)
+"

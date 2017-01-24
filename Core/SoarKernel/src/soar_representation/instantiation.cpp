@@ -89,7 +89,7 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
         cond->bt.OSK_prefs = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
-            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK])
+            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
             {
                 if (cond->bt.trace->slot->OSK_prefs)
                 {
@@ -148,7 +148,7 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
     }
 }
 
-/* -----------------------------------------------------------------------
+/*--------------------------------------------------------------------
  Find Clone For Level
 
  This routines take a given preference and finds the clone of it whose
@@ -164,12 +164,12 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
 
     if (!p)
     {
-        /* --- if the wme doesn't even have a preference on it, we can't backtrace
-         at all (this happens with I/O and some architecture-created wmes --- */
+        /* if the wme doesn't even have a preference on it, we can't backtrace
+         at all (this happens with I/O and some architecture-created wmes */
         return NIL;
     }
 
-    /* --- look at pref and all of its clones, find one at the right level --- */
+    /* look at pref and all of its clones, find one at the right level */
 
     if (p->inst->match_goal_level == level)
     {
@@ -188,7 +188,7 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
             return clone;
         }
 
-    /* --- if none was at the right level, we can't backtrace at all --- */
+    /* if none was at the right level, we can't backtrace at all */
     return NIL;
 }
 
@@ -290,9 +290,24 @@ goal_stack_level get_match_goal(condition* top_cond)
  it will be instantiated with the same gensym.
  ----------------------------------------------------------------------- */
 
+uint64_t get_rhs_function_first_arg_identity(agent* thisAgent, rhs_value rv)
+{
+    cons* fl;
+    rhs_function* rf;
+    rhs_value firstArg;
+
+    fl = rhs_value_to_funcall_list(rv);
+    rf = static_cast<rhs_function_struct*>(fl->first);
+    firstArg =  static_cast<char*>(fl->rest->first);
+    assert(rhs_value_is_symbol(firstArg));
+    uint64_t returnVal = rhs_value_to_o_id(static_cast<char*>(firstArg));
+    thisAgent->explanationBasedChunker->deep_copy_sym_expanded = rhs_value_to_symbol(static_cast<char*>(firstArg));
+    return returnVal;
+}
+
 Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
                               goal_stack_level new_id_level, char new_id_letter,
-                              struct token_struct* tok, wme* w)
+                              struct token_struct* tok, wme* w, bool& wasUnboundVar)
 {
     cons* fl;
     cons* arglist;
@@ -301,6 +316,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     Symbol* result;
     bool nil_arg_found;
 
+    /* We pass back whether this was an unbound var via wasUnboundVar so that the re-orderer
+     * will not consider it unconnected to the LHS if it's a child of an unconnected symbol */
+    wasUnboundVar = false;
     if (rhs_value_is_symbol(rv))
     {
 
@@ -315,6 +333,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         int64_t index;
         Symbol* sym;
 
+        wasUnboundVar = true;
         index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
         if (thisAgent->firer_highest_rhs_unboundvar_index < index)
         {
@@ -353,16 +372,16 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
 
-    /* --- build up a list of the argument values --- */
+    /* build up a list of the argument values */
     prev_c = NIL;
     nil_arg_found = false;
     arglist = NIL; /* unnecessary, but gcc -Wall warns without it */
     for (arg_cons = fl->rest; arg_cons != NIL; arg_cons = arg_cons->rest)
     {
         allocate_cons(thisAgent, &c);
-        c->first = instantiate_rhs_value(thisAgent,
-                                         static_cast<char*>(arg_cons->first), new_id_level,
-                                         new_id_letter, tok, w);
+        bool dummy_was_unbound_var;
+
+        c->first = instantiate_rhs_value(thisAgent, static_cast<char*>(arg_cons->first), new_id_level, new_id_letter, tok, w, dummy_was_unbound_var);
         if (!c->first)
         {
             nil_arg_found = true;
@@ -386,7 +405,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         arglist = NIL;
     }
 
-    /* --- if all args were ok, call the function --- */
+    /* if all args were ok, call the function */
 
     if (!nil_arg_found)
     {
@@ -412,7 +431,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
         result = NIL;
     }
 
-    /* --- scan through arglist, dereference symbols and deallocate conses --- */
+    /* scan through arglist, dereference symbols and deallocate conses */
     Symbol* lSym;
     for (c = arglist; c != NIL; c = c->rest)
         if (c->first)
@@ -433,9 +452,11 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     char first_letter;
     preference* newPref;
 
+    bool_quadruple was_unbound_vars;
+
     if (a->type == FUNCALL_ACTION)
     {
-        lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w);
+        lValue = instantiate_rhs_value(thisAgent, a->value, -1, 'v', tok, w, was_unbound_vars.id);
         if (lValue)
         {
             thisAgent->symbolManager->symbol_remove_ref(&lValue);
@@ -449,7 +470,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     uint64_t oid_id = 0, oid_attr = 0, oid_value = 0, oid_referent = 0;
     rhs_value f_id = 0, f_attr = 0, f_value = 0, f_referent = 0;
 
-    lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w);
+    lId = instantiate_rhs_value(thisAgent, a->id, -1, 's', tok, w, was_unbound_vars.id);
     if (!lId)
     {
         goto abort_execute_action;
@@ -457,13 +478,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     if (!lId->is_sti())
     {
         thisAgent->outputManager->printa_sf(thisAgent, "Error: RHS of action %a makes a preference for %y (not an identifier)\n", a, lId);
-        //lAttr = instantiate_rhs_value(thisAgent, a->attr, 1, 'a', tok, w);
-        //lValue = instantiate_rhs_value(thisAgent, a->value, 1, 'v', tok, w);
-        //dprint(DT_DEBUG, "(%r ^%r %r) (%r ^%r %r)\n", a->id, a->attr, a->value, lId, lAttr, lValue);
         goto abort_execute_action;
     }
 
-    lAttr = instantiate_rhs_value(thisAgent, a->attr, lId->id->level, 'a', tok, w);
+    lAttr = instantiate_rhs_value(thisAgent, a->attr, lId->id->level, 'a', tok, w, was_unbound_vars.attr);
     if (!lAttr)
     {
         goto abort_execute_action;
@@ -471,8 +489,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     first_letter = first_letter_from_symbol(lAttr);
 
-    lValue = instantiate_rhs_value(thisAgent, a->value, lId->id->level,
-                                  first_letter, tok, w);
+    lValue = instantiate_rhs_value(thisAgent, a->value, lId->id->level, first_letter, tok, w, was_unbound_vars.value);
     if (!lValue)
     {
         goto abort_execute_action;
@@ -480,8 +497,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
 
     if (preference_is_binary(a->preference_type))
     {
-        lReferent = instantiate_rhs_value(thisAgent, a->referent, lId->id->level,
-                                         first_letter, tok, w);
+        lReferent = instantiate_rhs_value(thisAgent, a->referent, lId->id->level, first_letter, tok, w, was_unbound_vars.referent);
         if (!lReferent)
         {
             goto abort_execute_action;
@@ -525,8 +541,16 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         {
             if (rhs_value_is_funcall(rule_action->value))
             {
-                f_value = rule_action->value;
-                rule_action->value = NULL;
+                if (thisAgent->WM->glbDeepCopyWMEs)
+                {
+                    // Extract identity from first argument of rule_action->value
+                    oid_value = get_rhs_function_first_arg_identity(thisAgent, rule_action->value);
+                    deallocate_rhs_value(thisAgent, rule_action->value);
+                    rule_action->value = NULL;
+                } else {
+                    f_value = rule_action->value;
+                    rule_action->value = NULL;
+                }
             } else {
                 oid_value = rhs_value_to_o_id(rule_action->value);
             }
@@ -542,7 +566,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent));
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), false, was_unbound_vars);
     newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
     newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
     newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
@@ -838,7 +862,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     wme_add_ref(cond->bt.wme_);
                 }
             #endif
-            /* --- if trace is for a lower level, find one for this level --- */
+            /* if trace is for a lower level, find one for this level */
             if (cond->bt.trace)
             {
                 if (cond->bt.trace->inst->match_goal_level > level)
@@ -985,9 +1009,6 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
 
     glbDeepCopyWMELevel = pref->id->id->level;
 
-    deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
-    pref->rhs_funcs.value = NULL;
-
     while (thisAgent->WM->glbDeepCopyWMEs)
     {
         tempwme = thisAgent->WM->glbDeepCopyWMEs;
@@ -1037,10 +1058,10 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->rete_wme = w;
 
     inst->backtrace_number = 0;
-    inst->reliable = true;
+    inst->tested_quiescence = false;
     inst->tested_local_negation = false;
     inst->creates_deep_copy = false;
-    inst->creates_ltm_instance = false;
+    inst->tested_LTM = false;
 
     inst->in_ms = false;
     inst->in_newly_created = false;
@@ -1115,13 +1136,13 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     //id_matches(inst->i_id, 6);
 
-    /* --- build the instantiated conditions, and bind LHS variables --- */
+    /* build the instantiated conditions, and bind LHS variables */
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
         &(inst->top_of_instantiated_conditions),
         &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
         inst->i_id, additional_test_mode);
 
-    /* --- record the level of each of the wmes that was positively tested --- */
+    /* record the level of each of the wmes that was positively tested */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
         cond->inst = inst;
@@ -1131,7 +1152,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             cond->bt.trace = cond->bt.wme_->preference;
         }
     }
-    /* --- print trace info --- */
+    /* print trace info */
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
     {
@@ -1140,8 +1161,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
     }
 
-    /* --- initialize rhs_variable_bindings array with names of variables
-     (if there are any stored on the production -- for chunks there won't be any) --- */
+    /* initialize rhs_variable_bindings array with names of variables
+     (if there are any stored on the production -- for chunks there won't be any) */
     index = 0;
     cell = thisAgent->rhs_variable_bindings;
     for (c = prod->rhs_unbound_variables; c != NIL; c = c->rest)
@@ -1151,15 +1172,15 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
     thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
 
-    /* --- Before executing the RHS actions, tell the user that the -- */
-    /* --- phase has changed to output by printing the arrow --- */
+    /* Before executing the RHS actions, tell the user that the -- */
+    /* phase has changed to output by printing the arrow */
     if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
     }
 
-    /* --- execute the RHS actions, collect the results --- */
+    /* execute the RHS actions, collect the results */
     need_to_do_support_calculations = false;
     a2 = rhs_vars;
 
@@ -1188,6 +1209,9 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             if (thisAgent->WM->glbDeepCopyWMEs)
             {
                 inst->creates_deep_copy = true;
+                thisAgent->SMem->force_add_identity_for_STI(pref->value, pref->identities.value);
+                thisAgent->SMem->force_add_identity_for_STI(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
+                thisAgent->explanationBasedChunker->deep_copy_sym_expanded = NULL;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
@@ -1198,7 +1222,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
     }
 
-    /* --- reset rhs_variable_bindings array to all zeros --- */
+    /* reset rhs_variable_bindings array to all zeros */
     index = 0;
     cell = thisAgent->rhs_variable_bindings;
     while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index)
@@ -1206,10 +1230,10 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         *(cell++) = NIL;
     }
 
-    /* --- fill in lots of other stuff --- */
+    /* fill in lots of other stuff */
     finalize_instantiation(thisAgent, inst, need_to_do_support_calculations, NIL);
 
-    /* --- print trace info: printing preferences --- */
+    /* print trace info: printing preferences */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
      the o-support info for the preferences we're about to print */
     if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
@@ -1230,17 +1254,20 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     dprint(DT_PRINT_INSTANTIATIONS,  "%ecreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
-    /* --- build chunks/justifications if necessary --- */
+    /* Clean up variable to identity mappings for this instantiation */
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+
+    /* build chunks/justifications if necessary */
+
     thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
 
-    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
     deallocate_action_list(thisAgent, rhs_vars);
 
     dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, inst->match_goal_level);
 
     if (!thisAgent->system_halted)
     {
-        /* --- invoke callback function --- */
+        /* invoke callback function */
         soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
 
     }
@@ -1387,14 +1414,14 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                                 }
                             }
 
-                            /* --- deallocate pref --- */
-                            /* --- remove it from the list of bt.trace's for its match goal --- */
+                            /* deallocate pref */
+                            /* remove it from the list of bt.trace's for its match goal */
                             if (cond->bt.trace->on_goal_list)
                             {
                                 remove_from_dll(cond->bt.trace->inst->match_goal->id->preferences_from_goal, cond->bt.trace, all_of_goal_next, all_of_goal_prev);
                             }
 
-                            /* --- remove it from the list of bt.trace's from that instantiation --- */
+                            /* remove it from the list of bt.trace's from that instantiation */
                             remove_from_dll(cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev);
                             if ((!cond->bt.trace->inst->preferences_generated) && (!cond->bt.trace->inst->in_ms))
                             {
@@ -1424,7 +1451,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         condition* temp = cond_stack.back();
         cond_stack.pop_back();
 
-        /* --- dereference component symbols --- */
+        /* dereference component symbols */
         thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->id);
         thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->attr);
         thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->value);
@@ -1438,7 +1465,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             wma_remove_pref_o_set(thisAgent, temp->bt.trace);
         }
 
-        /* --- free the memory --- */
+        /* free the memory */
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
@@ -1453,14 +1480,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         ++riter;
 
         dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
-        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions, true);
-
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-        /* Setting deallocate_condition_list()'s pCleanUpIdentity argument to true
-         * will build up a set of identities to clean up.  We call this to actually
-         * remove entries from the debug symbol map */
-        thisAgent->explanationBasedChunker->cleanup_debug_mappings();
-        #endif
+        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
         if (temp->prod)
         {
@@ -1494,7 +1514,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     bool retracted_a_preference;
     bool trace_it;
 
-    /* --- invoke callback function --- */
+    /* invoke callback function */
     soar_invoke_callbacks(thisAgent, RETRACTION_CALLBACK,
                           static_cast<soar_call_data>(inst));
 
@@ -1502,7 +1522,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
 
     trace_it = trace_firings_of_inst(thisAgent, inst);
 
-    /* --- retract any preferences that are in TM and aren't o-supported --- */
+    /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
     while (pref != NIL)
@@ -1542,7 +1562,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
     {
-        /* --- remove inst from list of instantiations of this production --- */
+        /* remove inst from list of instantiations of this production */
         remove_from_dll(inst->prod->instantiations, inst, next, prev);
 
         production* prod = inst->prod;
@@ -1567,7 +1587,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
     }
 
-    /* --- mark as no longer in MS, and possibly deallocate  --- */
+    /* mark as no longer in MS, and possibly deallocate  */
     inst->in_ms = false;
     dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for retraction.\n", inst->i_id, inst->prod_name);
     possibly_deallocate_instantiation(thisAgent, inst);
@@ -1581,7 +1601,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
-    inst->creates_ltm_instance = true;
+    inst->tested_LTM = true;
 
     thisAgent->SMem->clear_instance_mappings();
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
@@ -1611,7 +1631,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     dprint(DT_PRINT_INSTANTIATIONS,  "%emake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* Clean up symbol to identity mappings for this instantiation*/
-    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
 
     return inst;
 }
@@ -1650,7 +1670,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     condition* cond, *last_cond;
     uint64_t state_sym_identity, superop_sym_identity;
 
-    /* --- find the acceptable preference wme we want to backtrace to --- */
+    /* find the acceptable preference wme we want to backtrace to */
     s = cand->slot;
     for (ap_wme = s->acceptable_preference_wmes; ap_wme != NIL; ap_wme = ap_wme->next)
         if (ap_wme->value == cand->value)
@@ -1674,16 +1694,16 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
         abort_with_fatal_error(thisAgent, msg);
     }
 
-    /* --- make the fake instantiation --- */
+    /* make the fake instantiation */
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 
-    /* --- make the fake conditions --- */
+    /* make the fake conditions */
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.ss_context_variable, inst->i_id);
     cond->data.tests.attr_test = make_test(thisAgent, ap_wme->attr, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->value, EQUALITY_TEST);
-    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
+    cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.o_context_variable, inst->i_id);
     superop_sym_identity = cond->data.tests.value_test->identity;
     /* -- Fill in fake condition info -- */
     cond->type = POSITIVE_CONDITION;
@@ -1703,7 +1723,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     last_cond = cond;
     cond = make_condition(thisAgent);
     cond->data.tests.id_test = make_test(thisAgent, goal, EQUALITY_TEST);
-    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
+    cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity(thisAgent->symbolManager->soarSymbols.s_context_variable, inst->i_id);
     state_sym_identity = cond->data.tests.id_test->identity;
     cond->data.tests.attr_test = make_test(thisAgent, thisAgent->symbolManager->soarSymbols.superstate_symbol, EQUALITY_TEST);
     cond->data.tests.value_test = make_test(thisAgent, ap_wme->id, EQUALITY_TEST);
@@ -1724,8 +1744,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 #endif
     cond->bt.level = goal->id->id->level;
 
-
-    /* --- make the fake preference --- */
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
                            cand->value, NIL, identity_quadruple(state_sym_identity, 0, superop_sym_identity));
     thisAgent->symbolManager->symbol_add_ref(pref->id);
@@ -1747,9 +1765,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural item instantiation.\n", inst->i_id, inst->prod_name);
 
-    /* Clean up symbol to identity mappings for this instantiation*/
-    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation(inst->i_id);
+    /* Clean up symbol to identity mappings for this instantiation */
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
 
-    /* --- return the fake preference --- */
     return pref;
 }

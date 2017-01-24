@@ -8,6 +8,8 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
+//#define EBC_SANITY_CHECK_RULES
+
 #include "kernel.h"
 
 #include "ebc_structs.h"
@@ -38,6 +40,7 @@ class Explanation_Based_Chunker
 
         /* Cached pointer to lti link rhs function since it may be used often */
         rhs_function*           lti_link_function;
+        Symbol*                 deep_copy_sym_expanded;
 
         /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
         cons*     chunk_free_problem_spaces;
@@ -57,8 +60,7 @@ class Explanation_Based_Chunker
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
         void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_or_create_o_id(Symbol* orig_var, uint64_t pI_id);
-        Symbol * get_ovar_for_o_id(uint64_t o_id);
+        uint64_t get_or_create_identity(Symbol* orig_var, uint64_t pI_id);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
@@ -67,6 +69,12 @@ class Explanation_Based_Chunker
         uint64_t get_identity(uint64_t pID);
         bool in_null_identity_set(test t);
         tc_number get_constraint_found_tc_num() { return tc_num_found; };
+
+        /* Methods to handle identity unification of conditions that test singletons */
+        void add_to_singletons(wme* pWME);
+        bool wme_is_a_singleton(wme* pWME);
+        void add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        void remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -92,18 +100,17 @@ class Explanation_Based_Chunker
         void print_merge_map(TraceMode mode);
         void print_instantiation_identities_map(TraceMode mode);
         void print_unification_map(TraceMode mode);
-        void print_identity_to_var_debug_map(TraceMode mode);
 
+        void print_singleton_summary();
+        const char* singletonTypeToString(singleton_element_type pType);
         void print_chunking_summary();
         void print_chunking_settings();
 
         /* Clean-up */
         void reinit();
-        void cleanup_after_instantiation_creation(uint64_t pI_id);
-        void cleanup_identity_for_debug_mappings(uint64_t pIdentity) {identities_to_clean_up->insert(pIdentity);};
-        void cleanup_debug_mappings();
-
+        void cleanup_after_instantiation_creation() { instantiation_identities->clear(); }
         void clear_variablization_maps();
+        void clear_singletons();
 
     private:
 
@@ -138,7 +145,7 @@ class Explanation_Based_Chunker
         uint64_t            m_current_bt_inst_id;
 
         /* Flags for potentialissues encountered during dependency analysis */
-        bool                m_reliable;
+        bool                m_correctness_issue_possible;
         bool                m_tested_quiescence;
         bool                m_tested_local_negation;
         bool                m_tested_deep_copy;
@@ -170,17 +177,14 @@ class Explanation_Based_Chunker
         /* Core tables used by EBC during identity assignment during instantiation
          * creation. The data stored within them is temporary and cleared after use. */
 
-        sym_to_id_map*             instantiation_identities;
-        id_to_sym_id_map*          identity_to_var_map;
-
-        /* The following are used to print out the original variables when
-         * compiled without SOAR_RELEASE_VERSION enabled */
-        id_to_sym_map*             id_to_rule_sym_debug_map;
-        id_set*                    identities_to_clean_up;
+        sym_to_id_map*      instantiation_identities;
+        id_to_sym_id_map*   identity_to_var_map;
 
         /* Map to unify variable identities into identity sets */
-        id_to_id_map*              unification_map;
-        identity_quadruple         local_singleton_superstate_identity;
+        id_to_id_map*       unification_map;
+        identity_quadruple  local_singleton_superstate_identity;
+        symbol_set*         local_singletons;
+        symbol_set*         singletons;
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
@@ -236,14 +240,13 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        uint64_t get_existing_o_id(Symbol* orig_var, uint64_t pI_id);
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
         void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void add_local_singleton_unification_if_needed(condition* pCond);
-        void literalize_RHS_function_args(const rhs_value rv);
+        void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
         void merge_conditions();
 
         /* Constraint analysis and enforcement methods */
@@ -273,7 +276,9 @@ class Explanation_Based_Chunker
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
-        condition* reinstantiate_condition_list(condition* top_cond);
+        condition* reinstantiate_lhs(condition* top_cond);
+        void reinstantiate_condition_list(condition* top_cond, bool pIsNCC = false);
+        void reinstantiate_condition(condition* cond, bool pIsNCC = false);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
 
@@ -284,14 +289,12 @@ class Explanation_Based_Chunker
 
         /* Clean-up methods */
         void clear_merge_map();
-        void clear_o_id_to_ovar_debug_map();
-        void clear_rulesym_to_identity_map();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_o_id_substitution_map();
-        void clear_singletons();
+        void clear_o_id_substitution_map()      { unification_map->clear(); }
+        void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
+        void clear_local_arch_singletons()      { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
         void clear_data();
 
 };
-
 #endif /* EBC_MANAGER_H_ */

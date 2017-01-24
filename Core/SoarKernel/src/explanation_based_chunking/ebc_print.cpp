@@ -46,8 +46,6 @@ void Explanation_Based_Chunker::print_identity_tables(TraceMode mode)
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
     print_instantiation_identities_map(mode);
     print_unification_map(mode);
-    print_identity_to_var_debug_map(mode);
-
 }
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
@@ -120,35 +118,12 @@ void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
-        outputManager->printa_sf(thisAgent, "   o%u(%y) = o%u(%y)\n",
-            iter->first, get_ovar_for_o_id(iter->first),
-            iter->second, get_ovar_for_o_id(iter->second));
+        outputManager->printa_sf(thisAgent, "   %u = %u\n", iter->first, iter->second);
     }
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Explanation_Based_Chunker::print_identity_to_var_debug_map(TraceMode mode)
-{
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, " Identity to Original Sym Debug Map\n");
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-
-    if (id_to_rule_sym_debug_map->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-    }
-
-    id_to_sym_map::iterator iter;
-
-    for (iter = id_to_rule_sym_debug_map->begin(); iter != id_to_rule_sym_debug_map->end(); ++iter)
-    {
-        outputManager->printa_sf(thisAgent, "   o%u = %y\n",  iter->first, iter->second);
-    }
-
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-}
 void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
@@ -163,10 +138,10 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 
     for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
     {
-        outputManager->printa_sf(thisAgent, "%y(o%u) -> %s of %l\n", get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+        outputManager->printa_sf(thisAgent, "%u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
     }
-
 }
+
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
@@ -220,7 +195,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
     outputManager->printa(thisAgent,    "           Explanation-Based Chunking Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("When Soar will learn rules", ebc_params->chunk_in_states->get_string(), 55).c_str());
-    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_OSK->get_value() ? "Yes" : "No"), 55).c_str());
+    outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Incorporate operator selection knowledge", std::string(ebc_params->mechanism_add_OSK->get_value() ? "Yes" : "No"), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Interrupt after learning any rule", std::string(ebc_params->interrupt_on_chunk->get_value() ? "Yes" : "No"), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Interrupt after learning from watched rule", std::string(ebc_params->interrupt_on_watched->get_value() ? "Yes" : "No"), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n\n", concatJustified("Interrupt after learning failure", std::string(ebc_params->interrupt_on_warning->get_value() ? "Yes" : "No"), 55).c_str());
@@ -292,30 +267,90 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-chunks", ebc_params->max_chunks->get_string(), 45).c_str(), "Maximum chunks that can be learned (per phase)");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("max-dupes", ebc_params->max_dupes->get_string(), 45).c_str(), "Maximum duplicate chunks (per rule, per phase)");
     outputManager->printa_sf(thisAgent, "------------------- Debugging ---------------------\n");
-    outputManager->printa_sf(thisAgent, "interrupt                   %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from any rule");
-    outputManager->printa_sf(thisAgent, "explain-interrupt        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning rule watched by explainer");
-    outputManager->printa_sf(thisAgent, "warning-interrupt        %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_warning->get_value()), "Stop Soar after detecting learning issue");
+    outputManager->printa_sf(thisAgent, "interrupt                  %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_chunk->get_value()), "Stop Soar after learning from any rule");
+    outputManager->printa_sf(thisAgent, "explain-interrupt          %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_watched->get_value()), "Stop Soar after learning rule watched by explainer");
+    outputManager->printa_sf(thisAgent, "warning-interrupt          %-%s%-%s\n", capitalizeOnOff(ebc_params->interrupt_on_warning->get_value()), "Stop Soar after detecting learning issue");
 //    outputManager->printa_sf(thisAgent, "\n*record-utility (disabled)   %-%s%-%s\n", capitalizeOnOff(ebc_params->utility_mode->get_value()), "Record utility instead of firing");
+    outputManager->printa_sf(thisAgent, "------------------- Fine Tune ---------------------\n");
+    outputManager->printa_sf(thisAgent, "singleton %-%-%s\n", "Print all WME singletons");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("singleton", "<type> <attribute> <type>", 50).c_str(), "Add a WME singleton pattern");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("singleton -r", "<type> <attribute> <type>", 50).c_str(), "Remove a WME singleton pattern");
     outputManager->printa_sf(thisAgent, "----------------- EBC Mechanisms ------------------\n");
-    outputManager->printa_sf(thisAgent, "add-osk                     %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_OSK->get_value()), "Learn from operator selection knowledge");
-    outputManager->printa_sf(thisAgent, "merge                       %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
-    outputManager->printa_sf(thisAgent, "dont-add-ltm-links          %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_no_ltm_links->get_value()), "Don't create LTM links in chunks");
-    outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_reorder_justifications->get_value()), "Re-order justifications (experimental)");
-    outputManager->printa_sf(thisAgent, "lhs-repair                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_lhs->get_value()), "Add grounding conditions for unconnected LHS identifiers");
-    outputManager->printa_sf(thisAgent, "rhs-repair                  %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_rhs->get_value()), "Add grounding conditions for unconnected RHS identifiers");
+    outputManager->printa_sf(thisAgent, "add-ltm-links              %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_ltm_links->get_value()), "Recreate LTM links in original results");
+    outputManager->printa_sf(thisAgent, "add-osk                    %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_add_OSK->get_value()), "Incorporate operator selection knowledge");
+    outputManager->printa_sf(thisAgent, "merge                      %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
+    outputManager->printa_sf(thisAgent, "lhs-repair                 %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_lhs->get_value()), "Add grounding conditions for unconnected LHS identifiers");
+    outputManager->printa_sf(thisAgent, "rhs-repair                 %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_repair_rhs->get_value()), "Add grounding conditions for unconnected RHS identifiers");
+    outputManager->printa_sf(thisAgent, "user-singletons            %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_user_singletons->get_value()), "Unify identities using domain-specific singletons");
 //    outputManager->printa_sf(thisAgent, "*variablize-identity (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_identity_analysis->get_value()), "Variablize symbols based on identity analysis");
 //    outputManager->printa_sf(thisAgent, "*variablize-rhs-funcs (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_variablize_rhs_funcs->get_value()), "Variablize and compose RHS functions");
 //    outputManager->printa_sf(thisAgent, "*enforce-constraints (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_constraints->get_value()), "Track and enforce transitive constraints");
 //    outputManager->printa_sf(thisAgent, "*merge (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
-//    outputManager->printa_sf(thisAgent, "*user-singletons (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_user_singletons->get_value()), "Unify identities using domain-specific singletons");
-    outputManager->printa_sf(thisAgent, "--------- Correctness Guarantee Filters ------------\n");
-    outputManager->printa_sf(thisAgent, "allow-local-negations       %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_negative_reasoning->get_value()), "Used local negative reasoning");
-//    outputManager->printa_sf(thisAgent, "*allow-missing-osk (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_OSK->get_value()), "Used operator selection rules to choose operator");
-//    outputManager->printa_sf(thisAgent, "*allow-opaque (disabled)     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Used knowledge from opaque knowledge retrieval");
-//    outputManager->printa_sf(thisAgent, "*allow-uncertain-operators (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Used operators selected probabilistically");
-//    outputManager->printa_sf(thisAgent, "*allow-conflated-reasoning (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Tests a WME that has multiple reasons it exists");
+    outputManager->printa_sf(thisAgent, "---------- Correctness Guarantee Filters ----------\n");
+    outputManager->printa_sf(thisAgent, "allow-local-negations          %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_negative_reasoning->get_value()), "Allow rules to form that used local negative reasoning");
+    outputManager->printa_sf(thisAgent, "allow-opaque*                  %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Allow rules to form that used knowledge from LTM recall");
+    outputManager->printa_sf(thisAgent, "allow-missing-osk*             %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_OSK->get_value()), "Allow rules to form from problem-solving that used OSK");
+    outputManager->printa_sf(thisAgent, "allow-uncertain-operators*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Allow rules to form from aleotoric problem-solving");
+    outputManager->printa_sf(thisAgent, "allow-conflated-reasoning*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Allow rules to form that have multiple reasoning paths");
+    outputManager->printa_sf(thisAgent, "* disabled\n"
+                                        "------------- Experimental Settings ---------------\n");
+    outputManager->printa_sf(thisAgent, "unify-all             %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_unify_all->get_value()), "Warning:  Can lead to incorrect behavior (for singleton experimentation)");
+    outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_reorder_justifications->get_value()), "Re-order justifications (for efficiency experimentation)");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- chunk <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help chunk\n");
 
+}
+
+const char* Explanation_Based_Chunker::singletonTypeToString(singleton_element_type pType)
+{
+    switch (pType) {
+        case ebc_any:
+            return "<any>";
+        case ebc_state:
+            return "<state>";
+        case ebc_operator:
+            return "<operator>";
+        case ebc_identifier:
+            return "<identifier>";
+        case ebc_constant:
+            return "<constant>";
+        default:
+            return "INVALID";
+    }
+}
+
+void Explanation_Based_Chunker::print_singleton_summary()
+{
+    outputManager->reset_column_indents();
+    outputManager->set_column_indent(0, 40);
+    outputManager->set_column_indent(1, 55);
+    outputManager->printa(thisAgent,    "==== Singleton WME Unification Patterns ====\n");
+    outputManager->printa(thisAgent,    "----------------- Local --------------------\n");
+    outputManager->printa(thisAgent,    "   (<state> ^superstate <state>)\n");
+    outputManager->printa(thisAgent,    "\n-------------- Super-state -----------------\n");
+    outputManager->printa(thisAgent,    "   (<state> ^superstate <any>)\n");
+    outputManager->printa_sf(thisAgent, "   (<state> ^operator   <operator>)             %-(unless condition only tests operator proposal)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^type       <constant>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^impasse    <constant>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^smem       <identifier>)\n");
+    outputManager->printa(thisAgent,    "   (<state> ^epmem      <identifier>)\n");
+    outputManager->printa(thisAgent,    "   ---------- user-defined ----------\n");
+    if (singletons->empty())
+    {
+        thisAgent->outputManager->printa(thisAgent, "   None.\n");
+    }
+    else
+    {
+        Symbol* lSym;
+        for (auto it = singletons->begin(); it != singletons->end(); it++)
+        {
+            lSym = static_cast<Symbol*>(*it);
+            thisAgent->outputManager->printa_sf(thisAgent, "   (%s ^%y %s)\n", singletonTypeToString(lSym->sc->singleton.id_type), lSym, singletonTypeToString(lSym->sc->singleton.value_type));
+        }
+    }
+    outputManager->printa(thisAgent, "\n\n"
+        "To add a new pattern:    chunk singleton    <type> attribute <type>\n"
+        "To remove a pattern:     chunk singleton -r <type> attribute <type>\n\n"
+        "   Valid types:          [ any | constant | identifier | operator | state ]  \n");
 }

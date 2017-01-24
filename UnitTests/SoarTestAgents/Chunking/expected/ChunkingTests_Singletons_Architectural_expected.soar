@@ -1,0 +1,7 @@
+sp {answer*apply-create-chunk-architectural-singletons*StateNoChange*t2-1
+    (state <s1> ^smem <l1> ^epmem <e1> ^reward-link <r1>
+          ^type <c7> ^quiescence <c6> ^quiescence <c5> ^choices <c4>
+          ^choices <c3> ^impasse <c2> ^attribute <c1> ^superstate <s2>)
+    -->
+    (<s1> ^result-architectural-singletons true +)
+}

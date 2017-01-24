@@ -218,7 +218,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
         prefix[1] = 0;
         lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
         lNewVar->var->instantiated_sym = lMatchedSym;
-        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_o_id(lNewVar, m_chunk_ID);
+        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity(lNewVar, m_chunk_ID);
     }
     else
     {
@@ -346,14 +346,14 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
     }
 }
 
-void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p_dangling_syms)
+void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_dangling_syms)
 {
     chunk_element* lDanglingSymInfo;
     wme* lWME;
     goal_stack_level targetLevel;
 
 
-    dprint(DT_REPAIR, "Repair rule started for:\n%1", m_vrblz_top);
+    dprint(DT_REPAIR, "Repair rule started for:\n%1", p_lhs_top);
 
     /* Determine the highest level of a dangling sym.  We need to add conditions
      * for all (state ^superstate state) wme's between that level and the match
@@ -381,8 +381,8 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
     tc = get_new_tc_number(thisAgent);
 
     dprint(DT_REPAIR, "Step 2: Marking states currently in conditions: \n");
-    mark_states_WMEs_and_store_variablizations(m_vrblz_top, tc);
-    thisAgent->symbolManager->reset_variable_generator(m_vrblz_top, NULL);
+    mark_states_WMEs_and_store_variablizations(p_lhs_top, tc);
+    thisAgent->symbolManager->reset_variable_generator(p_lhs_top, NULL);
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
@@ -403,7 +403,7 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
 
     /* Create conditions based on set of wme's compiled */
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
-    condition* new_cond, *prev_cond = m_vrblz_top, *first_cond = m_vrblz_top;
+    condition* new_cond, *prev_cond = p_lhs_top, *first_cond = p_lhs_top;
     while (prev_cond->next != NULL)
         prev_cond = prev_cond->next;
 
@@ -430,9 +430,9 @@ void Repair_Manager::repair_rule(condition*& m_vrblz_top, matched_symbol_list* p
         first_cond->next = NIL;
     }
 
-    m_vrblz_top = first_cond;
+    p_lhs_top = first_cond;
 
-    dprint(DT_REPAIR, "Final variablized conditions: \n%1", m_vrblz_top);
+    dprint(DT_REPAIR, "Final variablized conditions: \n%1", p_lhs_top);
 }
 
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()

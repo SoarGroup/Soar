@@ -459,17 +459,6 @@ void Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top
     }
 }
 
-void Output_Manager::debug_print_production(TraceMode mode, production* prod)
-{
-    if (!is_trace_enabled(mode)) return;
-    if (!m_defaultAgent) return;
-
-    if (prod)
-    {
-        print_production(m_defaultAgent, prod, true);
-    }
-}
-
 void Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString)
 {
     if (m_print_actual)

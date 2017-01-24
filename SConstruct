@@ -25,7 +25,7 @@ soarversionFile.close()
 
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
-DEF_TARGETS = 'kernel cli sml_java debugger headers'.split()
+DEF_TARGETS = 'kernel cli sml_java debugger headers scripts'.split()
 
 print "================================================================================"
 print "Soar", SOAR_VERSION, "scons build script started."
@@ -173,12 +173,14 @@ env = Environment(
 # extra compilation time.  (for some reason, this will build it the first two times you compile after
 # it exists.)
 
-if ((GetOption('dbg') == None) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
+if ((GetOption('dbg') == None) or (GetOption('dbg') == False) or (FindFile('build_time_date.h', 'Core/shared/') == None)):
     cli_version_dep = open('Core/shared/build_time_date.h', 'w')
     print >> cli_version_dep, "const char* kTimestamp = __TIME__;"
     print >> cli_version_dep, "const char* kDatestamp = __DATE__;"
     print >> cli_version_dep, "//* Last build of Soar " + SOAR_VERSION + " occurred at " + time.ctime(time.time()) + " *//"
     cli_version_dep.close()
+else:
+    print "Build time stamp file was not built because this is a debug build."
     
 if GetOption('cc') != None:
     env.Replace(CC=GetOption('cc'))

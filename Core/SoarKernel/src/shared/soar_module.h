@@ -38,7 +38,7 @@ namespace soar_module
     /////////////////////////////////////////////////////////////
 
     void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list);
-    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value);
+    wme* add_module_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool isSingleton = false);
     void remove_module_wme(agent* thisAgent, wme* w);
 
     ///////////////////////////////////////////////////////////////////////////

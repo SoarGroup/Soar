@@ -198,27 +198,65 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
 
 Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    Symbol* arg;
-    char* string;
-    growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
-
-    for (; args != NIL; args = args->rest)
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
     {
-        arg = static_cast<symbol_struct*>(args->first);
-        /* --- Note use of false here--print the symbol itself, not a rereadable
+        Symbol* arg;
+        char* string;
+        growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+        for (; args != NIL; args = args->rest)
+        {
+            arg = static_cast<symbol_struct*>(args->first);
+            /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
-        string = arg->to_string();
-        add_to_growable_string(thisAgent, &gs, string); // for XML generation
-        thisAgent->outputManager->printa(thisAgent, string);
+            string = arg->to_string();
+            add_to_growable_string(thisAgent, &gs, string); // for XML generation
+            thisAgent->outputManager->printa(thisAgent, string);
+        }
+
+        xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+        free_growable_string(thisAgent, gs);
     }
-
-    xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-
-    free_growable_string(thisAgent, gs);
 
     return NIL;
 }
 
+Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
+    {
+        Symbol* arg;
+        char* string;
+
+        Symbol* lChannelSym = static_cast<Symbol*>(args->first);
+        if (!lChannelSym->is_int() || (lChannelSym->ic->value < 1) || (lChannelSym->ic->value > maxAgentTraces))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's trace command must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
+            return NIL;
+        }
+        args = args->rest;
+        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)])
+        {
+            growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+            for (; args != NIL; args = args->rest)
+            {
+                arg = static_cast<symbol_struct*>(args->first);
+                /* --- Note use of false here--print the symbol itself, not a rereadable version of it --- */
+                string = arg->to_string();
+                add_to_growable_string(thisAgent, &gs, string); // for XML generation
+                thisAgent->outputManager->printa(thisAgent, string);
+            }
+
+            xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+            free_growable_string(thisAgent, gs);
+        }
+    }
+
+    return NIL;
+}
 /* --------------------------------------------------------------------
                                 Crlf
 
@@ -919,6 +957,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("link-stm-to-ltm"), set_lti_id_rhs_function_code, 2, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trace"), trace_rhs_function_code, -1, false, true, 0, false);
 
     /* RHS functions that return a simple value */
     add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, get_lti_id_rhs_function_code, 1, true, false, 0, false);
@@ -935,7 +974,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
-    /* EBC Manager caches this rhs function since it may re-use it many times */
+    /* EBC Manager caches these rhs functions since it may re-use them many times */
     thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
 
     init_built_in_rhs_math_functions(thisAgent);

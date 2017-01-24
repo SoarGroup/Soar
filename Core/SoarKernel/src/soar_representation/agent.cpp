@@ -283,7 +283,6 @@ agent* create_soar_agent(char* agent_name)                                      
     thisAgent->dyn_counters = new std::unordered_map< std::string, uint64_t >();
 
     thisAgent->outputManager = &Output_Manager::Get_OM();
-    thisAgent->debug_params = new debug_param_container(thisAgent);
     thisAgent->command_params = new cli_command_params(thisAgent);
     thisAgent->EpMem = new EpMem_Manager(thisAgent);
     thisAgent->SMem = new SMem_Manager(thisAgent);
@@ -330,8 +329,6 @@ void destroy_soar_agent(agent* delete_agent)
     delete_agent->SMem->clean_up_for_agent_deletion();
     delete_agent->Decider->clean_up_for_agent_deletion();
 
-    delete delete_agent->debug_params;
-    delete_agent->debug_params = NULL;
     delete delete_agent->command_params;
     delete_agent->command_params = NULL;
 
@@ -376,8 +373,6 @@ void destroy_soar_agent(agent* delete_agent)
     remove_trace_format(delete_agent, false, FOR_OPERATORS_TF, evaluate_object_sym);
     remove_trace_format(delete_agent, true, FOR_STATES_TF, NIL);
     remove_trace_format(delete_agent, true, FOR_OPERATORS_TF, NIL);
-
-    dprint_identifiers(DT_ID_LEAKING);
 
     delete delete_agent->output_settings;
     delete_agent->output_settings = NULL;

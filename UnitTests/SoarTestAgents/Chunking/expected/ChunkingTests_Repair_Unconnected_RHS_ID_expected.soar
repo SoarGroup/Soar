@@ -1,0 +1,14 @@
+sp {answer*apply*query*success2*StateNoChange*t3-2
+    (state <s1> ^superstate nil ^result <l1>)
+    -->
+    (<l1> ^foo <b1> +)
+    (<b1> ^foo bar +)
+}
+
+sp {answer*apply*query*success*OpNoChange*t3-1
+    (state <s1> ^superstate nil)
+    -->
+    (<s1> ^result <l1> +)
+    (<l1> ^D Y +)
+    (link-stm-to-ltm <l1> 2)
+}

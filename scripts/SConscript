@@ -1,0 +1,20 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Alex Turner <alexlt@umich.edu>
+
+import os, sys, platform
+Import('env', 'InstallDir')
+
+settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
+vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar', 'VisualSoar.jartmp')
+if os.name == 'nt':
+    jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.bat')
+    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.bat')
+elif sys.platform == 'darwin':
+    jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.command')
+    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.command')
+else:
+    jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.sh')
+    vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.sh')
+
+env.Alias('scripts', settings_install + jd_install + vs_install + vsc_install)

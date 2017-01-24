@@ -15,7 +15,6 @@
 #include <ebc_backtrace.cpp>
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
-#include <ebc_map.cpp>
 #include <ebc_merge.cpp>
 #include <ebc_print.cpp>
 #include <ebc_repair.cpp>
@@ -35,7 +34,6 @@
 #include <lexer.cpp>
 #include <mem.cpp>
 #include <memory_manager.cpp>
-#include <output_db.cpp>
 #include <output_errors.cpp>
 #include <output_manager.cpp>
 #include <output_print.cpp>

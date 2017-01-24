@@ -491,6 +491,7 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
         sym->tc_num = 0;
+        sym->singleton.possible = false;
         sym->epmem_hash = 0;
         sym->epmem_valid = 0;
         sym->smem_hash = 0;

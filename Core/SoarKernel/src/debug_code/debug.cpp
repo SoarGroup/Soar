@@ -41,19 +41,19 @@
 
 using namespace soar_module;
 
-bool symbol_matches_string(Symbol* sym, const char* match)
+bool break_if_symbol_matches_string(Symbol* sym, const char* match)
 {
     if (sym->to_string() == match)
         return true;
     return false;
 }
-bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
+bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
 {
-    if(symbol_matches_string(w->id, match_id) && symbol_matches_string(w->attr, match_attr) && symbol_matches_string(w->value, match_value))
+    if(break_if_symbol_matches_string(w->id, match_id) && break_if_symbol_matches_string(w->attr, match_attr) && break_if_symbol_matches_string(w->value, match_value))
         return true;
     return false;
 }
-bool id_matches(uint64_t lID, uint64_t lID_to_match)
+bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match)
 {
     if (lID == lID_to_match)
         return true;
@@ -103,6 +103,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
+    mode_info[DT_VALIDATE].prefix =                     strdup("Validate| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");
@@ -161,22 +162,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     debug_set_mode_info(mode_info, false);
 #endif
 }
-
-debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
-{
-}
-
-#ifdef DEBUG_REFCOUNT_DB
-
-#include "output_manager.h"
-
-void debug_store_refcount(Symbol* sym, bool isAdd)
-{
-    std::string caller_string = get_stacktrace(isAdd ? "add_ref" : "remove_ref");
-    debug_agent->outputManager->store_refcount(sym, caller_string.c_str() , isAdd);
-}
-
-#endif
 
 #ifdef DEBUG_MAC_STACKTRACE
 std::string get_stacktrace(const char* prefix)
@@ -351,25 +336,15 @@ void debug_test(int type)
         case 5:
         {
 //            print_internal_symbols(thisAgent);
-            dprint_identifiers(DT_DEBUG);
             break;
         }
         case 6:
         {
-            dprint_variablization_table(DT_DEBUG);
-            dprint_o_id_tables(DT_DEBUG);
-            dprint_attachment_points(DT_DEBUG);
-            dprint_constraints(DT_DEBUG);
-            dprint_merge_map(DT_DEBUG);
-            dprint_ovar_to_o_id_map(DT_DEBUG);
-            dprint_unification_map(DT_DEBUG);
-            dprint_identity_debug_map(DT_DEBUG);
-            dprint_tables(DT_DEBUG);
             break;
         }
         case 7:
             /* -- Print all instantiations -- */
-            dprint_all_inst(DT_DEBUG);
+            thisAgent->outputManager->print_all_inst(DT_DEBUG);
             break;
         case 8:
         {

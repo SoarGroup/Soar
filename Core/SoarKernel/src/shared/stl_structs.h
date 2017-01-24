@@ -31,6 +31,17 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
+
+typedef struct bool_quadruple_struct
+{
+        bool id;
+        bool attr;
+        bool value;
+        bool referent;
+
+        bool_quadruple_struct(uint64_t new_id = false, uint64_t new_attr = false, uint64_t new_value = false, uint64_t new_referent = false): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} bool_quadruple;
+
 typedef struct rhs_quadruple_struct
 {
         rhs_value id;
@@ -49,8 +60,6 @@ typedef struct sym_identity_struct {
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
         uint64_t            to_identity;
-        Symbol*             from_symbol;
-        Symbol*             to_symbol;
         IDSet_Mapping_Type  mappingType;
 } identity_mapping;
 
@@ -86,6 +95,5 @@ typedef struct attachment_struct
         attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
 
 } attachment_point;
-
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_ */

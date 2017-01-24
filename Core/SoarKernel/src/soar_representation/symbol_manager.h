@@ -18,15 +18,10 @@
 bool is_DT_mode_enabled(TraceMode mode);
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
-    /* -- Reference count functions for symbols
-     *      All symbol creation/copying use these now, so we can avoid accidental leaks more easily.
-     *      If DEBUG_REFCOUNT_DB is defined, an alternate version of the function is used
-     *      that sends a bunch of trace information to the debug database for deeper analysis of possible
-     *      bugs. -- */
     std::string get_stacktrace(const char* prefix);
 #endif
 
-class Symbol_Manager {
+class EXPORT Symbol_Manager {
 
         friend Output_Manager;
 
@@ -88,25 +83,12 @@ class Symbol_Manager {
 
         //-- symbol_add_ref -----------------
 
-        #ifdef DEBUG_REFCOUNT_DB
-        #define symbol_add_ref(sym) \
-            ({debug_store_refcount(sym, true); \
-                symbol_add_ref_func(sym); })
-
-        inline void symbol_add_ref_func(Symbol* x)
-        #else
         inline void symbol_add_ref(Symbol* x)
-        #endif
         {
-        #ifdef DEBUG_REFCOUNT_DB
-            //dprint(DT_REFCOUNT_ADDS, "ADD-REF %t -> %u\n", x, (x)->reference_count + 1);
-        #else
-//            dprint(DT_REFCOUNT_ADDS, "ADD-REF %y -> %u\n", x, (x)->reference_count + 1);
-            if (is_DT_mode_enabled(DT_REFCOUNT_ADDS))
-            {
-                std::cout << "ADD-REF " << x->to_string() << "->" <<  (x->reference_count + 1) << "\n";
-            }
-        #endif
+//            if (is_DT_mode_enabled(DT_REFCOUNT_ADDS))
+//            {
+//                std::cout << "ADD-REF " << x->to_string() << "->" <<  (x->reference_count + 1) << "\n";
+//            }
 
         #ifdef DEBUG_TRACE_REFCOUNT_FOR
             std::string strName(x->to_string());
@@ -126,25 +108,12 @@ class Symbol_Manager {
 
         //-- symbol_remove_ref -----------------
 
-        #ifdef DEBUG_REFCOUNT_DB
-        #define symbol_remove_ref(&sym) \
-            ({debug_store_refcount(sym, false); \
-                symbol_remove_ref_func(sym);})
-
-        inline void symbol_remove_ref_func(Symbol** x)
-        #else
         inline void symbol_remove_ref(Symbol** x)
-        #endif
         {
-        #ifdef DEBUG_REFCOUNT_DB
-            //dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", x, (x)->reference_count - 1);
-        #else
-//            dprint(DT_REFCOUNT_REMS, "REMOVE-REF %y -> %u\n", *x, (*x)->reference_count - 1);
 //            if (is_DT_mode_enabled(DT_REFCOUNT_REMS))
 //            {
 //                std::cout << "REMOVE-REF " << (*x)->to_string() << "->" <<  ((*x)->reference_count - 1) << "\n";
 //            }
-        #endif
         //    assert((x)->reference_count > 0);
             (*x)->reference_count--;
 

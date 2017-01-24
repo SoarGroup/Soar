@@ -1,0 +1,16 @@
+# test for initial state
+# makes sure that the right wmes are created and no others
+# this means the test will need to be updated when support for additional modules is added
+# if those modules add new links to states
+
+sp {report*initial-state
+#This is what it should be.  If it's not... either update this or something went wrong
+	(state <S1> ^epmem <E1> ^io <I1> ^reward-link <R1> ^smem <S2> ^superstate nil
+       ^type state)
+	(<E1> ^command <C1> ^present-id 1 ^result <R2>)
+	(<I1> ^input-link <I2> ^output-link <I3>)
+	(<S2> ^command <C2> ^result <R3>)
+-->
+	(succeeded)
+	(write (crlf) |correct initial state detected|)
+}

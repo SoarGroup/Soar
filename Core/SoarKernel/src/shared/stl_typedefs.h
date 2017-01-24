@@ -35,6 +35,8 @@
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
+    typedef std::set< production_record*, std::less< production_record* >,
+                      soar_module::soar_memory_pool_allocator< production_record* > >                               production_record_set;
     typedef std::set< instantiation*, std::less< instantiation* >,
                       soar_module::soar_memory_pool_allocator< instantiation* > >                                   inst_set;
     typedef std::set< instantiation_record*, std::less< instantiation_record* >,
@@ -102,6 +104,7 @@
     typedef std::list< wme* >                                   wme_list;
 
     typedef std::set< instantiation* >                          inst_set;
+    typedef std::set< production_record* >                      production_record_set;
     typedef std::set< instantiation_record* >                   inst_record_set;
     typedef std::set< Symbol* >                                 symbol_set;
     typedef std::set< wma_decay_element* >                      wma_decay_set;
