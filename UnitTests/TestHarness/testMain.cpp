@@ -34,7 +34,6 @@
 #include "MiscTests.hpp"
 #include "MultiAgentTest.hpp"
 #include "SimpleListener.hpp"
-#include "SMemEpMemCombinedFunctionalTests.hpp"
 #include "SMemFunctionalTests.hpp"
 #include "TokenizerTest.hpp"
 #include "wma/WmaFunctionalTests.hpp"
@@ -152,6 +151,8 @@ int main(int argc, char** argv)
 		}
 	}
 
+	usage(argv[0]);
+
 	const bool ShowTestOutput = false;
 	
 	std::condition_variable_any variable;
@@ -174,7 +175,6 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(IOTests);
 	TEST_DECLARATION(MiscTests);
 	TEST_DECLARATION(MultiAgentTest);
-	TEST_DECLARATION(SMemEpMemCombinedFunctionalTests);
 	TEST_DECLARATION(SMemFunctionalTests);
 	TEST_DECLARATION(TokenizerTest);
 	TEST_DECLARATION(WmaFunctionalTests);
@@ -267,7 +267,11 @@ int main(int argc, char** argv)
 			}
 			else if (!runner->failed)
 			{
+#ifndef _WIN32
 				std::cout << "✅" << std::endl;
+#else
+                std::cout << "Passed." << std::endl;
+#endif
 				std::cout.flush();
 
                 xml << " />" << std::endl;
