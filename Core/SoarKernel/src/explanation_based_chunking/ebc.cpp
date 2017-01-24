@@ -100,11 +100,11 @@ void Explanation_Based_Chunker::reinit()
     grounds_tc                          = 0;
     m_results_match_goal_level          = 0;
     m_results_tc                        = 0;
-    m_reliable                          = false;
+    m_correctness_issue_possible        = true;
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_lhs                         = NULL;
+    m_lhs                               = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;

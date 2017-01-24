@@ -30,9 +30,9 @@ typedef struct instantiation_struct
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-    bool                            reliable;
+    bool                            tested_quiescence;
     bool                            tested_local_negation;
-    bool                            creates_ltm_instance;
+    bool                            tested_LTM;
     bool                            creates_deep_copy;
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/

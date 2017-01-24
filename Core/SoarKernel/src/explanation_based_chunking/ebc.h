@@ -145,7 +145,7 @@ class Explanation_Based_Chunker
         uint64_t            m_current_bt_inst_id;
 
         /* Flags for potentialissues encountered during dependency analysis */
-        bool                m_reliable;
+        bool                m_correctness_issue_possible;
         bool                m_tested_quiescence;
         bool                m_tested_local_negation;
         bool                m_tested_deep_copy;

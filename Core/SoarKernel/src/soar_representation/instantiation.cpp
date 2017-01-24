@@ -1058,10 +1058,10 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->rete_wme = w;
 
     inst->backtrace_number = 0;
-    inst->reliable = true;
+    inst->tested_quiescence = false;
     inst->tested_local_negation = false;
     inst->creates_deep_copy = false;
-    inst->creates_ltm_instance = false;
+    inst->tested_LTM = false;
 
     inst->in_ms = false;
     inst->in_newly_created = false;
@@ -1601,7 +1601,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
-    inst->creates_ltm_instance = true;
+    inst->tested_LTM = true;
 
     thisAgent->SMem->clear_instance_mappings();
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);

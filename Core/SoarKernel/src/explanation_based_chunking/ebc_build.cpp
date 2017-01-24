@@ -487,7 +487,6 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 {
                     report_local_negation(cc->cond);
                 }
-                m_reliable = false;
             }
             has_local_negation = true;
         }
@@ -498,6 +497,11 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     {
         m_tested_local_negation = true;
         thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
+        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
+        {
+            thisAgent->stop_soar = true;
+            thisAgent->reason_for_stopping = "Chunking issue detected:  Problem-solving contained negated reasoning about sub-state structures.";
+        }
     }
 
     if (prev_vrblz)
@@ -866,9 +870,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     /* Set up a new instantiation and ID for this chunk's refracted match */
     init_instantiation(thisAgent, m_chunk_inst, NULL);
-    m_chunk_inst->tested_local_negation             = m_inst->tested_local_negation;
-    m_chunk_inst->creates_deep_copy                 = m_inst->creates_deep_copy;
-    m_chunk_inst->creates_ltm_instance              = m_inst->creates_ltm_instance;
+    m_chunk_inst->tested_local_negation     = m_inst->tested_local_negation;
+    m_chunk_inst->creates_deep_copy         = m_inst->creates_deep_copy;
+    m_chunk_inst->tested_LTM                = m_inst->tested_LTM;
+    m_chunk_inst->tested_quiescence         = m_inst->tested_quiescence;
     m_chunk_new_i_id = m_chunk_inst->i_id;
 
     #ifdef DEBUG_ONLY_CHUNK_ID
@@ -901,7 +906,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     /* Determine which WMEs in the topstate were relevent to problem-solving */
-    m_reliable = true;
+    m_correctness_issue_possible = false;
     m_tested_deep_copy = false;
     m_tested_local_negation = false;
     m_tested_ltm_recall = false;
@@ -937,14 +942,18 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
 
-    if ((m_rule_type == ebc_chunk) && !m_reliable)
+    /* Apply EBC correctness and (<s> ^quiescence t) filters that prevents rule learning */
+    if ((m_tested_local_negation && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS]) ||
+        (m_tested_ltm_recall && !ebc_settings[SETTING_EBC_ALLOW_OPAQUE])
+        || m_tested_quiescence)
+    {
+        m_correctness_issue_possible = true;
+    }
+
+    /* Apply EBC correctness filters */
+    if ((m_rule_type == ebc_chunk) && m_correctness_issue_possible)
     {
         m_rule_type = ebc_justification;
-        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
-        {
-            thisAgent->stop_soar = true;
-            thisAgent->reason_for_stopping = "Chunking issue detected:  Problem-solving contained negated reasoning about sub-state structures.";
-        }
     }
 
     if ((m_rule_type == ebc_justification) && !thisAgent->explanationMemory->isRecordingJustifications())
@@ -1049,12 +1058,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->prod                              = m_prod;
     m_chunk_inst->prod_name                         = m_prod->name;
     thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
-    m_chunk_inst->reliable                          = m_reliable;
     m_chunk_inst->in_ms                             = true;                     /* set true for now, we'll find out later... */
     m_chunk_inst->in_newly_created                  = true;
     m_chunk_inst->tested_local_negation             = m_tested_local_negation;
     m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
-    m_chunk_inst->creates_ltm_instance              = m_tested_ltm_recall;
+    m_chunk_inst->tested_LTM                        = m_tested_ltm_recall;
+    m_chunk_inst->tested_quiescence                 = m_tested_quiescence;
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
