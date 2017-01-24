@@ -1,0 +1,70 @@
+sp {init-rl
+    (state <s> ^superstate nil)
+-->
+    (<s> ^rl-item 0.9 0.6
+         ^rl-item2 0.7
+         ^rl-id <tp> 
+         ^rl-id2 <tp2>
+         ^test-done 1)
+    (<tp> ^value 0.9)
+    (<tp2> ^value <dummy1>)
+}
+
+sp {propose
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o> +)
+}
+  
+sp {template1
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+
+sp {template2
+    :template
+    (state <s> ^operator <o> +
+               ^rl-id.value <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+
+sp {template3
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <v>
+               ^rl-id.value <v>
+               ^rl-id2.value {<> <v>})
+-->
+    (<s> ^operator <o> = 0)
+#    (<s> ^foo bar)
+}
+
+# Note:  Setting numeric preference to <v> in following production
+#        will crash soar.  Long-standing bug.
+
+sp {template4
+    :template
+    (state <s> ^operator <o> +
+               ^rl-item <i>
+               ^rl-item2 {< <i> <i2>}
+               ^rl-id <id>
+               ^rl-id2 {<> <id> <id2> })
+    (<id> ^value <v>)
+-->
+    (<s> ^operator <o> = <i2>)
+}
+
+sp {propose*stop
+   (state <s> ^superstate.superstate nil)
+-->
+    (succeeded)
+    (interrupt)
+}
+
+
+#run
+#ctf expected/chunk26b.soar print -rfi

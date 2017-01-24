@@ -211,7 +211,7 @@ void print_condition_list(agent* thisAgent, condition* conds,
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
         id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, true, &removed_goal_test, &removed_impasse_test);
-        thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
+        thisAgent->id_test_to_match = copy_test(thisAgent, id_test->eq_test);
 
         /* --- collect all cond's whose id test matches this one --- */
         conds_for_this_id = dc;
@@ -397,6 +397,7 @@ void print_action_list(agent* thisAgent, action* actions,
         if (a->type == FUNCALL_ACTION)
         {
             thisAgent->memoryManager->free_with_pool(MP_dl_cons, dc);
+            lStr.clear();
             thisAgent->outputManager->rhs_value_to_string(a->value, lStr);
             xml_begin_tag(thisAgent, kTagAction);
             thisAgent->outputManager->printa(thisAgent, lStr.c_str());
@@ -692,7 +693,9 @@ void print_wme(agent* thisAgent, wme* w)
 
     if (wma_enabled(thisAgent))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, " [%f]", wma_get_wme_activation(thisAgent, w, true));
+        char buf[51];
+        SNPRINTF(buf, 50, " [%0.2g]", wma_get_wme_activation(thisAgent, w, true));
+        thisAgent->outputManager->printa(thisAgent, buf);
     }
 
     if (w->acceptable)

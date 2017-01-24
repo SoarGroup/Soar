@@ -1,0 +1,119 @@
+chunk always
+smem --enable
+
+smem --add {
+    (<a> ^player @23 @33)
+    (@23 ^name |michael jordan| ^number 23 ^qualities.first GOT)
+    (@33 ^name |scottie pippen| ^number 33 ^qualities.first Smooth)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^step 1)
+}
+
+sp {propose*start-agent
+    (state <s> ^superstate <ss>)
+    (<ss> ^superstate nil -^substate-done)
+-->
+    (<s> ^operator.name start)
+}
+
+sp {step*1
+    (state <s> ^operator.name start
+               ^step 1)
+-->
+    (<s> ^query <cue>)
+    (<cue> ^number 23)
+    (write (crlf) |Step 1: Querying | <cue>)
+    }
+
+sp {step*2
+    (state <s> ^operator.name start
+               ^step 2
+               ^queried1 <q>
+               ^superstate <ss>)
+-->
+    (<s> ^step 2 - 3 +)
+    (<ss> ^result1 <q>)
+    (write (crlf) |Step 2: Creating chunk for result 1 | <q>)
+}
+
+sp {step*3
+    (state <s> ^operator.name start
+               ^step 3)
+-->
+    (<s> ^query <cue>)
+    (<cue> ^number 33)
+    (write (crlf) |Step 3: Querying | <cue>)
+    }
+
+sp {step*4
+    (state <s> ^operator.name start
+               ^step 4
+               ^queried3 <q>
+               ^superstate <ss>)
+    (<ss> ^result1 <q_old>)
+-->
+    (<s> ^step 4 - 5 +)
+    (<ss> ^result2 <q> ^result3 <q_old>)
+    (write (crlf) |Step 2: Creating chunk for result 2 | <q>)
+}
+
+sp {propose*clear-agent
+    (state <s> ^superstate nil 
+               -^substate-done
+                ^result1 <q1> ^result2 <q2> ^result3 <q3>)
+-->
+    (<s> ^operator.name clear)
+}
+
+sp {step*5
+    (state <s> ^operator.name clear
+               ^result1 <q1> ^result2 <q2> ^result3 <q3>)
+-->
+    (<s> ^substate-done true +
+         ^result1 <q1> - 
+         ^result2 <q2> - 
+         ^result3 <q3> -)
+    (write (crlf) |Step 5: Clearing results |)
+    (interrupt)
+}
+
+# To  test that the links are really created when the learned rules fires, run the agent, call 
+# soar init, source this rule and step.  It should create only a Scottie Pippen wme that is linked.  
+# result3, which came from the mj LTM, should not be linked.  We should find a way to test this 
+# automatically in the unit test.
+
+#sp {test*twice
+#    (state <s> ^superstate nil)
+#--> 
+#    (<s> ^result1 <r1>)
+#}
+
+sp {anywhere*query
+    (state <s> ^operator <o>
+               ^query <cue>
+               ^smem.command <command>)
+-->
+    (<command> ^query <cue> ^depth 5)
+    (write (crlf) |Querying lti satisfying | <cue> | from smem |)
+}
+
+sp {anywhere*query*succeed
+    (state <s> ^operator <o>
+               ^smem.result <sres>
+               ^smem.command <command>
+               ^query <cue>
+               ^step <n>)
+    (<command> ^query <cue> ^depth <d>)
+    (<sres> ^success <cue>  ^retrieved <instance>)
+-->
+    (<s> ^query <a> -
+         ^(concat |queried| <n>) <instance>
+         ^step <n> - (+ 1 <n>) +)
+    (<command> ^query <cue> - ^depth <d> -)
+    (write (crlf) |Succesfully queried new instance of LTI based on cue | <cue> |: | <instance> )
+}
+

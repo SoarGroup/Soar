@@ -1,0 +1,85 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+smem --enable
+smem --add {
+   (<L1> ^value bar)
+   (<L2> ^value foo ^next <L1>)
+}
+
+sp {propose*top-op
+   (state <s> ^superstate nil
+             -^result <cr>
+             -^name)
+-->
+   (<s> ^operator.name top-op)
+}
+
+sp {apply*top-op*name
+   (state <s> ^operator.name top-op)
+-->
+   (<s> ^name top)
+}
+
+sp {apply*top-op*query
+   (state <s> ^name top
+              ^smem.command <command>)
+-->
+   (<command> ^query.value foo)
+}
+
+sp {apply*top-op*copy-query-result
+   (state <s> ^name top
+              ^smem.result <sres>)
+   (<sres> ^success
+           ^retrieved <L2>)
+-->
+   (<s> ^result1 <L2>)
+}
+
+sp {propose*sub-op
+   (state <s> ^superstate.superstate nil)
+-->
+   (<s> ^operator.name sub-op)
+}
+
+sp {elab*result1
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil
+         ^result1 <L2>)
+-->
+   (<s> ^result-ss1 <L2>)
+}
+
+sp {apply*sub-op*retrieve-lti
+   (state <s> ^operator.name sub-op
+              ^result-ss1.next <L1>
+              ^smem.command <scmd>)
+   (<L1> -^value)
+-->
+   (<scmd> ^retrieve <L1>)
+}
+
+#Try this with superstate smem link
+sp {apply*sub-op*make-chunk
+   (state <s> ^operator.name sub-op
+              ^smem.result <sres>
+              ^result-ss1 <L2>
+              ^superstate <ss>)
+   (<sres> ^success
+           ^retrieved <L1>)
+-->
+   (<ss> ^result <L>)
+   (<L> ^result1 <L1>
+        ^result2 <L2>)
+}
+
+sp {success
+   (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+   (succeeded)
+   (interrupt)
+}
+

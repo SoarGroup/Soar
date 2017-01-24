@@ -15,12 +15,12 @@
 #include "instantiation.h"
 #include "preference.h"
 #include "print.h"
-#include "output_db.h"
 #include "production_reorder.h"
 #include "rete.h"
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "soar_instance.h"
+#include "symbol.h"
 #include "test.h"
 #include "working_memory.h"
 #include "xml.h"
@@ -54,11 +54,6 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
         }
 
         update_printer_columns(pSoarAgent, msg);
-
-        if (db_mode)
-        {
-            m_db->print_db(trace_msg, mode_info[No_Mode].prefix, msg);
-        }
     }
 }
 /* A way to do variadic printing with std::strings that might be worth using,
@@ -92,16 +87,6 @@ void Output_Manager::printa(agent* pSoarAgent, const char* msg)
 //        throw ;
 //    }
 //}
-void Output_Manager::printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg)
-{
-//    soar_module::sqlite_statement*   target_statement = NIL;
-
-    if (((msgType == trace_msg) && mode_info[mode].enabled) ||
-            ((msgType == debug_msg) && mode_info[mode].enabled))
-    {
-        m_db->print_db(msgType, mode_info[mode].prefix, msg);
-    }
-}
 
 void Output_Manager::print_sf(const char* format, ...)
 {
@@ -272,23 +257,6 @@ void Output_Manager::buffer_start_fresh_line(agent* thisAgent, std::string &dest
     }
 }
 
-void Output_Manager::debug_start_fresh_line(TraceMode mode)
-{
-    if (!is_trace_enabled(mode)) return;
-
-    if (!m_defaultAgent)
-    {
-        std::cout << std::endl;
-        return;
-    }
-
-    if ((global_printer_output_column != 1) || (m_defaultAgent->output_settings->printer_output_column != 1))
-    {
-        printa(m_defaultAgent, "\n");
-    }
-
-}
-
 void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list pargs)
 {
     Symbol* sym;
@@ -337,7 +305,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case 'i':
+                    case 'd':
                     {
                         destString += std::to_string(va_arg(args, int64_t));
                     }
@@ -349,6 +317,12 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
+                    case 'f':
+                    {
+                        destString += std::to_string(va_arg(args, double));
+                    }
+                    break;
+
                     case 't':
                     {
                         t = va_arg(args, test);
@@ -357,6 +331,29 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                             test_to_string(t, destString);
                         } else {
                             destString += '#';
+                        }
+                    }
+                    break;
+
+                    case '-':
+                    case '=':
+                    {
+                        indent_amount = 0;
+                        next_position = (this->get_printer_output_column(thisAgent) + destString.length());
+                        for (next_column = 0; next_column < MAX_COLUMNS; next_column++)
+                        {
+                            if (next_position < m_column_indent[next_column]) {
+                                indent_amount = (m_column_indent[next_column] - next_position);
+                                break;
+                            }
+                        }
+                        if (indent_amount > 0) {
+                            if (ch == '-')
+                            {
+                                destString.append(indent_amount , ' ');
+                            } else {
+                                destString.append(indent_amount , '.');
+                            }
                         }
                     }
                     break;
@@ -398,54 +395,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         destString += "[";
                                         destString += std::to_string(ct->identity);
                                         destString += "]";
-                                    } else {
-                                        test_to_string(ct, destString);
-                                    }
-                                    destString += ' ';
-                                }
-                                destString += '}';
-                            }
-                        } else {
-                            destString += '#';
-                        }
-                    }
-                    break;
-
-                    case 'o':
-                    {
-                        t = va_arg(args, test);
-                        ct = NULL;
-                        if (t)
-                        {
-                            if (t->type != CONJUNCTIVE_TEST)
-                            {
-                                if (t->identity)
-                                {
-                                    if (t->type != EQUALITY_TEST)
-                                    {
-                                        destString += test_type_to_string(t->type);
-                                        destString += ' ';
-                                    }
-                                    sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(t->identity);
-                                    if (sym) destString += sym->to_string(true); else destString += '#';
-                                } else {
-                                    test_to_string(t, destString);
-                                }
-                            } else {
-                                destString += "{ ";
-                                for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
-                                {
-                                    ct = static_cast<test>(c->first);
-                                    assert(ct);
-                                    if (ct->identity)
-                                    {
-                                        if (ct->type != EQUALITY_TEST)
-                                        {
-                                            destString += test_type_to_string(ct->type);
-                                            destString += ' ';
-                                        }
-                                        sym = thisAgent->explanationBasedChunker->get_ovar_for_o_id(ct->identity);
-                                        if (sym) destString += sym->to_string(true); else destString += '#';
                                     } else {
                                         test_to_string(ct, destString);
                                     }
@@ -535,14 +484,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case 'd':
-                    {
-                        long argument = va_arg(args, long);
-                        destString += std::to_string(argument);
-                    }
-                    break;
-
-                    case 'f':
+                    case 'e':
                     {
                         if (thisAgent->output_settings->printer_output_column != 1)
                         {
@@ -609,12 +551,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case '8':
-                    {
-                        WM_to_string(thisAgent, destString);
-                    }
-                    break;
-
                     case 'c':
                     {
                         destString += static_cast<char>(va_arg(args, int));
@@ -627,28 +563,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                     }
                     break;
 
-                    case '-':
-                    case '=':
-                    {
-                        indent_amount = 0;
-                        next_position = (this->get_printer_output_column(thisAgent) + destString.length());
-                        for (next_column = 0; next_column < MAX_COLUMNS; next_column++)
-                        {
-                            if (next_position < m_column_indent[next_column]) {
-                                indent_amount = (m_column_indent[next_column] - next_position);
-                                break;
-                            }
-                        }
-                        if (indent_amount > 0) {
-                            if (ch == '-')
-                            {
-                                destString.append(indent_amount , ' ');
-                            } else {
-                                destString.append(indent_amount , '.');
-                            }
-                        }
-                    }
-                    break;
                     default:
                     {
                         destString += '%';

@@ -1,0 +1,11 @@
+sp {answer*condition-match*elaborate*matching-argument-object*StateNoChange*t5-1
+    (state <s1> ^superstate nil ^condition <c1> ^topstate <s2>)
+    (<c1> ^result <n2> ^result { <> <n2> <n1> } ^name <c2>)
+    (<n1> ^type <c2> ^num <c4> ^id <c3>)
+    -->
+    (<s2> ^result <o1> +)
+    (<o1> ^object <n1> + ^object <n2> +)
+}
+
+
+

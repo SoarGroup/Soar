@@ -137,12 +137,12 @@ public class SoarCommands
 
     public String getStopBeforeCommand(smlPhase phase)
     {
-        return "set-stop-phase --before --" + getPhaseName(phase);
+        return "soar stop-phase " + getPhaseName(phase);
     }
 
     public String getGetStopBeforeCommand()
     {
-        return "set-stop-phase --before";
+        return "soar stop-phase ";
     } // No phase => get value
 
     public String getPreferencesCommand(String arg)
@@ -172,7 +172,7 @@ public class SoarCommands
 
     public String getInitSoarCommand()
     {
-        return "init-soar";
+        return "soar init";
     }
 
     public String getLoadReteCommand(String arg)
@@ -187,112 +187,112 @@ public class SoarCommands
 
     public String getLogNewCommand(String arg)
     {
-        return "log \"" + arg + "\"";
+        return "output log \"" + arg + "\"";
     }
 
     public String getLogAppendCommand(String arg)
     {
-        return "log --append \"" + arg + "\"";
+        return "output log --append \"" + arg + "\"";
     }
 
     public String getLogCloseCommand()
     {
-        return "log --close";
+        return "output log --close";
     }
 
     public String getLogStatusCommand()
     {
-        return "log --query";
+        return "output log --query";
     }
 
     public String getWatchStatusCommand()
     {
-        return "watch";
+        return "trace";
     }
 
     public String getWatchDecisionsCommand(boolean state)
     {
-        return "watch --decisions" + (state ? "" : " remove");
+        return "trace --decisions" + (state ? "" : " remove");
     }
 
     public String getWatchPhasesCommand(boolean state)
     {
-        return "watch --phases" + (state ? "" : " remove");
+        return "trace --phases" + (state ? "" : " remove");
     }
 
     public String getWatchUserProductionsCommand(boolean state)
     {
-        return "watch --productions" + (state ? "" : " remove");
+        return "trace --productions" + (state ? "" : " remove");
     }
 
     public String getWatchChunksCommand(boolean state)
     {
-        return "watch --chunks" + (state ? "" : " remove");
+        return "trace --chunks" + (state ? "" : " remove");
     }
 
     public String getWatchJustificationsCommand(boolean state)
     {
-        return "watch --justifications" + (state ? "" : " remove");
+        return "trace --justifications" + (state ? "" : " remove");
     }
 
     public String getWatchWmesCommand(boolean state)
     {
-        return "watch --wmes" + (state ? "" : " remove");
+        return "trace --wmes" + (state ? "" : " remove");
     }
 
     public String getWatchPreferencesCommand(boolean state)
     {
-        return "watch --preferences" + (state ? "" : " remove");
+        return "trace --preferences" + (state ? "" : " remove");
     }
 
     public String getWatchLevelCommand(int level)
     {
-        return "watch --level " + level;
+        return "trace --level " + level;
     }
 
     public String getWatchWmesNoneCommand()
     {
-        return "watch --nowmes";
+        return "trace --nowmes";
     }
 
     public String getWatchWmesTimeTagsCommand()
     {
-        return "watch --timetags";
+        return "trace --timetags";
     }
 
     public String getWatchWmesFullCommand()
     {
-        return "watch --fullwmes";
+        return "trace --fullwmes";
     }
 
     public String getWatchAliasesCommand(boolean state)
     {
-        return "watch --aliases" + (state ? "" : " remove");
+        return "trace --aliases" + (state ? "" : " remove");
     }
 
     public String getWatchBacktracingCommand(boolean state)
     {
-        return "watch --backtracing" + (state ? "" : " remove");
+        return "trace --backtracing" + (state ? "" : " remove");
     }
 
     public String getWatchLearnPrintCommand()
     {
-        return "watch --learning print";
+        return "trace --learning print";
     }
 
     public String getWatchLearnFullCommand()
     {
-        return "watch --learning fullprint";
+        return "trace --learning fullprint";
     }
 
     public String getWatchLearnNoneCommand()
     {
-        return "watch --learning noprint";
+        return "trace --learning noprint";
     }
 
     public String getWatchLoadingCommand(boolean state)
     {
-        return "watch --loading " + (state ? "" : " remove");
+        return "trace --loading " + (state ? "" : " remove");
     }
 
     public String getPhaseName(smlPhase phase)

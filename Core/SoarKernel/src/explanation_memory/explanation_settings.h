@@ -20,7 +20,8 @@ class Explainer_Parameters: public soar_module::param_container
         soar_module::boolean_param* all;
         soar_module::boolean_param* include_justifications;
 
-        soar_module::boolean_param* list_all;
+        soar_module::boolean_param* list_chunks;
+        soar_module::boolean_param* list_justifications;
         soar_module::boolean_param* record_chunk;
         soar_module::boolean_param* explain_chunk;
         soar_module::boolean_param* explain_instantiation;

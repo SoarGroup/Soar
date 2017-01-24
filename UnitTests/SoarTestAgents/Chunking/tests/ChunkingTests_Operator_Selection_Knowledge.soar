@@ -1,0 +1,412 @@
+chunk always
+chunk max-chunks 200
+soar max-goal-depth 8 
+chunk add-osk on
+# watch --learn 2
+
+multi-attributes acceptable-test 23
+multi-attributes prohibit-test 23
+multi-attributes require-test 23
+multi-attributes reject-test 23
+multi-attributes better-test 23
+multi-attributes best-test 23
+multi-attributes worst-test 23
+multi-attributes uindifferent-test 23
+multi-attributes bindifferent-test 23
+multi-attributes nindifferent-test 23
+multi-attributes tests 10
+multi-attributes numbers 23
+multi-attributes numerics 3
+multi-attributes worse 3
+multi-attributes betters 23
+multi-attributes binary-indifferents 3
+multi-attributes random-numerics 3
+multi-attributes unary-indifferents 23
+multi-attributes worsts 23
+multi-attributes bests 23
+multi-attributes requires 3
+multi-attributes rejects 3
+multi-attributes prohibits 3
+multi-attributes random-numerics 23
+
+sp {init-superstate
+   (state <s> ^superstate nil)
+-->
+   (<s> ^name top-state
+        ^acceptable-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^prohibit-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^require-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^reject-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^better-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^worse-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^best-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^worst-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^uindifferent-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^bindifferent-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^nindifferent-test 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+        ^tests <test1> <test2> <test3> <test4> <test5> <test6> <test7> <test8> <test9> <test10> <test11> <test12>
+                ^numbers 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
+   (<test1> ^name test1
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 1
+            ^operators 5
+            ^prohibits 1 3
+            ^rejects 5
+            ^worsts 2)
+   (<test2> ^name test2
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 2
+            ^operators 3
+            ^numerics <bnp1> <bnp2> <bnp3>)
+   (<bnp1> ^value 1 ^referent 0.5)
+   (<bnp2> ^value 2 ^referent 0.6)
+   (<bnp3> ^value 3 ^referent 0.7)
+   (<test3> ^name test3
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 3
+            ^operators 3
+            ^betters <bbp1> <bbp2>
+            ^worse <bwp1>)
+   (<bbp1> ^value 2 ^referent 3)
+   (<bwp1> ^value 3 ^referent 1)
+   (<bbp2> ^value 1 ^referent 2)
+   (<test4> ^name test4
+            ^impasse-type nc
+            ^test-finished 1
+            ^test-num 4
+            ^operators 23
+            ^random-numerics 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
+   (<test5> ^name test5
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 5
+            ^operators 6
+            ^requires 1)
+   (<test6> ^name test6
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 6
+            ^operators 3
+            ^numerics <bnp1>
+            ^unary-indifferents 2
+            ^binary-indifferents <bip4> <bip2>)
+   (<bip1> ^value 1 ^referent 2)
+   (<bip2> ^value 1 ^referent 3)
+   (<bip3> ^value 1 ^referent 4)
+   (<bip4> ^value 2 ^referent 3)
+   (<bip5> ^value 2 ^referent 4)
+   (<bip6> ^value 3 ^referent 4)
+   (<bip7> ^value 5 ^referent 1)
+   (<bip8> ^value 5 ^referent 2)
+   (<bip9> ^value 5 ^referent 3)
+   (<bip10> ^value 5 ^referent 4)
+   (<bip11> ^value 6 ^referent 1)
+   (<bip12> ^value 6 ^referent 2)
+   (<bip13> ^value 6 ^referent 3)
+   (<bip14> ^value 6 ^referent 4)
+   (<bip15> ^value 6 ^referent 5)
+   (<bip16> ^value 7 ^referent 1)
+   (<bip17> ^value 7 ^referent 2)
+   (<bip18> ^value 7 ^referent 3)
+   (<bip19> ^value 7 ^referent 4)
+   (<bip20> ^value 7 ^referent 5)
+   (<bip21> ^value 7 ^referent 6)
+   (<bip22> ^value 8 ^referent 1)
+   (<bip23> ^value 8 ^referent 2)
+   (<bip24> ^value 8 ^referent 3)
+   (<bip25> ^value 8 ^referent 4)
+   (<bip26> ^value 8 ^referent 5)
+   (<bip27> ^value 8 ^referent 6)
+   (<bip28> ^value 8 ^referent 7)
+   (<test7> ^name test7
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 7
+            ^operators 4
+            ^bests 2 3
+            ^betters <bbp1>)
+   (<test8> ^name test8
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 8
+            ^operators 23
+            ^unary-indifferents 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
+   (<test9> ^name test9
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 9
+            ^operators 5
+            ^prohibits 1
+            ^worsts 1 2 3
+            ^unary-indifferents 4 5)
+   (<test10> ^name test10
+            ^impasse-type nc
+            ^test-finished 0
+            ^test-num 10
+            ^operators 7
+            ^numerics <bnp1>
+            ^unary-indifferents 2
+            ^binary-indifferents <bip1> <bip2> <bip3> <bip4> <bip5> <bip6> <bip7> <bip8> <bip9> <bip10>
+                                 <bip11> <bip12> <bip13> <bip14> <bip15> <bip16> <bip17> <bip18> <bip19> <bip20>
+                                 <bip21> <bip22> <bip23> <bip24> <bip25> <bip26> <bip27> <bip28>)
+   (<test11> ^name test11
+            ^impasse-type nc
+            ^test-finished 1
+            ^test-num 11
+            ^operators 23
+            ^unary-indifferents 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+            ^random-numerics 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+            ^bests 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+            ^worsts 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
+   (<test12> ^name test12
+            ^impasse-type nc
+            ^test-finished 1
+            ^test-num 12
+            ^operators 23
+            ^betters <b1> <b2> <b3> <b4> <b5> <b6> <b7> <b8> <b9> <b10> <b11> <b12> <b13> <b14> <b15> <b16> <b17> <b18> <b19> <b20> <b21> <b22>
+            )
+   (<b1> ^value 1 ^referent 2)
+   (<b2> ^value 1 ^referent 3)
+   (<b3> ^value 1 ^referent 4)
+   (<b4> ^value 2 ^referent 5)
+   (<b5> ^value 1 ^referent 6)
+   (<b6> ^value 1 ^referent 7)
+   (<b7> ^value 1 ^referent 8)
+   (<b8> ^value 1 ^referent 9)
+   (<b9> ^value 1 ^referent 10)
+   (<b10> ^value 1 ^referent 11)
+   (<b11> ^value 1 ^referent 12)
+   (<b12> ^value 1 ^referent 13)
+   (<b13> ^value 1 ^referent 14)
+   (<b14> ^value 1 ^referent 15)
+   (<b15> ^value 1 ^referent 16)
+   (<b16> ^value 1 ^referent 17)
+   (<b17> ^value 1 ^referent 18)
+   (<b18> ^value 1 ^referent 19)
+   (<b19> ^value 1 ^referent 20)
+   (<b20> ^value 1 ^referent 21)
+   (<b21> ^value 1 ^referent 22)
+   (<b22> ^value 1 ^referent 23)
+               }
+
+# Add case for tie impasse operators, don't need one for nc
+
+sp {propose*test
+   (state <s> ^name top-state
+              ^tests <some-test>)
+   (<some-test> ^test-finished { < 1 }
+                ^test-num { > 0 })
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name do-test
+        ^test <some-test>)
+}
+
+sp {tests*done
+   (state <s> ^name top-state
+              -^tests.test-finished { < 1 })
+   -->
+   (write (crlf) |All tests done.|)
+   (halt)
+}
+
+sp {prefer*lower*tests
+   (state <s> ^name top-state
+              ^operator <o1> + <o2> +)
+   (<o1> ^name do-test
+         ^test.test-num <tn1>)
+   (<o2> ^name do-test
+         ^test.test-num { < <tn1> <tn2> })
+-->
+   (<s> ^operator <o2> > <o1>)
+}
+
+sp {apply*end-test
+   (state <s> ^name test-state
+              ^operator <o>
+              ^test-finished true
+              ^test <test>)
+   (<test> ^test-finished <tests-completed>
+           ^name <name>)
+-->
+   (<test> ^test-finished <tests-completed> -
+           ^test-finished (+ <tests-completed> 1))
+   (write (crlf) |Completed test | <name>)
+}
+
+sp {apply*end-test-impassed
+   (state <s> ^superstate <test-s>
+              ^quiescence t)
+   (<test-s> ^name test-state
+             ^operator <o>
+             ^test <test>)
+   (<test> ^name <name>
+           ^test-finished <num>)
+-->
+   (<test-s> ^test-finished true)
+   (write (crlf) |Completed test | <name>)
+   }
+
+sp {propose*init-test
+   (state <s> ^superstate.superstate <ts>
+             -^op-count)
+   (<ts> ^superstate nil
+         ^operator <o>)
+   (<o> ^name do-test
+        ^test <some-test>)
+   (<some-test> ^name <tname>)
+-->
+   (<s> ^operator.name init-test
+        ^test <some-test>)
+   (write (crlf) |Completed test | <tname>)
+        
+}
+
+sp {apply*init-test
+   (state <s> ^operator.name init-test
+              ^test <some-test>)
+-->
+   (<s> ^op-count 0
+        ^name test-state
+        ^test <some-test>)
+}
+
+sp {propose*op
+   (state <s> ^name test-state
+              ^superstate.superstate <ts>
+              ^test.operators <num-ops>)
+   (<ts> ^numbers { <= <num-ops> <num> }
+         ^acceptable-test <num>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name (concat op <num>)
+        ^num <num>)
+}    
+
+sp {apply*op
+   (state <s> ^name test-state
+              ^operator.name <name>
+              ^superstate.superstate <ts>)
+-->
+   (<ts> ^result <name>)
+}    
+
+sp {pref*prohibit
+   (state <s> ^name test-state
+              ^superstate.superstate.prohibit-test <num>
+              ^operator <o> +
+              ^test.prohibits <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> ~)
+}
+
+sp {pref*require
+   (state <s> ^name test-state
+              ^superstate.superstate.require-test <num>
+              ^operator <o> +
+              ^test.requires <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> !)
+}
+
+sp {pref*reject
+   (state <s> ^name test-state
+              ^superstate.superstate.reject-test <num>
+              ^operator <o> +
+              ^test.rejects <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> -)
+}
+
+sp {pref*best
+   (state <s> ^name test-state
+              ^superstate.superstate.best-test <num>
+              ^operator <o> +
+              ^test.bests <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> >)
+}
+
+sp {pref*worst
+   (state <s> ^name test-state
+              ^superstate.superstate.worst-test <num>
+              ^operator <o> +
+              ^test.worsts <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> <)
+}
+
+sp {pref*unary-indifferent
+   (state <s> ^name test-state
+              ^superstate.superstate.uindifferent-test <num>
+              ^operator <o> +
+              ^test.unary-indifferents <num>)
+   (<o> ^num <num>)
+-->
+   (<s> ^operator <o> =)
+}
+
+sp {pref*binary-indifferent
+   (state <s> ^name test-state
+              ^superstate.superstate.bindifferent-test <num>
+              ^operator <o> + <o2> +
+              ^test.binary-indifferents <binary-indifferents>)
+   (<binary-indifferents> ^value <num> ^referent <num2>)
+   (<o> ^num <num>)
+   (<o2> ^num <num2>)
+   -->
+   (<s> ^operator <o> = <o2>)
+}
+
+sp {pref*better
+   (state <s> ^name test-state
+              ^superstate.superstate.better-test <num>
+              ^operator <o> + <o2> +
+              ^test.betters <better>)
+   (<better> ^value <num> ^referent <num2>)
+   (<o> ^num <num>)
+   (<o2> ^num <num2>)
+   -->
+   (<s> ^operator <o> > <o2>)
+}
+
+sp {pref*worse
+   (state <s> ^name test-state
+              ^superstate.superstate.worse-test <num>
+              ^operator <o> + <o2> +
+              ^test.worse <worse>)
+   (<worse> ^value <num> ^referent <num2>)
+   (<o> ^num <num>)
+   (<o2> ^num <num2>)
+   -->
+   (<s> ^operator <o> < <o2>)
+}
+
+sp {pref*numeric
+   (state <s> ^name test-state
+              ^superstate.superstate.nindifferent-test <num>
+              ^operator <o> +
+              ^test.numerics <numerics>)
+   (<numerics> ^value <num> ^referent <num2>)
+   (<o> ^num <num>)
+   -->
+   (<s> ^operator <o> = <num2>)
+}
+
+sp {pref*random-numeric
+   (state <s> ^name test-state
+              ^superstate.superstate.nindifferent-test <num>
+              ^operator <o> +
+              ^test.random-numerics <num>)
+   (<o> ^num <num>)
+   -->
+   (<s> ^operator <o> = (rand-float))
+}

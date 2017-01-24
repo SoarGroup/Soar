@@ -28,17 +28,7 @@ class GraphViz_Visualizer
         void visualize_wm(Symbol* pSym = NULL, int pDepth = 1);
         void visualize_smem(uint64_t lti_id = 0, int pDepth = 1);
 
-        const std::string get_next_filename() {
-            if (!thisAgent->visualizationManager->settings->use_same_file->get_value())
-            {
-                std::string lFileName = thisAgent->visualizationManager->settings->file_name->get_value();
-                ++m_file_count;
-                lFileName.append(std::to_string(m_file_count));
-                /* Should check if another file exists and keep trying new names */
-                return lFileName;
-            }
-            return thisAgent->visualizationManager->settings->file_name->get_value();
-        }
+        const std::string get_next_filename();
 
         /* Utility graphviz printing functions */
         void viz_graph_start(bool pLeftRight = true);
@@ -55,9 +45,9 @@ class GraphViz_Visualizer
         void viz_record_end(bool pLeftJustify = true);
         void viz_endl();
         void viz_text_record(const char* pMsg);
-        void viz_table_element_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true);
+        void viz_table_element_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true, bool pColor = false);
         void viz_table_element_end();
-        void viz_table_element_conj_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true);
+        void viz_table_element_conj_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true, bool pColor = false);
 
         void escape_graphviz_chars();
         void clear_visualization();

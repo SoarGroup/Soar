@@ -67,7 +67,6 @@ class Viz_Parameters;
 class OM_Parameters;
 class OM_DB;
 class AgentOutput_Info;
-class debug_param_container;
 
 class cli_command_params;
 class decide_param_container;
@@ -145,5 +144,13 @@ namespace cli
     class CommandLineInterface;
 
 }
+
+/* Three utility functions to help break when a soar symbol or wme is encountered.  If you set
+ * your debugger to always break on these, you can just add them to stop Soar at the point where
+ * problem structures are being processed.  Since we can throw these in anywhere, we're forward
+ * declaring them here so that we don't need to include debug.h everywhere.*/
+extern bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
+extern bool break_if_symbol_matches_string(Symbol* sym, const char* match);
+extern bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

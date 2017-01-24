@@ -1,0 +1,12 @@
+sp {answer*apply16b*OpNoChange*t3-1
+    (state <s1> ^superstate nil)
+    -->
+    (<s1> ^result16a <s2> + ^result16b <n1> + ^test-done 1 +)
+    (<s2> ^operator <o1> + ^name substate + ^ungrounded-identifier2 <n1> +
+           ^ungrounded-identifier1 <s2> +)
+    (<o1> ^name test +)
+    (<n1> ^foo bar +)
+}
+
+
+

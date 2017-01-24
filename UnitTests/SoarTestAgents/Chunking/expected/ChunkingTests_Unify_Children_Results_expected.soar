@@ -1,0 +1,20 @@
+sp {answer*substate*apply*copy-result*OpNoChange*t5-1
+    (state <s1> ^superstate nil -^results <r*1> ^goal <g7> ^goal <g4>
+          ^goal <g1> ^object <c2> ^object <c1> ^operator <o1>)
+    (<g7> ^finished false)
+    (<g4> ^finished false ^has-property <g6> ^has-property { < <g6> <g5> })
+    (<g1> ^finished false ^has-property <g3> ^has-property { < <g3> <g2> })
+    (<c1> ^<c7> <c8>)
+    (<g6> ^<c7> <c8> ^<c5> <c6>)
+    (<c2> ^<c5> <c6> ^<c3> <c4>)
+    (<g5> ^<c3> <c4>)
+    -->
+    (<s1> ^results <s2> +)
+    (<s2> ^match <m1> + ^match <m2> + ^match <m3> +)
+    (<m1> ^self-link-test <s2> + ^matched-object <c1> + ^has-property <g6> +)
+    (<m2> ^self-link-test <s2> + ^matched-object <c2> + ^has-property <g6> +)
+    (<m3> ^self-link-test <s2> + ^matched-object <c2> + ^has-property <g5> +)
+}
+
+
+

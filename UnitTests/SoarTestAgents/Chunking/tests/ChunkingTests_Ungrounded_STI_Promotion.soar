@@ -1,0 +1,71 @@
+srand 23
+chunk always
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-item 8
+         ^test-item2 7)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (succeeded)
+    (interrupt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (interrupt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
+
+# Test that creates unexpected RHS results based subgraph with links to superstate (but not in RHS of rule)
+
+sp {apply16a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+-->
+    (<s> ^ungrounded-identifier1 <s>
+         ^ungrounded-identifier2 <new-wme>)
+    (<new-wme> ^foo bar)
+}
+
+# - The RHS of the chunk creates a link S1 --(result)--> S3.  That makes all the other items below S3, linked to
+#   superstate, and hence results of the chunk.
+sp {apply16b
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>
+               ^ungrounded-identifier1 <ungrounded-id1>
+               ^ungrounded-identifier2 <ungrounded-id2>)
+-->
+    (<ss> ^result16a <ungrounded-id1>
+          ^result16b <ungrounded-id2>
+          ^test-done 1)}
+
+#run
+#ctf expected/chunk16.soar print -cf

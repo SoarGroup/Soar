@@ -30,7 +30,7 @@ void action_record::init(agent* myAgent, preference* pPref, action* pAction, uin
         variablized_action = NULL;
     }
     identities_used = NULL;
-    dprint(DT_EXPLAIN_CONDS, "   Created action record a%u for pref %p (%r ^%r %r), [act %a]", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pAction);
+    dprint(DT_EXPLAIN_CONDS, "   Created action record a%u for pref %p (%r ^%r %r %r), [act %a]", pActionID, pPref, pPref->rhs_funcs.id, pPref->rhs_funcs.attr, pPref->rhs_funcs.value, pPref->rhs_funcs.referent, pAction);
 }
 
 void action_record::clean_up()

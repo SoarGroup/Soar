@@ -381,7 +381,7 @@ Symbol* Symbol_Manager::make_variable(const char* name)
     return sym;
 }
 
-Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number)
+Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number, bool prohibit_S)
 {
 
     idSymbol* sym;
@@ -390,6 +390,10 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
         if (islower(name_letter))
         {
             name_letter = static_cast<char>(toupper(name_letter));
+        }
+        if (prohibit_S && (name_letter == 'S'))
+        {
+            name_letter = 'I';
         }
     }
     else
@@ -420,10 +424,10 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->name_number = name_number;
 
     /* MToDo | Remove */
-    if ((name_letter == 'L') && (name_number == 198))
-    {
-        dprint(DT_DEBUG, "Found.\n");
-    }
+//    if ((name_letter == 'L') && (name_number == 198))
+//    {
+//        dprint(DT_DEBUG, "Found.\n");
+//    }
 
     sym->level = level;
     sym->promotion_level = level;
@@ -475,7 +479,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
 Symbol* Symbol_Manager::make_str_constant(char const* name)
 {
     strSymbol* sym;
-
     sym = static_cast<strSymbol*>(find_str_constant(name));
     if (sym)
     {
@@ -488,6 +491,7 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
         sym->reference_count = 0;
         sym->hash_id = get_next_symbol_hash_id(thisAgent);
         sym->tc_num = 0;
+        sym->singleton.possible = false;
         sym->epmem_hash = 0;
         sym->epmem_valid = 0;
         sym->smem_hash = 0;
@@ -592,6 +596,8 @@ Symbol* Symbol_Manager::make_float_constant(double value)
 
 void Symbol_Manager::create_predefined_symbols()
 {
+    soarSymbols.crlf_symbol = make_str_constant("\n");
+    soarSymbols.at_symbol = make_str_constant("@");
     soarSymbols.problem_space_symbol = make_str_constant("problem-space");
     soarSymbols.state_symbol = make_str_constant("state");
     soarSymbols.operator_symbol = make_str_constant("operator");
@@ -632,7 +638,7 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.s_context_variable = make_variable("<s>");
     soarSymbols.o_context_variable = make_variable("<o>");
 
-    soarSymbols.fake_instantiation_symbol = make_str_constant("Memory System Instantiation");
+    soarSymbols.fake_instantiation_symbol = make_str_constant("Memory System Recall");
     soarSymbols.architecture_inst_symbol = make_str_constant("Architecture");
     soarSymbols.sti_symbol = make_str_constant("[STI]");
 
@@ -689,7 +695,8 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_bad_cmd = make_str_constant("bad-cmd");
     soarSymbols.smem_sym_depth = make_str_constant("depth");
     soarSymbols.smem_sym_store_new = make_str_constant("store-new");
-    soarSymbols.smem_sym_overwrite = make_str_constant("link-to-new-LTM");
+    soarSymbols.smem_sym_overwrite = make_str_constant("link-to-new-ltm");
+    soarSymbols.smem_sym_link_to_ltm = make_str_constant("link-to-ltm");
     soarSymbols.smem_sym_retrieve = make_str_constant("retrieve");
     soarSymbols.smem_sym_query = make_str_constant("query");
     soarSymbols.smem_sym_negquery = make_str_constant("neg-query");
@@ -706,6 +713,8 @@ void Symbol_Manager::create_predefined_symbols()
 
 void Symbol_Manager::release_predefined_symbols()
 {
+    symbol_remove_ref(&(soarSymbols.crlf_symbol));
+    symbol_remove_ref(&(soarSymbols.at_symbol));
     symbol_remove_ref(&(soarSymbols.problem_space_symbol));
     symbol_remove_ref(&(soarSymbols.state_symbol));
     symbol_remove_ref(&(soarSymbols.operator_symbol));
@@ -799,6 +808,7 @@ void Symbol_Manager::release_predefined_symbols()
     symbol_remove_ref(&(soarSymbols.smem_sym_depth));
     symbol_remove_ref(&(soarSymbols.smem_sym_store_new));
     symbol_remove_ref(&(soarSymbols.smem_sym_overwrite));
+    symbol_remove_ref(&(soarSymbols.smem_sym_link_to_ltm));
 
     symbol_remove_ref(&(soarSymbols.smem_sym_retrieve));
     symbol_remove_ref(&(soarSymbols.smem_sym_query));

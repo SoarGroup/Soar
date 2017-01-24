@@ -1,0 +1,14 @@
+sp {answer*apply*snc*t3-1
+    (state <s2> ^value 3)
+    (<s2> ^superstate <s1>)
+    (<s1> ^superstate nil)
+    (<s2> ^foo <c1>)
+    (<s2> ^wme { <> <c1> <c3> })
+    (<s2> ^value <c2>)
+    -->
+    (<s2> ^result <c3> +)
+    (<s2> ^new-math (* 23 <c2>) +)
+    (<s2> ^math (* 23 2) +)
+    (<s2> ^copied-math 23 +)
+    (<s2> ^bar <c1> +)
+}

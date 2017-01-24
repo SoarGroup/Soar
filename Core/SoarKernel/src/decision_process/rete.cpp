@@ -2555,6 +2555,7 @@ bool find_var_location(Symbol* var, rete_node_level current_depth,
     dummy = var->var->rete_binding_locations->first;
     result->levels_up = current_depth - dummy_to_varloc_depth(dummy);
     result->field_num = dummy_to_varloc_field_num(dummy);
+    //dprint(DT_DEBUG, "find_var_location returning %d %d", result->levels_up, result->field_num);
     return true;
 }
 
@@ -2574,38 +2575,16 @@ void bind_variables_in_test(agent* thisAgent,
                             rete_node_level depth,
                             byte field_num,
                             bool dense,
-                            cons** varlist,
-                            test main_eq_test = NULL)
+                            cons** varlist)
 {
     Symbol* referent;
-    cons* c;
 
-    if (!t)
-    {
-        return;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        referent = t->data.referent;
-        if (referent->symbol_type != VARIABLE_SYMBOL_TYPE)
-        {
-            return;
-        }
-        if (!dense && var_is_bound(referent))
-        {
-            return;
-        }
-        push_var_binding(thisAgent, referent, depth, field_num);
-        push(thisAgent, referent, *varlist);
-        return;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            bind_variables_in_test(thisAgent, static_cast<test>(c->first), depth, field_num, dense, varlist, t->eq_test);
-        }
-    }
+    assert(t && t->eq_test);
+    referent = t->eq_test->data.referent;
+    if (!referent->is_variable()) return;
+    if (!dense && var_is_bound(referent)) return;
+    push_var_binding(thisAgent, referent, depth, field_num);
+    push(thisAgent, referent, *varlist);
 }
 
 /* -------------------------------------------------------------------
@@ -2775,38 +2754,25 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 }
 
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pOnlySTIs)
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pNoConstantIdentities)
 {
 //    test New;
     cons* c;
     Symbol* temp;
 
-    if (vn == NIL)
+    if (vn == NIL) return;
+    if (pNoConstantIdentities && !t->data.referent->is_sti()) return;
+
+    assert (varnames_is_one_var(vn));
+    temp = varnames_to_one_var(vn);
+    if (!t->data.referent->is_variable())
     {
-        return;
-    }
-    if (pOnlySTIs && !t->data.referent->is_sti())
-    {
-        return;
-    }
-    if (varnames_is_one_var(vn))
-    {
-        temp = varnames_to_one_var(vn);
-        t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
+        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp, pI_id);
         dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+    } else {
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity for varname %y because ungrounded NCC var in inst %u.\n", temp, pI_id);
     }
-    else
-    {
-        /* Not sure if we can have a varlist when this is called from add_additionals.  Should only
-         * be called in cases where there is one equality test.  Remove.*/
-        assert(false);
-        for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
-        {
-            temp = static_cast<Symbol*>(c->first);
-            t->identity = thisAgent->explanationBasedChunker->get_or_create_o_id(temp, pI_id);
-            dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from varlist!\n", t->identity, temp);
-        }
-    }
+
 }
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
@@ -2823,28 +2789,12 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
 varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
                                        varnames* starting_vn)
 {
-    cons* c;
-    Symbol* referent;
+    assert(t && t->eq_test);
 
-    if (!t)
+    Symbol* referent = t->eq_test->data.referent;
+    if (referent->is_variable() && !var_is_bound(referent))
     {
-        return starting_vn;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        referent = t->data.referent;
-        if (referent->symbol_type == VARIABLE_SYMBOL_TYPE)
-            if (! var_is_bound(referent))
-            {
-                starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
-            }
-        return starting_vn;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            starting_vn = add_unbound_varnames_in_test(thisAgent, static_cast<test>(c->first),
-                          starting_vn);
+        starting_vn = add_var_to_varnames(thisAgent, referent, starting_vn);
     }
     return starting_vn;
 }
@@ -3837,9 +3787,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     action* a;
     byte production_addition_result;
 
-    //dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
-    //dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
-    //dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
+    dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
+    dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
+    dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
 
     /* --- build the network for all the conditions --- */
     build_network_for_condition_list(thisAgent, lhs_top, 1, thisAgent->dummy_top_node,
@@ -3952,7 +3902,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     treated as refracted instantiations, at least for now.  At some point,
     this issue needs to be re-visited for chunks that immediately match with
     a different instantiation and a different type of support than the
-    original, chunk-creating instantion. */
+    original, chunk-creating instantiation. */
 
 
     /* --- handle initial refraction by adding it to tentative_retractions --- */
@@ -3989,8 +3939,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
 #endif
 
         insert_at_head_of_dll(thisAgent->ms_retractions, msc, next, prev);
-        insert_at_head_of_dll(p_node->b.p.tentative_retractions, msc,
-                              next_of_node, prev_of_node);
+        insert_at_head_of_dll(p_node->b.p.tentative_retractions, msc, next_of_node, prev_of_node);
     }
 
     /* --- call new node's add_left routine with all the parent's tokens --- */
@@ -4006,19 +3955,20 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
         if (p_node->b.p.tentative_retractions)
         {
+            dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
+            dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
+
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
             msc = p_node->b.p.tentative_retractions;
             p_node->b.p.tentative_retractions = NIL;
             remove_from_dll(thisAgent->ms_retractions, msc, next, prev);
             if (msc->goal)
             {
-                remove_from_dll(msc->goal->id->ms_retractions, msc,
-                                next_in_level, prev_in_level);
+                remove_from_dll(msc->goal->id->ms_retractions, msc, next_in_level, prev_in_level);
             }
             else
             {
-                remove_from_dll(thisAgent->nil_goal_retractions,
-                                msc, next_in_level, prev_in_level);
+                remove_from_dll(thisAgent->nil_goal_retractions, msc, next_in_level, prev_in_level);
             }
 
 
@@ -4167,7 +4117,6 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         rete_node_level where_levels_up)
 {
     test t;
-    cons* c;
 
     while (where_levels_up)
     {
@@ -4175,36 +4124,14 @@ Symbol* var_bound_in_reconstructed_conds(agent* thisAgent,
         cond = cond->prev;
     }
 
-    if (where_field_num == 0)
-    {
-        t = cond->data.tests.id_test;
-    }
-    else if (where_field_num == 1)
-    {
-        t = cond->data.tests.attr_test;
-    }
-    else
-    {
-        t = cond->data.tests.value_test;
-    }
+    if (where_field_num == 0)       t = cond->data.tests.id_test;
+    else if (where_field_num == 1)  t = cond->data.tests.attr_test;
+    else                            t = cond->data.tests.value_test;
 
-    if (!t)
-    {
-        goto abort_var_bound_in_reconstructed_conds;
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        return t->data.referent;
-    }
-    else if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return static_cast<test>(c->first)->data.referent;
-            }
-    }
+    if (!t) goto abort_var_bound_in_reconstructed_conds;
+    t = t->eq_test;
+
+    return t->data.referent;
 
 abort_var_bound_in_reconstructed_conds:
     {
@@ -4223,7 +4150,6 @@ test var_test_bound_in_reconstructed_conds(
     rete_node_level where_levels_up)
 {
     test t;
-    cons* c;
 
     while (where_levels_up)
     {
@@ -4231,36 +4157,13 @@ test var_test_bound_in_reconstructed_conds(
         cond = cond->prev;
     }
 
-    if (where_field_num == 0)
-        {
-        t = cond->data.tests.id_test;
-        }
-    else if (where_field_num == 1)
-        {
-        t = cond->data.tests.attr_test;
-        }
-            else
-            {
-        t = cond->data.tests.value_test;
-            }
+    if (where_field_num == 0)       t = cond->data.tests.id_test;
+    else if (where_field_num == 1)  t = cond->data.tests.attr_test;
+    else                            t = cond->data.tests.value_test;
 
-    if (!t)
-        {
-        goto abort_var_test_bound_in_reconstructed_conds;
-                    }
-    if (t->type == EQUALITY_TEST)
-                {
-        return t;
-                    }
-    else if (t->type == CONJUNCTIVE_TEST)
-                {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return static_cast<test>(c->first);
-            }
-        }
+    if (!t) goto abort_var_test_bound_in_reconstructed_conds;
+
+    return t->eq_test;
 
 abort_var_test_bound_in_reconstructed_conds:
         {
@@ -4312,8 +4215,7 @@ void rete_node_to_conditions(agent* thisAgent,
     cond = make_condition(thisAgent);
     if (real_parent_node(node) == cutoff)
     {
-        cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this
-                                             will get replaced by NIL later */
+        cond->prev = conds_for_cutoff_and_up; /* if this is the top of an NCC, this will get replaced by NIL later */
         *dest_top_cond = cond;
     }
     else
@@ -4335,7 +4237,7 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
-        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
+//        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent,
                                 nvn ? nvn->data.bottom_of_subconditions : NIL,
                                 node->parent,
@@ -4350,16 +4252,16 @@ void rete_node_to_conditions(agent* thisAgent,
     }
     else
     {
-        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
+//        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
+//            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
+//            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
@@ -4376,7 +4278,7 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
             }
-            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
+//            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
@@ -6376,7 +6278,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_o_assertions",  node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%e   RETE: putting [%y] into ms_o_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_o_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6391,7 +6293,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%f   RETE: putting [%y] into ms_i_assertions",  node->b.p.prod->name);
+            thisAgent->outputManager->printa_sf(thisAgent, "%e   RETE: putting [%y] into ms_i_assertions",  node->b.p.prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "RETE: putting [%s] into ms_i_assertions", node->b.p.prod->name->to_string(true));
             xml_generate_verbose(thisAgent, buf);
@@ -6558,7 +6460,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
         {
             ms_change* assertion;
-            thisAgent->outputManager->printa_sf(thisAgent, "%f Retractions list:\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%e Retractions list:\n");
             for (assertion = thisAgent->ms_retractions;  assertion; assertion = assertion->next)
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "     Retraction: %y ", assertion->p_node->b.p.prod->name);
@@ -6567,7 +6469,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (thisAgent->nil_goal_retractions)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "%fCurrent NIL Goal list:\n");
+                thisAgent->outputManager->printa_sf(thisAgent, "%eCurrent NIL Goal list:\n");
                 assertion = NIL;
                 for (assertion = thisAgent->nil_goal_retractions; assertion; assertion = assertion->next_in_level)
                 {
@@ -6588,7 +6490,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%f%y: ", node->b.p.prod->name);
+        thisAgent->outputManager->printa_sf(thisAgent, "%e%y: ", node->b.p.prod->name);
         char buf[256];
         SNPRINTF(buf, 254, "%s: ", node->b.p.prod->name->to_string(true));
         xml_generate_verbose(thisAgent, buf);
@@ -6598,7 +6500,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE)
     {
         #ifdef BUG_139_WORKAROUND_WARNING
-        thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
+        thisAgent->outputManager->printa_sf(thisAgent, "%eWarning: can't find instantiation of justification %y to retract (BUG 139 WORKAROUND)\n",
             node->b.p.prod ? node->b.p.prod->name : NULL);
         xml_generate_warning(thisAgent, "Warning: can't find an existing justification to retract (BUG 139 WORKAROUND)");
         #endif
@@ -6606,7 +6508,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     }
     #endif
 
-    thisAgent->outputManager->printa_sf(thisAgent, "%fWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
+    thisAgent->outputManager->printa_sf(thisAgent, "%eWarning: Soar can't find an existing instantiation of %y to retract.  Soar memory may be corrupt.\n",
         node->b.p.prod ? node->b.p.prod->name : NULL);
     xml_generate_warning(thisAgent, "Warning: Soar can't find an existing instantiation to retract.  Soar memory may be corrupt.");
 
@@ -8999,7 +8901,7 @@ void xml_condition_list(agent* thisAgent, condition* conds,
         /* --- normal pos/neg conditions --- */
         removed_goal_test = removed_impasse_test = false;
         id_test = copy_test(thisAgent, c->data.tests.id_test, false, false, true, &removed_goal_test, &removed_impasse_test);
-        thisAgent->id_test_to_match = copy_of_equality_test_found_in_test(thisAgent, id_test);
+        thisAgent->id_test_to_match = copy_test(thisAgent, id_test->eq_test);
 
         /* --- collect all cond's whose id test matches this one --- */
         conds_for_this_id = dc;

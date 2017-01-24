@@ -1,0 +1,11 @@
+sp {answer*apply14b*OpNoChange*t3-1
+    (state <s1> ^superstate nil ^test-param <p1> ^test-item { > 3 <c1> })
+    -->
+    (<s1> ^result14-ungrounded-num 3 + ^result14-ungrounded-id <u1> +
+           ^result14-grounded-id <p1> + ^result14-grounded-num <c1> +
+           ^test-done 1 +)
+    (<u1> ^sub-item <s2> + ^number 5 +)
+}
+
+
+

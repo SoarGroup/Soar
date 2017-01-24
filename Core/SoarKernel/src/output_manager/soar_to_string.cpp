@@ -251,7 +251,7 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
         assert(cond != cond->next);
-        sprinta_sf(thisAgent, destString, "%s%i: %l\n", m_pre_string, ++count, cond);
+        sprinta_sf(thisAgent, destString, "%s%d: %l\n", m_pre_string, ++count, cond);
     }
     return;
 }
@@ -364,9 +364,7 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
     if (a->type == FUNCALL_ACTION)
     {
         if (m_pre_string) destString += m_pre_string;
-        destString += "(rhs_function ";
         rhs_value_to_string(a->value, destString);
-        destString += ')';
     } else {
         if (m_pre_string) destString += m_pre_string;
         destString += '(';
@@ -461,17 +459,6 @@ void Output_Manager::preflist_result_to_string(agent* thisAgent, preference* top
     }
 }
 
-void Output_Manager::debug_print_production(TraceMode mode, production* prod)
-{
-    if (!is_trace_enabled(mode)) return;
-    if (!m_defaultAgent) return;
-
-    if (prod)
-    {
-        print_production(m_defaultAgent, prod, true);
-    }
-}
-
 void Output_Manager::cond_prefs_to_string(agent* thisAgent, condition* top_cond, preference* top_pref, std::string &destString)
 {
     if (m_print_actual)
@@ -562,7 +549,7 @@ void Output_Manager::cond_actions_to_string(agent* thisAgent, condition* top_con
 
 void Output_Manager::instantiation_to_string(agent* thisAgent, instantiation* inst, std::string &destString)
 {
-    sprinta_sf(thisAgent, destString, "%sInstantiation (i%u) matched %y in state %y (level %d)\n", 
+    sprinta_sf(thisAgent, destString, "%sInstantiation (i %u) matched %y in state %y (level %d)\n",
         m_pre_string, inst->i_id, inst->prod_name, inst->match_goal, inst->match_goal_level);
     cond_prefs_to_string(thisAgent, inst->top_of_instantiated_conditions, inst->preferences_generated, destString);
 }
@@ -599,9 +586,36 @@ void Output_Manager::print_all_inst(TraceMode mode)
     }
 }
 
+inline const char* YesNoStrForMSC(ms_change* lPtr) { if (lPtr) return "Yes"; else return "No"; }
+
+void Output_Manager::print_msc(TraceMode mode, ms_change* p_ms_change)
+{
+    if (!is_trace_enabled(mode) || !p_ms_change) return;
+    print_sf("Match-set change");
+    if (p_ms_change->goal)
+    {
+        print_sf(" for %y at level %d", p_ms_change->goal, static_cast<int64_t>(p_ms_change->level));
+    }
+    print_sf(" (pnode %s):\n", p_ms_change->p_node ? "exists" : "is NULL");
+    if (p_ms_change->w) print_sf("wme = %w\n", p_ms_change->w);
+    if (p_ms_change->tok && p_ms_change->tok->w) print_sf("token wme = %w\n", p_ms_change->tok->w);
+    if (p_ms_change->inst) print_sf("inst = %y (i %u)\n", p_ms_change->inst->prod_name, p_ms_change->inst->i_id);
+    print_sf("List links:  Normal = %s/%s, of_node = %s/%s, in_level %s/%s\n",
+        YesNoStrForMSC(p_ms_change->prev), YesNoStrForMSC(p_ms_change->next),
+        YesNoStrForMSC(p_ms_change->prev_of_node), YesNoStrForMSC(p_ms_change->next_of_node),
+        YesNoStrForMSC(p_ms_change->prev_in_level), YesNoStrForMSC(p_ms_change->next_in_level));
+}
+
+void Output_Manager::print_partial_matches(TraceMode mode, rete_node* pNode)
+{
+    if (!is_trace_enabled(mode) || !pNode) return;
+    if (!m_defaultAgent) return;
+    print_partial_match_information(m_defaultAgent, pNode, FULL_WME_TRACE);
+}
+
 void Output_Manager::print_saved_test(TraceMode mode, saved_test* st)
 {
-    if (!is_trace_enabled(mode)) return;
+    if (!is_trace_enabled(mode) || !st) return;
 
     print_sf("  Index: %y  Test: %t\n", st->var, st->the_test);
 }
@@ -761,7 +775,7 @@ bool om_print_sym(agent* thisAgent, void* item, void* vMode)
 
     if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return false;
 
-    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%i)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
+    Output_Manager::Get_OM().printa_sf(thisAgent, "%y (%d)\n", static_cast<symbol_struct*>(item), static_cast<symbol_struct*>(item)->reference_count);
     return false;
 }
 

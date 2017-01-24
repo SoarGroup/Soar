@@ -26,7 +26,7 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
         {
 //            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,  "%fThe following RHS actions contain variables that are not tested\n"
+            printa_sf(thisAgent,  "%eThe following RHS actions contain variables that are not tested\n"
                                   "in a positive condition on the LHS: \n\n"
                                   "%s\n", pString2);
             break;
@@ -35,7 +35,7 @@ void Output_Manager::display_ebc_error(agent* thisAgent, EBCFailureType pErrorTy
         {
 //            thisAgent->explanationBasedChunker->print_current_built_rule("Attempted to add an invalid rule:");
 
-            printa_sf(thisAgent,"%f Conditions on the LHS contain tests that are not connected \n"
+            printa_sf(thisAgent,"%eConditions on the LHS contain tests that are not connected \n"
                                 "to a goal: %s\n\n", pString2);
             printa(thisAgent,   "   This is likely caused by a condition that tested a working memory element \n"
                                 "   that was created in the sub-state but later became connected to the \n"
@@ -77,12 +77,12 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
     {
         case ebc_error_max_chunks:
         {
-            printa_sf(thisAgent, "%fWarning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%eWarning: Maximum number of chunks reached.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_max_dupes:
         {
-            printa_sf(thisAgent, "%fWarning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
+            printa_sf(thisAgent, "%eWarning: Rule has produced maximum number of duplicate chunks this decision cycle.  Skipping opportunity to learn new rule.\n");
             break;
         }
         case ebc_error_invalid_chunk:
@@ -92,7 +92,7 @@ void Output_Manager::display_soar_feedback(agent* thisAgent, SoarCannedMessageTy
         }
         case ebc_error_invalid_justification:
         {
-            printa_sf(thisAgent, "%fWarning:  Chunking produced an invalid justification.  Ignoring.\n");
+            printa_sf(thisAgent, "%eWarning:  Chunking produced an invalid justification.  Ignoring.\n");
             break;
         }
         case ebc_progress_validating:

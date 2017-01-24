@@ -1,0 +1,60 @@
+###############################################################################
+# settings.soar                                                               #
+#                                                                             #
+# This file is silently loaded once upon agent creation.  It can be used to   #
+# add custom aliases and default Soar settings for an agent.                  #
+#                                                                             #
+# Warning: This file is not reloaded when an agent is re-initialized.         #
+#                                                                             #
+# Warning:  You can turn on tcl mode in this file, but you cannot use tcl     #
+#           commands here.                                                    #
+###############################################################################
+
+################
+# User aliases #
+################
+# alias pcf               print -cf
+# alias pcfi              print -cfi
+# alias sm                smem
+# alias sms               smem -S
+
+#################
+# Soar Settings #
+#################
+soar max-goal-depth 23
+# output print-depth 2
+# watch 0
+# trace --chunk-warnings
+# trace --learning 2
+# trace --wmes
+
+###################
+# Module Settings #
+###################
+# chunk always
+# chunk only
+# chunk except
+# chunk never
+# explain all
+# explain justifications on
+# epmem on
+# smem --on
+# rl --on
+# wma --on
+# tcl on
+
+########################
+# Agent Trace Settings #
+########################
+# output agent-trace 1 off
+# output agent-trace 2 off
+# output agent-trace 3 off
+# output agent-trace 4 off
+# output agent-trace 5 off
+# output agent-trace 6 off
+# output agent-trace 7 off
+# output agent-trace 8 off
+# output agent-trace 9 off
+# output agent-trace 10 off
+
+echo "\nUser settings loaded from settings.soar..."

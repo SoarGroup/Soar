@@ -87,14 +87,27 @@ enum TraceMode
     DT_RETE_PNODE_ADD           = 51,
     DT_WATERFALL                = 52,
     DT_GDS_HIGH                 = 53,
+    DT_RHS_FUN_VARIABLIZATION   = 54,
+    DT_DEEP_COPY                = 55,
+    DT_RHS_LTI_LINKING          = 56,
+    DT_VALIDATE                 = 57,
     num_trace_modes
 };
 
-enum LearnedRuleType {
+enum ebc_rule_type {
     ebc_no_rule,
     ebc_chunk,
     ebc_justification,
     ebc_template
+};
+
+enum singleton_element_type {
+    ebc_identifier,
+    ebc_state,
+    ebc_operator,
+    ebc_constant,
+    ebc_any,
+    ebc_num_element_types
 };
 
 enum Decider_settings {
@@ -114,6 +127,7 @@ enum Decider_settings {
 
 enum Output_sysparams {
     OM_ECHO_COMMANDS,
+    OM_AGENT_WRITES,
     OM_WARNINGS,
     OM_PRINT_DEPTH,
     num_output_sysparams
@@ -134,19 +148,21 @@ enum ChunkingSettings {
     SETTING_EBC_IDENTITY_VRBLZ,
     SETTING_EBC_CONSTRAINTS,
     SETTING_EBC_RHS_VRBLZ,
-    SETTING_EBC_OSK,
+    SETTING_EBC_ADD_OSK,
     SETTING_EBC_REPAIR_LHS,
     SETTING_EBC_REPAIR_RHS,
     SETTING_EBC_MERGE,
     SETTING_EBC_USER_SINGLETONS,
+    SETTING_EBC_UNIFY_ALL,
     SETTING_EBC_ALLOW_LOCAL_NEGATIONS,
     SETTING_EBC_ALLOW_OSK,
     SETTING_EBC_ALLOW_OPAQUE,
     SETTING_EBC_ALLOW_PROB,
     SETTING_EBC_ALLOW_CONFLATED,
     SETTING_EBC_ALLOW_LOCAL_PROMOTION,
-    SETTING_EBC_REPAIR_JUSTIFICATIONS,
-    SETTING_EBC_DONT_ADD_BAD_JUSTIFICATIONS,
+    SETTING_EBC_REORDER_JUSTIFICATIONS,
+    SETTING_EBC_ADD_LTM_LINKS,
+    SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS,
     num_ebc_settings
  };
 
@@ -156,6 +172,10 @@ enum IDSet_Mapping_Type {
     IDS_literalize_mappings_exist,
     IDS_unified_with_existing_mappings,
     IDS_unified_with_literalized_identity,
+    IDS_unified_with_local_singleton,
+    IDS_unified_with_singleton,
+    IDS_unified_child_result,
+    IDS_literalized_RHS_function_arg,
     IDS_base_instantiation
 };
 

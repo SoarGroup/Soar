@@ -834,8 +834,9 @@ void AgentSML::RegisterRHSFunction(RhsFunction* rhsFunction)
                      RhsFunction::RhsFunctionCallback,
                      rhsFunction->GetNumExpectedParameters(),
                      rhsFunction->IsValueReturned(),
-                     true,
-                     static_cast<void*>(rhsFunction));
+                     rhsFunction->CanBeStandAlone(),
+                     static_cast<void*>(rhsFunction),
+                     rhsFunction->LiteralizeArguments());
 }
 
 void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)

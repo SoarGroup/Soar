@@ -18,9 +18,11 @@
 #include "production.h"
 #include "print.h"
 #include "rhs.h"
+#include "rhs_functions.h"
 #include "soar_instance.h"
 #include "soar_TraceNames.h"
 #include "test.h"
+#include "working_memory.h"
 #include "xml.h"
 
 #include <assert.h>
@@ -44,22 +46,24 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Create data structures used for EBC */
     identity_to_var_map = new id_to_sym_id_map();
     instantiation_identities = new sym_to_id_map();
-    id_to_rule_sym_debug_map = new id_to_sym_map();
-    identities_to_clean_up = new id_set();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
     cond_merge_map = new triple_merge_map();
-    rhs_var_to_match_map = new sym_to_sym_map();
+    local_linked_STIs = new rhs_value_list();
+
     init_chunk_cond_set(&negated_set);
 
     /* Initialize learning setting */
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
+    local_singletons = new symbol_set();
+    singletons = new symbol_set();
+
     local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();
-
+    lti_link_function = NULL;
     reinit();
 }
 
@@ -72,10 +76,11 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete cond_merge_map;
     delete instantiation_identities;
     delete unification_map;
-    delete id_to_rule_sym_debug_map;
-    delete rhs_var_to_match_map;
     delete chunk_history;
-
+    delete local_linked_STIs;
+    delete local_singletons;
+    clear_singletons();
+    delete singletons;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
 }
@@ -95,11 +100,11 @@ void Explanation_Based_Chunker::reinit()
     grounds_tc                          = 0;
     m_results_match_goal_level          = 0;
     m_results_tc                        = 0;
-    m_reliable                          = false;
+    m_correctness_issue_possible        = true;
     m_inst                              = NULL;
     m_results                           = NULL;
     m_extra_results                     = NULL;
-    m_vrblz_top                         = NULL;
+    m_lhs                               = NULL;
     m_rhs                               = NULL;
     m_prod                              = NULL;
     m_chunk_inst                        = NULL;
@@ -110,7 +115,6 @@ void Explanation_Based_Chunker::reinit()
     m_failure_type                      = ebc_success;
     m_rule_type                         = ebc_no_rule;
     m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
-    max_chunks_reached                  = false;
 
 //    chunk_history += "Soar re-initialization performed.\n";
 }
@@ -346,7 +350,6 @@ Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
     }
 
     generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
-//    dprint(DT_DEBUG, "Generated name %s.\n", lName.str().c_str());
     return generated_name;
 }
 void Explanation_Based_Chunker::set_up_rule_name()
@@ -368,9 +371,7 @@ void Explanation_Based_Chunker::set_up_rule_name()
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_justifications_attempted();
-        #endif
     }
 
     if (m_should_print_name)
@@ -383,4 +384,56 @@ void Explanation_Based_Chunker::set_up_rule_name()
         xml_end_tag(thisAgent, kTagProduction);
         xml_end_tag(thisAgent, kTagLearning);
     }
+}
+void Explanation_Based_Chunker::clear_data()
+{
+    dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
+    clear_cached_constraints();
+    clear_variablization_maps();
+    clear_merge_map();
+    clear_rulesym_to_identity_map();
+    clear_o_id_substitution_map();
+    clear_attachment_map();
+    clear_local_arch_singletons();
+}
+
+void Explanation_Based_Chunker::clear_attachment_map()
+{
+    for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    {
+        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
+    }
+    attachment_points->clear();
+}
+
+void Explanation_Based_Chunker::clear_variablization_maps()
+{
+    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing variablization map...\n");
+    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
+    {
+        thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
+        thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
+    }
+    identity_to_var_map->clear();
+}
+
+uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uint64_t pI_id)
+{
+    int64_t existing_o_id = 0;
+
+    auto iter_sym = instantiation_identities->find(orig_var);
+    if (iter_sym != instantiation_identities->end())
+    {
+        existing_o_id = iter_sym->second;
+    }
+
+    if (!existing_o_id)
+    {
+        increment_counter(ovar_id_counter);
+        break_if_id_matches(ovar_id_counter, 8351);
+        (*instantiation_identities)[orig_var] = ovar_id_counter;
+
+        return ovar_id_counter;
+    }
+    return existing_o_id;
 }

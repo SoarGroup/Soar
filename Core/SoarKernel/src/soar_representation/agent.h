@@ -118,11 +118,11 @@ typedef struct EXPORT agent_struct
     GraphViz_Visualizer*        visualizationManager;
 
     /* This contains parameters that are used to interface to certain CLI
-     * commands that were combined in Soar 9.6 */
+     * commands that were combined in Soar 9.6.  Should be moved to a
+     * manager class */
     cli_command_params*         command_params;
 
-    // MToDo | Move these two
-    debug_param_container*      debug_params;
+    /* Some output manager settings for this agent */
     AgentOutput_Info*           output_settings;
 
 
@@ -130,7 +130,6 @@ typedef struct EXPORT agent_struct
 
     /* --- headers of dll's of all productions of each type --- */
     production*         all_productions_of_type[NUM_PRODUCTION_TYPES];
-    /* --- counts of how many productions there are of each type --- */
     uint64_t            num_productions_of_type[NUM_PRODUCTION_TYPES];
 
     /* --- stuff for "input-period" command --- */

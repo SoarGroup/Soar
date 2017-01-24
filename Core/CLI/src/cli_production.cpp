@@ -629,7 +629,6 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 {
     int64_t exciseCount = 0;
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
-    std::string lCmd("init");
     production* nextProd = NULL;
 
     // Process the general options

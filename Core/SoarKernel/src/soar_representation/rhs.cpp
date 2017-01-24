@@ -11,6 +11,7 @@
  *
  * ================================================================= */
 #include "rhs.h"
+#include "rhs_functions.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -30,9 +31,9 @@ test var_test_bound_in_reconstructed_conds(
     byte where_field_num,
     rete_node_level where_levels_up);
 
-/* ----------------------------------------------------------------
+/*--------------------------------------------------------------
    Deallocates the given rhs_value.
----------------------------------------------------------------- */
+--------------------------------------------------------------*/
 
 void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 {
@@ -75,9 +76,9 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     }
 }
 
-/* ----------------------------------------------------------------
+/*--------------------------------------------------------------
    Returns a new copy of the given rhs_value.
----------------------------------------------------------------- */
+--------------------------------------------------------------*/
 
 rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
 {
@@ -116,13 +117,13 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         {
             lID = thisAgent->explanationBasedChunker->get_identity(lID);
         }
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
     }
 }
 
-/* ----------------------------------------------------------------
+/*--------------------------------------------------------------
    Deallocates the given action (singly-linked) list.
----------------------------------------------------------------- */
+--------------------------------------------------------------*/
 
 void deallocate_action_list(agent* thisAgent, action* actions)
 {
@@ -138,7 +139,7 @@ void deallocate_action_list(agent* thisAgent, action* actions)
         }
         else
         {
-            /* --- make actions --- */
+            /*- make actions -*/
             deallocate_rhs_value(thisAgent, a->id);
             deallocate_rhs_value(thisAgent, a->attr);
             deallocate_rhs_value(thisAgent, a->value);
@@ -151,10 +152,10 @@ void deallocate_action_list(agent* thisAgent, action* actions)
     }
 }
 
-/* -----------------------------------------------------------------
+/*---------------------------------------------------------------
    Find first letter of rhs_value, or '*' if nothing appropriate.
    (See comments on first_letter_from_symbol for more explanation.)
------------------------------------------------------------------ */
+---------------------------------------------------------------*/
 
 char first_letter_from_rhs_value(rhs_value rv)
 {
@@ -188,7 +189,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
 
     if (rhs_value_is_symbol(rv))
     {
-        /* --- ordinary values (i.e., symbols) --- */
+        /*- ordinary values (i.e., symbols) -*/
         sym = rhs_value_to_symbol(rv);
         if (sym->is_variable())
         {
@@ -197,7 +198,7 @@ void add_all_variables_in_rhs_value(agent* thisAgent,
     }
     else
     {
-        /* --- function calls --- */
+        /*- function calls -*/
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -218,7 +219,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
 
     if (a->type == MAKE_ACTION)
     {
-        /* --- ordinary make actions --- */
+        /*- ordinary make actions -*/
         id = rhs_value_to_symbol(a->id);
         if (id->is_variable())
         {
@@ -233,7 +234,7 @@ void add_all_variables_in_action(agent* thisAgent, action* a,
     }
     else
     {
-        /* --- function call actions --- */
+        /*- function call actions -*/
         add_all_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
     }
 }
@@ -269,7 +270,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
 
     if (rhs_value_is_symbol(rv))
     {
-        /* --- ordinary values (i.e., symbols) --- */
+        /*- ordinary values (i.e., symbols) -*/
         sym = rhs_value_to_symbol(rv);
         if (sym->symbol_type == VARIABLE_SYMBOL_TYPE)
         {
@@ -278,7 +279,7 @@ void add_bound_variables_in_rhs_value(agent* thisAgent,
     }
     else
     {
-        /* --- function calls --- */
+        /*- function calls -*/
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -294,7 +295,7 @@ void add_bound_variables_in_action(agent* thisAgent, action* a,
 
     if (a->type == MAKE_ACTION)
     {
-        /* --- ordinary make actions --- */
+        /*- ordinary make actions -*/
         id = rhs_value_to_symbol(a->id);
         add_bound_variables_in_rhs_value(thisAgent, a->id, tc, var_list);
         add_bound_variables_in_rhs_value(thisAgent, a->attr, tc, var_list);
@@ -306,7 +307,7 @@ void add_bound_variables_in_action(agent* thisAgent, action* a,
     }
     else
     {
-        /* --- function call actions --- */
+        /*- function call actions -*/
         add_bound_variables_in_rhs_value(thisAgent, a->value, tc, var_list);
     }
 }
@@ -356,7 +357,7 @@ action* copy_action(agent* thisAgent, action* pAction)
     }
     return new_action;
 }
-/* -------------------------------------------------------------------
+/*-----------------------------------------------------------------
              Reconstructing the RHS Actions of a Production
 
    When we print a production (but not when we fire one), we have to
@@ -366,7 +367,7 @@ action* copy_action(agent* thisAgent, action* pAction)
    or "the 7th RHS unbound variable".  The routines below copy rhs_value's
    and actions, and substitute variable names for such references.
    For RHS unbound variables, we gensym new variable names.
-------------------------------------------------------------------- */
+-----------------------------------------------------------------*/
 
 rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,
@@ -384,15 +385,14 @@ rhs_value create_RHS_value(agent* thisAgent,
     uint64_t lO_id = 0;
 
 
-    /* -- (1) Reteloc's seemed to be used for identifiers or constants originally bound to
-     *    variables
-     *    (2) unbound_vars for unbound vars of course
-     *    (3) rhs_symbols for literal constants, including those in RHS functions -- */
+    /* (1) Reteloc identifiers or constants originally bound to variables
+     * (2) unbound_vars for unbound vars of course
+     * (3) rhs_symbols for literal constants, including those in RHS functions */
 
     if (rhs_value_is_reteloc(rv))
     {
-        /* -- rv is a symbol pointed to by a rete location
-         *    This case seems to only be for identifiers or constants originally bound to variables -- */
+        /* Symbol pointed to by a rete location
+         * This case seems to only be for identifiers or constants originally bound to variables */
 
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
@@ -404,7 +404,7 @@ rhs_value create_RHS_value(agent* thisAgent,
 
     if (rhs_value_is_unboundvar(rv))
     {
-        /* -- rv is a an unbound variable -- */
+        /* Unbound variable */
         index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
         if (! *(thisAgent->rhs_variable_bindings + index))
         {
@@ -420,30 +420,28 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             if (add_original_vars && pI_id)
             {
-                lO_id = thisAgent->explanationBasedChunker->get_or_create_o_id(sym, pI_id);
+                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym, pI_id);
             }
-            /* -- generate will increment the refcount on the new variable,
-             *    so don't need to do it here. -- */
+            /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, true);
         }
         else
         {
-            /* -- unbound variable was already created in previous rhs action -- */
+            /* unbound variable was already created in previous rhs action */
             sym = *(thisAgent->rhs_variable_bindings + index);
         }
         if (add_original_vars && pI_id)
         {
-            lO_id = thisAgent->explanationBasedChunker->get_or_create_o_id(sym, pI_id);
+            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym, pI_id);
         }
 
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u (%s)\n", sym, lO_id, pI_id, add_original_vars ? "T" : "F");
-        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id);
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u\n", sym, lO_id, pI_id);
+        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, true);
     }
 
     if (rhs_value_is_funcall(rv))
     {
-        /* -- rv is a rhs function -- */
         fl = rhs_value_to_funcall_list(rv);
         allocate_cons(thisAgent, &new_fl);
         new_fl->first = fl->first;
@@ -465,13 +463,11 @@ rhs_value create_RHS_value(agent* thisAgent,
     }
     else
     {
-        /* -- rv is a rhs_symbol
-         *    This case seems to only be for literal values including those in function calls. -- */
-
+        /* Literal values including those in function calls. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->o_id : 0;
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, lO_id);
-        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id, rs->was_unbound_var);
     }
 }
 
@@ -532,29 +528,38 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
-    if (!sym)
-    {
-        dprint(DT_ALLOCATE_RHS_VALUE, "allocate_rhs_value_no_refcount called with nil.\n");
-        return reinterpret_cast<rhs_value>(NIL);
-    }
+    if (!sym) return reinterpret_cast<rhs_value>(NIL);
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->o_id = pO_ID;
-//    dprint(DT_ALLOCATE_RHS_VALUE, "Allocated new rhs_value for new rhs_symbol %y(%u).\n", sym, pO_ID);
+    new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
 {
     if (sym)
     {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID);
+    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID, pWasUnbound);
+}
+
+bool rhs_value_is_literalizing_function(rhs_value rv)
+{
+    cons* fl;
+    rhs_function* rf;
+    if (rhs_value_is_funcall(rv))
+    {
+        fl = rhs_value_to_funcall_list(rv);
+        rf = static_cast<rhs_function_struct*>(fl->first);
+        return rf->literalize_arguments;
+    }
+    return false;
 }
 

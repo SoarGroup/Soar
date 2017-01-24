@@ -22,7 +22,7 @@
 #include "working_memory.h"
 #include "working_memory_activation.h"
 
-void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta)
+void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta, bool stripLTILinks)
 {
     if (my_list.empty())
     {
@@ -61,7 +61,11 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
                 continue;
             }
         }
-
+        if (stripLTILinks)
+        {
+            pref->id->id->LTI_ID = 0;
+            if (pref->value->is_lti()) pref->value->id->LTI_ID = 0;
+        }
         pref = pref->inst_next;
     }
 
@@ -71,9 +75,9 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
         // such as to potentially produce justifications that can follow
         // it to future adventures (potentially on new states)
         instantiation* my_justification_list = NIL;
-        dprint(DT_MILESTONES, "Calling chunk instantiation from _smem_process_buffered_wme_list...\n");
-        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-        thisAgent->explanationBasedChunker->build_chunk_or_justification(inst, &my_justification_list);
+        dprint(DT_MILESTONES, "Asserting preferences of new architectural instantiation in _smem_process_buffered_wme_list...\n");
+//        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
+//        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &my_justification_list);
 
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)
@@ -120,12 +124,12 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     }
 }
 
-void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes)
+void SMem_Manager::install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, bool stripLTILinks)
 {
     dprint(DT_SMEM_INSTANCE, "Installing meta wme buffer.\n");
-    install_buffered_triple_list(state, cue_wmes, meta_wmes, true);
+    install_buffered_triple_list(state, cue_wmes, meta_wmes, true, false);
     dprint(DT_SMEM_INSTANCE, "Installing retrieved wme buffer.\n");
-    install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false);
+    install_buffered_triple_list(state, cue_wmes, retrieval_wmes, false, stripLTILinks);
 }
 
 void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value)
@@ -150,6 +154,12 @@ void SMem_Manager::clear_instance_mappings()
     dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size(), iSti_to_lti_map.size());
 }
 
+void SMem_Manager::force_add_identity_for_STI(Symbol* pSym, uint64_t pID)
+{
+    if (!pSym->is_sti()) return;
+    sti_to_identity_map[pSym] = pID;
+}
+
 uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
 {
     sym_to_id_map::iterator lIter;
@@ -162,7 +172,7 @@ uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
     {
         return lIter->second;
     } else {
-        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_o_id(pSym, pI_ID);
+        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_identity(pSym, pI_ID);
         sti_to_identity_map[pSym] = lID;
         return lID;
     }
@@ -365,7 +375,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
                 install_memory(state, (*iterator)->id->LTI_ID, (*iterator), false, meta_wmes, retrieval_wmes, install_type, depth - 1, visited);//choosing not to bla children of retrived node
             }
         }
-        dprint(DT_SMEM_INSTANCE, "Done installng memory called for %y %u %y.\n", state, pLTI_ID, sti);
+        dprint(DT_SMEM_INSTANCE, "Done installing memory called for %y %u %y.\n", state, pLTI_ID, sti);
 
     if (triggered)
     {

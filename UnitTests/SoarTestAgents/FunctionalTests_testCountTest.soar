@@ -1,0 +1,442 @@
+# This is the source used for TestSoarPerformance in the UM 9.0.0
+# distribution of Soar. Courtesy of John Laird and Bob Marinier
+chunk always
+max-elaborations 1000000
+
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {count-test*propose*count-test1
+   (state <s> ^name count-test
+              ^current-test.test-number 1
+              ^count > 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test1)
+}
+
+sp {count-test*apply*count-test1
+   (state <s> ^operator.name count-test1
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+
+max-elaborations 10000
+
+sp {count-test*propose*count-test2
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 2
+         ^test-initialized true
+        -^test-complete true)
+
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test2)
+}
+
+sp {count-test*apply*count-test2
+   (state <s> ^operator.name count-test2
+              ^count { <count> > 0 })
+-->
+   (<s> ^count <count> -
+               (- <count> 1))
+}
+
+max-elaborations 10000
+
+sp {count-test*propose*count-test3
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 3
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test3)
+}
+
+sp {count-test*apply*count-test3
+   (state <s> ^operator.name count-test3
+              ^count { <count> > 0 })
+-->
+   (<s> ^count (- <count> 1))
+}
+
+sp {count-test*propose*count-test4
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 4
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test4)
+}
+
+sp {count-test4*propose*substate-count
+   (state <s> ^name count-test4
+              ^superstate.count > 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name substate-count)
+}
+
+sp {count-test4*count-operator-substate*apply*count
+   (state <s> ^operator.name substate-count
+              ^superstate <ss>)
+   (<ss> ^count <count>)
+-->
+   (<ss> ^count <count> -
+               (- <count> 1))
+}
+
+sp {Impasse__State_No-Change*propose*propose-super-operator-test8
+   (state <s> ^impasse tie
+              ^superstate <ss>)
+   (<ss> ^current-test.test-number 8
+         ^operator <o> +)
+-->
+   (<ss> ^operator <o> =)
+}
+
+sp {Impasse__operator_tie*propose*select-super-operator-test7
+   (state <s> ^impasse tie
+              ^superstate.current-test.test-number 7)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name select-super-operator-test7)
+}
+
+sp {Impasse__operator_tie*apply*select-super-operator-test7
+   (state <s> ^operator.name select-super-operator-test7
+              ^superstate <ss>)
+   (<ss> ^operator <o> +)
+-->
+   (<ss> ^operator <o> =)
+}
+
+sp {Impasse__State_No-Change*propose*propose-super-operator-test6
+   (state <s> ^impasse no-change
+              ^attribute state
+              ^superstate <ss>)
+   (<ss> ^current-test.test-number 6
+         ^count > 0)
+-->
+   (<ss> ^operator.name count-test6)
+}
+
+sp {Impasse__State_No-Change*propose*propose-super-operator-test5
+   (state <s> ^impasse no-change 
+              ^attribute state
+              ^superstate.current-test.test-number 5)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name propose-super-operator-test5)
+}
+
+sp {Impasse__State_No-Change*apply*propose-super-operator-test5
+   (state <s> ^operator.name propose-super-operator-test5
+              ^superstate <ss>)
+   (<ss> ^count > 0)
+-->
+   (<ss> ^operator.name count-test5)
+}
+
+sp {count-test*apply*count-test5
+   (state <s> ^operator.name count-test5
+              ^count <c>)
+--> 
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+
+sp {count-test*apply*count-test6
+   (state <s> ^operator.name count-test6
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+
+sp {count-test*propose*count-test7
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 7
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test7)
+}
+
+sp {count-test*propose*count-test7b
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 7
+         ^test-initialized true
+        -^test-complete true
+        -^test-number 6)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test7)
+}
+
+sp {count-test*apply*count-test7
+   (state <s> ^operator.name count-test7
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+
+sp {count-test*propose*count-test8
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 8
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test8)
+}
+
+sp {count-test*propose*count-test8b
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 8
+         ^test-initialized true
+        -^test-complete true
+        -^test-number 6)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test8)
+}
+
+sp {count-test*apply*count-test8
+   (state <s> ^operator.name count-test8
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+
+sp {count-test*propose*count-test9
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 9
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test9)
+}
+
+sp {count-test9*elaborate*substate
+   (state <s> ^name count-test9
+              ^superstate.current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-comment <tc>)
+-->
+   (<s> ^test-structure <ts>
+        ^test-number <tn>)
+   (<ts> ^test-comment <tc>
+         ^test-structure <ts>)
+}
+
+sp {count-test9*propose*substate-count
+   (state <s> ^name count-test9
+              ^superstate <ss>
+              ^superstate.count > 0)
+   (<ss> ^current-test <ct>
+        -^current-test { <otherct> <> <ct> })
+   (<ct> ^test-number 9)
+  -{(<ss> ^current-test.test-number <> 9)}
+   (<s> ^test-structure.test-structure.test-comment <tn>
+        ^test-structure <ts>
+       -^test-structure { <> <ts> <x> })
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test9)
+}
+
+sp {count-test9*count-operator-substate*apply*count
+   (state <s> ^operator.name count-test9
+              ^superstate <ss>)
+   (<ss> ^count <count>)
+-->
+   (<ss> ^count <count> -
+                (- <count> 1))
+}
+
+sp {propose*initialize-count-test
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-count-test)
+}
+
+sp {apply*initialize-count-test
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-count-test)
+-->
+   (<s> ^name count-test
+        ^current-test <t1>)
+   (<t1> ^test-number 1
+         ^test-comment |Count in top-state using operators.|
+         ^test-count 5000
+         ^next-test <t2>)
+   (<t2> ^test-number 2
+         ^test-comment |Count in top-state in single operator using rules.|
+         ^test-count 5000
+         ^next-test <t3>)
+   (<t3> ^test-number 3
+         ^test-comment |Count in top-state using monotonic applications - no deletions. Can grow WM to be very large.|
+         ^test-count 5000
+         ^next-test <t4>)
+   (<t4> ^test-number 4
+         ^test-comment |Count in substate using operators - test operator no-change, o-support results, chunking.|
+         ^test-count 5000
+         ^next-test <t5>)
+   (<t5> ^test-number 5
+         ^test-comment |Create count operators in substate - test state no-change, i-support results via suboperator, chunking.|
+         ^test-count 5000
+         ^next-test <t6>)
+   (<t6> ^test-number 6
+         ^test-comment |Create count operators in substate - test state no-change, i-support results via elaboration, chunking.|
+         ^test-count 5000
+         ^next-test <t7>)
+   (<t7> ^test-number 7
+         ^test-comment |Select count operators in substate - test tie subgoal, i-support results via supoperator, chunking.|
+         ^test-count 5000
+         ^next-test <t8>)
+   (<t8> ^test-number 8
+         ^test-comment |Select count operators in substate - test tie subgoal, i-support results, chunking.|
+         ^test-count 5000
+         ^next-test <t9>)
+   (<t9> ^test-number 9
+         ^test-count 10
+         ^test-comment |Select count operators in substate - try to get chunking to crash on conditions.|
+         ^next-test nil)
+}
+
+sp {count-test*propose*next-test
+   (state <s> ^name count-test
+              ^current-test <ct>)
+   (<ct> ^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-test
+         ^current-test <ct>)
+}
+
+sp {count-test*apply*next-test*monitor
+   (state <s> ^operator.name next-test
+              ^current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-complete true)
+-->
+  (write (crlf) |Test #| <tn> | Complete.|)
+}
+
+sp {count-test*apply*next-test
+   (state <s> ^operator.name next-test
+              ^current-test <ct>)
+   (<ct> ^next-test <nt>)
+-->
+   (<s> ^current-test <ct> -
+                      <nt>)
+}
+
+sp {count-test*apply*no-next-test
+   (state <s> ^operator <o>
+              ^current-test <ct>)
+   (<o> ^current-test <ct>)
+   (<ct> ^next-test nil)
+-->
+   (write (crlf) |**************Tests all complete.**********|)
+   (succeeded)
+}
+
+sp {count-test*propose*set-up-current-test
+   (state <s> ^name count-test
+              ^current-test <ct>)
+   (<ct> -^test-complete true
+         -^test-initialized true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name set-up-current-test)
+}
+
+sp {count-test*apply*set-up-current-test*monitor
+   (state <s> ^name count-test
+              ^operator.name set-up-current-test
+              ^current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-comment <tc>
+         ^test-count <test-count>)
+-->
+   (write (crlf) |Test #| <tn> | | <tc>)
+   (write (crlf) |Running for | <test-count> | counts.|)
+   
+}
+
+sp {count-test*apply*set-up-current-test*add-counts
+   (state <s> ^name count-test
+              ^operator.name set-up-current-test
+              ^current-test <ct>)
+   (<ct> ^test-count <test-count>)
+-->
+   (<ct> ^test-initialized true)
+   (<s> ^count <test-count>)   
+}
+
+sp {count-test*propose*test-complete
+   (state <s> ^name count-test
+              ^count 0
+             -^current-test.test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name test-complete)
+}
+
+sp {count-test*apply*test-complete*clear-count
+   (state <s> ^operator.name test-complete
+              ^count <c>)
+-->
+   (<s> ^count <c> -)
+}
+
+sp {count-test*apply*test-complete
+   (state <s> ^operator.name test-complete
+              ^current-test <ct>)
+-->
+   (<ct> ^test-complete true)
+}
+

@@ -30,7 +30,10 @@ typedef struct instantiation_struct
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-    bool                            reliable;
+    bool                            tested_quiescence;
+    bool                            tested_local_negation;
+    bool                            tested_LTM;
+    bool                            creates_deep_copy;
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
     bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
@@ -44,16 +47,16 @@ typedef struct instantiation_struct
 } instantiation;
 
 void                init_instantiation_pool(agent* thisAgent);
-
+void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL);
 void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
-void                init_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
+void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
 void                retract_instantiation(agent* thisAgent, instantiation* inst);
 void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
 goal_stack_level    get_match_goal(condition* top_cond);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
 void                copy_OSK(agent* thisAgent, instantiation* inst);
-Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w);
+Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {

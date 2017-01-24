@@ -23,6 +23,7 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 {
     thisAgent                   = myAgent;
     name                        = NULL;
+    type                        = ebc_no_rule;
     chunkID                     = pChunkID;
     chunkInstantiation          = NULL;
     chunkInstantiationID        = 0;
@@ -46,13 +47,20 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
+    stats.tested_deep_copy                  = false;
+    stats.tested_quiescence                 = false;
+    stats.tested_ltm_recall                 = false;
     stats.reverted                          = false;
     stats.lhs_unconnected                   = false;
     stats.rhs_unconnected                   = false;
     stats.repair_failed                     = false;
     stats.did_not_match_wm                  = false;
+    stats.rhs_arguments_literalized         = 0;
     stats.num_grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
+    stats.merged_disjunctions               = 0;
+    stats.merged_disjunction_values         = 0;
+    stats.eliminated_disjunction_values     = 0;
     stats.instantations_backtraced          = 0;
     stats.seen_instantations_backtraced     = 0;
     stats.constraints_attached              = 0;
@@ -145,6 +153,17 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     for (condition* cond = lhs; cond != NIL; cond = cond->next)
     {
         lChunkCondInst = cond->inst;
+        if ((type == ebc_no_rule) && (cond->type == POSITIVE_CONDITION) )
+        {
+            if (cond->data.tests.id_test->eq_test->data.referent->is_sti())
+            {
+                type = ebc_justification;
+                thisAgent->explanationMemory->stats.justifications_explained++;
+            } else {
+                type = ebc_chunk;
+                thisAgent->explanationMemory->stats.chunks_explained++;
+            }
+        }
         if (lChunkCondInst)
         {
             dprint(DT_EXPLAIN, "Matching chunk condition %l from instantiation i%u (%y)", cond, lChunkCondInst->i_id, lChunkCondInst->prod_name);
@@ -173,7 +192,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
         }
         lcondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, lchunkInstRecord);
         lcondRecord->set_instantiation(lchunkInstRecord);
-        cond->inst = chunkInstantiation;
+        //cond->inst = chunkInstantiation;
     }
     dprint(DT_EXPLAIN, "...done with (4) adding chunk instantiation conditions!\n");
 
@@ -458,7 +477,6 @@ void chunk_record::visualize()
         x1 = i1->get_instantiationID();
         x2 = chunkID;
         x3 = lCond->get_conditionID();
-        dprint(DT_DEBUG, "Connecting %u %u %u.\n", x1, x2, x3);
         visualizer->viz_connect_inst_to_chunk(x1, x2, x3);
 //        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), chunkID, lCond->get_conditionID());
     }

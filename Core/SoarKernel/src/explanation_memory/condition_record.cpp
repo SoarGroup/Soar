@@ -156,44 +156,17 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
 
 bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)
 {
-    cons* c;
-
-    switch (t->type)
-    {
-        case EQUALITY_TEST:
-            if (t->identity)
-            {
-                id_set::const_iterator it;
-                it = pIDSet->find(t->identity);
-                if (it != pIDSet->end())
-                {
-                    return true;
-                }
-            }
-
-            return false;
-            break;
-        case CONJUNCTIVE_TEST:
-            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            {
-                if (test_contains_identity_in_set(thisAgent, static_cast<test>(c->first), pIDSet))
-                {
-                    return true;
-                }
-            }
-            return false;
-            break;
-
-        default:  /* relational tests other than equality */
-            return false;
-    }
+    if (!t || !t->eq_test || !t->eq_test->identity) return false;
+    auto it = pIDSet->find(t->eq_test->identity);
+    if (it != pIDSet->end()) return true;
+    return false;
 }
 
 bool condition_record::contains_identity_from_set(const id_set* pIDSet)
 {
     bool returnVal = (test_contains_identity_in_set(thisAgent, condition_tests.value, pIDSet) ||
-        test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
-        test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
+                      test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
+                      test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
 
     dprint(DT_EXPLAIN_PATHS, "condition_record::contains_identity_from_set returning %s.\n", returnVal ? "TRUE" : "FALSE");
 
@@ -216,7 +189,7 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 
 }
 
-void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable)
+void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper)
 {
     cons* c, *c2;
     test c1_test, c2_test;
@@ -224,7 +197,7 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
+        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false, isSuper);
         if (pTestIdentity->type == CONJUNCTIVE_TEST)
         {
             c2 =  pTestIdentity->data.conjunct_list;
@@ -243,13 +216,13 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
             if (c2)
             {
                 c2_test = static_cast<test>(c2->first);
-                viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+                viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable, isSuper);
             } else {
                 if (test_has_referent(c1_test) && c1_test->data.referent->is_variable())
                 {
-                    viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+                    viz_combo_test(c1_test, c2_test, pNode_id, false, false, false, false, printIdentity, printAcceptable, isSuper);
                 } else {
-                    viz_combo_test(c1_test, NULL, pNode_id, false, false, false, false, false, printAcceptable);
+                    viz_combo_test(c1_test, NULL, pNode_id, false, false, false, false, false, printAcceptable, isSuper);
                 }
             }
             visualizer->viz_record_end();
@@ -262,9 +235,9 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     } else {
         if (printInitialPort || printFinalPort)
         {
-            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort);
+            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort, isSuper);
         } else {
-            visualizer->viz_table_element_start();
+            visualizer->viz_table_element_start(0, ' ', true, isSuper);
         }
         if (isAttribute)
         {
@@ -286,18 +259,18 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     }
 }
 
-void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable)
+void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper)
 {
     cons* c;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false);
+        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false, isSuper);
         for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
             visualizer->viz_record_start();
-            viz_matched_test(static_cast<test>(c->first), pMatchedWME, pNode_id, false, false, false, false, printIdentity, printAcceptable);
+            viz_matched_test(static_cast<test>(c->first), pMatchedWME, pNode_id, false, false, false, false, printIdentity, printAcceptable, isSuper);
             visualizer->viz_record_end();
             visualizer->viz_endl();
         }
@@ -307,9 +280,9 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
     } else {
         if (printInitialPort || printFinalPort)
         {
-            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort);
+            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort, isSuper);
         } else {
-            visualizer->viz_table_element_start();
+            visualizer->viz_table_element_start(0, ' ', false, isSuper);
         }
         if (isAttribute)
         {
@@ -340,34 +313,36 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
  *
  * Note:  This may cause a bad vizgraph if attribute of NC is a conjunct.  The minus
  *        sign would be outside the brackets of the nested records for the conjunct. */
-void condition_record::visualize_for_wm_trace()
+void condition_record::visualize_for_wm_trace(goal_stack_level match_level)
 {
     test id_test_without_goal_test ;
+    bool isSuper = (match_level > 0) && (wme_level_at_firing < match_level);
 
     thisAgent->visualizationManager->viz_record_start();
     id_test_without_goal_test = copy_test(thisAgent, condition_tests.id, false, false, true);
-    viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false, false);
+    viz_matched_test(id_test_without_goal_test, NULL, conditionID, true, false, false, false, false, false, isSuper);
     deallocate_test(thisAgent, id_test_without_goal_test);
-    viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false, false);
-    viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false, test_for_acceptable_preference);
+    viz_matched_test(condition_tests.attr, NULL, conditionID, false, false, true, (type == NEGATIVE_CONDITION), false, false, isSuper);
+    viz_matched_test(condition_tests.value, NULL, conditionID, false, true, false, false, false, test_for_acceptable_preference, isSuper);
     thisAgent->visualizationManager->viz_record_end();
 }
 
 void condition_record::visualize_for_chunk()
 {
     thisAgent->visualizationManager->viz_record_start();
-    viz_matched_test(condition_tests.id, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace, false);
-    viz_matched_test(condition_tests.attr, matched_wme.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace, false);
-    viz_matched_test(condition_tests.value, matched_wme.value, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace, test_for_acceptable_preference);
+    viz_matched_test(condition_tests.id, matched_wme.id, conditionID, true, false, false, false, thisAgent->explanationMemory->print_explanation_trace, false, false);
+    viz_matched_test(condition_tests.attr, matched_wme.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), thisAgent->explanationMemory->print_explanation_trace, false, false);
+    viz_matched_test(condition_tests.value, matched_wme.value, conditionID, false, true, false, false, thisAgent->explanationMemory->print_explanation_trace, test_for_acceptable_preference, false);
     thisAgent->visualizationManager->viz_record_end();
 }
 
-void condition_record::visualize_for_explanation_trace(condition* pCond)
+void condition_record::visualize_for_explanation_trace(condition* pCond, goal_stack_level match_level)
 {
+    bool isSuper = (match_level > 0) && (wme_level_at_firing < match_level);
     thisAgent->visualizationManager->viz_record_start();
-    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, true, false, false, false, true, false);
-    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true, false);
-    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true, test_for_acceptable_preference);
+    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, true, false, false, false, true, false, isSuper);
+    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, false, false, true, (type == NEGATIVE_CONDITION), true, false, isSuper);
+    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, false, true, false, false, true, test_for_acceptable_preference, isSuper);
     thisAgent->visualizationManager->viz_record_end();
 }
 

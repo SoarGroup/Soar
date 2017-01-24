@@ -139,17 +139,26 @@ inline bool condition_is_operational(condition* cond, goal_stack_level grounds_l
     uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
     /* MToDo | Remove */
 //    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
-//        dprint(DT_DEBUG, "Levels don't match: idLevel %u = btLevel %u = prefLevel %u!!!\n", idLevel, btLevel, prefLevel);
-//    else
-//        dprint(DT_DEBUG, "Levels: idLevel %u = btLevel %u = prefLevel %u\n", idLevel, btLevel, prefLevel);
+//    {
+ //       dprint(DT_DEBUG, "Levels don't match: id level %u != cond bt.level %u!!!  Operational is <= %d\n", idLevel, btLevel, static_cast<int64_t>(grounds_level));
+//            "!= pref id level %u!!!\n          %y | %l | %p\n", prefLevel, thisID, cond, cond->bt.trace);
+//        preference* testp = find_clone_for_level(cond->bt.trace, btLevel);
+//        preference* testp2 = find_clone_for_level(cond->bt.trace, (grounds_level));
+//        preference* testp3 = find_clone_for_level(cond->bt.trace, (grounds_level + 1));
+//        dprint(DT_DEBUG, "bt level, bt level + 1, grounds_level, grounds_level + 1: %u %u %d %d %s %s %s %s",
+ //           btLevel, static_cast<int64_t>(grounds_level), static_cast<int64_t>(grounds_level+1),
+ //           testp ? "Yes" : "No ",testp2 ? "Yes" : "No ",testp3 ? "Yes" : "No ");
+ //   }
+
     return  (thisID->id->level <= grounds_level);
+//    return (btLevel <= grounds_level);
 }
 
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
-                                     const identity_triple o_ids_to_replace,
-                                     const rhs_triple rhs_funcs,
+                                     const identity_quadruple o_ids_to_replace,
+                                     const rhs_quadruple rhs_funcs,
                                      uint64_t bt_depth,
                                      BTSourceType bt_type)
 {
@@ -209,23 +218,20 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
-        #endif
         dprint(DT_BACKTRACE, "... already backtraced through.\n");
         m_current_bt_inst_id = last_bt_inst_id;
         return;
     }
 
     inst->backtrace_number = backtrace_number;
-    #ifdef BUILD_WITH_EXPLAINER
     thisAgent->explanationMemory->add_bt_instantiation(inst, bt_type);
     thisAgent->explanationMemory->increment_stat_instantations_backtraced();
-    #endif
-    if (!inst->reliable)
-    {
-        m_reliable = false;
-    }
+
+    if (inst->tested_quiescence) m_tested_quiescence = true;
+    if (inst->tested_local_negation) m_tested_local_negation = true;
+    if (inst->tested_LTM) m_tested_ltm_recall = true;
+    if (inst->creates_deep_copy) m_tested_deep_copy = true;
 
     Symbol* thisID, *value;
 
@@ -233,7 +239,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_BACKTRACE, " Checking operationality of condition %l\n", c);
+            dprint(DT_BACKTRACE, "Checking operationality of condition of of instantiation %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
@@ -244,7 +250,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 else                                        /* Another condition that matches the same wme */
                 {
                     add_to_grounds(c);
-                    add_singleton_unification_if_needed(c);
+//                    add_singleton_unification_if_needed(c);
                 }
             } else {
                 add_to_locals(c);
@@ -253,7 +259,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
         else
         {
-            dprint(DT_BACKTRACE, "Backtracing adding negated condition...%l (i%u)\n", c, c->inst->i_id);
+            dprint(DT_BACKTRACE, "Adding negated condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -338,7 +344,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         thisAgent->outputManager->set_print_test_format(true, true);
-        dprint(DT_BACKTRACE, "Backtracing through local condition %l...\n", cond);
+        dprint(DT_BACKTRACE, "Backtracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
         thisAgent->outputManager->clear_print_test_format();
         bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 
@@ -387,11 +393,13 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         Symbol* thisValue = cond->data.tests.value_test->eq_test->data.referent;
         if (thisID->id->isa_goal)
         {
-            if ((thisAttr == thisAgent->symbolManager->soarSymbols.quiescence_symbol) &&
+            if (cond->inst->tested_quiescence ||
+               ((thisAttr == thisAgent->symbolManager->soarSymbols.quiescence_symbol) &&
                 (thisValue == thisAgent->symbolManager->soarSymbols.t_symbol) &&
-                (! cond->test_for_acceptable_preference))
+                (! cond->test_for_acceptable_preference)))
             {
-                m_reliable = false;
+                m_tested_quiescence = true;
+                cond->inst->tested_quiescence = true;
             }
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {

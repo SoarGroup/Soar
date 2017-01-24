@@ -57,7 +57,7 @@ bool CommandLineInterface::DoRedirectedOutputCommand(std::vector<std::string>& a
     return false;
 }
 
-bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2)
+bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::string* pArg1, const std::string* pArg2, const std::string* pArg3)
 {
     agent* thisAgent = m_pAgentSML->GetSoarAgent();
     std::ostringstream tempStringStream;
@@ -73,6 +73,31 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
     if (!my_param)
     {
         return SetError("Invalid output sub-command.  Use 'output ?' to see a list of valid sub-commands and settings.");
+    }
+    else if (my_param == thisAgent->outputManager->m_params->agent_traces)
+    {
+        if (!pArg2)
+        {
+            PrintCLIMessage(thisAgent->outputManager->m_params->get_agent_channel_string(thisAgent).c_str());
+            return true;
+        } else {
+            int lTraceLevel;
+            if (!my_param->validate_string(pArg3->c_str()))
+            {
+                return SetError("Agent trace channel setting must be 'on' or 'off'. Use 'output ?' to see a list of valid sub-commands.");
+            }
+            if (pArg3) {
+                if (!from_string(lTraceLevel, (*pArg2)) || (lTraceLevel < 1) || (lTraceLevel > maxAgentTraces))
+                {
+                    tempStringStream << "Agent trace channel must be an integer between 1 and " << maxAgentTraces << ".";
+                    return SetError(tempStringStream.str().c_str());
+                }
+                thisAgent->output_settings->agent_traces_enabled[lTraceLevel-1] = ((*pArg3) == "on");
+            } else {
+                tempStringStream << "Agent trace channel " << lTraceLevel << " is now" ;
+                PrintCLIMessage_Item(tempStringStream.str().c_str(), my_param, 0);
+            }
+        }
     }
     else if ((my_param == thisAgent->outputManager->m_params->help_cmd) || (my_param == thisAgent->outputManager->m_params->qhelp_cmd))
     {
@@ -102,8 +127,7 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
                 tempStringStream << my_param->get_name() << " is now " << pArg2->c_str();
                 PrintCLIMessage(&tempStringStream);
             }
-            /* The following code assumes that all parameters except learn are boolean */
-            if (!strcmp(pArg1->c_str(), "print-depth"))
+            if (my_param == thisAgent->outputManager->m_params->print_depth)
             {
                 thisAgent->outputManager->m_params->update_int_setting(thisAgent, static_cast<soar_module::integer_param*>(my_param));
             } else {
@@ -307,7 +331,9 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
     m_Result.str("");
 
     // Fire off command
+    SaveOutputSettings();
     bool ret = m_Parser.handle_command(argv);
+    RestoreOutputSettings();
 
     if (!m_Result.str().empty())
     {
@@ -335,6 +361,31 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
 
     return ret;
 }
+
+void CommandLineInterface::SaveOutputSettings()
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    m_callbacks_were_enabled = thisAgent->output_settings->callback_mode;
+    m_output_was_enabled = thisAgent->output_settings->print_enabled;
+    m_console_was_enabled = thisAgent->outputManager->is_printing_to_stdout();
+
+    thisAgent->output_settings->callback_mode = true;
+    thisAgent->output_settings->print_enabled = true;
+    thisAgent->outputManager->set_printing_to_stdout(false);
+    thisAgent->outputManager->m_params->update_params_for_settings(thisAgent);
+}
+
+void CommandLineInterface::RestoreOutputSettings()
+{
+    agent* thisAgent = m_pAgentSML->GetSoarAgent();
+
+    thisAgent->output_settings->callback_mode = m_callbacks_were_enabled;
+    thisAgent->output_settings->print_enabled = m_output_was_enabled ;
+    thisAgent->outputManager->set_printing_to_stdout(m_console_was_enabled);
+    thisAgent->outputManager->m_params->update_params_for_settings(thisAgent);
+}
+
 bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent)
 {
     std::ios_base::openmode openmode = std::ios_base::out;
@@ -367,6 +418,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
                 m_LogFilename = filename;
             }
+            SaveOutputSettings();
             break;
 
         case LOG_ADD:
@@ -386,6 +438,7 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
             delete m_pLogFile;
             m_pLogFile = 0;
             m_LogFilename.clear();
+            RestoreOutputSettings();
             break;
 
         default:

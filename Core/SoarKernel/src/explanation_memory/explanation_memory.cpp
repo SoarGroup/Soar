@@ -47,7 +47,7 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
     all_actions = new std::unordered_map< uint64_t, action_record* >();
     production_id_map = new std::unordered_map< uint64_t, production* >();
-    cached_production = new std::set< production_record* >();
+    cached_production = new production_record_set();
 }
 
 void Explanation_Memory::initialize_counters()
@@ -64,7 +64,18 @@ void Explanation_Memory::initialize_counters()
     stats.max_chunks = 0;
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
+    stats.rhs_arguments_literalized = 0;
+    stats.tested_deep_copy = 0;
+    stats.tested_quiescence = 0;
+    stats.tested_ltm_recall = 0;
+    stats.tested_local_negation_just = 0;
+    stats.rhs_arguments_literalized_just = 0;
+    stats.tested_deep_copy_just = 0;
+    stats.tested_ltm_recall_just = 0;
     stats.merged_conditions = 0;
+    stats.merged_disjunctions = 0;
+    stats.merged_disjunction_values = 0;
+    stats.eliminated_disjunction_values = 0;
     stats.chunks_attempted = 0;
     stats.chunks_succeeded = 0;
     stats.justifications_attempted = 0;
@@ -83,6 +94,8 @@ void Explanation_Memory::initialize_counters()
     stats.justifications_repaired = 0;
     stats.ungrounded_justifications_added = 0;
     stats.ungrounded_justifications_ignored = 0;
+    stats.chunks_explained = 0;
+    stats.justifications_explained = 0;
 }
 
 void Explanation_Memory::clear_explanations()
@@ -427,7 +440,7 @@ bool Explanation_Memory::toggle_production_watch(production* pProduction)
     } else {
         pProduction->explain_its_chunks = true;
         ++num_rules_watched;
-        outputManager->printa_sf(thisAgent, "%fNow watching any chunks formed by rule '%y'\n", pProduction->name);
+        outputManager->printa_sf(thisAgent, "%eNow watching any chunks formed by rule '%y'\n", pProduction->name);
     }
     return true;
 }
@@ -543,7 +556,7 @@ bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID
 bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
 {
     std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    identity_triple lWatchIdentities;
+    identity_quadruple lWatchIdentities;
 
     iter_inst = all_conditions->find(pConditionID);
     if (iter_inst == all_conditions->end())

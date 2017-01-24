@@ -1,0 +1,1422 @@
+# This file enables EpMem use in the Factorization test
+
+epmem --set learning on
+smem --set learning on
+
+sp {elaboration*original-number-to-factor-mod-two
+   (state <s> ^original-number-to-factor <n>)
+-->
+   (<s> ^original-number-to-factor-mod-two (mod <n> 2))
+}
+
+sp {elaboration*enable-epmem
+   (state <s> ^original-number-to-factor-mod-two 0) # even
+-->
+   (<s> ^using-epmem true)
+}
+
+sp {elaboration*enable-smem
+   (state <s> ^original-number-to-factor-mod-two 1) # odd
+-->
+   (<s> ^using-smem true)
+}
+
+sp {complete
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 100
+         ^complete true)
+-->
+   (write |Finished Factorization Stress Test!|)
+   (halt)
+}
+
+watch 0
+# This file contains elaborations to check the first 20 factors.
+
+##########################################
+sp {wrong-answer
+   (state <s> ^factorization-object <fo>)
+   (<fo> ^checked
+        -^correct)
+-->
+   (write |Wrong Answer! | <fo>)
+   (halt)
+}
+
+##########################################
+sp {apply*check
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+-->
+   (<fo> ^checked true)
+}
+
+##########################################
+sp {preference*bigger-check-is-always-better
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^factorization-object.number <n1>)
+   (<o2> ^factorization-object.number {< <n1> <n2>})
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+sp {preference*retrieve-factor-is-always-better
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name retrieve-factor)
+   (<o2> ^name check)
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+
+##########################################
+# 2
+sp {propose*check-2
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 2
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-2
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 2
+         ^factor <2>)
+   (<2> ^value 2
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |2 is correct!|)
+}
+
+##########################################
+# 3
+sp {propose*check-3
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 3
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-3
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 3
+         ^factor <2>)
+   (<2> ^value 3
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |3 is correct!|)
+}
+
+##########################################
+# 4
+sp {propose*check-4
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 4
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-4
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 4
+         ^factor <2>)
+   (<2> ^value 2
+        ^multiplicity 2)
+-->
+   (<fo> ^correct true)
+   (write |4 is correct!|)
+}
+
+##########################################
+# 5
+sp {propose*check-5
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 5
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-5
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 5
+         ^factor <2>)
+   (<2> ^value 5
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |5 is correct!|)
+}
+
+##########################################
+# 6
+sp {propose*check-6
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 6
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-6
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 6
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 2
+        ^multiplicity 1)
+   (<3> ^value 3
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |6 is correct!|)
+}
+
+##########################################
+# 7
+sp {propose*check-7
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 7
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-7
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 7
+         ^factor <2>)
+   (<2> ^value 7
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |7 is correct!|)
+}
+
+##########################################
+# 8
+sp {propose*check-8
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 8
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-8
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 8
+         ^factor <2>)
+   (<2> ^value 2
+        ^multiplicity 3)
+-->
+   (<fo> ^correct true)
+   (write |8 is correct!|)
+}
+
+##########################################
+# 9
+sp {propose*check-9
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 9
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-9
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 9
+         ^factor <2>)
+   (<2> ^value 3
+        ^multiplicity 2)
+-->
+   (<fo> ^correct true)
+   (write |9 is correct!|)
+}
+
+##########################################
+# 10
+sp {propose*check-10
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 10
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-10
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 10
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 2
+        ^multiplicity 1)
+   (<3> ^value 5
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |10 is correct!|)
+}
+
+##########################################
+# 11
+sp {propose*check-11
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 11
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-11
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 11
+         ^factor <2>)
+   (<2> ^value 11
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |11 is correct!|)
+}
+
+##########################################
+# 12
+sp {propose*check-12
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 12
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-12
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 12
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 2
+        ^multiplicity 2)
+   (<3> ^value 3
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |12 is correct!|)
+}
+
+##########################################
+# 13
+sp {propose*check-13
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 13
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-13
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 13
+         ^factor <2>)
+   (<2> ^value 13
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |13 is correct!|)
+}
+
+##########################################
+# 14
+sp {propose*check-14
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 14
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-14
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 14
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 7
+        ^multiplicity 1)
+   (<3> ^value 2
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |14 is correct!|)
+}
+
+##########################################
+# 15
+sp {propose*check-15
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 15
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-15
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 15
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 3
+        ^multiplicity 1)
+   (<3> ^value 5
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |15 is correct!|)
+}
+
+##########################################
+# 16
+sp {propose*check-16
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 16
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-16
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 16
+         ^factor <2>)
+   (<2> ^value 2
+        ^multiplicity 4)
+-->
+   (<fo> ^correct true)
+   (write |16 is correct!|)
+}
+
+##########################################
+# 17
+sp {propose*check-17
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 17
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-17
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 17
+         ^factor <2>)
+   (<2> ^value 17
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |17 is correct!|)
+}
+
+##########################################
+# 18
+sp {propose*check-18
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 18
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-18
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 18
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 2
+        ^multiplicity 1)
+   (<3> ^value 3
+        ^multiplicity 2)
+-->
+   (<fo> ^correct true)
+   (write |18 is correct!|)
+}
+
+##########################################
+# 19
+sp {propose*check-19
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 19
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-19
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 19
+         ^factor <2>)
+   (<2> ^value 19
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |19 is correct!|)
+}
+
+##########################################
+# 20
+sp {propose*check-20
+   (state <s> ^name Factorization
+              ^factorization-object <fo>)
+   (<fo> ^number 20
+        -^correct)
+-->
+   (<s> ^operator <check> + >)
+   (<check> ^name check
+            ^factorization-object <fo>)
+}
+
+sp {apply*check-20
+   (state <s> ^operator <o>)
+   (<o> ^name check
+        ^factorization-object <fo>)
+   (<fo> ^number 20
+         ^factor <2>
+         ^factor <3>)
+   (<2> ^value 2
+        ^multiplicity 2)
+   (<3> ^value 5
+        ^multiplicity 1)
+-->
+   (<fo> ^correct true)
+   (write |20 is correct!|)
+}
+# This file handles all the clean up after all the substates are blown away.
+
+####################################################
+###                 OPERATORS                    ###
+####################################################
+
+####################################################
+###              CLEAN-UP-SUBSTATES              ###
+# This proposes to clean up the factorization objects
+# on the top state so long as there is a "need to
+# clean up"
+sp {propose*clean-up-substates
+   (state <s> ^name Factorization
+              ^needs-clean-up true)
+-->
+   (<s> ^operator.name clean-up-substates)
+}
+
+# This removes all the factorization objects from the
+# state
+sp {apply*clean-up-substates*remove-factorization-object
+   (state <s> ^operator.name clean-up-substates
+              ^factorization-object <fo>)
+   (<fo> ^number <n>)
+-->
+   (write |Factored | <n> |: |)
+   (write (cmd |print| |--depth| |2| <fo>))
+   (<s> ^factorization-object <fo> -)
+}
+
+sp {apply*clean-up-substates
+   (state <s> ^operator.name clean-up-substates
+              ^needs-clean-up <ncu>)
+-->
+   (<s> ^needs-clean-up <ncu> -)
+}
+# This file has all the elaborations for the factor recursive substate
+
+####################################################
+###    CREATE-NUMBER-TO-FACTOR-FROM-COUNTER      ###
+# This elaboration is for the counter on the top state
+# but never on the recursive substates.  What it does
+# is checks whether we should be factoring a number and
+# if we should, creating the structure to force a
+# subgoal creation.
+sp {elaboration*create-number-to-factor-from-counter
+   (state <s> ^counter <c>
+              ^needs-factorization true
+              ^name Factorization)
+-->
+   (<s> ^number-to-factor <c>)
+}
+
+####################################################
+###    FACTOR-NUMBER*HAS-FACTORIZATION-OBJECT    ###
+# This is an elaboration to check whether there is at least
+# one factorization object on the factor-number operator
+# because if we didn't check, we wouldn't drop into a substate
+# since our apply rule would see that the counter has created
+# a needs factorization flag set to true.
+sp {elaboration*factor-number*has-factorization-object
+   (state <s> ^factorization-object <f-o>)
+-->
+   (<s> ^has-factorization-object true)
+}
+
+####################################################
+###          NUMBER-TO-FACTOR-TO-INT             ###
+# This makes sure the number we're factoring is a "int"
+# because whenever we divide it we will get a float
+# and mod only works between ints
+sp {elaboration*number-to-factor-to-int
+   (state <s> ^number-to-factor <ntf>)
+-->
+   (<s> ^number-to-factor-int (int <ntf>))
+}
+
+####################################################
+###        NUMBER-TO-FACTOR-MOD-COUNTER          ###
+# This is an elaboration to determine the mod of 
+# the number we're trying to factor mod our current
+# count.
+sp {elaboration*number-to-factor-mod-counter
+   (state <s> ^name factor-recursive-substate
+              ^counter <c>
+              ^number-to-factor-int <ntf>)
+-->
+   (<s> ^number-to-factor-mod-counter (mod <ntf> <c>))
+}
+
+####################################################
+###          NUMBER-TO-FACTOR-IS-PRIME           ###
+# This elaboration is used to determine whether a
+# number we're trying to factor is prime.  The
+# reason it's checking whether number to factor is 1
+# instead of prime is because after we divide the
+# number, if it's prime, we'll get a value of 1
+# because it was divided by itself.  This is then
+# used to propose to set the completed flag to true.
+sp {elaboration*number-to-factor-is-prime
+   (state <s> ^number-to-factor-int 1)
+-->
+   (<s> ^number-to-factor-is-prime true)
+}
+
+####################################################
+###       HAS-FACTORIZATION-OBJECT-COMPLETE      ###
+# This is an elaboration to check whether there is at least
+# one factorization object on the factor-number operator
+# because if we didn't check, we wouldn't drop into a substate
+# since our apply rule would see that the counter has created
+# a needs factorization flag set to true.
+sp {elaboration*has-factorization-object-complete
+   (state <s> ^factorization-object <f-o>)
+   (<f-o> ^complete true)
+-->
+   (<s> ^has-factorization-object-complete true)
+}
+
+####################################################
+### EXISTS-FACTORIZATION-OBJECT-WITHOUT-COMPLETE ###
+# This is an elaboration to check whether there is at least
+# one factorization object on the factor-number operator
+# because if we didn't check, we wouldn't drop into a substate
+# since our apply rule would see that the counter has created
+# a needs factorization flag set to true.
+sp {elaboration*exists-factorization-object-without-complete
+   (state <s> ^factorization-object <f-o>)
+   (<f-o> -^complete)
+-->
+   (<s> ^exists-factorization-object-without-complete true)
+}
+####################################################
+###     GENERIC-OPERATOR*ADD-IS-EPMEM-OBJECT     ###
+# This piggy backs onto other operators.  All this
+# does is add an o-supported epmem flag to any
+# factorization object created in an epmem substate.
+# This is necessary so epmem objects always propogate
+# to the top state.
+sp {apply*generic-operator*add-is-epmem-object
+   (state <s> ^name factor-recursive-substate
+              ^using-epmem true
+              ^operator <o>
+              ^factorization-object <fo>
+              ^original-number-to-factor <n>)
+   (<fo> ^number <n>
+        -^epmem)
+-->
+   (<fo> ^epmem true)
+}
+####################################################
+###       COPY-FACTORIZATION-OBJECTS*EPMEM       ###
+# This copies all the factorization objects to the superstate
+# since this substate is about to be blown away.
+sp {apply*copy-factorization-objects*epmem
+   (state <s> ^operator.name copy-factorization-objects
+			  ^factorization-object <fo>
+     		  ^original-number-to-factor <n>
+     		  ^superstate <ss>)
+   (<fo> ^complete true
+         ^number <> <n>
+         ^epmem true)
+-->
+   (<ss> ^factorization-object <fo>)
+}
+####################################################
+###            FOUND-FACTORS-IN-EPMEM            ###
+# If we found some factors, this will be proposed
+# and called to get the factors.
+sp {propose*found-factors-in-epmem
+   (state <s> ^name factor-recursive-substate
+              ^using-epmem true
+              ^epmem.result.retrieved <episode>
+              ^epmem.result.success
+              ^original-number-to-factor <n>)
+   (<episode> ^factorization-object.number <n>)
+ -{(state <s> ^factorization-object <fo>)
+   (<fo> ^epmem true)}
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name found-factors-in-epmem)
+}
+
+# This copies only the factor we want from an episode
+sp {apply*found-factors-in-epmem
+   (state <s> ^operator.name found-factors-in-epmem
+              ^epmem.result.retrieved <episode>
+              ^original-number-to-factor <n>)
+   (<episode> ^factorization-object <fo>)
+   (<fo> ^number <n>)
+-->
+   (<s> ^factorization-object <fo>)
+   (<fo> ^epmem true)
+}
+####################################################
+###           LOOK-UP-IN-EPMEM-FACTORS           ###
+# This looks up a factor in EpMem.
+sp {propose*look-up-in-epmem-factors
+   (state <s> ^name factor-recursive-substate
+              ^using-epmem true
+             -^needs-factorization
+             -^factorization-object <fo>
+             -^epmem.command.query)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name look-up-in-epmem-factors)
+}
+
+# This actually creates the query
+sp {apply*look-up-in-epmem-factors
+   (state <s> ^operator.name look-up-in-epmem-factors
+              ^original-number-to-factor <n>
+              ^epmem.command <ec>)
+-->
+   (<ec> ^query.factorization-object.number <n>)
+}
+
+####################################################
+###           COPY-ADDITIONAL-FACTORS            ### 
+# This copies additional factors from the substate's
+# factorization objects.  This only needs to copy
+# the largest number's factors because the other ones
+# are dervived from the largest number's.
+sp {propose*copy-additional-factors
+   (state <s> ^name factor-recursive-substate
+              ^needs-to-copy-additional-factors true
+              ^factorization-object <fo>)
+   (<fo> ^complete true
+         ^number <n>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name copy-additional-factors
+        ^number <n>)
+}
+
+# This copies all the factors which already exist at this point
+# onto the object, this will only be true in cases like '4' where
+# it gets a value of 2 for the first factor and an additional factor
+# of 2 later on.
+sp {apply*copy-additional-factors*copy-factors-already-existing
+   (state <s> ^operator <o>
+              ^original-number-to-factor <n>
+              ^factorization-object <non-complete-factor-object>
+              ^factorization-object <biggest-complete-factor-object>)
+   (<o> ^name copy-additional-factors
+        ^number <biggest-complete-number>)
+   (<biggest-complete-factor-object> ^number <biggest-complete-number>
+               					     ^factor <factor>)
+   (<factor> ^value <v>
+             ^multiplicity <m>)
+   (<non-complete-factor-object> ^number <n>
+       						    -^complete
+       						     ^factor <non-complete-existing-factor>)
+   (<non-complete-existing-factor> ^value <v>
+                				   ^multiplicity <non-complete-existing-factor-m>)
+-->
+   (<non-complete-existing-factor> ^multiplicity <non-complete-existing-factor-m> -
+                				   ^multiplicity (+ <non-complete-existing-factor-m> <m>))
+}
+
+# This copies all the factors which were derived from the substates
+# which don't yet exist in our factorization object.
+sp {apply*copy-additional-factors*copy-factors-not-already-existing
+   (state <s> ^operator <o>
+              ^original-number-to-factor <n>
+              ^factorization-object <non-complete-factor-object>
+              ^factorization-object <biggest-complete-factor-object>)
+   (<o> ^name copy-additional-factors
+        ^number <biggest-complete-number>)
+   (<biggest-complete-factor-object> ^number <biggest-complete-number>
+                                     ^factor <factor>)
+   (<factor> ^value <v>
+             ^multiplicity <m>)
+   (<non-complete-factor-object> ^number <n>
+                                -^complete)
+ -{(<non-complete-factor-object> ^factor <non-complete-factor>)
+   (<non-complete-factor> ^value <v>)}
+-->
+   (<non-complete-factor-object> ^factor <factor>)
+}
+
+# This removes the need to copy because we only need
+# to copy one object and only the biggest.
+sp {apply*copy-additional-factors*remove-need-to-copy
+   (state <s> ^operator.name copy-additional-factors
+              ^needs-to-copy-additional-factors <ntcaf>)
+-->
+   (<s> ^needs-to-copy-additional-factors <ntcaf> -)
+}
+####################################################
+###          COPY-FACTORIZATION-OBJECTS          ###
+# This copies all the factors from this substate up
+# to the superstate.
+sp {propose*copy-factorization-objects
+   (state <s> ^name factor-recursive-substate
+              ^has-factorization-object true
+             -^exists-factorization-object-without-complete
+             -^needs-factorization
+             -^needs-to-copy-additional-factors
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>)
+   (<fo> ^number <n>)
+-->
+   (<s> ^operator.name copy-factorization-objects)
+}
+
+# This copies all the factorization objects to the superstate
+# since this substate is about to be blown away.
+sp {apply*copy-factorization-objects
+   (state <s> ^operator.name copy-factorization-objects
+			  ^factorization-object <fo>
+     		  ^original-number-to-factor <n>
+     		  ^superstate <ss>)
+   (<fo> ^complete true
+         ^number <n>)
+-->
+   (<ss> ^factorization-object <fo>)
+}
+####################################################
+###     CREATE-INITIAL-FACTORIZATION-OBJECT      ###
+# This creates the initial factorization objecvt
+# with the first factor.
+sp {propose*create-initial-factorization-object
+   (state <s> ^name factor-recursive-substate
+              ^original-number-to-factor <ontf>
+              ^number-to-factor <> <ontf>
+             -^needs-factorization true
+             -^needs-to-copy-to-superstate
+             -^exists-factorization-object-without-complete)
+-->
+   (<s> ^operator.name create-initial-factorization-object)
+}
+
+# This is the proposal to create the object if this is a prime
+# number, because the other proposal expects this to be after
+# a substate.
+sp {propose*create-initial-factorization-object*prime-number
+   (state <s> ^name factor-recursive-substate
+              ^number-to-factor-is-prime true
+             -^factorization-object <fo>)
+-->
+   (<s> ^operator.name create-initial-factorization-object)
+}
+
+# This creates the initial factorization object.
+sp {apply*create-initial-factorization-object
+   (state <s> ^operator.name create-initial-factorization-object
+              ^original-number-to-factor <ontf>
+              ^counter <c>) # Because this is the number we're
+							# dividing by, this is the first
+							# factor.
+-->
+   (<s> ^factorization-object <fo>)
+   (<fo> ^number <ontf>
+         ^factor <first-factor>)
+   (<first-factor> ^value <c>
+                   ^multiplicity 1)
+}
+
+# If we still "need to factor" at this point, because it's a prime number,
+# we remove that "need."
+sp {apply*create-initial-factorization-object*remove-needs-factorization
+   (state <s> ^operator.name create-initial-factorization-object
+              ^needs-factorization <nf>)
+-->
+   (<s> ^needs-factorization <nf> -)
+}
+
+# This makes sure that we copy additional factors to build up the object
+sp {apply*create-initial-factorization-object*needs-copy-additional-factors
+   (state <s> ^operator.name create-initial-factorization-object
+              ^has-factorization-object-complete)
+-->
+   (<s> ^needs-to-copy-additional-factors true)
+}
+####################################################
+###         DIVIDE-TO-FIND-NEXT-FACTOR           ###
+# When there is a mod of the number to factor with
+# the counter of 0 and the number to factor is not 1,
+# we propose to divide the number to factor to find
+# the next number to factor
+sp {propose*divide-to-find-next-factor
+   (state <s> ^name factor-recursive-substate
+              ^counter <c>
+              ^number-to-factor-mod-counter 0
+              ^number-to-factor-int {<> 1 <ntf>}
+             -^factorization-object <fo>
+             -^needs-factorization true)
+-->
+   (<s> ^operator.name divide-to-find-next-factor)
+}
+
+# This removes the existing number to factor and then
+# adds the divided version along with the adding the
+# needs factorization flag set to true to the state.
+sp {apply*divide-to-find-next-factor
+   (state <s> ^operator.name divide-to-find-next-factor
+              ^counter <c>
+              ^number-to-factor <ntf>)
+-->
+   (<s> ^number-to-factor <ntf> -
+        ^number-to-factor (/ <ntf> <c>)
+        ^needs-factorization true)
+}
+####################################################
+###               FACTOR-NUMBER                  ###
+# This proposes to factor a number that needs
+# to be factored
+## This will propose and then won't be able
+## to apply, forcing a subgoal creation.
+sp {propose*factor-number
+   (state <s> ^number-to-factor-int <c>
+              ^needs-factorization true
+             -^number-to-factor-is-prime)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name factor-number
+        ^number-to-factor <c>)
+}
+
+# This removes the needs factorization flag from the current
+# state.
+sp {apply*factor-number*remove-needs-factorization-flag
+   (state <s> ^operator <o>
+              ^needs-factorization <n-f>
+              ^has-factorization-object)
+   (<o> ^name factor-number)
+-->
+   (<s> ^needs-factorization <n-f> -
+        ^needs-clean-up true)
+}
+####################################################
+###          FIND-FIRST-FACTOR*COUNTER           ###
+# This proposes find the first factor if the mod is
+# not 0.  If the mod is 0, that means the number is
+# a factor and is the first factor.
+sp {propose*find-first-factor*counter
+   (state <s> ^name factor-recursive-substate
+              ^counter <c>
+              ^number-to-factor-mod-counter <> 0
+              ^number-to-factor-int <> 1
+             -^needs-factorization
+             -^factorization-object <fo>)
+-->
+   (<s> ^operator.name find-first-factor)
+}
+
+# This just increments our counter.
+sp {apply*find-first-factor*counter
+   (state <s> ^operator.name find-first-factor
+              ^counter <c>)
+-->
+   (<s> ^counter <c> -
+        ^counter (+ <c> 1))
+}
+# This file contains the rules to initialize one of
+# the recursive factor substates
+
+####################################################
+###                 OPERATORS                    ###
+####################################################
+
+####################################################
+###     INITIALIZE*FACTOR-RECURSIVE-SUBSTATE     ###
+# This proposes to initialize a factor substate
+# if there is a superstate which is not nil,
+# the state has no name, and in the superstate
+# there is a selected operator with the name
+# 'factor-number' and a number to factor on it
+sp {propose*initialize*factor-recursive-substate
+   (state <s> ^superstate {<> nil <ss>}
+   			 -^name)
+   (<ss> ^operator <o>)
+   (<o> ^name factor-number
+        ^number-to-factor <c>)
+-->
+   (<s> ^operator <init> + >)
+   (<init> ^name initialize-factor-recursive-substate
+           ^number-to-factor <c>)
+}
+
+# This initializes the substate by creating a name
+# for the substate and setting the number to factor
+# in the substate and then initializing the counter
+sp {apply*initialize*factor-recursive-substate
+   (state <s> ^operator <o>)
+   (<o> ^name initialize-factor-recursive-substate
+        ^number-to-factor <c>)
+-->
+   (<s> ^name factor-recursive-substate
+        ^number-to-factor <c>
+        ^original-number-to-factor <c> # This is the original number passed to the substate
+        							   # to factor.  This is used by the set-complete-true
+        							   # operator to make sure it sets complete true on the
+        							   # right factorization-object without resorting to a
+        							   # fancy elaboration for determining which is the only
+        							   # factorization object without a complete true flag.
+        ^counter 2) # We start at two because otherwise we will always
+					# have a mod value of 0 which means we've "factored"
+					# it when we really haven't and because this is
+					# recursive we will blow out the stack.
+}
+####################################################
+###           SET-COMPLETE-FLAG-TRUE             ###
+# This rule proposes to set the complete flag to true
+# on the factorization object we just created.  This
+# proposal proposes on prime numbers only!
+sp {propose*set-complete-flag-true
+   (state <s> ^name factor-recursive-substate
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>
+              ^superstate <ss>
+             -^needs-factorization
+             -^needs-to-copy-additional-factors)
+   (<fo> ^number <n>
+        -^complete)
+-->
+   (<s> ^operator.name set-complete-flag-true)
+}
+
+# This applies a set-complete-flag-true operator.  It
+# sets the complete flag to be true on the factorization
+# object we just created.
+sp {apply*set-complete-flag-true
+   (state <s> ^operator.name set-complete-flag-true
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>)
+   (<fo> ^number <n>)
+-->
+   (<fo> ^complete true)
+   (<s> ^needs-to-copy-to-superstate true)
+}
+
+# This file contains all the preferences for the factor recursive substate
+
+####################################################
+###    COPY-ADDITIONAL-FACTORS*BIGGEST-IS-BEST   ###
+# This makes sure that we only copy factors from the
+# biggest, complete, factor.
+sp {preference*copy-additional-factors*biggest-is-best
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name copy-additional-factors
+         ^number <n1>)
+   (<o2> ^name copy-additional-factors
+         ^number {< <n1>})
+-->
+   (<s> ^operator <o1> > <o2>)
+}
+####################################################
+###              ADD-FACTORS-TO-SMEM             ###
+# This adds factors to smem since smem doesn't do
+# automatic adding.
+sp {propose*add-factors-to-smem
+   (state <s> ^name factor-recursive-substate
+              ^using-smem true
+              ^has-factorization-object true
+             -^exists-factorization-object-without-complete
+             -^needs-factorization
+             -^needs-to-copy-additional-factors
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>
+             -^added-factorization-object-to-smem
+             -^looked-up-in-smem-success)
+   (<fo> ^number <n>)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name add-factors-to-smem)
+}
+
+# This removes any retrieve still on the smem
+# command link, if there are any, because otherwise
+# we will get a 'bad-cmd' error from smem.
+sp {apply*add-factors-to-smem*remove-retrieves
+   (state <s> ^operator.name add-factors-to-smem
+              ^smem.command <sc>)
+   (<sc> ^retrieve <retrieve>)
+-->
+   (<sc> ^retrieve <retrieve> -)
+}
+
+# This creates a store command for the factorization
+# object we just created and completed.
+sp {apply*add-factors-to-smem*store-factorization-object
+   (state <s> ^operator.name add-factors-to-smem
+              ^smem.command <sc>
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>)
+   (<fo> ^number <n>)
+-->
+   (<sc> ^store <fo>)
+   (<s> ^added-factorization-object-to-smem true)
+}
+
+# Since smem doesn't do recursive stores, we need
+# to store each individual factor.  Since smem
+# also allows us to do as many stores as we want
+# at once, we will add all the stores at once.
+sp {apply*add-factors-to-smem*store-factors
+   (state <s> ^operator.name add-factors-to-smem
+              ^smem.command <sc>
+              ^original-number-to-factor <n>
+              ^factorization-object <fo>)
+   (<fo> ^number <n>
+         ^factor <f>)
+-->
+   (<sc> ^store <f>)
+}
+
+# This removes any query object which is still on the
+# smem command link at this point.
+sp {apply*add-factors-to-smem*remove-query
+   (state <s> ^operator.name add-factors-to-smem
+              ^smem.command <sc>)
+   (<sc> ^query <query>)
+-->
+   (<sc> ^query <query> -)
+}
+####################################################
+###            FOUND-FACTORS-IN-SMEM            ###
+# If we found some factors, this will be proposed
+# and called to get the factors.
+sp {propose*found-factors-in-smem
+   (state <s> ^name factor-recursive-substate
+              ^using-smem true
+              ^smem.result.retrieved <factor-object>
+              ^smem.result.success
+              ^original-number-to-factor <n>
+             -^factorization-object <fo>)
+   (<factor-object> ^number <n>)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name found-factors-in-smem)
+}
+
+# This copies only the factor we want from an factor-object
+sp {apply*found-factors-in-smem*copy-factorization-object
+   (state <s> ^operator.name found-factors-in-smem
+              ^smem.result.retrieved <factor-object>
+              ^original-number-to-factor <n>)
+   (<factor-object> ^number <n>)
+-->
+   (<s> ^factorization-object <factor-object>)
+}
+
+# This removes any query object which is still on the
+# smem command link at this point.
+sp {apply*found-factors-in-smem*remove-query
+   (state <s> ^operator.name found-factors-in-smem
+              ^smem.command <sc>)
+   (<sc> ^query <query>)
+-->
+   (<sc> ^query <query> -)
+}
+
+# This makes it so that we immediately skip to copying
+# the factors back up since we don't have to any brute
+# forcing.
+sp {apply*found-factors-in-smem*looked-up-in-smem-success
+   (state <s> ^operator.name found-factors-in-smem
+             -^looked-up-in-smem-success)
+-->
+   (<s> ^looked-up-in-smem-success true)
+}
+####################################################
+###           LOOK-UP-IN-SMEM-FACTORS           ###
+# This looks up a factor in EpMem.
+sp {propose*look-up-in-smem-factors
+   (state <s> ^name factor-recursive-substate
+              ^using-smem true
+             -^needs-factorization
+             -^factorization-object <fo>
+             -^smem.command.query)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name look-up-in-smem-factors)
+}
+
+# This actually creates the query
+sp {apply*look-up-in-smem-factors
+   (state <s> ^operator.name look-up-in-smem-factors
+              ^original-number-to-factor <n>
+              ^smem.command <ec>)
+-->
+   (<ec> ^query.number <n>)
+}
+####################################################
+###        ALL-RETRIEVE-FACTORS-ARE-EQUAL        ###
+# This makes sure that when we're retrieving factors
+# that they all are 'equal' so we retrieve them all
+# instead of operator tie'ing.
+sp {preference*all-retrieve-factors-are-equal
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name retrieve-factor)
+   (<o2> ^name retrieve-factor)
+-->
+   (<s> ^operator <o1> = <o2>)
+}
+####################################################
+###                RETRIEVE-FACTOR               ###
+# This retrieves all the factors of a factorization
+# object after retrieveing that object.
+sp {propose*retrieve-factor
+   (state <s> ^factorization-object <factor-object>)
+   (<factor-object> ^factor <factor-lti>)
+   (<factor-lti> -^value)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name retrieve-factor
+        ^factor <factor-lti>)
+}
+
+# This adds the retrieve command to the smem
+# command link.
+sp {apply*retrieve-factor
+   (state <s> ^operator <o>
+              ^smem.command <sc>)
+   (<o> ^name retrieve-factor
+        ^factor <factor-lti>)
+-->
+   (<sc> ^retrieve <factor-lti>)
+}
+
+# Copy the factors
+sp {apply*retrieve-factor*copy
+    (state <s>  ^operator <o>
+                ^smem.result <sr>
+                ^factorization-object <factor-object>)
+    (<factor-object> ^factor <factor-lti>)
+    (<sr>   ^retrieved <lti>
+            ^success <factor-lti>)
+    (<o> ^name retrieve-factor
+         ^factor <factor-lti>)
+    (<lti> ^<attr> <value>)
+-->
+    (<factor-lti> ^<attr> <value>)
+}
+
+# This removes any previous retrieve so we don't
+# get 'bad-cmd' errors from smem since we can't
+# do simultaneous retrieves.
+sp {apply*retrieve-factor*remove-previous-retrieve
+   (state <s> ^operator <o>
+              ^smem.command <sc>)
+   (<o> ^name retrieve-factor
+        ^factor <factor-lti>)
+   (<sc> ^retrieve {<> <factor-lti> <old-factor>})
+-->
+   (<sc> ^retrieve <old-factor> -)
+}
+
+# This removes any previous query so we don't
+# get 'bad-cmd' errors from smem since we can't
+# do simultaneous queries and retrieves
+sp {apply*retrieve-factor*remove-query
+   (state <s> ^operator <o>
+              ^smem.command <sc>)
+   (<o> ^name retrieve-factor
+        ^factor <factor-lti>)
+   (<sc> ^query <query>)
+-->
+   (<sc> ^query <query> -)
+}
+
+# This removes any previous query so we don't
+# get 'bad-cmd' errors from smem since we can't
+# do simultaneous queries and retrieves
+sp {apply*retrieve-factor*remove-needs-factorization
+   (state <s> ^operator <o>
+              ^needs-factorization <nf>)
+   (<o> ^name retrieve-factor
+        ^factor <factor-lti>)
+-->
+   (<s> ^needs-factorization <nf> -)
+}
+
+# This file contains the top state counter
+
+####################################################
+###                 OPERATORS                    ###
+####################################################
+
+####################################################
+###         INCREMENT-TOP-STATE-COUNTER          ###
+# Propose to increment the counter if
+# there is not a factorization object
+# which needs to be factored
+sp {propose*increment-top-state-counter
+   (state <s> ^name Factorization
+             -^needs-factorization
+             -^needs-clean-up
+              ^counter <c>)
+-->
+   (<s> ^operator.name increment-counter)
+}
+
+# This increments the counter and makes sure
+# that the number is factored
+sp {apply*increment-top-state-counter
+   (state <s> ^operator.name increment-counter
+              ^counter <c>)
+-->
+   (<s> ^counter <c> -
+        ^counter (+ <c> 1)
+        ^needs-factorization true)
+}
+# This file contains the initialization rules for the top state
+
+####################################################
+###                 OPERATORS                    ###
+####################################################
+
+####################################################
+###           INITIALIZE*TOP-STATE               ###
+# Propose to initialize the top state
+sp {propose*initialize*top-state
+   (state <s> -^name
+               ^superstate nil)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name initialize-top-state)
+}
+
+# Apply initializating the stop state
+## Adds a 'name' attribute to the top
+## state with the value 'Factorization'.
+## This also creates the main counter.
+sp {apply*initialize*top-state
+   (state <s> ^operator.name initialize-top-state)
+-->
+   (<s> ^name Factorization
+        ^counter 1)
+}

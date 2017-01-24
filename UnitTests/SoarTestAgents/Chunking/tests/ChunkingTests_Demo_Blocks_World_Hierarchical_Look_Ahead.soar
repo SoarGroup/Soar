@@ -1,0 +1,2122 @@
+chunk only
+srand 23
+
+sp {evaluate-operator*elaborate*evaluation*failure*no-operators
+    :default
+    (state <goal-nc> ^quiescence t)
+    (<goal-nc> ^impasse no-change)
+    (<goal-nc> ^attribute state)
+    (<goal-nc> ^superstate <state-nc>)
+    (<state-nc> ^quiescence t)
+    (<state-nc> ^impasse no-change)
+    (<state-nc> ^attribute state)
+    (<state-nc> ^superstate <eval-g>)
+    (<eval-g> ^quiescence t)
+    (<eval-g> ^superstate <select-g>)
+    (<select-g> ^evaluation <e2>)
+    (<eval-g> ^ontop <ontop3>)
+    (<ontop3> ^top-block <tblock3>)
+    (<tblock3> ^name C)
+    (<ontop3> ^bottom-block <bblock3>)
+    (<eval-g> ^ontop <ontop2>)
+    (<ontop2> ^top-block <tblock2>)
+    (<tblock2> ^name B)
+    (<ontop2> ^bottom-block <bblock2>)
+    (<eval-g> ^ontop <ontop1>)
+    (<ontop1> ^top-block <tblock1>)
+    (<tblock1> ^name A)
+    (<ontop1> ^bottom-block <bblock1>)
+    (<select-g> ^operator <o2>)
+    (<o2> ^evaluation <e2>)
+    (<o2> ^name evaluate-operator)
+    -->
+    (<e2> ^symbolic-value partial-failure +)
+}
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator*pickup*putdown*rules
+    :default
+    (state <s> ^look-ahead-operator <o>)
+    (<o> ^name { << pick-up put-down >> <n*1> })
+    (<s> ^operator <o>)
+    -->
+    (<s> ^tried-tied-operator <o> +)
+}
+
+sp {evaluate-operator*elaborate*state*remove*untried-tied-operator
+    :default
+    (state <s> ^untried-tied-operator <o>)
+    (<s> ^look-ahead-operator <o>)
+    (<s> ^operator <o>)
+    -->
+    (<s> ^untried-tied-operator <o> -)
+}
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator
+    :default
+    (state <s> ^look-ahead-operator <o>)
+    (<s> ^operator <o>)
+    -->
+    (<s> ^tried-tied-operator <o> +)
+}
+
+sp {evaluate-operator*propose*look-ahead*reject-all-others
+    :default
+    (state <s> ^untried-tied-operator <o>)
+    (<s> ^look-ahead-operator <o>)
+    (<s> ^operator { <> <o> <o1> } +)
+    -->
+    (<s> ^operator <o1> -)
+}
+
+sp {evaluate-operator*propose*look-ahead
+    :default
+    (state <s> ^untried-tied-operator <o>)
+    (<s> ^look-ahead-operator <o>)
+    -->
+    (<s> ^operator <o> +)
+}
+
+sp {selection*elaborate*evaluate-operator*all-operators-novalue
+    :default
+    (state <s> ^quiescence t)
+    (<s> -^found-value <f*1>)
+    (<s> -^not-all-operators-evaluated <n*1>)
+    (<s> ^choices multiple)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^superstate <sss>)
+    (<sss> ^name selection)
+    (<sss> ^operator <sso>)
+    (<sso> ^name evaluate-operator)
+    (<sso> ^evaluation <e>)
+    (<s> ^operator <o>)
+    -->
+    (<e> ^numeric-value novalue +)
+}
+
+sp {selection*pass-back-expected-value-discounted
+    :default
+    (state <s> ^evaluation <e*1>)
+    (<e*1> ^expected-value <ev>)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^superstate <s*2>)
+    (<s*2> ^operator <sso>)
+    (<sso> ^name evaluate-operator)
+    (<sso> ^superoperator <s*3>)
+    (<sso> ^evaluation <e2>)
+    (<s*3> ^name <n*1>)
+    -->
+    (<e2> ^expected-value (* 0.900000 <ev>) +)
+}
+
+sp {selection*pass-back-success
+    :default
+    (state <s> ^evaluation <e*1>)
+    (<e*1> ^symbolic-value { << required-success >> <s*3> })
+    (<s> ^superstate <s*1>)
+    (<s*1> ^superstate <s*2>)
+    (<s*2> ^operator <sso>)
+    (<sso> ^name evaluate-operator)
+    (<sso> ^superoperator <s*4>)
+    (<sso> ^evaluation <e2>)
+    (<s*4> ^name <n*1>)
+    -->
+    (<e2> ^symbolic-value partial-success +)
+}
+
+sp {evaluate-operator*elaborate*evaluation*failure*constraint-failure
+    :default
+    (state <rej-state-imp> ^quiescence t)
+    (<rej-state-imp> ^impasse constraint-failure)
+    (<rej-state-imp> ^attribute operator)
+    (<rej-state-imp> ^superstate <eval-g>)
+    (<eval-g> ^quiescence t)
+    (<eval-g> ^superstate <select-g>)
+    (<select-g> ^quiescence t)
+    (<select-g> ^quiescence t)
+    (<select-g> ^evaluation <e2>)
+    (<select-g> ^operator <o2>)
+    (<o2> ^evaluation <e2>)
+    (<o2> ^name evaluate-operator)
+    -->
+    (<e2> ^symbolic-value exhaustion-failure +)
+}
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator*nln
+    :default
+    (state <s> ^look-ahead-operator <o-copy>)
+    (<o-copy> ^duplicate-of <o>)
+    (<s> ^problem-space <p>)
+    (<p> ^no-local-negations <nln>)
+    (<o> ^{ <> duplicate-of <att> } <val>)
+    -->
+    (<o-copy> ^<att> <val> +)
+}
+
+sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+    :default
+    (state <s> ^problem-space <p>)
+    (<p> -^no-local-negations <nln>)
+    (<s> ^duplicates <d>)
+    (<s> ^look-ahead-operator <o-copy>)
+    (<o-copy> ^duplicate-of <o>)
+    (<o> ^{ <> duplicate-of <att> } <id>)
+    (<p> -^dont-copy <att>)
+    (<d> ^<id> <copy-id>)
+    -->
+    (<o-copy> ^<att> <copy-id> +)
+}
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator
+    :default
+    (state <s> ^problem-space <p>)
+    (<p> -^no-local-negations <nln>)
+    (<s> ^duplicates <d>)
+    (<s> ^look-ahead-operator <o-copy>)
+    (<o-copy> ^duplicate-of <o>)
+    (<o> ^{ <> duplicate-of <att> } <val>)
+    (<d> -^<val> <v*1>)
+    (<p> -^dont-copy <att>)
+    -->
+    (<o-copy> ^<att> <val> +)
+}
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
+    :default
+    (state <s> ^default-operator-copy yes)
+    (<s> -^default-state-copy yes)
+    (<s> ^impasse no-change)
+    (<s> ^attribute operator)
+    -->
+    (<s> ^duplicates <d> +)
+}
+
+sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space
+    :default
+    (state <s> ^superstate <s*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^default-operator-copy <yes-or-no>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^default-operator-copy <yes-or-no> +)
+}
+
+sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes
+    :default
+    (state <s> ^problem-space <ps>)
+    (<ps> -^default-operator-copy no)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^default-operator-copy yes +)
+}
+
+sp {duplicate-desired*replace-old-value
+    :default
+    (state <s> ^duplicates <d*1>)
+    (<s> ^desired <o-copy>)
+    (<o-copy> ^duplicate-of <o>)
+    (<s> ^problem-space <p>)
+    (<o> ^{ <> duplicate-of <att> } <id>)
+    (<p> -^dont-copy <att>)
+    (<d*1> ^<id> <copy-id>)
+    -->
+    (<o-copy> ^<att> <copy-id> +)
+}
+
+sp {duplicate-desired*copy-old-value
+    :default
+    (state <s> ^duplicates <d>)
+    (<s> ^desired <o-copy>)
+    (<o-copy> ^duplicate-of <o>)
+    (<s> ^superstate <s*1>)
+    (<s> ^problem-space <p>)
+    (<o> ^{ <> duplicate-of <att> } <val>)
+    (<d> -^<val> <v*1>)
+    (<p> -^dont-copy <att>)
+    (<s*1> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <o>)
+    -->
+    (<o-copy> ^<att> <val> +)
+}
+
+sp {evaluate-operator*elaborate*state*eval*desired
+    :default
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^default-desired-copy yes)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <d>)
+    -->
+    (<s> ^desired <d-copy> +)
+    (<d-copy> ^duplicate-of <d> +)
+}
+
+sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^problem-space <p>)
+    (<p> -^dont-copy-anything <d*2>)
+    (<p> ^all-attributes-at-level two)
+    (<s> ^duplicates <d>)
+    (<s> ^duplicate-of <d*1>)
+    (<d> ^<new-id> { <> tried-tied-operator <att> })
+    (<p> -^one-level-attributes <att>)
+    (<p> -^dont-copy <att>)
+    (<d> ^<id> <new-id>)
+    (<d*1> ^<att> <id>)
+    -->
+    (<s> ^<att> <new-id> +)
+}
+
+sp {evaluate-operator*elaborate*state*add-duplicate-to-state
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicates <d>)
+    (<s> ^duplicate-of <d*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^two-level-attributes <att>)
+    (<d> ^<new-id> <att>)
+    (<d> ^<id> <new-id>)
+    (<d*1> ^<att> <id>)
+    -->
+    (<s> ^<att> <new-id> +)
+}
+
+sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicates <d>)
+    (<d> ^<id> { <=> <d> <new-id> })
+    (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
+    (<d> ^<sub-val> <new-val>)
+    -->
+    (<new-id> ^<sub-att> <new-val> +)
+}
+
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicates <d>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^no-local-negations <nln>)
+    (<d> ^<id> { <=> <d> <new-id> })
+    (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
+    -->
+    (<new-id> ^<sub-att> <sub-val> +)
+}
+
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate
+    :default
+    (state <s> ^default-state-copy yes)
+   -{ (<s> ^problem-space <p*1>)
+      (<p*1> ^no-local-negations <nln>)}
+    (<s> ^duplicates <d>)
+    (<d> ^<id> { <=> <d> <new-id> })
+    (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
+    (<d> -^<sub-val> <s*1>)
+   -{ (<s> ^problem-space <p*2>)
+      (<p*2> ^dont-copy <sub-att>)}
+    -->
+    (<new-id> ^<sub-att> <sub-val> +)
+}
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^problem-space <p>)
+    (<p> -^dont-copy-anything <d*1>)
+    (<p> ^all-attributes-at-level two)
+    (<s> ^duplicates <d>)
+    (<s> ^duplicate-of <ss>)
+    (<ss>
+          ^{ <> duplicate-of <> tried-tied-operator <> problem-space <> impasse <> attribute <> choices <> quiescence <> operator <> superstate <att> } <id>)
+    (<p> -^one-level-attributes <att>)
+    (<p> -^dont-copy <att>)
+    -->
+    (<d> ^<id> <new-id> +)
+    (<d> ^<new-id> <att> +)
+}
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicates <d>)
+    (<s> ^duplicate-of <d*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^two-level-attributes <att>)
+    (<d*1> ^<att> <id>)
+    -->
+    (<d> ^<id> <new-id> +)
+    (<d> ^<new-id> <att> +)
+}
+
+sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
+    :default
+    (state <s> ^all-attributes-at-level one)
+    (<s> ^default-state-copy yes)
+    (<s> ^duplicates <d*1>)
+    (<s> ^duplicate-of <d*2>)
+    (<d*2> ^{ <> tried-tied-operator <att> } <id>)
+   -{ (<s> ^problem-space <p*1>)
+      (<p*1> ^dont-copy <att>)}
+    (<d*1> ^<id> <new-id>)
+    -->
+    (<s> ^<att> <id> -)
+    (<s> ^<att> <new-id> +)
+}
+
+sp {evaluate-operator*elaborate*state*change-one-level-attribute-to-duplicate
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicates <d*1>)
+    (<s> ^duplicate-of <d*2>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^one-level-attributes <att>)
+    (<d*2> ^<att> <id>)
+    (<d*1> ^<id> <new-id>)
+    -->
+    (<s> ^<att> <id> -)
+    (<s> ^<att> <new-id> +)
+}
+
+sp {evaluate-operator*elaborate*state*add-all-attributes-at-level-one
+    :default
+    (state <s> ^all-attributes-at-level one)
+    (<s> ^default-state-copy yes)
+    (<s> ^problem-space <p>)
+    (<p> -^dont-copy-anything <d*1>)
+    (<s> ^duplicate-of <ss>)
+    (<ss>
+          ^{ <> duplicate-of <> tried-tied-operator <> problem-space <> impasse <> attribute <> choices <> quiescence <> operator <> superstate <> type <> name <> look-ahead-operator <att> } <val>)
+    (<p> -^dont-copy <att>)
+    -->
+    (<s> ^<att> <val> +)
+}
+
+sp {evaluate-operator*elaborate*state*add-one-level-attributes
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^duplicate-of <d*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^one-level-attributes <att>)
+    (<d*1> ^<att> <val>)
+    -->
+    (<s> ^<att> <val> +)
+}
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^duplicates <d> +)
+}
+
+sp {evaluate-operator*elaborate*state*copy-all-attributes-at-level-one-from-problem-space
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^all-attributes-at-level one)
+    -->
+    (<s> ^all-attributes-at-level one +)
+}
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one*no-problem-space
+    :default
+    (state <s> ^impasse no-change)
+    (<s> -^problem-space <p*1>)
+    (<s> ^attribute operator)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <so>)
+    (<so> -^superproblem-space <p>)
+    (<so> ^name evaluate-operator)
+    -->
+    (<s> ^all-attributes-at-level one +)
+}
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one
+    :default
+    (state <s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^problem-space <p>)
+    (<p> -^dont-copy-anything <d*2>)
+    (<p> -^dont-copy <d*1>)
+    (<p> -^two-level-attributes <t*1>)
+    (<p> -^one-level-attributes <o*2>)
+    (<p> -^all-attributes-at-level two)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^all-attributes-at-level one +)
+}
+
+sp {evaluate-operator*elaborate*default-state-copy-from-problem-space
+    :default
+    (state <s> ^superstate <s*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^default-state-copy <yes-or-no>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^default-state-copy <yes-or-no> +)
+}
+
+sp {evaluate-operator*elaborate*default-for-default-state-copy-is-yes
+    :default
+    (state <s> ^problem-space <p>)
+    (<p> -^default-state-copy no)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^default-state-copy yes +)
+}
+
+sp {evaluate-operator*elaborate*expected-evaluation*from-subgoal
+    :default
+    (state <ss> ^expected-value <v>)
+    (<ss> ^desired <eb>)
+    (<ss> ^superstate <s>)
+    (<s> ^evaluation <e>)
+    (<s> ^operator <so>)
+    (<so> ^evaluation <e>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <eb>)
+    -->
+    (<e> ^expected-value <v> +)
+}
+
+sp {evaluate-operator*elaborate*numeric-evaluation*from-subgoal
+    :default
+    (state <ss> ^numeric-value <v>)
+    (<ss> ^desired <eb>)
+    (<ss> ^superstate <s>)
+    (<s> ^evaluation <e>)
+    (<s> ^operator <so>)
+    (<so> ^evaluation <e>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <eb>)
+    -->
+    (<e> ^numeric-value <v> +)
+}
+
+sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
+    :default
+    (state <s> ^superstate <ss>)
+    (<ss> ^evaluation <e>)
+    (<s>
+          ^{ << required-success success partial-success indifferent partial-failure exhaustion-failure failure prohibit-failure >> <svalue> } <deb>)
+    (<deb> ^duplicate-of <eb>)
+    (<ss> ^operator <so>)
+    (<so> ^evaluation <e>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <eb>)
+    -->
+    (<e> ^symbolic-value <svalue> +)
+}
+
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+    :default
+    (state <ss> ^superstate <s>)
+    (<s> ^evaluation <e>)
+    (<ss>
+          ^{ << required-success success partial-success indifferent partial-failure exhaustion-failure failure prohibit-failure >> <svalue> } <eb>)
+    (<s> ^operator <so>)
+    (<so> ^evaluation <e>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <eb>)
+    -->
+    (<e> ^symbolic-value <svalue> +)
+}
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*no-copy
+    :default
+    (state <s> ^default-operator-copy no)
+    (<s> ^superstate <s*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^name <p>)
+    (<s*1> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^superproblem-space <s*2>)
+    (<s*2> ^name <p>)
+    (<so> ^superoperator <o>)
+    -->
+    (<s> ^look-ahead-operator <o> +)
+    (<s> ^untried-tied-operator <o> +)
+}
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*copy
+    :default
+    (state <s> ^default-operator-copy yes)
+    (<s> ^superstate <s*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^name <n>)
+    (<s*1> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^superproblem-space <s*2>)
+    (<s*2> ^name <n>)
+    (<so> ^superoperator <o>)
+    -->
+    (<s> ^look-ahead-operator <copy-o> +)
+    (<s> ^untried-tied-operator <copy-o> +)
+    (<copy-o> ^duplicate-of <o> +)
+}
+
+sp {evaluate-operator*elaborate*state*duplicate-of
+    :default
+    (state <s> ^default-state-copy yes)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^superstate <sss>)
+    -->
+    (<s> ^duplicate-of <sss> +)
+}
+
+sp {evaluate-operator*elaborate*state*name
+    :default
+    (state <s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^superstate <s*2>)
+    (<s*2> ^name { <> evaluate-operator <name> })
+    -->
+    (<s> ^name <name> +)
+}
+
+sp {evaluate-operator*elaborate*state*desired*nln
+    :default
+    (state <s> ^impasse no-change)
+    (<s> ^attribute operator)
+    (<s> ^superstate <s*1>)
+    (<s> ^problem-space <p*1>)
+    (<p*1> ^no-local-negations <nln>)
+    (<s*1> ^operator <so>)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <d>)
+    -->
+    (<s> ^desired <d> +)
+}
+
+sp {evaluate-operator*elaborate*state*desired
+    :default
+    (state <s> ^impasse no-change)
+   -{ (<s> ^problem-space <p*1>)
+      (<p*1> ^no-local-negations <nln>)}
+    (<s> ^attribute operator)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^operator <so>)
+    (<so> -^default-desired-copy yes)
+    (<so> ^name evaluate-operator)
+    (<so> ^evaluation <e*1>)
+    (<e*1> ^desired <d>)
+    -->
+    (<s> ^desired <d> +)
+}
+
+sp {selection*elaborate*evaluate-operator*superstate
+    :default
+    (state <s> ^name selection)
+    (<s> ^superstate <ss>)
+    (<s> ^operator <o>)
+    (<o> ^name evaluate-operator)
+    -->
+    (<o> ^superstate <ss> +)
+}
+
+sp {selection*elaborate*evaluate-operator*superproblem-space
+    :default
+    (state <s> ^name selection)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^problem-space <p2>)
+    (<s> ^operator <o>)
+    (<o> ^name evaluate-operator)
+    -->
+    (<o> ^superproblem-space <p2> +)
+}
+
+sp {selection*apply*state*evaluation
+    :default
+    (state <s> ^name selection)
+    (<s> ^operator <o>)
+    (<o> ^name evaluate-operator)
+    (<o> ^superoperator <ob>)
+    -->
+    (<s> ^evaluation <e> +)
+    (<e> ^superoperator <ob> +)
+}
+
+sp {selection*select*evaluate-operator*indifferent
+    :default
+    (state <s> ^name selection)
+    (<s> -^operator-selection not-indifferent)
+    (<s> ^operator <o> +)
+    (<o> ^name evaluate-operator)
+    -->
+    (<s> ^operator <o> =)
+}
+
+sp {selection*propose*evaluate-operator
+    :default
+    (state <s> ^name selection)
+    (<s> ^item <i>)
+   -{ (state <s> ^evaluation <e>)
+      (<e> ^superoperator <i>)
+      (<e> ^value true)}
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name evaluate-operator +)
+    (<o> ^superoperator <i> +)
+}
+
+sp {selection*compare*novalue-evaluation-always-worse
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^numeric-value novalue)
+    (<e1> ^superoperator <o1>)
+    (<s> ^evaluation { <> <e1> <e2> })
+    (<e2> ^desired <d>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <o2>)
+    (<e2> ^numeric-value { <> novalue <n*1> })
+    -->
+    (<ss> ^operator <o2> > <o1>)
+}
+
+sp {selection*elaborate*state*found-value-true
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e>)
+    (<e>
+          ^{ << numeric-value symbolic-value expected-value >> <a*1> } { <> novalue <v*1> })
+    -->
+    (<s> ^found-value true +)
+}
+
+sp {selection*elaborate*state*all-objects-evaluated
+    :default
+    (state <s> ^name selection)
+   -{ (<s> ^operator <o> +)
+      (<o> ^name evaluate-operator)
+      (<o> ^evaluation <e*1>)
+      (<e*1> ^value true)}
+    -->
+    (<s> ^not-all-operators-evaluated true +)
+}
+
+sp {selection*select*partial-failure-evaluation-becomes-worst-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^symbolic-value partial-failure)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^desired <e>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <e>)
+    -->
+    (<ss> ^operator <o1> <)
+}
+
+sp {selection*select*indifferent-evaluation-becomes-indifferent-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^symbolic-value indifferent)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^desired <eb>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <eb>)
+    -->
+    (<ss> ^operator <o1> =)
+}
+
+sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^symbolic-value prohibit-failure)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^desired <e>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <e>)
+    -->
+    (<ss> ^operator <o1> ~)
+}
+
+sp {selection*select*exhaustion-failure-evaluation-becomes-reject-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^quiescence t)
+    (<s> ^evaluation <e1>)
+    (<e1> ^symbolic-value exhaustion-failure)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^desired <e>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <e>)
+    -->
+    (<ss> ^operator <o1> -)
+}
+
+sp {selection*select*failure-evaluation-becomes-reject-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^symbolic-value { << lose failure >> <s*1> })
+    (<e1> ^desired <e>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <e>)
+    -->
+    (<ss> ^operator <o1> -)
+}
+
+sp {selection*select*success-evaluation-becomes-best-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^symbolic-value { << partial-success success >> <s*1> })
+    (<e1> ^desired <eb>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <eb>)
+    -->
+    (<ss> ^operator <o1> >)
+}
+
+sp {selection*select*required-success-evaluation-becomes-required-preference
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^symbolic-value required-success)
+    (<e1> ^superoperator <o1>)
+    (<e1> ^desired <eb>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <eb>)
+    -->
+    (<ss> ^operator <o1> !)
+}
+
+sp {selection*compare*partial-failure-evaluation-better-than-failure
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^symbolic-value failure)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^symbolic-value partial-failure)
+    (<e2> ^desired <d>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <y>)
+    (<e1> ^superoperator { <> <y> <x> })
+    -->
+    (<ss> ^operator <x> > <y>)
+}
+
+sp {selection*compare*success-evaluation-better-than-partial-success
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^symbolic-value partial-success)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^symbolic-value success)
+    (<e2> ^desired <d>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <y>)
+    (<e1> ^superoperator { <> <y> <x> })
+    -->
+    (<ss> ^operator <x> > <y>)
+}
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent*exhaustion-failure
+    :default
+    (state <s> ^name selection)
+    (<s> ^quiescence t)
+    (<s> ^evaluation <e2>)
+    (<e2> ^symbolic-value exhaustion-failure)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^symbolic-value exhaustion-failure)
+    (<e2> ^desired <d>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <y>)
+    (<e1> ^superoperator <x>)
+    -->
+    (<ss> ^operator <x> = <y>)
+}
+
+sp {selection*compare*same-symbolic-evaluations-are-indifferent
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^superoperator <y>)
+    (<e2> ^symbolic-value { <> exhaustion-failure <v> })
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^symbolic-value <v>)
+    (<e2> ^desired <d>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e1> ^superoperator <x>)
+    -->
+    (<ss> ^operator <x> = <y>)
+}
+
+sp {selection*compare*prefer-lower-evaluation
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^desired <d>)
+    (<d> ^better lower)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <o2>)
+    (<e1> ^superoperator <o1>)
+    (<e2> ^numeric-value <n*1>)
+    (<e1> ^numeric-value { < <n*1> <v> })
+    (<ss> ^problem-space <p2>)
+    -->
+    (<ss> ^operator <o2> < <o1>)
+}
+
+sp {selection*compare*higher-evaluation-better
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^desired <d>)
+    (<d> ^better higher)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <o2>)
+    (<e1> ^superoperator <o1>)
+    (<e2> ^numeric-value <n*1>)
+    (<e1> ^numeric-value { > <n*1> <v> })
+    (<ss> ^problem-space <p2>)
+    -->
+    (<ss> ^operator <o2> < <o1>)
+}
+
+sp {selection*compare*equal-evaluation-indifferent
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e2>)
+    (<e2> ^desired <d>)
+    (<d> -^equal not-indifferent)
+    (<s> ^evaluation { <> <e2> <e1> })
+    (<e1> ^desired <d>)
+    (<e2> ^numeric-value <v>)
+    (<e1> ^numeric-value <v>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    (<e2> ^superoperator <y>)
+    (<e1> ^superoperator <x>)
+    -->
+    (<ss> ^operator <x> = <y>)
+}
+
+sp {selection*evaluation*expected-values
+    :default
+    (state <s> ^name selection)
+    (<s> ^evaluation <e1>)
+    (<e1> ^superoperator <x>)
+    (<e1> ^expected-value <v>)
+    (<e1> ^desired <d>)
+    (<s> ^superstate <ss>)
+    (<ss> ^desired <d>)
+    -->
+    (<ss> ^operator <x> = <v>)
+}
+
+sp {selection*elaborate*evaluation*desired
+    :default
+    (state <s> ^evaluation <e>)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^desired <d>)
+    -->
+    (<e> ^desired <d> +)
+}
+
+sp {selection*elaborate*evaluation*value
+    :default
+    (state <s> ^evaluation <e>)
+    (<e> ^{ << numeric-value symbolic-value expected-value >> <a*1> } <v*1>)
+    -->
+    (<e> ^value true +)
+}
+
+sp {selection*elaborate*name*selection
+    :default
+    (state <s> ^choices multiple)
+    -->
+    (<s> ^name selection +)
+}
+
+sp {top-goal*halt*failure
+    :default
+    (state <s> ^superstate nil)
+    (<s> ^desired <eb>)
+    (<s> ^name <name>)
+    (<s> ^{ << prohibit-failure failure exhaustion-failure >> <a*1> } <eb>)
+    -->
+    (halt)
+}
+
+sp {top-goal*halt*success
+    :default
+    (state <s> ^superstate nil)
+    (<s> ^desired <eb>)
+    (<s> ^name <name>)
+    (<s> ^{ << required-success success >> <a*1> } <eb>)
+    -->
+    (halt)
+}
+
+sp {default*select*reject*conflict
+    "Reject an object if it leads to a conflict that can not be resolved."
+    :default
+    (state <s3> ^quiescence t)
+    (<s3> ^choices none)
+    (<s3> ^attribute state)
+    (<s3> ^superstate <s2>)
+    (<s2> ^quiescence t)
+    (<s2> ^impasse conflict)
+    (<s2> ^item <o>)
+    (<s2> ^superstate <s1>)
+    (<s1> ^operator <o> +)
+    -->
+    (<s1> ^operator <o> -)
+}
+
+sp {default*select*indifferent-and-worst*tied
+    "Indifferent an operator if it leads to a tie that can not be resolved."
+    :default
+    (state <s3> ^quiescence t)
+    (<s3> ^choices none)
+    (<s3> ^attribute state)
+    (<s3> ^superstate <s2>)
+    (<s2> ^quiescence t)
+    (<s2> ^impasse tie)
+    (<s2> ^item <o>)
+    (<s2> ^superstate <s1>)
+    (<s1> ^operator <o> +)
+    -->
+    (<s1> ^operator <o> =)
+    (<s1> ^operator <o> <)
+}
+
+sp {default*top-goal*halt*operator*failure
+    "Halt if no operator can be selected for the top goal."
+    :default
+    (state <ss> ^impasse constraint-failure)
+    (<ss> ^superstate <s>)
+    (<s> ^superstate nil)
+    -->
+    (write (crlf) |No operator can be selected for top goal.|)
+    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)
+    (write (crlf) |No operator can be selected for top goal.|)(write (crlf) |Soar must halt.|)(halt)
+}
+
+sp {top-ps*apply*wait*random
+    "Fake production just to avoid extra operator no-change."
+    :default
+    (state <s> ^operator <o>)
+    (<o> ^name wait)
+    -->
+    (<o> ^random elaboration +)
+}
+
+sp {top-ps*propose*wait
+    "Propose wait if there is a state no-change."
+    :default
+    (state <s> ^choices none)
+   -{ (<s> ^operator <o*1>)
+      (<o*1> ^name wait)}
+   -{ (<s> ^superstate <s*1>)
+      (<s*1> ^name evaluate-operator)}
+    (<s> ^attribute state)
+    -->
+    (<s> ^operator <o> +)
+    (<s> ^operator <o> <)
+    (<o> ^name wait +)
+}
+
+sp {elaborate*state*operator*name
+    "Elaborate substates with name of operator."
+    :default
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^name <name> +)
+}
+
+sp {elaborate*state*top-state
+    :default
+    (state <s> ^superstate <ss>)
+   -{ (<ss> ^operator <o*1>)
+      (<o*1> ^name evaluate-operator)}
+    (<ss> ^top-state <ts>)
+    -->
+    (<s> ^top-state <ts> +)
+}
+
+sp {elaborate*top-state
+    :default
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+sp {default*elaborate*state*io
+    "Elaborate each substate with io pointer."
+    :default
+    (state <s> ^impasse no-change)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^io <io>)
+    -->
+    (<s> ^io <io> +)
+}
+
+sp {move-block*monitor*putdown
+    (state <s> ^name move-block)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^holding <h*1>)
+    (<h*1> ^name <mname>)
+    (<s> ^operator <o>)
+    (<o> ^name put-down)
+    (<o> ^destination <d*1>)
+    (<d*1> ^name <dname>)
+    -->
+    (write (crlf) |Put | <mname> | on | <dname>)
+}
+
+sp {move-block*propose*put-down
+    (state <s> ^name move-block)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g*1>)
+    (<g*1> ^holding { <> nothing <mblock> })
+    (<ts> ^clear { <> <mblock> <block> })
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name put-down +)
+    (<op> ^moving-block <mblock> +)
+    (<op> ^destination <block> +)
+}
+
+sp {apply*open-gripper*pass*top-state
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name open-gripper)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*2>)
+    (<o*2> ^gripper <gripper>)
+    -->
+    (<gripper> ^command open +)
+}
+
+sp {put-down*select*open-gripper
+    (state <s> ^name put-down)
+    (<s> ^desired <d*1>)
+    (<d*1> ^destination <dest>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^above <dest>)
+    (<g> ^holding <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name open-gripper)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {putdown*propose*open-gripper
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^position down)
+    (<g> ^open no)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name open-gripper +)
+}
+
+sp {apply*up-gripper*pass*top-state
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name move-gripper-up)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*2>)
+    (<o*2> ^gripper <gripper>)
+    -->
+    (<gripper> ^command up +)
+}
+
+sp {put-down*select*move-gripper-up
+    (state <s> ^name put-down)
+    (<s> ^desired <d*1>)
+    (<d*1> ^destination <dblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^above { <> <dblock> <a*1> })
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-up)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*select*move-gripper-up2
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^holding nothing)
+    (<g> ^above { <> <mblock> <a*1> })
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-up)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*select*move-gripper-up
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^holding <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-up)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*propose*move-gripper-up
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^position down)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name move-gripper-up +)
+}
+
+sp {apply*down-gripper*pass*top-state
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name move-gripper-down)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*2>)
+    (<o*2> ^gripper <gripper>)
+    -->
+    (<gripper> ^command down +)
+}
+
+sp {pick-up*select*move-gripper-down
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^above <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-down)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {put-down*select*move-gripper-down
+    (state <s> ^name put-down)
+    (<s> ^desired <d*1>)
+    (<d*1> ^destination <dblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^above <dblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-down)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*propose*move-gripper-down
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^position up)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name move-gripper-down +)
+}
+
+sp {apply*move-gripper-above*pass*top-state
+    (state <s> ^operator <op>)
+    (<op> ^name move-gripper-above)
+    (<op> ^destination <des>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <gripper>)
+    -->
+    (<gripper> ^command move-gripper-above +)
+    (<gripper> ^destination <des> +)
+}
+
+sp {put-down*select*move-gripper-above
+    (state <s> ^name put-down)
+    (<s> ^desired <d*1>)
+    (<d*1> ^destination <dblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <dblock>)
+    (<op1> ^name move-gripper-above)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*select*move-gripper-above
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <mblock>)
+    (<op1> ^name move-gripper-above)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*propose*move-gripper-above
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^position up)
+    (<g> ^above <x>)
+    (<ts> ^clear { <> <x> <y> })
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name move-gripper-above +)
+    (<op> ^destination <y> +)
+}
+
+sp {apply*close-gripper*pass*top-state
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name close-gripper)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*2>)
+    (<o*2> ^gripper <gripper>)
+    -->
+    (<gripper> ^command close +)
+}
+
+sp {pick-up*select*close-gripper
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <m*1>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^holding nothing)
+    (<g> ^above <a*1>)
+    (<a*1> ^name <mblock>)
+    (<m*1> ^name <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name close-gripper)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*propose*close-gripper
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^position down)
+    (<g> ^open yes)
+    (<g> ^above <a*1>)
+    (<a*1> ^name { << A B C >> <n*1> })
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name close-gripper +)
+}
+
+sp {gripper-operators*elaborate*problem-space
+    (state <s> ^state-type gripper-operators)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name gripper +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {put-down*elaborate*desired
+    (state <s> ^name put-down)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name put-down)
+    (<so> ^destination <dest>)
+    (<so> ^moving-block <block>)
+    -->
+    (<s> ^desired <d> +)
+    (<d> ^moving-block <block> +)
+    (<d> ^destination <dest> +)
+}
+
+sp {pick-up*elaborate*desired
+    (state <s> ^name pick-up)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name pick-up)
+    (<so> ^moving-block <block>)
+    -->
+    (<s> ^desired <d> +)
+    (<d> ^moving-block <block> +)
+}
+
+sp {pick-up*put-down*elaborate*substate*gripper-operators
+    (state <s> ^name { << pick-up put-down >> <n*1> })
+    -->
+    (<s> ^state-type gripper-operators +)
+}
+
+sp {move-block*monitor*pickup
+    (state <s> ^name move-block)
+    (<s> ^operator <o>)
+    (<o> ^name pick-up)
+    (<o> ^moving-block <m*1>)
+    (<m*1> ^name <name>)
+    -->
+    (write (crlf) |Pickup block | <name>)
+}
+
+sp {move-block*propose*pick-up
+    (state <s> ^name move-block)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g*1>)
+    (<g*1> ^holding nothing)
+    (<ts> ^clear <block>)
+    (<block> ^type block)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name pick-up +)
+    (<op> ^moving-block <block> +)
+}
+
+sp {move-block*elaborate*problem-space
+    (state <s> ^name move-block)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name pick-up-put-down +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {move-block*elaborate*desired
+    (state <s> ^name move-block)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name move-block)
+    (<so> ^destination <dest>)
+    (<so> ^moving-block <block>)
+    -->
+    (<s> ^desired <d> +)
+    (<d> ^moving-block <block> +)
+    (<d> ^destination <dest> +)
+}
+
+sp {blocks-world*apply*operator*forget*moved-block*evaluation
+    (state <s> ^name evaluate-operator)
+    (<s> ^last-moved-block <mb>)
+    (<s> ^operator <o>)
+    (<o> ^name move-block)
+    (<o> ^moving-block { <> <mb> <m*1> })
+    -->
+    (<s> ^last-moved-block <mb> -)
+}
+
+sp {blocks-world*apply*operator*remember*moved-block*evaluation
+    (state <s1> ^name evaluate-operator)
+    (<s1> ^operator <o1>)
+    (<o1> ^name move-block)
+    (<o1> ^moving-block <mb>)
+    (<s1> -^last-moved-block <mb>)
+    (<o1> ^destination <tblock>)
+    -->
+    (<s1> ^last-moved-block <mb> +)
+}
+
+sp {blocks-world*apply*operator*move-block*change-ontop*evaluation*remove
+    (state <s> ^name evaluate-operator)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>)
+    (<ontop> ^bottom-block <object>)
+    (<s> ^operator <o>)
+    (<o> ^moving-block <mblock>)
+    (<o> ^destination { <> <object> <tblock> })
+    -->
+    (<ontop> ^bottom-block <object> -)
+}
+
+sp {blocks-world*apply*operator*move-block*change-ontop*evaluation*add
+    (state <s> ^name evaluate-operator)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>)
+    (<s> ^operator <o>)
+    (<o> ^moving-block <mblock>)
+    (<o> ^destination <tblock>)
+    -->
+    (<ontop> ^bottom-block <tblock> +)
+}
+
+sp {blocks-world*reject*move-block*twice
+    (state <s> ^name evaluate-operator)
+    (<s> ^last-moved-block <mb>)
+    (<s> ^operator <o> +)
+    (<o> ^moving-block <mb>)
+    -->
+    (<s> ^operator <o> -)
+}
+
+sp {P6*evaluate*move-block*best*move-block-to-table
+    (state <s> ^name blocks-world)
+    (<s> ^object <table>)
+    (<table> ^name table)
+    (<s> ^desired <d>)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <block1>)
+    (<s> -^inplace-object <block1>)
+    (<ontop> ^bottom-block { <> <table> <block2> })
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <table>)
+    (<op1> ^moving-block <block1>)
+    (<op1> ^name move-block)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {P7*evaluate*move-block*better*move-to-goal
+    (state <s> ^name blocks-world)
+    (<s> ^inplace-object <block2>)
+    (<s> ^desired <d>)
+    (<d> ^ontop <ontop>)
+    (<ontop> ^bottom-block <block2>)
+    (<ontop> ^top-block <block1>)
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <block2>)
+    (<op1> ^moving-block <block1>)
+    (<op1> ^name move-block)
+    (<s> ^operator { <> <op1> <op2> } +)
+    -->
+    (<s> ^operator <op1> > <op2>)
+}
+
+sp {P5*propose*move-block
+    (state <s> ^name blocks-world)
+    (<s> ^moveable <blockA>)
+   -{ (<s> ^gripper <g*1>)
+      (<g*1> ^holding { <> nothing <h*2> })
+      (<g*1> ^holding { <> <blockA> <h*1> })}
+    (<blockA> ^type block)
+    (<s> ^clear { <> <blockA> <object> })
+   -{ (<s> ^ontop <ontop>)
+      (<ontop> ^top-block <blockA>)
+      (<ontop> ^bottom-block <object>)}
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-block +)
+    (<o> ^moving-block <blockA> +)
+    (<o> ^destination <object> +)
+}
+
+sp {blocks-world*apply*initialize
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name initialize-blocks-world)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <out>)
+    -->
+    (<out> ^gripper <gripper> +)
+    (<s> ^name blocks-world +)
+    (<s> ^ontop <ontop1> +)
+    (<s> ^ontop <ontop2> +)
+    (<s> ^ontop <ontop3> +)
+    (<s> ^object <blockA> +)
+    (<s> ^object <blockB> +)
+    (<s> ^object <blockC> +)
+    (<s> ^object <table> +)
+    (<s> ^desired <ds> +)
+    (<s> ^gripper <g> +)
+    (<g> ^holding nothing +)
+    (<g> ^position up +)
+    (<g> ^above <table> +)
+    (<g> ^open yes +)
+    (<ontop1> ^top-block <blockC> +)
+    (<ontop1> ^bottom-block <blockA> +)
+    (<ontop2> ^top-block <blockA> +)
+    (<ontop2> ^bottom-block <table> +)
+    (<ontop3> ^top-block <blockB> +)
+    (<ontop3> ^bottom-block <table> +)
+    (<blockA> ^name A +)
+    (<blockA> ^type block +)
+    (<blockB> ^name B +)
+    (<blockB> ^type block +)
+    (<blockC> ^name C +)
+    (<blockC> ^type block +)
+    (<table> ^name table +)
+    (<table> ^type table +)
+    (write (crlf) |Simple Blocks World - just move blocks.|)
+    (write (crlf) |Simple Blocks World - just move blocks.|)(write (crlf) |Initial state has C on A, A on table, and B on the table.|)
+    (<ds> ^ontop <dontop1> +)
+    (<ds> ^ontop <dontop2> +)
+    (<ds> ^ontop <dontop3> +)
+    (<dontop1> ^top-block <blockA> +)
+    (<dontop1> ^bottom-block <blockB> +)
+    (<dontop2> ^top-block <blockB> +)
+    (<dontop2> ^bottom-block <blockC> +)
+    (<dontop3> ^top-block <blockC> +)
+    (<dontop3> ^bottom-block <table> +)
+    (write (crlf) |Simple Blocks World - just move blocks.|)(write (crlf) |Initial state has C on A, A on table, and B on the table.|)(write (crlf) |The goal is to get A on B on C on the table.|)
+}
+
+sp {blocks-world*propose*initialize-blocks-world
+    (state <s> ^superstate nil)
+    (<s> -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-blocks-world +)
+}
+
+sp {apply*put-down*evaluate-operator*up
+    (state <s> ^name evaluate-operator)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^holding { <> nothing <mblock> })
+    (<ts> ^ontop <ontop>)
+    (<ontop> -^bottom-block <bblock>)
+    (<ontop> ^top-block <mblock>)
+    (<s> ^operator <op>)
+    (<op> ^name put-down)
+    (<op> ^destination <tblock>)
+    -->
+    (<g> ^holding nothing +)
+    (<g> ^holding <mblock> -)
+    (<ontop> ^bottom-block <tblock> +)
+}
+
+sp {apply*put-down*evaluate-operator
+    (state <s> ^name evaluate-operator)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^holding { <> nothing <mblock> })
+    (<ts> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>)
+    (<ontop> ^bottom-block <bblock>)
+    (<s> ^operator <op>)
+    (<op> ^name put-down)
+    (<op> ^destination <tblock>)
+    -->
+    (<g> ^holding nothing +)
+    (<g> ^holding <mblock> -)
+    (<ontop> ^bottom-block <tblock> +)
+    (<ontop> ^bottom-block <bblock> -)
+}
+
+sp {apply*pick-up*remove-bottome-block*evaluate
+    (state <s> ^name evaluate-operator)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^holding nothing)
+    (<ts> ^ontop <ontop>)
+    (<ontop> ^top-block <block>)
+    (<ontop> ^bottom-block <bblock>)
+    (<s> ^operator <op>)
+    (<op> ^moving-block <block>)
+    (<op> ^name pick-up)
+    -->
+    (<ontop> ^bottom-block <bblock> -)
+}
+
+sp {apply*pick-up*set-holding*evaluate
+    (state <s> ^name evaluate-operator)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g>)
+    (<g> ^holding nothing)
+    (<s> ^operator <op>)
+    (<op> ^name pick-up)
+    (<op> ^moving-block <block>)
+    -->
+    (<g> ^holding nothing -)
+    (<g> ^holding <block> +)
+}
+
+sp {move-block*elaborate*cover*moving-block*failure2
+    (state <s> ^name move-block)
+    (<s> ^tried-tied-operator <t*1>)
+    (<s> ^desired <d>)
+    (<d> ^moving-block <m*1>)
+    (<s> ^top-state <ss>)
+    (<ss> ^gripper <g*1>)
+    (<g*1> ^holding { <> nothing <> <m*1> <blockA> })
+    -->
+    (<s> ^failure <d> +)
+}
+
+sp {move-block*elaborate*cover*moving-block*failure
+    (state <s> ^name move-block)
+    (<s> ^desired <d>)
+    (<d> ^moving-block <blockA>)
+    (<s> ^top-state <ss>)
+    (<ss> ^ontop <ontop>)
+    (<ontop> ^bottom-block <blockA>)
+    (<ontop> ^top-block <tblock>)
+    -->
+    (<s> ^failure <d> +)
+}
+
+sp {move-block*elaborate*succcess
+    (state <s> ^name move-block)
+    (<s> ^desired <d>)
+    (<d> ^destination <blockB>)
+    (<d> ^moving-block <blockA>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^ontop <ontop1>)
+    (<ontop1> ^top-block <blockA>)
+    (<ontop1> ^bottom-block <blockB>)
+    -->
+    (<s> ^success <d> +)
+}
+
+sp {move-block*elaborate*problem-space*top-state*gripper
+    (state <s> ^name move-block)
+    (<s> ^ss-top-state <ts>)
+    (<ts> ^gripper <gripper>)
+    (<gripper> ^above <above>)
+    (<gripper> ^position <position>)
+    (<gripper> ^open <open>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper { <> <gripper> <ngripper> })
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<ngripper> ^above <above> +)
+    (<ngripper> ^open <open> +)
+    (<ngripper> ^position <position> +)
+}
+
+sp {move-block*elaborate*problem-space*top-state*gripper*holding
+    (state <s> ^name move-block)
+    (<s> ^ss-top-state <ts>)
+    (<ts> ^gripper <gripper>)
+    (<gripper> ^holding <holding>)
+    (<s> ^top-state <nts>)
+    (<nts> ^gripper { <> <gripper> <ngripper> })
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<ngripper> ^holding <holding> +)
+}
+
+sp {move-block*elaborate*problem-space*top-state*one
+    (state <s> ^name move-block)
+    (<s> ^ss-top-state <ts>)
+    (<s> ^top-state <nts>)
+    (<s> ^superstate <ss>)
+    (<ts> ^ontop <ontop1>)
+    (<ontop1> -^bottom-block <bblock1>)
+    (<ontop1> ^top-block <tblock1>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<nts> ^ontop <nontop3> +)
+    (<nontop3> ^top-block <tblock1> +)
+}
+
+sp {move-block*elaborate*problem-space*top-state*both
+    (state <s> ^name move-block)
+    (<s> ^ss-top-state <ts>)
+    (<s> ^top-state <nts>)
+    (<s> ^superstate <ss>)
+    (<ts> ^ontop <ontop1>)
+    (<ontop1> ^top-block <tblock1>)
+    (<ontop1> ^bottom-block <bblock1>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<nts> ^ontop <nontop3> +)
+    (<nontop3> ^top-block <tblock1> +)
+    (<nontop3> ^bottom-block <bblock1> +)
+}
+
+sp {move-block*elaborate*problem-space*top-state
+    (state <s> ^name move-block)
+    (<s> ^ss-top-state <ts>)
+    (<ts> ^object <table>)
+    (<table> ^name table)
+    (<ts> ^object <tblock3>)
+    (<tblock3> ^name C)
+    (<ts> ^object <tblock2>)
+    (<tblock2> ^name B)
+    (<ts> ^object <tblock1>)
+    (<tblock1> ^name A)
+    (<ts> ^gripper <gripper>)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^top-state <tsn> +)
+    (<tsn> ^flag move-block-lookahead +)
+    (<tsn> ^gripper <ngripper> +)
+    (<tsn> ^object <tblock1> +)
+    (<tsn> ^object <tblock2> +)
+    (<tsn> ^object <tblock3> +)
+    (<tsn> ^object <table> +)
+}
+
+sp {move-block*elaborate*problem-space*ss-top-state
+    (state <s> ^name move-block)
+    (<s> ^superstate <ss>)
+    (<ss> ^superstate <s*1>)
+    (<s*1> ^top-state <ssts>)
+    (<ss> ^operator <o*1>)
+    (<o*1> ^name evaluate-operator)
+    -->
+    (<s> ^ss-top-state <ssts> +)
+}
+
+sp {Impasse__Operator_Tie*elaborate*learn*on
+    (state <s> ^impasse tie)
+    -->
+    (force-learn <s>)
+}
+
+sp {apply*move-gripper-above*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^above <objx>)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command move-gripper-above)
+    (<grip> ^destination { <> <objx> <des> })
+    (<des> ^name <name>)
+    -->
+    (write (crlf) |X Move gripper above | <name>)
+    (<g> ^above <objx> -)
+    (<g> ^above <des> +)
+    (<grip> ^command move-gripper-above -)
+    (<grip> ^destination <des> -)
+}
+
+sp {apply*move-gripper-up*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^position down)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command up)
+    -->
+    (<g> ^position down -)
+    (<g> ^position up +)
+    (write (crlf) |X Move gripper up.|)
+    (<grip> ^command up -)
+}
+
+sp {apply*move-gripper-down*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^position up)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command down)
+    -->
+    (<g> ^position up -)
+    (<g> ^position down +)
+    (write (crlf) |X Move gripper down.|)
+    (<grip> ^command down -)
+}
+
+sp {apply*open-gripper*holding*something*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^open no)
+    (<g> ^above <obj>)
+    (<g> ^holding <block>)
+    (<obj> ^name <obj-name>)
+    (<block> ^name <block-name>)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command open)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <block>)
+    -->
+    (write (crlf) |X Open gripper - place | <block-name> | on | <obj-name>)
+    (<g> ^open no -)
+    (<g> ^open yes +)
+    (<g> ^holding <block> -)
+    (<g> ^holding nothing +)
+    (<g> ^above <obj> -)
+    (<g> ^above <block> +)
+    (<ontop> ^bottom-block <obj> +)
+    (<grip> ^command open -)
+}
+
+sp {apply*open-gripper*holding*nothing*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^open no)
+    (<g> ^holding nothing)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command open)
+    -->
+    (write (crlf) |X Open gripper - but holding nothing.|)
+    (<g> ^open no -)
+    (<g> ^open yes +)
+    (<grip> ^command open -)
+}
+
+sp {apply*close-gripper*above-block*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^position down)
+    (<g> ^open yes)
+    (<g> ^above <block>)
+    (<block> ^name <name>)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command close)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <block>)
+    (<ontop> ^bottom-block <obj>)
+    (<obj> ^name <oname>)
+    -->
+    (write (crlf) |X Close gripper on | <name> |. Thereby picking it up.|)
+    (write (crlf) |X Close gripper on | <name> |. Thereby picking it up.|)(write (crlf) |X   Now above | <oname> |.|)
+    (<grip> ^command close -)
+    (<g> ^holding nothing -)
+    (<g> ^holding <block> +)
+    (<g> ^open yes -)
+    (<g> ^open no +)
+    (<g> ^above <block> -)
+    (<g> ^above <obj> +)
+    (<ontop> ^bottom-block <obj> -)
+}
+
+sp {apply*close-gripper*up*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^position up)
+    (<g> ^open yes)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command close)
+    -->
+    (write (crlf) |X Close gripper while up.|)
+    (<grip> ^command close -)
+    (<g> ^open yes -)
+    (<g> ^open no +)
+}
+
+sp {apply*close-gripper*above-table*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^position down)
+    (<g> ^open yes)
+    (<g> ^above <a*1>)
+    (<a*1> ^type table)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command close)
+    -->
+    (write (crlf) |X Close gripper above the table|)
+    (<grip> ^command close -)
+    (<g> ^open yes -)
+    (<g> ^open no +)
+}
+
+sp {blocks-world*elaborate*problem-space
+    (state <s> ^name blocks-world)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name move-blocks +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^two-level-attributes desired +)
+    (<p> ^two-level-attributes ontop +)
+    (<p> ^two-level-attributes gripper +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {elaborate*block*moveable
+    (state <s> ^name blocks-world)
+    (<s> ^object <block>)
+   -{ (<s> ^ontop <o*2>)
+      (<o*2> ^last-bottom <block>)}
+   -{ (<s> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+    -->
+    (<s> ^moveable <block> +)
+}
+
+sp {blocks-world*monitor*operator-application*move-block
+    (state <s> ^operator <o>)
+    (<o> ^name move-block)
+    (<o> ^destination <d*1>)
+    (<o> ^moving-block <m*1>)
+    (<d*1> ^name <dob-name>)
+    (<m*1> ^name <mob-name>)
+    -->
+    (write (crlf) |  APPLYING | <o> |: move-block(| <mob-name> |,| <dob-name> |)|)
+}
+
+sp {P4*elaborate*object-on-inplace
+    (state <s> ^inplace-object <blockB>)
+    (<s> ^desired <d*1>)
+    (<s> ^ontop <ontop-s>)
+    (<ontop-s> ^bottom-block <blockB>)
+    (<ontop-s> ^top-block <blockA>)
+    (<d*1> ^ontop <ontop-d>)
+    (<ontop-d> ^top-block <blockA>)
+    (<ontop-d> ^bottom-block <blockB>)
+    -->
+    (<s> ^inplace-object <blockA> +)
+}
+
+sp {P3*elaborate*object-on-table
+    (state <s> ^object <table>)
+    (<table> ^name table)
+    -->
+    (<s> ^inplace-object <table> +)
+}
+
+sp {P11*halt*all-blocks-in-desired-position
+    (state <s> ^name blocks-world)
+    (<s> ^inplace-object <i*3>)
+    (<i*3> ^name C)
+    (<s> ^inplace-object <i*2>)
+    (<i*2> ^name B)
+    (<s> ^inplace-object <i*1>)
+    (<i*1> ^name A)
+    (<s> ^desired <ds>)
+    -->
+    (<s> ^success <ds> +)
+    (write (crlf) |TASK: Finished Stacking the Blocks.|)
+}
+
+sp {P2*elaborate*table*clear*top
+    (state <s> ^superstate nil)
+    (<s> ^object <object>)
+    (<object> ^type table)
+    -->
+    (<s> ^clear <object> +)
+}
+
+sp {P1*elaborate*block*clear*top
+    (state <s> ^superstate nil)
+    (<s> ^object <block>)
+   -{ (<s> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+   -{ (<s> ^gripper <g*1>)
+      (<g*1> ^holding <block>)}
+    -->
+    (<s> ^clear <block> +)
+}
+
+sp {P2b*elaborate*table*clear
+    (state <s> ^top-state <ts>)
+    (<ts> ^flag move-block-lookahead)
+    (<ts> ^object <object>)
+    (<object> ^type table)
+    -->
+    (<ts> ^clear <object> +)
+}
+
+sp {P2*elaborate*table*clear
+    (state <ts> ^top-state <ts>)
+    (<ts> ^object <object>)
+    (<object> ^type table)
+    -->
+    (<ts> ^clear <object> +)
+}
+
+sp {P1b*elaborate*block*clear
+    (state <s> ^top-state <ts>)
+    (<ts> ^flag move-block-lookahead)
+    (<ts> ^object <block>)
+   -{ (<ts> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+   -{ (<ts> ^gripper <g*1>)
+      (<g*1> ^holding <block>)}
+    -->
+    (<ts> ^clear <block> +)
+}
+
+sp {P1*elaborate*block*clear
+    (state <ts> ^top-state <ts>)
+    (<ts> ^object <block>)
+   -{ (<ts> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+   -{ (<ts> ^gripper <g*1>)
+      (<g*1> ^holding <block>)}
+    -->
+    (<ts> ^clear <block> +)
+}
+
+sp {selection*elaborate*evaluate-operator*evaluation
+    :o-support
+    (state <s> ^name selection)
+    (<s> ^evaluation <e>)
+    (<e> ^superoperator <ob>)
+    (<s> ^operator <o>)
+    (<o> ^superoperator <ob>)
+    (<o> ^name evaluate-operator)
+    -->
+    (<o> ^evaluation <e> +)
+}

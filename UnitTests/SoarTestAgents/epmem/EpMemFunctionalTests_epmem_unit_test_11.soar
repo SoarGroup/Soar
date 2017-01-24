@@ -1,0 +1,200 @@
+smem --set learning on
+epmem --set learning on
+epmem --set trigger dc
+epmem --set graph-match-ordering dfs
+epmem --set exclusions tests
+
+sp {propose*init
+    (state <s> ^superstate nil
+              -^name)
+-->
+    (<s> ^operator.name init)
+}
+
+sp {apply*init
+    (state <s> ^operator.name init)
+-->
+    (cmd epmem --set force ignore)
+    (<s> ^name ep-unit
+         ^parity <parity>
+         ^count 0
+         ^eps 110)
+}
+
+sp {ep-unit*propose*test
+    (state <s> ^name ep-unit
+               ^count <eps>
+               ^eps <eps>
+               ^tests.test <test>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name test
+         ^test <test>)
+    (cmd epmem --set trigger none)
+}
+
+sp {ep-unit*elab*even
+    (state <s> ^name ep-unit
+               ^10 << 0 2 4 6 8 >>
+               ^parity <parity>)
+-->
+    (<parity> ^ten even)
+}
+
+sp {ep-unit*elab*odd
+    (state <s> ^name ep-unit
+               ^10 << 1 3 5 7 9 >>
+               ^parity <parity>)
+-->
+    (<parity> ^ten odd)
+}
+
+sp {ep-unit*apply*count*store
+    (state <s> ^operator.name count
+               ^10 << 2 3 5 7 >>
+               ^1 1
+               ^smem.command <scmd>
+               ^parity <parity>)
+    (<parity> ^ten)
+-->
+    (<scmd> ^store <parity>)
+}
+
+sp {ep-unit*apply*count*remove-store
+    (state <s> ^operator.name count
+               ^smem <smem>)
+    (<smem> ^command <scmd>
+            ^result <sres>)
+    (<scmd> ^store <store>)
+    (<sres> ^success <store>)
+-->
+    (<scmd> ^store <store> -)
+#    (write (crlf) |Stored parity id | <store> )
+#    (interrupt)
+}
+
+sp {ep-unit*apply*count*remove-parity
+    (state <s> ^operator.name count
+               ^count 100
+               ^parity <parity>)
+-->
+    (<s> ^parity <parity> -)
+#    (interrupt)
+}
+
+sp {ep-unit*propose*count
+    (state <s> ^name ep-unit
+               ^count <count>
+               ^eps {> <count>})
+-->
+    (<s> ^operator.name count)
+}
+
+sp {ep-unit*apply*count*mark-place
+    (state <s> ^operator.name count
+              -^place)
+-->
+    (<s> ^place 1)
+}
+
+sp {ep-unit*apply*count*create
+    (state <s> ^operator.name count
+               ^place <place>
+              -^<place>)
+-->
+    (<s> ^<place> 0)
+}
+
+sp {ep-unit*apply*count*carry
+    (state <s> ^operator.name count
+               ^place <place>
+               ^<place> 9)
+-->
+    (<s> ^<place> 9 -
+         ^<place> 0
+         ^place <place> -
+         ^place (* <place> 10))
+}
+
+sp {ep-unit*apply*count*no-carry
+    (state <s> ^operator.name count
+               ^place <place>
+               ^<place> {< 9 <digit>}
+               ^count <count>)
+-->
+    (<s> ^<place> <digit> -
+         ^<place> (+ <digit> 1)
+         ^count <count> -
+         ^count (+ <count> 1)
+         ^place <place> -)
+}
+
+sp {apply*test*retrieve
+    (state <s> ^operator <o>
+               ^epmem.command <ecmd>)
+    (<o> ^name test
+         ^test.commands.<command> <arg>)
+-->
+    (<ecmd> ^<command> <arg>)
+}
+
+sp {apply*test*pass
+    (state <s> ^operator <o>
+               ^epmem.result <result>)
+    (<o> ^name test
+         ^test <test>)
+    (<result> ^<augmentation>)
+   -{
+    (<test> ^result.<metadata> <value>)
+   -(<result> ^<metadata> <value>)
+}
+-->
+    (<s> ^test-passed true)
+}
+
+sp {apply*test*pass*trace
+    (state <s> ^test-passed)
+-->
+    (write (crlf) |Test passed.|)
+    (succeeded)
+    (interrupt)
+}
+
+sp {apply*test*fail
+    (state <s> ^operator <o>
+               ^epmem.result <result>)
+    (<o> ^name test
+         ^test <test>)
+    (<test> ^result.<metadata> <value>)
+    (<result> ^<augmentation>
+             -^<metadata> <value>)
+-->
+    (<s> ^test-failed true)
+}
+
+
+sp {apply*test*fail*trace
+    (state <s> ^test-failed)
+-->
+    (write (crlf) |Test failed!|)
+    (interrupt)
+}
+
+
+sp {apply*init2
+    (state <s> ^operator.name init)
+-->
+    (<s> ^tests <tests>)
+    (<tests> ^test <t-11>)
+    (<t-11> ^id 11
+            ^name |impossible negative cue (but same path as positive cue)|
+            ^commands <c-11>
+            ^result <r-11>)
+    (<c-11> ^query <q-11>
+            ^neg-query <nq-11>)
+    (<q-11> ^name ep-unit)
+    (<nq-11> ^name bad-state-name)
+    (<r-11> ^graph-match 1
+            ^match-cardinality 1
+            ^memory-id 109)
+}

@@ -1,0 +1,48 @@
+# Tests:
+# - 
+
+srand 23
+chunk always
+
+sp {init
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate nil)
+-->
+   (<s> ^wme hustle
+        ^foo bar
+        ^value 3)
+}
+
+sp {propose
+   (state <s2> ^superstate.superstate <ss2>)
+   (<ss2> ^superstate nil)
+-->
+   (<s2> ^operator <o> +)
+   (<o> ^name make-chunk)}
+
+sp {elab
+    (state <s3> ^superstate <ss3>)
+    (<ss3> ^value { > 1 <num> }
+          ^foo <bar-copy>)
+-->
+    (<s3> ^foo <bar-copy>
+         ^math (+ 20 <num>))
+}
+
+sp {apply
+   (state <s4> ^operator <o2>
+              ^foo <bar>
+              ^math <number>
+              ^superstate <ss4>)
+   (<ss4> ^wme {<> <bar> <value> }
+          ^value <new-num>)
+   (<o2> ^name make-chunk)
+-->
+   (<ss4> ^result <value> ^new-math (* <number> <new-num>) ^math (* <number> 2) ^copied-math <number> ^bar <bar>)}
+
+sp {apply*test-done
+   (state <s3> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}

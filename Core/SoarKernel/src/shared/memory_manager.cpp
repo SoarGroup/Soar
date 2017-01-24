@@ -347,17 +347,12 @@ void Memory_Manager::print_memory_statistics()
         total += memory_for_usage[i];
     }
 
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes total memory allocated\n", total);
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes statistics overhead\n",
-          memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes for strings\n",
-          memory_for_usage[STRING_MEM_USAGE]);
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes for hash tables\n",
-          memory_for_usage[HASH_TABLE_MEM_USAGE]);
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes for various memory pools\n",
-          memory_for_usage[POOL_MEM_USAGE]);
-    dprint(DT_SOAR_INSTANCE, "%8lu bytes for miscellaneous other things\n",
-          memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes total memory allocated\n", total);
+    dprint(DT_SOAR_INSTANCE, "%d bytes statistics overhead\n", memory_for_usage[STATS_OVERHEAD_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for strings\n", memory_for_usage[STRING_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for hash tables\n", memory_for_usage[HASH_TABLE_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for various memory pools\n", memory_for_usage[POOL_MEM_USAGE]);
+    dprint(DT_SOAR_INSTANCE, "%d bytes for miscellaneous other things\n",  memory_for_usage[MISCELLANEOUS_MEM_USAGE]);
 }
 
 void Memory_Manager::debug_print_memory_stats(agent* thisAgent)

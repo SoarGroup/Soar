@@ -1,0 +1,13 @@
+sp {answer*condition-match*elaborate*results*StateNoChange*t3-1
+    (state <s1> ^superstate nil ^condition <c1> ^topstate <s2>)
+    (<c1> ^name <c3> ^name { << red blue >> <c2> })
+    (<s2> ^object <n1>)
+    (<n1> ^linguistic-desc <d1>)
+    (<d1> ^word <c3>)
+    -->
+    (<s2> ^result <o1> +)
+    (<o1> ^object <n1> +)
+}
+
+
+

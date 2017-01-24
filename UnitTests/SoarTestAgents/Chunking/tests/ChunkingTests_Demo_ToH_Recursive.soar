@@ -1,0 +1,430 @@
+chunk always
+srand 23
+
+sp {elaborate*state*desired
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>)
+    (<o> ^to <peg>)
+    (<o> ^disk <disk>)
+    -->
+    (<s> ^desired <d*1> +)
+    (<d*1> ^move-disk <md> +)
+    (<md> ^disk <disk> +)
+    (<md> ^peg <peg> +)
+}
+
+sp {apply*move-disk*target-not-clear
+    (state <s> ^operator <o>)
+    (<o> ^name move-disk)
+    (<o> ^to <target-peg>)
+    (<s> ^top-state <ts>)
+    (<target-peg> ^name <target-peg-name>)
+    (<ts> ^upper-disk <m-disk>)
+    (<o> ^disk <m-disk>)
+    (<m-disk> ^name <m-disk-name>)
+    (<ts> ^upper-disk <o-disk>)
+    (<o-disk> ^larger <m-disk>)
+    (<ts> ^holds <i>)
+    (<i> ^on <target-peg>)
+    (<i> ^disk <o-disk>)
+    (<ts> ^holds { <> <i> <h> })
+    (<h> ^disk <m-disk>)
+    (<h> ^on { <> <target-peg> <source-peg> })
+    (<h> ^above <adisk>)
+    (<source-peg> ^name <source-peg-name>)
+    -->
+    (<h> ^above <o-disk> +)
+    (<h> ^above <adisk> -)
+    (<h> ^on <target-peg> +)
+    (<h> ^on <source-peg> -)
+}
+
+sp {apply*move-disk*source-not-clear*target-clear
+    (state <s> ^operator <o>)
+    (<o> ^name move-disk)
+    (<o> ^to <target-peg>)
+    (<s> ^top-state <ts>)
+    (<ts> ^clear <target-peg>)
+    (<target-peg> ^name <target-peg-name>)
+    (<ts> ^upper-disk <m-disk>)
+    (<o> ^disk <m-disk>)
+    (<m-disk> ^name <m-disk-name>)
+    (<ts> ^holds <h>)
+    (<h> ^disk <m-disk>)
+    (<h> ^on { <> <target-peg> <source-peg> })
+    (<h> ^above { <> none <adisk> })
+    (<source-peg> ^name <source-peg-name>)
+    -->
+    (<h> ^above none +)
+    (<h> ^above <adisk> -)
+    (<h> ^on <target-peg> +)
+    (<h> ^on <source-peg> -)
+}
+
+sp {apply*move-disk*source-clear*target-clear
+    (state <s> ^operator <o>)
+    (<o> ^name move-disk)
+    (<o> ^to <target-peg>)
+    (<s> ^top-state <ts>)
+    (<ts> ^clear <target-peg>)
+    (<target-peg> ^name <target-peg-name>)
+    (<ts> ^upper-disk <m-disk>)
+    (<o> ^disk <m-disk>)
+    (<m-disk> ^name <m-disk-name>)
+    (<ts> ^holds <h>)
+    (<h> ^above none)
+    (<h> ^disk <m-disk>)
+    (<h> ^on { <> <target-peg> <source-peg> })
+    (<source-peg> ^name <source-peg-name>)
+    -->
+    (<h> ^on <target-peg> +)
+    (<h> ^on <source-peg> -)
+}
+
+sp {tower-of-hanoi*select*maintain*operator
+    (state <s> ^operator <o>)
+    -->
+    (<s> ^operator <o> >)
+}
+
+sp {tower-of-hanoi*propose*move-disk*mea*clear-smaller
+    (state <s> ^top-state <ts>)
+    (<s> ^desired <d>)
+    (<d> ^move-disk <md>)
+    (<md> ^peg <disk1-target>)
+    (<ts> ^peg { <> <disk1-target> <target-peg> })
+    (<md> ^disk <disk1>)
+    (<disk1> ^larger <m-disk>)
+   -{ (<disk1> ^larger <disk3>)
+      (<disk3> ^larger <m-disk>)
+      (<ts> ^holds <h3>)
+      (<h3> ^on <disk1-target>)
+      (<h3> ^disk <disk3>)}
+    (<ts> ^holds <h1>)
+    (<h1> ^on <disk1-target>)
+    (<h1> ^disk <m-disk>)
+    (<ts> ^holds <h2>)
+    (<h2> ^disk <disk1>)
+    (<h2> ^on { <> <target-peg> <disk1-source> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-disk +)
+    (<o> ^type clear-smaller +)
+    (<o> ^disk <m-disk> +)
+    (<o> ^to <target-peg> +)
+}
+
+sp {tower-of-hanoi*propose*move-disk*mea*clear-disk
+    (state <s> ^top-state <ts>)
+    (<s> ^desired <d>)
+    (<d> ^move-disk <md>)
+    (<md> ^peg <peg1>)
+    (<ts> ^peg { <> <peg1> <target-peg> })
+    (<md> ^disk <disk1>)
+    (<ts> ^holds <h>)
+    (<h> ^above <disk1>)
+    (<h> ^on { <> <target-peg> <peg2> })
+    (<h> ^disk <m-disk>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-disk +)
+    (<o> ^type clear-disk +)
+    (<o> ^disk <m-disk> +)
+    (<o> ^to <target-peg> +)
+}
+
+sp {tower-of-hanoi*propose*move-disk*mea*onpeg
+    (state <s> ^desired <d>)
+    (<d> ^holds <dh1>)
+    (<dh1> ^satisfied *no*)
+    (<dh1> ^on <target-peg>)
+    (<dh1> ^disk <m-disk>)
+   -{ (<d> ^holds <dh2>)
+      (<dh2> ^satisfied *no*)
+      (<dh2> ^disk <x-disk>)
+      (<x-disk> ^larger <m-disk>)}
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-disk +)
+    (<o> ^type put-on-peg +)
+    (<o> ^disk <m-disk> +)
+    (<o> ^to <target-peg> +)
+}
+
+sp {towers-of-hanoi*apply*initialize-recursive
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name initialize-toh-recursive)
+    -->
+    (<s> ^name towers-of-hanoi +)
+    (<s> ^disk <disk-1> +)
+    (<s> ^disk <disk-2> +)
+    (<s> ^disk <disk-3> +)
+    (<s> ^disk <disk-4> +)
+    (<s> ^disk <disk-5> +)
+    (<s> ^disk <disk-6> +)
+    (<s> ^disk <disk-7> +)
+    (<s> ^disk <disk-8> +)
+    (<s> ^disk <disk-9> +)
+    (<s> ^disk <disk-10> +)
+    (<s> ^disk <disk-11> +)
+    (<s> ^peg <peg-a> +)
+    (<s> ^peg <peg-b> +)
+    (<s> ^peg <peg-c> +)
+    (<s> ^holds <h1> +)
+    (<s> ^holds <h2> +)
+    (<s> ^holds <h3> +)
+    (<s> ^holds <h4> +)
+    (<s> ^holds <h5> +)
+    (<s> ^holds <h6> +)
+    (<s> ^holds <h7> +)
+    (<s> ^holds <h8> +)
+    (<s> ^holds <h9> +)
+    (<s> ^holds <h10> +)
+    (<s> ^holds <h11> +)
+    (<s> ^desired <d> +)
+    (<h1> ^disk <disk-1> +)
+    (<h1> ^above <disk-2> +)
+    (<h1> ^on <peg-a> +)
+    (<h2> ^disk <disk-2> +)
+    (<h2> ^above <disk-3> +)
+    (<h2> ^on <peg-a> +)
+    (<h3> ^disk <disk-3> +)
+    (<h3> ^above <disk-4> +)
+    (<h3> ^on <peg-a> +)
+    (<h4> ^disk <disk-4> +)
+    (<h4> ^above <disk-5> +)
+    (<h4> ^on <peg-a> +)
+    (<h5> ^disk <disk-5> +)
+    (<h5> ^above <disk-6> +)
+    (<h5> ^on <peg-a> +)
+    (<h6> ^disk <disk-6> +)
+    (<h6> ^above <disk-7> +)
+    (<h6> ^on <peg-a> +)
+    (<h7> ^disk <disk-7> +)
+    (<h7> ^above <disk-8> +)
+    (<h7> ^on <peg-a> +)
+    (<h8> ^disk <disk-8> +)
+    (<h8> ^above <disk-9> +)
+    (<h8> ^on <peg-a> +)
+    (<h9> ^disk <disk-9> +)
+    (<h9> ^above <disk-10> +)
+    (<h9> ^on <peg-a> +)
+    (<h10> ^disk <disk-10> +)
+    (<h10> ^above <disk-11> +)
+    (<h10> ^on <peg-a> +)
+    (<h11> ^disk <disk-11> +)
+    (<h11> ^above none +)
+    (<h11> ^on <peg-a> +)
+    (<disk-1> ^name 1 +)
+    (<disk-1> ^size 1 +)
+    (<disk-2> ^name 2 +)
+    (<disk-2> ^size 2 +)
+    (<disk-3> ^name 3 +)
+    (<disk-3> ^size 3 +)
+    (<disk-4> ^name 4 +)
+    (<disk-4> ^size 4 +)
+    (<disk-5> ^name 5 +)
+    (<disk-5> ^size 5 +)
+    (<disk-6> ^name 6 +)
+    (<disk-6> ^size 6 +)
+    (<disk-7> ^name 7 +)
+    (<disk-7> ^size 7 +)
+    (<disk-8> ^name 8 +)
+    (<disk-8> ^size 8 +)
+    (<disk-9> ^name 9 +)
+    (<disk-9> ^size 9 +)
+    (<disk-10> ^name 10 +)
+    (<disk-10> ^size 10 +)
+    (<disk-11> ^name 11 +)
+    (<disk-11> ^size 11 +)
+    (<peg-a> ^name A +)
+    (<peg-b> ^name B +)
+    (<peg-c> ^name C +)
+    (<d> ^holds <d1> +)
+    (<d> ^holds <d2> +)
+    (<d> ^holds <d3> +)
+    (<d> ^holds <d4> +)
+    (<d> ^holds <d5> +)
+    (<d> ^holds <d6> +)
+    (<d> ^holds <d7> +)
+    (<d> ^holds <d8> +)
+    (<d> ^holds <d9> +)
+    (<d> ^holds <d10> +)
+    (<d> ^holds <d11> +)
+    (<d1> ^disk <disk-1> +)
+    (<d1> ^above <disk-2> +)
+    (<d1> ^on <peg-c> +)
+    (<d2> ^disk <disk-2> +)
+    (<d2> ^above <disk-3> +)
+    (<d2> ^on <peg-c> +)
+    (<d3> ^disk <disk-3> +)
+    (<d3> ^above <disk-4> +)
+    (<d3> ^on <peg-c> +)
+    (<d4> ^disk <disk-4> +)
+    (<d4> ^above <disk-5> +)
+    (<d4> ^on <peg-c> +)
+    (<d5> ^disk <disk-5> +)
+    (<d5> ^above <disk-6> +)
+    (<d5> ^on <peg-c> +)
+    (<d6> ^disk <disk-6> +)
+    (<d6> ^above <disk-7> +)
+    (<d6> ^on <peg-c> +)
+    (<d7> ^disk <disk-7> +)
+    (<d7> ^above <disk-8> +)
+    (<d7> ^on <peg-c> +)
+    (<d8> ^disk <disk-8> +)
+    (<d8> ^above <disk-9> +)
+    (<d8> ^on <peg-c> +)
+    (<d9> ^disk <disk-9> +)
+    (<d9> ^above <disk-10> +)
+    (<d9> ^on <peg-c> +)
+    (<d10> ^disk <disk-10> +)
+    (<d10> ^above <disk-11> +)
+    (<d10> ^on <peg-c> +)
+    (<d11> ^disk <disk-11> +)
+    (<d11> ^above none +)
+    (<d11> ^on <peg-c> +)
+}
+
+sp {towers-of-hanoi*propose*initialize-recursive
+    (state <s> ^superstate nil)
+    (<s> -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-toh-recursive +)
+}
+
+sp {elaborations*elaborate*super*top-state
+    (state <ss> ^superstate <s*1>)
+    (<s*1> ^top-state <s>)
+    -->
+    (<ss> ^top-state <s> +)
+}
+
+sp {elaborations*elaborate*top-state
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+sp {tower-of-hanoi*monitor*operator-execution*move-disk
+    (state <s> ^operator <o>)
+    (<o> ^name move-disk)
+    (<o> ^to <t*1>)
+    (<t*1> ^name <to-name>)
+    (<o> ^disk <d*1>)
+    (<d*1> ^size <size>)
+    -->
+    (write (crlf) | Goal Move Disk:| <size> | to peg | <to-name>)
+}
+
+sp {tower-of-hanoi*elaborate*desired*statisfied
+    (state <s> ^name towers-of-hanoi)
+    (<s> ^top-state <t*1>)
+    (<s> ^desired <d*1>)
+    (<t*1> ^holds <h>)
+    (<h> ^on <target-peg>)
+    (<h> ^disk <m-disk>)
+    (<d*1> ^holds <dh>)
+    (<dh> ^on <target-peg>)
+    (<dh> ^disk <m-disk>)
+    -->
+    (<dh> ^satisfied *yes* +)
+}
+
+sp {tower-of-hanoi*elaborate*desired*not-statisfied
+    (state <s> ^name towers-of-hanoi)
+    (<s> ^top-state <ts>)
+    (<s> ^desired <d>)
+    (<d> ^holds <dh>)
+    (<dh> ^on <target-peg>)
+    (<dh> ^disk <m-disk>)
+   -{ (<ts> ^holds <h>)
+      (<h> ^on <target-peg>)
+      (<h> ^disk <m-disk>)}
+    -->
+    (<dh> ^satisfied *no* +)
+}
+
+sp {towers-of-hanoi*desired-of-disk*satisfied
+    (state <s> ^holds <h11>)
+    (<h11> ^on <peg-c>)
+    (<peg-c> ^name C)
+    (<h11> ^disk <disk-11>)
+    (<disk-11> ^name 11)
+    (<s> ^holds <h10>)
+    (<h10> ^on <peg-c>)
+    (<h10> ^disk <disk-10>)
+    (<disk-10> ^name 10)
+    (<s> ^holds <h9>)
+    (<h9> ^on <peg-c>)
+    (<h9> ^disk <disk-9>)
+    (<disk-9> ^name 9)
+    (<s> ^holds <h8>)
+    (<h8> ^on <peg-c>)
+    (<h8> ^disk <disk-8>)
+    (<disk-8> ^name 8)
+    (<s> ^holds <h7>)
+    (<h7> ^on <peg-c>)
+    (<h7> ^disk <disk-7>)
+    (<disk-7> ^name 7)
+    (<s> ^holds <h6>)
+    (<h6> ^on <peg-c>)
+    (<h6> ^disk <disk-6>)
+    (<disk-6> ^name 6)
+    (<s> ^holds <h5>)
+    (<h5> ^on <peg-c>)
+    (<h5> ^disk <disk-5>)
+    (<disk-5> ^name 5)
+    (<s> ^holds <h4>)
+    (<h4> ^on <peg-c>)
+    (<h4> ^disk <disk-4>)
+    (<disk-4> ^name 4)
+    (<s> ^holds <h3>)
+    (<h3> ^on <peg-c>)
+    (<h3> ^disk <disk-3>)
+    (<disk-3> ^name 3)
+    (<s> ^holds <h2>)
+    (<h2> ^on <peg-c>)
+    (<h2> ^disk <disk-2>)
+    (<disk-2> ^name 2)
+    (<s> ^holds <h1>)
+    (<h1> ^on <peg-c>)
+    (<h1> ^disk <disk-1>)
+    (<disk-1> ^name 1)
+    -->
+    (write (crlf) |Success!|)
+    (write (crlf) |Success!|)(halt)
+}
+
+sp {towers-of-hanoi*object*peg*elaborate*state*clear
+    "If not(on(x,peg)), then clear(peg)."
+    (state <s> ^name towers-of-hanoi)
+    (<s> ^peg <peg>)
+   -{ (<s> ^holds <h*1>)
+      (<h*1> ^on <peg>)}
+    -->
+    (<s> ^clear <peg> +)
+}
+
+sp {towers-of-hanoi*object*disk*elaborate*state*upper-disk
+    "If not(above(x,disk)), then upper-disk(disk)."
+    (state <s> ^name towers-of-hanoi)
+    (<s> ^disk <disk>)
+   -{ (<s> ^holds <h*1>)
+      (<h*1> ^above <disk>)}
+    -->
+    (<s> ^upper-disk <disk> +)
+}
+
+sp {towers-of-hanoi*object*disk*elaborate*state*larger
+    "If size-of(i) > size-of(j), then larger(i,j)."
+    (state <s> ^name towers-of-hanoi)
+    (<s> ^disk <j-disk>)
+    (<j-disk> ^size <s*1>)
+    (<j-disk> ^size <j-size>)
+    (<s> ^disk { <> <j-disk> <i-disk> })
+    (<i-disk> ^size { < <s*1> <i-size> })
+    -->
+    (<j-disk> ^larger <i-disk> +)
+}

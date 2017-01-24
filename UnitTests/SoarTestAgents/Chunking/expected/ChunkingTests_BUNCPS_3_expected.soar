@@ -1,0 +1,12 @@
+sp {answer*justify*condition-match*elaborate*matching-argument-object*snc*t4-0*snc*t4-1
+    (state <s1> ^superstate nil ^condition <c3> ^condition <c1>)
+    (<c1> ^arg <a1>)
+    (<c3> ^name <c2>)
+    (<a1> ^type <c2>)
+    -->
+    (<s1> ^result <o1> +)
+    (<o1> ^object <c1> +)
+}
+
+
+

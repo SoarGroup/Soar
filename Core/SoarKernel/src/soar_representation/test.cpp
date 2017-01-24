@@ -12,6 +12,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "ebc_repair.h"
+#include "explanation_memory.h"
 #include "output_manager.h"
 #include "instantiation.h"
 #include "preference.h"
@@ -150,7 +151,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
    Deallocates a test.
 ---------------------------------------------------------------- */
 
-void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
+void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
@@ -178,48 +179,137 @@ void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity)
                 next_c = c->rest;
                 test tt;
                 tt = static_cast<test>(c->first);
-                deallocate_test(thisAgent, static_cast<test>(c->first), pCleanUpIdentity);
+                deallocate_test(thisAgent, static_cast<test>(c->first));
                 free_cons(thisAgent, c);
                 c = next_c;
             }
             break;
         default: /* relational tests other than equality */
-            #ifdef DEBUG_REFCOUNT_DB
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-            #else
-            thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-            #endif
-            #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-            /* The following cleans up the identity->rule variable
-             * mapping that is only used for debugging in a non-release build. */
-            if (pCleanUpIdentity && t->identity)
-            {
-                thisAgent->explanationBasedChunker->cleanup_identity_for_debug_mappings(t->identity);
-            }
-            #endif
-
             break;
     }
-    /* -- The eq_test was just a cache to prevent repeated searches on conjunctive tests
+    /* -- The eq_test is a cache to prevent repeated searches on conjunctive tests
      *    which was all over the kernel.  We did not copy the test or increment the
      *    refcount, so we don't need to deallocate the test here. -- */
     t->eq_test = NULL;
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
-    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test done.\n");
 }
+
+void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
+{
+    cons* c_new, *c_next, *c_last = NULL, *c_first = NULL;
+    Symbol* lSym;
+    tc_number lTC = get_new_tc_number(thisAgent);
+    tc_number lTC2 = get_new_tc_number(thisAgent);
+
+    int dest_count, new_count, final_count;
+    final_count = dest_count = new_count = 0;
+
+    for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_new->rest)
+    {
+        static_cast<Symbol*>(c_new->first)->tc_num = lTC;
+        ++dest_count;
+    }
+
+    for (c_new = new_test->data.disjunction_list; c_new != NULL; c_new = c_next)
+    {
+        lSym = static_cast<Symbol*>(c_new->first);
+        ++new_count;
+        c_next = c_new->rest;
+        if (lSym->tc_num == lTC)
+        {
+            lSym->tc_num = lTC2;
+        }
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
+        free_cons(thisAgent, c_new);
+    }
+    new_test->data.disjunction_list = NULL;
+    deallocate_test(thisAgent, new_test);
+
+    for (c_new = destination->data.disjunction_list; c_new != NULL; c_new = c_next)
+    {
+        lSym = static_cast<Symbol*>(c_new->first);
+        c_next = c_new->rest;
+        if (lSym->tc_num != lTC2)
+        {
+            if (c_last)
+            {
+                c_last->rest = c_next;
+            }
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            free_cons(thisAgent, c_new);
+            continue;
+        } else if (!c_first) {
+            c_first = c_new;
+        }
+        c_last = c_new;
+        ++final_count;
+    }
+    destination->data.disjunction_list = c_first;
+    thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
+    thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
+    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
+
+}
+
+bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
+{
+    test destination = 0;//, original = 0;
+    cons* c;//, *c_orig;
+
+    destination = *dest_test_address;
+
+//    dprint(DT_DEBUG, "Merging disjunctive test %t into %t", new_test, destination);
+    if (destination->type != CONJUNCTIVE_TEST)
+    {
+        if (destination->type == DISJUNCTION_TEST)
+        {
+            merge_disjunction_tests(thisAgent, destination, new_test);
+            return true;
+        }
+
+        destination = make_test(thisAgent, NIL, CONJUNCTIVE_TEST);
+        allocate_cons(thisAgent, &c);
+        destination->data.conjunct_list = c;
+        destination->eq_test = (*dest_test_address)->eq_test;
+        c->first = *dest_test_address;
+        c->rest = NIL;
+        *dest_test_address = destination;
+    }
+
+//    assert(destination->eq_test);
+
+    for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
+    {
+        if (static_cast<test>(c->first)->type == DISJUNCTION_TEST)
+        {
+            merge_disjunction_tests(thisAgent, static_cast<test>(c->first), new_test);
+//            dprint(DT_DEBUG, "Found another disjunction.  Merged test is now %t", destination);
+            return true;
+        }
+    }
+    /* --- now add add_test to the conjunct list --- */
+    allocate_cons(thisAgent, &c);
+    c->first = new_test;
+    c->rest = destination->data.conjunct_list;
+    destination->data.conjunct_list = c;
+
+//    dprint(DT_DEBUG, "No disjunction found.  Merged test is now %t", destination);
+    return true;
+}
+
 
 /* ----------------------------------------------------------------
    Destructively modifies the first test (t) by adding the second
    one (add_me) to it (usually as a new conjunct).  The first test
    need not be a conjunctive test nor even exist.
 ---------------------------------------------------------------- */
-
-bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
+bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool merge_disjunctions)
 {
 
-	test destination = 0;//, original = 0;
-	cons* c;//, *c_orig;
+    test destination = 0;//, original = 0;
+    cons* c;//, *c_orig;
 
     if (!new_test)
     {
@@ -234,6 +324,13 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
 
     destination = *dest_test_address;
     assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
+
+    /* Since this function is called frequently but merges infrequently, we call a special
+     * version of this function instead */
+    if (merge_disjunctions && (new_test->type == DISJUNCTION_TEST))
+    {
+        return add_test_merge_disjunctions(thisAgent, dest_test_address, new_test);
+    }
 
     if (destination->type != CONJUNCTIVE_TEST)
     {
@@ -266,7 +363,7 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test)
    test is already included in the first one.
 ---------------------------------------------------------------- */
 
-void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg)
+void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool neg, bool merge_disjunctions)
 {
     test ct;
     cons* c;
@@ -286,7 +383,7 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 return;
             }
 
-    add_test(thisAgent, t, add_me);
+    add_test(thisAgent, t, add_me, merge_disjunctions);
 }
 
 /* ----------------------------------------------------------------
@@ -530,30 +627,17 @@ uint32_t hash_test(agent* thisAgent, test t)
    parameters) in the given test, and returns true if one is found.
 ---------------------------------------------------------------- */
 
-bool test_includes_goal_or_impasse_id_test(test t,
-        bool look_for_goal,
-        bool look_for_impasse)
+bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse)
 {
     cons* c;
 
-    if (t->type == EQUALITY_TEST)
-    {
-        return false;
-    }
-    if (look_for_goal && (t->type == GOAL_ID_TEST))
-    {
-        return true;
-    }
-    if (look_for_impasse && (t->type == IMPASSE_ID_TEST))
-    {
-        return true;
-    }
+    if (t->type == EQUALITY_TEST) return false;
+    if (look_for_goal && (t->type == GOAL_ID_TEST)) return true;
+    if (look_for_impasse && (t->type == IMPASSE_ID_TEST)) return true;
     if (t->type == CONJUNCTIVE_TEST)
     {
         for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (test_includes_goal_or_impasse_id_test(static_cast<test>(c->first),
-                    look_for_goal,
-                    look_for_impasse))
+            if (test_includes_goal_or_impasse_id_test(static_cast<test>(c->first), look_for_goal, look_for_impasse))
             {
                 return true;
             }
@@ -562,46 +646,10 @@ bool test_includes_goal_or_impasse_id_test(test t,
     return false;
 }
 
-/* ----------------------------------------------------------------
-   Looks through a test, and returns a new copy of the first equality
-   test it finds.  Signals an error if there is no equality test in
-   the given test.
----------------------------------------------------------------- */
-
-test copy_of_equality_test_found_in_test(agent* thisAgent, test t)
-{
-    cons* c;
-    char msg[BUFFER_MSG_SIZE];
-
-    if (!t)
-    {
-        strncpy(msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
-        msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-        abort_with_fatal_error(thisAgent, msg);
-    }
-    if (t->type == EQUALITY_TEST)
-    {
-        return copy_test(thisAgent, t);
-    }
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-            if (static_cast<test>(c->first) &&
-                    (static_cast<test>(c->first)->type == EQUALITY_TEST))
-            {
-                return copy_test(thisAgent, static_cast<test>(c->first));
-            }
-    }
-    strncpy(msg, "Internal error: can't find equality constraint in constraint\n", BUFFER_MSG_SIZE);
-    abort_with_fatal_error(thisAgent, msg);
-    return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-test equality_test_found_in_test(test t)
+test find_eq_test(test t)
 {
     cons* c;
 
-    assert(t);
     if (t->type == EQUALITY_TEST)
     {
         return t;
@@ -695,7 +743,6 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
             //            referent = t->data.referent;
             //            break;
         case EQUALITY_TEST:
-        case SMEM_LINK_TEST:
             referent = t->data.referent;
             break;
         default:
@@ -742,10 +789,7 @@ char first_letter_from_test(test t)
     cons* c;
     char ch;
 
-    if (!t)
-    {
-        return '*';
-    }
+    if (!t) return '*';
 
     switch (t->type)
     {
@@ -753,19 +797,10 @@ char first_letter_from_test(test t)
             return first_letter_from_symbol(t->data.referent);
         case CONJUNCTIVE_TEST:
             return first_letter_from_symbol(t->eq_test->data.referent);
-//            for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-//            {
-//                ch = first_letter_from_test(static_cast<test>(c->first));
-//                if (ch != '*')
-//                {
-//                    return ch;
-//                }
-//            }
         case GOAL_ID_TEST:
             return 's';
         case IMPASSE_ID_TEST:
             return 'i';
-            return '*';
         default:  /* disjunction tests, and relational tests other than equality */
             return '*';
     }
@@ -999,7 +1034,7 @@ cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
         /* -- There are no remaining tests in conjunct list, so return NULL --*/
         return NULL;
     } else {
-        (*t)->eq_test = equality_test_found_in_test(*t);
+        (*t)->eq_test = find_eq_test(*t);
     }
 
     return next;
@@ -1043,7 +1078,7 @@ void copy_non_identical_test(agent* thisAgent, test* t, test add_me, bool consid
                 }
         }
         dprint(DT_MERGE, "          ...found test to copy: %t\n", add_me);
-        add_test(thisAgent, t, copy_test(thisAgent, add_me));
+        add_test(thisAgent, t, copy_test(thisAgent, add_me), true);
     }
 }
 

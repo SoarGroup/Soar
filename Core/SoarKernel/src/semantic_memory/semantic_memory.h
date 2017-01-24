@@ -82,6 +82,7 @@ class SMem_Manager
         Symbol*     get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
         void        add_identity_to_iSTI_test(test pTest, uint64_t pI_ID);
         uint64_t    get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID);
+        void        force_add_identity_for_STI(Symbol* pSym, uint64_t pID);
 
         /* Methods that brings in a portion or all of smem into an ltm_set data structure */
         void        create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth = 1);
@@ -162,9 +163,9 @@ class SMem_Manager
 
         /* Methods for retrieving an LTM structure to be installed in STM */
         void            add_triple_to_recall_buffer(symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value);
-        void            install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta);
+        void            install_buffered_triple_list(Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, bool meta, bool stripLTILinks = false);
         void            install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* lti, bool activate_lti, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, smem_install_type install_type = wm_install, uint64_t depth = 1, std::set<uint64_t>* visited = NULL);
-        void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes);
+        void            install_recall_buffer(Symbol* state, wme_set& cue_wmes, symbol_triple_list& meta_wmes, symbol_triple_list& retrieval_wmes, bool stripLTILinks = false);
 
         /* Methods to update/store LTM in smem database */
         void            deallocate_ltm(ltm_object* ltm, bool free_ltm = true);

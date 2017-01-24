@@ -1,0 +1,69 @@
+srand 23
+chunk always
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-param <p1>
+         ^test-param2 <p2>)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (succeeded)
+    (interrupt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (interrupt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
+
+# Type comparison with identifiers, first will not match
+sp {apply9a
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-param { <=> <t2> <t1> }
+          ^test-param2 { <> <t1> <t2> }
+          ^test-item <t2>)
+-->
+    (<ss> ^result9a <t2> ^sub9 <sb>)
+    (<sb> ^result9b <t1>)}
+
+sp {apply9b
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate <ss>)
+    (<ss> ^test-param { <=> <t2> <t1> }
+          ^test-param2 { <> <t1> <t2> } )
+-->
+    (<ss> ^result9c <t2> ^result9d <t1>
+          ^test-done 1)}
+
+
+#run
+#ctf expected/chunk9.soar print -cf

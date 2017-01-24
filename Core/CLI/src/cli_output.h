@@ -92,7 +92,7 @@ namespace cli
                 {
                     return cli.DoOutput(argv_orig);
                 }
-                std::string arg, arg2;
+                std::string arg, arg2, arg3;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
 
@@ -105,16 +105,23 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
+                if (num_args > 2)
+                {
+                    arg3 = argv[start_arg_position+2];
+                }
                 if (backwardCompatibleReplacement)
                 {
                     return cli.DoOutput(argv_orig, &arg, &subCommandArg);
                 } else if (num_args == 1)
                 {
                     return cli.DoOutput(argv_orig, &arg);
-                }
-                if (num_args >= 2)
+                } else if (num_args == 2)
                 {
                     return cli.DoOutput(argv_orig, &arg, &arg2);
+                }
+                else if (num_args >= 3)
+                {
+                    return cli.DoOutput(argv_orig, &arg, &arg2, &arg3);
                 }
 
                 return cli.DoOutput(argv_orig);

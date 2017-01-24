@@ -1223,7 +1223,7 @@ byte run_preference_semantics(agent* thisAgent,
      * - For context-slots at the top level (will never be backtraced through)
      * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
 
-    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
+    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
 
     /* Empty the context-dependent preference set in the slot */
 
@@ -1894,14 +1894,17 @@ byte run_preference_semantics(agent* thisAgent,
 
                     /* This decision was non-numeric, so add all non-numeric preferences associated with the
                      * chosen candidate to the OSK prefs.*/
-
-                    for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
-                    {
-                        if (p->value == (*result_candidates)->value)
-                        {
-                            add_to_OSK(thisAgent, s, p);
-                        }
-                    }
+                    /* MToDo | Temporarily removed because it was causing problems for John in demo agents.  All of the OSK
+                     *         prefs that involve uncertainty now seem weird. Will need to reconsider how we handle them now
+                     *         that we have a better handle for correctness issues and are thinking more about probabilistic
+                     *         chunks.*/
+//                    for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
+//                    {
+//                        if (p->value == (*result_candidates)->value)
+//                        {
+//                            add_to_OSK(thisAgent, s, p);
+//                        }
+//                    }
                     for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value))
@@ -1944,7 +1947,7 @@ byte run_preference_semantics(agent* thisAgent,
    (if non-NIL) for backtracing.
 ------------------------------------------------------------------ */
 
-void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p)
+void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p, bool isSingleton = false)
 {
     wme* w;
 
@@ -1952,6 +1955,10 @@ void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, 
     insert_at_head_of_dll(id->id->impasse_wmes, w, next, prev);
     w->preference = p;
     add_wme_to_wm(thisAgent, w);
+    if (isSingleton)
+    {
+        thisAgent->explanationBasedChunker->add_to_singletons(w);
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -1967,11 +1974,10 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 {
     Symbol* impasseID;
 
-    impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level);
+    impasseID = thisAgent->symbolManager->make_new_identifier((isa_goal ? 'S' : 'I'), level, 0, false);
     post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
-    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol,
-                    NIL);
+    add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol, NIL, true);
 
     if (isa_goal)
     {
@@ -1979,12 +1985,12 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(impasseID->id->smem_info));
         thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
         impasseID->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header, true);
 
         impasseID->id->epmem_info->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header);
+        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header, true);
         impasseID->id->epmem_info->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
         soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, impasseID->id->epmem_info->epmem_cmd_header);
         impasseID->id->epmem_info->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
@@ -2003,22 +2009,22 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             thisAgent->symbolManager->symbol_remove_ref(&my_time_sym);
         }
 
-        Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('S', level);
+        Symbol* lsmem_header = thisAgent->symbolManager->make_new_identifier('L', level);
         Symbol* lsmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
         Symbol* lsmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header);
+        impasseID->id->smem_info->smem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.smem_sym, lsmem_header, true);
         impasseID->id->smem_info->cmd_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_cmd, lsmem_cmd_header);
         impasseID->id->smem_info->result_wme = soar_module::add_module_wme(thisAgent, lsmem_header, thisAgent->symbolManager->soarSymbols.smem_sym_result, lsmem_result_header);
 
     }
     else
     {
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.object_symbol, object, NIL, true);
     }
 
     if (attr)
     {
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL);
+        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.attribute_symbol, attr, NIL, true);
     }
 
     switch (impasse_type)
@@ -2026,19 +2032,19 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         case NONE_IMPASSE_TYPE:
             break;    /* this happens only when creating the top goal */
         case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.constraint_failure_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
         case CONFLICT_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.conflict_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case TIE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.tie_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.multiple_symbol, NIL);
             break;
         case NO_CHANGE_IMPASSE_TYPE:
-            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL);
+            add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.impasse_symbol, thisAgent->symbolManager->soarSymbols.no_change_symbol, NIL, true);
             add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.choices_symbol, thisAgent->symbolManager->soarSymbols.none_symbol, NIL);
             break;
     }
@@ -3477,9 +3483,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         {
             if (rhs_value_is_reteloc(a->id))
             {
-                sym = get_symbol_from_rete_loc(
-                          rhs_value_to_reteloc_levels_up(a->id),
-                          rhs_value_to_reteloc_field_num(a->id), tok, w);
+                sym = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(a->id), rhs_value_to_reteloc_field_num(a->id), tok, w);
             }
         }
         assert(sym != NIL);
@@ -3489,8 +3493,7 @@ bool shouldCreateInstantiation(agent* thisAgent, production* prod,
         {
             if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
             {
-                thisAgent->outputManager->printa_sf(thisAgent,
-                                   "*** Waterfall: aborting firing because (%y * *)", sym);
+                thisAgent->outputManager->printa_sf(thisAgent, "*** Waterfall: aborting firing because (%y * *)", sym);
                 thisAgent->outputManager->printa_sf(thisAgent,
                       " level %d is on or higher (lower int) than change level %d\n",
                       static_cast<int64_t>(sym->id->level), static_cast<int64_t>(thisAgent->change_level));
@@ -3515,8 +3518,7 @@ void do_preference_phase(agent* thisAgent)
         if (thisAgent->current_phase == APPLY_PHASE)   /* it's always IE for PROPOSE */
         {
             xml_begin_tag(thisAgent, kTagSubphase);
-            xml_att_val(thisAgent, kPhase_Name,
-                        kSubphaseName_FiringProductions);
+            xml_att_val(thisAgent, kPhase_Name, kSubphaseName_FiringProductions);
             switch (thisAgent->FIRING_TYPE)
             {
                 case PE_PRODS:
@@ -3552,26 +3554,14 @@ void do_preference_phase(agent* thisAgent)
     thisAgent->change_level = thisAgent->highest_active_level;
     thisAgent->next_change_level = thisAgent->highest_active_level;
 
-    // Temporary list to buffer deallocation of some preferences until
-    // the inner elaboration loop is over.
+    // Temporary list to buffer deallocation of some preferences until the inner elaboration loop is over.
     preference_list bufdeallo;
 
     // inner elaboration cycle
     for (;;)
     {
         thisAgent->change_level = thisAgent->next_change_level;
-
-//        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//        {
-//            thisAgent->outputManager->printa_sf(thisAgent,  "\n--- Inner Elaboration Phase, active level %d",
-//                static_cast<int64_t>(thisAgent->active_level));
-//            if (thisAgent->active_goal)
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent, " (%y)", thisAgent->active_goal);
-//            }
-//            thisAgent->outputManager->printa_sf(thisAgent,  " ---\n");
-//        }
-
+        dprint(DT_WATERFALL, "\n--- Inner Elaboration Phase, active level %d goal %y ---\n", static_cast<int64_t>(thisAgent->active_level), thisAgent->active_goal);
         dprint(DT_DEALLOCATE_INST, "Clearing newly_created_instantiations...\n");
         thisAgent->newly_created_instantiations = NIL;
 
@@ -3582,18 +3572,7 @@ void do_preference_phase(agent* thisAgent)
         bool once = true;
         while (postpone_assertion(thisAgent, &prod, &tok, &w))
         {
-//            if(!tok)
-//                dprint(DT_DEBUG, "Found.\n");
-
             assertionsExist = true;
-
-            if (thisAgent->explanationBasedChunker->max_chunks_reached)
-            {
-                consume_last_postponed_assertion(thisAgent);
-                thisAgent->system_halted = true;
-                soar_invoke_callbacks(thisAgent, AFTER_HALT_SOAR_CALLBACK, 0);
-                return;
-            }
 
             if (prod->type == JUSTIFICATION_PRODUCTION_TYPE)
             {
@@ -3631,33 +3610,24 @@ void do_preference_phase(agent* thisAgent)
 
         if (thisAgent->active_goal == NIL)
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,
-//                      " inner elaboration loop doesn't have active goal.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop doesn't have active goal.\n");
             break;
         }
 
         if (thisAgent->active_goal->id->lower_goal == NIL)
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,  " inner elaboration loop at bottom goal.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop at bottom goal.\n");
             break;
         }
 
         if (thisAgent->current_phase == APPLY_PHASE)
         {
-            thisAgent->active_goal = highest_active_goal_apply(thisAgent,
-                                     thisAgent->active_goal->id->lower_goal, true);
+            thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->active_goal->id->lower_goal, true);
         }
         else
         {
             assert(thisAgent->current_phase == PROPOSE_PHASE);
-            thisAgent->active_goal = highest_active_goal_propose(thisAgent,
-                                     thisAgent->active_goal->id->lower_goal, true);
+            thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->active_goal->id->lower_goal, true);
         }
 
         if (thisAgent->active_goal != NIL)
@@ -3666,11 +3636,7 @@ void do_preference_phase(agent* thisAgent)
         }
         else
         {
-//            if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
-//            {
-//                thisAgent->outputManager->printa_sf(thisAgent,
-//                      " inner elaboration loop finished but not at quiescence.\n");
-//            }
+            dprint(DT_WATERFALL, " inner elaboration loop finished but not at quiescence.\n");
             break;
         }
     } // end inner elaboration loop
@@ -4005,6 +3971,12 @@ void elaborate_gds(agent* thisAgent)
                     else
                     {
                         /* WME should be in the GDS of the current goal if the WME's GDS does not already exist. (i.e., if NIL GDS) */
+
+                        /* MToDo | Remove.  Experimenting while debugging agent that has a missing gds */
+                        //if (!inst->match_goal->id->id->gds)
+                        //{
+                        //    create_gds_for_goal(thisAgent, inst->match_goal);
+                        //}
 
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 

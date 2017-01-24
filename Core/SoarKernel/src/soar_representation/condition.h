@@ -104,7 +104,7 @@ void        copy_condition_list(agent* thisAgent, condition* top_cond, condition
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
                          bool pCopyInstantiation = false, bool pStripGoalImpasseTests = false);
 void        deallocate_condition(agent* thisAgent, condition*& cond);
-void        deallocate_condition_list(agent* thisAgent, condition*& cond_list, bool pCleanUpIdentity = false);
+void        deallocate_condition_list(agent* thisAgent, condition*& cond_list);
 
 void        add_bound_variables_in_condition(agent* thisAgent, condition* c, tc_number tc, cons** var_list);
 void        unmark_variables_and_free_list(agent* thisAgent, cons* var_list);
@@ -112,5 +112,12 @@ void        unmark_variables_and_free_list(agent* thisAgent, cons* var_list);
 int         condition_count(condition* pCond);
 bool        conditions_are_equal(condition* c1, condition* c2);
 bool        canonical_cond_greater(condition* c1, condition* c2);
+
+inline int64_t count_conditions(condition* top_cond)
+{
+    int64_t count = 0;
+    for (condition* cond = top_cond; cond; cond = cond->next, count++) {}
+    return count;
+}
 
 #endif

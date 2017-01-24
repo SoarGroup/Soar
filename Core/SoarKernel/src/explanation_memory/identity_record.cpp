@@ -44,7 +44,7 @@ void identity_record::clean_up()
 }
 
 
-void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -63,7 +63,7 @@ void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_s
                     lNewIDSet->identity = thisAgent->explanationMemory->get_identity_set_counter();
                     lNewIDSet->variable_sym = pTest->data.referent;
                     thisAgent->symbolManager->symbol_add_ref(lNewIDSet->variable_sym);
-                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity, lNewIDSet->variable_sym, lNewIDSet->variable_sym);
+                    thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity, lNewIDSet->identity);
 
                 } else {
                     lNewIDSet->identity = NULL_IDENTITY_SET;
@@ -75,18 +75,17 @@ void add_identities_in_test(agent* thisAgent, test pTest, uint64_t pInstID, id_s
     }
 }
 
-void add_identities_in_condition_list(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
+void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_id_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {
         if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            add_identities_in_condition_list(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_conditions(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
         } else {
-            thisAgent->outputManager->set_dprint_test_format(DT_EXPLAIN_IDENTITIES, true, true);
-            add_identities_in_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
-            add_identities_in_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
         }
     }
 }
@@ -96,7 +95,7 @@ void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
     /* Generate identity sets and add mappings for all conditions in chunk */
 
     dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
-    add_identities_in_condition_list(thisAgent, lhs, pInstID, identities_in_chunk, id_to_id_set_mappings);
+    generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, id_to_id_set_mappings);
 }
 
 void identity_record::map_originals_to_sets()
@@ -171,14 +170,12 @@ void identity_record::print_original_ebc_mappings()
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%u%-%y %-%u%-%y\n",
-            iter->first, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->first), iter->second, thisAgent->explanationBasedChunker->get_ovar_for_o_id(iter->second));
+        thisAgent->outputManager->printa_sf(thisAgent, "%u%- %-%u%-\n", iter->first, iter->second);
     }
 }
 
 void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
-                                           uint64_t pFromID,  uint64_t pToID,
-                                           Symbol*  pFromSym, Symbol*  pToSym)
+                                           uint64_t pFromID,  uint64_t pToID)
 {
     identity_mapping_list* lInstMappingList;
 
@@ -193,17 +190,7 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     identity_mapping* lMapping;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
     lMapping->from_identity = pFromID;
-    lMapping->from_symbol = pFromSym;
-    if (pFromSym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(pFromSym);
-    }
     lMapping->to_identity = pToID;
-    lMapping->to_symbol = pToSym;
-    if (pToSym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(pToSym);
-    }
     lMapping->mappingType = pType;
     lInstMappingList->push_back(lMapping);
 }
@@ -263,11 +250,7 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
 
     if (printHeader)
     {
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-                outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%-    Original variables %- Mapping Type\n");
-        #else
-                outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%- Mapping Type\n");
-        #endif
+        outputManager->printa_sf(thisAgent, "Variablization IDs %-  Identity %-   CVar%- Mapping Type\n");
     }
     for (auto it = pMapList->begin(); it != pMapList->end(); ++it)
     {
@@ -299,9 +282,6 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             outputManager->printa_sf(thisAgent, "%-| %-|");
 
         }
-        #ifdef DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
-            outputManager->printa_sf(thisAgent, "%-| %y -> %y", lMapping->from_symbol, lMapping->to_symbol);
-        #endif
         switch (lMapping->mappingType)
         {
             case IDS_no_existing_mapping:
@@ -320,6 +300,21 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
                 outputManager->printa_sf(thisAgent, "%-| Added to identity set already literalized\n");
                 break;
             case IDS_base_instantiation:
+                outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
+                break;
+            case IDS_unified_with_local_singleton:
+                outputManager->printa_sf(thisAgent, "%-| Unified with local singleton WME set\n");
+                break;
+            case IDS_unified_with_singleton:
+                outputManager->printa_sf(thisAgent, "%-| Unified with singleton WME set\n");
+                break;
+            case IDS_unified_child_result:
+                outputManager->printa_sf(thisAgent, "%-| Unified child result\n");
+                break;
+            case IDS_literalized_RHS_function_arg:
+                outputManager->printa_sf(thisAgent, "%-| Literalized RHS function argument\n");
+                break;
+            default:
                 outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
                 break;
         }
@@ -349,14 +344,6 @@ void identity_record::clear_mappings()
         for (auto it2 = lMapList->begin(); it2 != lMapList->end(); ++it2)
         {
             lMapping = *it2;
-            if (lMapping->from_symbol)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->from_symbol));
-            }
-            if (lMapping->to_symbol)
-            {
-                thisAgent->symbolManager->symbol_remove_ref(&(lMapping->to_symbol));
-            }
             thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
         }
         delete lMapList;

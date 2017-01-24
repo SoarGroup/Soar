@@ -92,5 +92,6 @@ class EXPORT Soar_Instance
 EXPORT Soar_Instance* getSoarInstance();
 EXPORT Output_Manager* getOM();
 EXPORT void configure_for_unit_tests();
+EXPORT void configure_agent_for_unit_tests(agent* testAgent);
 
 #endif /* SOARINSTANCE_H_ */

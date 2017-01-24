@@ -1,0 +1,9 @@
+sp {answer*apply-create-chunk*StateNoChange*t2-1
+    (state <s1> ^superstate nil ^ds <c6> ^ds { > 6 <c4> } ^dd { > 1 <c3> }
+          ^dd <c1> ^d <c5> ^d { > 5 <c2> })
+    -->
+    (<s1> ^result true +)
+}
+
+
+

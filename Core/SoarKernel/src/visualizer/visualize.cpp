@@ -28,6 +28,34 @@
 #include "visualize_wm.h"
 #include "visualize_settings.h"
 
+// Test if a path exists
+bool fileExists(const char* path)
+{
+#ifdef _WIN32
+    DWORD a = GetFileAttributes(path);
+    return a != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat st;
+    return (stat(path, &st) == 0);
+#endif
+}
+const std::string GraphViz_Visualizer::get_next_filename() {
+    if (!thisAgent->visualizationManager->settings->use_same_file->get_value())
+    {
+        std::string lFileNameBase = thisAgent->visualizationManager->settings->file_name->get_value();
+        std::string lFileName;
+        bool fileNameFound = false;
+        while (!fileNameFound)
+        {
+            lFileName = lFileNameBase + std::to_string(++m_file_count) + std::string(".gv");
+            fileNameFound = !fileExists(lFileName.c_str());
+        }
+        lFileName = lFileNameBase + std::to_string(m_file_count);
+        return lFileName;
+    }
+    return thisAgent->visualizationManager->settings->file_name->get_value();
+}
+
 GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 {
     thisAgent = myAgent;
@@ -269,26 +297,26 @@ void GraphViz_Visualizer::viz_table_end()
     graphviz_output += "              \xF3/TABLE\xF2\n";
 }
 
-void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort)
+void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
 {
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD PORT=\"%c_%u%s\"\xF2 ",
-            pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
+            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD\xF2 ");
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
     }
     viz_table_start();
 }
 
-void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort)
+void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
 {
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD PORT=\"%c_%u%s\"\xF2 ",
-            pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
+            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD\xF2 ");
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
     }
 }
 

@@ -41,6 +41,25 @@
 
 using namespace soar_module;
 
+bool break_if_symbol_matches_string(Symbol* sym, const char* match)
+{
+    if (sym->to_string() == match)
+        return true;
+    return false;
+}
+bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
+{
+    if(break_if_symbol_matches_string(w->id, match_id) && break_if_symbol_matches_string(w->attr, match_attr) && break_if_symbol_matches_string(w->value, match_value))
+        return true;
+    return false;
+}
+bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match)
+{
+    if (lID == lID_to_match)
+        return true;
+    return false;
+}
+
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)
@@ -57,6 +76,11 @@ void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabl
 
 void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 {
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        mode_info[i].prefix = NULL;
+    }
+
     mode_info[No_Mode].prefix =                         strdup("        | ");
     mode_info[DT_DEBUG].prefix =                        strdup("Debug   | ");
 
@@ -74,10 +98,12 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
     mode_info[DT_RHS_VARIABLIZATION].prefix =           strdup("VrblzRHS| ");
+    mode_info[DT_RHS_FUN_VARIABLIZATION].prefix =       strdup("RHS Func| ");
     mode_info[DT_NCC_VARIABLIZATION].prefix =           strdup("VrblzNCC| ");
     mode_info[DT_RL_VARIABLIZATION].prefix =            strdup("Vrblz RL| ");
     mode_info[DT_CONSTRAINTS].prefix =                  strdup("Cnstrnts| ");
     mode_info[DT_MERGE].prefix =                        strdup("Merge Cs| ");
+    mode_info[DT_VALIDATE].prefix =                     strdup("Validate| ");
     mode_info[DT_REORDERER].prefix =                    strdup("Reorder | ");
     mode_info[DT_REPAIR].prefix =                       strdup("Repair  | ");
     mode_info[DT_REINSTANTIATE].prefix =                strdup("ReInst  | ");
@@ -95,6 +121,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
 
     mode_info[DT_EPMEM_CMD].prefix =                    strdup("EpMemCmd| ");
     mode_info[DT_GDS].prefix =                          strdup("GDS     | ");
+    mode_info[DT_GDS_HIGH].prefix =                     strdup("GDS High| ");
     mode_info[DT_SMEM_INSTANCE].prefix =                strdup("SMemInst| ");
     mode_info[DT_PARSER].prefix =                       strdup("Parser  | ");
     mode_info[DT_SOAR_INSTANCE].prefix =                strdup("SoarInst| ");
@@ -117,6 +144,17 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_PREFS].prefix =                        strdup("Prefs   | ");
     mode_info[DT_RETE_PNODE_ADD].prefix =               strdup("ReteNode| ");
     mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
+    mode_info[DT_DEEP_COPY].prefix =                    strdup("DeepCopy| ");
+    mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
+
+    /* In case we forget to add a trace prefix */
+    for (int i=0; i < num_trace_modes; i++)
+    {
+        if (mode_info[i].prefix == NULL)
+        {
+            mode_info[i].prefix =              strdup("???     | ");
+        }
+    }
 
 #ifndef SOAR_RELEASE_VERSION
     debug_set_mode_info(mode_info, true);
@@ -124,90 +162,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     debug_set_mode_info(mode_info, false);
 #endif
 }
-
-debug_param_container::debug_param_container(agent* new_agent): soar_module::param_container(new_agent)
-{
-}
-
-#include "sqlite3.h"
-bool symbol_matches_string(Symbol* sym, const char* match)
-{
-    std::string strName(sym->to_string());
-    if (strName == match)
-    {
-//        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
-        return true;
-    }
-    return false;
-}
-bool wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
-{
-    return (symbol_matches_string(w->id, match_id) &&
-            symbol_matches_string(w->attr, match_attr) &&
-            symbol_matches_string(w->value, match_value));
-}
-
-bool check_symbol(agent* thisAgent, Symbol* sym, const char* message)
-{
-#ifdef DEBUG_CHECK_SYMBOL
-    std::string strName(sym->to_string());
-    if (strName == DEBUG_CHECK_SYMBOL)
-    {
-        //    dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, get_refcount_stacktrace_string().c_str());
-        dprint(DT_DEBUG, "%sFound %s(%i) | %s\n", message, strName.c_str(), sym->reference_count, "");
-        return true;
-    }
-#endif
-    return false;
-}
-
-bool check_symbol_in_test(agent* thisAgent, test t, const char* message)
-{
-#ifdef DEBUG_CHECK_SYMBOL
-    cons* c;
-    if (t->type == CONJUNCTIVE_TEST)
-    {
-        for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            if (t->type == EQUALITY_TEST)
-            {
-                if (static_cast<test>(c->first)->original_test)
-                {
-                    return (check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, message) || check_symbol(thisAgent, static_cast<test>(c->first)->original_test->data.referent, message));
-                }
-                else
-                {
-                    return (check_symbol(thisAgent, static_cast<test>(c->first)->data.referent, message));
-                }
-            }
-        }
-    }
-    else if (t->type == EQUALITY_TEST)
-    {
-        if (t->original_test)
-        {
-            return (check_symbol(thisAgent, t->data.referent, message) || check_symbol_in_test(thisAgent, t->original_test, message));
-        }
-        else
-        {
-            return (check_symbol(thisAgent, t->data.referent, message));
-        }
-    }
-#endif
-    return false;
-}
-
-#ifdef DEBUG_REFCOUNT_DB
-
-#include "output_manager.h"
-
-void debug_store_refcount(Symbol* sym, bool isAdd)
-{
-    std::string caller_string = get_stacktrace(isAdd ? "add_ref" : "remove_ref");
-    debug_agent->outputManager->store_refcount(sym, caller_string.c_str() , isAdd);
-}
-
-#endif
 
 #ifdef DEBUG_MAC_STACKTRACE
 std::string get_stacktrace(const char* prefix)
@@ -382,25 +336,15 @@ void debug_test(int type)
         case 5:
         {
 //            print_internal_symbols(thisAgent);
-            dprint_identifiers(DT_DEBUG);
             break;
         }
         case 6:
         {
-            dprint_variablization_table(DT_DEBUG);
-            dprint_o_id_tables(DT_DEBUG);
-            dprint_attachment_points(DT_DEBUG);
-            dprint_constraints(DT_DEBUG);
-            dprint_merge_map(DT_DEBUG);
-            dprint_ovar_to_o_id_map(DT_DEBUG);
-            dprint_o_id_substitution_map(DT_DEBUG);
-            dprint_o_id_to_ovar_debug_map(DT_DEBUG);
-            dprint_tables(DT_DEBUG);
             break;
         }
         case 7:
             /* -- Print all instantiations -- */
-            dprint_all_inst(DT_DEBUG);
+            thisAgent->outputManager->print_all_inst(DT_DEBUG);
             break;
         case 8:
         {

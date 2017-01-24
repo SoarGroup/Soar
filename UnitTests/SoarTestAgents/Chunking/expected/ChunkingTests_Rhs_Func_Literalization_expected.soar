@@ -1,0 +1,6 @@
+sp {answer*add-on-compare*elaborate*state*OpNoChange*t4-1
+        (state <s1> ^initial-value 1 ^test-value 2 ^operator <o1>)
+    (<o1> ^name add-on-compare)
+    -->
+    (<s1> ^result true +)
+}

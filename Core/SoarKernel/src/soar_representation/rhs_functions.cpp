@@ -48,6 +48,7 @@
 #include "output_manager.h"
 #include "production.h"
 #include "run_soar.h"
+#include "semantic_memory.h"
 #include "slot.h"
 #include "soar_TraceNames.h"
 #include "symbol.h"
@@ -64,19 +65,39 @@
 
 using namespace soar_TraceNames;
 
+/* The last argument to add_rhs_function determines whether EBC literalizes the arguments of the function, i.e. forces the identity sets
+ * of any arguments that are variables to map to the null identity set.  This will cause any variables that map to that identity set to
+ * to not be variablized in the final chunk.
+ *
+ * Currently, ONLY MATH FUNCTIONS cause literalization of their arguments.
+ *
+ *   - One could argue that make-constant-symbol, trim, capitalize_symbol should also literalize arguments, but it seems unlikely that
+ *     their products would affect behavior.  Moreover, an agent that used those functions to print a lot of trace messages could end
+ *     up literalizing a lot of variables unnecessarily.
+ *   - One could also argue that ifeq should be literalized since it could return an identifier. It looks the original author of ifeq
+ *     made it for pretty printing and not a way to get conditional rhs actions, which we probably don't want to support.  So I grouped
+ *     this with the other text producing rhs functions that don't cause literalization.
+ *
+ * Technically, we only need to literalize the arguments of a rhs function if another condition later tests that the value produced meets a
+ * constraint.  If they don't have constraints, we could actually compose the functions used into the variablized rhs actions of the final
+ * chunk.  If we add that capability to EBC down the line, the semantics of this parameter will change to indicate whether to compose (if no
+ * constraints) or literalize (if later constraints on value exist).  If we add that, we should definitely include if-eq, make-constant-symbol,
+ * trim, and capitalize_symbol, so that they can be composed into the learned rule rather than be hard-coded (possibly inaccurate) strings. */
+
 void add_rhs_function(agent* thisAgent,
                       Symbol* name,
                       rhs_function_routine f,
                       int num_args_expected,
                       bool can_be_rhs_value,
                       bool can_be_stand_alone_action,
-                      void* user_data)
+                      void* user_data,
+                      bool literalize_arguments)
 {
     rhs_function* rf;
 
     if ((!can_be_rhs_value) && (!can_be_stand_alone_action))
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Internal error: attempt to add_rhs_function that can't appear anywhere\n");
         return;
     }
 
@@ -102,8 +123,7 @@ void add_rhs_function(agent* thisAgent,
     rf->can_be_rhs_value = can_be_rhs_value;
     rf->can_be_stand_alone_action = can_be_stand_alone_action;
     rf->user_data = user_data;
-//    rf->cached_print_str = NULL;
-//    rf->thisAgent = thisAgent;
+    rf->literalize_arguments = can_be_rhs_value ? literalize_arguments : false;
 }
 
 rhs_function* lookup_rhs_function(agent* thisAgent, Symbol* name)
@@ -178,27 +198,65 @@ void remove_rhs_function(agent* thisAgent, Symbol* name)    /* code from Koss 8/
 
 Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
-    Symbol* arg;
-    char* string;
-    growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
-
-    for (; args != NIL; args = args->rest)
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
     {
-        arg = static_cast<symbol_struct*>(args->first);
-        /* --- Note use of false here--print the symbol itself, not a rereadable
+        Symbol* arg;
+        char* string;
+        growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+        for (; args != NIL; args = args->rest)
+        {
+            arg = static_cast<symbol_struct*>(args->first);
+            /* --- Note use of false here--print the symbol itself, not a rereadable
            version of it --- */
-        string = arg->to_string();
-        add_to_growable_string(thisAgent, &gs, string); // for XML generation
-        thisAgent->outputManager->printa(thisAgent, string);
+            string = arg->to_string();
+            add_to_growable_string(thisAgent, &gs, string); // for XML generation
+            thisAgent->outputManager->printa(thisAgent, string);
+        }
+
+        xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+        free_growable_string(thisAgent, gs);
     }
-
-    xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
-
-    free_growable_string(thisAgent, gs);
 
     return NIL;
 }
 
+Symbol* trace_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    if (thisAgent->outputManager->settings[OM_AGENT_WRITES])
+    {
+        Symbol* arg;
+        char* string;
+
+        Symbol* lChannelSym = static_cast<Symbol*>(args->first);
+        if (!lChannelSym->is_int() || (lChannelSym->ic->value < 1) || (lChannelSym->ic->value > maxAgentTraces))
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: First argument of agent's trace command must be an integer channel number between 1 and %d.  %y is invalid.\n", maxAgentTraces, lChannelSym);
+            return NIL;
+        }
+        args = args->rest;
+        if (thisAgent->output_settings->agent_traces_enabled[(lChannelSym->ic->value - 1)])
+        {
+            growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
+
+            for (; args != NIL; args = args->rest)
+            {
+                arg = static_cast<symbol_struct*>(args->first);
+                /* --- Note use of false here--print the symbol itself, not a rereadable version of it --- */
+                string = arg->to_string();
+                add_to_growable_string(thisAgent, &gs, string); // for XML generation
+                thisAgent->outputManager->printa(thisAgent, string);
+            }
+
+            xml_object(thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs));
+
+            free_growable_string(thisAgent, gs);
+        }
+    }
+
+    return NIL;
+}
 /* --------------------------------------------------------------------
                                 Crlf
 
@@ -207,7 +265,9 @@ Symbol* write_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
 
 Symbol* crlf_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
-    return thisAgent->symbolManager->make_str_constant("\n");
+    thisAgent->symbolManager->symbol_add_ref(thisAgent->symbolManager->soarSymbols.crlf_symbol);
+    return thisAgent->symbolManager->soarSymbols.crlf_symbol;
+
 }
 
 /* --------------------------------------------------------------------
@@ -267,6 +327,11 @@ Symbol* make_constant_symbol_rhs_function_code(agent* thisAgent, cons* args, voi
    Returns a newly generated str_constant whose name is a representation
    of the current local time.
 -------------------------------------------------------------------- */
+
+Symbol* dc_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
+{
+    return thisAgent->symbolManager->make_int_constant(thisAgent->decision_phases_count);
+}
 
 Symbol* timestamp_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_data*/)
 {
@@ -335,31 +400,81 @@ Symbol* accept_rhs_function_code(agent* thisAgent, cons* /*args*/, void* /*user_
 
 
 Symbol*
-lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+get_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 {
     Symbol* sym, * returnSym;
 
     if (!args)
     {
-        thisAgent->outputManager->printa(thisAgent,  "Error: '@' function called with no arguments.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' function called with no arguments.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (!sym->is_lti())
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: %y is not linked to a semantic identifier.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: %y is not linked to a semantic identifier.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        thisAgent->outputManager->printa(thisAgent,  "Error: '@' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' takes exactly 1 argument.\n");
         return NIL;
     }
 
     returnSym = thisAgent->symbolManager->make_int_constant(sym->id->LTI_ID);
     return returnSym;
+}
+
+Symbol*
+set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+    Symbol* sym, *ltiIDSym, *returnSym;
+
+    if (!args)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' rhs function called with no arguments.\n");
+        return NIL;
+    }
+
+    sym = static_cast<Symbol*>(args->first);
+    if (!sym->is_sti())
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' rhs function cannot accept %y because it is not a Soar identifier\n", sym);
+        return NIL;
+    }
+
+    if (args->rest)
+    {
+        if (args->rest->rest)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' rhs function takes exactly 2 arguments.\n");
+            return NIL;
+        }
+        ltiIDSym = static_cast<Symbol*>(args->rest->first);
+        if (!ltiIDSym->is_int())
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' rhs function cannot accept %y as an LTI ID because it is not an integer\n", ltiIDSym);
+            return NIL;
+        }
+
+    }
+    else
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: '@' rhs function takes exactly 2 arguments.\n");
+        return NIL;
+    }
+
+    if (thisAgent->SMem->lti_exists(ltiIDSym->ic->value))
+    {
+        sym->id->LTI_ID = ltiIDSym->ic->value;
+    }
+    else
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "%eWarning: Long-term memory @%u does not exist.  Could not link short-term memory %y.\n",  static_cast<uint64_t>(ltiIDSym->ic->value), sym);
+    }
+    return NIL;
 }
 
 /* ---------------------------------------------------------------------
@@ -374,20 +489,20 @@ capitalize_symbol_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
     if (!args)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'capitalize-symbol' function called with no arguments.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'capitalize-symbol' function called with no arguments.\n");
         return NIL;
     }
 
     sym = static_cast<Symbol*>(args->first);
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'capitalize-symbol' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'capitalize-symbol' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -472,7 +587,7 @@ Symbol* ifeq_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
     if (!args)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'ifeq' function called with no arguments\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'ifeq' function called with no arguments\n");
         return NIL;
     }
 
@@ -505,7 +620,7 @@ Symbol* trim_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
     if (!args)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'trim' function called with no arguments.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'trim' function called with no arguments.\n");
         return NIL;
     }
 
@@ -513,13 +628,13 @@ Symbol* trim_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
     if (sym->symbol_type != STR_CONSTANT_SYMBOL_TYPE)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: non-symbol (%y) passed to 'trim' function.\n", sym);
         return NIL;
     }
 
     if (args->rest)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'trim' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'trim' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -575,24 +690,24 @@ Symbol* dont_learn_rhs_function_code(agent* thisAgent, cons* args, void* /*user_
 
     if (!args)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'dont-learn' function called with no arg.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'dont-learn' function called with no arg.\n");
         return NIL;
     }
 
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: non-identifier (%y) passed to dont-learn function.\n", state);
         return NIL;
     }
     else if (! state->id->isa_goal)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier passed to dont-learn is not a state: %y.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: identifier passed to dont-learn is not a state: %y.\n", state);
     }
 
     if (args->rest)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'dont-learn' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'dont-learn' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -618,25 +733,25 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, cons* args, void* /*user
 
     if (!args)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'force-learn' function called with no arg.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'force-learn' function called with no arg.\n");
         return NIL;
     }
 
     state = static_cast<Symbol*>(args->first);
     if (state->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: non-identifier (%y) passed to force-learn function.\n", state);
         return NIL;
     }
     else if (! state->id->isa_goal)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: identifier passed to force-learn is not a state: %y.\n", state);
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: identifier passed to force-learn is not a state: %y.\n", state);
     }
 
 
     if (args->rest)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  "Error: 'force-learn' takes exactly 1 argument.\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "%eError: 'force-learn' takes exactly 1 argument.\n");
         return NIL;
     }
 
@@ -652,14 +767,10 @@ Symbol* force_learn_rhs_function_code(agent* thisAgent, cons* args, void* /*user
 /* ====================================================================
                   RHS Deep copy recursive helper functions
 ====================================================================  */
-void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
+void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
                                 std::unordered_map<Symbol*, Symbol*>& processedSymbols);
 
-void recursive_wme_copy(agent* thisAgent,
-                        Symbol* parent_id,
-                        wme* curwme,
+void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
                         std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
 
@@ -687,10 +798,7 @@ void recursive_wme_copy(agent* thisAgent,
             made_new_attr_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent,
-                                   curwme->attr,
-                                   new_attr,
-                                   processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->attr, new_attr, processedSymbols);
     }
 
     /* Handling the case where the value is an id symbol */
@@ -710,14 +818,10 @@ void recursive_wme_copy(agent* thisAgent,
             made_new_value_symbol = true;
         }
 
-        recursive_deep_copy_helper(thisAgent,
-                                   curwme->value,
-                                   new_value,
-                                   processedSymbols);
+        recursive_deep_copy_helper(thisAgent, curwme->value, new_value, processedSymbols);
     }
 
-    /* Making the new wme (Note just reusing the wme data structure, these
-       wme's actually get converted into preferences later).*/
+    /* Making the new wme (Note just reusing the wme data structure, these wme's actually get converted into preferences later).*/
     wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
 
     /* TODO: We need a serious reference counting audit of the kernel But I think
@@ -734,57 +838,36 @@ void recursive_wme_copy(agent* thisAgent,
     }
 
     thisAgent->WM->glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
+    thisAgent->WM->glbDeepCopyWMEs->deep_copied_wme = curwme;
     thisAgent->WM->glbDeepCopyWMEs->next = oldGlobalWme;
 
 }
 
-void recursive_deep_copy_helper(agent* thisAgent,
-                                Symbol* id_to_process,
-                                Symbol* parent_id,
+void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
                                 std::unordered_map<Symbol*, Symbol*>& processedSymbols)
 {
     /* If this symbol has already been processed then ignore it and return */
-    if (processedSymbols.find(id_to_process) != processedSymbols.end())
-    {
-        return;
-    }
+    if (processedSymbols.find(id_to_process) != processedSymbols.end()) return;
+
     processedSymbols.insert(std::pair<Symbol*, Symbol*>(id_to_process, parent_id));
 
     /* Iterating over the normal slot wmes */
-    for (slot* curslot = id_to_process->id->slots;
-            curslot != 0;
-            curslot = curslot->next)
+    for (slot* curslot = id_to_process->id->slots; curslot != 0; curslot = curslot->next)
     {
-
         /* Iterating over the wmes in this slot */
-        for (wme* curwme = curslot->wmes;
-                curwme != 0;
-                curwme = curwme->next)
+        for (wme* curwme = curslot->wmes; curwme != 0; curwme = curwme->next)
         {
-
-            recursive_wme_copy(thisAgent,
-                               parent_id,
-                               curwme,
-                               processedSymbols);
-
+            recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
         }
-
     }
 
     /* Iterating over input wmes */
-    for (wme* curwme = id_to_process->id->input_wmes;
-            curwme != 0;
-            curwme = curwme->next)
+    for (wme* curwme = id_to_process->id->input_wmes; curwme != 0; curwme = curwme->next)
     {
-
-        recursive_wme_copy(thisAgent,
-                           parent_id,
-                           curwme,
-                           processedSymbols);
-
+        recursive_wme_copy(thisAgent, parent_id, curwme, processedSymbols);
     }
-
 }
+
 /* ====================================================================
                   RHS Deep copy function
 ====================================================================  */
@@ -803,11 +886,7 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
-    recursive_deep_copy_helper(thisAgent,
-                               baseid,
-                               retval,
-                               processedSymbols);
-
+    recursive_deep_copy_helper(thisAgent, baseid,  retval, processedSymbols);
 
     return retval;
 }
@@ -827,8 +906,7 @@ Symbol* count_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*
     for (; args != NIL; args = args->rest)
     {
         arg = static_cast<symbol_struct*>(args->first);
-        /* --- Note use of false here--print the symbol itself, not a rereadable
-           version of it --- */
+        /* --- Note use of false here--print the symbol itself, not a rereadable version of it --- */
         string = arg->to_string();
         (*thisAgent->dyn_counters)[ string ]++;
     }
@@ -869,88 +947,62 @@ Symbol* wait_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
 
 void init_built_in_rhs_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code,
-                     -1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code,
-                     0, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), lti_id_rhs_function_code,
-                     1, true, false, 0);
-    /*
-      Replaced with a gSKI rhs function
-      add_rhs_function (thisAgent, make_str_constant (thisAgent, "interrupt"),
-      interrupt_rhs_function_code,
-      0, false, true, 0);
-    */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"),
-                     make_constant_symbol_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),
-                     timestamp_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code,
-                     0, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),
-                     trim_rhs_function_code,
-                     1,
-                     true,
-                     false,
-                     0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"),
-                     capitalize_symbol_rhs_function_code,
-                     1,
-                     true,
-                     false,
-                     0);
-    /* AGR 520  begin */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code,
-                     4, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code,
-                     1, true, false, 0);
-    /* AGR 520  end   */
+    /* Note that there are four RHS functions that are defined in sml_RhsFunction.cpp instead of here in the kernel:  concat, exec, cmd and interrupt */
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"),
-                     dont_learn_rhs_function_code,
-                     1, false, true, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"),
-                     force_learn_rhs_function_code,
-                     1, false, true, 0);
+    /* Stand-alone RHS functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"), count_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dont-learn"), dont_learn_rhs_function_code,  1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("force-learn"), force_learn_rhs_function_code, 1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("halt"), halt_rhs_function_code, 0, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("link-stm-to-ltm"), set_lti_id_rhs_function_code, 2, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"), wait_rhs_function_code, 1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("write"), write_rhs_function_code, -1, false, true, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trace"), trace_rhs_function_code, -1, false, true, 0, false);
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"),
-                     deep_copy_rhs_function_code,
-                     1, true, false, 0);
+    /* RHS functions that return a simple value */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, get_lti_id_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("make-constant-symbol"), make_constant_symbol_rhs_function_code,  -1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("strlen"), strlen_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("timestamp"),  timestamp_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trim"),  trim_rhs_function_code, 1, true, false, 0, false);
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("count"),
-                     count_rhs_function_code,
-                     -1, false, true, 0);
+    /* RHS functions that are more elaborate */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("accept"), accept_rhs_function_code, 0, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("deep-copy"), deep_copy_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("ifeq"), ifeq_rhs_function_code, 4, true, false, 0, false);
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("wait"),
-                     wait_rhs_function_code,
-                     1, false, true, 0);
+    /* EBC Manager caches these rhs functions since it may re-use them many times */
+    thisAgent->explanationBasedChunker->lti_link_function = lookup_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
 
     init_built_in_rhs_math_functions(thisAgent);
 }
 
 void remove_built_in_rhs_functions(agent* thisAgent)
 {
-
-    // DJP-FREE: These used to call make_str_constant, but the symbols must already exist and if we call make here again we leak a reference.
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("crlf"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("make-constant-symbol"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("count"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("dont-learn"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("force-learn"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("count"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("halt"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+
+    remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("crlf"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("dc"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("make-constant-symbol"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("strlen"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("timestamp"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trim"));
+
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("accept"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("deep-copy"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("ifeq"));
 
     remove_built_in_rhs_math_functions(thisAgent);
+
 }

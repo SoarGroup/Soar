@@ -19,13 +19,20 @@ typedef struct chunk_stats_struct {
         uint64_t            duplicates;
         uint64_t            max_dupes;
         bool                tested_local_negation;
+        bool                tested_quiescence;
+        bool                tested_deep_copy;
+        bool                tested_ltm_recall;
         bool                reverted;
         bool                lhs_unconnected;
         bool                rhs_unconnected;
         bool                repair_failed;
         bool                did_not_match_wm;
+        uint64_t            rhs_arguments_literalized;
         uint64_t            num_grounding_conditions_added;
         uint64_t            merged_conditions;
+        uint64_t            merged_disjunctions;
+        uint64_t            eliminated_disjunction_values;
+        uint64_t            merged_disjunction_values;
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
         uint64_t            constraints_attached;
@@ -58,6 +65,7 @@ class chunk_record
         agent*                  thisAgent;
 
         Symbol*                 name;
+        ebc_rule_type           type;
         uint64_t                chunkID;
         instantiation*          chunkInstantiation;
         uint64_t                chunkInstantiationID;

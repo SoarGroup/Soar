@@ -1805,104 +1805,54 @@ Symbol* dice_prob_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
 void init_built_in_rhs_math_functions(agent* thisAgent)
 {
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("+"), plus_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("*"), times_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("-"), minus_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("/"), fp_divide_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("div"), div_rhs_function_code,
-                     2, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("size"), size_rhs_function_code,
-                     1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sum"), sum_rhs_function_code,
-                     1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code,
-                     2, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code,
-                     -1, true, false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code,
-                     -1, true, false, 0);
+    /* RHS basic math functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("+"), plus_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("*"), times_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("-"), minus_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("/"), fp_divide_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("div"), div_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("size"), size_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sum"), sum_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code, -1, true, false, 0, true);
 
+    /* RHS trigonometry functions */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"), sin_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("cos"), cos_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("atan2"), atan2_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sqrt"), sqrt_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("abs"), abs_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("int"), int_rhs_function_code, 1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("float"), float_rhs_function_code, 1, true, false, 0, true);
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sin"),
-                     sin_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("cos"),
-                     cos_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("atan2"),
-                     atan2_rhs_function_code,
-                     2,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sqrt"),
-                     sqrt_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("abs"),
-                     abs_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("int"),
-                     int_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("float"),
-                     float_rhs_function_code,
-                     1,
-                     true,
-                     false, 0);
+    /* RHS special purpose functions for computing headings and range */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off-heading"), round_off_heading_air_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off"), round_off_air_rhs_function_code, 2, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-heading"), compute_heading_rhs_function_code, 4, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-range"), compute_range_rhs_function_code, 4, true, false, 0, true);
 
-    /* voigtjr 6/12/2007: added these built in functions on laird's request
-    these are straight out of the <8.6 kernel */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off-heading"),
-                     round_off_heading_air_rhs_function_code, 2, true, false, 0);
+    /* RHS special purpose functions for Michigan Dice app*/
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"), dice_prob_rhs_function_code, 4, true, false, 0, true);
 
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("round-off"),
-                     round_off_air_rhs_function_code, 2, true, false, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-heading"),
-                     compute_heading_rhs_function_code, 4, true, false, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-range"),
-                     compute_range_rhs_function_code, 4, true, false, 0);
-
-    // NLD: 11/11 (ditto voigtjr's motivation above)
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("compute-dice-probability"),
-                     dice_prob_rhs_function_code, 4, true, false, 0);
-
-    // Bug 800: implement rhs rand functions
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-int"),
-                     rand_int_rhs_function_code, -1, true, false, 0);
-
-    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-float"),
-                     rand_float_rhs_function_code, -1, true, false, 0);
-
+    /* RHS functions that generate random numbers */
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-int"), rand_int_rhs_function_code, -1, true, false, 0, true);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("rand-float"), rand_float_rhs_function_code, -1, true, false, 0, true);
 }
 
 void remove_built_in_rhs_math_functions(agent* thisAgent)
 {
-    // DJP-FREE: These used to call make_str_constant, but the symbols must already exist and if we call make here again we leak a reference.
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("+"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("*"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("-"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("/"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("div"));
-    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("size"));
-	  remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sum"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sum"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("max"));
+
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sin"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("cos"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("atan2"));
@@ -1911,17 +1861,12 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("int"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("float"));
 
-    /* voigtjr 6/12/2007: added these built in functions on laird's request
-    these are straight out of the <8.6 kernel */
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("round-off-heading"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("round-off"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-heading"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-range"));
-
-    // NLD: 11/11
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("compute-dice-probability"));
 
-    // Bug 800: implement rand
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-int"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("rand-float"));
 }

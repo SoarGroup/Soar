@@ -1,0 +1,69 @@
+srand 23
+chunk always
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-item 8
+         ^test-item2 6
+         ^test-item3 7
+         ^foo 23 ^bar 23)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (succeeded)
+    (interrupt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (interrupt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
+
+# Negative conjunctive conditions
+
+sp {ungrounded-sti
+    (state <s> ^operator.name test)
+-->
+    (<s> ^ungrounded <ug>)
+}
+sp {apply24
+    (state <s> ^operator <o>
+               ^superstate <ss>
+               ^ungrounded <ug>)
+    (<ss> ^test-item { > <y> <x> }
+          ^test-item2 { <> <x> <y> })
+         -{(<ss> ^test-item3 { < <ug> > <x> > <y> <max> }
+                 ^foo <max>
+                 ^bar <x>)}
+-->
+    (<ss> ^highest <x> ^second-highest <y> ^unbound <max> ^test-done 1)
+}
+
+
+#run
+#ctf expected/chunk24.soar print -cf

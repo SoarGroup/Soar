@@ -33,9 +33,12 @@ namespace cli
 
             virtual bool Parse(std::vector< std::string >& argv)
             {
+                bool doRemove = false, doClear = false;
                 cli::Options opt;
                 OptionsData optionsData[] =
                 {
+                    {'r', "remove",             OPTARG_NONE},
+                    {'c', "clear",              OPTARG_NONE},
                     {0, 0, OPTARG_NONE}
                 };
 
@@ -43,17 +46,25 @@ namespace cli
                 {
                     if (!opt.ProcessOptions(argv, optionsData))
                     {
-                        cli.SetError(opt.GetError().c_str());
-                        return cli.AppendError(GetSyntax());
+//                        cli.SetError(opt.GetError().c_str());
+//                        return cli.AppendError(GetSyntax());
                     }
-
                     if (opt.GetOption() == -1)
                     {
                         break;
                     }
+                    switch (opt.GetOption())
+                    {
+                        case 'r':
+                            doRemove = true;
+                            break;
+                        case 'c':
+                            doClear = true;
+                            break;
+                    }
                 }
 
-                std::string arg, arg2;
+                std::string arg, arg2, arg3, arg4;
                 size_t start_arg_position = opt.GetArgument() - opt.GetNonOptionArguments();
                 size_t num_args = argv.size() - start_arg_position;
                 if (num_args > 0)
@@ -64,18 +75,30 @@ namespace cli
                 {
                     arg2 = argv[start_arg_position+1];
                 }
+                if ((num_args == 3) || (num_args > 4))
+                {
+                    return cli.SetError("Wrong number of arguments for the chunk command.");
+                }
                 if (num_args > 2)
                 {
-                    return cli.SetError("Too many arguments for the 'chunk' command.");
+                    arg3 = argv[start_arg_position+2];
+                }
+                if (num_args > 3)
+                {
+                    arg4 = argv[start_arg_position+3];
                 }
 
                 if (num_args == 1)
                 {
-                    return cli.DoChunk(&arg);
+                    return cli.DoChunk(&arg, NULL, NULL, NULL, false, doClear);
                 }
                 if (num_args == 2)
                 {
                     return cli.DoChunk(&arg, &arg2);
+                }
+                if (num_args == 4)
+                {
+                    return cli.DoChunk(&arg, &arg2, &arg3, &arg4, doRemove);
                 }
 
                 // case: nothing = full configuration information

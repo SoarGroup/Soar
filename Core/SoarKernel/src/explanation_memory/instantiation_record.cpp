@@ -213,9 +213,12 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
             //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", static_cast<int64_t>(match_level), static_cast<int64_t>((*it)->get_level()));
             //            }
             //            path_to_base->pop_back();
+            dprint(DT_EXPLAIN_PATHS, "...creating identity path for i%u (%y) at level %d\n", lParentInst->instantiationID, lParentInst->production_name, static_cast<int64_t>(match_level));
         } else {
-            dprint(DT_EXPLAIN_PATHS, "...not recursing because no parent or parent != match level\n");
-            dprint(DT_EXPLAIN_PATHS, "...%u: %d != %d...\n", lParentInst, (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), static_cast<int64_t>(match_level));
+            dprint(DT_EXPLAIN_PATHS, "...not recursing because %s: %d%s%d\n", lParentInst ? "parent inst level != match level for " : "no parent instantiation! ", (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), (lParentInst ? " != " : " "), static_cast<int64_t>(match_level));
+            condition_record* lCond = (*it);
+            dprint(DT_EXPLAIN_PATHS, "   pref: %p\n", (*it)->cached_pref);
+            dprint(DT_EXPLAIN_PATHS, "   tests: (%t ^%t %t)\n", lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
         }
     }
 }
@@ -233,7 +236,7 @@ id_set* instantiation_record::get_lhs_identities()
             top = excised_production->get_lhs();
             assert(top);
         } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "%fError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
+            thisAgent->outputManager->printa_sf(thisAgent, "%eError:  Cannot generate identity analysis this instantiation.  Original rule conditions no longer in RETE.\n");
         }
     } else {
         p_node_to_conditions_and_rhs(thisAgent, originalProduction->p_node, NIL, NIL, &top, &bottom, NULL);
@@ -262,6 +265,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         /* Print header */
         outputManager->printa_sf(thisAgent, "Working memory trace of instantiation # %u %-(match of rule %y at level %d)\n",
             instantiationID, production_name, static_cast<int64_t>(match_level));
+        outputManager->printa_sf(thisAgent, "%- %-Operational %-Creator\n\n");
         outputManager->set_print_test_format(false, true);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
@@ -286,11 +290,10 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
 
             id_test_without_goal_test = copy_test(thisAgent, lCond->condition_tests.id, false, false, true);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 id_test_without_goal_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
-                lCond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->test_for_acceptable_preference ? " +" : "");
             deallocate_test(thisAgent, id_test_without_goal_test);
 
             bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
@@ -400,11 +403,10 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             } else {
                 print_cond = current_cond;
             }
-            outputManager->printa_sf(thisAgent, "(%o%s^%o %o%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 print_cond->data.tests.id_test, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 print_cond->data.tests.attr_test, print_cond->data.tests.value_test,
-                print_cond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                print_cond->test_for_acceptable_preference ? " +" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
@@ -503,11 +505,10 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool printFoote
 
             outputManager->printa_sf(thisAgent, "%d:%-", lConditionCount);
 
-            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%s%-",
+            outputManager->printa_sf(thisAgent, "(%t%s^%t %t%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
-                lCond->test_for_acceptable_preference ? " +" : "",
-                thisAgent->explanationMemory->is_condition_related(lCond) ? "*" : "");
+                lCond->test_for_acceptable_preference ? " +" : "");
             outputManager->printa_sf(thisAgent, "(%g%s^%g %g%s)%-",
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
@@ -594,7 +595,7 @@ void instantiation_record::viz_wm_instantiation()
                     lInNegativeConditions = true;
                 }
             }
-            lCond->visualize_for_wm_trace();
+            lCond->visualize_for_wm_trace(match_level);
         }
         if (lInNegativeConditions)
         {
@@ -679,7 +680,7 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            lCond->visualize_for_explanation_trace(print_cond);
+            lCond->visualize_for_explanation_trace(print_cond, match_level);
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;

@@ -47,7 +47,6 @@
 #ifndef NO_TIMING_STUFF               /* Tracks additional statistics on how much time is spent in various parts of the system. */
     //#define DETAILED_TIMING_STATS
 #endif
-#define BUILD_WITH_EXPLAINER
 
 /*  rete stat tracking (may be broken right now though bug might be superficial) */
 //#define TOKEN_SHARING_STATS           /* get statistics on token counts with and without sharing */
@@ -72,17 +71,15 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-    #define DEBUG_SAVE_IDENTITY_TO_RULE_SYM_MAPPINGS
     #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
-
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
-    //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. */
-                                    /* Tested on OSX (Mountain Lion).  Does not work on Windows. */
-    //#define DEBUG_REFCOUNT_DB     /* Enables extensive refcount and deallocation data tracking into a database */
+    //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/
 
     //#define DEBUG_EPMEM_WME_ADD
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */
     //#define DEBUG_GDS             /* Use DT_GDS and DT_GDS_HIGH.  This setting just adds parent instantiations that it recurses through */
+    //#define DEBUG_INCOMING_SML    /* Prints message coming in via KernelSML::ProcessIncomingSML */
+
 #else
     //#define MEMORY_POOL_STATS
     #define MEM_POOLS_ENABLED 1
@@ -97,23 +94,22 @@
  *    Format strings for Soar printing:
  *
  *       %c   character
- *       %i   int64_t
+ *       %d   int64_t
  *       %u   uint64_t
- *       %d   short
  *       %s   string
- *       %f   fresh line (adds newline if not at column 1)
- *       %m   coluMn
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
  *
  *       %a   action
  *       %l   condition
  *       %n   funcall list
- *       %7   instantiation
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s)
  *       %t   test
- *       %g   identity information for test
+ *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
@@ -124,5 +120,32 @@
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
- *       %8   Working Memory
+ *
+ *   Alphabetical
+ *
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
+ *       %1   condition list
+ *       %2   action list
+ *       %3   cons list of conditions
+ *       %4   condition action lists (2 args: cond, action)
+ *       %5   condition preference lists (2 args: cond, preference)
+ *       %6   condition results lists (2 args: cond, preference)
+ *       %7   instantiation
+ *       %a   action
+ *       %c   character
+ *       %d   int64_t
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
+ *       %g   variablization identity of test
+ *       %h   like %g but with second argument containing symbol to use if STI
+ *       %l   condition
+ *       %n   funcall list
+ *       %p   preference
+ *       %r   rhs value
+ *       %s   string
+ *       %t   test
+ *       %u   uint64_t
+ *       %w   wme
+ *       %y   symbol
    ------------------------------------*/

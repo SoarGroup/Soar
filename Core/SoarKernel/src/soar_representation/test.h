@@ -59,16 +59,16 @@ bool tests_are_equal(test t1, test t2, bool neg);
 bool tests_identical(test t1, test t2, bool considerIdentity = false);
 bool test_includes_goal_or_impasse_id_test(test t, bool look_for_goal, bool look_for_impasse);
 test copy_of_equality_test_found_in_test(agent* thisAgent, test t);
-test equality_test_found_in_test(test t);
+test find_eq_test(test t);
 
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
-void deallocate_test(agent* thisAgent, test t, bool pCleanUpIdentity = false);
+void deallocate_test(agent* thisAgent, test t);
 
 test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
 
-bool add_test(agent* thisAgent, test* dest_address, test new_test);
-void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg);
+bool add_test(agent* thisAgent, test* dest_address, test new_test, bool merge_disjunctions = false);
+void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg, bool merge_disjunctions = false);
 
 cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem);
 
@@ -85,12 +85,14 @@ void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool consi
 
 inline bool test_has_referent(test t)
 {
-    return ((t->type != CONJUNCTIVE_TEST) &&
-            (t->type != GOAL_ID_TEST) &&
-            (t->type != IMPASSE_ID_TEST) &&
-            (t->type != DISJUNCTION_TEST) &&
-            (t->type != SMEM_LINK_UNARY_TEST) &&
-            (t->type != SMEM_LINK_UNARY_NOT_TEST));
+    return ((t->type != CONJUNCTIVE_TEST) && (t->type != GOAL_ID_TEST) &&
+            (t->type != IMPASSE_ID_TEST) && (t->type != DISJUNCTION_TEST) &&
+            (t->type != SMEM_LINK_UNARY_TEST) && (t->type != SMEM_LINK_UNARY_NOT_TEST));
 };
 
+inline bool test_can_be_transitive_constraint(test t)
+{
+    return ((t->type != EQUALITY_TEST) && (t->type != CONJUNCTIVE_TEST) &&
+            (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST));
+};
 #endif /* TEST_H_ */

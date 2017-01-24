@@ -39,7 +39,7 @@ class Repair_Manager
         Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID);
         ~Repair_Manager();
 
-        void        repair_rule(condition*& m_vrblz_top, matched_symbol_list* pUnconnected_LTIs);
+        void        repair_rule(condition*& p_lhs_top, matched_symbol_list* pUnconnected_LTIs);
 
     private:
 

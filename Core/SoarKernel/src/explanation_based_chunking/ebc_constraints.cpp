@@ -31,49 +31,24 @@ void Explanation_Based_Chunker::clear_cached_constraints()
 
 void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 {
-    /* -- Only conjunctive tests can have relational tests here.  Otherwise,
-     *    should be an equality test. -- */
-    if (t->type != CONJUNCTIVE_TEST)
-    {
-        assert(t->type == EQUALITY_TEST);
-        return;
-    }
+    /* Only conjunctive tests can have relational tests here */
+    if (t->type != CONJUNCTIVE_TEST) return;
 
-    test equality_test = NULL, ctest;
-    cons* c;
-    for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-    {
-        if (static_cast<test>(c->first)->type == EQUALITY_TEST)
-        {
-            equality_test = static_cast<test>(c->first);
-            break;
-        }
-    }
-    assert(equality_test);
+    test ctest;
     constraint* new_constraint = NULL;
-    for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+
+    for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
     {
         ctest = static_cast<test>(c->first);
-        switch (ctest->type)
+        if (test_can_be_transitive_constraint(ctest))
         {
-            case GREATER_TEST:
-            case GREATER_OR_EQUAL_TEST:
-            case LESS_TEST:
-            case LESS_OR_EQUAL_TEST:
-            case NOT_EQUAL_TEST:
-            case SAME_TYPE_TEST:
-            case DISJUNCTION_TEST:
-                thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
-                new_constraint->eq_test = equality_test;
-                new_constraint->constraint_test = ctest;
-                dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
-                constraints->push_back(new_constraint);
-                #ifdef BUILD_WITH_EXPLAINER
-                thisAgent->explanationMemory->increment_stat_constraints_collected();
-                #endif
-                break;
-            default:
-                break;
+            assert(t->eq_test);
+            thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
+            new_constraint->eq_test = t->eq_test;
+            new_constraint->constraint_test = ctest;
+            dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
+            constraints->push_back(new_constraint);
+            thisAgent->explanationMemory->increment_stat_constraints_collected();
         }
     }
 }
@@ -94,13 +69,7 @@ attachment_point* Explanation_Based_Chunker::get_attachment_point(uint64_t pO_id
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
-        dprint(DT_CONSTRAINTS, "...found attachment point: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
-
         return it->second;
-    } else {
-        dprint(DT_CONSTRAINTS, "...did not find attachment point for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-        dprint_attachment_points(DT_CONSTRAINTS);
     }
     return 0;
 }
@@ -108,18 +77,7 @@ attachment_point* Explanation_Based_Chunker::get_attachment_point(uint64_t pO_id
 bool Explanation_Based_Chunker::has_positive_condition(uint64_t pO_id)
 {
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
-    if (it != (*attachment_points).end())
-    {
-        dprint(DT_CONSTRAINTS, "...found positive condition, returning true: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
-
-        return true;
-    } else {
-        dprint(DT_CONSTRAINTS, "...did not find positive condition, returning false for %y(o%u)!\n", get_ovar_for_o_id(pO_id), pO_id);
-//        dprint_attachment_points(DT_CONSTRAINTS);
-//        dprint_o_id_update_map(DT_CONSTRAINTS);
-    }
-    return false;
+    return (it != (*attachment_points).end());
 }
 
 void Explanation_Based_Chunker::set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField)
@@ -127,13 +85,11 @@ void Explanation_Based_Chunker::set_attachment_point(uint64_t pO_id, condition* 
     std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).find(pO_id);
     if (it != (*attachment_points).end())
     {
-        dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %y(o%u) -> %s of %l\n",
-            get_ovar_for_o_id(it->first), it->first, field_to_string(it->second->field), it->second->cond);
+        dprint(DT_CONSTRAINTS, "Skipping because existing attachment already exists: %u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
         return;
     }
 
-    dprint(DT_CONSTRAINTS, "Recording attachment point: %y(o%u) -> %s of %l\n",
-        get_ovar_for_o_id(pO_id), pO_id, field_to_string(pField), pCond);
+    dprint(DT_CONSTRAINTS, "Recording attachment point: %u -> %s of %l\n", pO_id, field_to_string(pField), pCond);
     attachment_point* new_attachment;
     thisAgent->memoryManager->allocate_with_pool(MP_attachments, &new_attachment);
     new_attachment->cond = pCond;
@@ -160,12 +116,6 @@ void Explanation_Based_Chunker::find_attachment_points(condition* pCond)
             {
                 set_attachment_point(lTest->identity, pCond, ATTR_ELEMENT);
             }
-        }
-        else
-        {
-            dprint(DT_CONSTRAINTS, (pCond->type == NEGATIVE_CONDITION) ?
-                "Skipping for negative condition %l\n" :
-                "Skipping for negative conjunctive condition:\n%l", pCond);
         }
         pCond = pCond->next;
     }
@@ -218,22 +168,17 @@ void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRela
     attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
     if (attachment_info)
     {
-        dprint(DT_CONSTRAINTS, "Found attachment point in condition %l.\n", attachment_info->cond);
-        assert(attachment_info->cond);
         if (attachment_info->field == VALUE_ELEMENT)
         {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, true);
         } else if (attachment_info->field == ATTR_ELEMENT)
         {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test, true);
         } else
         {
-            assert(false);
-            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test);
+            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test, true);
         }
-        #ifdef BUILD_WITH_EXPLAINER
         thisAgent->explanationMemory->increment_stat_constraints_attached();
-        #endif
         return;
     }
     dprint(DT_CONSTRAINTS, "Did not find attachment point!\n");
@@ -277,9 +222,7 @@ void Explanation_Based_Chunker::add_additional_constraints()
         return;
     }
 
-    find_attachment_points(m_vrblz_top);
-    dprint_attachment_points(DT_CONSTRAINTS);
-    dprint_constraints(DT_CONSTRAINTS);
+    find_attachment_points(m_lhs);
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
     {
         lConstraint = *iter;

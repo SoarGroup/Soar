@@ -1,0 +1,110 @@
+# Settings
+
+chunk always
+chunk bottom-only off
+chunk add-osk off
+chunk lhs-repair on
+chunk rhs-repair on
+chunk allow-local-negations on
+chunk add-ltm-links on
+chunk max-chunks 50
+chunk max-dupes 3
+soar max-elaborations 100
+soar max-goal-depth 100
+soar wait-snc off
+
+# Procedural Memory
+
+sp {apply*initialize-rhs-value-chunking-test
+    (state <s> ^operator <op>)
+    (<op> ^name initialize-rhs-value-chunking-test)
+    -->
+    (<s> ^name rhs-value-chunking-test +)
+    (<s> ^test-value 2 +)
+    (<s> ^initial-value 1 +)
+}
+
+sp {propose*initialize-rhs-value-chunking-test
+    (state <s> ^superstate nil)
+    (<s> -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-rhs-value-chunking-test +)
+}
+
+sp {apply*add-one
+    (state <s> ^operator <op>)
+    (<op> ^name add-one)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^initial-value <v>)
+    -->
+    (<s> ^new-value (+ 1 <v>) +)
+}
+
+sp {add-on-compare*propose*add-one
+    (state <s> ^name add-on-compare)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name add-one +)
+}
+
+sp {add-on-compare*elaborate*state
+    (state <s> ^name add-on-compare)
+    (<s> ^new-value <x>)
+    (<s> ^superstate <ss>)
+    (<ss> ^test-value <x>)
+    -->
+    (<ss> ^result true +)
+}
+
+sp {rhs-value-chunking-test*propose*add-on-compare
+    (state <s> ^name rhs-value-chunking-test)
+    (<s> -^result true)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name add-on-compare +)
+}
+
+sp {elaborations*elaborate*state
+    (state <s> ^result true)
+    -->
+    (halt)
+}
+
+sp {elaborate*top-state*top-state
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+sp {elaborate*state*top-state
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^top-state <ts>)
+    -->
+    (<s> ^top-state <ts> +)
+}
+
+sp {elaborate*state*name
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^name <name> +)
+}
+
+#sp {chunk*add-on-compare*elaborate*state*OpNoChange*t4-1
+#    :chunk
+#    (state <s1> ^initial-value 1)
+#    (<s1> ^operator <o1>)
+#    (<o1> ^name add-on-compare)
+#    (<s1> ^test-value <c1>)
+#    -->
+#    (<s1> ^result true +)
+#}
+
+
+
+# Semantic memory is not enabled.  Did not save.
+# Episodic memory is not enabled.  Did not save.

@@ -247,7 +247,7 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
         }
 //        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
 //        outputManager->printa(thisAgent, " ^");
@@ -295,7 +295,7 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }
@@ -328,7 +328,7 @@ void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 55);
     outputManager->set_column_indent(1, 54);
-    outputManager->printa_sf(thisAgent,    "%f=======================================================\n");
+    outputManager->printa_sf(thisAgent,    "%e=======================================================\n");
     outputManager->printa(thisAgent,    "                       Explainer Summary\n");
     outputManager->printa(thisAgent,    "=======================================================\n");
     outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
@@ -345,7 +345,11 @@ void Explanation_Memory::print_explain_summary()
 
     outputManager->printa(thisAgent, "\n");
     outputManager->printa_sf(thisAgent, "Chunks available for discussion:");
-    print_chunk_list(10);
+    print_chunk_list(10, true);
+
+    outputManager->printa(thisAgent, "\n");
+    outputManager->printa_sf(thisAgent, "Justifications available for discussion:");
+    print_chunk_list(10, false);
 
     outputManager->printa(thisAgent, "\n");
 
@@ -372,84 +376,98 @@ void Explanation_Memory::print_all_watched_rules()
 }
 
 
-void Explanation_Memory::print_all_chunks()
+void Explanation_Memory::print_all_chunks(bool pChunks)
 {
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 0);
     outputManager->set_column_indent(1, 4);
-    outputManager->printa(thisAgent, "Chunks available for discussion:\n");
-    print_chunk_list(0);
+    outputManager->printa_sf (thisAgent, pChunks ? "%u chunks available for discussion:\n" : "%u justifications available for discussion:\n",
+                                         pChunks ? stats.chunks_explained : stats.justifications_explained);
+    print_chunk_list(0, pChunks);
 }
 
 void Explanation_Memory::print_global_stats()
 {
-    outputManager->set_column_indent(0, 60);
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "            Explanation-Based Chunking Statistics\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Sub-states analyzed                            %-%u\n", stats.chunks_attempted);
-    outputManager->printa_sf(thisAgent, "Rules learned                                  %-%u\n", stats.chunks_succeeded);
-    outputManager->printa_sf(thisAgent, "Learning failures reverted to justifications   %-%u\n", stats.chunks_reverted);
+    outputManager->set_column_indent(0, 72);
+    outputManager->printa_sf(thisAgent, "===========================================================================\n");
+    outputManager->printa_sf(thisAgent, "                  Explanation-Based Chunking Statistics\n");
+    outputManager->printa_sf(thisAgent, "===========================================================================\n");
+    outputManager->printa_sf(thisAgent, "Sub-states analyzed                                    %-%u\n", stats.chunks_attempted);
+    outputManager->printa_sf(thisAgent, "Rules learned                                          %-%u\n", stats.chunks_succeeded);
+    outputManager->printa_sf(thisAgent, "Justifications learned                                 %-%u\n", stats.justifications_succeeded);
+    outputManager->printa_sf(thisAgent, "Justifications attempted                               %-%u\n", stats.justifications_attempted);
+    outputManager->printa_sf(thisAgent, "Number of rules fired                                  %-%u\n", thisAgent->explanationBasedChunker->get_instantiation_count());
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                               Work Performed\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Number of rule firings analyzed during backtracing                 %-%u\n", stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Number of rule firings re-visited and skipped                      %-%u\n", stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "\nConditions merged                                    %- %u\n", stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged                               %-%u\n", stats.merged_disjunctions);
+    outputManager->printa_sf(thisAgent, "- Redundant values                                     %-%u\n", stats.merged_disjunction_values);
+    outputManager->printa_sf(thisAgent, "- Impossible values eliminated                         %-%u\n", stats.eliminated_disjunction_values);
+    outputManager->printa_sf(thisAgent, "\nConstraints collected                                  %- %u\n", stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "Constraints attached                                   %-%u\n", stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                    Problem-Solving Characteristics\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Backtracing produced conditions unconnected to goal                %-%u\n", stats.lhs_unconnected);
+    outputManager->printa_sf(thisAgent, "Backtracing produced actions unconnected to goal                   %-%u\n", stats.rhs_unconnected);
+    outputManager->printa_sf(thisAgent, "\nChunk identities literalized by RHS functions                    %- %u\n", stats.rhs_arguments_literalized);
+    outputManager->printa_sf(thisAgent, "Chunks tested knowledge created by deep-copy                       %-%u\n", stats.tested_deep_copy);
+    outputManager->printa_sf(thisAgent, "\nJustification identities literalized by RHS functions            %- %u\n", stats.rhs_arguments_literalized_just);
+    outputManager->printa_sf(thisAgent, "Justification tested knowledge created by deep-copy                %-%u\n", stats.tested_deep_copy_just);
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                  Potential Generality Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Chunks with extra conditions to fix partial operationality         %-%u\n", stats.chunks_repaired);
+    outputManager->printa_sf(thisAgent, "Justifications with extra conditions to fix partial operationality %-%u\n", stats.justifications_repaired);
+    outputManager->printa_sf(thisAgent, "Extra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
 
-    outputManager->printa_sf(thisAgent, "\nJustifications attempted                   %- %u\n", stats.justifications_attempted);
-    outputManager->printa_sf(thisAgent, "Justifications successfully built          %-%u\n", stats.justifications_succeeded);
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                  Potential Correctness Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Chunk used negated reasoning about sub-state                       %-%u\n", stats.tested_local_negation);
+    outputManager->printa_sf(thisAgent, "Chunk tested knowledge retrieved from long-term memory             %-%u\n", stats.tested_ltm_recall);
+    outputManager->printa_sf(thisAgent, "Justification used negated reasoning about sub-state               %-%u\n", stats.tested_local_negation_just);
+    outputManager->printa_sf(thisAgent, "Justification tested knowledge retrieved from long-term memory     %-%u\n", stats.tested_ltm_recall_just);
 
-    outputManager->printa_sf(thisAgent, "\nInstantiations built                     %- %u\n", thisAgent->explanationBasedChunker->get_instantiation_count());
-    outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %-%u\n", stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Instantiations re-visited                  %-%u\n", stats.seen_instantations_backtraced);
-
-    outputManager->printa_sf(thisAgent, "\nConditions merged                        %- %u\n", stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", stats.constraints_attached);
-
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "          Partially Operational Conditions and Actions\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "LHS with conditions unconnected to goal    %-%u\n", stats.lhs_unconnected);
-    outputManager->printa_sf(thisAgent, "RHS with actions unconnected to goal       %-%u\n", stats.rhs_unconnected);
-
-    outputManager->printa_sf(thisAgent, "Repair attempted but failed                %-%u\n", stats.repair_failed);
-    outputManager->printa_sf(thisAgent, "Chunks reverted to justifications          %-%u\n", stats.chunks_reverted);
-
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "                Experimental Justification Repair\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Justifications needing repair              %-%u\n", stats.rhs_unconnected);
-    outputManager->printa_sf(thisAgent, "Justifications repaired                    %-%u\n", stats.justifications_repaired);
-    outputManager->printa_sf(thisAgent, "Justification repair failed yet added      %-%u\n", stats.ungrounded_justifications_added);
-    outputManager->printa_sf(thisAgent, "Justification repair failed and ignored    %-%u\n", stats.ungrounded_justifications_ignored);
-
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "             Potential Generality Issues Detected\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Chunks repaired                            %-%u\n", stats.chunks_repaired);
-    outputManager->printa_sf(thisAgent, "Conditions added during repair             %-%u\n", stats.grounding_conditions_added);
-
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "            Potential Correctness Issues Detected\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Used negated reasoning about substate      %-%u\n", stats.tested_local_negation);
-    outputManager->printa_sf(thisAgent, "Chunk learned did not match WM             %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification learned did not match WM     %-%u\n", stats.justification_did_not_match);
-
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "                     Learning Failures\n");
-    outputManager->printa_sf(thisAgent, "=============================================================\n");
-    outputManager->printa_sf(thisAgent, "Duplicate of existing rule                 %-%u\n", stats.duplicates);
-    outputManager->printa_sf(thisAgent, "Could not repair invalid rule              %-%u\n", stats.repair_failed);
-    outputManager->printa_sf(thisAgent, "Skipped because of max-chunks              %-%u\n", stats.max_chunks);
-    outputManager->printa_sf(thisAgent, "Skipped because of max-dupes               %-%u\n", stats.max_dupes);
-    outputManager->printa_sf(thisAgent, "Backtracing produced no conditions         %-%u\n", stats.no_grounds);
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                      Learning Skipped or Unsuccessful\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Ignored duplicate of existing rule                                 %-%u\n", stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Skipped because problem-solving tested ^quiescence true            %-%u\n", stats.tested_quiescence);
+    outputManager->printa_sf(thisAgent, "Skipped because no super-state knowledge tested                    %-%u\n", stats.no_grounds);
+    outputManager->printa_sf(thisAgent, "Skipped because MAX-CHUNKS exceeded in a decision cycle            %-%u\n", stats.max_chunks);
+    outputManager->printa_sf(thisAgent, "Skipped because MAX-DUPES exceeded for rule this decision cycle    %-%u\n", stats.max_dupes);
+#ifndef SOAR_RELEASE_VERSION
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                      Technical Debugging Statistics \n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Chunk learned that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Justification learned that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
+    outputManager->printa_sf(thisAgent, "Could not repair unconnected conditions/actions                    %-%u\n", stats.repair_failed);
+    outputManager->printa_sf(thisAgent, "Could not build chunk so reverted to justifications                %-%u\n", stats.chunks_reverted);
+    outputManager->printa_sf(thisAgent, "Ignored rule with partially-operational conditions/actions         %-%u\n", stats.ungrounded_justifications_ignored);
+    outputManager->printa_sf(thisAgent, "Learned partially-operational justification                        %-%u\n", stats.ungrounded_justifications_added);
+//    outputManager->printa_sf(thisAgent, "Reasoning paths existed that were not explored                     %-?\n");
+//    outputManager->printa_sf(thisAgent, "Operator selection knowledge:\n");
+//    outputManager->printa_sf(thisAgent, "- Problem-solving did not use OSK                                  %-?\n");
+//    outputManager->printa_sf(thisAgent, "- Problem-solving used OSK which EBC analyzed to learn rule        %-?\n");
+//    outputManager->printa_sf(thisAgent, "- Problem-solving used OSK but EBC ignored                         %-?\n");
+//    outputManager->printa_sf(thisAgent, "Uncertain knowledge or opaque knowledge retrieval:\n");
+//    outputManager->printa_sf(thisAgent, "- Analyzed reasoning of operators selected probabilistically       %-?\n");
+#endif
 }
 
 
 void Explanation_Memory::print_chunk_stats() {
 
     assert(current_discussed_chunk);
-    outputManager->set_column_indent(0, 60);
-    outputManager->printa_sf(thisAgent, "===========================================================\n");
-    outputManager->printa_sf(thisAgent, "%fStatistics for '%y' (c %u):\n",                         current_discussed_chunk->name, current_discussed_chunk->chunkID);
-    outputManager->printa_sf(thisAgent, "===========================================================\n");
+    outputManager->set_column_indent(0, 72);
+    outputManager->printa_sf(thisAgent, "===========================================================================\n");
+    outputManager->printa_sf(thisAgent, "EBC statistics for %y (c %u):\n",                         current_discussed_chunk->name, current_discussed_chunk->chunkID);
+    outputManager->printa_sf(thisAgent, "===========================================================================\n");
     outputManager->printa_sf(thisAgent, "Number of conditions           %-%u\n",          current_discussed_chunk->conditions->size());
     outputManager->printa_sf(thisAgent, "Number of actions              %-%u\n",          current_discussed_chunk->actions->size());
     outputManager->printa_sf(thisAgent, "Base instantiation             %-i %u (%y)\n",    current_discussed_chunk->baseInstantiation->instantiationID, current_discussed_chunk->baseInstantiation->production_name);
@@ -461,49 +479,76 @@ void Explanation_Memory::print_chunk_stats() {
             outputManager->printa_sf(thisAgent, "%-i %u (%y)\n", (*it)->instantiationID, (*it)->production_name);
         }
     }
-    outputManager->printa_sf(thisAgent, "\n===========================================================\n");
-    outputManager->printa_sf(thisAgent, "                 Generality and Correctness\n");
-    outputManager->printa_sf(thisAgent, "===========================================================\n");
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                       Generality and Correctness\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
     outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "Tested negation in local substate          %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Rule learned did not match WM              %-%s\n", (current_discussed_chunk->stats.did_not_match_wm ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Repaired unconnected identifiers           %-%s\n", ((current_discussed_chunk->stats.num_grounding_conditions_added > 0) ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "- LHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "- RHS conditions not connected to goal   %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tested negation in local substate                  %-%s\n", (current_discussed_chunk->stats.tested_local_negation ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tested knowledge from sub-state LTM recall         %-%s\n", (current_discussed_chunk->stats.tested_ltm_recall ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Partially operational conditions/actions repaired  %-%s\n", ((current_discussed_chunk->stats.num_grounding_conditions_added > 0) ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "- LHS conditions not connected to goal             %-%s\n", (current_discussed_chunk->stats.lhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "- RHS conditions not connected to goal             %-%s\n", (current_discussed_chunk->stats.rhs_unconnected ? "Yes" : "No"));
     if (current_discussed_chunk->stats.num_grounding_conditions_added > 0)
     {
-        outputManager->printa_sf(thisAgent, "- Repaired conditions added                  %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
+        outputManager->printa_sf(thisAgent, "- Repaired conditions added                    %-%u\n", current_discussed_chunk->stats.num_grounding_conditions_added);
     } else {
-        outputManager->printa_sf(thisAgent, "- Tried to repair but could not        %-%s\n", (current_discussed_chunk->stats.repair_failed ? "Yes" : "No"));
-        outputManager->printa_sf(thisAgent, "- Reverted to justification            %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
+        outputManager->printa_sf(thisAgent, "- Tried to repair but could not                %-%s\n", (current_discussed_chunk->stats.repair_failed ? "Yes" : "No"));
+        outputManager->printa_sf(thisAgent, "- Added justification instead                  %-%s\n", (current_discussed_chunk->stats.reverted ? "Yes" : "No"));
     }
-    outputManager->printa_sf(thisAgent, "\n===========================================================\n");
-    outputManager->printa_sf(thisAgent, "                      Work Performed\n");
-    outputManager->printa_sf(thisAgent, "===========================================================\n");
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                             Miscellaneous\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Rule learned did not match WM                      %-%s\n", (current_discussed_chunk->stats.did_not_match_wm ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Identities literalized by RHS functions            %-%u\n", current_discussed_chunk->stats.rhs_arguments_literalized);
+    outputManager->printa_sf(thisAgent, "Tested knowledge that was deep copied              %-%s\n", (current_discussed_chunk->stats.tested_deep_copy ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tested ^quiescence true                            %-%s\n", (current_discussed_chunk->stats.tested_quiescence ? "Yes" : "No"));
+
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                            Work Performed\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "Instantiations backtraced through          %-%u\n", current_discussed_chunk->stats.instantations_backtraced);
     outputManager->printa_sf(thisAgent, "Instantiations skipped                     %-%u\n", current_discussed_chunk->stats.seen_instantations_backtraced);
     outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", current_discussed_chunk->stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", current_discussed_chunk->stats.constraints_attached);
     outputManager->printa_sf(thisAgent, "Duplicates chunks later created            %-%u\n", current_discussed_chunk->stats.duplicates);
     outputManager->printa_sf(thisAgent, "Conditions merged                          %-%u\n", current_discussed_chunk->stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged                   %-%u\n", current_discussed_chunk->stats.merged_disjunctions);
+    outputManager->printa_sf(thisAgent, "- Duplicate values kept                    %-%u\n", current_discussed_chunk->stats.merged_disjunction_values);
+    outputManager->printa_sf(thisAgent, "- Impossible values eliminated             %-%u\n", current_discussed_chunk->stats.eliminated_disjunction_values);
 }
 
-void Explanation_Memory::print_chunk_list(short pNumToPrint)
+void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
 {
     short lNumPrinted = 0;
+    uint64_t total_rules;
+    ebc_rule_type desired_type;
+    if (pChunks)
+    {
+        total_rules = stats.chunks_explained;
+        desired_type = ebc_chunk;
+    } else {
+        total_rules = stats.justifications_explained;
+        desired_type = ebc_justification;
+    }
+
     for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         Symbol* d1 = it->first;
         chunk_record* d2 = it->second;
-        outputManager->printa_sf(thisAgent, "%-%-%y (c%u)\n", it->first, it->second->chunkID);
+
+        if (d2->type != desired_type) continue;
+
+        outputManager->printa_sf(thisAgent, "%-%-%y (c %u)\n", it->first, it->second->chunkID);
         if (pNumToPrint && (++lNumPrinted >= pNumToPrint))
         {
             break;
         }
     }
-    if (pNumToPrint && ((*chunks).size() > pNumToPrint))
+
+    if (pNumToPrint && (total_rules > pNumToPrint))
     {
-        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d chunks.  Type 'explain list' to see the other %d chunks.\n", pNumToPrint, ( (*chunks).size() - pNumToPrint));
+        std::string typeString = pChunks ? "chunks" : "justifications";
+        outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d %s recorded.  Type 'explain list-%s' to see the other %d %s.\n", pNumToPrint, typeString.c_str(), typeString.c_str(), ( total_rules - pNumToPrint), typeString.c_str());
     }
 }
 

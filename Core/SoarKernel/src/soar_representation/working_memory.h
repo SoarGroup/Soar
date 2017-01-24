@@ -83,31 +83,36 @@ class WM_Manager
 
 typedef struct wme_struct
 {
-    /* WARNING:  The next three fields (id,attr,value) MUST be consecutive--
-       the rete code relies on this! */
-    Symbol* id;
-    Symbol* attr;
-    Symbol* value;
-    bool acceptable;
-    uint64_t timetag;
-    uint64_t reference_count;
-    struct wme_struct* rete_next, *rete_prev; /* used for dll of wmes in rete */
-    struct right_mem_struct* right_mems;      /* used for dll of rm's it's in */
-    struct token_struct* tokens;              /* dll of tokens in rete */
-    struct wme_struct* next, *prev;           /* (see above) */
-    struct preference_struct* preference;     /* pref. supporting it, or NIL */
-    struct output_link_struct* output_link;   /* for top-state output commands */
-    tc_number tc;                             /* for chunker use only */
-    struct condition_struct* chunker_bt_last_ground_cond;
+    /* WARNING:  The next three fields (id,attr,value) MUST be consecutive.  The rete code relies on this! */
+    Symbol*                     id;
+    Symbol*                     attr;
+    Symbol*                     value;
+    bool                        acceptable;
+    uint64_t                    timetag;
+    uint64_t                    reference_count;
 
-    struct gds_struct* gds;
-    struct wme_struct* gds_next, *gds_prev;   /* used for dll of wmes in gds */
+    struct wme_struct           *rete_next, *rete_prev; /* used for dll of wmes in rete */
+    struct right_mem_struct*    right_mems;             /* used for dll of rm's it's in */
+    struct token_struct*        tokens;                 /* dll of tokens in rete */
+    struct wme_struct           *next, *prev;           /* (see above) */
 
-    epmem_node_id epmem_id;
-    uint64_t epmem_valid;
+    struct preference_struct*   preference;             /* pref. supporting it, or NIL */
+    struct wme_struct*          deep_copied_wme;
+    struct output_link_struct*  output_link;            /* for top-state output commands */
 
-    wma_decay_element* wma_decay_el;
-    tc_number wma_tc_value;
+    tc_number                   tc;                     /* for chunker use only */
+    struct condition_struct*    chunker_bt_last_ground_cond;
+    bool                        is_singleton;
+    bool                        singleton_status_checked;
+
+    struct gds_struct*          gds;
+    struct wme_struct*          gds_next, *gds_prev;   /* used for dll of wmes in gds */
+
+    epmem_node_id               epmem_id;
+    uint64_t                    epmem_valid;
+
+    wma_decay_element*          wma_decay_el;
+    tc_number                   wma_tc_value;
 
 } wme;
 

@@ -1,0 +1,73 @@
+srand 23
+chunk always
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^test-item 9
+         ^test-item2 7)
+    (write (crlf) |Starting chunking unit test.|)
+}
+
+sp {propose*top
+    (state <s> ^superstate nil)
+-->
+    (<s> ^operator <o>)
+    (<o> ^name do-test)
+}
+
+sp {apply*test-done
+    (state <s> ^superstate nil ^test-done)
+-->
+    (write (crlf) |Chunk produced. Test completed.|)
+    (succeeded)
+    (interrupt)
+}
+
+sp {apply*test-failed
+    (state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+    (write (crlf) |Chunk not produced.  Test failed.|)
+    (interrupt)
+}
+
+sp {init-substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)}
+
+sp {propose*test
+    (state <s> ^name substate)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name test)}
+
+## Chaining example with binding from local state that coincidentally
+# matches a different binding.  Both vars on rhs.  One should be reversed
+# while the other shouldn't be.
+
+sp {apply1a
+    (state <s> ^name substate
+               ^operator.name test)
+-->
+    (<s> ^substate-output 9)}
+
+sp {apply1b
+    (state <s> ^name substate
+               ^operator.name test
+               ^superstate.test-item { > 8 < 10 >= <var-ungrounded> <var> }
+               ^superstate.test-item2 { <= <var> <var2> }
+               ^substate-output <var-ungrounded>
+               ^superstate <ss>)
+-->
+    (<ss> ^result1a <var-ungrounded>
+          ^result1b <var>
+          ^result1c <var2>
+          ^result1d <unbound>
+          ^test-done 1)
+    (<unbound> ^foo bar)
+    }
+
+
+#run
+#ctf expected/chunk1.soar print -cf

@@ -1,0 +1,18 @@
+chunk always
+
+sp {apply-create-chunk-architectural-singletons
+    (state <s> ^superstate <ss> <ss2>)
+    (<ss> ^attribute      <c1> <c2>)
+    (<ss> ^choices        <c3> <c4>)
+    (<ss> ^epmem          <c5> <c6>)
+    (<ss> ^impasse        <c7> <c8>)
+    (<ss> ^quiescence     <c9> <c10>)
+    (<ss> ^reward-link    <c13> <c14>)
+    (<ss> ^smem           <c15> <c16>)
+    (<ss> ^superstate     <c17> <c18>)
+#    (<ss> ^svs            <c19> <c20>)
+    (<ss> ^type           <c21> <c22>)
+-->
+    (<ss> ^result-architectural-singletons true)
+    (interrupt)
+}

@@ -102,6 +102,7 @@ Symbol* sml::InterruptRhsFunction::Execute(std::vector<Symbol*>* /*pArguments*/)
 Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 {
     std::ostringstream ostr;
+    Symbol* lastSymbol = NULL;
     
     for (std::vector<Symbol*>::iterator iter = pArguments->begin() ; iter != pArguments->end() ; iter++)
     {
@@ -109,14 +110,17 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
         
         if (!pSymbol)
         {
-            std::cerr << "Concat function was sent a null symbol! "
-                      << "Ignoring it..."
-                      << std::endl;
+            std::cerr << "Concat function was sent a null symbol! " << "Ignoring it..." << std::endl;
         }
         else
         {
+            if (lastSymbol && (lastSymbol->symbol_type != STR_CONSTANT_SYMBOL_TYPE))
+            {
+                ostr << " ";
+            }
             std::string nextString = pSymbol->to_string();
             ostr << nextString;
+            lastSymbol = pSymbol;
         }
     }
     

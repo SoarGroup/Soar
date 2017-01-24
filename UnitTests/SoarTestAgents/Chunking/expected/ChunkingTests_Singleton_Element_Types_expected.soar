@@ -1,0 +1,170 @@
+sp {answer*apply-create-chunk*OpNoChange*t10-2-1
+        (state <s2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c17> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c15> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c13> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <> jordan <s3> } ^sti { <> michael <i5> }
+          ^sti { <> jordan <i3> } ^constant-f { <> michael <c18> }
+          ^constant-f { <> jordan <c9> } ^constant-s { <> michael <c16> }
+          ^constant-s { <> jordan <c7> } ^constant-i { <> michael <c14> }
+          ^constant-i { <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t9-2-1
+        (state <s2> ^state-type { <> michael <s7> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c17> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c15> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c13> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s3> }
+          ^sti { <> michael <> jordan <i3> } ^constant-f { <> michael <c18> }
+          ^constant-f { <> jordan <c9> } ^constant-s { <> michael <c16> }
+          ^constant-s { <> jordan <c7> } ^constant-i { <> michael <c14> }
+          ^constant-i { <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t8-2-1
+        (state <s2> ^state-type { <> michael <s7> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c15> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c14> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c13> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s3> }
+          ^sti { <> michael <i5> } ^sti { <> jordan <i3> }
+          ^constant-f { <> michael <> jordan <c9> }
+          ^constant-s { <> michael <> jordan <c7> }
+          ^constant-i { <> michael <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t5-2-1
+        (state <s2> ^state-type { <> michael <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> }
+          ^constant-f { <> michael <> jordan <c8> }
+          ^constant-s { <> michael <> jordan <c6> }
+          ^constant-i { <> michael <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <> jordan <s3> }
+          ^sti { <> michael <> jordan <i3> }
+          ^constant-f { <> michael <> jordan <c9> }
+          ^constant-s { <> michael <> jordan <c7> }
+          ^constant-i { <> michael <> jordan <c5> })
+    (<o1> ^state-type { <> michael <> jordan <s1> }
+          ^sti { <> michael <> jordan <i1> }
+          ^constant-f { <> michael <> jordan <c3> }
+          ^constant-s { <> michael <> jordan <c2> }
+          ^constant-i { <> michael <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t4-2-1
+        (state <s2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c14> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c12> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c10> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <s5> } ^state-type { <> jordan <s3> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i3> }
+          ^constant-f { <> michael <c15> } ^constant-f { <> jordan <c9> }
+          ^constant-s { <> michael <c13> } ^constant-s { <> jordan <c7> }
+          ^constant-i { <> michael <c11> } ^constant-i { <> jordan <c5> })
+    (<o1> ^state-type { <> michael <> jordan <s1> }
+          ^sti { <> michael <> jordan <i1> }
+          ^constant-f { <> michael <> jordan <c3> }
+          ^constant-s { <> michael <> jordan <c2> }
+          ^constant-i { <> michael <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t3-2-1
+        (state <s2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c15> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c14> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c13> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <> jordan <s3> }
+          ^sti { <> michael <> jordan <i3> }
+          ^constant-f { <> michael <> jordan <c9> }
+          ^constant-s { <> michael <> jordan <c7> }
+          ^constant-i { <> michael <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t2-2-1
+        (state <s2> ^state-type { <> michael <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> }
+          ^constant-f { <> michael <> jordan <c8> }
+          ^constant-s { <> michael <> jordan <c6> }
+          ^constant-i { <> michael <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s3> }
+          ^sti { <> michael <i5> } ^sti { <> jordan <i3> }
+          ^constant-f { <> michael <c15> } ^constant-f { <> jordan <c9> }
+          ^constant-s { <> michael <c14> } ^constant-s { <> jordan <c7> }
+          ^constant-i { <> michael <c13> } ^constant-i { <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+sp {answer*apply-create-chunk*OpNoChange*t2-1
+        (state <s2> ^state-type { <> michael <s7> } ^state-type { <> jordan <s4> }
+          ^sti { <> michael <> jordan <i2> } ^constant-f { <> michael <c17> }
+          ^constant-f { <> jordan <c8> } ^constant-s { <> michael <c15> }
+          ^constant-s { <> jordan <c6> } ^constant-i { <> michael <c13> }
+          ^constant-i { <> jordan <c4> }
+          ^operator { <> michael <> jordan <o1> })
+    (<i2> ^state-type { <> michael <s6> } ^state-type { <> jordan <s3> }
+          ^sti { <> michael <i5> } ^sti { <> jordan <i3> }
+          ^constant-f { <> michael <c18> } ^constant-f { <> jordan <c9> }
+          ^constant-s { <> michael <c16> } ^constant-s { <> jordan <c7> }
+          ^constant-i { <> michael <c14> } ^constant-i { <> jordan <c5> })
+    (<o1> ^state-type { <> michael <s5> } ^state-type { <> jordan <s1> }
+          ^sti { <> michael <i4> } ^sti { <> jordan <i1> }
+          ^constant-f { <> michael <c12> } ^constant-f { <> jordan <c3> }
+          ^constant-s { <> michael <c11> } ^constant-s { <> jordan <c2> }
+          ^constant-i { <> michael <c10> } ^constant-i { <> jordan <c1> })
+    -->
+    (<s2> ^result true +)
+}
+
+
+

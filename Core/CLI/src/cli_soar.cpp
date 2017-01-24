@@ -176,35 +176,47 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
             if (thisAgent->Decider->params->stop_phase->get_value() == APPLY_PHASE)
             {
                 m_pKernelSML->SetStopBefore(sml::sml_APPLY_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the apply phase.");
+
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == DECISION_PHASE)
             {
                 m_pKernelSML->SetStopBefore(sml::sml_DECISION_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the decision phase.");
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == INPUT_PHASE)
             {
                 m_pKernelSML->SetStopBefore(sml::sml_INPUT_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the input phase.");
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == OUTPUT_PHASE)
             {
                 m_pKernelSML->SetStopBefore(sml::sml_OUTPUT_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the output phase.");
             }
             else if (thisAgent->Decider->params->stop_phase->get_value() == PROPOSE_PHASE)
             {
                 m_pKernelSML->SetStopBefore(sml::sml_PROPOSAL_PHASE) ;
+                PrintCLIMessage("Soar will now stop before the proposal phase.");
             }
         }
         else if (my_param == thisAgent->Decider->params->keep_all_top_oprefs)
         {
             thisAgent->Decider->settings[DECIDER_KEEP_TOP_OPREFS] = thisAgent->Decider->params->keep_all_top_oprefs->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "Soar will now %s retain top level preferences for items that are already o-supported.", thisAgent->Decider->settings[DECIDER_KEEP_TOP_OPREFS] ? "always" : "not");
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->wait_snc)
         {
             thisAgent->Decider->settings[DECIDER_WAIT_SNC] = thisAgent->Decider->params->wait_snc->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "Soar will now %s when a state doesn't change.", thisAgent->Decider->settings[DECIDER_WAIT_SNC] ? "wait instead of impassing" : "impasse");
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->timers_enabled)
         {
             thisAgent->timers_enabled = thisAgent->Decider->params->timers_enabled->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "Timers are now %s.", thisAgent->timers_enabled ? "enabled" : "disabled");
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->tcl_enabled)
         {
@@ -239,26 +251,48 @@ bool CommandLineInterface::DoSoar(const char pOp, const std::string* pArg1, cons
                 m_GPMax = static_cast<size_t>(thisAgent->Decider->params->max_gp->get_value());
             }
             thisAgent->Decider->settings[DECIDER_MAX_GP] = thisAgent->Decider->params->max_gp->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "The maximum number of rules gp can generate is now %u.", thisAgent->Decider->settings[DECIDER_MAX_GP]);
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->max_dc_time)
         {
             thisAgent->Decider->settings[DECIDER_MAX_DC_TIME] = thisAgent->Decider->params->max_dc_time->get_value();
+            if (thisAgent->Decider->settings[DECIDER_MAX_DC_TIME] > 0)
+            {
+                thisAgent->outputManager->sprint_sf(tempString, "Soar will now interrupt decisions after %u seconds.", thisAgent->Decider->settings[DECIDER_MAX_DC_TIME]);
+                PrintCLIMessage(tempString.c_str());
+            } else {
+                PrintCLIMessage("Soar will no longer interrupt based on how how long a decision takes. (default)");
+            }
         }
         else if (my_param == thisAgent->Decider->params->max_elaborations)
         {
             thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS] = thisAgent->Decider->params->max_elaborations->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "The maximum number of elaborations in a phase is now %u.", thisAgent->Decider->settings[DECIDER_MAX_ELABORATIONS]);
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->max_goal_depth)
         {
             thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] = thisAgent->Decider->params->max_goal_depth->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "The maximum goal depth is now %u.", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
+            PrintCLIMessage(tempString.c_str());
         }
         else if (my_param == thisAgent->Decider->params->max_memory_usage)
         {
             thisAgent->Decider->settings[DECIDER_MAX_MEMORY_USAGE] = thisAgent->Decider->params->max_memory_usage->get_value();
+            if (thisAgent->Decider->settings[DECIDER_MAX_MEMORY_USAGE] > 0)
+            {
+                thisAgent->outputManager->sprint_sf(tempString, "Soar will now interrupt execution if more than %u bytes of memory are used.  (This requires a special build of Soar.  See manual for more information.)", thisAgent->Decider->settings[DECIDER_MAX_MEMORY_USAGE]);
+                PrintCLIMessage(tempString.c_str());
+            } else {
+                PrintCLIMessage("Soar will not interrupt execution based on memory usage. (default)");
+            }
         }
         else if (my_param == thisAgent->Decider->params->max_nil_output_cycles)
         {
             thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES] = thisAgent->Decider->params->max_nil_output_cycles->get_value();
+            thisAgent->outputManager->sprint_sf(tempString, "The maximum number of decision cycles without output before interrupting is now %u.  (used with run --output)", thisAgent->Decider->settings[DECIDER_MAX_NIL_OUTPUT_CYCLES]);
+            PrintCLIMessage(tempString.c_str());
         }
         return result;
     }

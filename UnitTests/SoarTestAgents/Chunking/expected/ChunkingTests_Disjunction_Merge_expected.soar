@@ -1,0 +1,12 @@
+sp {answer*make-chunk*StateNoChange*t2-1
+    (state <s1> ^superstate nil)
+    (<s1> ^num3 { << 1 2 3 >> <c6> })
+    (<s1> ^num3 { << 2 3 >> <c5> })
+    (<s1> ^num2 { << 2 >> <c4> })
+    (<s1> ^num1 { << 1 >> <c3> })
+    (<s1> ^word2 { << Michael Jordan not-object2 >> <c2> })
+    (<s1> ^word2 { << not-object2 not-object3 >> <c1> })
+    (<s1> ^word { << object >> <> word-make <> word-propose <c7> })
+    -->
+    (<s1> ^result (concat <c3> <c4> <c5> <c6> <c2> <c7>) +)
+}

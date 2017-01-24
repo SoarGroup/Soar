@@ -1,0 +1,154 @@
+chunk always
+srand 23
+
+# Singleton types:  any constant identifier state operator
+#chunk single state state-type state
+#chunk single state operator operator
+#chunk single state sti identifier
+#chunk single state constant-i constant
+#chunk single state constant-s constant
+#chunk single state constant-f constant
+
+#chunk single identifier state-type state
+#chunk single identifier operator operator
+#chunk single identifier sti identifier
+#chunk single identifier constant-i constant
+#chunk single identifier constant-s constant
+#chunk single identifier constant-f constant
+
+#chunk single operator state-type state
+#chunk single operator operator operator
+#chunk single operator sti identifier
+#chunk single operator constant-i constant
+#chunk single operator constant-s constant
+#chunk single operator constant-f constant
+
+#chunk single any state-type state
+#chunk single any operator operator
+#chunk single any sti identifier
+#chunk single any constant-i constant
+#chunk single any constant-s constant
+#chunk single any constant-f constant
+
+#chunk single state state-type any
+#chunk single state operator any
+#chunk single state sti any
+#chunk single state constant-i any
+#chunk single state constant-s any
+#chunk single state constant-f any
+
+#chunk single any state-type any
+#chunk single any operator any
+#chunk single any sti any
+#chunk single any constant-i any
+#chunk single any constant-s any
+#chunk single any constant-f any
+
+#chunk single identifier state-type constant
+#chunk single identifier operator constant
+#chunk single identifier sti constant
+#chunk single identifier constant-i constant
+#chunk single identifier constant-s constant
+#chunk single identifier constant-f constant
+
+#chunk single identifier state-type identifier
+#chunk single identifier operator identifier
+#chunk single identifier sti identifier
+#chunk single identifier constant-i identifier
+#chunk single identifier constant-s identifier
+#chunk single identifier constant-f identifier
+
+#chunk single identifier state-type state
+#chunk single identifier operator state
+#chunk single identifier sti state
+#chunk single identifier constant-i state
+#chunk single identifier constant-s state
+#chunk single identifier constant-f state
+
+#chunk single identifier state-type operator
+#chunk single identifier operator operator
+#chunk single identifier sti operator
+#chunk single identifier constant-i operator
+#chunk single identifier constant-s operator
+#chunk single identifier constant-f operator
+
+sp {init-superstate
+    (state <s> ^superstate nil)
+-->
+    (<s> ^constant-i 23
+         ^constant-s |string|
+         ^constant-f 1.2
+         ^sti <id>
+         ^state-type <s>)
+    (<id> ^constant-i 23
+          ^constant-s |string|
+          ^constant-f 1.2
+          ^sti <id2>
+          ^operator <dummy-op>
+          ^state-type <s>)
+}
+
+sp {propose
+    (state <s> ^sti <id> ^superstate nil)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^constant-i 23
+         ^constant-s |string|
+         ^constant-f 1.2
+         ^sti <id>
+         ^operator <dummy-op>
+         ^state-type <s>)
+}
+
+sp {intermediate-1
+    (state <s> ^superstate <ss>)
+    (<ss> ^constant-i { <> michael <c1> }
+          ^constant-s { <> michael <c2> }
+          ^constant-f{ <> michael <c3> }
+          ^sti { <> michael <c4> }
+          ^operator { <> michael <c5> }
+          ^state-type { <> michael <c7> })
+    (<c4> ^constant-i { <> michael <c8> }
+          ^constant-s { <> michael <c9> }
+          ^constant-f{ <> michael <c10> }
+          ^sti { <> michael <c11> }
+          ^state-type { <> michael <c14> })
+    (<c5> ^constant-i { <> michael <c15> }
+          ^constant-s { <> michael <c16> }
+          ^constant-f{ <> michael <c17> }
+          ^sti { <> michael <c18> }
+          ^state-type { <> michael <c19> })
+-->
+    (<s> ^substate-flag1 <c4>)
+}
+
+sp {intermediate-2
+    (state <s> ^superstate <ss>)
+    (<ss> ^constant-i { <> jordan <c1> }
+          ^constant-s { <> jordan <c2> }
+          ^constant-f{ <> jordan <c3> }
+          ^sti { <> jordan <c4> }
+          ^operator { <> jordan <c5> }
+          ^state-type { <> jordan <c7> })
+    (<c4> ^constant-i { <> jordan <c8> }
+          ^constant-s { <> jordan <c9> }
+          ^constant-f{ <> jordan <c10> }
+          ^sti { <> jordan <c11> }
+          ^state-type { <> jordan <c14> })
+    (<c5> ^constant-i { <> jordan <c15> }
+          ^constant-s { <> jordan <c16> }
+          ^constant-f{ <> jordan <c17> }
+          ^sti { <> jordan <c18> }
+          ^state-type { <> jordan <c19> })
+-->
+    (<s> ^substate-flag2 <c4>)
+}
+
+sp {apply-create-chunk
+    (state <s> ^superstate <ss>
+               ^substate-flag1 <c>
+               ^substate-flag2 <c>)
+-->
+    (<ss> ^result true)
+    #   (interrupt)
+}

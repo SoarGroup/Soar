@@ -1,7 +1,0 @@
-sp {answer*apply*chunk*check-smem*success*OpNoChange*t5-1
-    (state <s1> ^superstate nil)
-    -->
-    (<s1> ^operator <l1> +)
-    (<s1> ^substate-retrieved <l2> +)
-    (<l2> ^operator <l1> +)
-}

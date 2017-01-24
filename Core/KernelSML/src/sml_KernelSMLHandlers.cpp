@@ -99,7 +99,7 @@ void KernelSML::BuildCommandMap()
     m_CommandMap[sml_Names::kCommand_SVSQuery] = &sml::KernelSML::HandleSVSQuery;
 }
 
-bool fileExists(const char* path)
+bool fileExistsAndIsDir(const char* path)
 {
 #ifdef _WIN32
     DWORD a = GetFileAttributes(path);
@@ -223,7 +223,7 @@ std::string searchForFile(std::string& pFileName)
         }
         directory += pFileName;
         normalize_separators(directory);
-        if (fileExists(directory.c_str()))
+        if (fileExistsAndIsDir(directory.c_str()))
         {
             found_settings = true;
         }
@@ -240,7 +240,7 @@ std::string searchForFile(std::string& pFileName)
             }
             directory += pFileName;
             normalize_separators(directory);
-            if (fileExists(directory.c_str()))
+            if (fileExistsAndIsDir(directory.c_str()))
             {
                 found_settings = true;
             }
@@ -256,7 +256,7 @@ std::string searchForFile(std::string& pFileName)
         }
         directory += pFileName;
         normalize_separators(directory);
-        if (fileExists(directory.c_str()))
+        if (fileExistsAndIsDir(directory.c_str()))
         {
             found_settings = true;
         }
@@ -1079,7 +1079,7 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 
         /* MToDo | Here's a new function to expand a command.  Did not use for something else
          *         but it could solve a problem with TclSoarLib.  (Bug is that soar aliases
-         *         prevent Tcl substitution */
+         *         prevent Tcl substitution) */
         //        std::string lCmd;
         //        lCmd = m_CommandLineInterface.ExpandCommand(pCommandName);
         //        pFunction = m_CommandMap[lCmd.c_str()];

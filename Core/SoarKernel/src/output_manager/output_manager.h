@@ -23,7 +23,7 @@
 #define MAX_LEXER_LINE_LENGTH 1000
 #define MAX_LEXEME_LENGTH (MAX_LEXER_LINE_LENGTH+5)
 #define output_string_size MAX_LEXEME_LENGTH*2+10
-#define DEBUG_SCHEMA_VERSION "0.1"
+#define maxAgentTraces 100
 
 typedef struct trace_mode_info_struct
 {
@@ -51,8 +51,9 @@ class AgentOutput_Info
         AgentOutput_Info();
 
         bool print_enabled;
-        bool callback_mode, db_mode;
+        bool callback_mode;
         int  printer_output_column;
+        bool agent_traces_enabled[maxAgentTraces] ;
         void set_output_params_agent(bool pDebugEnabled);
 } ;
 
@@ -84,10 +85,9 @@ class Output_Manager
         sml::Kernel*                              m_Kernel;
         agent*                                    m_defaultAgent;
         OM_Parameters*                            m_params;
-        OM_DB*                                    m_db;
 
         /* -- Global toggles for database, standard out -- */
-        bool db_mode, stdout_mode;
+        bool stdout_mode;
 
         /* -- Settings for how tests are printed (actual, original production tests, test identity) -- */
         bool m_print_actual, m_print_identity;
@@ -160,16 +160,11 @@ class Output_Manager
         void sprint_sf(std::string &destString, const char* format, ...);
         size_t sprint_sf_cstr(char* dest, size_t dest_size, const char* format, ...);
 
-        /* Print to database */
-        void printa_database(TraceMode mode, agent* pSoarAgent, MessageType msgType, const char* msg);
-        void store_refcount(Symbol* sym, const char* callers, bool isAdd);
-
         /* Versions that will check debug mode and only print if set */
         void debug_print(TraceMode mode, const char* msg);
         void debug_print_sf(TraceMode mode, const char* format, ...);
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
-        void debug_start_fresh_line(TraceMode mode);
 
         const char* phase_to_string(top_level_phase pPhase);
         void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
@@ -222,21 +217,6 @@ class Output_Manager
         }
         void clear_print_indents() { set_print_indents(); }
 
-        void set_dprint_indents(TraceMode mode, const char* pPre = NULL, const char* pPost = NULL)
-        {
-            if (is_trace_enabled(mode)) set_print_indents(pPre, pPost);
-        }
-        void set_dprint_test_format(TraceMode mode, bool pActual, bool p_Identity)
-        {
-            if (is_trace_enabled(mode)) set_print_test_format(pActual, p_Identity);
-        }
-        void clear_dprint_indents(TraceMode mode)
-        {
-            if (is_trace_enabled(mode)) clear_print_indents();
-        }
-        void clear_dprint_test_format(TraceMode mode) {
-            if (is_trace_enabled(mode)) clear_print_test_format();
-        }
         void set_column_indent(int pColumnIndex, int pColumnNum) {
             if (pColumnIndex >= MAX_COLUMNS) return;
             m_column_indent[pColumnIndex] = pColumnNum; }
@@ -244,9 +224,9 @@ class Output_Manager
         void reset_column_indents() { for (int i=0; i<MAX_COLUMNS; i++) m_column_indent[i] = 0; }
 
         /* -- The following should all be refactored into to_string functions to be used with format strings -- */
-        void debug_print_production(TraceMode mode, production* prod);
-
         void print_identifiers(TraceMode mode);
+        void print_msc(TraceMode mode, ms_change* p_ms_change);
+        void print_partial_matches(TraceMode mode, rete_node* pNode);
         void print_saved_test(TraceMode mode, saved_test* st);
         void print_saved_test_list(TraceMode mode, saved_test* st);
         void print_varnames(TraceMode mode, varnames* var_names);
@@ -283,23 +263,22 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *    Format strings for Soar printing:
  *
  *       %c   character
- *       %i   int64_t
+ *       %d   int64_t
  *       %u   uint64_t
- *       %d   short
  *       %s   string
- *       %f   fresh line (adds newline if not at column 1)
- *       %m   coluMn
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
  *
  *       %a   action
  *       %l   condition
  *       %n   funcall list
- *       %7   instantiation
  *       %p   preference
  *       %r   rhs value
  *       %y   symbol
- *       %o   symbol's original variable(s)
  *       %t   test
- *       %g   identity information for test
+ *       %g   variablization identity of test
  *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
@@ -310,6 +289,33 @@ inline std::string concatJustified(const char* left_string, std::string right_st
  *       %5   condition preference lists (2 args: cond, preference)
  *       %6   condition results lists (2 args: cond, preference)
  *       %7   instantiation
- *       %8   Working Memory
+ *
+ *   Alphabetical
+ *
+ *       %-   fill to next column indent with spaces
+ *       %=   fill to next column indent with periods
+ *       %1   condition list
+ *       %2   action list
+ *       %3   cons list of conditions
+ *       %4   condition action lists (2 args: cond, action)
+ *       %5   condition preference lists (2 args: cond, preference)
+ *       %6   condition results lists (2 args: cond, preference)
+ *       %7   instantiation
+ *       %a   action
+ *       %c   character
+ *       %d   int64_t
+ *       %e   fresh line (adds newline if not at column 1)
+ *       %f   double
+ *       %g   variablization identity of test
+ *       %h   like %g but with second argument containing symbol to use if STI
+ *       %l   condition
+ *       %n   funcall list
+ *       %p   preference
+ *       %r   rhs value
+ *       %s   string
+ *       %t   test
+ *       %u   uint64_t
+ *       %w   wme
+ *       %y   symbol
    ------------------------------------*/
 #endif /* OUTPUT_MANAGER_H_ */
