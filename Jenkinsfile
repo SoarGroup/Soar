@@ -1,5 +1,3 @@
-def unitTestArguments = "-s -c SMemFunctionalTests"
-
 def names = nodeNames()
 def builders = [:]
 
@@ -40,7 +38,7 @@ for (int i=0; i<names.size(); ++i) {
         bat "%VS_2015% & call build.bat all --scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
 
         bat 'pushd VS2015'
-        bat 'UnitTests'
+        bat 'UnitTests.exe'
         bat 'popd'
         //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
         //bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
