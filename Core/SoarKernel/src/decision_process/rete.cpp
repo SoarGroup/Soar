@@ -1482,8 +1482,9 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             // if identifier-valued and short-term, known value
             if ((w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                     (w->value->id->epmem_id != EPMEM_NODEID_BAD) &&
-                    (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation) &&
-                    (!w->value->id->LTI_ID))
+                    (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)
+                    //&& (!w->value->id->LTI_ID)
+                    )
             {
                 // add id ref count
                 (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
@@ -1523,7 +1524,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
 #endif
 
             // return to the id pool
-            if (!lti)
+            //if (!lti)
             {
 #ifdef DEBUG_EPMEM_WME_ADD
                 fprintf(stderr, "   returning WME to pool: %d %d %d\n",
@@ -1536,7 +1537,7 @@ inline void _epmem_remove_wme(agent* thisAgent, wme* w)
         }
 
         // reduce the ref count on the value
-        if (!lti && (w->value->id->epmem_id != EPMEM_NODEID_BAD) && (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation))
+        if ((w->value->id->epmem_id != EPMEM_NODEID_BAD) && (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)) //!lti &&
         {
             epmem_wme_set* my_refs = (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ];
 
