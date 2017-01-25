@@ -2456,10 +2456,9 @@ inline void _epmem_store_level(agent* thisAgent,
             continue;
         }
         /* Not sure why this is excluding LTIs or whether that makes sense any more. */
-        if (((*w_p)->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
-                (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation))
-                && (!(*w_p)->value->id->LTI_ID)
-                )
+        if (((*w_p)->value->symbol_type     == IDENTIFIER_SYMBOL_TYPE) &&
+           (((*w_p)->value->id->epmem_id    != EPMEM_NODEID_BAD) &&
+            ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)))
         {
             // prevent exclusions from being recorded
             if (thisAgent->EpMem->epmem_params->exclusions->in_set((*w_p)->attr))

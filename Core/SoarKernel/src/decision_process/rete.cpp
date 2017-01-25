@@ -1482,9 +1482,7 @@ void add_wme_to_rete(agent* thisAgent, wme* w)
             // if identifier-valued and short-term, known value
             if ((w->value->symbol_type == IDENTIFIER_SYMBOL_TYPE) &&
                     (w->value->id->epmem_id != EPMEM_NODEID_BAD) &&
-                    (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation)
-                    //&& (!w->value->id->LTI_ID)
-                    )
+                    (w->value->id->epmem_valid == thisAgent->EpMem->epmem_validation))
             {
                 // add id ref count
                 (*thisAgent->EpMem->epmem_id_ref_counts)[ w->value->id->epmem_id ]->insert(w);
