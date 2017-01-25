@@ -8,7 +8,6 @@
 #include "MiscTests.cpp"
 #include "MultiAgentTest.cpp"
 #include "SimpleListener.cpp"
-#include "SMemEpMemCombinedFunctionalTests.cpp"
 #include "SMemFunctionalTests.cpp"
 #include "TokenizerTest.cpp"
 #include "wma/WmaFunctionalTests.cpp"
