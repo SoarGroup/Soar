@@ -1069,8 +1069,11 @@ void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value)
     }
     if (!already_exists)
     {
+        dprint(DT_OSK, "Adding OSK preference %p from %y to slot (%y ^%y)\n", pref, pref->inst->prod_name, s->id, s->attr);
         push(thisAgent, pref, s->OSK_prefs);
         preference_add_ref(pref);
+    } else {
+        dprint(DT_OSK, "Not adding OSK preference %p from %y to slot (%y ^%y) because it already exists.\n", pref, pref->inst->prod_name, s->id, s->attr);
     }
 //    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
 //    {
