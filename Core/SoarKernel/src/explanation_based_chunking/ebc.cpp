@@ -430,7 +430,6 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uin
     if (!existing_o_id)
     {
         increment_counter(ovar_id_counter);
-        break_if_id_matches(ovar_id_counter, 8351);
         (*instantiation_identities)[orig_var] = ovar_id_counter;
 
         return ovar_id_counter;

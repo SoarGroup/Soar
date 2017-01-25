@@ -73,7 +73,7 @@
 
     #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
-    //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/
+    #define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/
 
     //#define DEBUG_EPMEM_WME_ADD
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */

@@ -960,7 +960,7 @@ void init_built_in_rhs_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("trace"), trace_rhs_function_code, -1, false, true, 0, false);
 
     /* RHS functions that return a simple value */
-    add_rhs_function(thisAgent, thisAgent->symbolManager->soarSymbols.at_symbol, get_lti_id_rhs_function_code, 1, true, false, 0, false);
+    add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("@"), get_lti_id_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("capitalize-symbol"), capitalize_symbol_rhs_function_code, 1, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("crlf"), crlf_rhs_function_code, 0, true, false, 0, false);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("dc"),  dc_rhs_function_code,  0, true, false, 0, false);
