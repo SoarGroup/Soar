@@ -3865,6 +3865,41 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                                p->name, p_node->b.p.prod->name);
         }
         thisAgent->symbolManager->deallocate_symbol_list_removing_references(rhs_unbound_vars_for_new_prod);
+//        if (refracted_inst)
+//        {
+//            insert_at_head_of_dll(p->instantiations, refracted_inst, next, prev);
+//            refracted_inst->rete_token = NIL;
+//            refracted_inst->rete_wme = NIL;
+//            thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
+//            msc->inst = refracted_inst;
+//            msc->p_node = p_node;
+//            /* Because the RETE 'artificially' refracts this instantiation (ie, it is
+//            not actually firing -- the original instantiation fires but not the
+//            chunk), we make the refracted instantiation of the chunk a nil_goal
+//            retraction, rather than associating it with the activity of its match
+//            goal. In p_node_left_addition, where the tentative assertion will be
+//            generated, we make it a point to look at the goal value and extract
+//            from the appropriate list; here we just make a a simplifying
+//            assumption that the goal is NIL (although, in reality), it never will
+//            be.  */
+//
+//            /* This initialization is necessary (for at least safety reasons, for all
+//            msc's, regardless of the mode */
+//            msc->level = NO_WME_LEVEL;
+//            msc->goal = NIL;
+//
+//            dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
+//
+//            insert_at_head_of_dll(thisAgent->nil_goal_retractions,
+//                                  msc, next_in_level, prev_in_level);
+//
+//    #ifdef BUG_139_WORKAROUND
+//            msc->p_node->b.p.prod->already_fired = 0;       /* RPM workaround for bug #139; mark prod as not fired yet */
+//    #endif
+//
+//            insert_at_head_of_dll(thisAgent->ms_retractions, msc, next, prev);
+//            insert_at_head_of_dll(p_node->b.p.tentative_retractions, msc, next_of_node, prev_of_node);
+//        }
         return DUPLICATE_PRODUCTION;
     }
 

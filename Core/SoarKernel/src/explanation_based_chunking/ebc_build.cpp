@@ -773,10 +773,18 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 m_inst->prod->last_duplicate_dc = thisAgent->d_cycle_count;
             }
         }
+        production_remove_ref(thisAgent, m_chunk_inst->prod);
+        thisAgent->symbolManager->symbol_remove_ref(&m_chunk_inst->prod_name);
+        m_chunk_inst->prod                              = duplicate_rule;
+        m_chunk_inst->prod_name                         = duplicate_rule->name;
+        thisAgent->symbolManager->symbol_add_ref(m_chunk_inst->prod_name);
+
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
-        return false;
+        m_was_duplicate = true;
+        return true;
+//        return false;
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
@@ -1071,6 +1079,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     /* Add to RETE */
+    m_was_duplicate = false;
     bool lAddedSuccessfully = add_chunk_to_rete();
 
     if (lAddedSuccessfully)
@@ -1083,14 +1092,15 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
          *             set it to to null because so that clean_up() won't delete it.) */
         m_chunk_inst = NULL;
         clean_up();
-
+if (!m_was_duplicate)
+{
         /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
          * which is what would have been created if the chunk had fired on its goal level */
         dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
         set_learning_for_instantiation(*new_inst_list);
         learn_EBC_rule(*new_inst_list, new_inst_list);
         dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
-
+}
     } else {
         /* Clean up failed chunk completely*/
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
