@@ -85,8 +85,8 @@ public:
     TEST(No_Topstate_Match, -1);
     TEST(Opaque_State_Barrier, -1);
     TEST(Operator_Selection_Knowledge, -1);
-    TEST(PRIMS_Sanity1, -1);
-    TEST(PRIMS_Sanity2, -1);
+//    TEST(PRIMS_Sanity1, -1);
+//    TEST(PRIMS_Sanity2, -1);
     TEST(Promoted_STI, -1);
     TEST(Reorderer_Bad_Conjunction, -1);
     TEST(Repair_NOR_Temporal_Constraint, -1);
