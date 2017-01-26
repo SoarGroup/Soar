@@ -1208,6 +1208,11 @@ void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, pr
 
 ************************************************************************** */
 
+void update_proposal_OSK(agent* thisAgent, slot* s, preference* winner)
+{
+
+}
+
 byte run_preference_semantics(agent* thisAgent,
                               slot* s,
                               preference** result_candidates,
@@ -1269,7 +1274,7 @@ byte run_preference_semantics(agent* thisAgent,
                     rl_perform_update(thisAgent, force_result->numeric_value,
                                       force_result->rl_contribution, s->id);
                 }
-
+                update_proposal_OSK(thisAgent, s, force_result);
                 return NONE_IMPASSE_TYPE;
             }
         }
@@ -1327,6 +1332,7 @@ byte run_preference_semantics(agent* thisAgent,
 
         if (candidates->next_candidate)
         {
+            update_proposal_OSK(thisAgent, s, NULL);
             return CONSTRAINT_FAILURE_IMPASSE_TYPE;
         }
 
@@ -1337,6 +1343,7 @@ byte run_preference_semantics(agent* thisAgent,
         for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             if (p->value == value)
             {
+                update_proposal_OSK(thisAgent, s, NULL);
                 return CONSTRAINT_FAILURE_IMPASSE_TYPE;
             }
 
@@ -1353,7 +1360,7 @@ byte run_preference_semantics(agent* thisAgent,
 //            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
 //            print_preference(thisAgent, candidates);
 //        }
-
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1435,6 +1442,7 @@ byte run_preference_semantics(agent* thisAgent,
                 clear_OSK_prefs(thisAgent, s);
             }
         }
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1544,6 +1552,7 @@ byte run_preference_semantics(agent* thisAgent,
             {
                 clear_OSK_prefs(thisAgent, s);
             }
+            update_proposal_OSK(thisAgent, s, NULL);
             return CONFLICT_IMPASSE_TYPE;
         }
 
@@ -1612,6 +1621,7 @@ byte run_preference_semantics(agent* thisAgent,
                 clear_OSK_prefs(thisAgent, s);
             }
         }
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1680,6 +1690,7 @@ byte run_preference_semantics(agent* thisAgent,
                 clear_OSK_prefs(thisAgent, s);
             }
         }
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1768,6 +1779,7 @@ byte run_preference_semantics(agent* thisAgent,
                 clear_OSK_prefs(thisAgent, s);
             }
         }
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1922,6 +1934,7 @@ byte run_preference_semantics(agent* thisAgent,
         {
             *result_candidates = candidates;
         }
+        update_proposal_OSK(thisAgent, s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1932,6 +1945,7 @@ byte run_preference_semantics(agent* thisAgent,
     {
         clear_OSK_prefs(thisAgent, s);
     }
+    update_proposal_OSK(thisAgent, s, NULL);
     return TIE_IMPASSE_TYPE;
 }
 

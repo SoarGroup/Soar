@@ -173,6 +173,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 //        get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
 //        get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
 //        get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
+
+    break_if_id_matches(inst->i_id, 41);
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "... BT through instantiation of ");
@@ -239,7 +241,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_BACKTRACE, "Checking operationality of condition of of instantiation %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
+//            dprint(DT_BACKTRACE, "Checking operationality of condition of of instantiation %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
@@ -265,6 +267,28 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
             {
                 push(thisAgent, c, negateds_to_print);
             }
+        }
+        if (c->bt.OSK_prefs)
+        {
+            backtrace_through_OSK(c->bt.OSK_prefs, grounds_level, c->inst->explain_depth);
+//                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
+//                {
+//                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
+//                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//                    {
+//                        thisAgent->outputManager->printa(thisAgent, "     Tracing through OSK preference: ");
+//                        xml_begin_tag(thisAgent, kTagOSKPreference);
+//                        print_preference(thisAgent, p);
+//                    }
+//
+//                    dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
+//                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
+//
+//                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+//                    {
+//                        xml_end_tag(thisAgent, kTagOSKPreference);
+//                    }
+//                }
         }
     }
 
@@ -374,28 +398,28 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         {
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
-            if (cond->bt.OSK_prefs)
-            {
-                backtrace_through_OSK(cond->bt.OSK_prefs, grounds_level, cond->inst->explain_depth);
-//                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
-//                {
-//                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
-//                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-//                    {
-//                        thisAgent->outputManager->printa(thisAgent, "     Tracing through OSK preference: ");
-//                        xml_begin_tag(thisAgent, kTagOSKPreference);
-//                        print_preference(thisAgent, p);
-//                    }
-//
-//                    dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
-//                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
-//
-//                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-//                    {
-//                        xml_end_tag(thisAgent, kTagOSKPreference);
-//                    }
-//                }
-            }
+//            if (cond->bt.OSK_prefs)
+//            {
+//                backtrace_through_OSK(cond->bt.OSK_prefs, grounds_level, cond->inst->explain_depth);
+////                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
+////                {
+////                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
+////                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+////                    {
+////                        thisAgent->outputManager->printa(thisAgent, "     Tracing through OSK preference: ");
+////                        xml_begin_tag(thisAgent, kTagOSKPreference);
+////                        print_preference(thisAgent, p);
+////                    }
+////
+////                    dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
+////                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
+////
+////                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+////                    {
+////                        xml_end_tag(thisAgent, kTagOSKPreference);
+////                    }
+////                }
+//            }
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {

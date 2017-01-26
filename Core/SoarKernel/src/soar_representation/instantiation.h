@@ -28,6 +28,8 @@ typedef struct instantiation_struct
     condition*                      bottom_of_instantiated_conditions;
     preference*                     preferences_generated;  /* prefs created by instantiation that are still in WM*/
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
+    cons*                           OSK_prefs;              /* list of OSK prefs to backtrace through */
+    bool                            has_proposal_prefs;
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool                            tested_quiescence;

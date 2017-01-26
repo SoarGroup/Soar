@@ -828,12 +828,12 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 
     dprint(DT_REINSTANTIATE, "m_lhs after reinstantiation: \n%1", m_lhs);
 
+    dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
     if (m_rule_type == ebc_justification)
     {
-        dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
         reinstantiate_actions(m_rhs);
-        dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
     }
+    dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
 
     return returnConds;
 }
