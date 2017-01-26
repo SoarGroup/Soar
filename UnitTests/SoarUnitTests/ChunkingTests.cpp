@@ -13,8 +13,8 @@
 #include "SoarHelper.hpp"
 
 //#define SAVE_LOG_FILES
-#define TURN_EXPLAINER_ON
-#define INIT_AFTER_RUN
+//#define TURN_EXPLAINER_ON
+//#define INIT_AFTER_RUN
 
 /* Note that some test don't get as many successful learned chunks as expected because Soar is not
  * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */

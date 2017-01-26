@@ -60,8 +60,8 @@ public:
     TEST(Duplicates, -1);
     TEST(Faux_Operator, -1);
     TEST(Faux_Smem_Operator_RHS, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
-    TEST(GamesAgent_Sanity1, -1);
+//    TEST(Games_Nccx2_Long_Lived, -1);
+//    TEST(GamesAgent_Sanity1, -1);
     TEST(Justification_RC_not_Ungrounded_STIs, -1);
     TEST(Justifications_Get_New_Identities, -1);
     TEST(Link_STM_to_LTM, -1);          // Decreased expected to 0.  At least make sure it runs.
