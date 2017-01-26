@@ -408,7 +408,7 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
                 {//this is where we extract the old edge weights from the database store.
                     first_time = false;
                     children_q->bind_int(1, lti_id);
-                    children_q->bind_int(2, lti_id);
+                    //children_q->bind_int(2, lti_id);
                     while (children_q->execute() == soar_module::row)
                     {
                         if (settings->spreading_loop_avoidance->get_value() == on && children_q->column_int(0) == lti_id)
@@ -487,14 +487,14 @@ void SMem_Manager::child_spread(uint64_t lti_id, std::map<uint64_t, std::list<st
             smem_edges_to_update->erase(lti_id);
         }
         children_q->bind_int(1, lti_id);
-        children_q->bind_int(2, lti_id);
+        //children_q->bind_int(2, lti_id);
         lti_trajectories[lti_id] = new std::list<std::pair<uint64_t, double>>;
         while (children_q->execute() == soar_module::row)
         {
-            if (children_q->column_int(0) == lti_id)
+            /*if (children_q->column_int(0) == lti_id)
             {
                 continue;
-            }
+            }*/
             (lti_trajectories[lti_id])->push_back(std::make_pair((uint64_t)(children_q->column_int(0)),children_q->column_double(1)));
             children.push_back(children_q->column_int(0));
         }
@@ -627,7 +627,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             //If we still have room for more, we add the new path to the p-queue for additional traversal.
             if (new_list->size() < depth_limit + 1 && count < limit && initial_activation > baseline_prob)
             {//if we aren't at the depth limit, the total traversal size limit, and the activation is big enough
-                lti_traversal_queue.push(std::make_pair(initial_activation,new_list));
+                lti_traversal_queue.push(std::make_pair(initial_activation*lti_iterator->second,new_list));
             }
             else
             {
