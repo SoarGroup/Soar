@@ -77,6 +77,24 @@ void init_instantiation_pool(agent* thisAgent)
 
  --------------------------------------------------------------------------*/
 
+void copy_proposal_OSK(agent* thisAgent, instantiation* inst, cons* newOSK)
+{
+    condition* cond;
+    preference* pref, *new_pref;
+    cons* l_OSK_prefs;
+
+    assert (!inst->OSK_proposal_prefs);
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
+    {
+        for (l_OSK_prefs = newOSK; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
+        {
+            pref = static_cast<preference*>(l_OSK_prefs->first);
+            push(thisAgent, pref, inst->OSK_prefs);
+            preference_add_ref(pref);
+        }
+    }
+}
+
 void copy_OSK(agent* thisAgent, instantiation* inst)
 {
     condition* cond;
@@ -95,25 +113,8 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
                     for (l_OSK_prefs = cond->bt.trace->slot->OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
                     {
                         pref = static_cast<preference*>(l_OSK_prefs->first);
-                        if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm)
-                        {
-                            push(thisAgent, pref, inst->OSK_prefs);
-                            preference_add_ref(pref);
-                        }
-                        else
-                        {
-                            /* Can this happen?  Seems like all prefs in OSK should already be at the right level and in TM */
-                            assert(false);
-                            new_pref = find_clone_for_level(pref, inst->match_goal_level);
-                            if (new_pref)
-                            {
-                                if (new_pref->in_tm)
-                                {
-                                    push(thisAgent, new_pref, inst->OSK_prefs);
-                                    preference_add_ref(new_pref);
-                                }
-                            }
-                        }
+                        push(thisAgent, pref, inst->OSK_prefs);
+                        preference_add_ref(pref);
                     }
                 }
             }
@@ -123,24 +124,8 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
                 while (pref)
                 {
                     new_pref = NIL;
-                    if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm)
-                    {
-                        push(thisAgent, pref, inst->OSK_prefs);
-                        preference_add_ref(pref);
-                    }
-                    else
-                    {
-                        assert(false);
-                        new_pref = find_clone_for_level(pref, inst->match_goal_level);
-                        if (new_pref)
-                        {
-                            if (new_pref->in_tm)
-                            {
-                                push(thisAgent, new_pref, inst->OSK_prefs);
-                                preference_add_ref(new_pref);
-                            }
-                        }
-                    }
+                    push(thisAgent, pref, inst->OSK_prefs);
+                    preference_add_ref(pref);
                     pref = pref->next;
                 }
             }
@@ -1425,6 +1410,11 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         /* Clean up operator selection knowledge */
         preference_list_clear(thisAgent, inst->OSK_prefs);
         preference_list_clear(thisAgent, inst->OSK_proposal_prefs);
+        if (inst->OSK_proposal_slot)
+        {
+            assert(inst->OSK_proposal_slot->instantiation_with_temp_OSK = inst);
+            inst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
+        }
 
         preference* next_pref;
         while (inst->preferences_cached)

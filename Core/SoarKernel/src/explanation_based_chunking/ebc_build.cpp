@@ -700,14 +700,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
         if (pref->slot && pref->slot->OSK_prefs)
         {
-            dprint(DT_DEBUG, "Backtracing through OSK of result pref %p", pref);
             backtrace_through_OSK(pref->slot->OSK_prefs, grounds_level, 0);
-            dprint(DT_DEBUG, "Done backtracing through OSK of result pref %p", pref);
-        } else {
-            if (pref->slot)
-                dprint(DT_DEBUG, "Did not backtrace through OSK of result pref %p because no slot", pref);
-            else
-                dprint(DT_DEBUG, "Did not backtrace through OSK of result pref %p because no OSK in slot", pref);
         }
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {

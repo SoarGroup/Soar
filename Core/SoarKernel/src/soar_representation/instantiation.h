@@ -30,6 +30,7 @@ typedef struct instantiation_struct
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
     cons*                           OSK_prefs;              /* list of OSK prefs to backtrace through */
     cons*                           OSK_proposal_prefs;     /* OSK prefs that temporarily exist for a proposal while operator is selected */
+    slot*                           OSK_proposal_slot;
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
     bool                            tested_quiescence;
@@ -58,6 +59,7 @@ void                deallocate_instantiation(agent* thisAgent, instantiation*& i
 goal_stack_level    get_match_goal(condition* top_cond);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
 void                copy_OSK(agent* thisAgent, instantiation* inst);
+void                copy_proposal_OSK(agent* thisAgent, instantiation* inst, cons* newOSK);
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
