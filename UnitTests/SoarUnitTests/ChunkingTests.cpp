@@ -16,6 +16,9 @@
 #define TURN_EXPLAINER_ON
 #define INIT_AFTER_RUN
 
+/* Note that some test don't get as many successful learned chunks as expected because Soar is not
+ * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */
+
 void ChunkingTests::All_Test_Types()                                  { check_chunk("All_Test_Types", 4, 1); }
 void ChunkingTests::BUNCPS_0()                                        { check_chunk("BUNCPS_0", 8, 1); }
 void ChunkingTests::BUNCPS_1()                                        { check_chunk("BUNCPS_1", 8, 1); }
@@ -70,7 +73,7 @@ void ChunkingTests::NCC_Simple_Literals()                             { check_ch
 void ChunkingTests::NCC_with_Relational_Constraint()                  { check_chunk("NCC_with_Relational_Constraint", 8, 1); }
 void ChunkingTests::No_Topstate_Match()                               { check_chunk("No_Topstate_Match", 8, 1); }
 void ChunkingTests::Opaque_State_Barrier()                            { check_chunk("Opaque_State_Barrier", 8, 1); }
-void ChunkingTests::Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge", 75, 13); }        // Should be 18
+void ChunkingTests::Operator_Selection_Knowledge()                    { check_chunk("Operator_Selection_Knowledge", 75, 14); }        // Should be 18
 void ChunkingTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 0); }                       // Was 24 before concat rhs variablization change
 void ChunkingTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 0); }                       // Was 22 before concat rhs variablization change
 void ChunkingTests::Promoted_STI()                                    { check_chunk("Promoted_STI", 8, 1); }

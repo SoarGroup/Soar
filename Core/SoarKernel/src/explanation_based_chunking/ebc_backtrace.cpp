@@ -268,9 +268,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
                 push(thisAgent, c, negateds_to_print);
             }
         }
-        if (c->bt.OSK_prefs)
+        if (c->inst->OSK_prefs)
         {
-            backtrace_through_OSK(c->bt.OSK_prefs, grounds_level, c->inst->explain_depth);
+            backtrace_through_OSK(c->inst->OSK_prefs, grounds_level, c->inst->explain_depth);
 //                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
 //                {
 //                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
