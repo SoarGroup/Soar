@@ -60,11 +60,11 @@ public:
     TEST(Duplicates, -1);
     TEST(Faux_Operator, -1);
     TEST(Faux_Smem_Operator_RHS, -1);
-//    TEST(Games_Nccx2_Long_Lived, -1);
-//    TEST(GamesAgent_Sanity1, -1);
+    TEST(Games_Nccx2_Long_Lived, -1);
+    TEST(GamesAgent_Sanity1, -1);
     TEST(Justification_RC_not_Ungrounded_STIs, -1);
     TEST(Justifications_Get_New_Identities, -1);
-    TEST(Link_STM_to_LTM, -1);          // Decreased expected to 0.  At least make sure it runs.
+    TEST(Link_STM_to_LTM, -1);
     TEST(Literalization_of_NC_and_NCC, -1);
     TEST(Literalization_with_BT_Constraints, -1);
     TEST(Literalization_with_BT_Constraints2, -1);
@@ -85,8 +85,8 @@ public:
     TEST(No_Topstate_Match, -1);
     TEST(Opaque_State_Barrier, -1);
     TEST(Operator_Selection_Knowledge, -1);
-//    TEST(PRIMS_Sanity1, -1);
-//    TEST(PRIMS_Sanity2, -1);
+    TEST(PRIMS_Sanity1, -1);
+    TEST(PRIMS_Sanity2, -1);
     TEST(Promoted_STI, -1);
     TEST(Reorderer_Bad_Conjunction, -1);
     TEST(Repair_NOR_Temporal_Constraint, -1);

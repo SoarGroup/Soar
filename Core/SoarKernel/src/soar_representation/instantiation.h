@@ -24,26 +24,34 @@ typedef struct instantiation_struct
     struct instantiation_struct*    next, *prev;            /* dll of inst's from same prod */
     struct token_struct*            rete_token;             /* used by Rete for retractions */
     wme*                            rete_wme;               /* ditto */
+
     condition*                      top_of_instantiated_conditions;
     condition*                      bottom_of_instantiated_conditions;
+
     preference*                     preferences_generated;  /* prefs created by instantiation that are still in WM*/
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
+
     cons*                           OSK_prefs;              /* list of OSK prefs to backtrace through */
     cons*                           OSK_proposal_prefs;     /* OSK prefs that temporarily exist for a proposal while operator is selected */
     slot*                           OSK_proposal_slot;
+
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+
     bool                            tested_quiescence;
     bool                            tested_local_negation;
     bool                            tested_LTM;
     bool                            creates_deep_copy;
+
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
     bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
+
     tc_number                       backtrace_number;
     bool                            GDS_evaluated_already;
     uint64_t                        i_id;                   /* id number used by EBC */
     Symbol*                         prod_name;
+
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;

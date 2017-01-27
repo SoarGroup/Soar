@@ -1058,6 +1058,7 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->preferences_cached = NULL;
     inst->OSK_prefs = NULL;
     inst->OSK_proposal_prefs = NULL;
+    inst->OSK_proposal_slot = NULL;
 
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
