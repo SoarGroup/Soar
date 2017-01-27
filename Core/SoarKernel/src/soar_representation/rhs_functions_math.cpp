@@ -399,7 +399,6 @@ Symbol* size_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/
             count++;
         }
     }
-    thisAgent->symbolManager->symbol_remove_ref(&arg1);
     return thisAgent->symbolManager->make_int_constant(count);
 }
 Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
@@ -424,7 +423,6 @@ Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
             sum+= static_cast<int>(w->value->ic->value);
         }
     }
-    thisAgent->symbolManager->symbol_remove_ref(&arg1);
 	return thisAgent->symbolManager->make_int_constant(sum);
 }
 

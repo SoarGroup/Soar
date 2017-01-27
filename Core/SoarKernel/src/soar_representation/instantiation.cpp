@@ -356,7 +356,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
-    dprint(DT_DEBUG, "Call RHS function %y\n", rf->name);
+
     /* build up a list of the argument values */
     prev_c = NIL;
     nil_arg_found = false;
@@ -1503,12 +1503,6 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     retracted_a_preference = false;
 
     trace_it = trace_firings_of_inst(thisAgent, inst);
-    if (trace_it)
-    {
-        thisAgent->outputManager->start_fresh_line(thisAgent);
-        thisAgent->outputManager->printa(thisAgent,  "Retracting ");
-        print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
-    }
 
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
