@@ -698,7 +698,10 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-
+        if (pref->slot && pref->slot->OSK_prefs)
+        {
+            backtrace_through_OSK(pref->slot->OSK_prefs, grounds_level, 0);
+        }
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagBacktraceResult);

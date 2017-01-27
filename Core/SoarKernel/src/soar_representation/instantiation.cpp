@@ -77,44 +77,44 @@ void init_instantiation_pool(agent* thisAgent)
 
  --------------------------------------------------------------------------*/
 
+void copy_proposal_OSK(agent* thisAgent, instantiation* inst, cons* newOSK)
+{
+    condition* cond;
+    preference* pref, *new_pref;
+    cons* l_OSK_prefs;
+
+    assert (!inst->OSK_proposal_prefs);
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
+    {
+        for (l_OSK_prefs = newOSK; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
+        {
+            pref = static_cast<preference*>(l_OSK_prefs->first);
+            push(thisAgent, pref, inst->OSK_prefs);
+            preference_add_ref(pref);
+        }
+    }
+}
+
 void copy_OSK(agent* thisAgent, instantiation* inst)
 {
     condition* cond;
     preference* pref, *new_pref;
     cons* l_OSK_prefs;
 
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL;
-            cond = cond->next)
+    inst->OSK_prefs = NIL;
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        cond->bt.OSK_prefs = NIL;
         if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
         {
             if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
             {
-                if (cond->bt.trace->slot->OSK_prefs)
+                if (cond->bt.trace->slot->OSK_prefs && (cond->data.tests.id_test->eq_test->data.referent->id->level == inst->match_goal_level) && !cond->test_for_acceptable_preference)
                 {
                     for (l_OSK_prefs = cond->bt.trace->slot->OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
                     {
-                        new_pref = NIL;
                         pref = static_cast<preference*>(l_OSK_prefs->first);
-                        if (pref->inst->match_goal_level == inst->match_goal_level
-                                && pref->in_tm)
-                        {
-                            push(thisAgent, pref, cond->bt.OSK_prefs);
-                            preference_add_ref(pref);
-                        }
-                        else
-                        {
-                            new_pref = find_clone_for_level(pref, inst->match_goal_level);
-                            if (new_pref)
-                            {
-                                if (new_pref->in_tm)
-                                {
-                                    push(thisAgent, new_pref, cond->bt.OSK_prefs);
-                                    preference_add_ref(new_pref);
-                                }
-                            }
-                        }
+                        push(thisAgent, pref, inst->OSK_prefs);
+                        preference_add_ref(pref);
                     }
                 }
             }
@@ -124,23 +124,8 @@ void copy_OSK(agent* thisAgent, instantiation* inst)
                 while (pref)
                 {
                     new_pref = NIL;
-                    if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm)
-                    {
-                        push(thisAgent, pref, cond->bt.OSK_prefs);
-                        preference_add_ref(pref);
-                    }
-                    else
-                    {
-                        new_pref = find_clone_for_level(pref, inst->match_goal_level);
-                        if (new_pref)
-                        {
-                            if (new_pref->in_tm)
-                            {
-                                push(thisAgent, new_pref, cond->bt.OSK_prefs);
-                                preference_add_ref(new_pref);
-                            }
-                        }
-                    }
+                    push(thisAgent, pref, inst->OSK_prefs);
+                    preference_add_ref(pref);
                     pref = pref->next;
                 }
             }
@@ -950,7 +935,6 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
         }
     }
 
-    cond->bt.OSK_prefs = NULL;
     prev_cond = cond;
 }
 
@@ -1072,6 +1056,9 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->bottom_of_instantiated_conditions = NULL;
     inst->preferences_generated = NULL;
     inst->preferences_cached = NULL;
+    inst->OSK_prefs = NULL;
+    inst->OSK_proposal_prefs = NULL;
+    inst->OSK_proposal_slot = NULL;
 
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
@@ -1319,28 +1306,10 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         level = inst->match_goal_level;
 
-        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond =
-                    cond->next)
+        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
             if (cond->type == POSITIVE_CONDITION)
             {
-
-                if (cond->bt.OSK_prefs)
-                {
-                    c_old = c = cond->bt.OSK_prefs;
-                    cond->bt.OSK_prefs = NIL;
-                    for (; c != NIL; c = c->rest)
-                    {
-                        pref = static_cast<preference*>(c->first);
-#ifdef DO_TOP_LEVEL_REF_CTS
-                        if (level > TOP_GOAL_LEVEL)
-#endif
-                        {
-                            preference_remove_ref(thisAgent, pref);
-                        }
-                    }
-                    free_list(thisAgent, c_old);
-                }
 
                 /*  voigtjr, nlderbin:
                  We flattened out the following recursive loop in order to prevent a stack
@@ -1355,12 +1324,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                  deallocate_preference
                  possibly_deallocate_instantiation
                  goto loop start
-                 */
+
+                 Note:  If one of those functions that are flattened out here change, this code may
+                        need updating. - Maz */
 #ifndef DO_TOP_LEVEL_REF_CTS
                 if (level > TOP_GOAL_LEVEL)
 #endif
                 {
                     wme_remove_ref(thisAgent, cond->bt.wme_);
+
                     if (cond->bt.trace)
                     {
                         cond->bt.trace->reference_count--;
@@ -1435,6 +1407,16 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 /* voigtjr, nlderbin end */
             } // if
         } // for
+
+        /* Clean up operator selection knowledge */
+        preference_list_clear(thisAgent, inst->OSK_prefs);
+        preference_list_clear(thisAgent, inst->OSK_proposal_prefs);
+        if (inst->OSK_proposal_slot)
+        {
+            assert(inst->OSK_proposal_slot->instantiation_with_temp_OSK = inst);
+            inst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
+        }
+
         preference* next_pref;
         while (inst->preferences_cached)
         {

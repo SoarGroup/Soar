@@ -16,6 +16,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "mem.h"
+#include "instantiation.h"
 #include "preference.h"
 #include "symbol.h"
 #include "symbol_manager.h"
@@ -100,6 +101,7 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     s->wmes = NIL;
     s->all_preferences = NIL;
     s->OSK_prefs = NIL;
+    s->instantiation_with_temp_OSK = NULL;
 
     /* JC: This is the same as all_preferences
      *  except they are indexed by type.
@@ -219,11 +221,16 @@ void remove_garbage_slots(agent* thisAgent)
 
         /* --- deallocate the slot --- */
         dprint(DT_DEALLOCATE_SLOT, "Deallocating slot %y ^%y.\n", s->id, s->attr);
-        /* MMA 9-2012 */
-        if (s->OSK_prefs && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
+        if (s->OSK_prefs)
         {
             clear_OSK_prefs(thisAgent, s);
         }
+        if (s->instantiation_with_temp_OSK)
+        {
+            preference_list_clear(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
+            s->instantiation_with_temp_OSK->OSK_proposal_slot = NULL;
+        }
+
         /* MMA 9-2012 end */
 
         if (s->changed && (!s->isa_context_slot))

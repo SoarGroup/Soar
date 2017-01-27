@@ -34,15 +34,16 @@
 
 typedef struct slot_struct
 {
-    struct slot_struct* next, *prev;  /* dll of slots for this id */
-    Symbol* id;                       /* id, attr of the slot */
+    struct slot_struct* next, *prev;                /* dll of slots for this id */
+    Symbol* id;                                     /* id, attr of the slot */
     Symbol* attr;
-    wme* wmes;                        /* dll of wmes in the slot */
-    wme* acceptable_preference_wmes;  /* dll of acceptable pref. wmes */
-    preference* all_preferences;      /* dll of all pref's in the slot */
-    preference* preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
-    cons* OSK_prefs;                  /* list of OSK prefs to backtrace through */
-    Symbol* impasse_id;               /* NIL if slot is not impassed */
+    wme* wmes;                                      /* dll of wmes in the slot */
+    wme* acceptable_preference_wmes;                /* dll of acceptable pref. wmes */
+    preference* all_preferences;                    /* dll of all pref's in the slot */
+    preference* preferences[NUM_PREFERENCE_TYPES];  /* dlls for each type */
+    cons* OSK_prefs;                                /* list of OSK prefs to backtrace through */
+    instantiation* instantiation_with_temp_OSK;     /* last operator proposal instantiation that had an OSK */
+    Symbol* impasse_id;                             /* NIL if slot is not impassed */
     bool isa_context_slot;
     byte impasse_type;
     bool marked_for_possible_removal;

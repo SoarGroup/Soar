@@ -91,6 +91,7 @@ enum TraceMode
     DT_DEEP_COPY                = 55,
     DT_RHS_LTI_LINKING          = 56,
     DT_VALIDATE                 = 57,
+    DT_OSK                      = 58,
     num_trace_modes
 };
 

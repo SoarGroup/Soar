@@ -237,6 +237,7 @@ class Explanation_Based_Chunker
                 const rhs_quadruple rhs_funcs,
                 uint64_t bt_depth,
                 BTSourceType bt_type);
+        void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */

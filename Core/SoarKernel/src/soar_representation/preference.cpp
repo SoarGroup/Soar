@@ -287,6 +287,11 @@ void deallocate_preference(agent* thisAgent, preference* pref)
    preference and all its clones have reference_count 0, and deallocates
    them all if they do.  It returns true if they were actually
    deallocated, false otherwise.
+
+   Note:  If this code changes, similar changes may need to be made in
+          deallocate_instantiation, which had to use a flattened out
+          version of this code to avoid a stack overflow in certain
+          cases.
 -------------------------------------------------------------------*/
 
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref)
@@ -634,5 +639,28 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
         }
         preference_remove_ref(thisAgent, pref);
         pref = next_pref;
+    }
+}
+
+void preference_list_clear(agent* thisAgent, cons* lPrefList)
+{
+    cons *c, *c_old;
+    preference* lPref;
+
+    if (lPrefList)
+    {
+        c_old = c = lPrefList;
+        lPref = NIL;
+        for (; c != NIL; c = c->rest)
+        {
+            lPref = static_cast<preference*>(c->first);
+            #ifdef DO_TOP_LEVEL_REF_CTS
+            if (level > TOP_GOAL_LEVEL)
+            #endif
+            {
+                preference_remove_ref(thisAgent, lPref);
+            }
+        }
+        free_list(thisAgent, c_old);
     }
 }
