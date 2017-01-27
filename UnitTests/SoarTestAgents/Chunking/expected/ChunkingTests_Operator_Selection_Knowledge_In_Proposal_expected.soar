@@ -1,0 +1,28 @@
+sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t6-2
+        (state <s1> ^top-state <s2> ^operator <o1>)
+   -{ (<s1> ^operator <o*1>)
+      (<o*1> ^name evaluate-operator)}
+    (<s2> ^dumb-test1 IWASTESTED1 ^dumb-test2 IWASTESTED2 ^gripper <g1>
+          ^io <i2> ^clear { <> <t2> <b1> })
+    (<g1> ^position up ^holding nothing ^above <t2>)
+    (<i2> ^output-link <i1>)
+    (<i1> ^gripper <g2>)
+    (<b1> ^type block)
+    (<o1> ^moving-block <b1> ^name move-block ^destination <t1>)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <b1> +)
+}
+
+sp {answer*apply*move-gripper-above*pass*top-state*OpNoChange*t6-1
+        (state <s1> ^top-state <s2> ^operator <o1>)
+   -{ (<s1> ^operator <o*1>)
+      (<o*1> ^name evaluate-operator)}
+    (<s2> ^dumb-test1 IWASTESTED1 ^gripper <g1> ^io <i2>
+          ^clear { <> <t1> <b1> })
+    (<g1> ^position up ^above <t1>)
+    (<i2> ^output-link <i1>)
+    (<i1> ^gripper <g2>)
+    (<o1> ^moving-block <b1> ^name pick-up)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <b1> +)
+}

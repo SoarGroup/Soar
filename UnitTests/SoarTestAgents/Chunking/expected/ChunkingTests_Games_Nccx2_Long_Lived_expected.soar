@@ -6,79 +6,81 @@ sp {answer*chunk-predicate-impasse*apply*complete*action*StateNoChange*t2082-1
            ^primary-rtype single + ^nlp-set <l12> + ^verb-structure <l68> +
            ^aname action-default11 + ^handle action-default11 +)
     (<p3> ^argnum 4 +)
-    (<l12> ^conditions <l7> + ^conditions <l13> + ^conditions <l40> +
+    (<l12> ^conditions <l3> + ^conditions <l13> + ^conditions <l40> +
            ^aname action-default11 +)
-    (<l7> ^args <l1> + ^rtype single + ^negative false + ^parameter <l8> +
-           ^result <l10> + ^attribute name + ^name garbage + ^type attribute +)
+    (<l3> ^parameter <l1> + ^attribute name + ^result <l4> + ^rtype single +
+           ^args <l6> + ^negative false + ^name garbage + ^type attribute +)
     (<l1> ^num 1 + ^1 <l2> +)
-    (<l2> ^args <l3> + ^rtype single + ^negative false + ^parameter <l4> +
-           ^result <l5> + ^attribute primitive + ^name object +
+    (<l2> ^param-id 1 + ^type single +)
+    (<l4> ^set <l5> +)
+    (<l6> ^num 1 + ^1 <l8> +)
+    (<l8> ^parameter <l7> + ^attribute primitive + ^result <l9> +
+           ^rtype single + ^args <l11> + ^negative false + ^name object +
            ^type attribute +)
-    (<l4> ^num 0 +)
-    (<l5> ^set <l6> +)
-    (<l8> ^num 1 + ^1 <l9> +)
-    (<l9> ^param-id 1 + ^type single +)
-    (<l10> ^set <l11> +)
-    (<l13> ^return-type number + ^args <l14> + ^rtype single +
-           ^negative false + ^parameter <l35> + ^result <l38> + ^name color +
+    (<l7> ^num 0 +)
+    (<l9> ^set <l10> +)
+    (<l13> ^return-type number + ^parameter <l14> + ^result <l17> +
+           ^rtype single + ^args <l19> + ^negative false + ^name color +
            ^type attribute-of +)
-    (<l14> ^num 1 + ^2 <l31> +)
-    (<l31> ^args <l15> + ^rtype single + ^negative false + ^parameter <l32> +
-           ^result <l33> + ^attribute predicate + ^name clear +
+    (<l14> ^num 2 + ^2 <l15> + ^1 <l16> +)
+    (<l15> ^param-id 2 + ^type single +)
+    (<l16> ^param-id 4 + ^type single +)
+    (<l17> ^set <l18> +)
+    (<l19> ^num 1 + ^2 <l21> +)
+    (<l21> ^parameter <l20> + ^attribute predicate + ^result <l22> +
+           ^rtype single + ^args <l24> + ^negative false + ^name free +
            ^type concept +)
-    (<l15> ^num 1 + ^1 <l27> +)
-    (<l27> ^args <l16> + ^rtype single + ^negative false + ^parameter <l28> +
-           ^result <l29> + ^attribute predicate + ^name free + ^type concept +)
-    (<l16> ^num 1 + ^1 <l23> +)
-    (<l23> ^args <l17> + ^rtype single + ^negative false + ^parameter <l24> +
-           ^result <l25> + ^attribute category + ^name block +
-           ^type attribute +)
-    (<l17> ^num 1 + ^1 <l18> +)
-    (<l18> ^args <l19> + ^rtype single + ^negative false + ^parameter <l20> +
-           ^result <l21> + ^attribute primitive + ^name object +
-           ^type attribute +)
     (<l20> ^num 0 +)
-    (<l21> ^set <l22> +)
-    (<l24> ^num 0 +)
-    (<l25> ^set <l26> +)
-    (<l28> ^num 0 +)
-    (<l29> ^set <l30> +)
-    (<l32> ^num 0 +)
-    (<l33> ^set <l34> +)
-    (<l35> ^num 2 + ^2 <l36> + ^1 <l37> +)
-    (<l36> ^param-id 2 + ^type single +)
-    (<l37> ^param-id 4 + ^type single +)
-    (<l38> ^set <l39> +)
-    (<l40> ^return-type number + ^args <l41> + ^rtype single +
-           ^negative false + ^parameter <l62> + ^result <l65> + ^name color +
-           ^type attribute-of +)
-    (<l41> ^num 1 + ^2 <l58> +)
-    (<l58> ^args <l42> + ^rtype single + ^negative false + ^parameter <l59> +
-           ^result <l60> + ^attribute predicate + ^name clear +
+    (<l22> ^set <l23> +)
+    (<l24> ^num 1 + ^1 <l26> +)
+    (<l26> ^parameter <l25> + ^attribute predicate + ^result <l27> +
+           ^rtype single + ^args <l29> + ^negative false + ^name clear +
            ^type concept +)
-    (<l42> ^num 1 + ^1 <l54> +)
-    (<l54> ^args <l43> + ^rtype single + ^negative false + ^parameter <l55> +
-           ^result <l56> + ^attribute predicate + ^name free + ^type concept +)
-    (<l43> ^num 1 + ^1 <l50> +)
-    (<l50> ^args <l44> + ^rtype single + ^negative false + ^parameter <l51> +
-           ^result <l52> + ^attribute category + ^name block +
+    (<l25> ^num 0 +)
+    (<l27> ^set <l28> +)
+    (<l29> ^num 1 + ^1 <l31> +)
+    (<l31> ^parameter <l30> + ^attribute category + ^result <l32> +
+           ^rtype single + ^args <l34> + ^negative false + ^name block +
            ^type attribute +)
-    (<l44> ^num 1 + ^1 <l45> +)
-    (<l45> ^args <l46> + ^rtype single + ^negative false + ^parameter <l47> +
-           ^result <l48> + ^attribute primitive + ^name object +
+    (<l30> ^num 0 +)
+    (<l32> ^set <l33> +)
+    (<l34> ^num 1 + ^1 <l36> +)
+    (<l36> ^parameter <l35> + ^attribute primitive + ^result <l37> +
+           ^rtype single + ^args <l39> + ^negative false + ^name object +
            ^type attribute +)
+    (<l35> ^num 0 +)
+    (<l37> ^set <l38> +)
+    (<l40> ^return-type number + ^parameter <l41> + ^result <l44> +
+           ^rtype single + ^args <l46> + ^negative false + ^name color +
+           ^type attribute-of +)
+    (<l41> ^num 2 + ^2 <l42> + ^1 <l43> +)
+    (<l42> ^param-id 3 + ^type single +)
+    (<l43> ^param-id 4 + ^type single +)
+    (<l44> ^set <l45> +)
+    (<l46> ^num 1 + ^2 <l48> +)
+    (<l48> ^parameter <l47> + ^attribute predicate + ^result <l49> +
+           ^rtype single + ^args <l51> + ^negative false + ^name free +
+           ^type concept +)
     (<l47> ^num 0 +)
-    (<l48> ^set <l49> +)
-    (<l51> ^num 0 +)
-    (<l52> ^set <l53> +)
-    (<l55> ^num 0 +)
-    (<l56> ^set <l57> +)
-    (<l59> ^num 0 +)
-    (<l60> ^set <l61> +)
-    (<l62> ^num 2 + ^2 <l63> + ^1 <l64> +)
-    (<l63> ^param-id 3 + ^type single +)
-    (<l64> ^param-id 4 + ^type single +)
-    (<l65> ^set <l66> +)
+    (<l49> ^set <l50> +)
+    (<l51> ^num 1 + ^1 <l53> +)
+    (<l53> ^parameter <l52> + ^attribute predicate + ^result <l54> +
+           ^rtype single + ^args <l56> + ^negative false + ^name clear +
+           ^type concept +)
+    (<l52> ^num 0 +)
+    (<l54> ^set <l55> +)
+    (<l56> ^num 1 + ^1 <l58> +)
+    (<l58> ^parameter <l57> + ^attribute category + ^result <l59> +
+           ^rtype single + ^args <l61> + ^negative false + ^name block +
+           ^type attribute +)
+    (<l57> ^num 0 +)
+    (<l59> ^set <l60> +)
+    (<l61> ^num 1 + ^1 <l63> +)
+    (<l63> ^parameter <l62> + ^attribute primitive + ^result <l64> +
+           ^rtype single + ^args <l66> + ^negative false + ^name object +
+           ^type attribute +)
+    (<l62> ^num 0 +)
+    (<l64> ^set <l65> +)
     (<l68> ^2 <l67> + ^1 <l69> +)
     (<l67> ^verb-name move1 + ^verb-prep on1 + ^2 1 + ^1 3 +)
     (<l69> ^verb-name move1 + ^verb-prep on1 + ^2 1 + ^1 2 +)
@@ -116,30 +118,30 @@ sp {answer*chunk-predicate-impasse*apply*complete*StateNoChange*t2059-1
            ^formated predicate + ^primary-rtype single + ^nlp-set <l23> +
            ^aname free + ^handle free +)
     (<p3> ^argnum 1 +)
-    (<l23> ^conditions <l18> + ^aname free +)
-    (<l18> ^args <l1> + ^rtype single + ^negative true + ^parameter <l19> +
-           ^result <l21> + ^attribute prepositions + ^name on1 +
+    (<l23> ^conditions <l3> + ^aname free +)
+    (<l3> ^parameter <l1> + ^attribute prepositions + ^result <l4> +
+           ^rtype single + ^args <l6> + ^negative true + ^name on1 +
            ^type state-pair +)
-    (<l1> ^num 2 + ^2 <l8> + ^1 <l12> +)
-    (<l8> ^args <l2> + ^rtype single + ^negative false + ^parameter <l9> +
-           ^result <l10> + ^attribute category + ^name location +
+    (<l1> ^num 1 + ^1 <l2> +)
+    (<l2> ^param-id 1 + ^type single +)
+    (<l4> ^set <l5> +)
+    (<l6> ^num 2 + ^2 <l8> + ^1 <l19> +)
+    (<l8> ^parameter <l7> + ^attribute category + ^result <l9> +
+           ^rtype single + ^args <l11> + ^negative false + ^name location +
            ^type attribute +)
-    (<l2> ^num 1 + ^1 <l3> +)
-    (<l3> ^args <l4> + ^rtype single + ^negative false + ^parameter <l5> +
-           ^result <l6> + ^attribute primitive + ^name object +
+    (<l7> ^num 0 +)
+    (<l9> ^set <l10> +)
+    (<l11> ^num 1 + ^1 <l13> +)
+    (<l13> ^parameter <l12> + ^attribute primitive + ^result <l14> +
+           ^rtype single + ^args <l16> + ^negative false + ^name object +
            ^type attribute +)
-    (<l5> ^num 0 +)
-    (<l6> ^set <l7> +)
-    (<l9> ^num 0 +)
-    (<l10> ^set <l11> +)
-    (<l12> ^args <l13> + ^rtype single + ^negative false + ^parameter <l14> +
-           ^result <l16> + ^attribute input-arg + ^name object +)
-    (<l14> ^num 1 + ^1 <l15> +)
-    (<l15> ^param-id 1 + ^type single +)
-    (<l16> ^set <l17> +)
-    (<l19> ^num 1 + ^1 <l20> +)
-    (<l20> ^param-id 1 + ^type single +)
-    (<l21> ^set <l22> +)
+    (<l12> ^num 0 +)
+    (<l14> ^set <l15> +)
+    (<l19> ^parameter <l17> + ^attribute input-arg + ^result <l20> +
+           ^rtype single + ^args <l22> + ^negative false + ^name object +)
+    (<l17> ^num 1 + ^1 <l18> +)
+    (<l18> ^param-id 1 + ^type single +)
+    (<l20> ^set <l21> +)
 }
 
 sp {answer*chunk-predicate-impasse*apply*complete*StateNoChange*t2049-1
@@ -152,24 +154,24 @@ sp {answer*chunk-predicate-impasse*apply*complete*StateNoChange*t2049-1
            ^formated predicate + ^primary-rtype single + ^nlp-set <l18> +
            ^aname clear + ^handle clear +)
     (<p3> ^argnum 1 +)
-    (<l18> ^conditions <l13> + ^aname clear +)
-    (<l13> ^args <l1> + ^rtype single + ^negative true + ^parameter <l14> +
-           ^result <l16> + ^attribute prepositions + ^name below1 +
+    (<l18> ^conditions <l3> + ^aname clear +)
+    (<l3> ^parameter <l1> + ^attribute prepositions + ^result <l4> +
+           ^rtype single + ^args <l6> + ^negative true + ^name below1 +
            ^type state-pair +)
-    (<l1> ^num 2 + ^2 <l2> + ^1 <l7> +)
-    (<l2> ^args <l3> + ^rtype single + ^negative false + ^parameter <l4> +
-           ^result <l5> + ^attribute primitive + ^name object +
+    (<l1> ^num 1 + ^1 <l2> +)
+    (<l2> ^param-id 1 + ^type single +)
+    (<l4> ^set <l5> +)
+    (<l6> ^num 2 + ^2 <l8> + ^1 <l14> +)
+    (<l8> ^parameter <l7> + ^attribute primitive + ^result <l9> +
+           ^rtype single + ^args <l11> + ^negative false + ^name object +
            ^type attribute +)
-    (<l4> ^num 0 +)
-    (<l5> ^set <l6> +)
-    (<l7> ^args <l8> + ^rtype single + ^negative false + ^parameter <l9> +
-           ^result <l11> + ^attribute input-arg + ^name object +)
-    (<l9> ^num 1 + ^1 <l10> +)
-    (<l10> ^param-id 1 + ^type single +)
-    (<l11> ^set <l12> +)
-    (<l14> ^num 1 + ^1 <l15> +)
-    (<l15> ^param-id 1 + ^type single +)
-    (<l16> ^set <l17> +)
+    (<l7> ^num 0 +)
+    (<l9> ^set <l10> +)
+    (<l14> ^parameter <l12> + ^attribute input-arg + ^result <l15> +
+           ^rtype single + ^args <l17> + ^negative false + ^name object +)
+    (<l12> ^num 1 + ^1 <l13> +)
+    (<l13> ^param-id 1 + ^type single +)
+    (<l15> ^set <l16> +)
 }
 
 sp {answer*with-attribute*apply*complete*instance*t1449-1
@@ -223,13 +225,13 @@ sp {answer*top-pair*apply*complete*t931-1
 
 sp {answer*with-attribute*apply*complete*instance*t925-1
         (state <s1> ^list <l1> ^world <n1>
-          ^{ << action goal predicate failure heuristic >> <c4> } <a2>)
+          ^{ << action goal predicate failure heuristic >> <c4> } <a3>)
     (<l1> ^game <g1>)
     (<n1> ^objects <c3>)
-    (<a2> ^condition <c1>)
+    (<a3> ^condition <c1>)
     (<c1> ^rtype single ^name object ^type attribute ^attribute primitive
-          ^args <a1> ^negative <c2> ^parameter <p1> ^result <r1>)
-    (<a1> -^1 <a3>)
+          ^args <a2> ^negative <c2> ^parameter <p1> ^result <r1>)
+    (<a2> -^1 <a1>)
     (<r1> ^set <p2>)
     (<c3> ^object <n2>)
     -->

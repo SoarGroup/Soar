@@ -1,5 +1,5 @@
 sp {answerx2*apply*op*OpNoChange*t53-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c8>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c8>
           ^nindifferent-test <c2> ^bindifferent-test <c8>
           ^bindifferent-test <c2> ^acceptable-test <c2> ^acceptable-test <c8>
           ^numbers <c7> ^bindifferent-test <c7> ^acceptable-test <c7>
@@ -24,7 +24,7 @@ sp {answerx2*apply*op*OpNoChange*t53-2
 }
 
 sp {answer*apply*op*OpNoChange*t53-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c14> ^numbers <c1>
           ^nindifferent-test <c14> ^bindifferent-test <c1>
           ^bindifferent-test <c14> ^acceptable-test <c14>
@@ -51,7 +51,7 @@ sp {answer*apply*op*OpNoChange*t53-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t47-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c4>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c4>
           ^prohibit-test <c4> ^acceptable-test <c4> ^numbers <c3>
           ^worst-test <c3> ^acceptable-test <c3> ^numbers <c2>
           ^worst-test <c2> ^acceptable-test <c2> ^numbers { <= <c9> <c1> }
@@ -65,7 +65,7 @@ sp {answerx2*apply*op*OpNoChange*t47-2
 }
 
 sp {answer*apply*op*OpNoChange*t47-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c1> ^prohibit-test <c1>
           ^acceptable-test <c1> ^numbers <c3> ^worst-test <c3>
           ^acceptable-test <c3> ^numbers <c5> ^worst-test <c5>
@@ -80,26 +80,26 @@ sp {answer*apply*op*OpNoChange*t47-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t41-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers { <= <c3> <c1> }
+        (state <s1> ^superstate nil ^operator <o1> ^numbers { <= <c3> <c1> }
           ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
     (<t1> ^operators <c3> ^name <c2>)
     -->
-    (<s1> ^result op23 +)
+    (<s1> ^result op15 +)
 }
 
 sp {answer*apply*op*OpNoChange*t41-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers { <= <c3> <c2> }
           ^acceptable-test <c2>)
     (<o1> ^name do-test ^test <t1>)
     (<t1> ^operators <c3> ^name <c1>)
     -->
-    (<s1> ^result op23 +)
+    (<s1> ^result op15 +)
 }
 
 sp {answerx2*apply*op*OpNoChange*t35-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c1>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c1>
           ^best-test <c2> ^better-test <c2> ^acceptable-test <c2>
           ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
@@ -110,7 +110,7 @@ sp {answerx2*apply*op*OpNoChange*t35-2
 }
 
 sp {answer*apply*op*OpNoChange*t35-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c4> ^numbers <c1>
           ^best-test <c4> ^better-test <c4> ^acceptable-test <c4>
           ^acceptable-test <c1>)
@@ -122,7 +122,7 @@ sp {answer*apply*op*OpNoChange*t35-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t29-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c3>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c2> ^numbers <c3>
           ^nindifferent-test <c2> ^bindifferent-test <c2>
           ^acceptable-test <c2> ^acceptable-test <c3>)
     (<o1> ^name do-test ^test <t1>)
@@ -135,7 +135,7 @@ sp {answerx2*apply*op*OpNoChange*t29-2
 }
 
 sp {answer*apply*op*OpNoChange*t29-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c4> ^numbers <c1>
           ^nindifferent-test <c4> ^bindifferent-test <c4>
           ^acceptable-test <c4> ^acceptable-test <c1>)
@@ -149,7 +149,7 @@ sp {answer*apply*op*OpNoChange*t29-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t23-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c1>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c1>
           ^require-test <c1> ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
     (<t1> ^operators <c3> ^name <c2> ^requires { <= <c3> <c1> })
@@ -158,7 +158,7 @@ sp {answerx2*apply*op*OpNoChange*t23-2
 }
 
 sp {answer*apply*op*OpNoChange*t23-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c1> ^require-test <c1>
           ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
@@ -168,7 +168,7 @@ sp {answer*apply*op*OpNoChange*t23-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t17-2
-    (state <s1> ^superstate nil ^operator <o1> ^worse-test { <= <c6> <c3> }
+        (state <s1> ^superstate nil ^operator <o1> ^worse-test { <= <c6> <c3> }
           ^numbers <c3> ^acceptable-test <c3> ^numbers <c2> ^better-test <c2>
           ^acceptable-test <c2> ^numbers <c1> ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
@@ -181,7 +181,7 @@ sp {answerx2*apply*op*OpNoChange*t17-2
 }
 
 sp {answer*apply*op*OpNoChange*t17-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^worse-test { <= <c4> <c3> }
           ^numbers <c3> ^acceptable-test <c3> ^numbers <c6> ^better-test <c6>
           ^acceptable-test <c6> ^numbers <c1> ^acceptable-test <c1>)
@@ -195,28 +195,28 @@ sp {answer*apply*op*OpNoChange*t17-1
 }
 
 sp {answerx2*apply*op*OpNoChange*t11-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c1>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c1>
           ^nindifferent-test <c1> ^acceptable-test <c1>)
     (<o1> ^name do-test ^test <t1>)
     (<t1> ^operators <c4> ^name <c3> ^numerics <b1>)
     (<b1> ^referent <c2> ^value { <= <c4> <c1> })
     -->
-    (<s1> ^result op1 +)
+    (<s1> ^result op2 +)
 }
 
 sp {answer*apply*op*OpNoChange*t11-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c2> ^nindifferent-test <c2>
           ^acceptable-test <c2>)
     (<o1> ^name do-test ^test <t1>)
     (<t1> ^operators <c3> ^name <c1> ^numerics <b1>)
     (<b1> ^referent <c4> ^value { <= <c3> <c2> })
     -->
-    (<s1> ^result op1 +)
+    (<s1> ^result op2 +)
 }
 
 sp {answerx2*apply*op*OpNoChange*t5-2
-    (state <s1> ^superstate nil ^operator <o1> ^numbers <c5>
+        (state <s1> ^superstate nil ^operator <o1> ^numbers <c5>
           ^prohibit-test <c5> ^acceptable-test <c5> ^numbers <c4>
           ^prohibit-test <c4> ^acceptable-test <c4> ^numbers <c3>
           ^reject-test <c3> ^acceptable-test <c3> ^numbers <c2>
@@ -232,7 +232,7 @@ sp {answerx2*apply*op*OpNoChange*t5-2
 }
 
 sp {answer*apply*op*OpNoChange*t5-1
-    (state <s2> ^superstate <s1>)
+        (state <s2> ^superstate <s1>)
     (<s1> ^superstate nil ^operator <o1> ^numbers <c1> ^prohibit-test <c1>
           ^acceptable-test <c1> ^numbers <c3> ^prohibit-test <c3>
           ^acceptable-test <c3> ^numbers <c5> ^reject-test <c5>
