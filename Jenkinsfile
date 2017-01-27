@@ -7,21 +7,28 @@ for (int i=0; i<names.size(); ++i) {
   builders["node_" + name] = {
     node(name) {
       checkout scm
+      
+      stage('Clean')
 
       if (isUnix()) {
         sh 'rm -f *.7zip'
         sh 'rm -rf out*'
         sh 'rm -rf build/Core/ClientSMLSWIG*'
-        sh 'scons all --scu'
-        //sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
-        //junit 'out/TestResults.xml'
-        sh 'pushd out; ./UnitTests; popd'
+
       } else {
         bat 'del /q /f *.7zip'
         bat 'del /q /f user-env*.bat'
         //bat 'del /q /f VS2013\\'
-        bat 'del /q /f VS2015\\'
+        try {
+          bat 'del /q /f VS2015\\'
+        }
+      }
 
+      stage('Build')
+
+      if (isUnix()) {
+        sh 'scons all --scu'
+      } else {
         def tcl="C:\\Tcl"
         if (name == "Windows32") {
           tcl="C:\\Tcl"
@@ -36,14 +43,9 @@ for (int i=0; i<names.size(); ++i) {
 
         //bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
         bat "%VS_2015% & call build.bat all --scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
-
-        bat 'VS2015\\UnitTests.exe'
-        //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
-        //bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
-
-        //junit 'VS2013\\TestResults.xml'
-        //junit 'VS2015\\TestResults.xml'
       }
+
+      stage('Upload')
 
       withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: '099da30c-b551-4c0c-847d-28fa1c22c5cb',
                             usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
@@ -58,6 +60,19 @@ for (int i=0; i<names.size(); ++i) {
         }
       }
 
+      stage('Test')
+
+      if (isUnix()) {
+        sh 'pushd out; ./UnitTests; popd'
+        //sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
+        //junit 'out/TestResults.xml'
+      } else {
+        bat 'VS2015\\UnitTests.exe'
+        //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
+        //bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
+        //junit 'VS2013\\TestResults.xml'
+        //junit 'VS2015\\TestResults.xml'
+      }
       archive '*.7zip'
     }
   }

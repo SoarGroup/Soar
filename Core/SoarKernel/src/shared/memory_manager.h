@@ -72,11 +72,13 @@ inline void fill_with_garbage(T* block, size_t size)
 {
     memset(static_cast<void*>(block), 0xBB, (size));
 }
-template <typename T>
-inline void fill_with_zeroes(T* block, size_t size)
-{
-    memset(static_cast<void*>(block), 0, (size));
-}
+/* Disabling the fill with zeros part since that may actually hide bugs */
+#define fill_with_zeroes(block,size) { }
+//template <typename T>
+//inline void fill_with_zeroes(T* block, size_t size)
+//{
+//    memset(static_cast<void*>(block), 0, (size));
+//}
 #else
 #define fill_with_garbage(block,size) { }
 #define fill_with_zeroes(block,size) { }
