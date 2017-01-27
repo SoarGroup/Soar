@@ -8,6 +8,7 @@
 #include "ebc.h"
 
 #include "agent.h"
+#include "condition.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc_settings.h"
