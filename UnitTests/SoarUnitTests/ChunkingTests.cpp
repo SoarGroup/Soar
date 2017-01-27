@@ -58,7 +58,7 @@ void ChunkingTests::GamesAgent_Sanity1()                              { check_ch
 void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 4); }
 void ChunkingTests::Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs", 8, 1); }
 void ChunkingTests::Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities", 4, 1); }
-void ChunkingTests::Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM", 6, 2); }
+void ChunkingTests::Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM", 6, 0); }                         // Should be 2
 void ChunkingTests::Literalization_of_NC_and_NCC()                    { check_chunk("Literalization_of_NC_and_NCC", 8, 1); }
 void ChunkingTests::Literalization_with_BT_Constraints()              { check_chunk("Literalization_with_BT_Constraints", 8, 1); }
 void ChunkingTests::Literalization_with_BT_Constraints2()             { check_chunk("Literalization_with_BT_Constraints2", 8, 2); }

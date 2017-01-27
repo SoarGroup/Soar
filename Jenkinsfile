@@ -70,7 +70,7 @@ for (int i=0; i<names.size(); ++i) {
             //sh 'pushd out; ./Prototype-UnitTesting ' + unitTestArguments + '; popd'
             //junit 'out/TestResults.xml'
           } else {
-            bat 'VS2015\\UnitTests.exe'
+            bat 'VS2015\\UnitTests.exe -f testCommandToFile'
             //bat 'pushd VS2013 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
             //bat 'pushd VS2015 & Prototype-UnitTesting ' + unitTestArguments + ' & popd'
             //junit 'VS2013\\TestResults.xml'
