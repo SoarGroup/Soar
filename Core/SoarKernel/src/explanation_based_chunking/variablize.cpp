@@ -626,7 +626,7 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
             reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->data.referent->var->instantiated_sym)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
     {
     /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
      * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */
@@ -634,61 +634,6 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-    }
-}
-
-void sanity_test_chunk (test pTest)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_test_chunk(static_cast<test>(c->first));
-        }
-    } else {
-        assert(!test_has_referent(pTest) || !pTest->data.referent->is_sti());
-    }
-}
-
-void sanity_check_conditions(condition* top_cond)
-{
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-//            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            if (cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.id_test);
-            if (cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.attr_test);
-            if (cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.value_test);
-        }
-        else
-        {
-//            dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
-//            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
-            sanity_check_conditions(cond->data.ncc.top);
-        }
-    }
-}
-
-void sanity_test_justification (test pTest, bool pIsNCC = false)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_test_justification(static_cast<test>(c->first), pIsNCC);
-        }
-    } else {
-        if (pIsNCC)
-        {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
-
-        } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
-        }
     }
 }
 
@@ -709,12 +654,9 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
         reinstantiate_test(cond->data.tests.value_test);
         dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
         #ifdef EBC_SANITY_CHECK_RULES
-        if (cond->type == POSITIVE_CONDITION)
-        {
-            sanity_test_justification(cond->data.tests.id_test, pIsNCC);
-            sanity_test_justification(cond->data.tests.attr_test, pIsNCC);
-            sanity_test_justification(cond->data.tests.value_test, pIsNCC);
-        }
+        sanity_justification_test(cond->data.tests.id_test, pIsNCC);
+        sanity_justification_test(cond->data.tests.attr_test, pIsNCC);
+        sanity_justification_test(cond->data.tests.value_test, pIsNCC);
         #endif
     } else {
         reinstantiate_condition_list(cond->data.ncc.top, true);

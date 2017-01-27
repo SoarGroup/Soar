@@ -283,6 +283,11 @@ class Explanation_Based_Chunker
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
 
+        /* Methods to make sure that we didn't create rules that are bad but the RETE would accept */
+        void sanity_chunk_conditions(condition* top_cond);
+        void sanity_chunk_test (test pTest);
+        void sanity_justification_test (test pTest, bool pIsNCC = false);
+
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);
         void        merge_values_in_conds(condition* pDestCond, condition* pSrcCond);

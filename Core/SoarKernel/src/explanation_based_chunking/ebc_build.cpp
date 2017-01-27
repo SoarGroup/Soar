@@ -43,7 +43,7 @@
 #include <ebc_repair.h>
 
 using namespace soar_TraceNames;
-void sanity_check_conditions(condition* top_cond);
+
 /* =====================================================================
 
                            Results Calculation
@@ -979,7 +979,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
     #ifdef EBC_SANITY_CHECK_RULES
-    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_lhs);
+    if (m_rule_type == ebc_chunk) sanity_chunk_conditions(m_lhs);
     #endif
 
     /* Merge redundant conditions (same identity sets in each element) */
