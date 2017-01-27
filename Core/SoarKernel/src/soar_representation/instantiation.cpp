@@ -406,7 +406,17 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
         result = (*(rf->f))(thisAgent, arglist, rf->user_data);
 
-#ifndef NO_TIMING_STUFF  // restart the kernel timer
+//        dprint(DT_DEBUG, "Called RHS function %y with args", rf->name);
+//        Symbol* lSym2;
+//        for (c = arglist; c != NIL; c = c->rest)
+//            if (c->first)
+//            {
+//                lSym2 = static_cast<Symbol *>(c->first);
+//                dprint_noprefix(DT_DEBUG, " %y", lSym2);
+//            }
+//        dprint_noprefix(DT_DEBUG, "\n");
+
+        #ifndef NO_TIMING_STUFF  // restart the kernel timer
         thisAgent->timers_kernel.start();
 #endif
 
