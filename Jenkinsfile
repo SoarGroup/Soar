@@ -22,6 +22,8 @@ for (int i=0; i<names.size(); ++i) {
         try {
           bat 'del /q /f VS2015\\'
         }
+        catch {
+        }
       }
 
       stage('Build')
