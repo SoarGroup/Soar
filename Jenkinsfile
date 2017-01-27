@@ -23,6 +23,7 @@ for (int i=0; i<names.size(); ++i) {
           bat 'del /q /f VS2015\\'
         }
         catch {
+          bat 'echo Could not find VS2015'
         }
       }
 
