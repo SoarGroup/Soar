@@ -182,6 +182,7 @@ namespace cli
 
             // utility for kernel SML
             bool IsLogOpen();
+            bool IsSourcingFile() { return !m_SourceFileStack.empty(); }
 
             bool GetCurrentWorkingDirectory(std::string& directory);
 

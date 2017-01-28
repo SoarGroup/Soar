@@ -106,8 +106,9 @@ void decider_param_container::print_status(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("State stack", stateStackStr.c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Current number of states", std::to_string(soarStackDepth).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Next phase", thisAgent->outputManager->phase_to_string(thisAgent->current_phase), 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
 
-    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings:  soar ?");
+    outputManager->printa_sf(thisAgent, "\nUse 'soar ?' for a command overview or 'help soar' for the manual page.");
 }
 
 void decider_param_container::print_settings(agent* thisAgent)

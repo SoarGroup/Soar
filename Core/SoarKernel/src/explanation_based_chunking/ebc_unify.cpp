@@ -372,8 +372,10 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     }
 }
 
-void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+const std::string Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    std::string returnVal;
+
     if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
@@ -381,21 +383,28 @@ void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type
         (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot override the architectural singleton for %y.  Ignoring.\n", attrSym);
-        return;
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot override the architectural singleton for %y.  Ignoring.", attrSym);
+        return returnVal;
     }
 
-    if (attrSym->sc->singleton.possible) thisAgent->outputManager->printa_sf(thisAgent, "Clearing previous singleton for %y.\n", attrSym);
-    thisAgent->outputManager->printa_sf(thisAgent, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+    if (attrSym->sc->singleton.possible)
+    {
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Clearing previous singleton for %y.\n", attrSym);
+    }
+    thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     singletons->insert(attrSym);
     thisAgent->symbolManager->symbol_add_ref(attrSym);
     attrSym->sc->singleton.possible = true;
     attrSym->sc->singleton.id_type = id_type;
     attrSym->sc->singleton.value_type = value_type;
+
+    return returnVal;
 }
 
-void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+const std::string Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    std::string returnVal;
+
     if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
@@ -403,20 +412,22 @@ void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type,
         (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot remove the architectural singleton for %y.  Ignoring.\n", attrSym);
-        return;
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot remove the architectural singleton for %y.  Ignoring.", attrSym);
+        return returnVal;
     }
     auto it = singletons->find(attrSym);
     if (it == singletons->end())
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Could not find pattern (%s ^%y %s).  Did not remove.\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Could not find pattern (%s ^%y %s).  Did not remove.", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "Removed. Will no longer unify conditions in super-states that match a WME\n"
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Removed. Will no longer unify conditions in super-states that match a WME"
                                                        "         that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
         singletons->erase(attrSym);
         attrSym->sc->singleton.possible = false;
         thisAgent->symbolManager->symbol_remove_ref(&attrSym);
     }
+
+    return returnVal;
 }
 void Explanation_Based_Chunker::clear_singletons()
 {

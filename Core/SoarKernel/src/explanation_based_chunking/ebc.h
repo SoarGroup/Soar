@@ -73,8 +73,8 @@ class Explanation_Based_Chunker
         /* Methods to handle identity unification of conditions that test singletons */
         void add_to_singletons(wme* pWME);
         bool wme_is_a_singleton(wme* pWME);
-        void add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
-        void remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        const std::string add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        const std::string remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */

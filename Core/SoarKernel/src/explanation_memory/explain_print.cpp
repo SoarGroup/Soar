@@ -328,12 +328,12 @@ void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 55);
     outputManager->set_column_indent(1, 54);
-    outputManager->printa_sf(thisAgent,    "%e=======================================================\n");
-    outputManager->printa(thisAgent,    "                       Explainer Summary\n");
-    outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
+    outputManager->printa_sf(thisAgent, "%e=======================================================\n");
+    outputManager->printa(thisAgent,      "                   Explainer Summary\n");
+    outputManager->printa(thisAgent,      "=======================================================\n");
+    outputManager->printa_sf(thisAgent,   "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent,   "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent,   "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!m_all_enabled)
@@ -358,10 +358,11 @@ void Explanation_Memory::print_explain_summary()
         (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
     if (current_discussed_chunk)
     {
-        outputManager->printa_sf(thisAgent, "(c %u)\n\n", current_discussed_chunk->chunkID);
+        outputManager->printa_sf(thisAgent, "(c %u)\n", current_discussed_chunk->chunkID);
     } else {
-        outputManager->printa(thisAgent, "\n\n");
+        outputManager->printa(thisAgent, "\n");
     }
+    outputManager->printa(thisAgent,    "=======================================================\n\n");
     outputManager->printa(thisAgent, "Use 'explain chunk [ <chunk-name> | id ]' to discuss the formation of that chunk.\n");
     outputManager->printa_sf(thisAgent, "Use 'explain ?' to learn more about explain's sub-command and settings.\n");
 }
