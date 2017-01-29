@@ -990,9 +990,9 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             {
                 /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
                  * detect refcount leaks in unit tests and print out a message accordingly */
-                std::cout << "Refcount leak detected in unit test.  " << identifier_hash_table->count << " identifiers still exist.  Forcing deletion.\n";
+                std::cout << "Refcount leak detected. " << identifier_hash_table->count << " identifiers still exist. ";
             }
-            if (thisAgent->outputManager->settings[OM_WARNINGS])
+            else if (thisAgent->outputManager->settings[OM_WARNINGS])
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
                 do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);

@@ -15,6 +15,7 @@
 //#define SAVE_LOG_FILES  // Make sure a log directory exists where unit tests are run
 #define TURN_EXPLAINER_ON
 #define INIT_AFTER_RUN
+// Note: CONFIGURE_SOAR_FOR_UNIT_TESTS is defined in FunctionalTestHarness.cpp
 
 /* Note that some test don't get as many successful learned chunks as expected because Soar is not
  * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */
@@ -226,6 +227,16 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
     #endif
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+    #ifdef INIT_AFTER_RUN
+        #ifdef SAVE_LOG_FILES
+            agent_command("output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+        #endif
+        agent_command("soar init");
+        agent_command("trace 0");
+        agent_command("run 100");
+        agent_command("trace 1");
+        agent_command("soar init");
+    #endif
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
 
@@ -281,16 +292,6 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
 
     }
 
-    #ifdef INIT_AFTER_RUN
-        #ifdef SAVE_LOG_FILES
-            agent_command("output log -a Testing re-initialization of Soar for memory leaks and crashes.");
-        #endif
-        agent_command("soar init");
-        agent_command("trace 0");
-        agent_command("run 100");
-        agent_command("trace 1");
-        agent_command("soar init");
-    #endif
     close_log();
 }
 
