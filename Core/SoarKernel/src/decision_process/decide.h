@@ -142,7 +142,6 @@ extern int GDS_PrintCmd(/****ClientData****/ int clientData,
                         /****Tcl_Interp****/ void* interp,
                         int argc, char* argv[]);
 
-void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value = true);
 void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, preference* candidates);
 extern byte run_preference_semantics(agent* thisAgent, slot* s, preference** result_candidates, bool consistency = false, bool predict = false);
 

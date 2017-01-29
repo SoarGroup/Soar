@@ -16,6 +16,7 @@
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
 #include <ebc_merge.cpp>
+#include <ebc_osk.cpp>
 #include <ebc_print.cpp>
 #include <ebc_repair.cpp>
 #include <ebc_settings.cpp>

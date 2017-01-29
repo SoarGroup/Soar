@@ -63,6 +63,5 @@ extern slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr);
 extern void mark_slot_as_changed(agent* thisAgent, slot* s);
 extern void mark_slot_for_possible_removal(agent* thisAgent, slot* s);
 extern void remove_garbage_slots(agent* thisAgent);
-extern void clear_OSK_prefs(agent* thisAgent, slot* s);
 
 #endif

@@ -152,13 +152,13 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
 inline void preference_add_ref(preference* p) { (p)->reference_count++;}
 inline bool preference_remove_ref(agent* thisAgent, preference* p) {(p)->reference_count--; if ((p)->reference_count == 0) { return possibly_deallocate_preference_and_clones(thisAgent, p);} return false;}
 void deallocate_preference(agent* thisAgent, preference* pref);
-void preference_list_clear(agent* thisAgent, cons* lPrefList);
 bool add_preference_to_tm(agent* thisAgent, preference* pref);
 void remove_preference_from_tm(agent* thisAgent, preference* pref);
 bool remove_preference_from_clones(agent* thisAgent, preference* pref);
 void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo);
 inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
+void clear_preference_list(agent* thisAgent, cons* &lPrefList);
 
 inline const char* preference_name(byte pNum)
 {

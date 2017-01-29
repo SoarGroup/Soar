@@ -62,19 +62,25 @@ class Explanation_Based_Chunker
         uint64_t get_instantiation_count() { return inst_id_counter; };
         uint64_t get_or_create_identity(Symbol* orig_var, uint64_t pI_id);
 
+        /* Methods for operator selection knowledge tracking. */
+        void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
+        void    copy_OSK(instantiation* inst);
+        void    copy_proposal_OSK(instantiation* inst, cons* newOSK);
+        void    update_proposal_OSK(slot* s, preference* winner);
+
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void unify_identity(test t) { t->identity = get_identity(t->identity); }
-        void unify_preference_identities(preference* lPref);
-        uint64_t get_identity(uint64_t pID);
-        bool in_null_identity_set(test t);
-        tc_number get_constraint_found_tc_num() { return tc_num_found; };
+        void        unify_identity(test t) { t->identity = get_identity(t->identity); }
+        void        unify_preference_identities(preference* lPref);
+        uint64_t    get_identity(uint64_t pID);
+        bool        in_null_identity_set(test t);
+        tc_number   get_constraint_found_tc_num() { return tc_num_found; };
 
         /* Methods to handle identity unification of conditions that test singletons */
-        void add_to_singletons(wme* pWME);
-        bool wme_is_a_singleton(wme* pWME);
-        const std::string add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
-        const std::string remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        void                add_to_singletons(wme* pWME);
+        bool                wme_is_a_singleton(wme* pWME);
+        const std::string   add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        const std::string   remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */

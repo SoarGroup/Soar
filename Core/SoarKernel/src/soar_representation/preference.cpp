@@ -642,25 +642,20 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
     }
 }
 
-void preference_list_clear(agent* thisAgent, cons* lPrefList)
+void clear_preference_list(agent* thisAgent, cons* &pPrefList)
 {
-    cons *c, *c_old;
+    cons *c;
     preference* lPref;
 
-    if (lPrefList)
+    if (pPrefList)
     {
-        c_old = c = lPrefList;
         lPref = NIL;
-        for (; c != NIL; c = c->rest)
+        for (c = pPrefList; c != NIL; c = c->rest)
         {
             lPref = static_cast<preference*>(c->first);
-            #ifdef DO_TOP_LEVEL_REF_CTS
-            if (level > TOP_GOAL_LEVEL)
-            #endif
-            {
-                preference_remove_ref(thisAgent, lPref);
-            }
+            preference_remove_ref(thisAgent, lPref);
         }
-        free_list(thisAgent, c_old);
+        free_list(thisAgent, pPrefList);
+        pPrefList = NULL;
     }
 }

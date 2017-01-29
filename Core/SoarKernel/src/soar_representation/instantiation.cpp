@@ -65,74 +65,6 @@ void init_instantiation_pool(agent* thisAgent)
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
 }
 
-/* --------------------------------------------------------------------------
-                 Build context-dependent preference set
-
-  This function will copy the OSK prefs from a slot to the backtrace info for the
-  corresponding condition.  The copied OSK prefs will later be backtraced through.
-
-  Note: Until prohibits are included explicitly as part of the OSK prefs, we will
-  just copy them directly from the prohibits list so that there is no
-  additional overhead.
-
- --------------------------------------------------------------------------*/
-
-void copy_proposal_OSK(agent* thisAgent, instantiation* inst, cons* newOSK)
-{
-    condition* cond;
-    preference* pref, *new_pref;
-    cons* l_OSK_prefs;
-
-    assert (!inst->OSK_proposal_prefs);
-    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
-    {
-        for (l_OSK_prefs = newOSK; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
-        {
-            pref = static_cast<preference*>(l_OSK_prefs->first);
-            push(thisAgent, pref, inst->OSK_prefs);
-            preference_add_ref(pref);
-        }
-    }
-}
-
-void copy_OSK(agent* thisAgent, instantiation* inst)
-{
-    condition* cond;
-    preference* pref, *new_pref;
-    cons* l_OSK_prefs;
-
-    inst->OSK_prefs = NIL;
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
-    {
-        if (cond->type == POSITIVE_CONDITION && cond->bt.trace && cond->bt.trace->slot)
-        {
-            if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
-            {
-                if (cond->bt.trace->slot->OSK_prefs && (cond->data.tests.id_test->eq_test->data.referent->id->level == inst->match_goal_level) && !cond->test_for_acceptable_preference)
-                {
-                    for (l_OSK_prefs = cond->bt.trace->slot->OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
-                    {
-                        pref = static_cast<preference*>(l_OSK_prefs->first);
-                        push(thisAgent, pref, inst->OSK_prefs);
-                        preference_add_ref(pref);
-                    }
-                }
-            }
-            else
-            {
-                pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
-                while (pref)
-                {
-                    new_pref = NIL;
-                    push(thisAgent, pref, inst->OSK_prefs);
-                    preference_add_ref(pref);
-                    pref = pref->next;
-                }
-            }
-        }
-    }
-}
-
 /*--------------------------------------------------------------------
  Find Clone For Level
 
@@ -1245,7 +1177,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
 
     /* Copy any context-dependent preferences for conditions of this instantiation */
-    copy_OSK(thisAgent, inst);
+    thisAgent->explanationBasedChunker->copy_OSK(inst);
 
     thisAgent->production_being_fired = NIL;
 
@@ -1419,8 +1351,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         } // for
 
         /* Clean up operator selection knowledge */
-        preference_list_clear(thisAgent, inst->OSK_prefs);
-        preference_list_clear(thisAgent, inst->OSK_proposal_prefs);
+        clear_preference_list(thisAgent, inst->OSK_prefs);
+        clear_preference_list(thisAgent, inst->OSK_proposal_prefs);
         if (inst->OSK_proposal_slot)
         {
             assert(inst->OSK_proposal_slot->instantiation_with_temp_OSK = inst);

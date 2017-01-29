@@ -1000,87 +1000,6 @@ void do_buffered_link_changes(agent* thisAgent)
 #endif
 }
 
-/* ------------------------------------------------------------------
-                  Add a preference to a slot's OSK prefs
-   This function adds a preference to a slots's context dependent
-   preference set, checking to first see whether the pref is already
-   there. If an operator The slot's OSK prefs is copied to conditions' bt structs in
-   create_instatiation.  Those copies of the OSK prefs are used to
-   backtrace through all relevant local evaluation rules that led to the
-   selection of the operator that produced a result.
------------------------------------------------------------------- */
-
-void add_to_OSK(agent* thisAgent, slot* s, preference* pref, bool unique_value)
-{
-
-    bool already_exists = false;
-    cons* lOSK_pref;
-    preference* p;
-
-//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-//    {
-//        thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
-//        print_preference(thisAgent, pref);
-//    }
-
-    for (lOSK_pref = s->OSK_prefs; lOSK_pref != NIL; lOSK_pref = lOSK_pref->rest)
-    {
-        p = static_cast<preference*>(lOSK_pref->first);
-        if (p == pref)
-        {
-            already_exists = true;
-            break;
-        }
-
-        if (unique_value)
-        {
-            /* Checking if a preference is unique differs depending on the preference type */
-
-            /* Binary preferences can be considered equivalent if they point to the same
-             * operators in the correct relative spots */
-            if (((pref->type == BETTER_PREFERENCE_TYPE) || (pref->type == WORSE_PREFERENCE_TYPE)) &&
-                    ((p->type == BETTER_PREFERENCE_TYPE) || (p->type == WORSE_PREFERENCE_TYPE)))
-            {
-                if (pref->type == p->type)
-                {
-                    already_exists = ((pref->value == p->value) && (pref->referent == p->referent));
-                }
-                else
-                {
-                    already_exists = ((pref->value == p->referent) && (pref->referent == p->value));
-                }
-            }
-            else if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
-                     (p->type == BINARY_INDIFFERENT_PREFERENCE_TYPE))
-            {
-                already_exists = (((pref->value == p->value) && (pref->referent == p->referent)) ||
-                                  ((pref->value == p->referent) && (pref->referent == p->value)));
-            }
-            else
-            {
-                /* Otherwise they are equivalent if they have the same value and type */
-                already_exists = (pref->value == p->value) && (pref->type == p->type);
-            }
-            if (already_exists)
-            {
-                break;
-            }
-        }
-    }
-    if (!already_exists)
-    {
-        dprint(DT_OSK, "Adding OSK preference %p from %y to slot (%y ^%y)\n", pref, pref->inst->prod_name, s->id, s->attr);
-        push(thisAgent, pref, s->OSK_prefs);
-        preference_add_ref(pref);
-    } else {
-        dprint(DT_OSK, "Not adding OSK preference %p from %y to slot (%y ^%y) because it already exists.\n", pref, pref->inst->prod_name, s->id, s->attr);
-    }
-//    else if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-//    {
-//        thisAgent->outputManager->printa_sf(thisAgent, "--> equivalent pref already exists.  Not adding.\n");
-//    }
-
-}
 
 /** Build our RL trace. -bazald **/
 
@@ -1208,23 +1127,6 @@ void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, pr
 
 ************************************************************************** */
 
-void update_proposal_OSK(agent* thisAgent, slot* s, preference* winner)
-{
-    if (s->instantiation_with_temp_OSK)
-    {
-        preference_list_clear(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
-        s->instantiation_with_temp_OSK->OSK_proposal_prefs = NULL;
-        s->instantiation_with_temp_OSK->OSK_proposal_slot = NULL;
-        s->instantiation_with_temp_OSK = NULL;
-    }
-    if (winner)
-    {
-        s->instantiation_with_temp_OSK = winner->inst;
-        s->instantiation_with_temp_OSK->OSK_proposal_slot = s;
-        copy_proposal_OSK(thisAgent, winner->inst, s->OSK_prefs);
-    }
-}
-
 byte run_preference_semantics(agent* thisAgent,
                               slot* s,
                               preference** result_candidates,
@@ -1249,7 +1151,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     if (add_OSK && s->OSK_prefs)
     {
-        clear_OSK_prefs(thisAgent, s);
+        clear_preference_list(thisAgent, s->OSK_prefs);
     }
 
     /* If the slot has no preferences at all, things are trivial --- */
@@ -1261,7 +1163,7 @@ byte run_preference_semantics(agent* thisAgent,
             mark_slot_for_possible_removal(thisAgent, s);
         }
         *result_candidates = NIL;
-        if (add_OSK) update_proposal_OSK(thisAgent, s, NULL);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1287,7 +1189,7 @@ byte run_preference_semantics(agent* thisAgent,
                     rl_perform_update(thisAgent, force_result->numeric_value,
                                       force_result->rl_contribution, s->id);
                 }
-                if (add_OSK) update_proposal_OSK(thisAgent, s, force_result);
+                if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, force_result);
                 return NONE_IMPASSE_TYPE;
             }
         }
@@ -1345,7 +1247,7 @@ byte run_preference_semantics(agent* thisAgent,
 
         if (candidates->next_candidate)
         {
-            if (add_OSK) update_proposal_OSK(thisAgent, s, NULL);
+            if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
             return CONSTRAINT_FAILURE_IMPASSE_TYPE;
         }
 
@@ -1356,7 +1258,7 @@ byte run_preference_semantics(agent* thisAgent,
         for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             if (p->value == value)
             {
-                if (add_OSK) update_proposal_OSK(thisAgent, s, NULL);
+                if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
                 return CONSTRAINT_FAILURE_IMPASSE_TYPE;
             }
 
@@ -1373,7 +1275,7 @@ byte run_preference_semantics(agent* thisAgent,
 //            thisAgent->outputManager->printa_sf(thisAgent, "--> Adding preference to OSK prefs: ");
 //            print_preference(thisAgent, candidates);
 //        }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1430,11 +1332,11 @@ byte run_preference_semantics(agent* thisAgent,
         {
             for (p = s->preferences[PROHIBIT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_OSK(thisAgent, s, p);
+                thisAgent->explanationBasedChunker->add_to_OSK(s, p);
             }
             for (p = s->preferences[REJECT_PREFERENCE_TYPE]; p != NIL; p = p->next)
             {
-                add_to_OSK(thisAgent, s, p);
+                thisAgent->explanationBasedChunker->add_to_OSK(s, p);
             }
         }
     }
@@ -1452,10 +1354,10 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (add_OSK && s->OSK_prefs)
             {
-                clear_OSK_prefs(thisAgent, s);
+                clear_preference_list(thisAgent, s->OSK_prefs);
             }
         }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, candidates);
 
         return NONE_IMPASSE_TYPE;
     }
@@ -1562,9 +1464,9 @@ byte run_preference_semantics(agent* thisAgent,
             *result_candidates = candidates;
             if (add_OSK && s->OSK_prefs)
             {
-                clear_OSK_prefs(thisAgent, s);
+                clear_preference_list(thisAgent, s->OSK_prefs);
             }
-            if (add_OSK) update_proposal_OSK(thisAgent, s, NULL);
+            if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
 
             return CONFLICT_IMPASSE_TYPE;
         }
@@ -1600,14 +1502,14 @@ byte run_preference_semantics(agent* thisAgent,
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_OSK(thisAgent, s, p);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                         }
                     }
                     for (p = s->preferences[WORSE_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if (p->referent == cand->value)
                         {
-                            add_to_OSK(thisAgent, s, p);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                         }
                     }
                 }
@@ -1631,10 +1533,10 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (add_OSK && s->OSK_prefs)
             {
-                clear_OSK_prefs(thisAgent, s);
+                clear_preference_list(thisAgent, s->OSK_prefs);
             }
         }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1666,7 +1568,7 @@ byte run_preference_semantics(agent* thisAgent,
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_OSK(thisAgent, s, p);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                         }
                     }
                 }
@@ -1700,10 +1602,10 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (add_OSK && s->OSK_prefs)
             {
-                clear_OSK_prefs(thisAgent, s);
+                clear_preference_list(thisAgent, s->OSK_prefs);
             }
         }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1763,7 +1665,7 @@ byte run_preference_semantics(agent* thisAgent,
                     {
                         if (p->value == cand->value)
                         {
-                            add_to_OSK(thisAgent, s, p);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                         }
                     }
                 }
@@ -1789,10 +1691,10 @@ byte run_preference_semantics(agent* thisAgent,
         {
             if (add_OSK && s->OSK_prefs)
             {
-                clear_OSK_prefs(thisAgent, s);
+                clear_preference_list(thisAgent, s->OSK_prefs);
             }
         }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, candidates);
         return NONE_IMPASSE_TYPE;
     }
 
@@ -1898,7 +1800,7 @@ byte run_preference_semantics(agent* thisAgent,
                     {
                         if (p->value == (*result_candidates)->value)
                         {
-                            add_to_OSK(thisAgent, s, p, false);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p, false);
                         }
                     }
 
@@ -1911,7 +1813,7 @@ byte run_preference_semantics(agent* thisAgent,
                             if ((p->referent->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG) ||
                                     (p->value->decider_flag != UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG))
                             {
-                                add_to_OSK(thisAgent, s, p);
+                                thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                             }
                         }
                     }
@@ -1929,14 +1831,14 @@ byte run_preference_semantics(agent* thisAgent,
 //                    {
 //                        if (p->value == (*result_candidates)->value)
 //                        {
-//                            add_to_OSK(thisAgent, s, p);
+//                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
 //                        }
 //                    }
                     for (p = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
                     {
                         if ((p->value == (*result_candidates)->value) || (p->referent == (*result_candidates)->value))
                         {
-                            add_to_OSK(thisAgent, s, p);
+                            thisAgent->explanationBasedChunker->add_to_OSK(s, p);
                         }
                     }
                 }
@@ -1946,7 +1848,7 @@ byte run_preference_semantics(agent* thisAgent,
         {
             *result_candidates = candidates;
         }
-        if (add_OSK) update_proposal_OSK(thisAgent, s, *result_candidates);
+        if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, *result_candidates);
 
         return NONE_IMPASSE_TYPE;
     }
@@ -1956,9 +1858,9 @@ byte run_preference_semantics(agent* thisAgent,
     *result_candidates = candidates;
     if (add_OSK && s->OSK_prefs)
     {
-        clear_OSK_prefs(thisAgent, s);
+        clear_preference_list(thisAgent, s->OSK_prefs);
     }
-    if (add_OSK) update_proposal_OSK(thisAgent, s, NULL);
+    if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
 
     return TIE_IMPASSE_TYPE;
 }
