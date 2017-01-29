@@ -292,6 +292,7 @@ namespace cli
 
             // For help system
             bool ListHelpTopics(const std::string& directory, std::list< std::string >& topics);
+            bool backwards_compatibility_help(std::string pCmd, const char* pNewCmd, const char* pNewCmdFull);
 
             // stats, allocate
             void GetMemoryPoolStatistics();
