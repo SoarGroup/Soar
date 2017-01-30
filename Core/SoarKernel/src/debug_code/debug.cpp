@@ -43,7 +43,7 @@ using namespace soar_module;
 
 bool break_if_symbol_matches_string(Symbol* sym, const char* match)
 {
-    if (sym->to_string() == match)
+    if (std::string(sym->to_string()) == std::string(match))
         return true;
     return false;
 }

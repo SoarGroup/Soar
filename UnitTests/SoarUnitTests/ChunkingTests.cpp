@@ -177,11 +177,11 @@ void ChunkingTests::save_chunks(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "output command-to-file logs/unit_test_chunks_";
+        lCmdName = "output command-to-file logs/temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frc";
     #else
-        lCmdName = "output command-to-file unit_test_chunks.soar print -fcr";
+        lCmdName = "output command-to-file temp_chunks.soar print -fcr";
     #endif
     agent_command(lCmdName.c_str());
 }
@@ -191,11 +191,11 @@ void ChunkingTests::save_chunks_internal(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "output command-to-file logs/unit_test_chunks_";
+        lCmdName = "output command-to-file logs/temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frci";
     #else
-        lCmdName = "output command-to-file unit_test_chunks.soar print -fcri";
+        lCmdName = "output command-to-file temp_chunks.soar print -fcri";
     #endif
     agent_command(lCmdName.c_str());
 }
@@ -205,11 +205,11 @@ void ChunkingTests::source_saved_chunks(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "source logs/unit_test_chunks_";
+        lCmdName = "source logs/temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar";
     #else
-        lCmdName = "source unit_test_chunks.soar";
+        lCmdName = "source temp_chunks.soar";
     #endif
     agent_command(lCmdName.c_str());
 }

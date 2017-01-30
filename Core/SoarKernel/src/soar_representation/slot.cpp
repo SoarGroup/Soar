@@ -206,7 +206,9 @@ void remove_garbage_slots(agent* thisAgent)
         }
         if (s->instantiation_with_temp_OSK)
         {
-            clear_preference_list(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
+            free_list(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
+            s->instantiation_with_temp_OSK->OSK_proposal_prefs = NULL;
+            s->instantiation_with_temp_OSK->OSK_proposal_slot = NULL;
         }
         if (s->changed && (!s->isa_context_slot))
         {

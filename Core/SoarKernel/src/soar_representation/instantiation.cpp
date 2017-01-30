@@ -1042,13 +1042,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
     dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
-//    if ((inst->i_id == 83) || (inst->i_id == 83))
-//    {
-//        debug_trace_set(DT_UNIFY_SINGLETONS, true);
-//        dprint(DT_DEBUG, "Found.\n");
-//    } else {
-//        thisAgent->outputManager->clear_output_modes();
-//    }
+
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
         std::string lStr;
@@ -1062,8 +1056,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->production_firing_count++;
 
     AddAdditionalTestsMode additional_test_mode = (prod->type == TEMPLATE_PRODUCTION_TYPE) ? JUST_INEQUALITIES: ALL_ORIGINALS;
-
-    //id_matches(inst->i_id, 6);
 
     /* build the instantiated conditions, and bind LHS variables */
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
@@ -1103,7 +1095,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     /* Before executing the RHS actions, tell the user that the -- */
     /* phase has changed to output by printing the arrow */
-    if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    if (trace_it)
     {
         thisAgent->outputManager->printa(thisAgent,  " -->\n");
         xml_object(thisAgent, kTagActionSideMarker);
@@ -1165,11 +1157,14 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     /* print trace info: printing preferences */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
      the o-support info for the preferences we're about to print */
-    if (trace_it && thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    if (trace_it || thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
     {
         for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
         {
-            thisAgent->outputManager->printa(thisAgent,  " ");
+            if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+                thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
+            else
+                thisAgent->outputManager->printa(thisAgent,  " ");
             print_preference(thisAgent, pref);
         }
     }
@@ -1220,7 +1215,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     if (inst->in_newly_created)
     {
-        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
+        dprint(DT_OSK, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
         if (!inst->in_newly_deleted)
         {
             inst->in_newly_deleted = true;
@@ -1240,11 +1235,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
-//        if (inst->i_id == 23)
-//        {
-//            dprint(DT_DEBUG, "Found.\n");
-//        }
+        dprint(DT_OSK, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 
         level = inst->match_goal_level;
 
@@ -1267,7 +1258,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                  possibly_deallocate_instantiation
                  goto loop start
 
-                 Note:  If one of those functions that are flattened out here change, this code may
+                 Note:  If one of those functions that are flattened out here changes, this code may
                         need updating. - Maz */
 #ifndef DO_TOP_LEVEL_REF_CTS
                 if (level > TOP_GOAL_LEVEL)
@@ -1351,8 +1342,18 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         } // for
 
         /* Clean up operator selection knowledge */
-        clear_preference_list(thisAgent, inst->OSK_prefs);
-        clear_preference_list(thisAgent, inst->OSK_proposal_prefs);
+        if (inst->OSK_prefs)
+        {
+            dprint(DT_OSK, "Cleaning up OSK preference contained in inst %u %y\n", inst->i_id, inst->prod_name);
+            clear_preference_list(thisAgent, inst->OSK_prefs);
+        }
+        if (inst->OSK_proposal_prefs)
+        {
+            dprint(DT_OSK, "Cleaning up OSK proposal preference contained in inst %u %y\n", inst->i_id, inst->prod_name);
+            /* These prefs did not have their refcounts increased, so we don't want to call clear_preference_list */
+            free_list(thisAgent, inst->OSK_proposal_prefs);
+            inst->OSK_proposal_prefs = NULL;
+        }
         if (inst->OSK_proposal_slot)
         {
             assert(inst->OSK_proposal_slot->instantiation_with_temp_OSK = inst);
@@ -1403,7 +1404,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         instantiation* temp = *riter;
         ++riter;
 
-        dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
+        dprint(DT_OSK, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
         if (temp->prod)
@@ -1461,22 +1462,19 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                 {
                     thisAgent->outputManager->start_fresh_line(thisAgent);
                     thisAgent->outputManager->printa(thisAgent,  "Retracting ");
-                    print_instantiation_with_wmes(thisAgent, inst,
-                                                  static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),
-                                                  1);
-                    if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
-                    {
-                        thisAgent->outputManager->printa(thisAgent,  " -->\n");
-                        xml_object(thisAgent, kTagActionSideMarker);
-                    }
-                }
-                if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
-                {
-                    thisAgent->outputManager->printa(thisAgent,  " ");
-                    print_preference(thisAgent, pref);
+                    print_instantiation_with_wmes(thisAgent, inst, static_cast<wme_trace_type>(thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 1);
+                    thisAgent->outputManager->printa(thisAgent,  " -->\n");
+                    xml_object(thisAgent, kTagActionSideMarker);
                 }
             }
-
+            if (trace_it || thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+            {
+                if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+                    thisAgent->outputManager->printa_sf(thisAgent,  "%e- ");
+                else
+                    thisAgent->outputManager->printa(thisAgent,  " ");
+                print_preference(thisAgent, pref);
+            }
             remove_preference_from_tm(thisAgent, pref);
             retracted_a_preference = true;
         }

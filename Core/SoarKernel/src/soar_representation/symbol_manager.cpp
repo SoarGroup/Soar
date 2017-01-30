@@ -422,13 +422,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
         }
     }
     sym->name_number = name_number;
-
-    /* MToDo | Remove */
-//    if ((name_letter == 'L') && (name_number == 198))
-//    {
-//        dprint(DT_DEBUG, "Found.\n");
-//    }
-
     sym->level = level;
     sym->promotion_level = level;
     sym->slots = NULL;

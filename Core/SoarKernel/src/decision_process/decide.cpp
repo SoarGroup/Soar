@@ -3283,10 +3283,6 @@ void assert_new_preferences(agent* thisAgent, preference_list& bufdeallo)
     for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst)
     {
         next_inst = inst->next;
-        //        if ((inst->i_id == 1708) || (inst->i_id == 1709))
-        //        {
-        //            dprint(DT_DEALLOCATE_INST, "Found.\n");
-        //        }
         if (!inst->in_newly_deleted)
         {
             if (inst->in_ms)
@@ -3904,12 +3900,6 @@ void elaborate_gds(agent* thisAgent)
                     else
                     {
                         /* WME should be in the GDS of the current goal if the WME's GDS does not already exist. (i.e., if NIL GDS) */
-
-                        /* MToDo | Remove.  Experimenting while debugging agent that has a missing gds */
-                        //if (!inst->match_goal->id->id->gds)
-                        //{
-                        //    create_gds_for_goal(thisAgent, inst->match_goal);
-                        //}
 
                         add_wme_to_gds(thisAgent, inst->match_goal->id->gds, wme_matching_this_cond);
 
