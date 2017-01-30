@@ -52,6 +52,15 @@ typedef struct rhs_quadruple_struct
         rhs_quadruple_struct(rhs_value new_id = NULL, rhs_value new_attr = NULL, rhs_value new_value = NULL, rhs_value new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } rhs_quadruple;
 
+typedef struct deep_copy_struct
+{
+        Symbol* id;
+        Symbol* attr;
+        Symbol* value;
+        wme*    deep_copied_wme;
+        deep_copy_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL, wme* new_wme = NULL): id(new_id), attr(new_attr), value(new_value), deep_copied_wme(new_wme) {}
+} deep_copy_wme;
+
 typedef struct sym_identity_struct {
         uint64_t    identity;
         Symbol*     variable_sym;

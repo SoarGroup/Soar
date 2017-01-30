@@ -3954,8 +3954,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
         if (p_node->b.p.tentative_retractions)
         {
-            dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
-            dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
+            /* This doesn't seem to always work */
+//            dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
+//            dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
 
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
             msc = p_node->b.p.tentative_retractions;
@@ -3970,9 +3971,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
                 remove_from_dll(thisAgent->nil_goal_retractions, msc, next_in_level, prev_in_level);
             }
 
-
             thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-
         }
         else
         {
@@ -3994,8 +3993,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     
     /* --- Store variable name information --- */
     p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
-    p->rhs_unbound_variables =
-        destructively_reverse_list(rhs_unbound_vars_for_new_prod);
+    p->rhs_unbound_variables = destructively_reverse_list(rhs_unbound_vars_for_new_prod);
 
     /* --- invoke callback functions --- */
     soar_invoke_callbacks(thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));

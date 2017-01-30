@@ -822,25 +822,22 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
     }
 
     /* Making the new wme (Note just reusing the wme data structure, these wme's actually get converted into preferences later).*/
-    wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
+//    wme* oldGlobalWme = thisAgent->WM->glbDeepCopyWMEs;
 
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
        functions. */
-    thisAgent->symbolManager->symbol_add_ref(new_id);
-    if (!made_new_attr_symbol)
-    {
-        thisAgent->symbolManager->symbol_add_ref(new_attr);
-    }
-    if (!made_new_value_symbol)
-    {
-        thisAgent->symbolManager->symbol_add_ref(new_value);
-    }
+//    thisAgent->symbolManager->symbol_add_ref(new_id);
+//    if (!made_new_attr_symbol)
+//    {
+//        thisAgent->symbolManager->symbol_add_ref(new_attr);
+//    }
+//    if (!made_new_value_symbol)
+//    {
+//        thisAgent->symbolManager->symbol_add_ref(new_value);
+//    }
 
-    thisAgent->WM->glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
-    thisAgent->WM->glbDeepCopyWMEs->deep_copied_wme = curwme;
-    thisAgent->WM->glbDeepCopyWMEs->next = oldGlobalWme;
-
+    thisAgent->WM->glbDeepCopyWMEs.push_back(new deep_copy_wme(new_id, new_attr, new_value, curwme));
 }
 
 void recursive_deep_copy_helper(agent* thisAgent, Symbol* id_to_process, Symbol* parent_id,
@@ -886,8 +883,8 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, cons* args, void* /*user_d
 
     /* Now processing the wme's associated with the passed in symbol */
     std::unordered_map<Symbol*, Symbol*> processedSymbols;
+    thisAgent->WM->glbDeepCopyWMEs.clear();
     recursive_deep_copy_helper(thisAgent, baseid,  retval, processedSymbols);
-
     return retval;
 }
 

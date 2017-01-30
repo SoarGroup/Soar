@@ -32,6 +32,8 @@
     typedef std::list< rhs_value, soar_module::soar_memory_pool_allocator< rhs_value > >                            rhs_value_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
+    typedef std::list< deep_copy_wme*, soar_module::soar_memory_pool_allocator< deep_copy_wme* > >                  deep_copy_wme_list;
+
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
@@ -89,6 +91,7 @@
     typedef std::list< condition_record* >                      condition_record_list;
     typedef std::list< condition* >                             condition_list;
     typedef std::list< constraint* >                            constraint_list;
+    typedef std::list< deep_copy_wme* >                         deep_copy_wme_list;
     typedef std::list< uint64_t >                               id_list;
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation* >                         inst_list;

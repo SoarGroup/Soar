@@ -468,7 +468,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         {
             if (rhs_value_is_funcall(rule_action->value))
             {
-                if (thisAgent->WM->glbDeepCopyWMEs)
+                if (!thisAgent->WM->glbDeepCopyWMEs.empty())
                 {
                     // Extract identity from first argument of rule_action->value
                     oid_value = get_rhs_function_first_arg_identity(thisAgent, rule_action->value);
@@ -929,49 +929,54 @@ void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
 void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
 {
 
-    wme* tempwme;
+    deep_copy_wme* lNewDC_WME;
     goal_stack_level glbDeepCopyWMELevel = 0;
     condition* prev_cond = NULL;
+    preference* lPref;
 
     glbDeepCopyWMELevel = pref->id->id->level;
 
-    while (thisAgent->WM->glbDeepCopyWMEs)
+    for (auto it = thisAgent->WM->glbDeepCopyWMEs.begin();  it != thisAgent->WM->glbDeepCopyWMEs.end(); it++)
     {
-        tempwme = thisAgent->WM->glbDeepCopyWMEs;
+        lNewDC_WME = *it;
 
         /* Set the id levels.  Root and any re-visited STIs will already have it set */
-        if (tempwme->id->id->level == NO_WME_LEVEL)
+        if (lNewDC_WME->id->id->level == NO_WME_LEVEL)
         {
-            tempwme->id->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->id->id->level = glbDeepCopyWMELevel;
         }
-        if (tempwme->attr->is_sti() && tempwme->attr->id->level == NO_WME_LEVEL)
+        if (lNewDC_WME->attr->is_sti() && lNewDC_WME->attr->id->level == NO_WME_LEVEL)
         {
-            tempwme->attr->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->attr->id->level = glbDeepCopyWMELevel;
         }
-        if (tempwme->value->is_sti() && tempwme->value->id->level == NO_WME_LEVEL)
+        if (lNewDC_WME->value->is_sti() && lNewDC_WME->value->id->level == NO_WME_LEVEL)
         {
-            tempwme->value->id->level = glbDeepCopyWMELevel;
+            lNewDC_WME->value->id->level = glbDeepCopyWMELevel;
         }
 
         /* Add a condition that tests the WME that the deep copied preference is based on */
-        add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, tempwme->deep_copied_wme);
+        add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, lNewDC_WME->deep_copied_wme);
 
         /* Add the copied preference */
-        pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, tempwme->id, tempwme->attr, tempwme->value, NULL);
+        /* We may need to add refcounts for this pref?  But we have too many right now.  Grr */
+        lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value, NULL);
 
         /* We set the identities of the preferences so that they are dependent on the explanation behind
          * the working memory elements that they were copied from */
-        pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->id, inst->i_id);
-        pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->attr, inst->i_id);
-        pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(tempwme->deep_copied_wme->value, inst->i_id);
-        pref->in_tm = false;
+        lPref->identities.id = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->id, inst->i_id);
+        lPref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->attr, inst->i_id);
+        lPref->identities.value = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->value, inst->i_id);
+        lPref->in_tm = false;
 
         /* Now add a preferences that will create the deep-copied WME */
-        add_pref_to_inst(thisAgent, pref, inst);
+        add_pref_to_inst(thisAgent, lPref, inst);
 
-        thisAgent->WM->glbDeepCopyWMEs = tempwme->next;
-        deallocate_wme(thisAgent, tempwme);
+        /* Clean up the deep copy struct.  We didn't increase refcounts on their symbols. */
+        delete lNewDC_WME;
     }
+
+    thisAgent->WM->glbDeepCopyWMEs.clear();
+
 }
 
 void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod, struct token_struct* tok, wme* w)
@@ -1127,7 +1132,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         if (pref)
         {
             add_pref_to_inst(thisAgent, pref, inst);
-            if (thisAgent->WM->glbDeepCopyWMEs)
+            if (!thisAgent->WM->glbDeepCopyWMEs.empty())
             {
                 inst->creates_deep_copy = true;
                 thisAgent->SMem->force_add_identity_for_STI(pref->value, pref->identities.value);

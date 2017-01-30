@@ -66,22 +66,28 @@ typedef struct memory_pool_struct
 /* basic memory allocation */
 /* ----------------------- */
 
+/* Note:  DEBUG_MEMORY currently does nothing on allocation. It previously filled with zero's on
+ *        allocation and 0xbbb on deallocation.  The reasoning is that filling with zeroes on
+ *        allocation seems to hide uninitialization variable bugs, though I suppose if you suspect
+ *        that an uninitialized variable is causing a problem, you could use that option to test it.
+ */
 #ifdef DEBUG_MEMORY
-template <typename T>
-inline void fill_with_garbage(T* block, size_t size)
-{
-    memset(static_cast<void*>(block), 0xBB, (size));
-}
-/* Disabling the fill with zeros part since that may actually hide bugs */
-#define fill_with_zeroes(block,size) { }
-//template <typename T>
-//inline void fill_with_zeroes(T* block, size_t size)
-//{
-//    memset(static_cast<void*>(block), 0, (size));
-//}
+    template <typename T>
+    inline void fill_with_garbage(T* block, size_t size)
+    {
+        memset(static_cast<void*>(block), 0xBB, (size));
+    }
+    /* Disabling the fill with zeros part since that may actually hide bugs */
+    #define fill_with_zeroes(block,size) { }
+
+    //template <typename T>
+    //inline void fill_with_zeroes(T* block, size_t size)
+    //{
+    //    memset(static_cast<void*>(block), 0, (size));
+    //}
 #else
-#define fill_with_garbage(block,size) { }
-#define fill_with_zeroes(block,size) { }
+    #define fill_with_garbage(block,size) { }
+    #define fill_with_zeroes(block,size) { }
 #endif
 
 #ifdef MEMORY_POOL_STATS
