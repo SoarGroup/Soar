@@ -1,0 +1,6 @@
+sp {answer*make-chunk*StateNoChange*t3-1
+    (state <s1> ^university chicago ^chicago bulls ^chi town ^superstate nil
+          ^scottie <c1> ^michael { < <c1> <c2> })
+    -->
+    (<s1> ^result true +)
+}

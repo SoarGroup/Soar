@@ -84,6 +84,7 @@ public:
     TEST(No_Grounds, -1);
     TEST(No_Topstate_Match, -1);
     TEST(Opaque_State_Barrier, -1);
+    TEST(Operator_Selection_Knowledge_Ghost_Operator, -1);
     TEST(Operator_Selection_Knowledge_Mega_Test, -1);
     TEST(Operator_Selection_Knowledge_In_Proposal, -1);
     TEST(PRIMS_Sanity1, -1);
@@ -174,6 +175,7 @@ public:
     void NCC_with_Relational_Constraint();
     void No_Topstate_Match();
     void Opaque_State_Barrier();
+    void Operator_Selection_Knowledge_Ghost_Operator();
     void Operator_Selection_Knowledge_In_Proposal();
     void Operator_Selection_Knowledge_Mega_Test();
     void PRIMS_Sanity1();
