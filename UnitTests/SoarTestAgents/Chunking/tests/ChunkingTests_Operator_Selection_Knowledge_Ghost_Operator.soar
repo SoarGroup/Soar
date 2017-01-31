@@ -1,0 +1,85 @@
+chunk always
+chunk add-osk on
+
+sp {init*state
+    (state <s> ^superstate nil)
+-->
+    (<s> ^chi town 
+         ^chicago bulls
+         ^university chicago
+         ^michael jordan
+         ^scottie pippen)
+}
+sp {init*substate
+    (state <s> ^superstate.superstate nil)
+-->
+    (<s> ^name substate)
+}
+
+sp {ghost*elab
+    (state <s> ^superstate.superstate nil
+               -^stage
+                ^superstate.university chicago)
+-->
+    (<s> ^ghost seen)
+}
+
+sp {propose1
+    (state <s> ^name substate
+               ^superstate <ss>
+               -^stage)
+    (<ss> ^michael <x>
+          ^chi town)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name <x>)
+    }
+
+
+sp {propose2
+    (state <s> ^name substate
+               ^superstate <ss>
+               -^stage)
+    (<ss> ^scottie <x>
+          ^chicago bulls)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name <x>)
+    }
+
+sp {prefer*scottie
+    (state <s> ^name substate
+               ^operator <o1> +
+               ^operator <o2> +)
+    (<o1> ^name <n1>)
+    (<o2> ^name { > <n1> <n2> })
+-->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {apply-op1
+    (state <s> ^name substate
+               ^operator <o>
+               ^ghost seen)
+    -->
+    (<s> ^stage 2)
+    }
+
+
+sp {propose*stage*2
+    (state <s> ^name substate
+               ^stage 2)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name stage2)
+    }
+
+
+sp {make-chunk
+    (state <s> ^name substate
+               ^superstate <ss>
+               ^operator.name stage2)
+-->
+    (<ss> ^result true)
+    (interrupt)
+}
