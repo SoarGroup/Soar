@@ -60,6 +60,48 @@
 
 using namespace soar_TraceNames;
 
+#ifdef DEBUG_INST_DEALLOCATION_INVENTORY
+    id_to_sym_map inst_deallocation_map;
+
+    void IDI_add(agent* thisAgent, instantiation* pInst)
+    {
+        inst_deallocation_map[pInst->i_id] = pInst->prod_name;
+        thisAgent->symbolManager->symbol_add_ref(pInst->prod_name);
+    }
+    void IDI_remove(agent* thisAgent, uint64_t pID)
+    {
+        auto it = inst_deallocation_map.find(pID);
+        assert (it != inst_deallocation_map.end());
+        Symbol* lSym = it->second;
+        if (lSym)
+        {
+            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u was deallocated twice!\n", it->first);
+        }
+        inst_deallocation_map[pID] = NULL;
+    }
+    void IDI_print_and_cleanup(agent* thisAgent)
+    {
+        Symbol* lSym;
+        thisAgent->outputManager->printa_sf(thisAgent, "Looking for instantiations that were not deallocated...\n");
+        for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
+        {
+            lSym = it->second;
+            if (lSym != NULL)
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u (%y) was not deallocated!\n", it->first, lSym);
+                thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            }
+        }
+        inst_deallocation_map.clear();
+    }
+#else
+    void IDI_add(agent* thisAgent, instantiation* pInst) {}
+    void IDI_remove(agent* thisAgent, uint64_t pID) {}
+    void IDI_print_and_cleanup(agent* thisAgent) {}
+#endif
+
 void init_instantiation_pool(agent* thisAgent)
 {
     thisAgent->memoryManager->init_memory_pool(MP_instantiation, sizeof(instantiation), "instantiation");
@@ -1012,8 +1054,11 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->explain_tc_num = 0;
 
     inst->prod_name = prod ? prod->name : backup_name ? backup_name : NULL;
-    if (inst->prod_name) thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-
+    if (inst->prod_name)
+    {
+        thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
+        IDI_add(thisAgent, inst);
+    }
 }
 
 /* -----------------------------------------------------------------------
@@ -1240,7 +1285,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation stage 1 %u (%y)\n", inst->i_id, inst->prod_name);
 
         level = inst->match_goal_level;
 
@@ -1408,7 +1453,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     {
         instantiation* temp = *riter;
         ++riter;
-        dprint(DT_MILESTONES, "Deallocating instantiation %u (%y)\n", temp->i_id, temp->prod_name);
+        dprint(DT_MILESTONES, "Deallocating instantiation stage 2 %u (%y)\n", temp->i_id, temp->prod_name);
         dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
@@ -1426,6 +1471,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 production_remove_ref(thisAgent, temp->prod);
             }
         }
+
+        IDI_remove(thisAgent, temp->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
     dprint(DT_DEALLOCATE_INST, "Done removing instantiation's instantiation list.\n");

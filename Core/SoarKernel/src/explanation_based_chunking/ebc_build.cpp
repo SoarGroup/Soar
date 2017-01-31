@@ -1070,6 +1070,11 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 
+    /* Add this function to inventory deallocation inventory if that is enabled.
+     * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
+     *       though, we don't have the final rule name set up until now, so we call it here. */
+    IDI_add(thisAgent, m_chunk_inst);
+
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
@@ -1114,6 +1119,8 @@ void Explanation_Based_Chunker::clean_up ()
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
+        IDI_remove(thisAgent, m_chunk_inst->i_id);
+
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }

@@ -71,6 +71,7 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
+    #define DEBUG_INST_DEALLOCATION_INVENTORY   /* Looks for instantiations that weren't deallocated.  Useful for tracking down memory leaks. */
 //    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
     //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
     #define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/

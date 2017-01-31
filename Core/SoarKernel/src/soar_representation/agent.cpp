@@ -323,6 +323,8 @@ void destroy_soar_agent(agent* delete_agent)
         delete_agent->svs = NULL;
     #endif
 
+    IDI_print_and_cleanup(delete_agent);
+
     delete_agent->RL->clean_up_for_agent_deletion();
     delete_agent->WM->clean_up_for_agent_deletion();
     delete_agent->EpMem->clean_up_for_agent_deletion();
@@ -441,6 +443,8 @@ bool reinitialize_agent(agent* thisAgent)
     do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
 
     thisAgent->explanationMemory->re_init();
+
+    IDI_print_and_cleanup(thisAgent);
 
     thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();

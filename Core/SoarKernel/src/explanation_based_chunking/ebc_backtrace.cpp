@@ -223,6 +223,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (inst->tested_LTM) m_tested_ltm_recall = true;
     if (inst->creates_deep_copy) m_tested_deep_copy = true;
 
+    /* We must backtrace through OSK even if we're not adding OSK because prohibits also use this mechanism */
     if (inst->OSK_prefs)
     {
         backtrace_through_OSK(inst->OSK_prefs, grounds_level, inst->explain_depth);
