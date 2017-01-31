@@ -79,6 +79,7 @@ void ChunkingTests::NCC_with_Relational_Constraint()                  { check_ch
 void ChunkingTests::No_Grounds()                                      { check_chunk("No_Grounds", 8, 0); }
 void ChunkingTests::No_Topstate_Match()                               { check_chunk("No_Topstate_Match", 8, 1); }
 void ChunkingTests::Opaque_State_Barrier()                            { check_chunk("Opaque_State_Barrier", 8, 1); }
+void ChunkingTests::Operator_Selection_Knowledge_Ghost_Operator()     { check_chunk("Operator_Selection_Knowledge_Ghost_Operator", 4, 1); }
 void ChunkingTests::Operator_Selection_Knowledge_Mega_Test()          { check_chunk("Operator_Selection_Knowledge", 75, 18); }
 void ChunkingTests::Operator_Selection_Knowledge_In_Proposal()        { check_chunk("Operator_Selection_Knowledge_In_Proposal", 7, 2); }
 void ChunkingTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 4); }
