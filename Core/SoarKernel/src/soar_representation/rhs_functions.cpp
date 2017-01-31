@@ -827,15 +827,18 @@ void recursive_wme_copy(agent* thisAgent, Symbol* parent_id, wme* curwme,
     /* TODO: We need a serious reference counting audit of the kernel But I think
        this mirrors what happens in the instantiate rhs value and execute action
        functions. */
-//    thisAgent->symbolManager->symbol_add_ref(new_id);
-//    if (!made_new_attr_symbol)
-//    {
-//        thisAgent->symbolManager->symbol_add_ref(new_attr);
-//    }
-//    if (!made_new_value_symbol)
-//    {
-//        thisAgent->symbolManager->symbol_add_ref(new_value);
-//    }
+
+    /* It doesn't seem like we should be increasing these refcounts */
+
+    thisAgent->symbolManager->symbol_add_ref(new_id);
+    if (!made_new_attr_symbol)
+    {
+        thisAgent->symbolManager->symbol_add_ref(new_attr);
+    }
+    if (!made_new_value_symbol)
+    {
+        thisAgent->symbolManager->symbol_add_ref(new_value);
+    }
 
     thisAgent->WM->glbDeepCopyWMEs.push_back(new deep_copy_wme(new_id, new_attr, new_value, curwme));
 }

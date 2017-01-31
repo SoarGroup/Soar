@@ -43,6 +43,7 @@
 #include "output_manager.h"
 #include "parser.h"
 #include "print.h"
+#include "preference.h"
 #include "production.h"
 #include "production_record.h"
 #include "instantiation.h"
@@ -324,6 +325,7 @@ void destroy_soar_agent(agent* delete_agent)
     #endif
 
     IDI_print_and_cleanup(delete_agent);
+    PDI_print_and_cleanup(delete_agent);
 
     delete_agent->RL->clean_up_for_agent_deletion();
     delete_agent->WM->clean_up_for_agent_deletion();
@@ -445,6 +447,7 @@ bool reinitialize_agent(agent* thisAgent)
     thisAgent->explanationMemory->re_init();
 
     IDI_print_and_cleanup(thisAgent);
+    PDI_print_and_cleanup(thisAgent);
 
     thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();

@@ -143,7 +143,11 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
+    #ifdef DEBUG_PREF_DEALLOCATION_INVENTORY
+    uint64_t p_id;
+    #endif
 } preference;
+
 #include "dprint.h"
 #include "symbol.h"
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
@@ -166,6 +170,13 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
 inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
 void clear_preference_list(agent* thisAgent, cons* &lPrefList);
+
+/* These are used when DEBUG_PREF_DEALLOCATION_INVENTORY is defined.  They are used to print a report
+ * of preferences that aren't deallocated */
+
+void PDI_add(agent* thisAgent, instantiation* pInst);
+void PDI_remove(agent* thisAgent, uint64_t pID);
+void PDI_print_and_cleanup(agent* thisAgent);
 
 inline const char* preference_name(byte pNum)
 {

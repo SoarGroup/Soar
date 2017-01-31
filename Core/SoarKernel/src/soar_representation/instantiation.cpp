@@ -1420,7 +1420,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
     } // while
 
-    // free condition symbols and pref
+    // free condition symbols and its backtrace pref
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();

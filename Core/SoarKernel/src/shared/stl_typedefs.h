@@ -143,6 +143,8 @@ typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, sym_identity_info* >      id_to_sym_id_map;
 //typedef std::unordered_map< uint64_t, chunk_element* >          id_to_element_map;
+typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
+
 typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
 
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
