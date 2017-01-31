@@ -870,7 +870,7 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     if (cond->bt.trace)
     {
         #ifndef DO_TOP_LEVEL_REF_CTS
-        if (inst->match_goal_level > TOP_GOAL_LEVEL)
+        if (cond->bt.level > TOP_GOAL_LEVEL)
         #endif
         {
             preference_add_ref(cond->bt.trace);
@@ -1220,7 +1220,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     if (inst->in_newly_created)
     {
-        dprint(DT_OSK, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
         if (!inst->in_newly_deleted)
         {
             inst->in_newly_deleted = true;
@@ -1240,7 +1240,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         inst = *next_iter;
         assert(inst);
         ++next_iter;
-        dprint(DT_OSK, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation %u (%y)\n", inst->i_id, inst->prod_name);
 
         level = inst->match_goal_level;
 
@@ -1408,13 +1408,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     {
         instantiation* temp = *riter;
         ++riter;
-
-        dprint(DT_OSK, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
+        dprint(DT_MILESTONES, "Deallocating instantiation %u (%y)\n", temp->i_id, temp->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
         if (temp->prod)
         {
-            dprint(DT_DEALLOCATE_INST, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
+            dprint(DT_DEALLOCATE_PROD, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
             if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
             {
                 /* We are about to remove a justification that has not been excised from the rete.

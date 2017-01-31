@@ -41,7 +41,7 @@
 
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "W18"
+#define DEBUG_TRACE_REFCOUNT_FOR "B1"
 
 /* -- Forward declarations needed for symbol base struct -- */
 struct floatSymbol;

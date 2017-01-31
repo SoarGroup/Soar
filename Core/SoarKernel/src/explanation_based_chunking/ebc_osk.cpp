@@ -132,16 +132,13 @@ void Explanation_Based_Chunker::copy_OSK(instantiation* inst)
                     }
                 }
             }
-            else
+            pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
+            while (pref)
             {
-                pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
-                while (pref)
-                {
-                    new_pref = NIL;
-                    push(thisAgent, pref, inst->OSK_prefs);
-                    preference_add_ref(pref);
-                    pref = pref->next;
-                }
+                new_pref = NIL;
+                push(thisAgent, pref, inst->OSK_prefs);
+                preference_add_ref(pref);
+                pref = pref->next;
             }
         }
     }

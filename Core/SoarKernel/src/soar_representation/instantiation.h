@@ -69,7 +69,7 @@ preference*         find_clone_for_level(preference* p, goal_stack_level level);
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
-{
+{ break_if_id_matches(inst->i_id, 1);
     if ((!(inst)->preferences_generated) && (!(inst)->in_ms)) deallocate_instantiation(thisAgent, inst);
 }
 

@@ -400,6 +400,7 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         if (already_top_o_supported)
         {
             dprint(DT_PREFS, "...not adding because already o-supported on top state.\n");
+            dprint(DT_DEALLOCATE_PREF, "...not adding pref %p because already o-supported on top state.\n", pref);
             return false;
         }
     }

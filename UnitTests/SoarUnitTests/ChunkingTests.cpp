@@ -12,7 +12,7 @@
 
 #include "SoarHelper.hpp"
 
-//#define SAVE_LOG_FILES  // Make sure a log directory exists where unit tests are run
+#define SAVE_LOG_FILES  // Make sure a log directory exists where unit tests are run
 #define TURN_EXPLAINER_ON
 #define INIT_AFTER_RUN
 // Note: CONFIGURE_SOAR_FOR_UNIT_TESTS is defined in FunctionalTestHarness.cpp
@@ -145,9 +145,9 @@ void ChunkingTests::agent_command(const char* pCmd)
 void ChunkingTests::start_log(const char* pTestName)
 {
     std::string lCmdName("output log ");
-#ifdef SAVE_LOG_FILES
-    lCmdName += "logs/";
-#endif
+    #ifdef SAVE_LOG_FILES
+        lCmdName += "logs/";
+    #endif
     lCmdName += pTestName;
     lCmdName += "_log.txt";
     #ifdef SAVE_LOG_FILES
@@ -158,6 +158,9 @@ void ChunkingTests::start_log(const char* pTestName)
 void ChunkingTests::continue_log(const char* pTestName)
 {
     std::string lCmdName("output log -A ");
+    #ifdef SAVE_LOG_FILES
+        lCmdName += "logs/";
+    #endif
     lCmdName += pTestName;
     lCmdName += "_log.txt";
     #ifdef SAVE_LOG_FILES

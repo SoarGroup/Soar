@@ -25,6 +25,22 @@ sp {deep-copy
     (<s> ^dc-a (deep-copy <a>))
 }
 
+### Make a chunk based on deep-copied results
+#sp {deep-copy
+#    (state <s> ^operator.name deep-copy
+#               ^superstate.a <a>)
+#    (<a> ^b <b> ^c <c> )
+#    (<b> ^a <a> ^d <d>)
+#    (<c> ^b <b>)
+#    (<d> ^foo <bar>)
+#-->
+#    (<s> ^dc-a <a1>)
+#    (<a1> ^b <b1> ^c <c1> )
+#    (<b1> ^a <a1> ^d <d1>)
+#    (<c1> ^b <b1>)
+#    (<d1> ^foo <bar1>)
+#}
+
 # Test deep-copy works on top-state
 sp {deep-copy-top
     (state <s> ^a <a>)

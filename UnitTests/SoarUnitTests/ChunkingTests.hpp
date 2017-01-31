@@ -43,7 +43,7 @@ public:
     TEST(Constraint_Prop_from_Base_Conds, -1);
     TEST(Constraint_Ungrounded, -1);
     TEST(Deep_Copy_Identity_Expansion, -1);
-    TEST(Demo_Arithmetic, -1);
+//    TEST(Demo_Arithmetic, -1);
     TEST(Demo_Blocks_World_Hierarchical_Look_Ahead, -1);
     TEST(Demo_Blocks_World_Hierarchical, -1);
     TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation, -1);
@@ -60,8 +60,8 @@ public:
     TEST(Duplicates, -1);
     TEST(Faux_Operator, -1);
     TEST(Faux_Smem_Operator_RHS, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
-    TEST(GamesAgent_Sanity1, -1);
+//    TEST(Games_Nccx2_Long_Lived, -1);
+//    TEST(GamesAgent_Sanity1, -1);
     TEST(Justification_RC_not_Ungrounded_STIs, -1);
     TEST(Justifications_Get_New_Identities, -1);
     TEST(Link_STM_to_LTM, -1);
