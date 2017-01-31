@@ -558,7 +558,7 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     std::map<uint64_t, double> spread_map;
     //This map is the amount of spreading activation a recipient accumulates
     //from the source throughout the traversal.
-    while (!lti_traversal_queue.empty() & count < limit)
+    while (!lti_traversal_queue.empty() && count < limit)
     {//while we have network left to traversal and we haven't hit our computational limit.
         //Find the children of the current_lti_id.
         current_lti_list = lti_traversal_queue.top().second;
