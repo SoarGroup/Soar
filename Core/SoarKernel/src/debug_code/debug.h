@@ -20,7 +20,7 @@
 
 #ifndef SOAR_RELEASE_VERSION
     /* This can be used to turn off dprints except for a decision cycle range */
-//    #define DEBUG_ONLY_AFTER_DC 1221
+//    #define DEBUG_ONLY_AFTER_DC 4024
 //    #define DEBUG_ONLY_BEFORE_DC 1224
 
     /* This can be used to turn off dprints except for a particular chunk */
@@ -38,6 +38,7 @@ extern void debug_trace_off();
 bool break_if_symbol_matches_string(Symbol* sym, const char* match);
 bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
 bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
+bool break_if_test_symbol_matches_string(test t, const char* match);
 
 extern std::string get_stacktrace(const char* prefix = NULL);
 

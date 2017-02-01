@@ -953,6 +953,7 @@ void add_hash_info_to_id_test(agent* thisAgent,
     test New = 0;
 
     temp = var_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
+//    break_if_symbol_matches_string(temp, "I4");
     New = make_test(thisAgent, temp, EQUALITY_TEST);
     add_test(thisAgent, &(cond->data.tests.id_test), New);
 }
@@ -979,6 +980,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
+//    break_if_test_symbol_matches_string(new_ct, "I4");
 
     return new_ct;
 }

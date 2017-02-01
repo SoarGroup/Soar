@@ -282,6 +282,9 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
 
         result = rhs_value_to_symbol(rv);
+
+//        break_if_symbol_matches_string(result, "I4");
+
         assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
@@ -324,6 +327,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
         result = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(rv),
                                           rhs_value_to_reteloc_field_num(rv), tok, w);
+//        break_if_symbol_matches_string(result, "I4");
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -518,7 +522,6 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                     rule_action->value = NULL;
                 } else {
                     f_value = rule_action->value;
-                    rule_action->value = NULL;
                 }
             } else {
                 oid_value = rhs_value_to_o_id(rule_action->value);
@@ -1090,6 +1093,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     inst->in_newly_created = true;
     inst->in_ms = true;
 
+//    break_if_id_matches(inst->i_id, 35561);
+
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
     dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
 
@@ -1226,7 +1231,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     thisAgent->production_being_fired = NIL;
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "%ecreate_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* Clean up variable to identity mappings for this instantiation */
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
@@ -1237,7 +1242,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     deallocate_action_list(thisAgent, rhs_vars);
 
-    dprint_header(DT_MILESTONES, PrintAfter, "create_instantiation() for instance of %y (id=%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, inst->match_goal_level);
+    dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
     if (!thisAgent->system_halted)
     {

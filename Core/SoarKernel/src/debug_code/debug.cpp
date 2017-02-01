@@ -59,6 +59,13 @@ bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match)
         return true;
     return false;
 }
+bool break_if_test_symbol_matches_string(test t, const char* match)
+{
+    if (!t || !test_has_referent(t)) return false;
+    if (std::string(t->data.referent->to_string()) == std::string(match))
+        return true;
+    return false;
+}
 
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {

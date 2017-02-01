@@ -162,7 +162,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 //        get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
 //        get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
 
-    break_if_id_matches(inst->i_id, 41);
+//    break_if_id_matches(inst->i_id, 41);
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "... BT through instantiation of ");

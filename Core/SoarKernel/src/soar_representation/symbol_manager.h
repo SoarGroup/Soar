@@ -98,7 +98,7 @@ class EXPORT Symbol_Manager {
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
-                    std::cout << "++ | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+                    std::cout << "++ | " << strName.c_str() << " | " << (x->reference_count+1) << " | " << caller_string.c_str() << "\n";
                 }
             }
         #endif

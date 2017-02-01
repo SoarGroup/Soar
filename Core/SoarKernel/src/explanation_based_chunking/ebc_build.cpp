@@ -936,7 +936,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
-        clean_up();
+        clean_up(false);
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
@@ -1020,7 +1020,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
-                clean_up();
+                clean_up(false);
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
                 return;
             } else {
@@ -1110,7 +1110,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 }
 
-void Explanation_Based_Chunker::clean_up ()
+void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 {
     if (m_chunk_new_i_id)
     {
@@ -1119,7 +1119,7 @@ void Explanation_Based_Chunker::clean_up ()
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
-        IDI_remove(thisAgent, m_chunk_inst->i_id);
+        if (clean_up_inst_inventory) IDI_remove(thisAgent, m_chunk_inst->i_id);
 
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;

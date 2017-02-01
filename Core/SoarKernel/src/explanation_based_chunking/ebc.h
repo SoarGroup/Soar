@@ -227,7 +227,7 @@ class Explanation_Based_Chunker
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
-        void            clean_up();
+        void            clean_up(bool clean_up_inst_inventory = true);
         bool            add_chunk_to_rete();
 
         /* Dependency analysis methods */

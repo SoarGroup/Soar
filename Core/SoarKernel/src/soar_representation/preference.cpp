@@ -262,8 +262,9 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
-    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p\n", pref);
-
+//    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p\n", pref);
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u)\n", pref, pref->p_id);
+    break_if_id_matches(pref->p_id, 2);
     assert(pref->reference_count == 0);
 
     /*  remove it from the list of pref's for its match goal */

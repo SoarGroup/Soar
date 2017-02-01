@@ -10,7 +10,6 @@ decide indifferent-selection -x
 max-chunks 1000
 max-elaborations 500
 max-goal-depth 100
-watch 1
 
 multi-attributes object 20
 multi-attributes preposition 10
