@@ -71,8 +71,8 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-    #define DEBUG_INST_DEALLOCATION_INVENTORY   /* Looks for instantiations/prefs that weren't deallocated. */
-    #define DEBUG_PREF_DEALLOCATION_INVENTORY   /* Useful for tracking down memory leaks. */
+    #define DEBUG_INST_DEALLOCATION_INVENTORY   /* These two keep track of instantiations/prefs allocation/deallocation */
+    #define DEBUG_PREF_DEALLOCATION_INVENTORY   /* to see if any are still around at soar init or exit. */
 
     #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */

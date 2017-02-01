@@ -19,23 +19,43 @@
 
 #ifdef DEBUG_PREF_DEALLOCATION_INVENTORY
     id_to_string_map pref_deallocation_map;
+    id_to_pref_map pref_deallocation_map2;
+
     uint64_t PDI_id_counter = 0;
 
     void PDI_add(agent* thisAgent, preference* pPref, bool isShallow = false)
     {
         std::string lPrefString;
         pPref->p_id = ++PDI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u:%s%p", pPref->p_id, isShallow ? " shallow " : " ", pPref);
+        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u: %p", pPref->p_id, pPref);
+//        dprint(DT_DEBUG, "%u:%s%p\n", pPref->p_id, isShallow ? " shallow " : " ", pPref);
         pref_deallocation_map[pPref->p_id] = lPrefString;
+        pref_deallocation_map2[pPref->p_id] = pPref;
     }
     void PDI_remove(agent* thisAgent, preference* pPref)
     {
         auto it = pref_deallocation_map.find(pPref->p_id);
         assert (it != pref_deallocation_map.end());
+//        if (it == pref_deallocation_map.end())
+//        {
+//            dprint(DT_DEBUG, "Did not find preference to remove!  %p\nRemaining preference deallocation map:\n", pPref);
+//            std::string lPrefString;
+//            for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
+//            {
+//                lPrefString = it->second;
+//                if (!lPrefString.empty())
+//                {
+//                    dprint(DT_DEBUG, "%u: %s\n", it->first, lPrefString.c_str());
+//                }
+//            }
+//            return;
+//        }
         std::string lPrefString = it->second;
         if (!lPrefString.empty())
         {
+//            dprint(DT_DEBUG, "Clearing pref from %u: %p", pPref->p_id, pPref);
             pref_deallocation_map[pPref->p_id].clear();
+//            dprint(DT_DEBUG, "--> %p\n", pPref);
         } else {
             thisAgent->outputManager->printa_sf(thisAgent, "Preferences %u was deallocated twice!\n", it->first);
         }
@@ -51,8 +71,25 @@
             lPrefString = it->second;
             if (!lPrefString.empty())
             {
-//                thisAgent->outputManager->printa_sf(thisAgent, "Preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
                 bugCount++;
+            }
+        }
+        if (bugCount <= 23)
+        {
+            for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
+            {
+                lPrefString = it->second;
+                if (!lPrefString.empty())
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent, "Preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
+                    auto it2 = pref_deallocation_map2.find(it->first);
+                    if (it2 != pref_deallocation_map2.end())
+                    {
+                        preference* lPref = it2->second;
+                        thisAgent->outputManager->printa_sf(thisAgent, "- created by instantiation %u %y.  Refcount of %d.\n", lPref->inst ? lPref->inst->i_id : 0, lPref->inst ? lPref->inst->prod_name : thisAgent->symbolManager->soarSymbols.nil_symbol, lPref->reference_count);
+                    }
+
+                }
             }
         }
         thisAgent->outputManager->printa_sf(thisAgent, "\n\nPreference inventory result:  %u/%u were not deallocated.\n", bugCount, PDI_id_counter);
@@ -303,6 +340,8 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 //            possibly_deallocate_instantiation(thisAgent, prefInst);
 //        }
 
+    PDI_remove(thisAgent, pref);
+
     /*  dereference component symbols */
     thisAgent->symbolManager->symbol_remove_ref(&pref->id);
     thisAgent->symbolManager->symbol_remove_ref(&pref->attr);
@@ -324,8 +363,6 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
     if (pref->cloned_rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.attr);
     if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
     if (pref->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.referent);
-
-    PDI_remove(thisAgent, pref);
 
     /*  free the memory */
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);
