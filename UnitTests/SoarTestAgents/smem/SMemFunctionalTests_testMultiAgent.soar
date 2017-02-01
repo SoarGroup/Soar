@@ -12,16 +12,16 @@ sp {apply*init
 -->
    (<s> ^random-objects <ro>
         ^name multiagent)
-   (<ro> ^random-1 (random-int)
-   	     ^random-2 (random-int)
-         ^random-3 (random-int)
-         ^random-4 (random-int)
-         ^random-5 (random-int)
-         ^random-6 (random-int)
-         ^random-7 (random-int)
-         ^random-8 (random-int)
-         ^random-9 (random-int)
-         ^random-10 (random-int))
+   (<ro> ^random-1 (rand-int)
+   	     ^random-2 (rand-int)
+         ^random-3 (rand-int)
+         ^random-4 (rand-int)
+         ^random-5 (rand-int)
+         ^random-6 (rand-int)
+         ^random-7 (rand-int)
+         ^random-8 (rand-int)
+         ^random-9 (rand-int)
+         ^random-10 (rand-int))
 }
 
 sp {propose*store
