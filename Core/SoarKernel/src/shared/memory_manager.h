@@ -75,7 +75,8 @@ typedef struct memory_pool_struct
     template <typename T>
     inline void fill_with_garbage(T* block, size_t size)
     {
-        memset(static_cast<void*>(block), 0xBB, (size));
+//        memset(static_cast<void*>(block), 0xBB, (size));
+        memset(static_cast<void*>(block), 0, (size));
     }
     /* Disabling the fill with zeros part since that may actually hide bugs */
     #define fill_with_zeroes(block,size) { }
