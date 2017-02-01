@@ -324,9 +324,6 @@ void destroy_soar_agent(agent* delete_agent)
         delete_agent->svs = NULL;
     #endif
 
-    IDI_print_and_cleanup(delete_agent);
-    PDI_print_and_cleanup(delete_agent);
-
     delete_agent->RL->clean_up_for_agent_deletion();
     delete_agent->WM->clean_up_for_agent_deletion();
     delete_agent->EpMem->clean_up_for_agent_deletion();
@@ -354,9 +351,12 @@ void destroy_soar_agent(agent* delete_agent)
 
     excise_all_productions(delete_agent, false);
 
-    /* This must happen after production excision */
+    /* We can't clean up the explanation manager until after production excision */
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
+
+    IDI_print_and_cleanup(delete_agent);
+    PDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
