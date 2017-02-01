@@ -143,25 +143,17 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
-    #ifdef DEBUG_PREF_DEALLOCATION_INVENTORY
-    uint64_t p_id;
-    #endif
+    uint64_t                        p_id;               /* This is an ID that is currently only used when DEBUG_PREF_DEALLOCATION_INVENTORY is defined */
 } preference;
 
-#include "dprint.h"
-#include "symbol.h"
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false, const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
+                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false,
+                                   const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
 preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);
-inline void preference_add_ref(preference* p) {
-    if ((std::string(p->id->to_string(false, false)) == std::string("S1")) && (std::string(p->attr->to_string(false, false)) == std::string("a")) && (std::string(p->value->to_string(false, false)) == std::string("A1")))
-        dprint_noprefix(DT_DEBUG, "++ %p -> %d\n", p, (p)->reference_count + 1);
-    (p)->reference_count++;}
-inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false) {
-    if ((std::string(p->id->to_string(false, false)) == std::string("S1")) && (std::string(p->attr->to_string(false, false)) == std::string("a")) && (std::string(p->value->to_string(false, false)) == std::string("A1")))
-        dprint_noprefix(DT_DEBUG, "-- %p -> %d\n", p, (p)->reference_count - 1);
-    (p)->reference_count--; if ((p)->reference_count == 0) { return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);} return false;}
+inline void preference_add_ref(preference* p) { (p)->reference_count++;}
+inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
+              { (p)->reference_count--; if ((p)->reference_count == 0) { return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);} return false;}
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);
 bool add_preference_to_tm(agent* thisAgent, preference* pref);
 void remove_preference_from_tm(agent* thisAgent, preference* pref);
@@ -171,11 +163,7 @@ inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
 void clear_preference_list(agent* thisAgent, cons* &lPrefList);
 
-/* These are used when DEBUG_PREF_DEALLOCATION_INVENTORY is defined.  They are used to print a report
- * of preferences that aren't deallocated */
-
-void PDI_add(agent* thisAgent, instantiation* pInst);
-void PDI_remove(agent* thisAgent, uint64_t pID);
+/* When DEBUG_PREF_DEALLOCATION_INVENTORY is defined this functions prints a report of preferences that aren't deallocated */
 void PDI_print_and_cleanup(agent* thisAgent);
 
 inline const char* preference_name(byte pNum)

@@ -96,8 +96,8 @@
         pref_deallocation_map.clear();
     }
 #else
-    void PDI_add(agent* thisAgent, instantiation* pInst, bool isShallow = false) {}
-    void PDI_remove(agent* thisAgent, uint64_t pID) {}
+    void PDI_add(agent* thisAgent, preference* pPref, bool isShallow = false) {}
+    void PDI_remove(agent* thisAgent, preference* pPref) {}
     void PDI_print_and_cleanup(agent* thisAgent) {}
 #endif
 
