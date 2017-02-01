@@ -228,7 +228,10 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         backtrace_through_OSK(inst->OSK_prefs, grounds_level, inst->explain_depth);
     }
-
+    if (inst->OSK_proposal_prefs)
+    {
+        backtrace_through_OSK(inst->OSK_proposal_prefs, grounds_level, inst->explain_depth);
+    }
     Symbol* thisID, *value;
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
