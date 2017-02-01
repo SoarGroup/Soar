@@ -161,7 +161,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
                 SQL->history_add->execute(soar_module::op_reinit);
             }
 
-            new_activation = 0;
+            new_activation = lti_calc_base(pLTI_ID, time_now + ((add_access) ? (1) : (0)), prev_access_n + ((add_access) ? (1) : (0)), prev_access_1);
         }
         else
         {
