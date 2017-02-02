@@ -70,7 +70,6 @@ Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_s
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
-    //break_if_id_matches(inst->i_id, 1);
     if ((!(inst)->preferences_generated) && (!(inst)->in_ms))
         deallocate_instantiation(thisAgent, inst);
 }

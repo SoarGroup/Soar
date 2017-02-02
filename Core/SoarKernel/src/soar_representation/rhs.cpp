@@ -545,7 +545,6 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
 {
     if (sym)
     {
-//        break_if_symbol_matches_string(sym, "I4");
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
     return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID, pWasUnbound);

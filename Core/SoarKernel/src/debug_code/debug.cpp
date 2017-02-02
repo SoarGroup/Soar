@@ -23,6 +23,7 @@
 #include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
+#include "symbol.h"
 #include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
@@ -38,7 +39,6 @@
 #include <cxxabi.h>
 #include "debug_stacktrace.h"
 #endif
-
 using namespace soar_module;
 
 bool break_if_symbol_matches_string(Symbol* sym, const char* match)
@@ -65,6 +65,44 @@ bool break_if_test_symbol_matches_string(test t, const char* match)
     if (std::string(t->data.referent->to_string()) == std::string(match))
         return true;
     return false;
+}
+
+static int64_t debug_last_refcount = 0;
+static int64_t debug_last_refcount2 = 0;
+
+void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart)
+{
+    int lSymNum;
+    std::string numString;
+    numString.push_back(symString[1]);
+    if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
+    Symbol *sym = thisAgent->symbolManager->find_identifier(symString[0], 1);
+    if (sym)
+    {
+        int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
+        (*last_count) = sym->reference_count;
+    };
+}
+void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart)
+{
+    int lSymNum;
+    std::string numString;
+    numString.push_back(symString[1]);
+    if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
+    Symbol *sym = thisAgent->symbolManager->find_identifier(symString[0], 1);
+    if (sym)
+    {
+        int64_t new_count = static_cast<int64_t>(sym->reference_count);
+        int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
+        if (new_count != (*last_count))
+        {
+            dprint_noprefix(DT_DEBUG, "%s Reference count of %s changed (%d -> %d) by %d\n", callerString, symString,
+                (*last_count), new_count, (new_count - (*last_count)));
+            if (std::string(callerString) == std::string("DEALLOCATED INST preference deallocation")) break_if_id_matches(1, 1);
+        }
+        (*last_count) = 0;
+        if (twoPart) debug_last_refcount2 = debug_last_refcount2 + (new_count - debug_last_refcount);
+    };
 }
 
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)

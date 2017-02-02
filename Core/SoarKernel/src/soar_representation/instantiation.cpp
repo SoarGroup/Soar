@@ -283,8 +283,6 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
 
         result = rhs_value_to_symbol(rv);
 
-//        break_if_symbol_matches_string(result, "I4");
-
         assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
@@ -327,7 +325,6 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     {
         result = get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(rv),
                                           rhs_value_to_reteloc_field_num(rv), tok, w);
-//        break_if_symbol_matches_string(result, "I4");
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -1084,16 +1081,15 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     Symbol** cell;
 
     #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
-        assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
+    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
     #endif
 
+    //debug_refcount_change_start(thisAgent, "T1", true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
     inst->in_newly_created = true;
     inst->in_ms = true;
-
-//    break_if_id_matches(inst->i_id, 35561);
 
     dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
     dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
@@ -1241,6 +1237,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
+    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
@@ -1291,6 +1288,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(inst);
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation stage 1 %u (%y)\n", inst->i_id, inst->prod_name);
+        //debug_refcount_change_start(thisAgent, "T1", false);
 
         level = inst->match_goal_level;
 
@@ -1328,10 +1326,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                         {
                             preference* clone;
 
-                            if (cond->bt.trace->reference_count)
-                            {
-                                continue;
-                            }
                             bool has_active_clones = false;
                             for (clone = cond->bt.trace->next_clone; clone != NIL; clone = clone->next_clone)
                             {
@@ -1415,6 +1409,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             inst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
         }
 
+        //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 1")).c_str(), false);
+
         preference* next_pref;
         while (inst->preferences_cached)
         {
@@ -1426,10 +1422,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     } // while
 
     // free condition symbols and its backtrace pref
+    //debug_refcount_change_start(thisAgent, "T1", false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
         cond_stack.pop_back();
+
+        PDI_remove(thisAgent, temp->bt.trace);
 
         /* dereference component symbols */
         thisAgent->symbolManager->symbol_remove_ref(&temp->bt.trace->id);
@@ -1444,12 +1443,22 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         {
             wma_remove_pref_o_set(thisAgent, temp->bt.trace);
         }
+        if (temp->bt.trace->rhs_funcs.id) deallocate_rhs_value(thisAgent, temp->bt.trace->rhs_funcs.id);
+        if (temp->bt.trace->rhs_funcs.attr) deallocate_rhs_value(thisAgent, temp->bt.trace->rhs_funcs.attr);
+        if (temp->bt.trace->rhs_funcs.value) deallocate_rhs_value(thisAgent, temp->bt.trace->rhs_funcs.value);
+        if (temp->bt.trace->rhs_funcs.referent) deallocate_rhs_value(thisAgent, temp->bt.trace->rhs_funcs.referent);
+        if (temp->bt.trace->cloned_rhs_funcs.id) deallocate_rhs_value(thisAgent, temp->bt.trace->cloned_rhs_funcs.id);
+        if (temp->bt.trace->cloned_rhs_funcs.attr) deallocate_rhs_value(thisAgent, temp->bt.trace->cloned_rhs_funcs.attr);
+        if (temp->bt.trace->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, temp->bt.trace->cloned_rhs_funcs.value);
+        if (temp->bt.trace->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, temp->bt.trace->cloned_rhs_funcs.referent);
 
         /* free the memory */
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
+
+    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 2")).c_str(), false);
 
     // free instantiations in the reverse order
     inst_list::reverse_iterator riter = l_instantiation_list.rbegin();
@@ -1459,6 +1468,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         instantiation* temp = *riter;
         ++riter;
         dprint(DT_MILESTONES, "Deallocating instantiation stage 2 %u (%y)\n", temp->i_id, temp->prod_name);
+        //debug_refcount_change_start(thisAgent, "T1", false);
         dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
@@ -1477,6 +1487,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
+        //debug_refcount_change_end(thisAgent, "T1", (std::string(temp->prod_name->sc->name) + std::string(" instantiation deallocation 3 of")).c_str(), false);
         IDI_remove(thisAgent, temp->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
@@ -1507,6 +1518,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
+    //debug_refcount_change_start(thisAgent, "T1", true);
     while (pref != NIL)
     {
         next = pref->inst_next;
@@ -1537,6 +1549,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
+    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation retraction of")).c_str(), true);
 
     /* prod may not exist if rule was manually excised */
     if (inst->prod)

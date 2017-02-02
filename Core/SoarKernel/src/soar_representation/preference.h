@@ -163,8 +163,10 @@ inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
 void clear_preference_list(agent* thisAgent, cons* &lPrefList);
 
-/* When DEBUG_PREF_DEALLOCATION_INVENTORY is defined this functions prints a report of preferences that aren't deallocated */
+/* If DEBUG_PREF_DEALLOCATION_INVENTORY is #defined, this functions prints a report of preferences that aren't deallocated */
 void PDI_print_and_cleanup(agent* thisAgent);
+void PDI_remove(agent* thisAgent, preference* pPref);
+void PDI_add(agent* thisAgent, preference* pPref, bool isShallow = false);
 
 inline const char* preference_name(byte pNum)
 {

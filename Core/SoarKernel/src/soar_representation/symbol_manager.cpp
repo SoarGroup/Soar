@@ -466,7 +466,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     symbol_add_ref(sym);
     add_to_hash_table(thisAgent, identifier_hash_table, sym);
 
-//    break_if_symbol_matches_string(sym, "I4");
     return sym;
 }
 

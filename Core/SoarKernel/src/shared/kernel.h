@@ -71,12 +71,14 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-//    #define DEBUG_INST_DEALLOCATION_INVENTORY   /* These two keep track of instantiations/prefs allocation/deallocation */
-//    #define DEBUG_PREF_DEALLOCATION_INVENTORY   /* to see if any are still around at soar init or exit. */
+//    #define DEBUG_INST_DEALLOCATION_INVENTORY   // These two keep track of instantiations/prefs allocation/deallocation */
+//    #define DEBUG_PREF_DEALLOCATION_INVENTORY   // to see if any are still around at soar init or exit.
+//                                                // Note: Unit  tests that use multiple agents will fail if these are enabled. We'd need
+//                                                //       to move the inventory tracking maps somewhere that they can be agent specific. */
 
-    //#define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
+    #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */
-    //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/
+    #define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. */
 
     //#define DEBUG_EPMEM_WME_ADD
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */
