@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -62,7 +62,6 @@
  *   Note: #defines that enable trace messages pf SQL processing and errors   *
  *   can be found in soar_db.cpp                                              */
 /* =============================== */
-#define DEBUG_MEMORY
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
@@ -76,7 +75,7 @@
 //                                                // Note: Unit  tests that use multiple agents will fail if these are enabled. We'd need
 //                                                //       to move the inventory tracking maps somewhere that they can be agent specific. */
 
-    #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
+//    #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */
 //    #define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. */
 
