@@ -19,7 +19,7 @@ public:
 	TEST(testAllNegQueriesEpMem, -1)
 	TEST(testBeforeAfterProhibitEpMem, -1)
 	TEST(testBeforeEpMem, -1)
-//	TEST(testCountEpMem, -1)
+	TEST(testCountEpMem, -1)
 	TEST(testCyclicQuery, -1)
 	TEST(testEpMemEncodeOutput_NoWMA, -1)
 	TEST(testEpMemEncodeOutput_WMA, -1)
@@ -39,7 +39,6 @@ public:
 	TEST(testEpmemUnit_11, -1)
 	TEST(testEpmemUnit_12, -1)
 	TEST(testEpmemUnit_13, -1)
-//	TEST(testEpmemUnit_14, -1) /* This test should no longer pass with the new 9.6.0 model of smem */
 	TEST(testEpMemYRemoval, -1)
 	TEST(testHamilton, -1)
 	TEST(testHamiltonian, -1)

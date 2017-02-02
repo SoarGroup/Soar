@@ -43,7 +43,7 @@ public:
     TEST(Constraint_Prop_from_Base_Conds, -1);
     TEST(Constraint_Ungrounded, -1);
     TEST(Deep_Copy_Identity_Expansion, -1);
-//    TEST(Demo_Arithmetic, -1);
+    //TEST(Demo_Arithmetic, -1);
     TEST(Demo_Blocks_World_Hierarchical_Look_Ahead, -1);
     TEST(Demo_Blocks_World_Hierarchical, -1);
     TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation, -1);

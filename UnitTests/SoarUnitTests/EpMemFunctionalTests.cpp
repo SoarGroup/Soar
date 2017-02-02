@@ -23,7 +23,9 @@ void EpMemFunctionalTests::tearDown(bool caught)
 
 void EpMemFunctionalTests::testCountEpMem()
 {
-	runTest("testCountEpMem", 1693);
+    //SoarHelper::start_log(agent, "testCountEpmem");
+	runTest("testCountEpMem", -1);
+    //SoarHelper::close_log(agent);
 }
 
 void EpMemFunctionalTests::testHamilton()
