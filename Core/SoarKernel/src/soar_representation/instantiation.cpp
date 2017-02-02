@@ -27,6 +27,7 @@
 #include "callback.h"
 #include "condition.h"
 #include "debug.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -59,48 +60,6 @@
 #include <string> // SBW 8/4/08
 
 using namespace soar_TraceNames;
-
-#ifdef DEBUG_INST_DEALLOCATION_INVENTORY
-    id_to_sym_map inst_deallocation_map;
-
-    void IDI_add(agent* thisAgent, instantiation* pInst)
-    {
-        inst_deallocation_map[pInst->i_id] = pInst->prod_name;
-        thisAgent->symbolManager->symbol_add_ref(pInst->prod_name);
-    }
-    void IDI_remove(agent* thisAgent, uint64_t pID)
-    {
-        auto it = inst_deallocation_map.find(pID);
-        assert (it != inst_deallocation_map.end());
-        Symbol* lSym = it->second;
-        if (lSym)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&lSym);
-        } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u was deallocated twice!\n", it->first);
-        }
-        inst_deallocation_map[pID] = NULL;
-    }
-    void IDI_print_and_cleanup(agent* thisAgent)
-    {
-        Symbol* lSym;
-        thisAgent->outputManager->printa_sf(thisAgent, "Looking for instantiations that were not deallocated...\n");
-        for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
-        {
-            lSym = it->second;
-            if (lSym != NULL)
-            {
-                thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u (%y) was not deallocated!\n", it->first, lSym);
-                thisAgent->symbolManager->symbol_remove_ref(&lSym);
-            }
-        }
-        inst_deallocation_map.clear();
-    }
-#else
-    void IDI_add(agent* thisAgent, instantiation* pInst) {}
-    void IDI_remove(agent* thisAgent, uint64_t pID) {}
-    void IDI_print_and_cleanup(agent* thisAgent) {}
-#endif
 
 void init_instantiation_pool(agent* thisAgent)
 {

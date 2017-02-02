@@ -25,6 +25,7 @@
 #include "cmd_settings.h"
 #include "condition_record.h"
 #include "debug.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"

@@ -6,6 +6,7 @@
 #include <condition_record.cpp>
 #include <condition.cpp>
 #include <consistency.cpp>
+#include <debug_inventories.cpp>
 #include <debug_stacktrace.cpp>
 #include <debug.cpp>
 #include <decide.cpp>

@@ -77,13 +77,6 @@ inline void         possibly_deallocate_instantiation(agent* thisAgent, instanti
 instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
 preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
 
-/* These are used when DEBUG_INST_DEALLOCATION_INVENTORY is defined.  They are used to print a report
- * of instantiations that aren't deallocated */
-
-void IDI_add(agent* thisAgent, instantiation* pInst);
-void IDI_remove(agent* thisAgent, uint64_t pID);
-void IDI_print_and_cleanup(agent* thisAgent);
-
 /* -------------------------------------------------------------------
                               Instantiations
 

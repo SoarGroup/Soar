@@ -40,8 +40,6 @@ bool break_if_symbol_matches_string(Symbol* sym, const char* match);
 bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
 bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 bool break_if_test_symbol_matches_string(test t, const char* match);
-void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart);
-void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart);
 
 void debug_test(int type = 1);
 

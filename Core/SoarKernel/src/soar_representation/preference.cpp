@@ -1,6 +1,7 @@
 #include "preference.h"
 
 #include "agent.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "dprint.h"
@@ -16,73 +17,6 @@
 #include "working_memory_activation.h"
 
 #include <stdlib.h>
-
-#ifdef DEBUG_PREF_DEALLOCATION_INVENTORY
-    id_to_string_map pref_deallocation_map;
-
-    uint64_t PDI_id_counter = 0;
-
-    void PDI_add(agent* thisAgent, preference* pPref, bool isShallow)
-    {
-        std::string lPrefString;
-        pPref->p_id = ++PDI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u: %p", pPref->p_id, pPref);
-//        dprint(DT_DEBUG, "%u:%s%p\n", pPref->p_id, isShallow ? " shallow " : " ", pPref);
-        pref_deallocation_map[pPref->p_id] = lPrefString;
-    }
-    void PDI_remove(agent* thisAgent, preference* pPref)
-    {
-        auto it = pref_deallocation_map.find(pPref->p_id);
-        assert (it != pref_deallocation_map.end());
-//        if (it == pref_deallocation_map.end())
-//        {
-//            dprint(DT_DEBUG, "Did not find preference to remove!  %p\nRemaining preference deallocation map:\n", pPref);
-//            std::string lPrefString;
-//            for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
-//            {
-//                lPrefString = it->second;
-//                if (!lPrefString.empty()) dprint(DT_DEBUG, "%u: %s\n", it->first, lPrefString.c_str());
-//            }
-//            return;
-//        }
-        std::string lPrefString = it->second;
-        if (!lPrefString.empty())
-        {
-            pref_deallocation_map[pPref->p_id].clear();
-        } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "Preferences %u was deallocated twice!\n", it->first);
-        }
-    }
-
-    void PDI_print_and_cleanup(agent* thisAgent)
-    {
-        std::string lPrefString;
-        uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Looking for preferences that were not deallocated...\n");
-        for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
-        {
-            lPrefString = it->second;
-            if (!lPrefString.empty())
-            {
-                bugCount++;
-            }
-        }
-        if (bugCount <= 23)
-        {
-            for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
-            {
-                lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "Preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
-            }
-        }
-        thisAgent->outputManager->printa_sf(thisAgent, "\n\nPreference inventory result:  %u/%u were not deallocated.\n", bugCount, PDI_id_counter);
-        pref_deallocation_map.clear();
-    }
-#else
-    void PDI_add(agent* thisAgent, preference* pPref, bool isShallow) {}
-    void PDI_remove(agent* thisAgent, preference* pPref) {}
-    void PDI_print_and_cleanup(agent* thisAgent) {}
-#endif
 
 /* -------------------------------------------------------------------
    Make_preference() creates a new preference structure of the given type

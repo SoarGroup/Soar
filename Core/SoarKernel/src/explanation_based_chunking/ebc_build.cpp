@@ -19,6 +19,7 @@
 #include "condition.h"
 #include "decide.h"
 #include "debug.h"
+#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
