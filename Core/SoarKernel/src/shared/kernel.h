@@ -62,7 +62,7 @@
  *   Note: #defines that enable trace messages pf SQL processing and errors   *
  *   can be found in soar_db.cpp                                              */
 /* =============================== */
-
+#define DEBUG_MEMORY
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
