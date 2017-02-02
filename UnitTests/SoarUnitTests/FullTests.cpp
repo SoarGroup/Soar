@@ -8,10 +8,17 @@
 
 #include "FullTests.hpp"
 
-#include "SoarHelper.hpp"
 #include "FullTestsClientThread.hpp"
 #include "FullTestsClientThreadFullyOptimized.hpp"
 #include "FullTestsRemote.hpp"
+
+#include "SoarHelper.hpp"
+
+//#include "sml_EmbeddedConnectionSynch.h"
+#include "sml_AgentSML.h"
+//#include "sml_KernelSML.h"
+//#include "symbol_manager.h"
+#include "soar_instance.h"
 
 bool g_Cancel = false;
 
@@ -109,6 +116,9 @@ void FullTests_Parent::createSoar()
 		{
 			m_pKernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kUseAnyPort);
 		}
+        #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
+		configure_for_unit_tests();
+        #endif
 	}
 	
 	no_agent_assertTrue(m_pKernel != NULL);
@@ -136,6 +146,15 @@ void FullTests_Parent::createSoar()
 	no_agent_assertTrue_msg(m_pKernel->GetLastErrorDescription(), !m_pKernel->HadError());
 	no_agent_assertTrue(agent != NULL);
 	no_agent_assertTrue(creationHandlerReceived);
+    #ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
+	{
+//	    sml::EmbeddedConnectionSynch* lConnection = dynamic_cast<sml::EmbeddedConnectionSynch*>(m_pKernel->GetConnection());
+//	    sml::KernelSML* lKernel = lConnection->GetKernelSML();
+//	    agent_struct* lAgent = lKernel->GetAgentSML(kAgentName.c_str())->GetSoarAgent();
+	    agent_struct* lAgent = Soar_Instance::Get_Soar_Instance().Get_Agent_Info(kAgentName.c_str())->GetSoarAgent();
+	    configure_agent_for_unit_tests(lAgent);
+	}
+    #endif
 	
 	no_agent_assertTrue(m_pKernel->UnregisterForAgentEvent(agentCreationCallback));
 	
@@ -358,6 +377,7 @@ void FullTests_Parent::testProductions()
 	no_agent_assertTrue(excisedCount == 0);
 	
 	no_agent_assertTrue(agent->UnregisterForProductionEvent(prodCall));
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testRHSHandler()
@@ -398,6 +418,7 @@ void FullTests_Parent::testRHSHandler()
 	
 	no_agent_assertTrue(pSquare->DestroyWME());
 	no_agent_assertTrue(agent->Commit());
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testClientMessageHandler()
@@ -536,6 +557,8 @@ void FullTests_Parent::testWMEs()
 	std::string pattern = agent->ExecuteCommandLine("print -i (s1 ^* *)") ;
 	no_agent_assertTrue_msg("print -i (s1 ^* *)", agent->GetLastCommandLineResult());
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void FullTests_Parent::testXML()
@@ -570,6 +593,7 @@ void FullTests_Parent::testXML()
 		wmeChild.DeleteString(wmeString) ;
 	}
 	xml2.DeleteString(xmlString) ;
+
 }
 
 void FullTests_Parent::testAgent()
@@ -866,6 +890,8 @@ void FullTests_Parent::testAgent()
 	no_agent_assertTrue(agent->UnregisterForRunEvent(callback1));
 	no_agent_assertTrue(agent->UnregisterForRunEvent(callback2));
 	no_agent_assertTrue(agent->UnregisterForRunEvent(callback_run_count));
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testSimpleCopy()
@@ -1007,6 +1033,8 @@ void FullTests_Parent::testSimpleCopy()
 	changesString << "Number of changes: " << changes;
 	no_agent_assertTrue_msg(changesString.str().c_str(), changes == 13);
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 	// FIXME: leaks without this
 	north->DestroyWME();
 	south->DestroyWME();
@@ -1022,6 +1050,7 @@ void FullTests_Parent::testSimpleReteNetLoader()
 	//cout << "Input link id is " << pID->GetValueAsString() << endl ;
 	
 	no_agent_assertTrue(pID);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::test64BitReteNet()
@@ -1034,6 +1063,7 @@ void FullTests_Parent::test64BitReteNet()
 	//cout << "Input link id is " << pID->GetValueAsString() << endl ;
 	
 	no_agent_assertTrue(pID);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testOSupportCopyDestroy()
@@ -1064,6 +1094,7 @@ void FullTests_Parent::testOSupportCopyDestroy()
 	agent->RunSelf(1);
 	
 	no_agent_assertTrue(!badCopyExists);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testOSupportCopyDestroyCircularParent()
@@ -1095,6 +1126,7 @@ void FullTests_Parent::testOSupportCopyDestroyCircularParent()
 	
 	// FIXME: leaks without this.
 	pBar->DestroyWME();
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 	
 }
 
@@ -1126,6 +1158,8 @@ void FullTests_Parent::testOSupportCopyDestroyCircular()
 	agent->RunSelf(1);
 	
 	no_agent_assertTrue(!badCopyExists);
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testSynchronize()
@@ -1165,6 +1199,8 @@ void FullTests_Parent::testSynchronize()
 	std::string olNewName = pOutputLink->GetIdentifierName();
 	
 	no_agent_assertTrue(olName == olNewName);
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testRunningAgentCreation()
@@ -1195,6 +1231,8 @@ void FullTests_Parent::testRunningAgentCreation()
 	//std::cout << " " << response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1) << std::endl;
 	no_agent_assertTrue(response1.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 10);
 	no_agent_assertTrue(response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 10);
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testEventOrdering()
@@ -1246,6 +1284,7 @@ void FullTests_Parent::testStatusCompleteDuplication()
 	// there should only be one
 	no_agent_assertTrue(count == 1);
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testStopSoarVsInterrupt()
@@ -1301,7 +1340,8 @@ void FullTests_Parent::testStopSoarVsInterrupt()
 		no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 0);
 		no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 1);
 	}
-	
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testSharedWmeSetViolation()
@@ -1316,6 +1356,8 @@ void FullTests_Parent::testSharedWmeSetViolation()
 	no_agent_assertTrue_msg("CreateSharedIdWME was able to create duplicate wme", pFoo2 == 0);
 	
 	no_agent_assertTrue(agent->Commit());
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testEchoEquals()
@@ -1348,6 +1390,8 @@ void FullTests_Parent::testTemplateVariableNameBug()
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 4);
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void FullTests_Parent::testNegatedConjunctiveChunkLoopBug510()
@@ -1358,12 +1402,16 @@ void FullTests_Parent::testNegatedConjunctiveChunkLoopBug510()
 	agent->ExecuteCommandLineXML("stats", &response);
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testGDSBug1144()
 {
 	loadProductions(SoarHelper::GetResource("testGDSBug1144.soar"));
 	agent->ExecuteCommandLine("run");
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testGDSBug1011()
@@ -1375,6 +1423,8 @@ void FullTests_Parent::testGDSBug1011()
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 8);
 	no_agent_assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 19);
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void FullTests_Parent::testLearn()
@@ -1491,6 +1541,7 @@ void FullTests_Parent::testSVS()
 	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("testSVS.soar"));
 	agent->ExecuteCommandLine("run");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testPreferenceSemantics()
@@ -1498,6 +1549,7 @@ void FullTests_Parent::testPreferenceSemantics()
 	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("pref-semantics-test.soar"));
 	agent->ExecuteCommandLine("run");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testMatchTimeInterrupt()
@@ -1505,12 +1557,14 @@ void FullTests_Parent::testMatchTimeInterrupt()
 	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("testMatchTimeInterrupt.soar"));
 	agent->ExecuteCommandLine("run");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 void FullTests_Parent::testNegatedConjunctiveTestReorder()
 {
 	agent->ExecuteCommandLine("sp {test (state <s> ^a <val> -^a {<val> < 1}) --> }");
 	std::string production(agent->ExecuteCommandLine("print test"));
 	no_agent_assertTrue(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testNegatedConjunctiveTestUnbound()
@@ -1540,6 +1594,7 @@ void FullTests_Parent::testNegatedConjunctiveTestUnbound()
 	agent->ExecuteCommandLine("sp {test (state <s> ^superstate nil) -{(<s> ^bar <d>) (<s> -^bar { <> <d>})} --> }");
 	// <d> is bound inside of ncc
 	no_agent_assertTrue(agent->GetLastCommandLineResult());
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testCommandToFile()
@@ -1561,6 +1616,7 @@ void FullTests_Parent::testCommandToFile()
 	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
 	no_agent_assertTrue(result == resultString);
 	remove(("\"" + resourceDirectory + "/" + "testCommandToFile-output.soar\"").c_str());
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testConvertIdentifier()
@@ -1585,6 +1641,8 @@ void FullTests_Parent::testConvertIdentifier()
 	std::string convertedId(pConvertedId);
 	no_agent_assertTrue(convertedId == pBarWme->GetValueAsString());
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void FullTests_Parent::testOutputLinkRemovalOrdering()
@@ -1605,4 +1663,6 @@ void FullTests_Parent::testOutputLinkRemovalOrdering()
 	agent->ExecuteCommandLine("sp {four-apply (state <s> ^operator.name four ^io.output-link <ol>) (<ol> ^<asdf> <one>) --> (<ol> ^<asdf> <one> -) (<s> ^phase 3 - 4) }");
 	agent->ExecuteCommandLine("sp {five (state <s> ^superstate nil ^phase 4) --> (<s> ^operator.name five) }");
 	agent->ExecuteCommandLine("sp {five-apply (state <s> ^operator.name five) --> (halt) }");
+
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }

@@ -20,6 +20,7 @@ void SMemFunctionalTests::setUp()
 
 void SMemFunctionalTests::tearDown(bool caught)
 {
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
     FunctionalTestHarness::tearDown(caught);
 }
 

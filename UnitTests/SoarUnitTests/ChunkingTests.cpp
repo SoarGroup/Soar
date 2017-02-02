@@ -177,16 +177,9 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
     #endif
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-    #ifdef INIT_AFTER_RUN
-        #ifdef SAVE_LOG_FILES
-            SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
-        #endif
-        SoarHelper::agent_command(agent,"soar init");
-        SoarHelper::agent_command(agent,"trace 0");
-        SoarHelper::agent_command(agent,"run 100");
-        SoarHelper::agent_command(agent,"trace 1");
-        SoarHelper::agent_command(agent,"soar init");
-    #endif
+
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
 
@@ -232,16 +225,9 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
             #ifdef SAVE_LOG_FILES
             agent->ExecuteCommandLine("output log -a Success!!!  All expected rules were learned!!!", false, false);
             #endif
-//            if (ignored > expected_chunks)
-//            {
-//                std::cout << std::endl << "Learned more chunks than expected! " << expected_chunks << " < " << ignored;
-//            }
         }
-
         assertTrue_msg(outStringStream.str().c_str(), ignored >= expected_chunks);
-
     }
-
     SoarHelper::close_log(agent);
 }
 
@@ -376,6 +362,8 @@ void ChunkingTests::Singleton_Element_Types()
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-i operator");
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-s operator");
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-f operator");
+
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 
     verify_chunk("Singleton_Element_Types", 8, false);
 

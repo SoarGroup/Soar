@@ -33,30 +33,36 @@ void MiscTests::testInstiationDeallocationStackOverflow()
 	source("count-and-die.soar");
 	agent->ExecuteCommandLine("w 0");
 	kernel->RunAllAgentsForever();
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
+
 void MiscTests::testGDS_Failed_Justification_Crash()
 {
     source("testGDS_Failed_Justification_Crash.soar");
     agent->ExecuteCommandLine("w 0");
     kernel->RunAllAgentsForever();
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 void MiscTests::testIsupported_Smem_Chunk_Crash()
 {
     source("testIsupported_Smem_Chunk_Crash.soar");
     agent->ExecuteCommandLine("w 0");
     kernel->RunAllAgentsForever();
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 void MiscTests::testNegated_Operator_Crash()
 {
     source("testNegated_Operator_Crash.soar");
     agent->ExecuteCommandLine("w 0");
     kernel->RunAllAgentsForever();
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 void MiscTests::testOp_Augmentation_Crash()
 {
     source("testOp_Augmentation_Crash.soar");
     agent->ExecuteCommandLine("w 0");
     kernel->RunAllAgentsForever();
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void MiscTests::test_clog()
@@ -82,6 +88,7 @@ void MiscTests::test_clog()
 	agent->RunSelf(5);
 	agent->ExecuteCommandLine("clog --close");
 	remove("clog-test.txt");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void MiscTests::test_gp()
@@ -99,6 +106,7 @@ void MiscTests::test_gp()
 	
 	agent->ExecuteCommandLine("gp {gp*fail3 (state <s> ^foo bar[) --> (<s> ^foo bar) }");
 	assertTrue_msg("'unmatched [' didn't fail", agent->GetLastCommandLineResult() == false);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void MiscTests::test_echo()
@@ -281,7 +289,10 @@ void MiscTests::testWrongAgentWmeFunctions()
 	assertTrue(agent2->CreateSharedIdWME(foo1, "fail", il2) == 0);
 	assertTrue(agent2->DestroyWME(foo1) == 0);
 	
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
+	SoarHelper::init_check_to_find_refcount_leaks(agent2);
 	kernel->DestroyAgent(agent2);
+
 }
 
 void MiscTests::testRHSRand()
@@ -289,6 +300,7 @@ void MiscTests::testRHSRand()
 	kernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	source("testRHSRand.soar");
 	agent->RunSelf(5000);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void MiscTests::testMultipleKernels()
@@ -318,12 +330,14 @@ void MiscTests::testSmemArithmetic()
 	sml::ClientAnalyzedXML stats;
 	agent->ExecuteCommandLineXML("stats", &stats);
 	assertTrue(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 
 void MiscTests::testSource()
 {
 	source("big.soar");
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void MiscTests::testSoarRand()
@@ -346,6 +360,7 @@ void MiscTests::testPreferenceDeallocation()
 	sml::ClientAnalyzedXML response;
 	agent->ExecuteCommandLineXML("stats", &response);
 	assertTrue(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 //void MiscTests::testSoarDebugger()

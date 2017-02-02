@@ -33,6 +33,26 @@ bool SoarHelper::source(sml::Agent* agent, const std::string& pCategoryName, con
     return true;
 }
 
+void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
+{
+#ifdef INIT_AFTER_RUN
+    #ifdef SAVE_LOG_FILES
+        SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+    #endif
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"trace 0");
+    SoarHelper::agent_command(agent,"run 100");
+    SoarHelper::agent_command(agent,"trace 1");
+    SoarHelper::agent_command(agent,"soar init");
+#ifndef _WIN32
+    std::cout << "✅ ";
+#else
+    std::cout << "Init passed.  Test ";
+#endif
+    std::cout.flush();
+#endif
+}
+
 void SoarHelper::start_log(sml::Agent* agent, const char* pTestName)
 {
     std::string lCmdName("output log ");

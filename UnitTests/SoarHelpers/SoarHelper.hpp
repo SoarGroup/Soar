@@ -49,6 +49,7 @@ public:
 	static std::string GetResource(std::string resource);
 
     static bool source(sml::Agent* agent, const std::string& pCategoryName, const std::string& pTestName);
+    static void init_check_to_find_refcount_leaks(sml::Agent* agent);
     static void agent_command(sml::Agent* agent, const char* pCmd);
     static void start_log(sml::Agent* agent, const char* path);
     static void continue_log(sml::Agent* agent, const char* path);

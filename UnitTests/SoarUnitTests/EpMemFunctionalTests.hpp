@@ -107,6 +107,8 @@ public:
 	void testWMELength_MultiCycle();
 	void testWMELength_OneCycle();
 
+    void after(bool caught) { tearDown(caught); }
+	void tearDown(bool caught);
 };
 
 #endif /* FunctionalTests_EpMem_cpp */

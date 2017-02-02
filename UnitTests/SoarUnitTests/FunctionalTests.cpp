@@ -13,35 +13,43 @@
 void FunctionalTests::testWaterJug()
 {
     runTest("testWaterJug", -1);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 void FunctionalTests::testWaterJugHierarchy()
 {
     runTest("testWaterJugHierarchy", -1);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testTowersOfHanoi()
 {
     runTest("testTowersOfHanoi", 2048);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testTowersOfHanoiFast()
 {
     runTest("testTowersOfHanoiFast", 2047);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testEightPuzzle()
 {
     runTest("testEightPuzzle", -1);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testBlocksWorld()
 {
 	runTest("testBlocksWorld", -1);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testBlocksWorldOperatorSubgoaling()
 {
 	runTest("testBlocksWorldOperatorSubgoaling", 5);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testBlocksWorldLookAhead()
@@ -50,12 +58,14 @@ void FunctionalTests::testBlocksWorldLookAhead()
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 1");
 	runTestExecute(testName, -1);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testArithmetic()
 {
 	runTest("testArithmetic", -1);
 	assertTrue(SoarHelper::getD_CYCLE_COUNT(agent) > 40000);
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testCountTest()
@@ -66,4 +76,5 @@ void FunctionalTests::testCountTest()
 	assertEquals(85133, SoarHelper::getE_CYCLE_COUNT(agent));
 	assertEquals(40038, SoarHelper::getPE_CYCLE_COUNT(agent));
 	assertEquals(95151, SoarHelper::getINNER_E_CYCLE_COUNT(agent));
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
