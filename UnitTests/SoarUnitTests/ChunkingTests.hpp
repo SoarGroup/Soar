@@ -221,13 +221,8 @@ public:
     void Rhs_Func_Literalization();
 
 private:
-    void source(const std::string& path);
     void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);
     void verify_chunk(const char* pTestName, int64_t expected_chunks, bool directSourceChunks = false);
-    void agent_command(const char* pCmd);
-    void start_log(const char* path);
-    void continue_log(const char* path);
-    void close_log();
     void save_chunks(const char* path);
     void save_chunks_internal(const char* path);
     void source_saved_chunks(const char* path);

@@ -13,8 +13,6 @@
 #include "symbol_manager.h"
 #include "SoarHelper.hpp"
 
-#define CONFIGURE_SOAR_FOR_UNIT_TESTS
-
 FunctionalTestHarness::FunctionalTestHarness()
 : haltData(std::bind(&FunctionalTestHarness::haltHandler, this)),
 failedData(std::bind(&FunctionalTestHarness::failedHandler, this)),
@@ -124,7 +122,10 @@ void FunctionalTestHarness::setUp()
 	
 	internal_kernel = connection->GetKernelSML();
 	internal_agent = internal_kernel->GetAgentSML("soar1")->GetSoarAgent();
+
+	#ifdef CONFIGURE_SOAR_FOR_UNIT_TESTS
 	configure_agent_for_unit_tests(internal_agent);
+    #endif
 	
 	soar_add_callback(internal_agent,
 					  AFTER_DECISION_CYCLE_CALLBACK,

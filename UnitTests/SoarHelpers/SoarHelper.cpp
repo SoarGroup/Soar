@@ -8,14 +8,64 @@
 
 #include "SoarHelper.hpp"
 
-#include <sstream>
-
 #include "portability.h"
-
 #include "portable-dirent.h"
+#include "sml_ClientAnalyzedXML.h"
+#include "TestHelpers.hpp"
+
+#include <sstream>
 
 std::string SoarHelper::ResourceDirectory = "./SoarUnitTests/";
 
+void SoarHelper::agent_command(sml::Agent* agent, const char* pCmd)
+{
+    agent->ExecuteCommandLine(pCmd, true, false);
+}
+
+bool SoarHelper::source(sml::Agent* agent, const std::string& pCategoryName, const std::string& pTestName)
+{
+    sml::ClientAnalyzedXML response;
+
+    std::string sourceName = pCategoryName + "_" + pTestName + ".soar";
+    std::string lPath = GetResource(sourceName);
+    if (lPath.empty()) return false;
+    agent->ExecuteCommandLineXML(std::string("source \"" + lPath + "\"").c_str(), &response);
+    return true;
+}
+
+void SoarHelper::start_log(sml::Agent* agent, const char* pTestName)
+{
+    std::string lCmdName("output log ");
+    #ifdef SAVE_LOG_FILES
+        lCmdName += "logs/";
+    #endif
+    lCmdName += pTestName;
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        SoarHelper::agent_command(agent,lCmdName.c_str());
+    #endif
+}
+
+void SoarHelper::continue_log(sml::Agent* agent, const char* pTestName)
+{
+    std::string lCmdName("output log -A ");
+    #ifdef SAVE_LOG_FILES
+        lCmdName += "logs/";
+    #endif
+    lCmdName += pTestName;
+    lCmdName += "_log.txt";
+    #ifdef SAVE_LOG_FILES
+        SoarHelper::agent_command(agent,lCmdName.c_str());
+    #endif
+}
+
+void SoarHelper::close_log(sml::Agent* agent)
+{
+    std::string lCmdName("output log -c");
+    #ifdef SAVE_LOG_FILES
+        SoarHelper::agent_command(agent,lCmdName.c_str());
+    #endif
+}
 int SoarHelper::getD_CYCLE_COUNT(sml::Agent* agent)
 {
 	return SoarHelper::parseForCount("decisions", SoarHelper::getStats(agent));

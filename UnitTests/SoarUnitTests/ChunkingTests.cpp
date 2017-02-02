@@ -12,11 +12,6 @@
 
 #include "SoarHelper.hpp"
 
-//#define SAVE_LOG_FILES  // Make sure a log directory exists where unit tests are run
-#define TURN_EXPLAINER_ON
-#define INIT_AFTER_RUN
-// Note: CONFIGURE_SOAR_FOR_UNIT_TESTS is defined in FunctionalTestHarness.cpp
-
 /* Note that some test don't get as many successful learned chunks as expected because Soar is not
  * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */
 
@@ -128,55 +123,6 @@ void ChunkingTests::tearDown(bool caught)
     FunctionalTestHarness::tearDown(caught);
 }
 
-void ChunkingTests::source(const std::string& pTestName)
-{
-    sml::ClientAnalyzedXML response;
-
-    std::string sourceName = this->getCategoryName() + "_" + pTestName + ".soar";
-    std::string lPath = SoarHelper::GetResource(sourceName);
-    assertNonZeroSize_msg("Could not find test file '" + sourceName + "'", lPath);
-    agent->ExecuteCommandLineXML(std::string("source \"" + lPath + "\"").c_str(), &response);
-}
-
-void ChunkingTests::agent_command(const char* pCmd)
-{
-    agent->ExecuteCommandLine(pCmd, true, false);
-}
-
-void ChunkingTests::start_log(const char* pTestName)
-{
-    std::string lCmdName("output log ");
-    #ifdef SAVE_LOG_FILES
-        lCmdName += "logs/";
-    #endif
-    lCmdName += pTestName;
-    lCmdName += "_log.txt";
-    #ifdef SAVE_LOG_FILES
-        agent_command(lCmdName.c_str());
-    #endif
-}
-
-void ChunkingTests::continue_log(const char* pTestName)
-{
-    std::string lCmdName("output log -A ");
-    #ifdef SAVE_LOG_FILES
-        lCmdName += "logs/";
-    #endif
-    lCmdName += pTestName;
-    lCmdName += "_log.txt";
-    #ifdef SAVE_LOG_FILES
-        agent_command(lCmdName.c_str());
-    #endif
-}
-
-void ChunkingTests::close_log()
-{
-    std::string lCmdName("output log -c");
-    #ifdef SAVE_LOG_FILES
-        agent_command(lCmdName.c_str());
-    #endif
-}
-
 void ChunkingTests::save_chunks(const char* pTestName)
 {
     std::string lCmdName;
@@ -187,7 +133,7 @@ void ChunkingTests::save_chunks(const char* pTestName)
     #else
         lCmdName = "output command-to-file temp_chunks.soar print -fcr";
     #endif
-    agent_command(lCmdName.c_str());
+    SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
 
@@ -201,7 +147,7 @@ void ChunkingTests::save_chunks_internal(const char* pTestName)
     #else
         lCmdName = "output command-to-file temp_chunks.soar print -fcri";
     #endif
-    agent_command(lCmdName.c_str());
+    SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
 
@@ -215,31 +161,31 @@ void ChunkingTests::source_saved_chunks(const char* pTestName)
     #else
         lCmdName = "source temp_chunks.soar";
     #endif
-    agent_command(lCmdName.c_str());
+    SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
 void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks)
 {
-    start_log(pTestName);
-    source(pTestName);
+    SoarHelper::start_log(agent, pTestName);
+    assertTrue_msg("Could not find " + this->getCategoryName() + " test file '" + pTestName + "'", SoarHelper::source(agent, this->getCategoryName(), pTestName));
     #ifdef TURN_EXPLAINER_ON
-        agent_command("explain all on");
-        agent_command("explain just on");
+        SoarHelper::agent_command(agent,"explain all on");
+        SoarHelper::agent_command(agent,"explain just on");
     #endif
     #ifdef SAVE_LOG_FILES
-        agent_command("trace -CbL 2");
+        SoarHelper::agent_command(agent,"trace -CbL 2");
     #endif
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
     #ifdef INIT_AFTER_RUN
         #ifdef SAVE_LOG_FILES
-            agent_command("output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+            SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
         #endif
-        agent_command("soar init");
-        agent_command("trace 0");
-        agent_command("run 100");
-        agent_command("trace 1");
-        agent_command("soar init");
+        SoarHelper::agent_command(agent,"soar init");
+        SoarHelper::agent_command(agent,"trace 0");
+        SoarHelper::agent_command(agent,"run 100");
+        SoarHelper::agent_command(agent,"trace 1");
+        SoarHelper::agent_command(agent,"soar init");
     #endif
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
@@ -247,17 +193,17 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
 void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks, bool directSourceChunks)
 {
     #ifdef SAVE_LOG_FILES
-    agent_command("chunk ?");
-    agent_command("production firing-count");
-    agent_command("print -cf");
+    SoarHelper::agent_command(agent,"chunk ?");
+    SoarHelper::agent_command(agent,"production firing-count");
+    SoarHelper::agent_command(agent,"print -cf");
     #endif
     if (!directSourceChunks)
     {
-        close_log();
+        SoarHelper::close_log(agent);
         save_chunks(pTestName);
         tearDown(false);
         setUp();
-        continue_log(pTestName);
+        SoarHelper::continue_log(agent, pTestName);
         source_saved_chunks(pTestName);
     }
     {
@@ -279,7 +225,7 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
             outStringStream << "Only learned " << ignored << " of the expected " << expected_chunks << ".";
             #ifdef SAVE_LOG_FILES
             agent->ExecuteCommandLine((std::string("output log --add |") + outStringStream.str().c_str() + std::string("|")).c_str(), false, false);
-            agent_command("print -cf");
+            SoarHelper::agent_command(agent,"print -cf");
             #endif
         } else {
             std::cout << " " << ignored << "/" << expected_chunks << " ";
@@ -296,138 +242,140 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
 
     }
 
-    close_log();
+    SoarHelper::close_log(agent);
 }
 
 
 void ChunkingTests::Singleton_Element_Types()
 {
-    start_log("Singleton_Element_Types");
-    source("Singleton_Element_Types");
+    SoarHelper::start_log(agent, "Singleton_Element_Types");
+    assertTrue_msg("Could not find " + this->getCategoryName() + " test file 'Singleton_Element_Types'", SoarHelper::source(agent, this->getCategoryName(), "Singleton_Element_Types"));
+
     #ifdef TURN_EXPLAINER_ON
-        agent_command("explain all on");
-        agent_command("explain just on");
+        SoarHelper::agent_command(agent,"explain all on");
+        SoarHelper::agent_command(agent,"explain just on");
     #endif
     #ifdef SAVE_LOG_FILES
-        agent_command("trace -CbL 2");
+        SoarHelper::agent_command(agent,"trace -CbL 2");
     #endif
-    agent->RunSelf(3, sml::sml_DECISION);
-    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton state state-type state");
-    agent_command("chunk singleton state operator operator");
-    agent_command("chunk singleton state sti identifier");
-    agent_command("chunk singleton state constant-i constant");
-    agent_command("chunk singleton state constant-s constant");
-    agent_command("chunk singleton state constant-f constant");
-    agent->RunSelf(3, sml::sml_DECISION);
-    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton identifier state-type state");
-    agent_command("chunk singleton identifier operator operator");
-    agent_command("chunk singleton identifier sti identifier");
-    agent_command("chunk singleton identifier constant-i constant");
-    agent_command("chunk singleton identifier constant-s constant");
-    agent_command("chunk singleton identifier constant-f constant");
-    agent->RunSelf(3, sml::sml_DECISION);
-    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
-
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton operator state-type state");
-    agent_command("chunk singleton operator operator operator");
-    agent_command("chunk singleton operator sti identifier");
-    agent_command("chunk singleton operator constant-i constant");
-    agent_command("chunk singleton operator constant-s constant");
-    agent_command("chunk singleton operator constant-f constant");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton any state-type state");
-    agent_command("chunk singleton any operator operator");
-    agent_command("chunk singleton any sti identifier");
-    agent_command("chunk singleton any constant-i constant");
-    agent_command("chunk singleton any constant-s constant");
-    agent_command("chunk singleton any constant-f constant");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton state state-type state");
+    SoarHelper::agent_command(agent,"chunk singleton state operator operator");
+    SoarHelper::agent_command(agent,"chunk singleton state sti identifier");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-i constant");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-s constant");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-f constant");
+    agent->RunSelf(3, sml::sml_DECISION);
+    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton identifier state-type state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier operator operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier sti identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-i constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-s constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-f constant");
+    agent->RunSelf(3, sml::sml_DECISION);
+    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton operator state-type state");
+    SoarHelper::agent_command(agent,"chunk singleton operator operator operator");
+    SoarHelper::agent_command(agent,"chunk singleton operator sti identifier");
+    SoarHelper::agent_command(agent,"chunk singleton operator constant-i constant");
+    SoarHelper::agent_command(agent,"chunk singleton operator constant-s constant");
+    SoarHelper::agent_command(agent,"chunk singleton operator constant-f constant");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton state state-type any");
-    agent_command("chunk singleton state operator any");
-    agent_command("chunk singleton state sti any");
-    agent_command("chunk singleton state constant-i any");
-    agent_command("chunk singleton state constant-s any");
-    agent_command("chunk singleton state constant-f any");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton any state-type state");
+    SoarHelper::agent_command(agent,"chunk singleton any operator operator");
+    SoarHelper::agent_command(agent,"chunk singleton any sti identifier");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-i constant");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-s constant");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-f constant");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton any state-type any");
-    agent_command("chunk singleton any operator any");
-    agent_command("chunk singleton any sti any");
-    agent_command("chunk singleton any constant-i any");
-    agent_command("chunk singleton any constant-s any");
-    agent_command("chunk singleton any constant-f any");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton state state-type any");
+    SoarHelper::agent_command(agent,"chunk singleton state operator any");
+    SoarHelper::agent_command(agent,"chunk singleton state sti any");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-i any");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-s any");
+    SoarHelper::agent_command(agent,"chunk singleton state constant-f any");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton identifier state-type constant");
-    agent_command("chunk singleton identifier operator constant");
-    agent_command("chunk singleton identifier sti constant");
-    agent_command("chunk singleton identifier constant-i constant");
-    agent_command("chunk singleton identifier constant-s constant");
-    agent_command("chunk singleton identifier constant-f constant");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton any state-type any");
+    SoarHelper::agent_command(agent,"chunk singleton any operator any");
+    SoarHelper::agent_command(agent,"chunk singleton any sti any");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-i any");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-s any");
+    SoarHelper::agent_command(agent,"chunk singleton any constant-f any");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton identifier state-type identifier");
-    agent_command("chunk singleton identifier operator identifier");
-    agent_command("chunk singleton identifier sti identifier");
-    agent_command("chunk singleton identifier constant-i identifier");
-    agent_command("chunk singleton identifier constant-s identifier");
-    agent_command("chunk singleton identifier constant-f identifier");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton identifier state-type constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier operator constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier sti constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-i constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-s constant");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-f constant");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton identifier state-type state");
-    agent_command("chunk singleton identifier operator state");
-    agent_command("chunk singleton identifier sti state");
-    agent_command("chunk singleton identifier constant-i state");
-    agent_command("chunk singleton identifier constant-s state");
-    agent_command("chunk singleton identifier constant-f state");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton identifier state-type identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier operator identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier sti identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-i identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-s identifier");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-f identifier");
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    agent_command("chunk singleton -c");
-    agent_command("soar init");
-    agent_command("chunk singleton identifier state-type operator");
-    agent_command("chunk singleton identifier operator operator");
-    agent_command("chunk singleton identifier sti operator");
-    agent_command("chunk singleton identifier constant-i operator");
-    agent_command("chunk singleton identifier constant-s operator");
-    agent_command("chunk singleton identifier constant-f operator");
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton identifier state-type state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier operator state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier sti state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-i state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-s state");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-f state");
+
+    agent->RunSelf(3, sml::sml_DECISION);
+    assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
+
+    SoarHelper::agent_command(agent,"chunk singleton -c");
+    SoarHelper::agent_command(agent,"soar init");
+    SoarHelper::agent_command(agent,"chunk singleton identifier state-type operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier operator operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier sti operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-i operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-s operator");
+    SoarHelper::agent_command(agent,"chunk singleton identifier constant-f operator");
 
     verify_chunk("Singleton_Element_Types", 8, false);
 
