@@ -237,6 +237,8 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     std::set<smem_hash_id> attr_new;
     std::set< std::pair<smem_hash_id, smem_hash_id> > const_new;
     std::set< std::pair<smem_hash_id, uint64_t> > lti_new;
+    bool ever_updated_edge_weight = false;
+    bool added_edges = false;
     {
         ltm_slot_map::iterator s;
         ltm_slot::iterator v;
@@ -300,8 +302,10 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                 }
                 else
                 {
+                    added_edges = true;
                     value_lti = (*v)->val_lti.val_value->lti_id;
                     assert(value_lti);
+                    double edge_weight = (*v)->val_lti.edge_weight;
 
                     if (remove_old_children)
                     {
@@ -328,6 +332,15 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                         }
                     }
 
+                    //We have an edge_weight and a parent and a child. This is where we set the edge_weight to the nonfan value.
+                    if (edge_weight != 0.0)
+                    {
+                        SQL->web_update_child_edge->bind_double(1,edge_weight);
+                        SQL->web_update_child_edge->bind_int(2,pLTI_ID);
+                        SQL->web_update_child_edge->bind_int(3,value_lti);
+                        SQL->web_update_child_edge->execute(soar_module::op_reinit);
+                        ever_updated_edge_weight = true;
+                    }
                     // provide trace output
                     if (thisAgent->trace_settings[ TRACE_SMEM_SYSPARAM ])
                     {
@@ -422,6 +435,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     }
 
     //For now, on a change to the network for an lti, I reset the edge weights.
+    if (added_edges && !ever_updated_edge_weight)
     {
         double fan = 1.0/((double)new_lti_edges);
         SQL->web_update_all_lti_child_edges->bind_double(1,fan);

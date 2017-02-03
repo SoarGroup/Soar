@@ -945,6 +945,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                             do
                             {
+                                bool dont_consume = false;
                                 // value by type
                                 l_ltm_value = NIL;
                                 if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
@@ -1040,6 +1041,30 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                                                 // add to ltms
                                                 (*str_to_LTMs)[temp_key2] = l_ltm_temp;
+                                                lexer->get_lexeme();
+
+                                                if (lexer->current_lexeme.type == L_PAREN_LEXEME)
+                                                {
+                                                    lexer->get_lexeme();
+                                                    if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
+                                                    {
+                                                        l_ltm_value->val_lti.edge_weight = lexer->current_lexeme.float_val;
+                                                    }
+                                                    else
+                                                    {
+                                                        //error: The syntax suggested that an edge-weight value was going to be provided
+                                                        //but this was not encountered
+                                                    }
+                                                    lexer->get_lexeme();
+                                                }
+                                                else
+                                                {
+                                                    if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                                    {
+                                                        dont_consume = true;
+                                                    }
+                                                    l_ltm_value->val_lti.edge_weight = 0;
+                                                }
 
                                                 // possibly a newbie (could be a self-loop)
                                                 newbies->insert(l_ltm_temp);
@@ -1054,7 +1079,11 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                 if (l_ltm_value != NIL)
                                 {
                                     // consume
-                                    lexer->get_lexeme();
+                                    if (!dont_consume)
+                                    {
+                                        lexer->get_lexeme();
+                                    }
+                                    //lexer->get_lexeme();
 
                                     // add to appropriate slot
                                     l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);

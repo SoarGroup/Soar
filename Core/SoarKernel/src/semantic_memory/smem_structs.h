@@ -37,6 +37,7 @@ struct ltm_value_const
 struct ltm_value_lti
 {   smem_cue_element_type   val_type;
     ltm_object*             val_value;
+    double                  edge_weight;
 };
 
 typedef struct smem_vis_lti_struct
