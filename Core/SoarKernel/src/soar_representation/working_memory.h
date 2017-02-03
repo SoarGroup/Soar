@@ -109,6 +109,7 @@ typedef struct wme_struct
     wma_decay_element*          wma_decay_el;
     tc_number                   wma_tc_value;
 
+    uint64_t                    w_id;                   /* used by WME debug inventory mechanism */
 } wme;
 
 inline void wme_add_ref(wme* w)

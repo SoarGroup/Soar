@@ -68,7 +68,7 @@
     void debug_refcount_reset() {}
 #endif
 
-#ifdef DEBUG_INST_DEALLOCATION_INVENTORY
+#ifdef DEBUG_INSTANTIATION_INVENTORY
     id_to_sym_map inst_deallocation_map;
 
     void IDI_add(agent* thisAgent, instantiation* pInst)
@@ -110,7 +110,7 @@
     void IDI_print_and_cleanup(agent* thisAgent) {}
 #endif
 
-#ifdef DEBUG_PREF_DEALLOCATION_INVENTORY
+#ifdef DEBUG_PREFERENCE_INVENTORY
     id_to_string_map pref_deallocation_map;
 
     uint64_t PDI_id_counter = 0;
@@ -177,5 +177,70 @@
     void PDI_print_and_cleanup(agent* thisAgent) {}
 #endif
 
+#ifdef DEBUG_WME_INVENTORY
+    id_to_string_map wme_deallocation_map;
 
+    uint64_t WDI_id_counter = 0;
+
+    void WDI_add(agent* thisAgent, wme* pWME)
+    {
+        std::string lWMEString;
+        pWME->w_id = ++WDI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %w", pWME->w_id, pWME);
+//        dprint(DT_DEBUG, "%u: %w\n", pWME->w_id, pWME);
+        wme_deallocation_map[pWME->w_id] = lWMEString;
+    }
+    void WDI_remove(agent* thisAgent, wme* pWME)
+    {
+        auto it = wme_deallocation_map.find(pWME->w_id);
+        assert (it != wme_deallocation_map.end());
+//        if (it == wme_deallocation_map.end())
+//        {
+//            dprint(DT_DEBUG, "Did not find preference to remove!  %p\nRemaining preference deallocation map:\n", pWME);
+//            std::string lPrefString;
+//            for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
+//            {
+//                lPrefString = it->second;
+//                if (!lPrefString.empty()) dprint(DT_DEBUG, "%u: %s\n", it->first, lPrefString.c_str());
+//            }
+//            return;
+//        }
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            wme_deallocation_map[pWME->w_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "WME %u was deallocated twice!\n", it->first);
+        }
+    }
+
+    void WDI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lWMEString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "Looking for WMEs that were not deallocated...\n");
+        for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
+        {
+            lWMEString = it->second;
+            if (!lWMEString.empty())
+            {
+                bugCount++;
+            }
+        }
+        if (bugCount <= 23)
+        {
+            for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
+            {
+                lWMEString = it->second;
+                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "WME %u was not deallocated: %s!\n", it->first, lWMEString.c_str());
+            }
+        }
+        thisAgent->outputManager->printa_sf(thisAgent, "WME inventory result:  %u/%u were not deallocated.\n", bugCount, WDI_id_counter);
+        wme_deallocation_map.clear();
+    }
+#else
+    void WDI_add(agent* thisAgent, wme* pWME) {}
+    void WDI_remove(agent* thisAgent, wme* pWME) {}
+    void WDI_print_and_cleanup(agent* thisAgent) {}
+#endif
 

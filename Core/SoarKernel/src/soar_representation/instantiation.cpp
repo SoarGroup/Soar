@@ -1663,7 +1663,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->bt.wme_ = ap_wme;
     cond->inst = inst;
 
-    assert(goal->id->level == goal->id->id->level == ap_wme->id->id->level);
 #ifdef DO_TOP_LEVEL_REF_CTS
     wme_add_ref(ap_wme);
 #else

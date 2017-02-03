@@ -121,9 +121,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->rete_next = NIL;
     w->rete_prev = NIL;
 
-    /* When we first create a WME, it had no gds value.
-       Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
-       are floating around. */
     w->gds = NIL;
     w->gds_prev = NIL;
     w->gds_next = NIL;
@@ -133,6 +130,8 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
+
+    WDI_add(thisAgent, w);
 
     return w;
 }
@@ -367,6 +366,8 @@ void do_buffered_wm_changes(agent* thisAgent)
 void deallocate_wme(agent* thisAgent, wme* w)
 {
     dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
+    WDI_remove(thisAgent, w);
+
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

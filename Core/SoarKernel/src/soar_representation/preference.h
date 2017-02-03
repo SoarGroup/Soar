@@ -143,7 +143,7 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
-    uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREF_DEALLOCATION_INVENTORY */
+    uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
