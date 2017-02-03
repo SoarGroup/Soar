@@ -1,6 +1,7 @@
 #include "working_memory.h"
 
 #include "agent.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"

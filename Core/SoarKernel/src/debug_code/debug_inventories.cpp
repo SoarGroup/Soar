@@ -13,6 +13,7 @@
 #include "preference.h"
 #include "symbol_manager.h"
 #include "output_manager.h"
+#include "working_memory.h"
 
 #include <assert.h>
 #include <string>
