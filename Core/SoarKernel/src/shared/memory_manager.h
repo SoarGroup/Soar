@@ -71,12 +71,15 @@ typedef struct memory_pool_struct
  *        allocation seems to hide uninitialization variable bugs, though I suppose if you suspect
  *        that an uninitialized variable is causing a problem, you could use that option to test it.
  */
+ /* MToDo | Remove this. Just here so that I can play with the setting more easily.  Changing in kernel.h
+  *         requires more compile time since everything includes it. */
+//#define DEBUG_MEMORY
 #ifdef DEBUG_MEMORY
     template <typename T>
     inline void fill_with_garbage(T* block, size_t size)
     {
-//        memset(static_cast<void*>(block), 0xBB, (size));
-        memset(static_cast<void*>(block), 0, (size));
+        memset(static_cast<void*>(block), 0xBB, (size));
+//        memset(static_cast<void*>(block), 0, (size));
     }
     /* Disabling the fill with zeros part since that may actually hide bugs */
     #define fill_with_zeroes(block,size) { }

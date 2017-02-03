@@ -782,10 +782,11 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     {
         if (cond->type == POSITIVE_CONDITION)
         {
+            /* This was using level before, but I think that was wrong */
             #ifdef DO_TOP_LEVEL_REF_CTS
                 wme_add_ref(cond->bt.wme_);
             #else
-                if (level > TOP_GOAL_LEVEL)
+                if (cond->bt.wme_->id->id->level > TOP_GOAL_LEVEL)
                 {
                     wme_add_ref(cond->bt.wme_);
                 }
@@ -859,7 +860,7 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     cond->inst = inst;
 
     #ifndef DO_TOP_LEVEL_REF_CTS
-    if (inst->match_goal_level > TOP_GOAL_LEVEL)
+    if (pWME->id->id->level > TOP_GOAL_LEVEL)
     #endif
     {
         wme_add_ref(pWME);
@@ -867,11 +868,11 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
 
     cond->bt.level = pWME->id->id->level;
     cond->bt.trace = pWME->preference;
-    assert(cond->bt.wme_->preference == cond->bt.trace);
+
     if (cond->bt.trace)
     {
         #ifndef DO_TOP_LEVEL_REF_CTS
-        if (cond->bt.level > TOP_GOAL_LEVEL)
+        if (pWME->id->id->level > TOP_GOAL_LEVEL)
         #endif
         {
             preference_add_ref(cond->bt.trace);
@@ -1043,7 +1044,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
     #endif
 
-    //debug_refcount_change_start(thisAgent, "T1", true);
+    debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
@@ -1080,7 +1081,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         if (cond->type == POSITIVE_CONDITION)
         {
             cond->bt.level = cond->bt.wme_->id->id->level;
-            cond->bt.trace = cond->bt.wme_->preference;
+            cond->bt.trace = cond->bt.wme_->preference;  // These are later changed to the correct clone for the level
         }
     }
     /* print trace info */
@@ -1196,7 +1197,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
 
     deallocate_action_list(thisAgent, rhs_vars);
-    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
@@ -1247,7 +1248,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(inst);
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation stage 1 %u (%y)\n", inst->i_id, inst->prod_name);
-        //debug_refcount_change_start(thisAgent, "T1", false);
+        debug_refcount_change_start(thisAgent, false);
 
         level = inst->match_goal_level;
 
@@ -1273,7 +1274,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                  Note:  If one of those functions that are flattened out here changes, this code may
                         need updating. - Maz */
 #ifndef DO_TOP_LEVEL_REF_CTS
-                if (level > TOP_GOAL_LEVEL)
+                if (cond->bt.wme_->id->id->level > TOP_GOAL_LEVEL)
 #endif
                 {
                     wme_remove_ref(thisAgent, cond->bt.wme_);
@@ -1368,7 +1369,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             inst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
         }
 
-        //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 1")).c_str(), false);
+        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 1")).c_str(), false);
 
         preference* next_pref;
         while (inst->preferences_cached)
@@ -1381,7 +1382,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     } // while
 
     // free condition symbols and its backtrace pref
-    //debug_refcount_change_start(thisAgent, "T1", false);
+    debug_refcount_change_start(thisAgent, false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
@@ -1417,7 +1418,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
 
-    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 2")).c_str(), false);
+    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 2")).c_str(), false);
 
     // free instantiations in the reverse order
     inst_list::reverse_iterator riter = l_instantiation_list.rbegin();
@@ -1427,7 +1428,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         instantiation* temp = *riter;
         ++riter;
         dprint(DT_MILESTONES, "Deallocating instantiation stage 2 %u (%y)\n", temp->i_id, temp->prod_name);
-        //debug_refcount_change_start(thisAgent, "T1", false);
+        debug_refcount_change_start(thisAgent, false);
         dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
         deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
@@ -1446,7 +1447,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        //debug_refcount_change_end(thisAgent, "T1", (std::string(temp->prod_name->sc->name) + std::string(" instantiation deallocation 3 of")).c_str(), false);
+        debug_refcount_change_end(thisAgent, (std::string(temp->prod_name->sc->name) + std::string(" instantiation deallocation 3 of")).c_str(), false);
         IDI_remove(thisAgent, temp->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
     }
@@ -1477,7 +1478,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
-    //debug_refcount_change_start(thisAgent, "T1", true);
+    debug_refcount_change_start(thisAgent, true);
     while (pref != NIL)
     {
         next = pref->inst_next;
@@ -1508,7 +1509,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
-    //debug_refcount_change_end(thisAgent, "T1", (std::string(inst->prod_name->sc->name) + std::string(" instantiation retraction of")).c_str(), true);
+    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation retraction of")).c_str(), true);
 
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
@@ -1661,10 +1662,12 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ap_wme;
     cond->inst = inst;
+
+    assert(goal->id->level == goal->id->id->level == ap_wme->id->id->level);
 #ifdef DO_TOP_LEVEL_REF_CTS
     wme_add_ref(ap_wme);
 #else
-    if (goal->id->level > TOP_GOAL_LEVEL)
+    if (ap_wme->id->id->level > TOP_GOAL_LEVEL)
     {
         wme_add_ref(ap_wme);
     }
@@ -1685,6 +1688,8 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->test_for_acceptable_preference = true;
     cond->bt.wme_ = ss_link_wme;
     cond->inst = inst;
+
+    assert(goal->id->level == goal->id->id->level);
 #ifdef DO_TOP_LEVEL_REF_CTS
     wme_add_ref(ss_link_wme);
 #else

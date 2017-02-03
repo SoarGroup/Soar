@@ -899,7 +899,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 //        dprint(DT_DEBUG, "Chunk found.\n");
 //    }
     thisAgent->explanationMemory->add_chunk_record(m_inst);
-    //debug_refcount_change_start(thisAgent, "T1", false);
+    debug_refcount_change_start(thisAgent, false);
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1076,7 +1076,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
      *       though, we don't have the final rule name set up until now, so we call it here. */
     IDI_add(thisAgent, m_chunk_inst);
-    //debug_refcount_change_end(thisAgent, "T1", (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
+    debug_refcount_change_end(thisAgent, (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);

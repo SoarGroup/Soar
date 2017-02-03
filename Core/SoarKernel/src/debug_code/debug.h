@@ -28,8 +28,6 @@
 //    #define DEBUG_ONLY_CHUNK_ID_LAST 23613
 #endif
 
-std::string get_stacktrace(const char* prefix = NULL);
-
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
 void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
 void debug_trace_set(int dt_num, bool pEnable);

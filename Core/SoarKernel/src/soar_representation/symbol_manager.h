@@ -17,7 +17,7 @@
 #include <string>
 bool is_DT_mode_enabled(TraceMode mode);
 
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
+#ifdef DEBUG_MAC_STACKTRACE
     std::string get_stacktrace(const char* prefix);
 #endif
 

@@ -10,9 +10,18 @@
 
 #include "kernel.h"
 
+#define DEBUG_INST_DEALLOCATION_INVENTORY   // To keep track of instantiations/prefs allocation/deallocation */
+#define DEBUG_PREF_DEALLOCATION_INVENTORY   // to see if any are still around at soar init or exit.  Code is
+                                            // instrumented to add these counts.  Compiled out in optimized build.
+
+                                            // Note: Unit  tests that use multiple agents will fail if inventories are enabled. We'd need
+                                            //       to move the inventory tracking maps somewhere that they can be agent specific. */
+
+
 /* These are used to record the change in a refcount across the two calls */
-void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart);
-void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart);
+void debug_refcount_change_start(agent* thisAgent, bool twoPart);
+void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart);
+void debug_refcount_reset();
 
 /* These are used when DEBUG_INST_DEALLOCATION_INVENTORY is defined.  They are used to print a report
  * of instantiations that aren't deallocated */

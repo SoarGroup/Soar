@@ -41,9 +41,25 @@
 
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "T1"
+ /* DEBUG_TRACE_REFCOUNT_FOR prints refcount trace messages for a specific Soar
+  * identifier.  You must enable DT_ID_LEAKING to see the messages printing.
+  * DEBUG_MAC_STACKTRACE enables the building of a small library to print the
+  * call stack within debug messages. Tested on OSX only.
+  * Note: DEBUG_TRACE_REFCOUNT_FOR is currently dependent on DEBUG_MAC_STACKTRACE.
+  *       This could be changed by commenting out the code that prints the stack
+  *       in the symbol and symbol_manager code.*/
+
+#ifndef SOAR_RELEASE_VERSION
+    #define DEBUG_TRACE_REFCOUNT_FOR "D1"
+    #define DEBUG_MAC_STACKTRACE
+
+    #ifdef DEBUG_MAC_STACKTRACE
+    std::string get_stacktrace(const char* prefix = NULL);
+    #endif
+#endif
 
 /* -- Forward declarations needed for symbol base struct -- */
+
 struct floatSymbol;
 struct idSymbol;
 struct varSymbol;
@@ -71,7 +87,7 @@ struct strSymbol;
  * bugs where some part of the kernel may be treating a symbol as the wrong type.
  *
  * WARNING: next_in_hash_table MUST be the first field.  This field is used
- *       by the resizable hash table routines.
+ *          by the resizable hash table routines.
  *
  * Explanations of all the fields are at the end of the file.
  *

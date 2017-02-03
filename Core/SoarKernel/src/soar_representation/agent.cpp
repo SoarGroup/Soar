@@ -450,10 +450,11 @@ bool reinitialize_agent(agent* thisAgent)
     IDI_print_and_cleanup(thisAgent);
     PDI_print_and_cleanup(thisAgent);
 
+    reset_wme_timetags(thisAgent);
+
     thisAgent->symbolManager->reset_hash_table(MP_identifier);
     bool ok = thisAgent->symbolManager->reset_id_counters();
 
-    reset_wme_timetags(thisAgent);
     reset_statistics(thisAgent);
 
     // JRV: For XML generation

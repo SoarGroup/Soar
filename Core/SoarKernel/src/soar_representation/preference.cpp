@@ -256,7 +256,7 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 //        }
 
     PDI_remove(thisAgent, pref);
-    //debug_refcount_change_start(thisAgent, "T1", false);
+    debug_refcount_change_start(thisAgent, false);
 
     /*  dereference component symbols */
     thisAgent->symbolManager->symbol_remove_ref(&pref->id);
@@ -280,7 +280,7 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
     if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
     if (pref->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.referent);
 
-    //debug_refcount_change_end(thisAgent, "T1", (std::string(pref->inst ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST" ) + std::string(" preference deallocation")).c_str(), false);
+    debug_refcount_change_end(thisAgent, (std::string((pref->inst && pref->in_tm) ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST" ) + std::string(" preference deallocation")).c_str(), false);
 
     /*  free the memory */
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);

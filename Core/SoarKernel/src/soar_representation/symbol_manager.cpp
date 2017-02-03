@@ -983,7 +983,10 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             {
                 /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
                  * detect refcount leaks in unit tests and print out a message accordingly */
-                std::cout << "Refcount leak detected. " << identifier_hash_table->count << " identifiers still exist. ";
+                /* MToDo | Remove.  The printing could cause a crash if there's memory corruption, but usually
+                 *         prints out and good for debugging. */
+                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+                std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
             }
             else if (thisAgent->outputManager->settings[OM_WARNINGS])
             {
@@ -1010,6 +1013,8 @@ bool Symbol_Manager::reset_id_counters()
     {
         thisAgent->SMem->reset_id_counters();
     }
+
+    debug_refcount_reset();
 
     return true ;
 }

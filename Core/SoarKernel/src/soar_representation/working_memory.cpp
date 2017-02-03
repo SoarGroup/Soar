@@ -85,7 +85,7 @@ void reset_wme_timetags(agent* thisAgent)
     if (thisAgent->num_existing_wmes != 0)
     {
         thisAgent->outputManager->printa(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
-        thisAgent->outputManager->printa(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "there are still %u wmes allocated. (Probably a memory leak.)\n", thisAgent->num_existing_wmes);
         thisAgent->outputManager->printa(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;

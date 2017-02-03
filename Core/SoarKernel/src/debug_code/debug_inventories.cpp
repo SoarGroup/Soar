@@ -17,43 +17,56 @@
 #include <assert.h>
 #include <string>
 
-static int64_t debug_last_refcount = 0;
-static int64_t debug_last_refcount2 = 0;
+#ifdef DEBUG_TRACE_REFCOUNT_FOR
 
-void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart)
-{
-    int lSymNum;
-    std::string numString;
-    numString.push_back(symString[1]);
-    if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
-    Symbol *sym = thisAgent->symbolManager->find_identifier(symString[0], 1);
-    if (sym)
+    static int64_t debug_last_refcount = 0;
+    static int64_t debug_last_refcount2 = 0;
+
+    void debug_refcount_change_start(agent* thisAgent, bool twoPart)
     {
-        int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
-        (*last_count) = sym->reference_count;
-    };
-}
-void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart)
-{
-    int lSymNum;
-    std::string numString;
-    numString.push_back(symString[1]);
-    if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
-    Symbol *sym = thisAgent->symbolManager->find_identifier(symString[0], 1);
-    if (sym)
-    {
-        int64_t new_count = static_cast<int64_t>(sym->reference_count);
-        int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
-        if (new_count != (*last_count))
+        int lSymNum;
+        std::string numString;
+        numString.push_back(DEBUG_TRACE_REFCOUNT_FOR[1]);
+        if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
+        Symbol *sym = thisAgent->symbolManager->find_identifier(DEBUG_TRACE_REFCOUNT_FOR[0], 1);
+        if (sym)
         {
-            dprint_noprefix(DT_DEBUG, "%s Reference count of %s changed (%d -> %d) by %d\n", callerString, symString,
-                (*last_count), new_count, (new_count - (*last_count)));
-            if (std::string(callerString) == std::string("DEALLOCATED INST preference deallocation")) break_if_id_matches(1, 1);
-        }
-        (*last_count) = 0;
-        if (twoPart) debug_last_refcount2 = debug_last_refcount2 + (new_count - debug_last_refcount);
-    };
-}
+            int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
+            (*last_count) = sym->reference_count;
+        };
+    }
+    void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart)
+    {
+        int lSymNum;
+        std::string numString;
+        numString.push_back(DEBUG_TRACE_REFCOUNT_FOR[1]);
+        if (!from_string(lSymNum, std::string(numString)) || (lSymNum < 1) ) assert(false);
+        Symbol *sym = thisAgent->symbolManager->find_identifier(DEBUG_TRACE_REFCOUNT_FOR[0], 1);
+        if (sym)
+        {
+            int64_t new_count = static_cast<int64_t>(sym->reference_count);
+            int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
+            if (new_count != (*last_count))
+            {
+                dprint_noprefix(DT_ID_LEAKING, "%s Reference count of %s changed (%d -> %d) by %d\n", callerString, DEBUG_TRACE_REFCOUNT_FOR,
+                    (*last_count), new_count, (new_count - (*last_count)));
+                if (std::string(callerString) == std::string("DEALLOCATED INST preference deallocation")) break_if_id_matches(1, 1);
+            }
+            (*last_count) = 0;
+            if (twoPart) debug_last_refcount2 = debug_last_refcount2 + (new_count - debug_last_refcount);
+        };
+    }
+    void debug_refcount_reset()
+    {
+        debug_last_refcount = 0;
+        debug_last_refcount2 = 0;
+    }
+
+#else
+    void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart) {}
+    void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart) {}
+    void debug_refcount_reset() {}
+#endif
 
 #ifdef DEBUG_INST_DEALLOCATION_INVENTORY
     id_to_sym_map inst_deallocation_map;
@@ -155,7 +168,7 @@ void debug_refcount_change_end(agent* thisAgent, const char* symString, const ch
                 if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "Preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
             }
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "\n\nPreference inventory result:  %u/%u were not deallocated.\n", bugCount, PDI_id_counter);
+        thisAgent->outputManager->printa_sf(thisAgent, "Preference inventory result:  %u/%u were not deallocated.\n", bugCount, PDI_id_counter);
         pref_deallocation_map.clear();
     }
 #else

@@ -1245,4 +1245,45 @@ namespace tthread
 #endif
 #endif
 
+std::string get_stacktrace(const char* prefix)
+{
+    // storage array for stack trace data
+    // you can change the size of the array to increase the depth of
+    // the stack summarized in the string returned
+    void* addrlist[12];
+
+    // retrieve current stack addresses
+    int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
+
+    if (addrlen == 0)
+    {
+        return std::string("<empty, possibly corrupt>");
+    }
+
+    char** symbollist = backtrace_symbols(addrlist, addrlen);
+
+    // allocate string which will be filled with the demangled function name
+    size_t funcnamesize = 256;
+    char* funcname = (char*)malloc(funcnamesize);
+    std::string return_string;
+    if (prefix)
+    {
+        return_string += prefix;
+        return_string +=  " | ";
+    }
+    // iterate over the returned symbol lines. skip the first two
+    for (int i = 2; i < addrlen; i++)
+    {
+        return_string += tracey::demangle(std::string(symbollist[i]));
+        if (i < (addrlen - 1))
+        {
+            return_string += " | ";
+        }
+    }
+    free(funcname);
+    free(symbollist);
+    return return_string;
+}
+#else
+std::string get_stacktrace(const char* prefix) {}
 #endif

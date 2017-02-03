@@ -14,10 +14,7 @@
 
 #include "SoarHelper.hpp"
 
-//#include "sml_EmbeddedConnectionSynch.h"
 #include "sml_AgentSML.h"
-//#include "sml_KernelSML.h"
-//#include "symbol_manager.h"
 #include "soar_instance.h"
 
 bool g_Cancel = false;

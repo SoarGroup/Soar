@@ -250,18 +250,19 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
         make_test(thisAgent, lWME->value, EQUALITY_TEST));
     new_cond->test_for_acceptable_preference = lWME->acceptable;
     new_cond->bt.wme_ = lWME;
-    new_cond->bt.level = lWME->id->id->level;
 //    new_cond->bt.trace = find_clone_for_level(lWME->preference, static_cast<goal_stack_level>(m_match_goal_level));
 //    assert(new_cond->bt.trace || !lWME->preference);
-    new_cond->bt.trace = lWME->preference;
+    new_cond->bt.trace = lWME->preference ? find_clone_for_level(lWME->preference, static_cast<goal_stack_level>(m_match_goal_level)) : NULL;
+    new_cond->bt.level = lWME->id->id->level;
 
     new_cond->inst = lWME->preference ? lWME->preference->inst : NULL;
 
     /* In other functions we only add a reference if the instantiation match goal level is
      * not the top level.  We don't have that value yet, so I'm going to try to use the level
      * of the wme itself. */
+
 #ifndef DO_TOP_LEVEL_REF_CTS
-    if (new_cond->bt.level > TOP_GOAL_LEVEL)
+    if (lWME->id->id->level > TOP_GOAL_LEVEL)
 #endif
     {
         wme_add_ref(lWME);
@@ -270,7 +271,7 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
     if (new_cond->bt.trace)
     {
 #ifndef DO_TOP_LEVEL_REF_CTS
-        if (new_cond->bt.level > TOP_GOAL_LEVEL)
+        if (m_match_goal_level > TOP_GOAL_LEVEL)
 #endif
         {
             preference_add_ref(new_cond->bt.trace);
