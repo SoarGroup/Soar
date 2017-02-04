@@ -886,6 +886,10 @@ void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
       {
           pref->o_supported = false;
       }
+      else
+      {
+          pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
+      }
     }
     else
     {
@@ -1782,10 +1786,12 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     }
     assert(ap_wme && ss_link_wme);
 
-    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation for impasse item %u (match of %y)\n", inst->i_id, inst->prod_name);
-
     thisAgent->SMem->clear_instance_mappings();
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
+
+    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation for impasse item %u (match of %y)\n", inst->i_id, inst->prod_name);
+
+    /* We already know the match goal, so we can just set it */
     inst->match_goal = goal;
     inst->match_goal_level = goal->id->level;
 
