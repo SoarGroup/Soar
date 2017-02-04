@@ -638,8 +638,13 @@ void print_preference(agent* thisAgent, preference* pref)
     {
         thisAgent->outputManager->printa(thisAgent, "  :O ");
     }
-    thisAgent->outputManager->printa(thisAgent, ")\n");
-
+    if (pref->level > TOP_GOAL_LEVEL)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, ") [level %d]\n", static_cast<int64_t>(pref->level));
+    } else {
+        thisAgent->outputManager->printa(thisAgent, ")\n");
+    }
+    
     // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
     xml_begin_tag(thisAgent, kTagPreference);
     xml_att_val(thisAgent, kWME_Id, pref->id);
