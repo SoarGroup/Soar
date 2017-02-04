@@ -3490,7 +3490,10 @@ void do_preference_phase(agent* thisAgent)
     for (;;)
     {
         thisAgent->change_level = thisAgent->next_change_level;
-        dprint(DT_WATERFALL, "\n--- Inner Elaboration Phase, active level %d goal %y ---\n", static_cast<int64_t>(thisAgent->active_level), thisAgent->active_goal);
+        if (thisAgent->trace_settings[TRACE_WATERFALL_SYSPARAM])
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "\n--- Inner Elaboration Phase, active level %d goal %y ---\n", static_cast<int64_t>(thisAgent->active_level), thisAgent->active_goal);
+        }
         dprint(DT_DEALLOCATE_INST, "Clearing newly_created_instantiations...\n");
         thisAgent->newly_created_instantiations = NIL;
 
