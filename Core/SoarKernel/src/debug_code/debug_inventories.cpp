@@ -64,8 +64,8 @@
     }
 
 #else
-    void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart) {}
-    void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart) {}
+    void debug_refcount_change_start(agent* thisAgent, bool twoPart) {}
+    void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart) {}
     void debug_refcount_reset() {}
 #endif
 
@@ -93,17 +93,28 @@
     void IDI_print_and_cleanup(agent* thisAgent)
     {
         Symbol* lSym;
-        thisAgent->outputManager->printa_sf(thisAgent, "Looking for instantiations that were not deallocated...\n");
+        uint64_t bugCount = 0;
+
+        thisAgent->outputManager->printa_sf(thisAgent, "Instantiation inventory:  ");
         for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
         {
             lSym = it->second;
             if (lSym != NULL)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u (%y) was not deallocated!\n", it->first, lSym);
+                bugCount++;
+            }
+        }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated.\n", bugCount, inst_deallocation_map.size());
+        for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
+        {
+            if ((bugCount <= 23) && (lSym != NULL))
+            {
+                thisAgent->outputManager->printa_sf(thisAgent, "...instantiation %u (%y) was not deallocated!\n", it->first, lSym);
                 thisAgent->symbolManager->symbol_remove_ref(&lSym);
             }
         }
         inst_deallocation_map.clear();
+
     }
 #else
     void IDI_add(agent* thisAgent, instantiation* pInst) {}
@@ -152,7 +163,7 @@
     {
         std::string lPrefString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Looking for preferences that were not deallocated...\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "Preference inventory:     ");
         for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
         {
             lPrefString = it->second;
@@ -161,15 +172,15 @@
                 bugCount++;
             }
         }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated.\n", bugCount, PDI_id_counter);
         if (bugCount <= 23)
         {
             for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
             {
                 lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "Preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
+                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
             }
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "Preference inventory result:  %u/%u were not deallocated.\n", bugCount, PDI_id_counter);
         pref_deallocation_map.clear();
     }
 #else
@@ -219,7 +230,7 @@
     {
         std::string lWMEString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Looking for WMEs that were not deallocated...\n");
+        thisAgent->outputManager->printa_sf(thisAgent, "WME inventory:            ");
         for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
         {
             lWMEString = it->second;
@@ -228,15 +239,15 @@
                 bugCount++;
             }
         }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated.\n", bugCount, WDI_id_counter);
         if (bugCount <= 23)
         {
             for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
             {
                 lWMEString = it->second;
-                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "WME %u was not deallocated: %s!\n", it->first, lWMEString.c_str());
+                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...WME %u was not deallocated: %s!\n", it->first, lWMEString.c_str());
             }
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "WME inventory result:  %u/%u were not deallocated.\n", bugCount, WDI_id_counter);
         wme_deallocation_map.clear();
     }
 #else

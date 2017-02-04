@@ -73,7 +73,7 @@ typedef struct memory_pool_struct
  */
  /* MToDo | Remove this. Just here so that I can play with the setting more easily.  Changing in kernel.h
   *         requires more compile time since everything includes it. */
-//#define DEBUG_MEMORY
+#define DEBUG_MEMORY
 #ifdef DEBUG_MEMORY
     template <typename T>
     inline void fill_with_garbage(T* block, size_t size)

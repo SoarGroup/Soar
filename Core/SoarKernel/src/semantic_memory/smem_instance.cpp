@@ -33,38 +33,41 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
     for (preference* pref = inst->preferences_generated; pref;)
     {
-
+        assert(!pref->in_tm);  // Can this already be in TM with our new smem model?
         // add the preference to temporary memory
-        if (!pref->in_tm && add_preference_to_tm(thisAgent, pref))
+        if (!pref->in_tm)
         {
-            // and add it to the list of preferences to be removed
-            // when the goal is removed
-            dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
-            insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-            pref->on_goal_list = true;
-            if (meta)
+            if (add_preference_to_tm(thisAgent, pref))
             {
-                // if this is a meta wme, then it is completely local
-                // to the state and thus we will manually remove it
-                // (via preference removal) when the time comes
-                state->id->smem_info->smem_wmes->push_back(pref);
+                // and add it to the list of preferences to be removed
+                // when the goal is removed
+                dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
+                insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+                pref->on_goal_list = true;
+                if (meta)
+                {
+                    // if this is a meta wme, then it is completely local
+                    // to the state and thus we will manually remove it
+                    // (via preference removal) when the time comes
+                    state->id->smem_info->smem_wmes->push_back(pref);
+                }
             }
-        }
-        else
-        {
-            dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
-            if (pref->reference_count == 0)
+            else
             {
-                preference* previous = pref;
-                pref = pref->inst_next;
-                possibly_deallocate_preference_and_clones(thisAgent, previous);
-                continue;
+                dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
+                if (pref->reference_count == 0)
+                {
+                    preference* previous = pref;
+                    pref = pref->inst_next;
+                    possibly_deallocate_preference_and_clones(thisAgent, previous, true);
+                    continue;
+                }
             }
         }
         if (stripLTILinks)
         {
             pref->id->id->LTI_ID = 0;
-            if (pref->value->is_lti()) pref->value->id->LTI_ID = 0;
+            if (pref->value->is_sti()) pref->value->id->LTI_ID = 0;
         }
         pref = pref->inst_next;
     }
@@ -112,7 +115,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
                         {
                             preference* previous = just_pref;
                             just_pref = just_pref->inst_next;
-                            possibly_deallocate_preference_and_clones(thisAgent, previous);
+                            possibly_deallocate_preference_and_clones(thisAgent, previous, true);
                             continue;
                         }
                     }

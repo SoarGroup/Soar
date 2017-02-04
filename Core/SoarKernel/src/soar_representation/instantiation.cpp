@@ -159,6 +159,39 @@ void find_match_goal(instantiation* inst)
     }
 }
 
+void set_bt_and_find_match_goal(instantiation* inst)
+{
+    Symbol* lowest_goal_so_far;
+    goal_stack_level lowest_level_so_far;
+    condition* cond;
+    Symbol* id;
+
+    lowest_goal_so_far = NIL;
+    lowest_level_so_far = -1;
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            cond->bt.level = cond->bt.wme_->id->id->level;
+            cond->bt.trace = cond->bt.wme_->preference;  // These are later changed to the correct clone for the level
+            id = cond->bt.wme_->id;
+            if (id->id->isa_goal)
+                if (cond->bt.level > lowest_level_so_far)
+                {
+                    lowest_goal_so_far = id;
+                    lowest_level_so_far = cond->bt.level;
+                }
+        }
+
+    inst->match_goal = lowest_goal_so_far;
+    if (lowest_goal_so_far)
+    {
+        inst->match_goal_level = lowest_level_so_far;
+    }
+    else
+    {
+        inst->match_goal_level = ATTRIBUTE_IMPASSE_LEVEL;
+    }
+}
 
 goal_stack_level get_match_goal(condition* top_cond)
 {
@@ -373,9 +406,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     return result;
 }
 
-preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok, wme* w,
-                           action* rule_action,
-                           condition* cond)
+preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok, wme* w, action* rule_action)
 {
     Symbol* lId, *lAttr, *lValue, *lReferent;
     char first_letter;
@@ -762,7 +793,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  for preferences_generated;
  ----------------------------------------------------------------------- */
 
-void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
 {
     condition* cond;
     preference* p;
@@ -770,12 +801,11 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
-    if (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE)
+    if (inst->prod && (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE))
     {
         production_add_ref(inst->prod);
     }
 
-    find_match_goal(inst);
     level = inst->match_goal_level;
 
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
@@ -783,14 +813,14 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
         if (cond->type == POSITIVE_CONDITION)
         {
             /* This was using level before, but I think that was wrong */
-            #ifdef DO_TOP_LEVEL_REF_CTS
-                wme_add_ref(cond->bt.wme_);
-            #else
-                if (cond->bt.wme_->id->id->level > TOP_GOAL_LEVEL)
-                {
+//            #ifdef DO_TOP_LEVEL_PREF_REF_CTS
+//                wme_add_ref(cond->bt.wme_);
+//            #else
+//                if (cond->bt.wme_->id->id->level > TOP_GOAL_LEVEL)
+//                {
                     wme_add_ref(cond->bt.wme_);
-                }
-            #endif
+//                }
+//            #endif
             /* if trace is for a lower level, find one for this level */
             if (cond->bt.trace)
             {
@@ -798,25 +828,26 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 {
                     cond->bt.trace =  find_clone_for_level(cond->bt.trace, level);
                 }
-                #ifdef DO_TOP_LEVEL_REF_CTS
-                    if (cond->bt.trace)
-                    {
+//                #ifdef DO_TOP_LEVEL_PREF_REF_CTS
+//                    if (cond->bt.trace)
+//                    {
+//                        preference_add_ref(cond->bt.trace);
+//                    }
+//                #else
+//                    if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
+//                    {
                         preference_add_ref(cond->bt.trace);
-                    }
-                #else
-                    if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL))
-                    {
-                        preference_add_ref(cond->bt.trace);
-                    }
-                #endif
+//                    }
+//                #endif
             }
         }
         cond->inst = inst;
     }
 
-    if (inst->match_goal)
+    assert(inst->match_goal);
+    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
-        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        if (inst->match_goal)
         {
             insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
             p->on_goal_list = true;
@@ -831,6 +862,36 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
 {
     return ((inst)->prod && (thisAgent->trace_settings[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM + (inst)->prod->type] || ((inst)->prod->trace_firings)));
+}
+
+void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
+{
+    pref->inst = inst;
+    pref->level = inst->match_goal_level;
+
+    /* The parser cannot determine if a rhs preference (<s> ^operator <o> = <x>) is a relative
+     * operator indifferent preference or numeric indifferent preference until it matches, so we
+     * set it here. */
+    if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) && (pref->referent->is_float() || pref->referent->is_int()))
+    {
+        pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+    }
+
+    if (inst->prod)
+    {
+      if  (inst->prod->declared_support == DECLARED_O_SUPPORT)
+      {
+          pref->o_supported = true;
+      } else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
+      {
+          pref->o_supported = false;
+      }
+    }
+    else
+    {
+        pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
+    }
+    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
 }
 
 void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiation* inst, wme* pWME)
@@ -859,30 +920,30 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     cond->bt.wme_ = pWME;
     cond->inst = inst;
 
-    #ifndef DO_TOP_LEVEL_REF_CTS
-    if (pWME->id->id->level > TOP_GOAL_LEVEL)
-    #endif
-    {
+//    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
+//    if (pWME->id->id->level > TOP_GOAL_LEVEL)
+//    #endif
+//    {
         wme_add_ref(pWME);
-    }
+//    }
 
     cond->bt.level = pWME->id->id->level;
     cond->bt.trace = pWME->preference;
 
-    if (cond->bt.trace)
-    {
-        #ifndef DO_TOP_LEVEL_REF_CTS
-        if (pWME->id->id->level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            preference_add_ref(cond->bt.trace);
-        }
-    }
+//    if (cond->bt.trace)
+//    {
+//        #ifndef DO_TOP_LEVEL_PREF_REF_CTS
+//        if (pWME->id->id->level > TOP_GOAL_LEVEL)
+//        #endif
+//        {
+//            preference_add_ref(cond->bt.trace);
+//        }
+//    }
 
     prev_cond = cond;
 }
 
-void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue, bool inTM = false)
+void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue)
 {
     preference* pref;
 
@@ -895,37 +956,8 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
     pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
 
-    pref->inst = inst;
     pref->inst_next = pref->inst_prev = NULL;
-    pref->in_tm = inTM;
-    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next, inst_prev);
-}
-
-void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
-{
-    pref->inst = inst;
-
-    /* The parser cannot determine if a rhs preference (<s> ^operator <o> = <x>) is a binary or
-     * numeric indifferent preference until it matches, so we set it here. */
-    if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE)
-        && (pref->referent->is_float() || pref->referent->is_int()))
-    {
-        pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-    }
-
-    if (inst->prod->declared_support == DECLARED_O_SUPPORT)
-    {
-        pref->o_supported = true;
-    }
-    else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
-    {
-        pref->o_supported = false;
-    }
-    else
-    {
-        pref->o_supported = (thisAgent->FIRING_TYPE == PE_PRODS) ? true : false;
-    }
-    insert_at_head_of_dll(inst->preferences_generated, pref, inst_next,  inst_prev);
+    add_pref_to_inst(thisAgent, pref, inst);
 }
 
 void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
@@ -968,7 +1000,6 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         lPref->identities.id = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->id, inst->i_id);
         lPref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->attr, inst->i_id);
         lPref->identities.value = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->value, inst->i_id);
-        lPref->in_tm = false;
 
         /* Now add a preferences that will create the deep-copied WME */
         add_pref_to_inst(thisAgent, lPref, inst);
@@ -1051,8 +1082,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     inst->in_newly_created = true;
     inst->in_ms = true;
 
-    dprint_header(DT_MILESTONES, PrintBefore, "create_instantiation() for instance of %y (id=%u) begun.\n", inst->prod_name, inst->i_id);
-    dprint(DT_DEALLOCATE_INST, "%y matched.  Allocating instantiation %u and adding to newly_created_instantiations...\n", inst->prod_name, inst->i_id);
+    dprint_header(DT_MILESTONES, PrintBefore, "Allocating instantiation for instance of %u (%y) begun.\n", inst->i_id, inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation for instance of %u (%y) begun.\n", inst->i_id, inst->prod_name);
 
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
@@ -1084,6 +1115,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             cond->bt.trace = cond->bt.wme_->preference;  // These are later changed to the correct clone for the level
         }
     }
+    set_bt_and_find_match_goal(inst);
+
     /* print trace info */
     trace_it = trace_firings_of_inst(thisAgent, inst);
     if (trace_it)
@@ -1123,9 +1156,9 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
             if (a2)
             {
-                pref = execute_action(thisAgent, a, tok, w, a2, inst->top_of_instantiated_conditions);
+                pref = execute_action(thisAgent, a, tok, w, a2);
             } else {
-                pref = execute_action(thisAgent, a, tok, w, NULL, inst->top_of_instantiated_conditions);
+                pref = execute_action(thisAgent, a, tok, w, NULL);
             }
         }
         else
@@ -1218,13 +1251,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
 void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 {
-    condition* cond;
-
-    /* mvp 5-17-94 */
-    cons* c, *c_old;
-    preference* pref;
-    goal_stack_level level;
-
+    dprint(DT_DEALLOCATE_INST, "Deallocating instantiation called for %u (%y)\n", inst->i_id, inst->prod_name);
     if (inst->in_newly_created)
     {
         dprint(DT_DEALLOCATE_INST, "Skipping deallocation of instantiation %u (%y) because it is still on the newly created instantiation list.\n", inst->i_id, inst->prod_name);
@@ -1238,21 +1265,20 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
     condition_list cond_stack;
     inst_list l_instantiation_list;
+    instantiation* lInst;
 
     l_instantiation_list.push_back(inst);
     inst_list::iterator next_iter = l_instantiation_list.begin();
 
     while (next_iter != l_instantiation_list.end())
     {
-        inst = *next_iter;
-        assert(inst);
+        lInst = *next_iter;
+        assert(lInst);
         ++next_iter;
-        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation stage 1 %u (%y)\n", inst->i_id, inst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 for %u (%y)\n", lInst->i_id, lInst->prod_name);
         debug_refcount_change_start(thisAgent, false);
 
-        level = inst->match_goal_level;
-
-        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+        for (condition* cond = lInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
             if (cond->type == POSITIVE_CONDITION)
             {
@@ -1273,121 +1299,91 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
                  Note:  If one of those functions that are flattened out here changes, this code may
                         need updating. - Maz */
-#ifndef DO_TOP_LEVEL_REF_CTS
-                if (cond->bt.wme_->id->id->level > TOP_GOAL_LEVEL)
-#endif
+
+                wme_remove_ref(thisAgent, cond->bt.wme_);
+
+                if (cond->bt.trace)
                 {
-                    wme_remove_ref(thisAgent, cond->bt.wme_);
-
-                    if (cond->bt.trace)
+                    preference* lPref = cond->bt.trace;
+                    /* -----------------------
+                     * preference_remove_ref()
+                     * ----------------------- */
+                    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
+                    assert(lPref->level);
+                    if (lPref->level > TOP_GOAL_LEVEL)
+                    #endif
                     {
-                        cond->bt.trace->reference_count--;
-                        if (cond->bt.trace->reference_count == 0)
+                        if (lPref->reference_count != 0)
+                            lPref->reference_count--;
+                        if (lPref->reference_count == 0)
                         {
+                            /* possibly_deallocate_preference_and_clones() */
                             preference* clone;
-
+                            preference* next;
                             bool has_active_clones = false;
-                            for (clone = cond->bt.trace->next_clone; clone != NIL; clone = clone->next_clone)
+
+                            dprint(DT_DEALLOCATE_PREF, "Possibly deallocating preference %p and clones...\n", lPref);
+
+                            for (clone = lPref->next_clone; clone != NIL; clone = clone->next_clone)
+                                if (clone->reference_count) has_active_clones = true;
+                            if (has_active_clones) continue;
+                            for (clone = lPref->prev_clone; clone != NIL; clone = clone->prev_clone)
+                                if (clone->reference_count) has_active_clones = true;
+                            if (has_active_clones) continue;
+
+                            dprint(DT_DEALLOCATE_PREF, "Deallocating clones of %p...\n", lPref);
+                            clone = lPref->next_clone;
+                            while (clone)
                             {
-                                if (clone->reference_count)
-                                {
-                                    has_active_clones = true;
-                                }
+                                next = clone->next_clone;
+                                deallocate_preference(thisAgent, clone);
+                                clone = next;
                             }
-                            if (has_active_clones)
+                            clone = lPref->prev_clone;
+                            while (clone)
                             {
-                                continue;
-                            }
-                            for (clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone)
-                            {
-                                if (clone->reference_count)
-                                {
-                                    has_active_clones = true;
-                                }
-                            }
-                            if (has_active_clones)
-                            {
-                                continue;
+                                next = clone->prev_clone;
+                                deallocate_preference(thisAgent, clone);
+                                clone = next;
                             }
 
+                            /* ------------------------------
+                             * deallocate_preference() part 1
+                             * ------------------------------ */
+                            if (lPref->on_goal_list)
                             {
-                                preference* clone = cond->bt.trace->next_clone;
-                                preference* next;
-                                while (clone)
-                                {
-                                    next = clone->next_clone;
-                                    deallocate_preference(thisAgent, clone);
-                                    clone = next;
-                                }
-                                clone = cond->bt.trace->prev_clone;
-                                while (clone)
-                                {
-                                    next = clone->prev_clone;
-                                    deallocate_preference(thisAgent, clone);
-                                    clone = next;
-                                }
+                                remove_from_dll(lPref->inst->match_goal->id->preferences_from_goal, lPref, all_of_goal_next, all_of_goal_prev);
                             }
 
-                            /* deallocate pref */
-                            /* remove it from the list of bt.trace's for its match goal */
-                            if (cond->bt.trace->on_goal_list)
-                            {
-                                remove_from_dll(cond->bt.trace->inst->match_goal->id->preferences_from_goal, cond->bt.trace, all_of_goal_next, all_of_goal_prev);
-                            }
+                            remove_from_dll(lPref->inst->preferences_generated, lPref, inst_next, inst_prev);
 
-                            /* remove it from the list of bt.trace's from that instantiation */
-                            remove_from_dll(cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev);
-                            if ((!cond->bt.trace->inst->preferences_generated) && (!cond->bt.trace->inst->in_ms))
+                            /* -----------------------------------
+                             * possibly_deallocate_instantiation()
+                             * ----------------------------------- */
+                            if ((!lPref->inst->preferences_generated) && (!lPref->inst->in_ms))
                             {
-                                next_iter = l_instantiation_list.insert(next_iter, cond->bt.trace->inst);
+                                next_iter = l_instantiation_list.insert(next_iter, lPref->inst);
                             }
 
                             cond_stack.push_back(cond);
-                        } // if
-                    } // if
-                } // if
-                /* voigtjr, nlderbin end */
-            } // if
-        } // for
-
-        /* Clean up operator selection knowledge */
-        if (inst->OSK_prefs)
-        {
-            dprint(DT_OSK, "Cleaning up OSK preference contained in inst %u %y\n", inst->i_id, inst->prod_name);
-            clear_preference_list(thisAgent, inst->OSK_prefs);
+                        }
+                    }
+                }
+            }
         }
-        if (inst->OSK_proposal_prefs)
-        {
-            dprint(DT_OSK, "Cleaning up OSK proposal preference contained in inst %u %y\n", inst->i_id, inst->prod_name);
-            /* These prefs did not have their refcounts increased, so we don't want to call clear_preference_list */
-            free_list(thisAgent, inst->OSK_proposal_prefs);
-            inst->OSK_proposal_prefs = NULL;
-        }
-        if (inst->OSK_proposal_slot)
-        {
-            assert(inst->OSK_proposal_slot->instantiation_with_temp_OSK = inst);
-            inst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
-        }
+        debug_refcount_change_end(thisAgent, (std::string(lInst->prod_name->sc->name) + std::string(" instantiation deallocation - wme and clones")).c_str(), false);
+    }
 
-        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 1")).c_str(), false);
-
-        preference* next_pref;
-        while (inst->preferences_cached)
-        {
-            next_pref = inst->preferences_cached->inst_next;
-            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", inst->i_id, inst->prod_name, inst->preferences_cached);
-            deallocate_preference(thisAgent, inst->preferences_cached);
-            inst->preferences_cached = next_pref;
-        }
-    } // while
-
-    // free condition symbols and its backtrace pref
+    /* --------------------------------------------------
+     * deallocate_preference() part 2 (cleans up bt pref)
+     * -------------------------------------------------- */
     debug_refcount_change_start(thisAgent, false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
         cond_stack.pop_back();
 
+        cache_preference_if_necessary(thisAgent, temp->bt.trace);
         PDI_remove(thisAgent, temp->bt.trace);
 
         /* dereference component symbols */
@@ -1415,43 +1411,72 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         /* free the memory */
         thisAgent->memoryManager->free_with_pool(MP_preference, temp->bt.trace);
     }
-
-    thisAgent->symbolManager->symbol_remove_ref(&inst->prod_name);
-
-    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation 2")).c_str(), false);
+    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation: cumulative bt pref cleanup")).c_str(), false);
 
     // free instantiations in the reverse order
-    inst_list::reverse_iterator riter = l_instantiation_list.rbegin();
-    dprint(DT_DEALLOCATE_INST, "Freeing instantiation list for i %u (%y)\n", inst->i_id, inst->prod_name);
-    while (riter != l_instantiation_list.rend())
-    {
-        instantiation* temp = *riter;
-        ++riter;
-        dprint(DT_MILESTONES, "Deallocating instantiation stage 2 %u (%y)\n", temp->i_id, temp->prod_name);
-        debug_refcount_change_start(thisAgent, false);
-        dprint(DT_DEALLOCATE_INST, "Removing instantiation %u's conditions and production %y.\n", temp->i_id, temp->prod_name);
-        deallocate_condition_list(thisAgent, temp->top_of_instantiated_conditions);
 
-        if (temp->prod)
+    dprint(DT_DEALLOCATE_INST, "Freeing instantiation dealloc list built from %u (%y)\n", inst->i_id, inst->prod_name);
+    for (inst_list::reverse_iterator riter = l_instantiation_list.rbegin(); riter != l_instantiation_list.rend(); ++riter)
+    {
+        instantiation* lDelInst = *riter;
+
+        debug_refcount_change_start(thisAgent, false);
+        dprint(DT_MILESTONES, "Deallocating instantiation: Stage 2 for %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
+        dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 2 for %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
+
+        thisAgent->symbolManager->symbol_remove_ref(&lDelInst->prod_name);
+
+        deallocate_condition_list(thisAgent, lDelInst->top_of_instantiated_conditions);
+
+        /* Clean up operator selection knowledge */
+        if (lDelInst->OSK_prefs)
         {
-            dprint(DT_DEALLOCATE_PROD, "  Removing production reference for i %u (%y = %d).\n", temp->i_id, temp->prod->name, temp->prod->reference_count);
-            if ((temp->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (temp->prod->reference_count == 1))
+            dprint(DT_OSK, "Cleaning up OSK preference contained in inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
+            clear_preference_list(thisAgent, lDelInst->OSK_prefs);
+        }
+        if (lDelInst->OSK_proposal_prefs)
+        {
+            dprint(DT_OSK, "Cleaning up OSK proposal preference contained in inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
+            /* These prefs did not have their refcounts increased, so we don't want to call clear_preference_list */
+            free_list(thisAgent, lDelInst->OSK_proposal_prefs);
+            lDelInst->OSK_proposal_prefs = NULL;
+        }
+        if (lDelInst->OSK_proposal_slot)
+        {
+            assert(lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = lDelInst);
+            lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
+        }
+
+        /* Clean up preferences cached for possible explanations */
+        preference* next_pref;
+        while (lDelInst->preferences_cached)
+        {
+            next_pref = lDelInst->preferences_cached->inst_next;
+            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached);
+            deallocate_preference(thisAgent, lDelInst->preferences_cached);
+            lDelInst->preferences_cached = next_pref;
+        }
+
+        if (lDelInst->prod)
+        {
+            dprint(DT_DEALLOCATE_PROD, "  Removing production reference for i %u (%y = %d).\n", lDelInst->i_id, lDelInst->prod->name, lDelInst->prod->reference_count);
+            if ((lDelInst->prod->type == JUSTIFICATION_PRODUCTION_TYPE) && (lDelInst->prod->reference_count == 1))
             {
                 /* We are about to remove a justification that has not been excised from the rete.
                  * Normally, justifications are excised as soon as they don't have any matches in
                  * rete.cpp.  But if removing the preference will remove the instantiation, we
                  * need to excise it now so that the rete doesn't try to later */
-                excise_production(thisAgent, temp->prod, false, true);
+                excise_production(thisAgent, lDelInst->prod, false, true);
             } else {
-                production_remove_ref(thisAgent, temp->prod);
+                production_remove_ref(thisAgent, lDelInst->prod);
             }
         }
 
-        debug_refcount_change_end(thisAgent, (std::string(temp->prod_name->sc->name) + std::string(" instantiation deallocation 3 of")).c_str(), false);
-        IDI_remove(thisAgent, temp->i_id);
-        thisAgent->memoryManager->free_with_pool(MP_instantiation, temp);
+        debug_refcount_change_end(thisAgent, (std::string(lDelInst->prod_name->sc->name) + std::string(" instantiation deallocation 3 of")).c_str(), false);
+        IDI_remove(thisAgent, lDelInst->i_id);
+        thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
-    dprint(DT_DEALLOCATE_INST, "Done removing instantiation's instantiation list.\n");
+    dprint(DT_DEALLOCATE_INST, "Deallocate instantiation complete.\n");
     inst = NULL;
 }
 
@@ -1550,21 +1575,14 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
 
     instantiation* inst;
+
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
     inst->tested_LTM = true;
 
     thisAgent->SMem->clear_instance_mappings();
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y)  Architectural instantiation.\n", inst->i_id, inst->prod_name);
-
-    // create RHS
-    {
-        for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
-        {
-            add_pref_to_arch_inst(thisAgent, inst, (*a_it)->id, (*a_it)->attr, (*a_it)->value);
-        }
-    }
+    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 
     // create LHS
     {
@@ -1580,10 +1598,24 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
         }
     }
 
-    dprint(DT_PRINT_INSTANTIATIONS,  "%emake_architectural_instantiation for %y created: \n%5", inst->prod_name, inst->top_of_instantiated_conditions, inst->preferences_generated);
+//    find_match_goal(inst);
+
+    // create RHS
+    {
+        for (symbol_triple_list::iterator a_it = pActions->begin(); a_it != pActions->end(); a_it++)
+        {
+            add_pref_to_arch_inst(thisAgent, inst, (*a_it)->id, (*a_it)->attr, (*a_it)->value);
+        }
+    }
 
     /* Clean up symbol to identity mappings for this instantiation*/
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+
+    /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
+    finalize_instantiation(thisAgent, inst, false, NULL);
+
+    dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
+
 
     return inst;
 }
@@ -1613,7 +1645,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
 
 ------------------------------------------------------------------ */
 
-preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand)
+preference* make_architectural_instantiation_for_impasse_item2(agent* thisAgent, Symbol* goal, preference* cand)
 {
     slot* s;
     wme* ap_wme, *ss_link_wme;
@@ -1663,14 +1695,14 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->bt.wme_ = ap_wme;
     cond->inst = inst;
 
-#ifdef DO_TOP_LEVEL_REF_CTS
-    wme_add_ref(ap_wme);
-#else
-    if (ap_wme->id->id->level > TOP_GOAL_LEVEL)
-    {
+//#ifdef DO_TOP_LEVEL_PREF_REF_CTS
+//    wme_add_ref(ap_wme);
+//#else
+//    if (ap_wme->id->id->level > TOP_GOAL_LEVEL)
+//    {
         wme_add_ref(ap_wme);
-    }
-#endif
+//    }
+//#endif
     cond->bt.level = ap_wme->id->id->level;
 
     last_cond = cond;
@@ -1688,15 +1720,15 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     cond->bt.wme_ = ss_link_wme;
     cond->inst = inst;
 
-    assert(goal->id->level == goal->id->id->level);
-#ifdef DO_TOP_LEVEL_REF_CTS
-    wme_add_ref(ss_link_wme);
-#else
-    if (goal->id->level > TOP_GOAL_LEVEL)
-    {
+//    assert(goal->id->level == goal->id->id->level);
+//#ifdef DO_TOP_LEVEL_PREF_REF_CTS
+//    wme_add_ref(ss_link_wme);
+//#else
+//    if (goal->id->level > TOP_GOAL_LEVEL)
+//    {
         wme_add_ref(ss_link_wme);
-    }
-#endif
+//    }
+//#endif
     cond->bt.level = goal->id->id->level;
 
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, goal, thisAgent->symbolManager->soarSymbols.item_symbol,
@@ -1724,4 +1756,61 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
 
     return pref;
+}
+preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand)
+{
+    slot*           s;
+    wme*            ap_wme, *ss_link_wme;
+    instantiation*  inst;
+    condition*      prev_cond = NULL;
+
+    /* Find the acceptable preference wme we want to backtrace to */
+    s = cand->slot;
+    for (ap_wme = s->acceptable_preference_wmes; ap_wme != NIL; ap_wme = ap_wme->next)
+        if (ap_wme->value == cand->value)
+        {
+            break;
+        }
+
+    /* Find the superstate wme to link rule to dependent knowledge in superstate.  Now needed for EBC. */
+    for (ss_link_wme = goal->id->impasse_wmes; ss_link_wme != NIL; ss_link_wme = ss_link_wme->next)
+    {
+        if (ss_link_wme->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol)
+        {
+            break;
+        }
+    }
+    assert(ap_wme && ss_link_wme);
+
+    dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation for impasse item %u (match of %y)\n", inst->i_id, inst->prod_name);
+
+    thisAgent->SMem->clear_instance_mappings();
+    init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
+    inst->match_goal = goal;
+    inst->match_goal_level = goal->id->level;
+
+    // Create the LHS
+    add_cond_to_arch_inst(thisAgent, prev_cond, inst, ap_wme);
+    add_cond_to_arch_inst(thisAgent, prev_cond, inst, ss_link_wme);
+
+    // Find lowest matched state and its level
+//    find_match_goal(inst);
+
+    // Create the RHS
+    add_pref_to_arch_inst(thisAgent, inst, goal, thisAgent->symbolManager->soarSymbols.item_symbol, cand->value);
+
+
+    /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
+    finalize_instantiation(thisAgent, inst, false, NULL);
+
+    /* MToDo | I don't think we actually need this here since we're not using that map to create identities.
+     *         Also need to move the smem instance mappings somewhere general */
+
+    /* Clean up symbol to identity mappings for this instantiation*/
+    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+
+    dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation for impasse item %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
+
+    return inst->preferences_generated;
+
 }

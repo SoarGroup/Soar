@@ -60,11 +60,12 @@ typedef struct instantiation_struct
 void                init_instantiation_pool(agent* thisAgent);
 void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL);
 void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
-void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
+void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst, bool addToGoal = true);
 void                retract_instantiation(agent* thisAgent, instantiation* inst);
 void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
 goal_stack_level    get_match_goal(condition* top_cond);
+void                find_match_goal(instantiation* inst);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 

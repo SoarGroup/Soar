@@ -1321,7 +1321,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
 			{
 				preference* previous = pref;
 				pref = pref->inst_next;
-				possibly_deallocate_preference_and_clones(thisAgent, previous);
+				possibly_deallocate_preference_and_clones(thisAgent, previous, true);
 				continue;
 			}
         }

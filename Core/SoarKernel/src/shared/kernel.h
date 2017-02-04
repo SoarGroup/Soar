@@ -38,7 +38,8 @@
 
 /* --------------- Compiler directives that alter Soar behavior --------------------*/
 
-//#define DO_TOP_LEVEL_REF_CTS          /* Maintains refcounts on wme/pref at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
+//#define DO_TOP_LEVEL_PREF_REF_CTS            /* Maintains refcounts on prefs at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
+//#define DO_TOP_LEVEL_WME_REF_CTS            /* Maintains refcounts on wmes at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
 #define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
 #define BUG_139_WORKAROUND
 
@@ -65,7 +66,7 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+    //#define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif

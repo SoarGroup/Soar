@@ -594,6 +594,8 @@ void Explanation_Based_Chunker::make_clones_of_results()
             thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
         lClonedPref->inst = m_chunk_inst;
+        lClonedPref->level = m_chunk_inst->match_goal_level;
+
         dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
@@ -1069,6 +1071,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
     m_chunk_inst->tested_LTM                        = m_tested_ltm_recall;
     m_chunk_inst->tested_quiescence                 = m_tested_quiescence;
+
+    find_match_goal(m_chunk_inst);
     make_clones_of_results();
     finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
 

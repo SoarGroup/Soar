@@ -60,6 +60,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->next_candidate = NIL;
     p->next_result = NIL;
     p->parent_action = NULL;
+    p->level = 0;
 
     if (pUnify_identities)
     {
@@ -112,6 +113,8 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->type = pPref->type;
     p->numeric_value = pPref->numeric_value;
     p->o_supported = pPref->o_supported;
+    p->level = pPref->level;
+
     p->id = pPref->id;
     p->attr = pPref->attr;
     p->value = pPref->value;
@@ -175,10 +178,19 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 /* -------------------------------------------------------------------
    Deallocate_preference() deallocates a given preference.
 -------------------------------------------------------------------*/
+void cache_preference_if_necessary(agent* thisAgent, preference* pref)
+{
+    if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
+    {
+        preference* lNewPref = shallow_copy_preference(thisAgent, pref);
+        dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
+        insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
+    }
+}
 
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
-    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u)\n", pref, pref->p_id);
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u) at level %d \n", pref, pref->p_id, static_cast<int64_t>(pref->level));
     assert(pref->reference_count == 0);
 
     /*  remove it from the list of pref's for its match goal */
@@ -187,16 +199,7 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 
     if (pref->inst)
     {
-        /* The following caches the preference if there's a chance that it will be
-         * needed for an explanation of an instantiation.  (Might be able to avoid
-         * some of this caching.  At one point we passed in a pDoNotCache flag.  */
-        //if (!pDoNotCache && (pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
-        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled() && !dont_cache)
-        {
-            preference* lNewPref = shallow_copy_preference(thisAgent, pref);
-            dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
-            insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
-        }
+        if (!dont_cache) cache_preference_if_necessary(thisAgent, pref);
         /*  remove it from the list of pref's from that instantiation */
         remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
         dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
@@ -303,23 +306,14 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
     preference* clone, *next;
 
     dprint(DT_DEALLOCATE_PREF, "Possibly deallocating preference %p and clones...\n", pref);
-    if (pref->reference_count)
-    {
-        return false;
-    }
+    if (pref->reference_count) return false;
+
     for (clone = pref->next_clone; clone != NIL; clone = clone->next_clone)
-        if (clone->reference_count)
-        {
-            return false;
-        }
+        if (clone->reference_count) return false;
     for (clone = pref->prev_clone; clone != NIL; clone = clone->prev_clone)
-        if (clone->reference_count)
-        {
-            return false;
-        }
+        if (clone->reference_count) return false;
 
     dprint(DT_DEALLOCATE_PREF, "Deallocating clones of %p...\n", pref);
-    /*  deallocate all the clones */
     clone = pref->next_clone;
     while (clone)
     {
@@ -335,7 +329,6 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
         clone = next;
     }
 
-    /*  deallocate pref */
     deallocate_preference(thisAgent, pref, dont_cache);
 
     return true;

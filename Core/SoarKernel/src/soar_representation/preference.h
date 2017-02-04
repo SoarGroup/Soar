@@ -38,7 +38,11 @@
 #define PREFMEM_H
 
 #include "kernel.h"
+
+#include "instantiation.h"
 #include "stl_typedefs.h"
+
+#define DO_TOP_LEVEL_PREF_REF_CTS
 
 /* ------------------------------------------------------------------------
                                Preferences
@@ -143,6 +147,7 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
+    goal_stack_level                level;
     uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
@@ -150,10 +155,8 @@ preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, S
                                    const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false,
                                    const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
 preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
+void cache_preference_if_necessary(agent* thisAgent, preference* pref);
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);
-inline void preference_add_ref(preference* p) { (p)->reference_count++;}
-inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
-              { (p)->reference_count--; if ((p)->reference_count == 0) { return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);} return false;}
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);
 bool add_preference_to_tm(agent* thisAgent, preference* pref);
 void remove_preference_from_tm(agent* thisAgent, preference* pref);
@@ -162,6 +165,30 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
 inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
 void clear_preference_list(agent* thisAgent, cons* &lPrefList);
+
+inline void preference_add_ref(preference* p)
+{
+    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
+    assert(p->level);
+    if (p->level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        (p)->reference_count++;
+    }
+}
+
+inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
+{
+    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
+    assert(p->level);
+    if (p->level > TOP_GOAL_LEVEL)
+    #endif
+    {
+        if ((p)->reference_count != 0) (p)->reference_count--;
+        if ((p)->reference_count == 0) return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);
+    }
+    return false;
+}
 
 inline const char* preference_name(byte pNum)
 {

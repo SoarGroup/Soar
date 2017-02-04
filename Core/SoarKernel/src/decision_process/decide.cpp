@@ -2579,7 +2579,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     }
 
     /* --- remove any preferences supported by this goal --- */
-#ifdef DO_TOP_LEVEL_REF_CTS
+#ifdef DO_TOP_LEVEL_PREF_REF_CTS
     while (goal->id->preferences_from_goal)
     {
         p = goal->id->preferences_from_goal;
@@ -2593,7 +2593,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     }
 #else
     /* KJC Aug 05: this seems to cure a potential for exceeding callstack
-     * when popping soar's goal stack and not doing DO_TOP_LEVEL_REF_CTS
+     * when popping soar's goal stack and not doing DO_TOP_LEVEL_PREF_REF_CTS
      * Probably should make this change for all cases, but needs testing.  */
     /* Prefs are added to head of dll, so try removing from tail */
     if (goal->id->preferences_from_goal)
