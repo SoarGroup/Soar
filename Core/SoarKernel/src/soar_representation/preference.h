@@ -42,7 +42,7 @@
 #include "instantiation.h"
 #include "stl_typedefs.h"
 
-//#define DO_TOP_LEVEL_PREF_REF_CTS
+#define DO_TOP_LEVEL_PREF_REF_CTS
 
 /* ------------------------------------------------------------------------
                                Preferences

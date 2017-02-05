@@ -1074,7 +1074,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     find_match_goal(m_chunk_inst);
     make_clones_of_results();
-    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
+    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst, true);
 
     /* Add this function to inventory deallocation inventory if that is enabled.
      * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,

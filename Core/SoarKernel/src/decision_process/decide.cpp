@@ -3735,10 +3735,10 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
     {
         if (curr_pi->inst == inst)
         {
-            dprint(DT_GDS, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
+//            dprint(DT_GDS, "UNIQUE DLL:            %y is already in parent list\n", curr_pi->inst->prod_name);
             return;
         }
-        dprint(DT_GDS,  "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
+//        dprint(DT_GDS,  "UNIQUE DLL:            %y\n", curr_pi->inst->prod_name);
     } /* end for loop */
 
     new_pi = static_cast<parent_inst*>(malloc(sizeof(parent_inst)));
@@ -3754,7 +3754,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation* inst)
     }
 
     thisAgent->parent_list_head = new_pi;
-    dprint(DT_GDS, "UNIQUE DLL:         added: %y\n", inst->prod_name);
+//    dprint(DT_GDS, "UNIQUE DLL:         added: %y\n", inst->prod_name);
 }
 
 void add_wme_to_gds(agent* thisAgent, goal_dependency_set* gds, wme* wme_to_add)
@@ -3823,6 +3823,10 @@ void elaborate_gds(agent* thisAgent)
                 wme_goal_level         = cond->bt.level;
                 pref_for_this_wme      = wme_matching_this_cond->preference;
 
+                /* MToDo | Remove.  Just an experiment */
+                preference * pref_for_this_wme2      = find_clone_for_level(wme_matching_this_cond->preference, cond->bt.level);
+                assert(pref_for_this_wme == pref_for_this_wme2);
+
                 dprint(DT_GDS, "       wme_matching_this_cond at goal_level = %d : %w", static_cast<int64_t>(wme_goal_level), wme_matching_this_cond);
                 dprint(DT_GDS, "       pref_for_this_wme                        : %p", pref_for_this_wme);
 
@@ -3831,8 +3835,7 @@ void elaborate_gds(agent* thisAgent)
                  *  (except for fake instantiations, which do have prefs, so
                  *  they get handled under "wme is local and i-supported")
                  */
-                if ((pref_for_this_wme == NIL) ||
-                    (wme_goal_level < inst->match_goal_level))
+                if ((pref_for_this_wme == NIL) || (wme_goal_level < inst->match_goal_level))
                 {
 
                     dprint(DT_GDS, "%s", (pref_for_this_wme == NIL) ? "         WME has no preferences (arch-created)\n" : (wme_goal_level < inst->match_goal_level) ? "         WME is in the supergoal\n" : "");
@@ -3865,8 +3868,7 @@ void elaborate_gds(agent* thisAgent)
 
                             dprint(DT_GDS, "       .....GDS' goal is NIL so switching from old to new GDS list....\n");
                         }
-                        else if (wme_matching_this_cond->gds->goal->id->level >
-                    inst->match_goal_level)
+                        else if (wme_matching_this_cond->gds->goal->id->level > inst->match_goal_level)
                         {
                             /* if the WME currently belongs to the GDS of a goal below
                              * the current one */

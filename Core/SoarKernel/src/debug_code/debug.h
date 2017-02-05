@@ -20,7 +20,7 @@
 
 #ifndef SOAR_RELEASE_VERSION
     /* This can be used to turn off dprints except for a decision cycle range */
-//    #define DEBUG_ONLY_AFTER_DC 4024
+    #define DEBUG_ONLY_AFTER_DC 2454
 //    #define DEBUG_ONLY_BEFORE_DC 1224
 
     /* This can be used to turn off dprints except for a particular chunk */

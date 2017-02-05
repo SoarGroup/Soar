@@ -793,7 +793,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  for preferences_generated;
  ----------------------------------------------------------------------- */
 
-void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
 {
     condition* cond;
     preference* p;
@@ -827,11 +827,14 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
         cond->inst = inst;
     }
 
-    assert(inst->match_goal);
-    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+    if (addToGoal)
     {
-        insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
-        p->on_goal_list = true;
+        assert(inst->match_goal);
+        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        {
+            insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
+            p->on_goal_list = true;
+        }
     }
     if (need_to_do_support_calculations)
     {
@@ -904,7 +907,7 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
 
     cond->bt.level = pWME->id->id->level;
 
-    if (addBTPref)
+    if (addBTPref && pWME->preference)
     {
         cond->bt.trace = pWME->preference;
     }
@@ -918,7 +921,7 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     preference* pref;
 
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
-    pref->o_supported = true;
+//    pref->o_supported = true;
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
@@ -1171,7 +1174,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
 
     /* fill in lots of other stuff */
-    finalize_instantiation(thisAgent, inst, false, NIL);
+    finalize_instantiation(thisAgent, inst, false, NIL, true);
 
     /* print trace info: printing preferences */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
@@ -1328,6 +1331,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             if (lPref->on_goal_list)
                             {
                                 remove_from_dll(lPref->inst->match_goal->id->preferences_from_goal, lPref, all_of_goal_next, all_of_goal_prev);
+                                lPref->on_goal_list = false;
                             }
 
                             remove_from_dll(lPref->inst->preferences_generated, lPref, inst_next, inst_prev);
@@ -1587,7 +1591,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
 
     /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
-    finalize_instantiation(thisAgent, inst, false, NULL);
+    finalize_instantiation(thisAgent, inst, false, NULL, false);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
@@ -1754,7 +1758,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     inst->preferences_generated->o_supported = false;
 
     /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
-    finalize_instantiation(thisAgent, inst, false, NULL);
+    finalize_instantiation(thisAgent, inst, false, NULL, true);
 
     /* MToDo | I don't think we actually need this here since we're not using that map to create identities.
      *         Also need to move the smem instance mappings somewhere general */
