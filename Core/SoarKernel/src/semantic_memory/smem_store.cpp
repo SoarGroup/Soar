@@ -239,6 +239,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     std::set< std::pair<smem_hash_id, uint64_t> > lti_new;
     bool ever_updated_edge_weight = false;
     bool added_edges = false;
+    std::unordered_map<uint64_t, double> edge_weights;
     {
         ltm_slot_map::iterator s;
         ltm_slot::iterator v;
@@ -335,10 +336,11 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     //We have an edge_weight and a parent and a child. This is where we set the edge_weight to the nonfan value.
                     if (edge_weight != 0.0)
                     {
-                        SQL->web_update_child_edge->bind_double(1,edge_weight);
+                        /*SQL->web_update_child_edge->bind_double(1,edge_weight);
                         SQL->web_update_child_edge->bind_int(2,pLTI_ID);
                         SQL->web_update_child_edge->bind_int(3,value_lti);
-                        SQL->web_update_child_edge->execute(soar_module::op_reinit);
+                        SQL->web_update_child_edge->execute(soar_module::op_reinit);*/
+                        edge_weights[value_lti] = edge_weight;
                         ever_updated_edge_weight = true;
                     }
                     // provide trace output
@@ -434,14 +436,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         SQL->act_lti_child_lti_ct_set->execute(soar_module::op_reinit);
     }
 
-    //For now, on a change to the network for an lti, I reset the edge weights.
-    if (added_edges && !ever_updated_edge_weight)
-    {
-        double fan = 1.0/((double)new_lti_edges);
-        SQL->web_update_all_lti_child_edges->bind_double(1,fan);
-        SQL->web_update_all_lti_child_edges->bind_int(2,pLTI_ID);
-        SQL->web_update_all_lti_child_edges->execute(soar_module::op_reinit);
-    }
+
 
     //Put the initialization of the entry in the prohibit table here.
     //This doesn't create a prohibt. It creates an entry in the prohibit tracking table.
@@ -515,7 +510,20 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
                     SQL->web_add->bind_int(3, SMEM_AUGMENTATIONS_NULL);
                     SQL->web_add->bind_int(4, p->second);
                     SQL->web_add->bind_double(5, web_act);
-                    SQL->web_add->bind_double(6, 1.0/((double)new_lti_edges));
+                    if (ever_updated_edge_weight && edge_weights.find(p->second) != edge_weights.end())
+                    {
+                        /*
+                         * This will currently silently fail if the user doesn't supply all of the edge weights
+                         *  that they should. Some will be initialized to fan and others will not.
+                         *  The first round of normalization will "fix" this, in that things won't "break",
+                         *  but the values will be different than what the user presumably intended.
+                         */
+                        SQL->web_add->bind_double(6, edge_weights[p->second]);
+                    }
+                    else
+                    {
+                        SQL->web_add->bind_double(6, 1.0/((double)new_lti_edges));
+                    }
                     SQL->web_add->execute(soar_module::op_reinit);
                 }
 
@@ -567,6 +575,14 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
         {
             statistics->edges->set_value(statistics->edges->get_value() + (const_new.size() + lti_new.size()));
         }
+    }
+    //For now, on a change to the network for an lti, I reset the edge weights.
+    if (added_edges && !ever_updated_edge_weight)
+    {
+        double fan = 1.0/((double)new_lti_edges);
+        SQL->web_update_all_lti_child_edges->bind_double(1,fan);
+        SQL->web_update_all_lti_child_edges->bind_int(2,pLTI_ID);
+        SQL->web_update_all_lti_child_edges->execute(soar_module::op_reinit);
     }
     if (old_children != NULL)
     {
