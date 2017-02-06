@@ -684,7 +684,7 @@ void rl_tabulate_reward_value_for_goal(agent* thisAgent, Symbol* goal)
 
     if (!data->prev_op_rl_rules->empty())
     {
-        slot* s = find_slot(goal->id->reward_header, thisAgent->symbolManager->soarSymbols.rl_sym_reward);
+        slot* s = find_slot(goal->id->rl_info->rl_link_wme->value, thisAgent->symbolManager->soarSymbols.rl_sym_reward);
         slot* t;
         wme* w, *x;
 

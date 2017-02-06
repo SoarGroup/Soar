@@ -906,15 +906,23 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
 {
     condition * cond;
 
-    cond = make_condition(thisAgent,
-        make_test(thisAgent, pWME->id , EQUALITY_TEST),
-        make_test(thisAgent, pWME->attr, EQUALITY_TEST),
-        make_test(thisAgent, pWME->value, EQUALITY_TEST));
+    /* Add contents */
+    cond = make_condition(thisAgent, make_test(thisAgent, pWME->id , EQUALITY_TEST), make_test(thisAgent, pWME->attr, EQUALITY_TEST), make_test(thisAgent, pWME->value, EQUALITY_TEST));
+    cond->inst = inst;
+    cond->bt.wme_ = pWME;
+    cond->bt.level = pWME->id->id->level;
+    cond->test_for_acceptable_preference = pWME->acceptable;
+    if (addBTPref && pWME->preference) cond->bt.trace = pWME->preference;
+    //preference_add_ref(cond->bt.trace);
+
+    /* Add identity information */
     thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
     if (cond->data.tests.attr_test->data.referent->is_sti())
         thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
     if (cond->data.tests.value_test->data.referent->is_sti())
         thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
+
+    /* Set up links*/
     cond->prev = prev_cond;
     cond->next = NULL;
     if (prev_cond != NULL)
@@ -927,19 +935,8 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
         inst->top_of_instantiated_conditions = cond;
         inst->bottom_of_instantiated_conditions = cond;
     }
-    cond->test_for_acceptable_preference = pWME->acceptable;
-    cond->bt.wme_ = pWME;
-    cond->inst = inst;
-
-    cond->bt.level = pWME->id->id->level;
-
-    if (addBTPref && pWME->preference)
-    {
-        cond->bt.trace = pWME->preference;
-    }
-//            preference_add_ref(cond->bt.trace);
-
     prev_cond = cond;
+
 }
 
 void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, Symbol* pAttr, Symbol* pValue)

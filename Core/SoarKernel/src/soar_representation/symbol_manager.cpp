@@ -446,7 +446,6 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->input_wmes = NULL;
 
     sym->rl_info = NULL;
-    sym->reward_header = NULL;
 
     sym->epmem_info = NULL;
     sym->epmem_id = EPMEM_NODEID_BAD;

@@ -359,6 +359,7 @@ void destroy_soar_agent(agent* delete_agent)
     IDI_print_and_cleanup(delete_agent);
     PDI_print_and_cleanup(delete_agent);
     WDI_print_and_cleanup(delete_agent);
+    GDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);

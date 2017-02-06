@@ -110,7 +110,7 @@
     {
         std::string lPrefString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "GDS inventory:     ");
+        thisAgent->outputManager->printa_sf(thisAgent, "GDS inventory:            ");
         for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
         {
             lPrefString = it->second;

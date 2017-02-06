@@ -215,8 +215,9 @@ class rl_stat_container: public soar_module::stat_container
 // rl data associated with each state
 typedef struct rl_data_struct
 {
-    rl_et_map* eligibility_traces;          // traces associated with productions
-    production_list* prev_op_rl_rules;         // rl rules associated with the previous operator
+    rl_et_map*          eligibility_traces;        // traces associated with productions
+    production_list*    prev_op_rl_rules;         // rl rules associated with the previous operator
+    wme*                rl_link_wme;
 
     double previous_q;                      // q-value of the previous state
     double reward;                          // accumulated discounted reward

@@ -226,7 +226,6 @@ struct idSymbol    : public Symbol
     struct slot_struct* operator_slot;
     struct preference_struct* preferences_from_goal;
 
-    Symbol* reward_header;
     struct rl_data_struct* rl_info;
 
     struct epmem_data_struct*   epmem_info;

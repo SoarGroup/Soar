@@ -1920,26 +1920,25 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
         add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
-        impasseID->id->reward_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, impasseID->id->reward_header, true);
 
-        impasseID->id->epmem_info->epmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
-        soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, impasseID->id->epmem_info->epmem_header, true);
-        impasseID->id->epmem_info->epmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
-        soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, impasseID->id->epmem_info->epmem_cmd_header);
-        impasseID->id->epmem_info->epmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
-        soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_result, impasseID->id->epmem_info->epmem_result_header);
+        Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        impasseID->id->rl_info->rl_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, lreward_header, true);
+
+
+        Symbol* lepmem_header = thisAgent->symbolManager->make_new_identifier('E', level);
+        impasseID->id->epmem_info->epmem_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.epmem_sym, lepmem_header, true);
+        Symbol* lepmem_cmd_header = thisAgent->symbolManager->make_new_identifier('C', level);
+        impasseID->id->epmem_info->cmd_wme = soar_module::add_module_wme(thisAgent, lepmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cmd, lepmem_cmd_header);
+        Symbol* lepmem_result_header = thisAgent->symbolManager->make_new_identifier('R', level);
+        impasseID->id->epmem_info->result_wme = soar_module::add_module_wme(thisAgent, lepmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_result, lepmem_result_header);
+
 
         {
             int64_t my_time = static_cast<int64_t>(thisAgent->EpMem->epmem_stats->time->get_value());
-            if (my_time == 0)
-            {
-                // special case: pre-initialization
-                my_time = 1;
-            }
+            if (my_time == 0) my_time = 1;
 
             Symbol* my_time_sym = thisAgent->symbolManager->make_int_constant(my_time);
-            impasseID->id->epmem_info->epmem_time_wme = soar_module::add_module_wme(thisAgent, impasseID->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
+            impasseID->id->epmem_info->epmem_time_wme = soar_module::add_module_wme(thisAgent, lepmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
             thisAgent->symbolManager->symbol_remove_ref(&my_time_sym);
         }
 
@@ -2760,28 +2759,37 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
         }
     }
 
+//    inform_output_module_of_wm_changes(thisAgent, thisAgent->wmes_to_add, thisAgent->wmes_to_remove);
+
     goal->id->rl_info->eligibility_traces->~rl_et_map();
     thisAgent->memoryManager->free_with_pool(MP_rl_et, goal->id->rl_info->eligibility_traces);
     goal->id->rl_info->prev_op_rl_rules->~production_list();
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->reward_header);
+    remove_module_wme(thisAgent, goal->id->rl_info->rl_link_wme);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
 
     goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_cmd_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_result_header);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_header);
-
+    remove_module_wme(thisAgent, goal->id->epmem_info->epmem_time_wme);
+    remove_module_wme(thisAgent, goal->id->epmem_info->cmd_wme);
+    remove_module_wme(thisAgent, goal->id->epmem_info->result_wme);
+    remove_module_wme(thisAgent, goal->id->epmem_info->epmem_link_wme);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
     goal->id->smem_info->smem_wmes->~preference_list();
     thisAgent->memoryManager->free_with_pool(MP_smem_wmes, goal->id->smem_info->smem_wmes);
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->cmd_wme->value); // smem_command_header
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->result_wme->value); // smem_result_header
-    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->smem_link_wme->value); // smem_header
+    remove_module_wme(thisAgent, goal->id->smem_info->cmd_wme);
+    remove_module_wme(thisAgent, goal->id->smem_info->result_wme);
+    remove_module_wme(thisAgent, goal->id->smem_info->smem_link_wme);
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->cmd_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->result_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->smem_info->smem_link_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->cmd_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->result_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->epmem_info->epmem_link_wme->value);
+//    thisAgent->symbolManager->symbol_remove_ref(&goal->id->rl_info->rl_link_wme->value);
 #ifndef NO_SVS
     thisAgent->svs->state_deletion_callback(goal);
 #endif
