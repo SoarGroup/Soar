@@ -451,6 +451,7 @@ bool reinitialize_agent(agent* thisAgent)
     IDI_print_and_cleanup(thisAgent);
     PDI_print_and_cleanup(thisAgent);
     WDI_print_and_cleanup(thisAgent);
+    GDI_print_and_cleanup(thisAgent);
 
     reset_wme_timetags(thisAgent);
 

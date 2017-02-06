@@ -214,6 +214,7 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
             {
                 w->gds->goal->id->gds = NIL;
             }
+            GDI_remove(thisAgent, w->gds);
             thisAgent->memoryManager->free_with_pool(MP_gds, w->gds);
         }
     }

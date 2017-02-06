@@ -9,7 +9,6 @@
    @brief debug.cpp provides some utility functions for inspecting and
           manipulating the data structures of the Soar kernel at run
           time.
-
 ------------------------------------------------------------------ */
 
 #include "debug.h"
@@ -19,6 +18,7 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "lexer.h"
+#include "preference.h"
 #include "print.h"
 #include "rhs.h"
 #include "soar_module.h"
@@ -43,7 +43,7 @@ bool break_if_symbol_matches_string(Symbol* sym, const char* match)
 }
 bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
 {
-    if(break_if_symbol_matches_string(w->id, match_id) && break_if_symbol_matches_string(w->attr, match_attr) && break_if_symbol_matches_string(w->value, match_value))
+    if ((std::string(w->id->to_string()) == std::string(match_id)) && (std::string(w->attr->to_string()) == std::string(match_attr)) && (std::string(w->value->to_string()) == std::string(match_value)))
         return true;
     return false;
 }
@@ -60,7 +60,12 @@ bool break_if_test_symbol_matches_string(test t, const char* match)
         return true;
     return false;
 }
-
+bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value)
+{
+    if ((std::string(w->id->to_string()) == std::string(match_id)) && (std::string(w->attr->to_string()) == std::string(match_attr)) && (std::string(w->value->to_string()) == std::string(match_value)))
+        return true;
+    return false;
+}
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)

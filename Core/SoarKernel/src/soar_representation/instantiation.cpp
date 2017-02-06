@@ -110,6 +110,32 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
     return NIL;
 }
 
+/* Return preference for a WME that is at the highest level that isn't the top state */
+preference* find_clone_for_gds(preference* p)
+{
+    preference* clone;
+    goal_stack_level topmost_level_found = LOWEST_POSSIBLE_GOAL_LEVEL;
+    preference* topmost_clone = NULL;
+
+    if (!p) return NULL;
+
+    for (clone = p->next_clone; clone != NIL; clone = clone->next_clone)
+        if ((clone->level > TOP_GOAL_LEVEL) && (clone->level < topmost_level_found))
+        {
+            topmost_level_found = clone->level;
+            topmost_clone = clone;
+        }
+
+    for (clone = p->prev_clone; clone != NIL; clone = clone->prev_clone)
+        if ((clone->level > TOP_GOAL_LEVEL) && (clone->level < topmost_level_found))
+        {
+            topmost_level_found = clone->level;
+            topmost_clone = clone;
+        }
+
+    /* A single preference for the top-level with no clones*/
+    return NULL;
+}
 /* =======================================================================
 
  Firer Utilities
@@ -989,6 +1015,7 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
 
 }
 
+
 void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod, struct token_struct* tok, wme* w)
 {
     thisAgent->memoryManager->allocate_with_pool(MP_instantiation, &inst);
@@ -999,6 +1026,9 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->rete_wme = w;
 
     inst->backtrace_number = 0;
+    inst->match_goal = NULL;
+    inst->match_goal_level = 0;
+
     inst->tested_quiescence = false;
     inst->tested_local_negation = false;
     inst->creates_deep_copy = false;

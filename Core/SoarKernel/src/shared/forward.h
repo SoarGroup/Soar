@@ -15,6 +15,7 @@ typedef struct condition_struct condition;
 typedef struct cons_struct cons;
 typedef struct dl_cons_struct dl_cons;
 typedef struct exploration_parameter_struct exploration_parameter;
+typedef struct gds_struct goal_dependency_set;
 typedef struct hash_table_struct hash_table;
 typedef struct instantiation_struct instantiation;
 typedef struct io_wme_struct io_wme;
@@ -150,6 +151,7 @@ namespace cli
  * problem structures are being processed.  Since we can throw these in anywhere, we're forward
  * declaring them here so that we don't need to include debug.h everywhere.*/
 extern bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
+extern bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value);
 extern bool break_if_symbol_matches_string(Symbol* sym, const char* match);
 extern bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 extern bool break_if_test_symbol_matches_string(test t, const char* match);

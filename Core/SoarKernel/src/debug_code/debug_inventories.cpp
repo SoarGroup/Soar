@@ -8,6 +8,7 @@
 
 #include "agent.h"
 #include "dprint.h"
+#include "decide.h"
 #include "instantiation.h"
 #include "misc.h"
 #include "preference.h"
@@ -67,6 +68,73 @@
     void debug_refcount_change_start(agent* thisAgent, bool twoPart) {}
     void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart) {}
     void debug_refcount_reset() {}
+#endif
+
+#ifdef DEBUG_GDS_INVENTORY
+    id_to_string_map gds_deallocation_map;
+
+    uint64_t GDI_id_counter = 0;
+
+    void GDI_add(agent* thisAgent, goal_dependency_set* pGDS)
+    {
+        std::string lPrefString;
+        pGDS->g_id = ++GDI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "GDS %u (%y)", pGDS->g_id, pGDS->goal);
+//        dprint(DT_DEBUG, "%u:%s%p\n", pGDS->g_id, isShallow ? " shallow " : " ", pGDS);
+        gds_deallocation_map[pGDS->g_id] = lPrefString;
+    }
+    void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS)
+    {
+        auto it = gds_deallocation_map.find(pGDS->g_id);
+        assert (it != gds_deallocation_map.end());
+//        if (it == gds_deallocation_map.end())
+//        {
+//            dprint(DT_DEBUG, "Did not find preference to remove!  %p\nRemaining preference deallocation map:\n", pGDS);
+//            std::string lPrefString;
+//            for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
+//            {
+//                lPrefString = it->second;
+//                if (!lPrefString.empty()) dprint(DT_DEBUG, "%u: %s\n", it->first, lPrefString.c_str());
+//            }
+//            return;
+//        }
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            gds_deallocation_map[pGDS->g_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "GDS %u was deallocated twice!\n", it->first);
+        }
+    }
+    void GDI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lPrefString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "GDS inventory:     ");
+        for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
+        {
+            lPrefString = it->second;
+            if (!lPrefString.empty())
+            {
+                bugCount++;
+            }
+        }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated.\n", bugCount, GDI_id_counter);
+        if (bugCount <= 23)
+        {
+            for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
+            {
+                lPrefString = it->second;
+                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...preference %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
+            }
+        }
+        gds_deallocation_map.clear();
+        GDI_id_counter = 0;
+    }
+#else
+    void GDI_add(agent* thisAgent, goal_dependency_set* pGDS) {}
+    void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS) {}
+    void GDI_print_and_cleanup(agent* thisAgent) {}
 #endif
 
 #ifdef DEBUG_INSTANTIATION_INVENTORY
@@ -182,6 +250,7 @@
             }
         }
         pref_deallocation_map.clear();
+        PDI_id_counter = 0;
     }
 #else
     void PDI_add(agent* thisAgent, preference* pPref, bool isShallow) {}
@@ -249,6 +318,7 @@
             }
         }
         wme_deallocation_map.clear();
+        WDI_id_counter = 0;
     }
 #else
     void WDI_add(agent* thisAgent, wme* pWME) {}

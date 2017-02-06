@@ -69,6 +69,7 @@ typedef struct gds_struct
 {
     Symbol* goal;                /* pointer to the goal for the dependency set */
     wme* wmes_in_gds;            /* pointer to the dll of WMEs in GDS of goal */
+    uint64_t g_id;
 } goal_dependency_set;
 
 /* ------------------------------------------------------------------------

@@ -593,6 +593,10 @@ void Explanation_Based_Chunker::make_clones_of_results()
         {
             thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
+        if (std::string(m_chunk_inst->prod_name->sc->name) == std::string("justifyx3*learn-predicate*store*structure*learned-predicate*conditions*t1223-117"))
+        {
+            break_if_pref_matches_string(lResultPref, "N317", "args", "A9");
+        }
         lClonedPref->inst = m_chunk_inst;
         lClonedPref->level = m_chunk_inst->match_goal_level;
 

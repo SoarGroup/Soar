@@ -18,6 +18,7 @@
  *       someone wanted to use this stuff with multiple agents, they'd need to move the
  *       inventory tracking maps somewhere that they can be agent specific. */
 
+#define DEBUG_GDS_INVENTORY
 #define DEBUG_INSTANTIATION_INVENTORY
 #define DEBUG_PREFERENCE_INVENTORY
 #define DEBUG_WME_INVENTORY
@@ -42,5 +43,9 @@ void PDI_print_and_cleanup(agent* thisAgent);
 void WDI_add(agent* thisAgent, wme* pWME);
 void WDI_remove(agent* thisAgent, wme* pWME);
 void WDI_print_and_cleanup(agent* thisAgent);
+
+void GDI_add(agent* thisAgent, goal_dependency_set* pGDS);
+void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS);
+void GDI_print_and_cleanup(agent* thisAgent);
 
 #endif /* CORE_SOARKERNEL_SRC_DEBUG_CODE_DEBUG_INVENTORIES_H_ */
