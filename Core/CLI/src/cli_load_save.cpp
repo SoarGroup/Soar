@@ -206,7 +206,7 @@ bool CommandLineInterface::DoSave(std::vector<std::string>& argv, const std::str
             AddSaveText("\n# Procedural Memory\n");
             if (!DoCLog(LOG_CLOSE, 0, 0, true)) return false;
             lCmdVector.push_back("print");
-            lCmdVector.push_back("-fai");
+            lCmdVector.push_back("-fcDrTu");
             if (!DoCommandToFile(LOG_NEWAPPEND, lFile, lCmdVector)) return false;
 
             /* Save semantic memory */
