@@ -62,7 +62,7 @@ for (int i=0; i<names.size(); ++i) {
             junit 'out/TestResults.xml'
           } else {
             bat 'out\\UnitTests.exe -f testCommandToFile'
-            junit 'out\\TestResults.xml'
+            junit 'TestResults.xml'
           }
       }
       archive '*.7zip'
