@@ -61,7 +61,7 @@ for (int i=0; i<names.size(); ++i) {
             sh 'pushd out; ./UnitTests; popd'
             junit 'out/TestResults.xml'
           } else {
-            bat 'VS2015\\UnitTests.exe -f testCommandToFile'
+            bat 'out\\UnitTests.exe -f testCommandToFile'
             junit 'out\\TestResults.xml'
           }
       }
