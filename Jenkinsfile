@@ -18,7 +18,7 @@ for (int i=0; i<names.size(); ++i) {
         } else {
           bat 'del /q /f *.7zip'
           bat 'del /q /f user-env*.bat'
-          bat 'if exist "build/Core/ClientSMLSWIG" del /q /f build/Core/ClientSMLSWIG*'
+          bat 'if exist "build\\Core\\ClientSMLSWIG" del /q /f build\\Core\\ClientSMLSWIG*'
           bat 'if exist "out" del /q /f out'
           //bat 'del /q /f VS2013\\'
           //try {
