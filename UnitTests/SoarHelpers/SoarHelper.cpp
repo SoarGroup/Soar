@@ -52,12 +52,22 @@ void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
     std::cout.flush();
 #endif
 }
+void SoarHelper::add_log_dir_if_exists(std::string &lPath)
+{
+     struct stat sb;
+
+     if (stat("logs", &sb) == 0 && S_ISDIR(sb.st_mode))
+     {
+         lPath += "logs/";
+     }
+}
+
 
 void SoarHelper::start_log(sml::Agent* agent, const char* pTestName)
 {
     std::string lCmdName("output log ");
     #ifdef SAVE_LOG_FILES
-        lCmdName += "logs/";
+        SoarHelper::add_log_dir_if_exists(lCmdName);
     #endif
     lCmdName += pTestName;
     lCmdName += "_log.txt";
@@ -70,7 +80,7 @@ void SoarHelper::continue_log(sml::Agent* agent, const char* pTestName)
 {
     std::string lCmdName("output log -A ");
     #ifdef SAVE_LOG_FILES
-        lCmdName += "logs/";
+        SoarHelper::add_log_dir_if_exists(lCmdName);
     #endif
     lCmdName += pTestName;
     lCmdName += "_log.txt";

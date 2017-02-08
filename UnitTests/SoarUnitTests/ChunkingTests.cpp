@@ -127,7 +127,9 @@ void ChunkingTests::save_chunks(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "output command-to-file logs/temp_chunks_";
+        lCmdName = "output command-to-file ";
+        SoarHelper::add_log_dir_if_exists(lCmdName);
+        lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frc";
     #else
@@ -141,7 +143,9 @@ void ChunkingTests::save_chunks_internal(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "output command-to-file logs/temp_chunks_";
+        lCmdName = "output command-to-file ";
+        SoarHelper::add_log_dir_if_exists(lCmdName);
+        lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frci";
     #else
@@ -150,12 +154,13 @@ void ChunkingTests::save_chunks_internal(const char* pTestName)
     SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
-
 void ChunkingTests::source_saved_chunks(const char* pTestName)
 {
     std::string lCmdName;
     #ifdef SAVE_LOG_FILES
-        lCmdName = "source logs/temp_chunks_";
+        lCmdName = "source ";
+        SoarHelper::add_log_dir_if_exists(lCmdName);
+        lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar";
     #else
