@@ -20,8 +20,8 @@ for (int i=0; i<names.size(); ++i) {
           bat 'del /q /f user-env*.bat'
           //bat 'del /q /f VS2013\\'
           try {
-            bat 'mkdir VS2015 >> nul'
-            bat 'del /q /f VS2015\\ >> nul'
+            bat 'mkdir VS20152> nul'
+            bat 'del /q /f VS2015\\2> nul'
           }
           finally {
             bat 'echo Could not find VS2015'
