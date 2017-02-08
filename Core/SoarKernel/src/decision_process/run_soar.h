@@ -48,7 +48,7 @@ void remove_pwatch(agent* thisAgent, struct production_struct* prod);
    Reinitialize_soar() does all the work for an init-soar.
 --------------------------------------------------------------------- */
 
-bool reinitialize_soar(agent* thisAgent);
+void reinitialize_soar(agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                          Reset Timers

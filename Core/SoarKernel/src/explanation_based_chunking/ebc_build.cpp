@@ -593,10 +593,6 @@ void Explanation_Based_Chunker::make_clones_of_results()
         {
             thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
-        if (std::string(m_chunk_inst->prod_name->sc->name) == std::string("justifyx3*learn-predicate*store*structure*learned-predicate*conditions*t1223-117"))
-        {
-            break_if_pref_matches_string(lResultPref, "N317", "args", "A9");
-        }
         lClonedPref->inst = m_chunk_inst;
         lClonedPref->level = m_chunk_inst->match_goal_level;
 
@@ -650,7 +646,7 @@ void Explanation_Based_Chunker::remove_chunk_instantiation()
         lNext = lResultPref->inst_next;
         assert(lResultPref->reference_count == 0);
         dprint(DT_EBC_CLEANUP, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
-        lRemoved = remove_preference_from_clones(thisAgent, lResultPref);
+        lRemoved = remove_preference_from_clones_and_deallocate(thisAgent, lResultPref);
         assert(lRemoved);
     }
     m_chunk_inst = NULL;

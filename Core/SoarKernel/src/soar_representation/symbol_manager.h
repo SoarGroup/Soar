@@ -55,7 +55,7 @@ class EXPORT Symbol_Manager {
         Symbol* find_float_constant(double value);
 
         bool remove_if_sti(agent* thisAgent, void* item, void* userdata);
-        bool reset_id_counters();
+        void reset_id_counters();
         void reset_id_and_variable_tc_numbers();
         void reset_hash_table(MemoryPoolType lHashTable);
 

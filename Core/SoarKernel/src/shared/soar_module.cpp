@@ -54,8 +54,6 @@ namespace soar_module
         {
             thisAgent->explanationBasedChunker->add_to_singletons(w);
         }
-//        /*MToDo | Adding a refcount here.  Not sure if needed, but seems like it should and currently has issues with certain links being deallocated */
-        wme_add_ref(w, true);
         return w;
     }
 
@@ -79,7 +77,6 @@ namespace soar_module
 
             remove_wme_from_wm(thisAgent, w);
         }
-        wme_remove_ref(thisAgent, w, true);
     }
 
     void print_ambiguous_commands(agent* thisAgent, const std::string badCommand, const std::list<std::string> matched_name_list)

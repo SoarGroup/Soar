@@ -983,10 +983,16 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             {
                 /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
                  * detect refcount leaks in unit tests and print out a message accordingly */
-                /* MToDo | Remove.  The printing could cause a crash if there's memory corruption, but usually
-                 *         prints out and good for debugging. */
-                do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
-                std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
+                /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
+                 *        memory corruption, but usually prints out and is good for debugging. */
+                #ifndef SOAR_RELEASE_VERSION
+                    if (identifier_hash_table->count < 23)
+                        do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+                    else
+                        std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
+                #else
+                    std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
+                #endif
             }
             else if (thisAgent->outputManager->settings[OM_WARNINGS])
             {
@@ -1000,23 +1006,9 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
     }
 }
 
-bool Symbol_Manager::reset_id_counters()
+void Symbol_Manager::reset_id_counters()
 {
-    int i;
-
-    for (i = 0; i < 26; i++)
-    {
-        id_counter[i] = 1;
-    }
-
-    if (thisAgent->SMem->connected())
-    {
-        thisAgent->SMem->reset_id_counters();
-    }
-
-    debug_refcount_reset();
-
-    return true ;
+    for (int i = 0; i < 26; i++) id_counter[i] = 1;
 }
 
 bool reset_tc_num(agent* /*thisAgent*/, void* item, void*)
@@ -1033,8 +1025,6 @@ void Symbol_Manager::reset_id_and_variable_tc_numbers()
     do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, reset_tc_num, 0);
     do_for_all_items_in_hash_table(thisAgent, variable_hash_table, reset_tc_num, 0);
 }
-
-
 
 Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* counter)
 {

@@ -42,8 +42,6 @@
 #include "instantiation.h"
 #include "stl_typedefs.h"
 
-#define DO_TOP_LEVEL_PREF_REF_CTS
-
 /* ------------------------------------------------------------------------
                                Preferences
 
@@ -160,7 +158,7 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);
 bool add_preference_to_tm(agent* thisAgent, preference* pref);
 void remove_preference_from_tm(agent* thisAgent, preference* pref);
-bool remove_preference_from_clones(agent* thisAgent, preference* pref);
+bool remove_preference_from_clones_and_deallocate(agent* thisAgent, preference* pref);
 void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo);
 inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
@@ -169,7 +167,6 @@ void clear_preference_list(agent* thisAgent, cons* &lPrefList);
 inline void preference_add_ref(preference* p)
 {
     #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-    assert(p->level);
     if (p->level > TOP_GOAL_LEVEL)
     #endif
     {
@@ -180,7 +177,6 @@ inline void preference_add_ref(preference* p)
 inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
 {
     #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-    assert(p->level);
     if (p->level > TOP_GOAL_LEVEL)
     #endif
     {

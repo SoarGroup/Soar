@@ -52,7 +52,6 @@
             {
                 dprint_noprefix(DT_ID_LEAKING, "%s Reference count of %s changed (%d -> %d) by %d\n", callerString, DEBUG_TRACE_REFCOUNT_FOR,
                     (*last_count), new_count, (new_count - (*last_count)));
-                if (std::string(callerString) == std::string("DEALLOCATED INST preference deallocation")) break_if_id_matches(1, 1);
             }
             (*last_count) = 0;
             if (twoPart) debug_last_refcount2 = debug_last_refcount2 + (new_count - debug_last_refcount);
@@ -138,47 +137,56 @@
 #endif
 
 #ifdef DEBUG_INSTANTIATION_INVENTORY
-    id_to_sym_map inst_deallocation_map;
+    id_to_string_map inst_deallocation_map;
 
     void IDI_add(agent* thisAgent, instantiation* pInst)
     {
-        inst_deallocation_map[pInst->i_id] = pInst->prod_name;
-        thisAgent->symbolManager->symbol_add_ref(pInst->prod_name);
+        std::string lInstString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lInstString, "(%y) in %y (%d)", pInst->prod_name, pInst->match_goal, static_cast<int64_t>(pInst->match_goal_level));
+
+        inst_deallocation_map[pInst->i_id] = lInstString;
+//        thisAgent->symbolManager->symbol_add_ref(pInst->prod_name);
     }
     void IDI_remove(agent* thisAgent, uint64_t pID)
     {
         auto it = inst_deallocation_map.find(pID);
         assert (it != inst_deallocation_map.end());
-        Symbol* lSym = it->second;
-        if (lSym)
+
+        std::string lInstString = it->second;
+        if (!lInstString.empty())
         {
-            thisAgent->symbolManager->symbol_remove_ref(&lSym);
+            gds_deallocation_map[pID].clear();
         } else {
-            thisAgent->outputManager->printa_sf(thisAgent, "Instantiation %u was deallocated twice!\n", it->first);
+            std::string lInstString;
+            thisAgent->outputManager->sprinta_sf(thisAgent, lInstString, "Instantiation %u was deallocated twice!\n", it->first);
+            inst_deallocation_map[pID] = lInstString;
+            assert(false);
         }
-        inst_deallocation_map[pID] = NULL;
     }
     void IDI_print_and_cleanup(agent* thisAgent)
     {
-        Symbol* lSym;
+        std::string lInstString;
         uint64_t bugCount = 0;
 
         thisAgent->outputManager->printa_sf(thisAgent, "Instantiation inventory:  ");
         for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
         {
-            lSym = it->second;
-            if (lSym != NULL)
+            lInstString = it->second;
+            if (!lInstString.empty())
             {
                 bugCount++;
             }
         }
         thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated.\n", bugCount, inst_deallocation_map.size());
-        for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
+        if ((bugCount <= 23) )
         {
-            if ((bugCount <= 23) && (lSym != NULL))
+            for (auto it = inst_deallocation_map.begin(); it != inst_deallocation_map.end(); ++it)
             {
-                thisAgent->outputManager->printa_sf(thisAgent, "...instantiation %u (%y) was not deallocated!\n", it->first, lSym);
-                thisAgent->symbolManager->symbol_remove_ref(&lSym);
+                if (!lInstString.empty())
+                {
+                    thisAgent->outputManager->printa_sf(thisAgent, "...Instantiation %u %s was not deallocated!\n", it->first, lInstString.c_str());
+                    //                thisAgent->symbolManager->symbol_remove_ref(&lSym);
+                }
             }
         }
         inst_deallocation_map.clear();

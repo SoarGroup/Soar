@@ -37,8 +37,6 @@
 #include "stl_typedefs.h"
 #include "symbol.h"
 
-#define DO_TOP_LEVEL_WME_REF_CTS
-
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
 void add_wme_to_wm(agent* thisAgent, wme* w);

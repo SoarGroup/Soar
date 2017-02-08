@@ -18,14 +18,14 @@
  *       someone wanted to use this stuff with multiple agents, they'd need to move the
  *       inventory tracking maps somewhere that they can be agent specific. */
 
-#define DEBUG_GDS_INVENTORY
-#define DEBUG_INSTANTIATION_INVENTORY
-#define DEBUG_PREFERENCE_INVENTORY
-#define DEBUG_WME_INVENTORY
+//#define DEBUG_GDS_INVENTORY
+//#define DEBUG_INSTANTIATION_INVENTORY
+//#define DEBUG_PREFERENCE_INVENTORY
+//#define DEBUG_WME_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
- * antother range of calls, for example the refcount changes during chunking that
+ * another range of calls, for example the refcount changes during chunking that
  * happen in the middle of the ones for instantiation allocation.  Very crude and
  * sometimes wrong, but helpful. */
 void debug_refcount_change_start(agent* thisAgent, bool twoPart);

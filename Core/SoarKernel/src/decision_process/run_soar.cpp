@@ -345,7 +345,7 @@ void reset_max_stats(agent* thisAgent)
 #endif // NO_TIMING_STUFF
 }
 
-bool reinitialize_soar(agent* thisAgent)
+void reinitialize_soar(agent* thisAgent)
 {
     ++thisAgent->init_count;
     ++thisAgent->RL->rl_init_count;
@@ -364,7 +364,7 @@ bool reinitialize_soar(agent* thisAgent)
     }
     set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
 
-    bool ok = reinitialize_agent(thisAgent);
+    reinitialize_agent(thisAgent);
 
     /* Reinitializing the various halt and stop flags */
     thisAgent->system_halted = false;
@@ -393,7 +393,6 @@ bool reinitialize_soar(agent* thisAgent)
     delete thisAgent->stats_db;
     thisAgent->stats_db = new soar_module::sqlite_database();
 
-    return ok ;
 }
 
 /* ===================================================================

@@ -38,9 +38,23 @@
 
 /* --------------- Compiler directives that alter Soar behavior --------------------*/
 
-//#define DO_TOP_LEVEL_PREF_REF_CTS            /* Maintains refcounts on prefs at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
-//#define DO_TOP_LEVEL_WME_REF_CTS            /* Maintains refcounts on wmes at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
-#define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
+/* Maintains refcounts on prefs at top level.  May be more safe, but less efficient.
+ * - This option was turned on in Soar 6 to 8.6 and turned off in 9.0 to 9.5.1b
+ *
+ * Note:  Both DO_TOP_LEVEL_x_REF_CTS are currently broken.  We refactored and changed
+ *        how some significant aspects of the pref/instantiation deallocation code worked
+ *        and how the GDS code handles multiple preferences for the same wme at different
+ *        levels.  It took a lot of work to get the system working correctly again,
+ *        but it broke this optimization.  For now, people should not comment the following
+ *        two lines out.
+ */
+#define DO_TOP_LEVEL_PREF_REF_CTS
+#define DO_TOP_LEVEL_WME_REF_CTS
+
+/* Print a warning whenever we are ignoring a situation when there's no instance to
+ * retract for a justification.  We can't find documentation on what the original bug
+ * was.  We have seen the warning pop up in agents still.  */
+//#define BUG_139_WORKAROUND_WARNING
 #define BUG_139_WORKAROUND
 
 /* -------- Compiler directives for potentially expensive statistics ---------------*/
@@ -66,12 +80,12 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-    //#define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-//    #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
+    //#define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */
 
     //#define DEBUG_EPMEM_WME_ADD
