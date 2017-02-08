@@ -74,26 +74,15 @@ void init_instantiation_pool(agent* thisAgent)
  proper preference to backtrace through.)  If the given preference
  itself is at the right level, it is returned.  If there is no clone at
  the right level, NIL is returned.
+
+ REQUIRES: a pref that is not at the target level.  Caller must check.
  ----------------------------------------------------------------------- */
 
 preference* find_clone_for_level(preference* p, goal_stack_level level)
 {
     preference* clone;
 
-    if (!p)
-    {
-        /* if the wme doesn't even have a preference on it, we can't backtrace
-         at all (this happens with I/O and some architecture-created wmes */
-        return NIL;
-    }
-
-    /* look at pref and all of its clones, find one at the right level */
-
-    if (p->inst->match_goal_level == level)
-    {
-        return p;
-    }
-
+    assert(p && (p->inst->match_goal_level != level));
     for (clone = p->next_clone; clone != NIL; clone = clone->next_clone)
         if (clone->inst->match_goal_level == level)
         {
@@ -110,32 +99,6 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
     return NIL;
 }
 
-/* Return preference for a WME that is at the highest level that isn't the top state */
-preference* find_clone_for_gds(preference* p)
-{
-    preference* clone;
-    goal_stack_level topmost_level_found = LOWEST_POSSIBLE_GOAL_LEVEL;
-    preference* topmost_clone = NULL;
-
-    if (!p) return NULL;
-
-    for (clone = p->next_clone; clone != NIL; clone = clone->next_clone)
-        if ((clone->level > TOP_GOAL_LEVEL) && (clone->level < topmost_level_found))
-        {
-            topmost_level_found = clone->level;
-            topmost_clone = clone;
-        }
-
-    for (clone = p->prev_clone; clone != NIL; clone = clone->prev_clone)
-        if ((clone->level > TOP_GOAL_LEVEL) && (clone->level < topmost_level_found))
-        {
-            topmost_level_found = clone->level;
-            topmost_clone = clone;
-        }
-
-    /* A single preference for the top-level with no clones*/
-    return NULL;
-}
 /* =======================================================================
 
  Firer Utilities
@@ -152,15 +115,16 @@ preference* find_clone_for_gds(preference* p)
  is set to NIL and match_goal_level is set to ATTRIBUTE_IMPASSE_LEVEL.
  ----------------------------------------------------------------------- */
 
-void find_match_goal(instantiation* inst)
+void find_match_goal(agent* thisAgent, instantiation* inst)
 {
     Symbol* lowest_goal_so_far;
-    goal_stack_level lowest_level_so_far;
+    goal_stack_level lowest_level_so_far, lowest_id_level_so_far;
     condition* cond;
     Symbol* id;
 
     lowest_goal_so_far = NIL;
     lowest_level_so_far = -1;
+    lowest_id_level_so_far = -1;
     for (cond = inst->top_of_instantiated_conditions; cond != NIL;
             cond = cond->next)
         if (cond->type == POSITIVE_CONDITION)
@@ -172,6 +136,10 @@ void find_match_goal(instantiation* inst)
                     lowest_goal_so_far = id;
                     lowest_level_so_far = cond->bt.level;
                 }
+            if (id->id->level > lowest_id_level_so_far)
+            {
+                lowest_id_level_so_far = cond->bt.level;
+            }
         }
 
     inst->match_goal = lowest_goal_so_far;
@@ -181,7 +149,9 @@ void find_match_goal(instantiation* inst)
     }
     else
     {
-        inst->match_goal_level = ATTRIBUTE_IMPASSE_LEVEL;
+        inst->match_goal = find_goal_at_goal_stack_level(thisAgent, lowest_id_level_so_far);
+        inst->match_goal_level = lowest_id_level_so_far;
+//        inst->match_goal_level = ATTRIBUTE_IMPASSE_LEVEL;
     }
 }
 
@@ -840,7 +810,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             /* if trace is for a lower level, find one for this level */
             if (cond->bt.trace)
             {
-                if (cond->bt.trace->inst->match_goal_level > inst->match_goal_level)
+                if (cond->bt.trace->level > inst->match_goal_level)
                 {
                     cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
                 }
@@ -1203,15 +1173,21 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     /* print trace info: printing preferences */
     /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
      the o-support info for the preferences we're about to print */
-    if (trace_it || thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    if (trace_it)
     {
         for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
         {
-            if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
-                thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
-            else
-                thisAgent->outputManager->printa(thisAgent,  " ");
+            thisAgent->outputManager->printa_sf(thisAgent,  "%e ");
             print_preference(thisAgent, pref);
+        }
+    }
+    else if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    {
+        for (pref = inst->preferences_generated; pref != NIL; pref = pref->inst_next)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
+            print_preference(thisAgent, pref, false);
+            thisAgent->outputManager->printa_sf(thisAgent,  " (%y)\n", inst->prod_name);
         }
     }
 
@@ -1541,13 +1517,16 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
                     xml_object(thisAgent, kTagActionSideMarker);
                 }
             }
-            if (trace_it || thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+            if (trace_it)
             {
-                if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
-                    thisAgent->outputManager->printa_sf(thisAgent,  "%e- ");
-                else
-                    thisAgent->outputManager->printa(thisAgent,  " ");
-                print_preference(thisAgent, pref);
+                    thisAgent->outputManager->printa_sf(thisAgent,  "%e ");
+                    print_preference(thisAgent, pref);
+            }
+            else if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+            {
+                    thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
+                    print_preference(thisAgent, pref, false);
+                    thisAgent->outputManager->printa_sf(thisAgent,  " (%y)\n", inst->prod_name);
             }
             remove_preference_from_tm(thisAgent, pref);
             retracted_a_preference = true;

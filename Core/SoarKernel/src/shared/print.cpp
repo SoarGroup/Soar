@@ -624,7 +624,7 @@ void print_action(agent* thisAgent, action* a)
     a->next = old_next;
 }
 
-void print_preference(agent* thisAgent, preference* pref)
+void print_preference(agent* thisAgent, preference* pref, bool add_lf)
 {
     char pref_type = preference_to_char(pref->type);
 
@@ -640,10 +640,12 @@ void print_preference(agent* thisAgent, preference* pref)
     }
     if (pref->level > TOP_GOAL_LEVEL)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, ") [level %d]\n", static_cast<int64_t>(pref->level));
+        thisAgent->outputManager->printa_sf(thisAgent, ") [level %d]", static_cast<int64_t>(pref->level));
     } else {
-        thisAgent->outputManager->printa(thisAgent, ")\n");
+        thisAgent->outputManager->printa(thisAgent, ")");
     }
+    if (add_lf) thisAgent->outputManager->printa(thisAgent, "\n");
+
     
     // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
     xml_begin_tag(thisAgent, kTagPreference);

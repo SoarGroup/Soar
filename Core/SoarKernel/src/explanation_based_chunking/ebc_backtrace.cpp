@@ -91,7 +91,6 @@ void Explanation_Based_Chunker::add_to_locals(condition* cond)
         appropriate set (locals, grounds, negated_set).
 ------------------------------------------------------------------- */
 
-/* mvp 5-17-94 */
 void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
@@ -107,7 +106,6 @@ void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
     }
 }
 
-/* mvp 5-17-94 */
 void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
@@ -130,16 +128,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-     
-//    assert(thisID->id->is_sti());
-//    assert(thisID->id->level <= cond->bt.level);
-//
-//    uint64_t idLevel = thisID->id->level;
-//    uint64_t btLevel = cond->bt.level;
-//    uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
-
     return  (thisID->id->level <= grounds_level);
-//    return (btLevel <= grounds_level);
 }
 
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
@@ -272,7 +261,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
-        /* mvp 5-17-94 */
         thisAgent->outputManager->printa(thisAgent, "  -->Grounds:\n");
         xml_begin_tag(thisAgent, kTagGrounds);
         print_consed_list_of_condition_wmes(thisAgent, grounds, 0);
@@ -288,13 +276,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 //        print_consed_list_of_conditions(thisAgent, negateds_to_print, 0);
 //        xml_end_tag(thisAgent, kTagNegated);
 //        thisAgent->outputManager->printa_sf(thisAgent,  "\n");
-        /* mvp done */
 
         xml_end_tag(thisAgent, kTagBacktrace);
     }
 
     /* Moved these free's down to here, to ensure they are cleared even if we're not printing these lists     */
-
     free_list(thisAgent, grounds_to_print);
     free_list(thisAgent, locals_to_print);
     free_list(thisAgent, negateds_to_print);
@@ -363,34 +349,15 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         thisAgent->outputManager->set_print_test_format(true, true);
         dprint(DT_BACKTRACE, "Tracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
         thisAgent->outputManager->clear_print_test_format();
-        bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 
+        bt_pref = NULL;
+        if (cond->bt.trace)
+        {
+            bt_pref = (cond->bt.trace->level != grounds_level + 1) ? find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1)) : cond->bt.trace;
+        }
         if (bt_pref)
         {
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
-
-//            if (cond->bt.OSK_prefs)
-//            {
-//                backtrace_through_OSK(cond->bt.OSK_prefs, grounds_level, cond->inst->explain_depth);
-////                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
-////                {
-////                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
-////                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-////                    {
-////                        thisAgent->outputManager->printa(thisAgent, "     Tracing through OSK preference: ");
-////                        xml_begin_tag(thisAgent, kTagOSKPreference);
-////                        print_preference(thisAgent, p);
-////                    }
-////
-////                    dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
-////                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
-////
-////                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-////                    {
-////                        xml_end_tag(thisAgent, kTagOSKPreference);
-////                    }
-////                }
-//            }
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {

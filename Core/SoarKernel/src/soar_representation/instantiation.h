@@ -65,9 +65,8 @@ void                retract_instantiation(agent* thisAgent, instantiation* inst)
 void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
 goal_stack_level    get_match_goal(condition* top_cond);
-void                find_match_goal(instantiation* inst);
+void                find_match_goal(agent* thisAgent, instantiation* inst);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
-preference*         find_clone_for_gds(preference* p);
 
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 

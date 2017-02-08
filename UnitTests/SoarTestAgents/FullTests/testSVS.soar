@@ -385,7 +385,8 @@ sp {svs-tester*propose*wait
 
 sp {svs-tester*propose*advance-test
   (state <s> ^name svs-tester
-              ^finished-test true)
+             ^current-test <t>
+              ^finished-test <t>)
 -->
   (<s> ^operator <o> + >)
   (<o> ^name advance-test)
@@ -395,12 +396,12 @@ sp {svs-tester*apply*advance-test
   (state <s> ^name svs-tester
               ^operator.name advance-test
               ^current-test <t>
-              ^finished-test true)
+              ^finished-test <t>)
   (<t> ^next-test <next>)
 -->
   (<s> ^current-test <t> -
         ^current-test <next>
-        ^finished-test true -)
+        ^finished-test <t> -)
 }
 
 sp {svs-tester*halt*finished
@@ -439,9 +440,10 @@ sp {svs-tester*apply*do-commands*copy*command
 
 sp {svs-tester*apply*do-commands*mark*finished
   (state <s> ^name svs-tester
+              ^current-test <t>
               ^operator.name do-commands)
 -->
-  (<s> ^finished-test true)
+  (<s> ^finished-test <t>)
 }
 
 #sp {svs-tester*apply*op*remove*finished*svs*commands
@@ -470,17 +472,20 @@ sp {svs-tester*propose*extract-filters
   (<s> ^operator <o> +)
   (<o> ^name extract-filters
         ^node-type <type>
-        ^answers <a>)
+        ^answers <a>
+        ^current-test <t>)
 }
 
 sp {svs-tester*extract-filters*elaborate*info*superoperator
   (state <s> ^name extract-filters
               ^superstate.operator <op>)
   (<op> ^node-type <t>
-         ^answers <a>)
+         ^answers <a>
+         ^current-test <test>)
 -->
   (<s> ^node-type <t>
-        ^answers <a>)
+        ^answers <a>
+         ^current-test <test>)
 }
               
 sp {svs-tester*extract-filters*propose*extract-filter
@@ -665,9 +670,10 @@ sp {svs-tester*extract-filters*prefer*extract*over*complete
 sp {svs-tester*extract-filters*apply*complete-extract-filters*mark*finished
   (state <s> ^name extract-filters
               ^operator.name complete-extract-filters
+              ^current-test <t>
               ^superstate <ss>)
 -->
-  (<ss> ^finished-test true)
+  (<ss> ^finished-test <t>)
 }
               
 

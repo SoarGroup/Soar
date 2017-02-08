@@ -3761,7 +3761,7 @@ void elaborate_gds(agent* thisAgent)
                  * and we should process it normally. */
                 preference* clone_for_this_level;
 
-                if (pref_for_this_wme)
+                if (pref_for_this_wme && (pref_for_this_wme->level != inst->match_goal_level))
                 {
                     clone_for_this_level = find_clone_for_level(pref_for_this_wme, inst->match_goal_level);
 //                    if ((clone_for_this_level && (pref_for_this_wme != clone_for_this_level)))
