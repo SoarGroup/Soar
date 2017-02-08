@@ -18,14 +18,16 @@ for (int i=0; i<names.size(); ++i) {
         } else {
           bat 'del /q /f *.7zip'
           bat 'del /q /f user-env*.bat'
+          bat 'if exist "build/Core/ClientSMLSWIG" del /q /f build/Core/ClientSMLSWIG*'
+          bat 'if exist "out" del /q /f out'
           //bat 'del /q /f VS2013\\'
-          try {
-            bat 'mkdir VS2015 2> nul'
-            bat 'del /q /f VS2015\\ 2> nul'
-          }
-          finally {
-            bat 'echo Could not find VS2015'
-          }
+          //try {
+          //  bat 'mkdir VS2015 2> nul'
+          //  bat 'del /q /f VS2015\\ 2> nul'
+          //}
+          //finally {
+          //  bat 'echo Could not find VS2015'
+          //}
         }
       }
       stage('Build')
@@ -45,8 +47,7 @@ for (int i=0; i<names.size(); ++i) {
             bat 'echo set JAVA_HOME=C:\\Program Files\\Java\\jdk1.7.0_79>> user-env.bat'
             bat 'echo set SWIG_HOME=C:\\swigwin\\>> user-env.bat'
     
-            //bat "%VS_2013% & call build.bat all --no-scu --tcl=" + tcl + " --build=build-VS2013 --out=VS2013"
-            bat "%VS_2015% & call build.bat all --scu --tcl=" + tcl + " --build=build-VS2015 --out=VS2015"
+            bat "%VS_2015% & call build.bat all --scu --tcl=" + tcl
           }
       }
       stage('Upload')
@@ -60,7 +61,7 @@ for (int i=0; i<names.size(); ++i) {
               //bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2013.7zip VS2013/'
               bat 'for /f %%x in (soarversion) do "C:/Program Files/7-Zip/7z.exe" a %%x-' + name + '-VS2015.7zip VS2015/'
               //bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2013.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
-              bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '-VS2015.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
+              bat 'for /f %%x in (soarversion) do C:\\pscp.exe -pw %PASSWORD% %%x-' + name + '.7zip %USERNAME%@soar-jenkins.eecs.umich.edu:/Users/Shared/Build/Nightlies/'
             }
           }
       }
