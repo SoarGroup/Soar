@@ -15,7 +15,7 @@ lappend auto_path $soarDir
 
 proc createSlave {agentName} {
   global tclScriptDir auto_path _kernel _soarInstance
-  puts "tcl::master::createSlave($agentName)"
+  #puts "tcl::master::createSlave($agentName)"
   
   # Configure the slave interpreter
   
@@ -67,31 +67,25 @@ proc createSlave {agentName} {
   # Send output to the "stdout" channel by default
   $slave eval [list output-strings-destination -push -channel stdout]
 
-  return $slave
+  #return $agentName
 }
 
 # This is a lazy function which will either return the interpreter
 # already associated with this agent or create a new one for this agent
 proc getSlave { agentName } {
-    global _owners
-  if { [interp exists $agentName] } {
-	  return $agentName
-  } else {
-      set slave [createSlave $agentName]
-      dict set _owners $agentName "external"
-      return $slave
-  }  
+  global _soarInstance
+  if { ![interp exists $agentName] } {
+      $_soarInstance Tcl_Message_Library [concat "create " $agentName]
+  }
+  return $agentName
 }
 
-proc createSlavesForExistingAgents {} {
-    global _kernel _owners
-    puts "Kernel has [$_kernel GetNumberAgents] Agents"
-    set num_agents [$_kernel GetNumberAgents]
-    for {set i 0} {$i < $num_agents} {incr i} {
-        set agentName [ [$_kernel GetAgentByIndex $i] GetAgentName ]
-        createSlave $agentName
-        dict set _owners $agentName "internal"
-    }
+proc destroySlave { slaveName } {
+  #puts "tcl::master::destroySlave($slaveName)"
+
+  if {[interp exists $slaveName]} {
+    interp delete $slaveName
+  }
 }
 
 ##############################
@@ -128,45 +122,35 @@ proc smltclrhsfunction { agentName expression } {
 }
 
 proc smlstartup {} {
-    puts "tcl::master::smlstartup()"
-    createSlavesForExistingAgents
+    #puts "tcl::master::smlstartup()"
 }
 
 ##
 # Called when the system shuts down
 proc smlshutdown {} {
-  puts "tcl::master::smlshutdown()"
+  #puts "tcl::master::smlshutdown()"
 
   removeCallbackHandlers
   foreach slave [interp slaves] {
-      puts "     Deleting Slave $slave"
+      #puts "     Deleting Slave $slave"
       interp delete $slave
   }
 }
 
 proc smlCreateAgentCallback { id userData agent } {
-	puts "tcl::master::smlCreateAgentCallback([$agent GetAgentName])"
+	#puts "tcl::master::smlCreateAgentCallback([$agent GetAgentName])"
 
-    global _owners
+    global _soarInstance
     set slaveName [$agent GetAgentName]
-	if { [interp exists $slaveName] == 0 } {
-		createSlave $slaveName
-        dict set _owners $slaveName "external"
-	}
+    $_soarInstance Tcl_Message_Library [concat "create " $slaveName]
 }
 
 proc smlDestroyAgentCallback { id userData agent } {
-  puts "tcl::master::smlDestroyAgentCallback([$agent GetAgentName])"
-  global _owners
+  #puts "tcl::master::smlDestroyAgentCallback([$agent GetAgentName])"
 
+  global _soarInstance
   set slaveName [$agent GetAgentName]
-  set owner [dict get $_owners $slaveName]
-  if {[interp exists $slaveName]} {
-      if {[dict exists $_owners $slaveName] && [dict get $_owners $slaveName] == "external"} {
-          puts "     Deleting Slave $slaveName"
-          interp delete $slaveName
-      }
-  }
+  $_soarInstance Tcl_Message_Library [concat "destroy " $slaveName]
 }
 
 #####################
@@ -283,11 +267,11 @@ proc removeCallbackHandlers {} {
 # Initializes the kernel and registers for events
 ##
 proc initializeMaster { } {
-  global _kernel _soarInstance callbackIDs _owners
+  global _kernel _soarInstance callbackIDs
   
   loadSmlLibrary
   
   set _soarInstance [getSoarInstance]
   set _kernel [$_soarInstance Get_Kernel]
-  set _owners [dict create]
 }
+

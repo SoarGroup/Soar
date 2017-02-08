@@ -18,7 +18,8 @@ using namespace sml;
 using namespace std;
 
 void* launch_tcl(void* lib_ptr){
-    cout << "TclThread: Started" << endl;
+    /****** INITIALIZATION ******/
+    //cout << "TclThread: Started" << endl;
     TclSoarLib* tcl_lib = (TclSoarLib*)lib_ptr;
 
     pthread_mutex_lock(&tcl_lib->interp_mutex);
@@ -26,7 +27,7 @@ void* launch_tcl(void* lib_ptr){
         tcl_lib->m_interp = Tcl_CreateInterp();
         Tcl_FindExecutable(0);
 
-        cout << "TclThread: Created Interpreter" << endl;
+        //cout << "TclThread: Created Interpreter" << endl;
 
         if (!tcl_lib->initialize_Tcl_Interpreter() || !tcl_lib->initialize_Master())
         {
@@ -41,16 +42,45 @@ void* launch_tcl(void* lib_ptr){
             tcl_lib->GlobalEval("smlstartup", output);
         }
     }
-    cout << "TclThread: Initialized Interpreter" << endl;
+    //cout << "TclThread: Initialized Interpreter" << endl;
     pthread_mutex_unlock(&tcl_lib->interp_mutex);
 
 	// Signals the end of initialization
 	pthread_barrier_wait(&tcl_lib->interp_barrier);
 
-	// Wait until the library is to be destroyed
-	pthread_barrier_wait(&tcl_lib->interp_barrier);
+    /****** COMMAND HANDLING ******/
 
-    cout << "TclThread: SHUTDOWN received" << endl;
+    bool exit = false;
+    while(!exit)
+    {
+        // Wait until there is a new command
+        pthread_barrier_wait(&tcl_lib->interp_barrier);
+
+        std::string command;
+        std::string result;
+        switch(tcl_lib->thread_command_info.command)
+        {
+            case CREATE_TCL_SLAVE:
+                //cout << "TclThread: create slave " << tcl_lib->thread_command_info.info << endl;
+                command = "createSlave \"" + tcl_lib->thread_command_info.info + "\"";
+                tcl_lib->GlobalEval(command, result);
+                break;
+            case DESTROY_TCL_SLAVE:
+                //cout << "TclThread: destroy slave " << tcl_lib->thread_command_info.info << endl;
+                command = "destroySlave \"" + tcl_lib->thread_command_info.info + "\"";
+                tcl_lib->GlobalEval(command, result);
+                break;
+            case SHUTDOWN_TCL_THREAD:
+                //cout << "TclThread: SHUTDOWN received" << endl;
+                exit = true;
+                break;
+        }
+
+        // Let the messenger know that the command was finished
+        pthread_barrier_wait(&tcl_lib->interp_barrier);
+    }
+
+    /****** SHUTDOWN ******/
 
     pthread_mutex_lock(&tcl_lib->interp_mutex);
     {
@@ -61,14 +91,14 @@ void* launch_tcl(void* lib_ptr){
                 std::string output;
                 tcl_lib->GlobalEval("smlshutdown", output);
             }
-            cout << "TclThread: Deleting Tcl Interpreter" << endl;
+            //cout << "TclThread: Deleting Tcl Interpreter" << endl;
             Tcl_DeleteInterp(tcl_lib->m_interp);
             tcl_lib->m_interp = 0;
         }
     }
     pthread_mutex_unlock(&tcl_lib->interp_mutex);
 
-    cout << "TclThread: Exiting" << endl;
+    //cout << "TclThread: Exiting" << endl;
     return NULL;
 }
 
@@ -90,17 +120,55 @@ TclSoarLib::TclSoarLib(Kernel* myKernel) :
 
 TclSoarLib::~TclSoarLib()
 {
-    cout << "TclSoarLib::~TclSoarLib()" << endl;
-    cout << "   Waiting for TclThread to exit" << endl;
+    //cout << "TclSoarLib::~TclSoarLib()" << endl;
+    //cout << "   Waiting for TclThread to exit" << endl;
 
-	pthread_barrier_wait(&interp_barrier);
+    // Tell the thread to shutdown
+    send_thread_command(SHUTDOWN_TCL_THREAD, "");
+
+    // Wait until the thread exits
     pthread_join(lib_thread, NULL);
     pthread_mutex_destroy(&interp_mutex);
 	pthread_barrier_destroy(&interp_barrier);
 
     m_kernel = 0;
 
-    cout << "TclSoarLib destroyed" << endl;
+    //cout << "TclSoarLib destroyed" << endl;
+}
+
+void TclSoarLib::send_thread_command(TclThreadCommand command, std::string info){
+    if (m_interp)
+    {
+        thread_command_info.command = command;
+        thread_command_info.info = info;
+        // Wakes the tcl thread up and allows it to process the command
+        pthread_barrier_wait(&interp_barrier);
+        // Wait until the tcl thread is finished processing the command
+        pthread_barrier_wait(&interp_barrier);
+    }
+}
+
+bool TclSoarLib::handle_message(std::string message)
+{
+    if(message == "on")
+    {
+        return turnOn();
+    }
+    else if(message == "off")
+    {
+        return turnOff();
+    } 
+    else if(message.find("create") == 0 && message.size() >= 8)
+    {
+        send_thread_command(CREATE_TCL_SLAVE, message.substr(7));
+        return true;
+    } 
+    else if(message.find("destroy") == 0 && message.size() >= 9)
+    {
+        send_thread_command(DESTROY_TCL_SLAVE, message.substr(8));
+        return true;
+    }
+    return false;
 }
 
 std::string& TclSoarLib::EscapeTclString(const char* in, std::string& out)

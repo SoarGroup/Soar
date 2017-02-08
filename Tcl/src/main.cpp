@@ -41,32 +41,19 @@ extern "C"
 
 RHS_EXPORT void* sml_LibraryMessage(const char* pMessage, void* pMessageData)
 {
-    std::cout << "TclSoarLib::sml_LibraryMessage(" << pMessage << ")" << std::endl;
+    //std::cout << "TclSoarLib::sml_LibraryMessage(" << pMessage << ")" << std::endl;
 
-    /* -- create and delete should not be directly accessed by the user.  Ideally
-     *    we should pass in a parameter indicating whether the command originated
-     *    from the user or the soar code. -- */
-    if (!strcmp(pMessage, "delete"))
+    if (TclSoar::gTclLib)
     {
-        if (TclSoar::gTclLib)
+        if (!strcmp(pMessage, "delete"))
         {
             delete TclSoar::gTclLib;
             TclSoar::gTclLib = NULL;
             return ((void*) true);
-        }
-    }
-    else if (!strcmp(pMessage, "on"))
-    {
-        if (TclSoar::gTclLib)
+        } 
+        else 
         {
-			return ((void*) TclSoar::gTclLib->turnOn());
-        }
-    }
-    else if (!strcmp(pMessage, "off"))
-    {
-        if (TclSoar::gTclLib)
-        {
-            return ((void*) TclSoar::gTclLib->turnOff());
+            return ((void*)TclSoar::gTclLib->handle_message(pMessage));
         }
     }
     
