@@ -2766,7 +2766,7 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     temp = varnames_to_one_var(vn);
     if (!t->data.referent->is_variable())
     {
-        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp, pI_id);
+        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity(temp);
         dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
     } else {
         dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity for varname %y because ungrounded NCC var in inst %u.\n", temp, pI_id);

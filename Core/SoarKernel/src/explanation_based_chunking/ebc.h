@@ -60,7 +60,11 @@ class Explanation_Based_Chunker
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
         void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_or_create_identity(Symbol* orig_var, uint64_t pI_id);
+
+        /* identity generation functions */
+        uint64_t get_or_create_identity(Symbol* orig_var);
+        void     add_identity_to_test(test pTest);
+        void     force_add_identity(Symbol* pSym, uint64_t pID);
 
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
@@ -114,7 +118,7 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void cleanup_after_instantiation_creation() { instantiation_identities->clear(); }
+        void clear_symbol_identity_map() { instantiation_identities->clear(); }
         void clear_variablization_maps();
         void clear_singletons();
 

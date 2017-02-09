@@ -1121,7 +1121,7 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 {
     if (m_chunk_new_i_id)
     {
-        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
     }
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)

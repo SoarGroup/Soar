@@ -5759,7 +5759,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             if (good_cue)
             {
                 dprint(DT_EPMEM_CMD, "--- ...good cue.\n");
-                thisAgent->SMem->clear_instance_mappings();
+                thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
                 // retrieve
                 if (path == 1)

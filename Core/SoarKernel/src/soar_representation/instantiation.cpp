@@ -886,11 +886,11 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     //preference_add_ref(cond->bt.trace);
 
     /* Add identity information */
-    thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.id_test, inst->i_id);
+    thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.id_test);
     if (cond->data.tests.attr_test->data.referent->is_sti())
-        thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.attr_test, inst->i_id);
+        thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.attr_test);
     if (cond->data.tests.value_test->data.referent->is_sti())
-        thisAgent->SMem->add_identity_to_iSTI_test(cond->data.tests.value_test, inst->i_id);
+        thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.value_test);
 
     /* Set up links*/
     cond->prev = prev_cond;
@@ -918,11 +918,11 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->identities.id = thisAgent->SMem->get_identity_for_iSTI(pref->id, inst->i_id);
+    pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(pref->id);
     if (pref->attr->is_sti())
-        pref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(pref->attr, inst->i_id);
+    pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(pref->attr);
     if (pref->value->is_sti())
-    pref->identities.value = thisAgent->SMem->get_identity_for_iSTI(pref->value, inst->i_id);
+    pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(pref->value);
 
     add_pref_to_inst(thisAgent, pref, inst);
 }
@@ -964,9 +964,9 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
 
         /* We set the identities of the preferences so that they are dependent on the explanation behind
          * the working memory elements that they were copied from */
-        lPref->identities.id = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->id, inst->i_id);
-        lPref->identities.attr = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->attr, inst->i_id);
-        lPref->identities.value = thisAgent->SMem->get_identity_for_iSTI(lNewDC_WME->deep_copied_wme->value, inst->i_id);
+        lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->id);
+        lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->attr);
+        lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->value);
 
         /* Now add a preferences that will create the deep-copied WME */
         add_pref_to_inst(thisAgent, lPref, inst);
@@ -1149,8 +1149,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             if (!thisAgent->WM->glbDeepCopyWMEs.empty())
             {
                 inst->creates_deep_copy = true;
-                thisAgent->SMem->force_add_identity_for_STI(pref->value, pref->identities.value);
-                thisAgent->SMem->force_add_identity_for_STI(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
+                thisAgent->explanationBasedChunker->force_add_identity(pref->value, pref->identities.value);
+                thisAgent->explanationBasedChunker->force_add_identity(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
                 thisAgent->explanationBasedChunker->deep_copy_sym_expanded = NULL;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
@@ -1201,7 +1201,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     /* Clean up variable to identity mappings for this instantiation */
-    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     /* build chunks/justifications if necessary */
 
@@ -1579,7 +1579,9 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     inst->match_goal_level = pState->id->level;
     inst->tested_LTM = true;
 
-    thisAgent->SMem->clear_instance_mappings();
+    /* MToDo | Remove. */
+    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+
     dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 
     // create LHS
@@ -1605,7 +1607,7 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     }
 
     /* Clean up symbol to identity mappings for this instantiation*/
-    thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
     finalize_instantiation(thisAgent, inst, false, NULL, false);
@@ -1658,7 +1660,9 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     assert(ap_wme && ss_link_wme);
 
-    thisAgent->SMem->clear_instance_mappings();
+    /* MToDo | Remove */
+    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 
     dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation for impasse item %u (match of %y)\n", inst->i_id, inst->prod_name);
@@ -1678,6 +1682,9 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
 
     /* Initialize levels, add refcounts to prefs/wmes, sets on_goal_list flag, o-support calculation if needed */
     finalize_instantiation(thisAgent, inst, false, NULL, true);
+
+    /* Clean up symbol to identity mappings for this instantiation*/
+    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created architectural instantiation for impasse item %u:\n%5", inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 

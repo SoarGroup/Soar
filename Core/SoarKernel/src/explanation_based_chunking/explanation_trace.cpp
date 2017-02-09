@@ -19,7 +19,7 @@
 
 #include <assert.h>
 
-uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uint64_t pI_id)
+uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
 {
     int64_t existing_o_id = 0;
 
@@ -47,6 +47,16 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
 
     t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
+}
+
+void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
+{
+    if (pSym->is_sti()) (*instantiation_identities)[pSym] = pID;
+}
+
+void Explanation_Based_Chunker::add_identity_to_test(test pTest)
+{
+    if (!pTest->identity) pTest->identity = get_or_create_identity(pTest->data.referent);
 }
 
 void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,

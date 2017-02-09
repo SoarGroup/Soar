@@ -35,7 +35,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
     lVarInfo->variable_sym = variable;
     variable->var->instantiated_sym = pMatched_sym;
-    lVarInfo->identity = this->get_or_create_identity(variable, m_chunk_new_i_id);
+    lVarInfo->identity = this->get_or_create_identity(variable);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
     thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
