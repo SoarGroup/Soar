@@ -274,26 +274,16 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
     while (clone)
     {
         next = clone->next_clone;
-        #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-        if (clone->level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
-            deallocate_preference(thisAgent, clone, dont_cache);
-        }
+        dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
+        deallocate_preference(thisAgent, clone, dont_cache);
         clone = next;
     }
     clone = pref->prev_clone;
     while (clone)
     {
         next = clone->prev_clone;
-        #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-        if (clone->level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
-            deallocate_preference(thisAgent, clone, dont_cache);
-        }
+        dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
+        deallocate_preference(thisAgent, clone, dont_cache);
         clone = next;
     }
 
@@ -326,22 +316,12 @@ bool remove_preference_from_clones_and_deallocate(agent* thisAgent, preference* 
     if (any_clone)
     {
         dprint(DT_DEALLOCATE_PREF, "...found clone %p (%u) at level %d to possibly deallocate...\n", any_clone, any_clone->p_id, static_cast<int64_t>(any_clone->level));
-        #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-        if (any_clone->level > TOP_GOAL_LEVEL)
-        #endif
-        {
-            possibly_deallocate_preference_and_clones(thisAgent, any_clone);
-        }
+        possibly_deallocate_preference_and_clones(thisAgent, any_clone);
     }
     if (!pref->reference_count)
     {
         dprint(DT_DEALLOCATE_PREF, "...deallocating preference %p (%u) at level %d.\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
-        #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-        if (pref->level > TOP_GOAL_LEVEL)
-        #endif
-        {
         deallocate_preference(thisAgent, pref);
-        }
         return true;
     }
     else

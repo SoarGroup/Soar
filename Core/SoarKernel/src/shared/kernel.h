@@ -38,18 +38,13 @@
 
 /* --------------- Compiler directives that alter Soar behavior --------------------*/
 
-/* Maintains refcounts on prefs at top level.  May be more safe, but less efficient.
+/* Whether to increment refcounts on prefs and WMEs for the conditions in top level
+ * instantiation matches.  May be more safe, but allows a situations where many
+ * data structures are never deallocated because of a sequence of dependent
+ * instantiation firings in the top state.
  * - This option was turned on in Soar 6 to 8.6 and turned off in 9.0 to 9.5.1b
- *
- * Note:  Both DO_TOP_LEVEL_x_REF_CTS are currently broken.  We refactored and changed
- *        how some significant aspects of the pref/instantiation deallocation code worked
- *        and how the GDS code handles multiple preferences for the same wme at different
- *        levels.  It took a lot of work to get the system working correctly again,
- *        but it broke this optimization.  For now, people should not comment the following
- *        two lines out.
  */
-#define DO_TOP_LEVEL_PREF_REF_CTS
-#define DO_TOP_LEVEL_WME_REF_CTS
+//#define DO_TOP_LEVEL_COND_REF_CTS
 
 /* Print a warning whenever we are ignoring a situation when there's no instance to
  * retract for a justification.  We can't find documentation on what the original bug

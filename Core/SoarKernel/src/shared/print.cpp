@@ -791,7 +791,7 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                     break;
                 case FULL_WME_TRACE:
                     // Not all conds and wme_'s available when retracting
-                    #ifdef DO_TOP_LEVEL_PREF_REF_CTS
+                    #ifdef DO_TOP_LEVEL_COND_REF_CTS
                         thisAgent->outputManager->printa_sf(thisAgent,  " ");
                         print_wme(thisAgent, cond->bt.wme_);
                     #else

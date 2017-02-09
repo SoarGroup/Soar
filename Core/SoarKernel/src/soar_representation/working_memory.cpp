@@ -356,7 +356,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         }
 
         dprint(DT_WME_CHANGES, "      %w:\n",w);
-        wme_remove_ref(thisAgent, w, true);
+        wme_remove_ref(thisAgent, w);
         free_cons(thisAgent, c);
         thisAgent->wme_removal_count++;
     }

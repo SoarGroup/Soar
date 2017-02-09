@@ -715,7 +715,7 @@ void wma_remove_pref_o_set(agent* thisAgent, preference* pref)
 
         for (wme_set::iterator p = victim->begin(); p != victim->end(); p++)
         {
-            wme_remove_ref(thisAgent, (*p), true);
+            wme_remove_ref(thisAgent, (*p));
         }
 
         victim->~wme_set();

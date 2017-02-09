@@ -117,25 +117,13 @@ typedef struct wme_struct
 
 inline void wme_add_ref(wme* w, bool always_add = false)
 {
-    #ifndef DO_TOP_LEVEL_WME_REF_CTS
-    if (always_add || (w->id->id->level > TOP_GOAL_LEVEL))
-//        if ((w->id->id->level > TOP_GOAL_LEVEL))
-    #endif
-    {
-        (w)->reference_count++;
-    }
+    (w)->reference_count++;
 }
 
-inline void wme_remove_ref(agent* thisAgent, wme* w, bool always_remove = false)
+inline void wme_remove_ref(agent* thisAgent, wme* w)
 {
-    #ifndef DO_TOP_LEVEL_WME_REF_CTS
-    if (always_remove || (w->id->id->level > TOP_GOAL_LEVEL))
-//        if ((w->id->id->level > TOP_GOAL_LEVEL))
-    #endif
-    {
-        if ((w)->reference_count != 0) (w)->reference_count--;
-        if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
-    }
+    if ((w)->reference_count != 0) (w)->reference_count--;
+    if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
 }
 inline const char* field_to_string(WME_Field f)
 {

@@ -9099,7 +9099,7 @@ void xml_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                     else
                     {
                         // Not all conds available when retracting
-                        #ifdef DO_TOP_LEVEL_PREF_REF_CTS
+                        #ifdef DO_TOP_LEVEL_COND_REF_CTS
                         //print (thisAgent, " ");
                         xml_object(thisAgent, cond->bt.wme_);
                         #else

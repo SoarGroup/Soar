@@ -547,15 +547,15 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag)
         remove_wme_from_wm(thisAgent, pWme);
 
         /* This was previously using #ifndef NO_TOP_LEVEL_REFS, which is a macro constant that
-         * no longer exists.  We now use DO_TOP_LEVEL_PREF_REF_CTS.  Top level refcounting is now
-         * also disabled by default so changing it to #ifdef DO_TOP_LEVEL_PREF_REF_CTS would
-         * change the current behavior.  Other uses of DO_TOP_LEVEL_PREF_REF_CTS seem to only be used
+         * no longer exists.  We now use DO_TOP_LEVEL_COND_REF_CTS.  Top level refcounting is now
+         * also disabled by default so changing it to #ifdef DO_TOP_LEVEL_COND_REF_CTS would
+         * change the current behavior.  Other uses of DO_TOP_LEVEL_COND_REF_CTS seem to only be used
          * when adding refcounts to top-state wme's, so I'm not sure why the old macro prevented
          * this entire call.  So, I'm just going to comment it out for now and preserve existing
          * behavior. */
-        //#ifdef DO_TOP_LEVEL_PREF_REF_CTS
+        //#ifdef DO_TOP_LEVEL_COND_REF_CTS
         do_buffered_wm_and_ownership_changes(thisAgent);
-        //#endif // DO_TOP_LEVEL_PREF_REF_CTS
+        //#endif
     }
 
     return true;
@@ -1088,15 +1088,15 @@ int RemoveWme(agent* thisAgent, wme* pWme)
     }
 
 /* This was previously using #ifndef NO_TOP_LEVEL_REFS, which is a macro constant that
- * no longer exists.  We now use DO_TOP_LEVEL_PREF_REF_CTS.  Top level refcounting is now
- * also disabled by default so changing it to #ifdef DO_TOP_LEVEL_PREF_REF_CTS would
- * change the current behavior.  Other uses of DO_TOP_LEVEL_PREF_REF_CTS seem to only be used
+ * no longer exists.  We now use DO_TOP_LEVEL_COND_REF_CTS.  Top level refcounting is now
+ * also disabled by default so changing it to #ifdef DO_TOP_LEVEL_COND_REF_CTS would
+ * change the current behavior.  Other uses of DO_TOP_LEVEL_COND_REF_CTS seem to only be used
  * when adding refcounts to top-state wme's, so I'm not sure why the old macro prevented
  * this entire call.  So, I'm just going to comment it out for now and preserve existing
  * behavior. */
-//#ifdef DO_TOP_LEVEL_PREF_REF_CTS
+//#ifdef DO_TOP_LEVEL_COND_REF_CTS
     do_buffered_wm_and_ownership_changes(thisAgent);
-//#endif // DO_TOP_LEVEL_PREF_REF_CTS
+//#endif // DO_TOP_LEVEL_COND_REF_CTS
 
     return 0;
 }

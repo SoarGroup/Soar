@@ -806,18 +806,23 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            wme_add_ref(cond->bt.wme_);
-
-            /* if trace is for a lower level, find one for this level */
-            if (cond->bt.trace)
+            #ifndef DO_TOP_LEVEL_COND_REF_CTS
+            if (inst->match_goal_level > TOP_GOAL_LEVEL)
+            #endif
             {
-                if (cond->bt.trace->level > inst->match_goal_level)
-                {
-                    cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
-                }
+                wme_add_ref(cond->bt.wme_);
+
+                /* if trace is for a lower level, find one for this level */
                 if (cond->bt.trace)
                 {
-                    preference_add_ref(cond->bt.trace);
+                    if (cond->bt.trace->level > inst->match_goal_level)
+                    {
+                        cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
+                    }
+                    if (cond->bt.trace)
+                    {
+                        preference_add_ref(cond->bt.trace);
+                    }
                 }
             }
         }
@@ -1276,7 +1281,12 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                  Note:  If one of those functions that are flattened out here changes, this code may
                         need updating. - Mazin */
 
-                wme_remove_ref(thisAgent, cond->bt.wme_);
+                #ifndef DO_TOP_LEVEL_COND_REF_CTS
+                if (lInst->match_goal_level > TOP_GOAL_LEVEL)
+                #endif
+                {
+                    wme_remove_ref(thisAgent, cond->bt.wme_);
+                }
 
                 if (cond->bt.trace)
                 {
@@ -1284,8 +1294,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                     /* -----------------------
                      * preference_remove_ref()
                      * ----------------------- */
-                    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-                    if (lPref->level > TOP_GOAL_LEVEL)
+                    #ifndef DO_TOP_LEVEL_COND_REF_CTS
+                    if (lInst->match_goal_level > TOP_GOAL_LEVEL)
                     #endif
                     {
                         if (lPref->reference_count != 0)
@@ -1314,24 +1324,14 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             while (clone)
                             {
                                 next = clone->next_clone;
-                                #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-                                if (lPref->level > TOP_GOAL_LEVEL)
-                                #endif
-                                {
-                                    deallocate_preference(thisAgent, clone);
-                                }
+                                deallocate_preference(thisAgent, clone);
                                 clone = next;
                             }
                             clone = lPref->prev_clone;
                             while (clone)
                             {
                                 next = clone->prev_clone;
-                                #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-                                if (lPref->level > TOP_GOAL_LEVEL)
-                                #endif
-                                {
-                                    deallocate_preference(thisAgent, clone);
-                                }
+                                deallocate_preference(thisAgent, clone);
                                 clone = next;
                             }
 

@@ -113,7 +113,7 @@ void remove_output_function(agent* thisAgent, const char* name)
         {
             /* Remove ol entry */
             ol->link_wme->output_link = NULL;
-            wme_remove_ref(thisAgent, ol->link_wme, true);
+            wme_remove_ref(thisAgent, ol->link_wme);
             remove_from_dll(thisAgent->existing_output_links, ol, next, prev);
             thisAgent->memoryManager->free_with_pool(MP_output_link, ol);
             break;
@@ -861,7 +861,7 @@ void do_output_cycle(agent* thisAgent)
                 thisAgent->timers_phase.start();
 #endif
                 deallocate_io_wme_list(thisAgent, iw_list);
-                wme_remove_ref(thisAgent, ol->link_wme, true);
+                wme_remove_ref(thisAgent, ol->link_wme);
                 remove_from_dll(thisAgent->existing_output_links, ol, next, prev);
                 thisAgent->memoryManager->free_with_pool(MP_output_link, ol);
                 break;

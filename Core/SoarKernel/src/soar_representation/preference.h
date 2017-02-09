@@ -166,29 +166,18 @@ void clear_preference_list(agent* thisAgent, cons* &lPrefList);
 
 inline void preference_add_ref(preference* p)
 {
-    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-    if (p->level > TOP_GOAL_LEVEL)
-    #endif
-    {
-        (p)->reference_count++;
-    }
+    (p)->reference_count++;
 }
 
 inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
 {
-    #ifndef DO_TOP_LEVEL_PREF_REF_CTS
-    if (p->level > TOP_GOAL_LEVEL)
-    #endif
-    {
-        if ((p)->reference_count != 0) (p)->reference_count--;
-        if ((p)->reference_count == 0) return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);
-    }
+    if ((p)->reference_count != 0) (p)->reference_count--;
+    if ((p)->reference_count == 0) return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);
     return false;
 }
 
 inline const char* preference_name(byte pNum)
 {
-
     if (pNum == ACCEPTABLE_PREFERENCE_TYPE) return "acceptable";
     if (pNum == REQUIRE_PREFERENCE_TYPE) return "require";
     if (pNum == REJECT_PREFERENCE_TYPE) return "reject";
