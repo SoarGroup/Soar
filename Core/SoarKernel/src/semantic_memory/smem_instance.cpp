@@ -30,7 +30,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     }
     dprint(DT_SMEM_INSTANCE, "install_buffered_triple_list called in state %y.  Creating architectural instantiation.\n", state);
 
-    instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_architectural_instantiation_for_memory_system(thisAgent, state, &cue_wmes, &my_list, true);
     for (preference* pref = inst->preferences_generated; pref;)
     {
         assert(!pref->in_tm);  // Can this already be in TM with our new smem model?

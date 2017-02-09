@@ -249,8 +249,6 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
         make_test(thisAgent, lWME->value, EQUALITY_TEST));
     new_cond->test_for_acceptable_preference = lWME->acceptable;
     new_cond->bt.wme_ = lWME;
-//    new_cond->bt.trace = lWME->preference ? find_clone_for_level(lWME->preference, static_cast<goal_stack_level>(m_match_goal_level)) : NULL;
-//    assert(new_cond->bt.trace || !lWME->preference);
     new_cond->bt.trace = lWME->preference;
     new_cond->bt.level = lWME->id->id->level;
     new_cond->inst = lWME->preference ? lWME->preference->inst : NULL;

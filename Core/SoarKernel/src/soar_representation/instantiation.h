@@ -76,7 +76,7 @@ inline void         possibly_deallocate_instantiation(agent* thisAgent, instanti
         deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
+instantiation*      make_architectural_instantiation_for_memory_system(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions, bool forSMem);
 preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
 
 /* -------------------------------------------------------------------

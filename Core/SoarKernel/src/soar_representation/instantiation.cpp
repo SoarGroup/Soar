@@ -31,6 +31,7 @@
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "episodic_memory.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "misc.h"
@@ -883,7 +884,6 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     cond->bt.level = pWME->id->id->level;
     cond->test_for_acceptable_preference = pWME->acceptable;
     if (addBTPref && pWME->preference) cond->bt.trace = pWME->preference;
-    //preference_add_ref(cond->bt.trace);
 
     /* Add identity information */
     thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.id_test);
@@ -914,7 +914,6 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     preference* pref;
 
     pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
-//    pref->o_supported = true;
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
@@ -959,7 +958,6 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, lNewDC_WME->deep_copied_wme);
 
         /* Add the copied preference */
-        /* We may need to add refcounts for this pref?  I think they may already be adjusted when copied in the rhs function */
         lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value, NULL);
 
         /* We set the identities of the preferences so that they are dependent on the explanation behind
@@ -1568,7 +1566,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     possibly_deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions)
+instantiation* make_architectural_instantiation_for_memory_system(agent* thisAgent, Symbol* pState, wme_set* pConds, symbol_triple_list* pActions, bool forSMem)
 {
     dprint_header(DT_MILESTONES, PrintBoth, "make_architectural_instantiation() called.\n");
 
@@ -1588,10 +1586,17 @@ instantiation* make_architectural_instantiation(agent* thisAgent, Symbol* pState
     {
         condition* prev_cond = NULL;
 
-        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->smem_link_wme, false);
-        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->cmd_wme, false);
-        add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->result_wme, false);
-
+        if (forSMem)
+        {
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->smem_link_wme, false);
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->cmd_wme, false);
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->smem_info->result_wme, false);
+        } else
+        {
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->epmem_info->epmem_link_wme, false);
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->epmem_info->cmd_wme, false);
+            add_cond_to_arch_inst(thisAgent, prev_cond, inst, pState->id->epmem_info->result_wme, false);
+        }
         for (wme_set::iterator c_it = pConds->begin(); c_it != pConds->end(); c_it++)
         {
             add_cond_to_arch_inst(thisAgent, prev_cond, inst, (*c_it));
