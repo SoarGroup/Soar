@@ -43,14 +43,14 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 
 void Explanation_Based_Chunker::print_identity_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     print_instantiation_identities_map(mode);
     print_unification_map(mode);
 }
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "            Merge Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -81,7 +81,7 @@ void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     Instantiation Identity Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -104,7 +104,7 @@ void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mod
 
 void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     Identity to Identity Set Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -126,7 +126,7 @@ void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "   Attachment Points in Conditions\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -144,7 +144,7 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "    Relational Constraints List\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -163,7 +163,7 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 
 void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "== Identity Set -> Variablization ==\n");
     if (identity_to_var_map->size() == 0)
@@ -179,7 +179,7 @@ void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
 
 void Explanation_Based_Chunker::print_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     print_variablization_table(mode);
     print_identity_tables(mode);
 }

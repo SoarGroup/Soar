@@ -52,7 +52,7 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
 void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 40);
     outputManager->set_column_indent(1, 55);

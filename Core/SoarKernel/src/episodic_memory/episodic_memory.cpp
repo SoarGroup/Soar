@@ -6014,7 +6014,7 @@ void EpMem_Manager::clean_up_for_agent_deletion()
 void epmem_param_container::print_settings(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
 //    outputManager->reset_column_indents();
 //    outputManager->set_column_indent(0, 25);
@@ -6092,7 +6092,7 @@ void epmem_param_container::print_settings(agent* thisAgent)
 void epmem_param_container::print_summary(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     std::string lStr("Episodic memory is ");
     lStr.append(thisAgent->EpMem->epmem_params->learning->get_value() ? "enabled." : "not enabled.");
