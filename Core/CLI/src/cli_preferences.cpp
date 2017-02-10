@@ -115,8 +115,10 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
                                  wme_trace_type wtt,
                                  double* selection_probability = 0)
 {
+    bool attrIsOperator = (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol);
+
     thisAgent->outputManager->printa(thisAgent, "  ");
-    if (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+    if (attrIsOperator)
     {
         print_object_trace(thisAgent, pref->value);
     }
@@ -124,9 +126,9 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     {
         thisAgent->outputManager->printa_sf(thisAgent, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
     }
-    if (pref->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+    if (attrIsOperator)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  " %c", preference_to_char(pref->type));
+        thisAgent->outputManager->printa_sf(thisAgent,  " %c ", preference_to_char(pref->type));
     }
     if (preference_is_binary(pref->type))
     {
@@ -164,7 +166,7 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     }
     if (selection_probability)
     {
-        thisAgent->outputManager->printa_sf(thisAgent,  " =%s", dest);
+        thisAgent->outputManager->printa_sf(thisAgent,  " = %s", dest);
     }
     if (pref->o_supported)
     {
@@ -173,6 +175,10 @@ void print_preference_and_source(agent* thisAgent, preference* pref,
     else
     {
         thisAgent->outputManager->printa_sf(thisAgent,  " :I ");
+    }
+    if ((pref->level > TOP_GOAL_LEVEL) && !selection_probability)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, " [level %d] ", static_cast<int64_t>(pref->level));
     }
     if (selection_probability)
     {
