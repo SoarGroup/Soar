@@ -71,7 +71,34 @@ double get_number_from_symbol(Symbol* sym)
     return 0.0;
 }
 
+bool make_string_rereadable(std::string &pStr)
+{
+    bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+    bool is_rereadable;
+    bool has_angle_bracket;
 
+    const char* pCStr = pStr.c_str();
+    short pLength = pStr.size();
+
+    soar::Lexer::determine_possible_symbol_types_for_string(pCStr, pLength,
+            &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
+
+    has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
+
+    /* MToDo | Why do we even need has_angle_bracket? */
+    assert(!has_angle_bracket || possible_var);
+
+    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+        (!is_rereadable) || has_angle_bracket)
+    {
+        /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
+         *        - Shouldn't it also check whether dest char * was passed in and get a printed
+         *          output string instead?  */
+        pStr = string_to_escaped_string(pCStr, '|');
+        return true;
+    }
+    return false;
+}
 
 char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t dest_size)
 {
@@ -79,6 +106,7 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
     bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
     bool is_rereadable;
     bool has_angle_bracket;
+    bool wasModified;
     std::string lStr;
 
     switch (symbol_type)
@@ -183,22 +211,15 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                 return dest;
             }
 
-            soar::Lexer::determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
-                    &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
-
-            has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name) - 1] == '>';
-
-            if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                    (!is_rereadable) || has_angle_bracket)
+            lStr = sc->name;
+            wasModified = make_string_rereadable(lStr);
+            if (wasModified)
             {
-                /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
-                 *        - Shouldn't it also check whether dest char * was passed in and get a printed
-                 *          output string instead?  */
-                lStr = string_to_escaped_string(sc->name, '|');
                 sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, lStr.c_str());
             } else {
                 sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, sc->name);
             }
+
             if (!dest)
             {
                 return sc->cached_print_str;

@@ -60,7 +60,7 @@ using namespace soar_TraceNames;
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-const std::string string_to_escaped_string(char* s, char first_and_last_char)
+const std::string string_to_escaped_string(const char* s, char first_and_last_char)
 {
     std::string returnStr;
     returnStr.push_back(first_and_last_char);
