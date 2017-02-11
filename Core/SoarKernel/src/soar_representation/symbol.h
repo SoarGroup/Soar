@@ -319,6 +319,7 @@ inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
 char first_letter_from_symbol(Symbol* sym);
+bool make_string_rereadable(std::string &pStr);
 
 /* -- This function returns a numeric value from a symbol -- */
 double get_number_from_symbol(Symbol* sym);
