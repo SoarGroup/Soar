@@ -48,47 +48,26 @@
 extern "C"
 #endif
 {
-
-enum TclThreadCommand {
-    CREATE_TCL_SLAVE = 0,
-    DESTROY_TCL_SLAVE = 1,
-    SHUTDOWN_TCL_THREAD = 2
-};
-
-extern "C" class EXPORT TclThreadCommandInfo
-{
-    public:
-        TclThreadCommand command;
-        std::string info;
-};
-
 extern "C" class EXPORT TclSoarLib
 {
     public:
 
         TclSoarLib(sml::Kernel* pKernel);
+        void init_TclSoarLib();
         ~TclSoarLib();
 
-        bool handle_message(std::string message);
+        bool turnOn();
+        bool turnOff();
 
         sml::Kernel* m_kernel;
 
     private:
-        bool turnOn();
-        bool turnOff();
-
-        pthread_t lib_thread;
-        pthread_mutex_t interp_mutex;
-		pthread_barrier_t interp_barrier;
-        friend void* launch_tcl(void* lib_ptr);
-
-        TclThreadCommandInfo thread_command_info;
-        void send_thread_command(TclThreadCommand command, std::string info);
 
         Tcl_Interp* m_interp;
 
         bool initialize_Master();
         bool initialize_Tcl_Interpreter();
+
         bool evaluateDirCommand(const std::string command);
 
         std::string& EscapeTclString(const char* in, std::string& out);
@@ -96,6 +75,5 @@ extern "C" class EXPORT TclSoarLib
         int GlobalDirEval(const std::string& command, std::string& result);
 };
 } // extern "C"
-
 
 #endif /* TCLSOARLIB_H_ */

@@ -37,24 +37,28 @@ namespace TclSoar
 extern "C"
 #endif
 {
-#include <iostream>
 
 RHS_EXPORT void* sml_LibraryMessage(const char* pMessage, void* pMessageData)
 {
-    //std::cout << "TclSoarLib::sml_LibraryMessage(" << pMessage << ")" << std::endl;
-
-    if (TclSoar::gTclLib)
+    Kernel* lKernel;;
+    
+    /* -- create and delete should not be directly accessed by the user.  Ideally
+     *    we should pass in a parameter indicating whether the command originated
+     *    from the user or the soar code. -- */
+    if (!strcmp(pMessage, "delete"))
     {
-        if (!strcmp(pMessage, "delete"))
-        {
-            delete TclSoar::gTclLib;
-            TclSoar::gTclLib = NULL;
-            return ((void*) true);
-        } 
-        else 
-        {
-            return ((void*)TclSoar::gTclLib->handle_message(pMessage));
-        }
+        delete TclSoar::gTclLib;
+        TclSoar::gTclLib = NULL;
+        return ((void*) true);
+    }
+    else if (!strcmp(pMessage, "on"))
+    {
+        return ((void*) TclSoar::gTclLib->turnOn());
+        
+    }
+    else if (!strcmp(pMessage, "off"))
+    {
+        return ((void*) TclSoar::gTclLib->turnOff());
     }
     
     return NULL;
@@ -66,6 +70,7 @@ RHS_EXPORT const char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv)
     {
         TclSoar::gTclLib = new TclSoarLib(pKernel);
         Soar_Instance::Get_Soar_Instance().Register_Library(pKernel, libName, sml_LibraryMessage);
+        TclSoar::gTclLib->init_TclSoarLib();
     }
     return "";
 }

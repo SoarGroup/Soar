@@ -7,7 +7,6 @@ set tclScriptDir [file join $soarDir tcl]
 array set callbackIDs {
   rhs -1
   filter -1
-  agent_created -1
   agent_destroyed -1
 }
 
@@ -15,17 +14,17 @@ lappend auto_path $soarDir
 
 proc createSlave {agentName} {
   global tclScriptDir auto_path _kernel _soarInstance
-  #puts "tcl::master::createSlave($agentName)"
+  
+  set slave [interp create $agentName]
   
   # Configure the slave interpreter
   
   # Look up the SML agent
   set client_agent [$_kernel GetAgent $agentName]
-
-  set slave [interp create $agentName]
   
   # Set up aliases to common procs in master
   $slave eval [list lappend auto_path $tclScriptDir]
+  $slave eval [list set _agentName $agentName]
   
   # We want all the slaves using the same directory stack, otherwise
   # they can get out of synch and cause weird behavior
@@ -57,34 +56,27 @@ proc createSlave {agentName} {
   
   # Initialize slave interpreter
   $slave eval [list initializeSlave]
-
+  
   # Source tcl-setup file (can override Soar commands/aliases!)
   if { [catch {$slave eval source tcl-setup.soar} result] } {
     puts "ERROR: Failed to load tcl-setup.soar:\n$result"
   }
   popd
-
+  
   # Send output to the "stdout" channel by default
   $slave eval [list output-strings-destination -push -channel stdout]
-
-  #return $agentName
+  
+  return $slave
 }
 
 # This is a lazy function which will either return the interpreter
 # already associated with this agent or create a new one for this agent
-proc getSlave { agentName } {
-  global _soarInstance
-  if { ![interp exists $agentName] } {
-      $_soarInstance Tcl_Message_Library [concat "create " $agentName]
-  }
-  return $agentName
-}
-
-proc destroySlave { slaveName } {
-  #puts "tcl::master::destroySlave($slaveName)"
-
-  if {[interp exists $slaveName]} {
-    interp delete $slaveName
+proc getSlave {agentName} {
+  
+  if { [interp exists $agentName] } {
+    return $agentName
+  } else {
+    return [createSlave $agentName]
   }
 }
 
@@ -112,6 +104,7 @@ proc smlfilter {agentName commandLine} {
 ##
 # Called when an agent performs the tcl RHS function
 proc smltclrhsfunction { agentName expression } {
+  
   set slave [getSlave $agentName]
   $slave eval clearOutputBuffer
   if { [catch {$slave eval [concat uplevel #0 puts [list \[$expression\]]]} returnVal] } {
@@ -121,36 +114,19 @@ proc smltclrhsfunction { agentName expression } {
   return [$slave eval getOutputBuffer]
 }
 
-proc smlstartup {} {
-    #puts "tcl::master::smlstartup()"
-}
-
 ##
 # Called when the system shuts down
 proc smlshutdown {} {
-  #puts "tcl::master::smlshutdown()"
-
   removeCallbackHandlers
   foreach slave [interp slaves] {
-      #puts "     Deleting Slave $slave"
-      interp delete $slave
+    interp delete slave
   }
 }
 
-proc smlCreateAgentCallback { id userData agent } {
-	#puts "tcl::master::smlCreateAgentCallback([$agent GetAgentName])"
-
-    global _soarInstance
-    set slaveName [$agent GetAgentName]
-    $_soarInstance Tcl_Message_Library [concat "create " $slaveName]
-}
-
-proc smlDestroyAgentCallback { id userData agent } {
-  #puts "tcl::master::smlDestroyAgentCallback([$agent GetAgentName])"
-
-  global _soarInstance
-  set slaveName [$agent GetAgentName]
-  $_soarInstance Tcl_Message_Library [concat "destroy " $slaveName]
+proc smlDestroyAgentCallback {id userData agent } {
+  if {[interp exists [$agent GetAgentName]]} {
+    interp delete [$agent GetAgentName]
+  }
 }
 
 #####################
@@ -216,28 +192,24 @@ proc loadSmlLibrary {} {
 
 proc createCallbackHandlers {} {
   global _kernel callbackIDs
-  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED smlEVENT_AFTER_AGENT_CREATED
-
+  global sml_Names_kFilterName smlEVENT_BEFORE_AGENT_DESTROYED
+  
   # Register main command processing callback function
   if {$callbackIDs(filter) == -1} {
-    #$_kernel EnableFiltering 1
+    #  $_kernel EnableFiltering 1
     set callbackIDs(filter) [$_kernel RegisterForClientMessageEvent $sml_Names_kFilterName smlFilterCallback ""]
   }
-
+  
   # Install the tcl RHS function
   if {$callbackIDs(rhs) == -1} {
     set callbackIDs(rhs) [$_kernel AddRhsFunction tcl ""]
-  }
-
-  # Register agent creation callback function
-  if {$callbackIDs(agent_created) == -1} {
-    set callbackIDs(agent_created) [$_kernel RegisterForAgentEvent $smlEVENT_AFTER_AGENT_CREATED smlCreateAgentCallback ""]
   }
   
   # Register agent deletion callback function
   if {$callbackIDs(agent_destroyed) == -1} {
     set callbackIDs(agent_destroyed) [$_kernel RegisterForAgentEvent $smlEVENT_BEFORE_AGENT_DESTROYED smlDestroyAgentCallback ""]
   }
+  
 }
 
 proc removeCallbackHandlers {} {
@@ -267,11 +239,12 @@ proc removeCallbackHandlers {} {
 # Initializes the kernel and registers for events
 ##
 proc initializeMaster { } {
-  global _kernel _soarInstance callbackIDs
+  global _kernel _agentName _soarInstance callbackIDs
   
   loadSmlLibrary
   
   set _soarInstance [getSoarInstance]
   set _kernel [$_soarInstance Get_Kernel]
+  set _agentName "Master"
+  
 }
-
