@@ -155,7 +155,7 @@
         std::string lInstString = it->second;
         if (!lInstString.empty())
         {
-            gds_deallocation_map[pID].clear();
+            inst_deallocation_map[pID].clear();
         } else {
             std::string lInstString;
             thisAgent->outputManager->sprinta_sf(thisAgent, lInstString, "Instantiation %u was deallocated twice!\n", it->first);
