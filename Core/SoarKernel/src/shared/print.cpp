@@ -728,8 +728,7 @@ void print_wme_without_timetag(agent* thisAgent, wme* w)
     xml_object(thisAgent, w, XML_WME_NO_TIMETAG);
 }
 
-void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
-                                   wme_trace_type wtt, int action)
+void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst, wme_trace_type wtt, int action)
 {
     int PRINTING = -1;
     int FIRING = 0;
@@ -803,8 +802,7 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
                         else
                         {
                             // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
-                            thisAgent->outputManager->printa_sf(thisAgent, " %u", cond->bt.wme_->timetag);
-
+                            thisAgent->outputManager->printa_sf(thisAgent, "WME with time tag %u\n", cond->bt.wme_->timetag);
                             xml_begin_tag(thisAgent, kTagWME);
                             xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
                             xml_end_tag(thisAgent, kTagWME);

@@ -181,7 +181,7 @@ void init_trace_settings(agent* thisAgent)
 
     /* --- set all params to zero, except the following: --- */
     thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM] = true;
-    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE; /* RPM 6/05 Changed from timetag to none */
+    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = FULL_WME_TRACE;
 }
 
 /* ===================================================================
@@ -362,7 +362,7 @@ void reinitialize_soar(agent* thisAgent)
         /* Temporarily disable tracing: */
         set_trace_setting(thisAgent, i, false);
     }
-    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
 
     reinitialize_agent(thisAgent);
 

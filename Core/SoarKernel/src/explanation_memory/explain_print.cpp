@@ -441,7 +441,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Skipped because no super-state knowledge tested                    %-%u\n", stats.no_grounds);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-CHUNKS exceeded in a decision cycle            %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-DUPES exceeded for rule this decision cycle    %-%u\n", stats.max_dupes);
-#ifndef SOAR_RELEASE_VERSION
+//#ifndef SOAR_RELEASE_VERSION
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                      Technical Debugging Statistics \n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
@@ -458,7 +458,7 @@ void Explanation_Memory::print_global_stats()
 //    outputManager->printa_sf(thisAgent, "- Problem-solving used OSK but EBC ignored                         %-?\n");
 //    outputManager->printa_sf(thisAgent, "Uncertain knowledge or opaque knowledge retrieval:\n");
 //    outputManager->printa_sf(thisAgent, "- Analyzed reasoning of operators selected probabilistically       %-?\n");
-#endif
+//#endif
 }
 
 

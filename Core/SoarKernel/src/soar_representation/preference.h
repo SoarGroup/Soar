@@ -156,6 +156,7 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 void cache_preference_if_necessary(agent* thisAgent, preference* pref);
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);
+void deallocate_preference_contents(agent* thisAgent, preference* pref, bool dont_cache);
 bool add_preference_to_tm(agent* thisAgent, preference* pref);
 void remove_preference_from_tm(agent* thisAgent, preference* pref);
 bool remove_preference_from_clones_and_deallocate(agent* thisAgent, preference* pref);
