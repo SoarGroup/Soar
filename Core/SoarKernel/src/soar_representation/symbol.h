@@ -51,7 +51,7 @@
 
 #ifndef SOAR_RELEASE_VERSION
     //#define DEBUG_TRACE_REFCOUNT_FOR "S1"
-    #define DEBUG_MAC_STACKTRACE
+    //#define DEBUG_MAC_STACKTRACE
 
     #ifdef DEBUG_MAC_STACKTRACE
     std::string get_stacktrace(const char* prefix = NULL);

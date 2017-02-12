@@ -1067,14 +1067,18 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->newly_created_instantiations = inst;
     inst->in_newly_created = true;
     inst->in_ms = true;
+    /* It seems we can get the match goal level and goal from the waterfall variables. No need to search */
+    inst->match_goal_level = thisAgent->active_level;
+    inst->match_goal = thisAgent->active_goal;
 
-    dprint_header(DT_MILESTONES, PrintBefore, "Allocating instantiation for instance of %u (%y) begun.\n", inst->i_id, inst->prod_name);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation for instance of %u (%y) begun.\n", inst->i_id, inst->prod_name);
+
+    dprint_header(DT_MILESTONES, PrintBefore, "Allocating instantiation for instance of %u (%y) in state %y (level %d) begun.\n", inst->i_id, inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation for instance of %u (%y) in state %y (level %d) begun.\n", inst->i_id, inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
 
     if (thisAgent->trace_settings[TRACE_ASSERTIONS_SYSPARAM])
     {
         std::string lStr;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "\nNew match of %y.  Creating instantiation.\n", inst->prod_name);
+        thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "\nNew match of %y in state %y (level %d).  Creating instantiation.\n", inst->prod_name, inst->match_goal, static_cast<int64_t>(inst->match_goal_level));
         thisAgent->outputManager->printa(thisAgent, lStr.c_str());
         xml_generate_verbose(thisAgent, lStr.c_str());
     }
@@ -1087,18 +1091,33 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (prod->type == TEMPLATE_PRODUCTION_TYPE)
     {
         additional_test_mode = JUST_INEQUALITIES;
-    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) {
+    } else if ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) {
         additional_test_mode = ALL_ORIGINALS;
     }
 
     /* build the instantiated conditions, and bind LHS variables */
-    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-        &(inst->top_of_instantiated_conditions),
-        &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-        inst->i_id, additional_test_mode);
+    if (additional_test_mode == DONT_EXPLAIN)
+    {
+        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+            &(inst->top_of_instantiated_conditions),
+            &(inst->bottom_of_instantiated_conditions), NULL,
+            inst->i_id, additional_test_mode);
+    } else {
+        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
+            &(inst->top_of_instantiated_conditions),
+            &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
+            inst->i_id, additional_test_mode);
+    }
 
     /* record the level of each of the wmes that was positively tested */
-    set_bt_and_find_match_goal(inst);
+//    set_bt_and_find_match_goal(inst);
+
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            cond->bt.level = cond->bt.wme_->id->id->level;
+            cond->bt.trace = cond->bt.wme_->preference;  // These are later changed to the correct clone for the level
+        }
 
     bool isSubGoalMatch = (inst->match_goal_level > TOP_GOAL_LEVEL);
     if (!isSubGoalMatch && (prod->type != TEMPLATE_PRODUCTION_TYPE))

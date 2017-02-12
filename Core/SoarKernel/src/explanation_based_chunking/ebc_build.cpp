@@ -1062,6 +1062,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
     }
 
+    /* MToDo | Remove.  Just to see that nothing is being created when learning is off */
+    //    assert(unification_map->size() == 0);
+    //    assert(instantiation_identities->size() == 0);
+    //    assert(identity_to_var_map->size() == 0);
+    //    assert(constraints->size() == 0);
+
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
 
@@ -1165,6 +1171,9 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
     m_prod_name                         = NULL;
     m_rule_type                         = ebc_no_rule;
     m_failure_type                      = ebc_success;
+
+    //dprint(DT_DEBUG, "unification_map: %d, identity_to_var_map: %d, constraints: %d" , static_cast<int64_t>(unification_map->size()) , static_cast<int64_t>(identity_to_var_map->size()) , static_cast<int64_t>(constraints->size()));
+
     clear_variablization_maps();
     clear_cached_constraints();
     clear_o_id_substitution_map();
