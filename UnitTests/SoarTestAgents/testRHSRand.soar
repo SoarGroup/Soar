@@ -77,7 +77,8 @@ sp {detect*opnc
 	(<ss> ^operator <o>)
 	(<o> ^name <n> ^value <v> -^arg)
 -->
-	(exec test-failure <n> | failed with value | <v>)
+	(write (crlf) <n> | failed with value | <v>)
+    (failed)
 	(halt)
 }
 
@@ -86,6 +87,7 @@ sp {detect*opnc*arg
 	(<ss> ^operator <o>)
 	(<o> ^name <n> ^value <v> ^arg <a>)
 -->
-	(exec test-failure <n> | arg | <a> | failed with value | <v>)
+	(failed)
+    (write (crlf) <n> | arg | <a> | failed with value | <v>)
 	(halt)
 }

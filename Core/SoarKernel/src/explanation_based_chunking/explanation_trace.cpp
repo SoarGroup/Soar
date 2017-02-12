@@ -149,7 +149,7 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         return;
     }
 
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rete_test* rt = node->b.posneg.other_tests;
 

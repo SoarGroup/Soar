@@ -38,7 +38,10 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     lVarInfo->identity = this->get_or_create_identity(variable);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
-    thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+    }
     return lVarInfo;
 }
 
@@ -430,7 +433,21 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     return rhs;
 }
 
-action* Explanation_Based_Chunker::variablize_result_into_actions(preference* result, tc_number lti_link_tc)
+action* Explanation_Based_Chunker::convert_result_into_action(preference* result)
+{
+    action* a = make_action(thisAgent);
+    a->type = MAKE_ACTION;
+    a->preference_type = result->type;
+    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, NULL_IDENTITY_SET, result->was_unbound_vars.id);
+    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, NULL_IDENTITY_SET, result->was_unbound_vars.attr);
+    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, NULL_IDENTITY_SET, result->was_unbound_vars.value);
+    if (preference_is_binary(result->type)) a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, NULL_IDENTITY_SET, result->was_unbound_vars.referent);
+    dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
+
+    return a;
+}
+
+action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
 
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
@@ -601,7 +618,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
 
     for (lPref = m_results; lPref; lPref = lPref->next_result)
     {
-        lAction = variablize_result_into_actions(lPref, lti_link_tc);
+        lAction = variablize_result_into_action(lPref, lti_link_tc);
         if (!returnAction)  returnAction = lAction;
         if (lLastAction) lLastAction->next = lAction;
         lLastAction = lAction;
@@ -613,6 +630,31 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "Actions after variablizing: \n%2", returnAction);
+
+    return returnAction;
+}
+
+
+action* Explanation_Based_Chunker::convert_results_into_actions()
+{
+    dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
+    dprint_unification_map(DT_RHS_VARIABLIZATION);
+
+    action* returnAction, *lAction, *lLastAction;
+    preference* lPref;
+
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+    returnAction = lAction = lLastAction = NULL;
+
+    for (lPref = m_results; lPref; lPref = lPref->next_result)
+    {
+        lAction = convert_result_into_action(lPref);
+        if (!returnAction)  returnAction = lAction;
+        if (lLastAction) lLastAction->next = lAction;
+        lLastAction = lAction;
+    }
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after conversion: \n%2", returnAction);
 
     return returnAction;
 }

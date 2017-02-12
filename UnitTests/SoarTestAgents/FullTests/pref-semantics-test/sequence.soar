@@ -36,6 +36,7 @@ sp {sequence*test*fail
           ^top-state <ts>)
 -->
    (<ts> ^<name> failure)
-   (exec test-failure <name>)
+   (failed)
+   (write (crlf) |Failed | <name>)
 }
 

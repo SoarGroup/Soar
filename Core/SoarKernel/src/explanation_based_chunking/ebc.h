@@ -75,7 +75,7 @@ class Explanation_Based_Chunker
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
         void        unify_identity(test t) { t->identity = get_identity(t->identity); }
-        void        unify_preference_identities(preference* lPref);
+        void        unify_preference_identities(preference* lPref);                         /* Not used currently */
         uint64_t    get_identity(uint64_t pID);
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
@@ -265,8 +265,7 @@ class Explanation_Based_Chunker
         void add_additional_constraints();
         bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
-        void reset_constraint_found_tc_num() { /*if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; */
-            tc_num_found = get_new_tc_number(thisAgent); };
+        void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
@@ -276,7 +275,7 @@ class Explanation_Based_Chunker
 
         /* Variablization methods */
         action* variablize_results_into_actions();
-        action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
+        action* variablize_result_into_action(preference* result, tc_number lti_link_tc);
         uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
         void add_LTM_linking_actions(action* pLastAction);
         void variablize_equality_tests(test t);
@@ -292,6 +291,8 @@ class Explanation_Based_Chunker
         void reinstantiate_condition(condition* cond, bool pIsNCC = false);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
+        action* convert_results_into_actions();
+        action* convert_result_into_action(preference* result);
 
         /* Methods to make sure that we didn't create rules that are bad but the RETE would accept */
         void sanity_chunk_conditions(condition* top_cond);

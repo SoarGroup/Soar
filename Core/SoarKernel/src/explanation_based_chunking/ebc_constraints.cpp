@@ -60,7 +60,6 @@ void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
     cache_constraints_in_test(c->data.tests.id_test);
     cache_constraints_in_test(c->data.tests.attr_test);
     cache_constraints_in_test(c->data.tests.value_test);
-//    print_constraints(DT_CONSTRAINTS);
 }
 
 

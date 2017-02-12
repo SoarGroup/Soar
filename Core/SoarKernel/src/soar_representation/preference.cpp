@@ -9,6 +9,7 @@
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
+#include "output_manager.h"
 #include "print.h"
 #include "rhs.h"
 #include "slot.h"

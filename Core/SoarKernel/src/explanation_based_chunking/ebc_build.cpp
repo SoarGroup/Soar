@@ -137,6 +137,8 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     m_results = pref;
     if (pref->identities.id && linked_id)
     {
+        assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
         thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
         add_identity_unification(pref->identities.id, linked_id);
@@ -977,20 +979,26 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
 
-    /* Variablize the LHS */
-    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
-    variablize_condition_list(m_lhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        /* Variablize the LHS */
+        thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+        variablize_condition_list(m_lhs);
+        dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
-    #ifdef EBC_SANITY_CHECK_RULES
-    if (m_rule_type == ebc_chunk) sanity_chunk_conditions(m_lhs);
-    #endif
+        #ifdef EBC_SANITY_CHECK_RULES
+        if (m_rule_type == ebc_chunk) sanity_chunk_conditions(m_lhs);
+        #endif
 
-    /* Merge redundant conditions (same identity sets in each element) */
-    merge_conditions();
+        /* Merge redundant conditions (same identity sets in each element) */
+        merge_conditions();
 
-    /* Variablize the RHS preferences into actions */
-    m_rhs = variablize_results_into_actions();
+        /* Variablize the RHS preferences into actions */
+        m_rhs = variablize_results_into_actions();
+    } else {
+        m_rhs = convert_results_into_actions();
+    }
+
 
     /* Add isa_goal tests for first conditions seen with a goal identifier */
     add_goal_or_impasse_tests();
@@ -1045,9 +1053,14 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * This changes during re-instantiation.  If the rule being formed is a justification,
      * both m_lhs and m_rhs will become instantiated as well. */
 
-    l_inst_top = reinstantiate_current_rule();
-    l_inst_bottom = l_inst_top;
-    while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        l_inst_top = reinstantiate_current_rule();
+        l_inst_bottom = l_inst_top;
+        while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+    } else {
+        copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
+    }
 
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
@@ -1099,13 +1112,15 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         m_chunk_inst = NULL;
         clean_up();
 
-        /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
-         * which is what would have been created if the chunk had fired on its goal level */
-        dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
-        set_learning_for_instantiation(*new_inst_list);
-        learn_EBC_rule(*new_inst_list, new_inst_list);
-        dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
-
+        if ((*new_inst_list)->match_goal_level > TOP_GOAL_LEVEL)
+        {
+            /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
+             * which is what would have been created if the chunk had fired on its goal level */
+            dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
+            set_learning_for_instantiation(*new_inst_list);
+            learn_EBC_rule(*new_inst_list, new_inst_list);
+            dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
+        }
     } else {
         /* Clean up failed chunk completely*/
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");

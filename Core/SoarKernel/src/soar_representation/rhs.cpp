@@ -85,14 +85,11 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
     cons* fl=NULL, *new_fl=NULL;
 
-    if (rhs_value_is_reteloc(rv))
+    if (!rv) {
+            return NULL;
+    } else if ((rhs_value_is_reteloc(rv)) || (rhs_value_is_unboundvar(rv)))
     {
         return rv;
-    } else if (rhs_value_is_unboundvar(rv))
-    {
-        return rv;
-    } else if (!rv) {
-        return NULL;
     } else if (rhs_value_is_funcall(rv))
     {
         fl = rhs_value_to_funcall_list(rv);

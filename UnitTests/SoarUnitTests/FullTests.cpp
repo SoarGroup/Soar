@@ -1535,7 +1535,7 @@ void FullTests_Parent::testLearn()
 
 void FullTests_Parent::testSVS()
 {
-	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
+	m_pKernel->AddRhsFunction("failed", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("testSVS.soar"));
 	agent->ExecuteCommandLine("run");
 //	SoarHelper::init_check_to_find_refcount_leaks(agent);
@@ -1543,7 +1543,7 @@ void FullTests_Parent::testSVS()
 
 void FullTests_Parent::testPreferenceSemantics()
 {
-	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
+	m_pKernel->AddRhsFunction("failed", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("pref-semantics-test.soar"));
 	agent->ExecuteCommandLine("run");
 	SoarHelper::init_check_to_find_refcount_leaks(agent);
@@ -1551,7 +1551,7 @@ void FullTests_Parent::testPreferenceSemantics()
 
 void FullTests_Parent::testMatchTimeInterrupt()
 {
-	m_pKernel->AddRhsFunction("test-failure", Handlers::MyRhsFunctionFailureHandler, 0) ;
+	m_pKernel->AddRhsFunction("failed", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("testMatchTimeInterrupt.soar"));
 	agent->ExecuteCommandLine("run");
 	SoarHelper::init_check_to_find_refcount_leaks(agent);

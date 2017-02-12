@@ -162,7 +162,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
             else if (chunk_in_states->get_value() == ebc_never)
             {
@@ -170,7 +169,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = true;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = false;
             }
             else if (chunk_in_states->get_value() == ebc_only)
             {
@@ -178,7 +176,6 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = true;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = false;
-                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
             else if (chunk_in_states->get_value() == ebc_except)
             {
@@ -186,8 +183,8 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ONLY] = false;
                 thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_EXCEPT] = true;
-                thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = true;
             }
+            thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_NEVER] == false);
         } else {
             if (pChangedIntParam == max_chunks)
             {

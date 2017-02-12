@@ -646,7 +646,8 @@ sp {svs-tester*extract-filters*apply*extract-filter*complete*mark*extracted
   (<s> ^extracted <f>)
   (<svsc> ^extract_once <cmd> -)
   (write <res> | test for filter | <name> (crlf))
-  (exec test-failure <res> | test for filter | <name>)
+  (failed)
+  # <res> | test for filter | <name>)
   (halt)
   }
 

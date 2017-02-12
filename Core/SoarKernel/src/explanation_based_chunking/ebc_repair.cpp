@@ -389,8 +389,11 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
         new_cond = make_condition_from_wme(lWME);
         dprint(DT_REPAIR, "   Variablizing %l\n", new_cond);
         /* Variablize and add to condition list */
-        variablize_connecting_sti(new_cond->data.tests.id_test);
-        variablize_connecting_sti(new_cond->data.tests.value_test);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+        {
+            variablize_connecting_sti(new_cond->data.tests.id_test);
+            variablize_connecting_sti(new_cond->data.tests.value_test);
+        }
         dprint(DT_REPAIR, "   --> %l\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
 

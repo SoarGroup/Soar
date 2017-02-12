@@ -891,12 +891,14 @@ void add_cond_to_arch_inst(agent* thisAgent, condition* &prev_cond, instantiatio
     if (addBTPref && pWME->preference) cond->bt.trace = pWME->preference;
 
     /* Add identity information */
-    thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.id_test);
-    if (cond->data.tests.attr_test->data.referent->is_sti())
-        thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.attr_test);
-    if (cond->data.tests.value_test->data.referent->is_sti())
-        thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.value_test);
-
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.id_test);
+        if (cond->data.tests.attr_test->data.referent->is_sti())
+            thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.attr_test);
+        if (cond->data.tests.value_test->data.referent->is_sti())
+            thisAgent->explanationBasedChunker->add_identity_to_test(cond->data.tests.value_test);
+    }
     /* Set up links*/
     cond->prev = prev_cond;
     cond->next = NULL;
@@ -922,12 +924,14 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
-    pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(pref->id);
-    if (pref->attr->is_sti())
-    pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(pref->attr);
-    if (pref->value->is_sti())
-    pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(pref->value);
-
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(pref->id);
+        if (pref->attr->is_sti())
+            pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(pref->attr);
+        if (pref->value->is_sti())
+            pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(pref->value);
+    }
     add_pref_to_inst(thisAgent, pref, inst);
 }
 
@@ -965,11 +969,14 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         /* Add the copied preference */
         lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value, NULL);
 
-        /* We set the identities of the preferences so that they are dependent on the explanation behind
-         * the working memory elements that they were copied from */
-        lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->id);
-        lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->attr);
-        lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->value);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+        {
+            /* We set the identities of the preferences so that they are dependent on the explanation behind
+             * the working memory elements that they were copied from */
+            lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->id);
+            lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->attr);
+            lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->value);
+        }
 
         /* Now add a preferences that will create the deep-copied WME */
         add_pref_to_inst(thisAgent, lPref, inst);
@@ -1076,7 +1083,13 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
-    AddAdditionalTestsMode additional_test_mode = (prod->type == TEMPLATE_PRODUCTION_TYPE) ? JUST_INEQUALITIES: ALL_ORIGINALS;
+    AddAdditionalTestsMode additional_test_mode = DONT_EXPLAIN;
+    if (prod->type == TEMPLATE_PRODUCTION_TYPE)
+    {
+        additional_test_mode = JUST_INEQUALITIES;
+    } else if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) {
+        additional_test_mode = ALL_ORIGINALS;
+    }
 
     /* build the instantiated conditions, and bind LHS variables */
     p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
@@ -1085,16 +1098,16 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         inst->i_id, additional_test_mode);
 
     /* record the level of each of the wmes that was positively tested */
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
-    {
-        cond->inst = inst;
-        if (cond->type == POSITIVE_CONDITION)
-        {
-            cond->bt.level = cond->bt.wme_->id->id->level;
-            cond->bt.trace = cond->bt.wme_->preference;  // These are later changed to the correct clone for the level
-        }
-    }
     set_bt_and_find_match_goal(inst);
+
+    bool isSubGoalMatch = (inst->match_goal_level > TOP_GOAL_LEVEL);
+    if (!isSubGoalMatch && (prod->type != TEMPLATE_PRODUCTION_TYPE))
+    {
+        /* We don't need identity information or the original vars on the top level, so we clean up now */
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+        deallocate_action_list(thisAgent, rhs_vars);
+        rhs_vars = NULL;
+    }
 
     /* Print rule firing trace info if enabled*/
     trace_it = trace_firings_of_inst(thisAgent, inst);
@@ -1131,7 +1144,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
             dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
-            if (a2)
+            if (a2 && isSubGoalMatch)
             {
                 pref = execute_action(thisAgent, a, tok, w, a2);
             } else {
@@ -1151,8 +1164,11 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
             if (!thisAgent->WM->glbDeepCopyWMEs.empty())
             {
                 inst->creates_deep_copy = true;
-                thisAgent->explanationBasedChunker->force_add_identity(pref->value, pref->identities.value);
-                thisAgent->explanationBasedChunker->force_add_identity(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
+                if (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+                {
+                    thisAgent->explanationBasedChunker->force_add_identity(pref->value, pref->identities.value);
+                    thisAgent->explanationBasedChunker->force_add_identity(thisAgent->explanationBasedChunker->deep_copy_sym_expanded, pref->identities.value);
+                }
                 thisAgent->explanationBasedChunker->deep_copy_sym_expanded = NULL;
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
@@ -1182,26 +1198,32 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
     }
 
-    thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-
-    /* Copy any operator selection knowledge preferences for conditions of this instantiation */
-    thisAgent->explanationBasedChunker->copy_OSK(inst);
-
     thisAgent->production_being_fired = NIL;
+    if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-
-    /* Clean up variable to identity mappings for this instantiation */
-    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-
-    /* build chunks/justifications if necessary */
-
-    thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
-
-    deallocate_action_list(thisAgent, rhs_vars);
-    debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
-
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
+
+    if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE))
+    {
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+    }
+
+    if (isSubGoalMatch)
+    {
+        /* Copy any operator selection knowledge preferences for conditions of this instantiation */
+        thisAgent->explanationBasedChunker->copy_OSK(inst);
+
+        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+
+        /* build chunks/justifications if necessary */
+        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
+        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
+    }
+    else
+    {
+        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+    }
 
     if (!thisAgent->system_halted)
     {

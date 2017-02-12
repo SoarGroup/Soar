@@ -128,8 +128,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (ebc_settings[SETTING_EBC_EXCEPT] &&
-            member_of_list(inst->match_goal, chunk_free_problem_spaces))
+    if (ebc_settings[SETTING_EBC_EXCEPT] && member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
@@ -148,8 +147,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (ebc_settings[SETTING_EBC_ONLY]  &&
-            !member_of_list(inst->match_goal, chunky_problem_spaces))
+    if (ebc_settings[SETTING_EBC_ONLY]  && !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
