@@ -25,6 +25,7 @@
 #include "cmd_settings.h"
 #include "condition_record.h"
 #include "debug.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"
@@ -43,6 +44,7 @@
 #include "output_manager.h"
 #include "parser.h"
 #include "print.h"
+#include "preference.h"
 #include "production.h"
 #include "production_record.h"
 #include "instantiation.h"
@@ -350,9 +352,14 @@ void destroy_soar_agent(agent* delete_agent)
 
     excise_all_productions(delete_agent, false);
 
-    /* This must happen after production excision */
+    /* We can't clean up the explanation manager until after production excision */
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
+
+    IDI_print_and_cleanup(delete_agent);
+    PDI_print_and_cleanup(delete_agent);
+    WDI_print_and_cleanup(delete_agent);
+    GDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
     //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
@@ -408,50 +415,58 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent;
 }
 
-bool reinitialize_agent(agent* thisAgent)
+void reinitialize_agent(agent* thisAgent)
 {
 
-    /* Re-init episodic and semantic memory databases */
+    /* Clean up explanation-based chunking, episodic and semantic memory data structures */
     epmem_reinit(thisAgent);
     thisAgent->SMem->reinit();
-
     thisAgent->explanationBasedChunker->reinit();
+
+    /* Turn off WM activation and RL forgetting temporarily while clearing the goal stack */
     bool wma_was_enabled = wma_enabled(thisAgent);
     thisAgent->WM->wma_params->activation->set_value(off);
-
     rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->RL->rl_params->apoptosis->get_value();
     thisAgent->RL->rl_params->apoptosis->set_value(rl_param_container::apoptosis_none);
 
+    /* Remove all states and report to input/output functions */
     clear_goal_stack(thisAgent);
 
-    if (wma_was_enabled)
-    {
-        thisAgent->WM->wma_params->activation->set_value(on);
-    }
-
+    /* Re-enable WM activation and RL forgetting */
+    if (wma_was_enabled) thisAgent->WM->wma_params->activation->set_value(on);
     thisAgent->RL->rl_params->apoptosis->set_value(rl_apoptosis);
+
+    /* Clear stats for WM, EpMem, SMem and RL */
     thisAgent->RL->rl_stats->reset();
     thisAgent->WM->wma_stats->reset();
     thisAgent->EpMem->epmem_stats->reset();
     thisAgent->SMem->reset_stats();
     thisAgent->dyn_counters->clear();
 
-    thisAgent->active_level = 0; /* Signal that everything should be retracted */
+    /* Signal that everything should be retracted and allow all i-instantiations to retract */
+    thisAgent->active_level = 0;
     thisAgent->FIRING_TYPE = IE_PRODS;
-    do_preference_phase(thisAgent);    /* allow all i-instantiations to retract */
+    do_preference_phase(thisAgent);
 
+    /* It's now safe to clear out explanation memory */
     thisAgent->explanationMemory->re_init();
 
-    thisAgent->symbolManager->reset_hash_table(MP_identifier);
-    bool ok = thisAgent->symbolManager->reset_id_counters();
+    /* Print deallocation inventory results (compiled out in release build) */
+    IDI_print_and_cleanup(thisAgent);
+    PDI_print_and_cleanup(thisAgent);
+    WDI_print_and_cleanup(thisAgent);
+    GDI_print_and_cleanup(thisAgent);
 
+    /* Reset Soar identifier hash table and counters for WMEs, SMem and Soar IDs.
+     * Note:  reset_hash_table() is where refcount leaks in identifiers are detected. */
     reset_wme_timetags(thisAgent);
+    thisAgent->symbolManager->reset_hash_table(MP_identifier);
+    thisAgent->symbolManager->reset_id_counters();
+    if (thisAgent->SMem->connected()) thisAgent->SMem->reset_id_counters();
+
+    /* Reset basic Soar counters and pending XML trace/commands */
     reset_statistics(thisAgent);
-
-    // JRV: For XML generation
     xml_reset(thisAgent);
-
-    return ok;
 }
 
 cli_command_params::cli_command_params(agent* thisAgent)

@@ -20,6 +20,7 @@ void SMemFunctionalTests::setUp()
 
 void SMemFunctionalTests::tearDown(bool caught)
 {
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
     FunctionalTestHarness::tearDown(caught);
 }
 
@@ -248,21 +249,21 @@ void SMemFunctionalTests::testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Sta
 {
 	runTestSetup("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable");
 
-	agent->RunSelf(6);
-    std::string test_smem = agent->ExecuteCommandLine("soar init");
+	//agent->RunSelf(6);
+    //std::string test_smem = agent->ExecuteCommandLine("soar init");
     agent->RunSelf(6);
 
 	assertTrue_msg("testSimpleNonCueBasedRetrieval_ActivationBaseLevel_Stable functional test did not halt", halted);
 
     std::string result, expected;
 	result = agent->ExecuteCommandLine("print @1 -d 1");
-    expected = "(@1 ^location @2 ^name foo [+0.370])\n";
+    expected = "(@1 ^location @2 ^name foo [+0.535])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @2 -d 1");
     expected = "(@2 ^x 1 ^y 2 ^z 3 [+0.000])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @3 -d 1");
-    expected = "(@3 ^location @4 ^name bar [+1.258])\n";
+    expected = "(@3 ^location @4 ^name bar [+0.535])\n";
     assertTrue_msg(std::string("Activation value ") + expected + std::string(" != " + result), result == expected);
     result = agent->ExecuteCommandLine("print @4 -d 1");
     expected = "(@4 ^x 2 ^y 3 ^z 1 [+0.000])\n";

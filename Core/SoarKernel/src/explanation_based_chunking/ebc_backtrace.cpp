@@ -91,7 +91,6 @@ void Explanation_Based_Chunker::add_to_locals(condition* cond)
         appropriate set (locals, grounds, negated_set).
 ------------------------------------------------------------------- */
 
-/* mvp 5-17-94 */
 void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
@@ -107,7 +106,6 @@ void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
     }
 }
 
-/* mvp 5-17-94 */
 void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 {
     for (; c != NIL; c = c->rest)
@@ -130,28 +128,7 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
 {
     Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-     
-    assert(thisID->id->is_sti());
-    assert(thisID->id->level <= cond->bt.level);
-
-    uint64_t idLevel = thisID->id->level;
-    uint64_t btLevel = cond->bt.level;
-    uint64_t prefLevel = cond->bt.trace ? cond->bt.trace->id->id->level : 0;
-    /* MToDo | Remove */
-//    if ((idLevel != btLevel) || (prefLevel && (prefLevel != idLevel)))
-//    {
- //       dprint(DT_DEBUG, "Levels don't match: id level %u != cond bt.level %u!!!  Operational is <= %d\n", idLevel, btLevel, static_cast<int64_t>(grounds_level));
-//            "!= pref id level %u!!!\n          %y | %l | %p\n", prefLevel, thisID, cond, cond->bt.trace);
-//        preference* testp = find_clone_for_level(cond->bt.trace, btLevel);
-//        preference* testp2 = find_clone_for_level(cond->bt.trace, (grounds_level));
-//        preference* testp3 = find_clone_for_level(cond->bt.trace, (grounds_level + 1));
-//        dprint(DT_DEBUG, "bt level, bt level + 1, grounds_level, grounds_level + 1: %u %u %d %d %s %s %s %s",
- //           btLevel, static_cast<int64_t>(grounds_level), static_cast<int64_t>(grounds_level+1),
- //           testp ? "Yes" : "No ",testp2 ? "Yes" : "No ",testp3 ? "Yes" : "No ");
- //   }
-
     return  (thisID->id->level <= grounds_level);
-//    return (btLevel <= grounds_level);
 }
 
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
@@ -169,35 +146,16 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     m_current_bt_inst_id = inst->i_id;
 
     dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
-//    dprint(DT_BACKTRACE, "           RHS identities: (%y [o%u] ^%y [o%u] %y [o%u]),\n           Matched cond: %l\n",
-//        get_ovar_for_o_id(o_ids_to_replace.id),o_ids_to_replace.id,
-//        get_ovar_for_o_id(o_ids_to_replace.attr),o_ids_to_replace.attr,
-//        get_ovar_for_o_id(o_ids_to_replace.value), o_ids_to_replace.value, trace_cond);
+
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa_sf(thisAgent,  "... BT through instantiation of ");
-        if (inst->prod)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%y\n", inst->prod_name);
-        }
-        else
-        {
-            thisAgent->outputManager->printa(thisAgent, "[Architectural Fake Instantiation]\n");
-        }
-
+        thisAgent->outputManager->printa_sf(thisAgent, "%y\n", inst->prod ? inst->prod_name : thisAgent->symbolManager->soarSymbols.architecture_inst_symbol);
         xml_begin_tag(thisAgent, kTagBacktrace);
-        if (inst->prod)
-        {
-            xml_att_val(thisAgent, kProduction_Name, inst->prod_name);
-        }
-        else
-        {
-            xml_att_val(thisAgent, kProduction_Name, "[Architectural Fake Instantiation]");
-        }
-
+        xml_att_val(thisAgent, kProduction_Name, inst->prod ? inst->prod_name: thisAgent->symbolManager->soarSymbols.architecture_inst_symbol);
     }
 
-    if (trace_cond)
+    if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
     }
@@ -212,8 +170,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
-
-            /* mvp 5-17-94 */
             thisAgent->outputManager->printa(thisAgent, "(We already backtraced through this instantiation.)\n");
             xml_att_val(thisAgent, kBacktracedAlready, "true");
             xml_end_tag(thisAgent, kTagBacktrace);
@@ -233,26 +189,37 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (inst->tested_LTM) m_tested_ltm_recall = true;
     if (inst->creates_deep_copy) m_tested_deep_copy = true;
 
+    /* We must backtrace through OSK even if we're not adding OSK because prohibits also use this mechanism */
+    if (inst->OSK_prefs)
+    {
+        backtrace_through_OSK(inst->OSK_prefs, grounds_level, inst->explain_depth);
+    }
+    if (inst->OSK_proposal_prefs)
+    {
+        backtrace_through_OSK(inst->OSK_proposal_prefs, grounds_level, inst->explain_depth);
+    }
     Symbol* thisID, *value;
+
+    /* --- scan through conditions, collect grounds and locals --- */
+    negateds_to_print = NIL;
+
 
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            dprint(DT_BACKTRACE, "Checking operationality of condition of of instantiation %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {
-                if (c->bt.wme_->tc != grounds_tc)   /* First time we've seen something matching this wme*/
+                if (c->bt.wme_->tc != grounds_tc)                   /* First time we've seen something matching this wme*/
                 {
                     add_to_grounds(c);
                 }
-                else                                        /* Another condition that matches the same wme */
+                else if (ebc_settings[SETTING_EBC_LEARNING_ON])     /* Another condition that matches the same wme */
                 {
                     add_to_grounds(c);
-//                    add_singleton_unification_if_needed(c);
                 }
-            } else {
+            } else {                                                /* A local sub-state WME */
                 add_to_locals(c);
                 add_local_singleton_unification_if_needed(c);
             }
@@ -261,30 +228,21 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         {
             dprint(DT_BACKTRACE, "Adding negated condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
-            if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-            {
-                push(thisAgent, c, negateds_to_print);
-            }
+            if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }
     }
-
-    /* --- scan through conditions, collect grounds and locals --- */
-    grounds_to_print = NIL;
-    locals_to_print = NIL;
-    negateds_to_print = NIL;
 
     /* --- if tracing BT, print the resulting conditions, etc. --- */
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
-        /* mvp 5-17-94 */
         thisAgent->outputManager->printa(thisAgent, "  -->Grounds:\n");
         xml_begin_tag(thisAgent, kTagGrounds);
-        print_consed_list_of_condition_wmes(thisAgent, grounds_to_print, 0);
+        print_consed_list_of_condition_wmes(thisAgent, grounds, 0);
         xml_end_tag(thisAgent, kTagGrounds);
         thisAgent->outputManager->printa(thisAgent,  "\n");
         thisAgent->outputManager->printa(thisAgent, "  -->Locals:\n");
         xml_begin_tag(thisAgent, kTagLocals);
-        print_consed_list_of_condition_wmes(thisAgent, locals_to_print, 0);
+        print_consed_list_of_condition_wmes(thisAgent, locals, 0);
         xml_end_tag(thisAgent, kTagLocals);
         thisAgent->outputManager->printa_sf(thisAgent,  "\n");
         thisAgent->outputManager->printa(thisAgent, "  -->Negated:\n");
@@ -292,16 +250,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         print_consed_list_of_conditions(thisAgent, negateds_to_print, 0);
         xml_end_tag(thisAgent, kTagNegated);
         thisAgent->outputManager->printa_sf(thisAgent,  "\n");
-        /* mvp done */
 
         xml_end_tag(thisAgent, kTagBacktrace);
     }
 
-    /* Moved these free's down to here, to ensure they are cleared even if we're
-       not printing these lists     */
-
-    free_list(thisAgent, grounds_to_print);
-    free_list(thisAgent, locals_to_print);
+    /* Moved these free's down to here, to ensure they are cleared even if we're not printing these lists     */
     free_list(thisAgent, negateds_to_print);
 
     m_current_bt_inst_id = last_bt_inst_id;
@@ -313,7 +266,29 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
    This routine backtraces through locals, and keeps doing so until
    there are no more locals to BT.
 --------------------------------------------------------------- */
+void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, goal_stack_level grounds_level, uint64_t lExplainDepth)
+{
+    cons* l_OSK_prefs;
+    preference* p;
+    for (l_OSK_prefs = pOSKPrefList; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
+    {
+        p = static_cast<preference_struct*>(l_OSK_prefs->first);
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+        {
+            thisAgent->outputManager->printa(thisAgent, "     Tracing through OSK preference: ");
+            xml_begin_tag(thisAgent, kTagOSKPreference);
+            print_preference(thisAgent, p);
+        }
 
+        dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
+        backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, lExplainDepth, BT_OSK);
+
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+        {
+            xml_end_tag(thisAgent, kTagOSKPreference);
+        }
+    }
+}
 void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
 {
 
@@ -344,34 +319,17 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         thisAgent->outputManager->set_print_test_format(true, true);
-        dprint(DT_BACKTRACE, "Backtracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
+        dprint(DT_BACKTRACE, "Tracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
         thisAgent->outputManager->clear_print_test_format();
-        bt_pref = find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1));
 
+        bt_pref = NULL;
+        if (cond->bt.trace)
+        {
+            bt_pref = (cond->bt.trace->level != grounds_level + 1) ? find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1)) : cond->bt.trace;
+        }
         if (bt_pref)
         {
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
-
-            if (cond->bt.OSK_prefs)
-            {
-                for (l_OSK_prefs = cond->bt.OSK_prefs; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
-                {
-                    p = static_cast<preference_struct*>(l_OSK_prefs->first);
-                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-                    {
-                        thisAgent->outputManager->printa(thisAgent, "     Backtracing through OSK preference: ");
-                        xml_begin_tag(thisAgent, kTagOSKPreference);
-                        print_preference(thisAgent, p);
-                    }
-
-                    backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, cond->inst->explain_depth, BT_OSK);
-
-                    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-                    {
-                        xml_end_tag(thisAgent, kTagOSKPreference);
-                    }
-                }
-            }
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {

@@ -52,7 +52,7 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
 void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 40);
     outputManager->set_column_indent(1, 55);
@@ -71,11 +71,12 @@ void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "instantiation <inst id>    %-%-%s\n", "Explain instantiation");
     outputManager->printa_sf(thisAgent, "explanation-trace          %-%-%s\n", "Switch to explanation trace inspection");
     outputManager->printa_sf(thisAgent, "wm-trace                   %-%-%s\n", "Switch to working memory trace inspection");
-    outputManager->printa_sf(thisAgent, "-------------- Supporting Analysis ----------------\n");
+    outputManager->printa_sf(thisAgent, "------------ Supporting Analysis --------------\n");
     outputManager->printa_sf(thisAgent, "constraints                %-%-%s\n", "Display extra transitive constraints required by problem-solving");
     outputManager->printa_sf(thisAgent, "identity                   %-%-%s\n", "Display identity to identity set mappings");
     outputManager->printa_sf(thisAgent, "only-chunk-identities      %-%s%-%s\n", capitalizeOnOff(only_print_chunk_identities->get_value()), "Identity analysis only prints identities sets found in chunk");
     outputManager->printa_sf(thisAgent, "stats                      %-%-%s\n", "Display statistics about currently discussed chunk");
+    outputManager->printa_sf(thisAgent, "-----------------------------------------------\n");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- explain <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help explain\n");

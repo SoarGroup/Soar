@@ -17,7 +17,7 @@
 #include <string>
 bool is_DT_mode_enabled(TraceMode mode);
 
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
+#ifdef DEBUG_MAC_STACKTRACE
     std::string get_stacktrace(const char* prefix);
 #endif
 
@@ -55,7 +55,7 @@ class EXPORT Symbol_Manager {
         Symbol* find_float_constant(double value);
 
         bool remove_if_sti(agent* thisAgent, void* item, void* userdata);
-        bool reset_id_counters();
+        void reset_id_counters();
         void reset_id_and_variable_tc_numbers();
         void reset_hash_table(MemoryPoolType lHashTable);
 
@@ -98,7 +98,7 @@ class EXPORT Symbol_Manager {
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
-                    std::cout << "++ | " << strName.c_str() << " | " << x->reference_count << " | " << caller_string.c_str() << "\n";
+                    std::cout << "++ | " << strName.c_str() << " | " << (x->reference_count+1) << " | " << caller_string.c_str() << "\n";
                 }
             }
         #endif

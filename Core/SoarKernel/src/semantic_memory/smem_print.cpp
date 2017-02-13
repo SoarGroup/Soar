@@ -233,34 +233,7 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
             case STR_CONSTANT_SYMBOL_TYPE:
             {
                 rhash__str(expand_q->column_int(1), temp_str);
-
-                if (count(temp_str.begin(), temp_str.end(), ' ') > 0)
-                {
-                    temp_str.insert(0, "|");
-                    temp_str += '|';
-                    break;
-                }
-
-                soar::Lexer::determine_possible_symbol_types_for_string(temp_str.c_str(),
-                    strlen(temp_str.c_str()),
-                    &possible_id,
-                    &possible_var,
-                    &possible_sc,
-                    &possible_ic,
-                    &possible_fc,
-                    &is_rereadable);
-
-                bool has_angle_bracket = temp_str[0] == '<' || temp_str[temp_str.length() - 1] == '>';
-
-                if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                    (!is_rereadable) ||
-                    has_angle_bracket)
-                {
-                    /* BUGBUG if in context where id's could occur, should check
-                     possible_id flag here also */
-                    temp_str.insert(0, "|");
-                    temp_str += '|';
-                }
+                make_string_rereadable(temp_str);
                 break;
             }
             case INT_CONSTANT_SYMBOL_TYPE:
@@ -296,34 +269,7 @@ id_set SMem_Manager::print_LTM(uint64_t pLTI_ID, double lti_act, std::string* re
                 case STR_CONSTANT_SYMBOL_TYPE:
                 {
                     rhash__str(expand_q->column_int(3), temp_str2);
-
-                    if (count(temp_str2.begin(), temp_str2.end(), ' ') > 0)
-                    {
-                        temp_str2.insert(0, "|");
-                        temp_str2 += '|';
-                        break;
-                    }
-
-                    soar::Lexer::determine_possible_symbol_types_for_string(temp_str2.c_str(),
-                        temp_str2.length(),
-                        &possible_id,
-                        &possible_var,
-                        &possible_sc,
-                        &possible_ic,
-                        &possible_fc,
-                        &is_rereadable);
-
-                    bool has_angle_bracket = temp_str2[0] == '<' || temp_str2[temp_str2.length() - 1] == '>';
-
-                    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-                        (!is_rereadable) ||
-                        has_angle_bracket)
-                    {
-                        /* BUGBUG if in context where id's could occur, should check
-                         possible_id flag here also */
-                        temp_str2.insert(0, "|");
-                        temp_str2 += '|';
-                    }
+                    make_string_rereadable(temp_str2);
                     break;
                 }
                 case INT_CONSTANT_SYMBOL_TYPE:

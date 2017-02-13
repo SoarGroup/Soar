@@ -89,7 +89,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
+            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
                 new_ct->identity = t->eq_test->identity;
@@ -127,7 +127,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             {
                 new_ct->eq_test = new_ct;
             }
-            if (pUnify_variablization_identity)
+            if (pUnify_variablization_identity && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
             {
                 /* Mark this test as seen.  The tests in the constraint lists are copies of
                  * the pointers in grounds, so we use this tc_num later to later check if

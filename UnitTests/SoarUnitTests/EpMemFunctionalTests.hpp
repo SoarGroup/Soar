@@ -25,7 +25,7 @@ public:
 	TEST(testEpMemEncodeOutput_WMA, -1)
 	TEST(testEpMemEncodeSelection_NoWMA, -1)
 	TEST(testEpMemEncodeSelection_WMA, -1)
-	TEST(testEpMemSmemFactorizationCombinationTest, -1)
+//	TEST(testEpMemSmemFactorizationCombinationTest, -1)
 	TEST(testEpmemUnit_1, -1)
 	TEST(testEpmemUnit_2, -1)
 	TEST(testEpmemUnit_3, -1)
@@ -39,7 +39,6 @@ public:
 	TEST(testEpmemUnit_11, -1)
 	TEST(testEpmemUnit_12, -1)
 	TEST(testEpmemUnit_13, -1)
-//	TEST(testEpmemUnit_14, -1) /* This test should no longer pass with the new 9.6.0 model of smem */
 	TEST(testEpMemYRemoval, -1)
 	TEST(testHamilton, -1)
 	TEST(testHamiltonian, -1)
@@ -107,6 +106,8 @@ public:
 	void testWMELength_MultiCycle();
 	void testWMELength_OneCycle();
 
+    void after(bool caught) { tearDown(caught); }
+	void tearDown(bool caught);
 };
 
 #endif /* FunctionalTests_EpMem_cpp */

@@ -31,9 +31,13 @@
 #ifndef WMEM_H
 #define WMEM_H
 
+
 #include "kernel.h"
+
 #include "stl_typedefs.h"
 #include "semantic_memory.h"
+#include "symbol.h"
+
 
 void reset_wme_timetags(agent* thisAgent);
 wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool acceptable);
@@ -69,11 +73,7 @@ class WM_Manager
         tc_number wma_tc_counter;
         wma_d_cycle wma_d_cycle_count;
 
-        /* TEMPORARY HACK (Ideally this should be doable through
-         the external kernel interface but for now using a
-         couple of global STL lists to get this information
-         from the rhs function to this preference adding code)*/
-        wme* glbDeepCopyWMEs = NULL;
+        deep_copy_wme_list glbDeepCopyWMEs;
 
     private:
 
@@ -91,22 +91,22 @@ typedef struct wme_struct
     uint64_t                    timetag;
     uint64_t                    reference_count;
 
-    struct wme_struct           *rete_next, *rete_prev; /* used for dll of wmes in rete */
-    struct right_mem_struct*    right_mems;             /* used for dll of rm's it's in */
-    struct token_struct*        tokens;                 /* dll of tokens in rete */
-    struct wme_struct           *next, *prev;           /* (see above) */
+    struct wme_struct           *rete_next, *rete_prev;
+    struct right_mem_struct*    right_mems;
+    struct token_struct*        tokens;
+    struct wme_struct           *next, *prev;
 
     struct preference_struct*   preference;             /* pref. supporting it, or NIL */
     struct wme_struct*          deep_copied_wme;
     struct output_link_struct*  output_link;            /* for top-state output commands */
 
-    tc_number                   tc;                     /* for chunker use only */
+    tc_number                   tc;
     struct condition_struct*    chunker_bt_last_ground_cond;
     bool                        is_singleton;
     bool                        singleton_status_checked;
 
     struct gds_struct*          gds;
-    struct wme_struct*          gds_next, *gds_prev;   /* used for dll of wmes in gds */
+    struct wme_struct*          gds_next, *gds_prev;   /* wmes in gds */
 
     epmem_node_id               epmem_id;
     uint64_t                    epmem_valid;
@@ -114,28 +114,19 @@ typedef struct wme_struct
     wma_decay_element*          wma_decay_el;
     tc_number                   wma_tc_value;
 
+    uint64_t                    w_id;                   /* used by WME debug inventory mechanism */
 } wme;
 
-inline void wme_add_ref(wme* w)
+inline void wme_add_ref(wme* w, bool always_add = false)
 {
     (w)->reference_count++;
 }
 
 inline void wme_remove_ref(agent* thisAgent, wme* w)
 {
-    /* There are occasionally wme's with zero reference counts
-       created in the system. Make sure this function handles them
-       correctly. */
-    if ((w)->reference_count != 0)
-    {
-        (w)->reference_count--;
-    }
-    if ((w)->reference_count == 0)
-    {
-        deallocate_wme(thisAgent, w);
-    }
+    if ((w)->reference_count != 0) (w)->reference_count--;
+    if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
 }
-
 inline const char* field_to_string(WME_Field f)
 {
     if (f == ID_ELEMENT) return "ID";

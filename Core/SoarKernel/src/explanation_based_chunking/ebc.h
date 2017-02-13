@@ -60,21 +60,31 @@ class Explanation_Based_Chunker
         void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
         void     clear_chunk_id() {m_chunk_new_i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
-        uint64_t get_or_create_identity(Symbol* orig_var, uint64_t pI_id);
+
+        /* identity generation functions */
+        uint64_t get_or_create_identity(Symbol* orig_var);
+        void     add_identity_to_test(test pTest);
+        void     force_add_identity(Symbol* pSym, uint64_t pID);
+
+        /* Methods for operator selection knowledge tracking. */
+        void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
+        void    copy_OSK(instantiation* inst);
+        void    copy_proposal_OSK(instantiation* inst, cons* newOSK);
+        void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void unify_identity(test t) { t->identity = get_identity(t->identity); }
-        void unify_preference_identities(preference* lPref);
-        uint64_t get_identity(uint64_t pID);
-        bool in_null_identity_set(test t);
-        tc_number get_constraint_found_tc_num() { return tc_num_found; };
+        void        unify_identity(test t) { t->identity = get_identity(t->identity); }
+        void        unify_preference_identities(preference* lPref);                         /* Not used currently */
+        uint64_t    get_identity(uint64_t pID);
+        bool        in_null_identity_set(test t);
+        tc_number   get_constraint_found_tc_num() { return tc_num_found; };
 
         /* Methods to handle identity unification of conditions that test singletons */
-        void add_to_singletons(wme* pWME);
-        bool wme_is_a_singleton(wme* pWME);
-        void add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
-        void remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        void                add_to_singletons(wme* pWME);
+        bool                wme_is_a_singleton(wme* pWME);
+        const std::string   add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
+        const std::string   remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type);
 
         /* Determines whether learning is on for a particular instantiation
          * based on the global learning settings and whether the state chunky */
@@ -108,7 +118,7 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void cleanup_after_instantiation_creation() { instantiation_identities->clear(); }
+        void clear_symbol_identity_map() { instantiation_identities->clear(); }
         void clear_variablization_maps();
         void clear_singletons();
 
@@ -221,7 +231,7 @@ class Explanation_Based_Chunker
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
-        void            clean_up();
+        void            clean_up(bool clean_up_inst_inventory = true);
         bool            add_chunk_to_rete();
 
         /* Dependency analysis methods */
@@ -237,6 +247,7 @@ class Explanation_Based_Chunker
                 const rhs_quadruple rhs_funcs,
                 uint64_t bt_depth,
                 BTSourceType bt_type);
+        void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
@@ -254,8 +265,7 @@ class Explanation_Based_Chunker
         void add_additional_constraints();
         bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
-        void reset_constraint_found_tc_num() { /*if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; */
-            tc_num_found = get_new_tc_number(thisAgent); };
+        void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
@@ -265,7 +275,7 @@ class Explanation_Based_Chunker
 
         /* Variablization methods */
         action* variablize_results_into_actions();
-        action* variablize_result_into_actions(preference* result, tc_number lti_link_tc);
+        action* variablize_result_into_action(preference* result, tc_number lti_link_tc);
         uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
         void add_LTM_linking_actions(action* pLastAction);
         void variablize_equality_tests(test t);
@@ -281,6 +291,13 @@ class Explanation_Based_Chunker
         void reinstantiate_condition(condition* cond, bool pIsNCC = false);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
+        action* convert_results_into_actions();
+        action* convert_result_into_action(preference* result);
+
+        /* Methods to make sure that we didn't create rules that are bad but the RETE would accept */
+        void sanity_chunk_conditions(condition* top_cond);
+        void sanity_chunk_test (test pTest);
+        void sanity_justification_test (test pTest, bool pIsNCC = false);
 
         /* Condition polishing methods */
         void        remove_ungrounded_sti_from_test_and_cache_eq_test(test* t);

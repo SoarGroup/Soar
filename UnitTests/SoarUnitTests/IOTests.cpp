@@ -47,6 +47,7 @@ void IOTests::testInputLeak()
 			kernel->RunAllAgents(1);
 		}
 	}
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void IOTests::testInputLeak2()
@@ -95,6 +96,7 @@ void IOTests::testInputLeak2()
 			kernel->RunAllAgents(1);
 		}
 	}
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void IOTests::testInputLeak3()
@@ -140,6 +142,8 @@ void IOTests::testInputLeak3()
 			kernel->RunAllAgents(1);
 		}
 	}
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void IOTests::testInputLeak4()
@@ -197,6 +201,8 @@ void IOTests::testInputLeak4()
 			kernel->RunAllAgents(1);
 		}
 	}
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+
 }
 
 void IOTests::testOutputLeak1()

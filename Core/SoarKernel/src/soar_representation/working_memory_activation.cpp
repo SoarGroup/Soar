@@ -645,7 +645,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             for (wme_p = my_o_set->begin(); wme_p != my_o_set->end(); wme_p++)
             {
                 // add a ref to wmes on this list
-                wme_add_ref((*wme_p));
+                wme_add_ref((*wme_p), true);
             }
         }
 

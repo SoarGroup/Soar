@@ -42,10 +42,6 @@ void instantiation_record::init(agent* myAgent, instantiation* pInst)
     {
         pInst->prod->save_for_justification_explanation = true;
     }
-//    if (pInst->i_id == 4)
-//    {
-//        dprint(DT_DEBUG, "Found.\n");
-//    }
 
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
@@ -705,11 +701,6 @@ void instantiation_record::viz_et_instantiation()
             thisAgent->visualizationManager->viz_endl();
         }
         thisAgent->visualizationManager->viz_seperator();
-
-//        if (instantiationID == 4)
-//        {
-//            dprint(DT_DEBUG, "Found.\n");
-//        }
 
         action_record::viz_action_list(thisAgent, actions, originalProduction, rhs, excised_production);
 

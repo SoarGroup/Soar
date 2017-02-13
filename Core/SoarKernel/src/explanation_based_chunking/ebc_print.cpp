@@ -43,14 +43,14 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 
 void Explanation_Based_Chunker::print_identity_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     print_instantiation_identities_map(mode);
     print_unification_map(mode);
 }
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "            Merge Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -81,7 +81,7 @@ void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     Instantiation Identity Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -104,7 +104,7 @@ void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mod
 
 void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     Identity to Identity Set Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -126,7 +126,7 @@ void Explanation_Based_Chunker::print_unification_map(TraceMode mode)
 
 void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "   Attachment Points in Conditions\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -144,7 +144,7 @@ void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
 
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "    Relational Constraints List\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
@@ -163,7 +163,7 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 
 void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "== Identity Set -> Variablization ==\n");
     if (identity_to_var_map->size() == 0)
@@ -179,7 +179,7 @@ void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
 
 void Explanation_Based_Chunker::print_tables(TraceMode mode)
 {
-    if (!Output_Manager::Get_OM().is_trace_enabled(mode)) return;
+    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     print_variablization_table(mode);
     print_identity_tables(mode);
 }
@@ -234,6 +234,7 @@ void Explanation_Based_Chunker::print_chunking_summary()
             }
         }
     }
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "\nTry 'chunk ?' to learn more about chunking's sub-commands and settings.\n"
                     "For a detailed article about the chunk command, use 'help chunk'.\n");
 }
@@ -245,7 +246,9 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->reset_column_indents();
     outputManager->set_column_indent(0, 40);
     outputManager->set_column_indent(1, 55);
-    outputManager->printa_sf(thisAgent, "========== Chunk Commands and Settings ============\n");
+    outputManager->printa(thisAgent,    "===================================================\n");
+    outputManager->printa(thisAgent,    "           Chunk Commands and Settings\n");
+    outputManager->printa(thisAgent,    "===================================================\n");
     outputManager->printa_sf(thisAgent, "? | help %-%-%s\n", "Print this help listing");
 //    outputManager->printa_sf(thisAgent, "history %-%-%s\n", "Print a bullet-point list of all chunking events");
     outputManager->printa_sf(thisAgent, "stats %-%-%s\n", "Print statistics on learning that has occurred");
@@ -288,14 +291,15 @@ void Explanation_Based_Chunker::print_chunking_settings()
 //    outputManager->printa_sf(thisAgent, "*merge (disabled) %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_merge->get_value()), "Merge redundant conditions");
     outputManager->printa_sf(thisAgent, "---------- Correctness Guarantee Filters ----------\n");
     outputManager->printa_sf(thisAgent, "allow-local-negations          %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_negative_reasoning->get_value()), "Allow rules to form that used local negative reasoning");
-    outputManager->printa_sf(thisAgent, "allow-opaque*                  %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Allow rules to form that used knowledge from LTM recall");
+    outputManager->printa_sf(thisAgent, "allow-opaque*                  %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_opaque_knowledge->get_value()), "Allow rules to form that used knowledge from a LTM recall");
     outputManager->printa_sf(thisAgent, "allow-missing-osk*             %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_missing_OSK->get_value()), "Allow rules to form from problem-solving that used OSK");
-    outputManager->printa_sf(thisAgent, "allow-uncertain-operators*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Allow rules to form from aleotoric problem-solving");
-    outputManager->printa_sf(thisAgent, "allow-conflated-reasoning*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Allow rules to form that have multiple reasoning paths");
+    outputManager->printa_sf(thisAgent, "allow-uncertain-operators*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_probabilistic_operators->get_value()), "Allow rules to form that test operators decide probabilistically");
+    outputManager->printa_sf(thisAgent, "allow-conflated-reasoning*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Allow rules to form from problem-solving with multiple reasoning paths");
     outputManager->printa_sf(thisAgent, "* disabled\n"
                                         "------------- Experimental Settings ---------------\n");
     outputManager->printa_sf(thisAgent, "unify-all             %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_unify_all->get_value()), "Warning:  Can lead to incorrect behavior (for singleton experimentation)");
     outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_reorder_justifications->get_value()), "Re-order justifications (for efficiency experimentation)");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------\n");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- chunk <setting> [<value>]\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of these settings:  %-%-help chunk\n");

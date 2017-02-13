@@ -107,7 +107,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     lCurrentPath->clean_up();
     thisAgent->memoryManager->free_with_pool(MP_repair_path, lCurrentPath);
 
-    assert(final_path);
+//    assert(final_path);
     return final_path;
 }
 
@@ -218,7 +218,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
         prefix[1] = 0;
         lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
         lNewVar->var->instantiated_sym = lMatchedSym;
-        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity(lNewVar, m_chunk_ID);
+        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity(lNewVar);
     }
     else
     {
@@ -239,7 +239,6 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
 
 condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 {
-
     condition* new_cond;
 
     dprint(DT_REPAIR, "Creating condition for %u: (%y ^%y %y)\n", lWME->timetag, lWME->id, lWME->attr, lWME->value);
@@ -250,34 +249,9 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
         make_test(thisAgent, lWME->value, EQUALITY_TEST));
     new_cond->test_for_acceptable_preference = lWME->acceptable;
     new_cond->bt.wme_ = lWME;
-    new_cond->bt.level = lWME->id->id->level;
-//    new_cond->bt.trace = find_clone_for_level(lWME->preference, static_cast<goal_stack_level>(m_match_goal_level));
-//    assert(new_cond->bt.trace || !lWME->preference);
     new_cond->bt.trace = lWME->preference;
-
+    new_cond->bt.level = lWME->id->id->level;
     new_cond->inst = lWME->preference ? lWME->preference->inst : NULL;
-
-    /* In other functions we only add a reference if the instantiation match goal level is
-     * not the top level.  We don't have that value yet, so I'm going to try to use the level
-     * of the wme itself. */
-#ifndef DO_TOP_LEVEL_REF_CTS
-    if (new_cond->bt.level > TOP_GOAL_LEVEL)
-#endif
-    {
-        wme_add_ref(lWME);
-    }
-
-    if (new_cond->bt.trace)
-    {
-#ifndef DO_TOP_LEVEL_REF_CTS
-        if (new_cond->bt.level > TOP_GOAL_LEVEL)
-#endif
-        {
-            preference_add_ref(new_cond->bt.trace);
-        }
-    }
-
-    assert(new_cond->bt.wme_->preference == new_cond->bt.trace);
 
     return new_cond;
 }
@@ -415,8 +389,11 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
         new_cond = make_condition_from_wme(lWME);
         dprint(DT_REPAIR, "   Variablizing %l\n", new_cond);
         /* Variablize and add to condition list */
-        variablize_connecting_sti(new_cond->data.tests.id_test);
-        variablize_connecting_sti(new_cond->data.tests.value_test);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+        {
+            variablize_connecting_sti(new_cond->data.tests.id_test);
+            variablize_connecting_sti(new_cond->data.tests.value_test);
+        }
         dprint(DT_REPAIR, "   --> %l\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
 

@@ -43,7 +43,7 @@ public:
     TEST(Constraint_Prop_from_Base_Conds, -1);
     TEST(Constraint_Ungrounded, -1);
     TEST(Deep_Copy_Identity_Expansion, -1);
-    TEST(Demo_Arithmetic, -1);
+    //TEST(Demo_Arithmetic, -1);
     TEST(Demo_Blocks_World_Hierarchical_Look_Ahead, -1);
     TEST(Demo_Blocks_World_Hierarchical, -1);
     TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation, -1);
@@ -64,7 +64,7 @@ public:
     TEST(GamesAgent_Sanity1, -1);
     TEST(Justification_RC_not_Ungrounded_STIs, -1);
     TEST(Justifications_Get_New_Identities, -1);
-    TEST(Link_STM_to_LTM, -1);          // Decreased expected to 0.  At least make sure it runs.
+    TEST(Link_STM_to_LTM, -1);
     TEST(Literalization_of_NC_and_NCC, -1);
     TEST(Literalization_with_BT_Constraints, -1);
     TEST(Literalization_with_BT_Constraints2, -1);
@@ -84,7 +84,9 @@ public:
     TEST(No_Grounds, -1);
     TEST(No_Topstate_Match, -1);
     TEST(Opaque_State_Barrier, -1);
-    TEST(Operator_Selection_Knowledge, -1);
+    TEST(Operator_Selection_Knowledge_Ghost_Operator, -1);
+    TEST(Operator_Selection_Knowledge_Mega_Test, -1);
+    TEST(Operator_Selection_Knowledge_In_Proposal, -1);
     TEST(PRIMS_Sanity1, -1);
     TEST(PRIMS_Sanity2, -1);
     TEST(Promoted_STI, -1);
@@ -173,7 +175,9 @@ public:
     void NCC_with_Relational_Constraint();
     void No_Topstate_Match();
     void Opaque_State_Barrier();
-    void Operator_Selection_Knowledge();
+    void Operator_Selection_Knowledge_Ghost_Operator();
+    void Operator_Selection_Knowledge_In_Proposal();
+    void Operator_Selection_Knowledge_Mega_Test();
     void PRIMS_Sanity1();
     void PRIMS_Sanity2();
     void Promoted_STI();
@@ -217,13 +221,8 @@ public:
     void Rhs_Func_Literalization();
 
 private:
-    void source(const std::string& path);
     void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);
     void verify_chunk(const char* pTestName, int64_t expected_chunks, bool directSourceChunks = false);
-    void agent_command(const char* pCmd);
-    void start_log(const char* path);
-    void continue_log(const char* path);
-    void close_log();
     void save_chunks(const char* path);
     void save_chunks_internal(const char* path);
     void source_saved_chunks(const char* path);

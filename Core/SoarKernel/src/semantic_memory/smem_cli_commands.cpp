@@ -835,7 +835,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
     // consume left paren
     lexer->get_lexeme();
 
-    if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
+    if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
     {
         good_at = true;
 
@@ -948,7 +948,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                 bool dont_consume = false;
                                 // value by type
                                 l_ltm_value = NIL;
-                                if (lexer->current_lexeme.type == STR_CONSTANT_LEXEME)
+                                if ((lexer->current_lexeme.type == STR_CONSTANT_LEXEME)  || (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
                                 {
                                     l_ltm_value = new ltm_value;
                                     l_ltm_value->val_const.val_type = value_const_t;
@@ -966,7 +966,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                     l_ltm_value->val_const.val_type = value_const_t;
                                     l_ltm_value->val_const.val_value = thisAgent->symbolManager->make_float_constant(lexer->current_lexeme.float_val);
                                 }
-                                else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == IDENTIFIER_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
+                                else if ((lexer->current_lexeme.type == AT_LEXEME) || (lexer->current_lexeme.type == VARIABLE_LEXEME))
                                 {
                                     bool mistakenLTI = false;
                                     if (lexer->current_lexeme.type == AT_LEXEME)
@@ -1124,6 +1124,11 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
             thisAgent->outputManager->printa_sf(thisAgent, "Identifier of smem -add clause is invalid: %s\n", lexer->current_lexeme.string());
             delete l_ltm;
         }
+    }
+    else if (lexer->current_lexeme.type == IDENTIFIER_LEXEME)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Identifier of smem -add clause is invalid: %s\n", lexer->current_lexeme.string());
+        delete l_ltm;
     }
     else
     {

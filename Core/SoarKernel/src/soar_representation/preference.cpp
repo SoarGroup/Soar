@@ -1,6 +1,7 @@
 #include "preference.h"
 
 #include "agent.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "dprint.h"
@@ -8,6 +9,7 @@
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "mem.h"
+#include "output_manager.h"
 #include "print.h"
 #include "rhs.h"
 #include "slot.h"
@@ -59,6 +61,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->next_candidate = NIL;
     p->next_result = NIL;
     p->parent_action = NULL;
+    p->level = 0;
 
     if (pUnify_identities)
     {
@@ -96,6 +99,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->was_unbound_vars.value = pWas_unbound_vars.value;
     p->was_unbound_vars.referent = pWas_unbound_vars.referent;
 
+    PDI_add(thisAgent, p);
     dprint(DT_PREFS, "Created preference %p\n", p);
 
     return p;
@@ -110,6 +114,8 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->type = pPref->type;
     p->numeric_value = pPref->numeric_value;
     p->o_supported = pPref->o_supported;
+    p->level = pPref->level;
+
     p->id = pPref->id;
     p->attr = pPref->attr;
     p->value = pPref->value;
@@ -162,7 +168,9 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->next_candidate = NULL;
     p->next_result = NULL;
 
-    dprint(DT_PREFS, "Created shallow copy of preference %p\n", p);
+    PDI_add(thisAgent, p, true);
+
+    dprint(DT_PREFS, "Created shallow copy of preference %p (%u)\n", p, p->p_id);
 
     return p;
 
@@ -172,90 +180,21 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 /* -------------------------------------------------------------------
    Deallocate_preference() deallocates a given preference.
 -------------------------------------------------------------------*/
-
-void deallocate_preference(agent* thisAgent, preference* pref)
+void cache_preference_if_necessary(agent* thisAgent, preference* pref)
 {
-    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p\n", pref);
-
-    assert(pref->reference_count == 0);
-
-    /*  remove it from the list of pref's for its match goal */
-    if (pref->on_goal_list)
-        remove_from_dll(pref->inst->match_goal->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-
-
-    if (pref->inst)
+    if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
     {
-        /* The following caches the preference if there's a chance that it will be
-         * needed for an explanation of an instantiation.  (Might be able to avoid
-         * some of this caching.  At one point we passed in a pDoNotCache flag.  */
-        //if (!pDoNotCache && (pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->enabled())
-        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
-        {
-            preference* lNewPref = shallow_copy_preference(thisAgent, pref);
-            dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
-            insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
-        }
-        /*  remove it from the list of pref's from that instantiation */
-        remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
-        dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
-//        if (pref->inst->i_id == 1707)
-//        {
-//            dprint(DT_DEALLOCATE_INST, "Found.\n");
-//        }
-        possibly_deallocate_instantiation(thisAgent, pref->inst);
+        preference* lNewPref = shallow_copy_preference(thisAgent, pref);
+        dprint(DT_EXPLAIN_CACHE, "Caching preference for instantiation %u (match of %y): %p\n", pref->inst->i_id, pref->inst->prod_name, pref);
+        insert_at_head_of_dll(pref->inst->preferences_cached, lNewPref, inst_next, inst_prev);
     }
-    /* The following code re-uses the preference instead of copying it.  It worked
-     * but there were certain cases where instantiations weren't being deallocated
-     * (arithmetic agent, chunk always, interrupt on, allow-local-negations off,
-     * explain all, explain just, init after it interrupts). Couldn't quite sort
-     * out why but reverting to copying version resolved it. Since copying is more
-     * expensive, keeping the re-use code in case we have time to figure it out later. */
-    //    if (pref->inst)
-    //    {
-    //        /*  remove it from the list of pref's from that instantiation */
-    //        remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
-    //        instantiation* prefInst = pref->inst;
-    //        if ((pref->inst->match_goal_level != TOP_GOAL_LEVEL) && thisAgent->explanationMemory->is_any_enabled())
-    //        {
-    //            /* We erase some stuff and stash this preference in inst->preferences_cached
-    //             * This is needed in case preferences are retracted for an instantiation that is
-    //             * part of an explanation */
-    //            insert_at_head_of_dll(pref->inst->preferences_cached, pref, inst_next, inst_prev);
-    //            if (pref->wma_o_set)
-    //            {
-    //                wma_remove_pref_o_set(thisAgent, pref);
-    //            }
-    //            pref->wma_o_set = NULL;
-    //            /* Don't want this information or have the other things cleaned up.  This will
-    //             * also force the preference to be cleaned up when the instantiation gets
-    //             * deallocated.  (b/c pref->inst is null, so it won't go into this part) */
-    //            pref->inst = NULL;
-    //            pref->in_tm = false;
-    //            pref->on_goal_list = false;
-    //            pref->reference_count = 0;
-    //            pref->slot = NULL;
-    //            pref->total_preferences_for_candidate = 1;
-    //            pref->rl_contribution = false;
-    //            pref->rl_rho = 0;
-    //
-    //            /* Don't want to copy links to other preferences, except inst_next/prev b/c we're using that
-    //             * to link cached preferences */
-    //            pref->next_clone = NULL;
-    //            pref->prev_clone = NULL;
-    //            pref->next = NULL;
-    //            pref->prev = NULL;
-    //            pref->all_of_slot_next = NULL;
-    //            pref->all_of_slot_prev = NULL;
-    //            pref->all_of_goal_next = NULL;
-    //            pref->all_of_goal_prev = NULL;
-    //            pref->next_candidate = NULL;
-    //            pref->next_result = NULL;
-    //            return;
-    //        }
-    //        dprint(DT_DEALLOCATE_INSTANTIATION, "Possibly deallocating instantiation %u (match of %y) for preference.\n", prefInst->i_id, prefInst->prod_name);
-    //        possibly_deallocate_instantiation(thisAgent, prefInst);
-    //    }
+}
+
+void deallocate_preference_contents(agent* thisAgent, preference* pref, bool dont_cache)
+{
+    PDI_remove(thisAgent, pref);
+    debug_refcount_change_start(thisAgent, false);
+
     /*  dereference component symbols */
     thisAgent->symbolManager->symbol_remove_ref(&pref->id);
     thisAgent->symbolManager->symbol_remove_ref(&pref->attr);
@@ -278,8 +217,39 @@ void deallocate_preference(agent* thisAgent, preference* pref)
     if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
     if (pref->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.referent);
 
-    /*  free the memory */
+    debug_refcount_change_end(thisAgent, (std::string((pref->inst && pref->in_tm) ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST" ) + std::string(" preference deallocation")).c_str(), false);
+
+    /* MToDo | Remove.  Just for debugging. */
+    pref->p_id = 23;
+
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);
+
+}
+
+/* IMPORTANT: Any changes made to deallocate_preference should also be made to corresponding code in deallocate_instantiation */
+void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
+{
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u) at level %d \n", pref, pref->p_id, static_cast<int64_t>(pref->level));
+    assert(pref->reference_count == 0);
+
+    /*  Remove from temporary memory and match goal if necessary */
+    if (pref->in_tm) remove_preference_from_tm(thisAgent, pref);
+    if (pref->on_goal_list) remove_from_dll(pref->inst->match_goal->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+
+    /* Cache preference for explainer if necessary, remove from preferences
+     * asserted by instantiation and possibly deallocate parent
+     * instantiation if this is the last pref that it is asserting */
+    if (pref->inst)
+    {
+        if (!dont_cache) cache_preference_if_necessary(thisAgent, pref);
+        remove_from_dll(pref->inst->preferences_generated, pref, inst_next, inst_prev);
+        dprint(DT_DEALLOCATE_INST, "Possibly deallocating instantiation %u (match of %y) for preference.\n", pref->inst->i_id, pref->inst->prod_name);
+        possibly_deallocate_instantiation(thisAgent, pref->inst);
+    }
+
+    /* Clean up contents and deallocate */
+    deallocate_preference_contents(thisAgent, pref, dont_cache);
+
 }
 
 /* -------------------------------------------------------------------
@@ -288,46 +258,39 @@ void deallocate_preference(agent* thisAgent, preference* pref)
    them all if they do.  It returns true if they were actually
    deallocated, false otherwise.
 -------------------------------------------------------------------*/
+/* IMPORTANT: Any changes made to possibly_deallocate_preference_and_clones should also be made to corresponding code in deallocate_instantiation */
 
-bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref)
+bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache)
 {
     preference* clone, *next;
 
-    dprint(DT_DEALLOCATE_PREF, "Possibly deallocating preference %p and clones...\n", pref);
-    if (pref->reference_count)
-    {
-        return false;
-    }
-    for (clone = pref->next_clone; clone != NIL; clone = clone->next_clone)
-        if (clone->reference_count)
-        {
-            return false;
-        }
-    for (clone = pref->prev_clone; clone != NIL; clone = clone->prev_clone)
-        if (clone->reference_count)
-        {
-            return false;
-        }
+    dprint(DT_DEALLOCATE_PREF, "Possibly deallocating preference and clones of %p (%u) at level %d...\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
+    if (pref->reference_count) return false;
 
-    dprint(DT_DEALLOCATE_PREF, "Deallocating clones of %p...\n", pref);
-    /*  deallocate all the clones */
+    for (clone = pref->next_clone; clone != NIL; clone = clone->next_clone)
+        if (clone->reference_count) return false;
+    for (clone = pref->prev_clone; clone != NIL; clone = clone->prev_clone)
+        if (clone->reference_count) return false;
+
+    dprint(DT_DEALLOCATE_PREF, "...deallocating clones...\n");
     clone = pref->next_clone;
     while (clone)
     {
         next = clone->next_clone;
-        deallocate_preference(thisAgent, clone);
+        dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
+        deallocate_preference(thisAgent, clone, dont_cache);
         clone = next;
     }
     clone = pref->prev_clone;
     while (clone)
     {
         next = clone->prev_clone;
-        deallocate_preference(thisAgent, clone);
+        dprint(DT_DEALLOCATE_PREF, "...deallocating clone %p (%u) at level %d \n", clone, clone->p_id, static_cast<int64_t>(clone->level));
+        deallocate_preference(thisAgent, clone, dont_cache);
         clone = next;
     }
 
-    /*  deallocate pref */
-    deallocate_preference(thisAgent, pref);
+    deallocate_preference(thisAgent, pref, dont_cache);
 
     return true;
 }
@@ -338,11 +301,10 @@ bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pre
    deallocates it and returns true.  Otherwise it returns false.
 -------------------------------------------------------------------*/
 
-bool remove_preference_from_clones(agent* thisAgent, preference* pref)
+bool remove_preference_from_clones_and_deallocate(agent* thisAgent, preference* pref)
 {
-    preference* any_clone;
-
-    any_clone = NIL;
+    dprint(DT_DEALLOCATE_PREF, "Removing preference %p (%u) at level %d from clones...\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
+    preference* any_clone = NIL;
     if (pref->next_clone)
     {
         any_clone = pref->next_clone;
@@ -356,15 +318,18 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
     pref->next_clone = pref->prev_clone = NIL;
     if (any_clone)
     {
+        dprint(DT_DEALLOCATE_PREF, "...found clone %p (%u) at level %d to possibly deallocate...\n", any_clone, any_clone->p_id, static_cast<int64_t>(any_clone->level));
         possibly_deallocate_preference_and_clones(thisAgent, any_clone);
     }
     if (!pref->reference_count)
     {
+        dprint(DT_DEALLOCATE_PREF, "...deallocating preference %p (%u) at level %d.\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
         deallocate_preference(thisAgent, pref);
         return true;
     }
     else
     {
+        dprint(DT_DEALLOCATE_PREF, "...preference %p has been removed from clones.\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
         return false;
     }
 }
@@ -376,7 +341,7 @@ bool remove_preference_from_clones(agent* thisAgent, preference* pref)
 
 bool add_preference_to_tm(agent* thisAgent, preference* pref)
 {
-    dprint(DT_PREFS, "Adding preference %p to temporary memory\n", pref);
+    dprint(DT_PREFS, "Adding preference  %p (%u) at level %d to temporary memory\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
 
     slot* s = make_slot(thisAgent, pref->id, pref->attr);
     preference* p2;
@@ -398,6 +363,13 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
         if (already_top_o_supported)
         {
             dprint(DT_PREFS, "...not adding because already o-supported on top state.\n");
+            dprint(DT_DEALLOCATE_PREF, "...not adding pref %p (%u) at level %d because already o-supported on top state.\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
+            if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
+                print_preference(thisAgent, pref, false);
+                thisAgent->outputManager->printa_sf(thisAgent,  " (%y) ALREADY SUPPORTED ON TOP LEVEL.  IGNORING.\n", pref->inst->prod_name);
+            }
             return false;
         }
     }
@@ -522,6 +494,12 @@ bool add_preference_to_tm(agent* thisAgent, preference* pref)
     {
         mark_context_slot_as_acceptable_preference_changed(thisAgent, s);
     }
+    if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    {
+        thisAgent->outputManager->printa_sf(thisAgent,  "%e+ ");
+        print_preference(thisAgent, pref, false);
+        thisAgent->outputManager->printa_sf(thisAgent,  " (%y)\n", pref->inst->prod_name);
+    }
 
     return true;
 }
@@ -536,7 +514,7 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
 
     s = pref->slot;
 
-    dprint(DT_PREFS, "Removing preference %p from temporary memory\n", pref);
+    dprint(DT_PREFS, "Removing preference %p (%u) at level %d from temporary memory\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
 
     /*  remove preference from the list for the slot */
     remove_from_dll(s->all_preferences, pref, all_of_slot_next, all_of_slot_prev);
@@ -580,7 +558,12 @@ void remove_preference_from_tm(agent* thisAgent, preference* pref)
             dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and referent %y.\n", pref->id, pref->referent);
             post_link_removal(thisAgent, pref->id, pref->referent);
         }
-
+    if (thisAgent->trace_settings[TRACE_FIRINGS_PREFERENCES_SYSPARAM])
+    {
+        thisAgent->outputManager->printa_sf(thisAgent,  "%e- ");
+        print_preference(thisAgent, pref, false);
+        thisAgent->outputManager->printa_sf(thisAgent,  " (%y)\n", pref->inst->prod_name);
+    }
     /*  deallocate it and clones if possible */
     preference_remove_ref(thisAgent, pref);
 }
@@ -605,7 +588,7 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
         preference_add_ref(pref);  /* prevents it from being deallocated if it's
                                    a clone of some other pref we're about to
                                    remove */
-        dprint(DT_PREFS, "O-reject preferences posted: %p\n", pref);
+        dprint(DT_PREFS, "O-reject preferences posted: %p (%u) at level %d\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
     }
 
     pref = o_rejects;
@@ -626,13 +609,34 @@ void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejec
                     // on a list. These are deallocated after the inner elaboration
                     // loop completes.
                     preference_add_ref(p);
-                    bufdeallo.push_back(p);
+                    dprint(DT_DEALLOCATE_PREF, "Pushing o-rejected preference %p (%u) at level %d to bufdeallo\n", p, p->p_id, static_cast<int64_t>(p->level));
+                        bufdeallo.push_back(p);
                     remove_preference_from_tm(thisAgent, p);
                 }
                 p = next_p;
             }
         }
+        dprint(DT_DEALLOCATE_PREF, "Removing ref for o-rejected preference %p (%u) at level %d to bufdeallo\n", pref, pref->p_id, static_cast<int64_t>(pref->level));
         preference_remove_ref(thisAgent, pref);
         pref = next_pref;
+    }
+}
+
+void clear_preference_list(agent* thisAgent, cons* &pPrefList)
+{
+    cons *c;
+    preference* lPref;
+
+    if (pPrefList)
+    {
+        lPref = NIL;
+        for (c = pPrefList; c != NIL; c = c->rest)
+        {
+            lPref = static_cast<preference*>(c->first);
+            dprint(DT_OSK, "Cleaning up OSK preference %p\n", lPref);
+            preference_remove_ref(thisAgent, lPref, true);
+        }
+        free_list(thisAgent, pPrefList);
+        pPrefList = NULL;
     }
 }

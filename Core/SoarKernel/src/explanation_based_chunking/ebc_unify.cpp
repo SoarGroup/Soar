@@ -33,26 +33,16 @@ bool Explanation_Based_Chunker::in_null_identity_set(test t)
 
 uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
 {
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end()) return iter->second;
     return pID;
 }
 
-
-//void Explanation_Based_Chunker::unify_identity(test t)
-//{
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-//    uint64_t old_t = t->identity;
-//    if (old_t == 8238)
-//        dprint(DT_DEBUG, "Found.\n");
-//    t->identity = get_identity(t->identity);
-//    if (old_t != t->identity)
-//        dprint(DT_DEBUG, "Identity %u unified to %u.\n", old_t, t->identity);
-//}
-
+/* Not used any more */
 void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
 {
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rhs_value lRHS;
     if (lPref->identities.id) lPref->identities.id = get_identity(lPref->identities.id);
@@ -88,6 +78,7 @@ void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
 void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
     {
@@ -103,6 +94,8 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
 
 void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (pOld_o_id == NULL_IDENTITY_SET) return;
 
     if (pOld_o_id == pNew_o_id)
@@ -214,6 +207,8 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
     rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
     cons* c;
 
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (rf->can_be_rhs_value)
     {
         for (c = fl->rest; c != NIL; c = c->rest)
@@ -245,11 +240,12 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
                                                          const identity_quadruple o_ids_to_replace,
                                                          const rhs_quadruple rhs_funcs)
 {
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     test lId = 0, lAttr = 0, lValue = 0;
     lId = parent_cond->data.tests.id_test->eq_test;
     lAttr = parent_cond->data.tests.attr_test->eq_test;
     lValue = parent_cond->data.tests.value_test->eq_test;
+
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
 
@@ -321,6 +317,8 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 /* Requires: pCond is a local condition */
 void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condition* pCond)
 {
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+
     if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
         (pCond->bt.wme_->id->id->isa_goal) && (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
     {
@@ -345,6 +343,9 @@ void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condit
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; // May need this if we have to add both conds when learning is off
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (wme_is_a_singleton(pCond->bt.wme_) || ebc_settings[SETTING_EBC_UNIFY_ALL])
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
@@ -372,8 +373,10 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     }
 }
 
-void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+const std::string Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    std::string returnVal;
+
     if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
@@ -381,21 +384,28 @@ void Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type
         (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot override the architectural singleton for %y.  Ignoring.\n", attrSym);
-        return;
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot override the architectural singleton for %y.  Ignoring.", attrSym);
+        return returnVal;
     }
 
-    if (attrSym->sc->singleton.possible) thisAgent->outputManager->printa_sf(thisAgent, "Clearing previous singleton for %y.\n", attrSym);
-    thisAgent->outputManager->printa_sf(thisAgent, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+    if (attrSym->sc->singleton.possible)
+    {
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Clearing previous singleton for %y.\n", attrSym);
+    }
+    thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Will unify conditions in super-states that match a WME that fits the pattern:  (%s ^%y %s)", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     singletons->insert(attrSym);
     thisAgent->symbolManager->symbol_add_ref(attrSym);
     attrSym->sc->singleton.possible = true;
     attrSym->sc->singleton.id_type = id_type;
     attrSym->sc->singleton.value_type = value_type;
+
+    return returnVal;
 }
 
-void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
+const std::string Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
+    std::string returnVal;
+
     if ((attrSym == thisAgent->symbolManager->soarSymbols.operator_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.superstate_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.smem_sym) ||
@@ -403,20 +413,22 @@ void Explanation_Based_Chunker::remove_singleton(singleton_element_type id_type,
         (attrSym == thisAgent->symbolManager->soarSymbols.impasse_symbol) ||
         (attrSym == thisAgent->symbolManager->soarSymbols.epmem_sym))
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Soar cannot remove the architectural singleton for %y.  Ignoring.\n", attrSym);
-        return;
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Soar cannot remove the architectural singleton for %y.  Ignoring.", attrSym);
+        return returnVal;
     }
     auto it = singletons->find(attrSym);
     if (it == singletons->end())
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Could not find pattern (%s ^%y %s).  Did not remove.\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Could not find pattern (%s ^%y %s).  Did not remove.", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
     } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "Removed. Will no longer unify conditions in super-states that match a WME\n"
-                                                       "         that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
+        thisAgent->outputManager->sprinta_sf(thisAgent, returnVal, "Removed. Will no longer unify conditions in super-states that match a WME\n"
+                                                                   "         that fits the pattern:  (%s ^%y %s)\n", singletonTypeToString(id_type), attrSym, singletonTypeToString(value_type));
         singletons->erase(attrSym);
         attrSym->sc->singleton.possible = false;
         thisAgent->symbolManager->symbol_remove_ref(&attrSym);
     }
+
+    return returnVal;
 }
 void Explanation_Based_Chunker::clear_singletons()
 {

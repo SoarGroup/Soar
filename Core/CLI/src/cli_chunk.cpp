@@ -87,6 +87,7 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
             assert(pArg3 && pArg4);
             singleton_element_type id_type, value_type;
             Symbol* attrSym = thisAgent->symbolManager->make_str_constant(pArg3->c_str());
+            std::string resultString;
             if (!attrSym)
             {
                 return SetError("Invalid attribute element of singleton.  Must be a valid string constant.");
@@ -107,9 +108,13 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
             }
             if (doRemove)
             {
-                thisAgent->explanationBasedChunker->remove_singleton(id_type, attrSym, value_type);
+                resultString = thisAgent->explanationBasedChunker->remove_singleton(id_type, attrSym, value_type);
             } else {
-                thisAgent->explanationBasedChunker->add_new_singleton(id_type, attrSym, value_type);
+                resultString = thisAgent->explanationBasedChunker->add_new_singleton(id_type, attrSym, value_type);
+            }
+            if (!IsSourcingFile())
+            {
+                PrintCLIMessage(&resultString);
             }
             return true;
         }

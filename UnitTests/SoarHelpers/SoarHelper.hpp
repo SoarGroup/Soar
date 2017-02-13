@@ -9,8 +9,13 @@
 #ifndef SoarHelper_cpp
 #define SoarHelper_cpp
 
-#include "sml_ClientAgent.h"
 
+//#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
+#define TURN_EXPLAINER_ON
+#define INIT_AFTER_RUN
+#define CONFIGURE_SOAR_FOR_UNIT_TESTS
+
+#include "sml_ClientAgent.h"
 #include <string>
 
 class SoarHelper
@@ -42,6 +47,15 @@ public:
 	
 	static std::string ResourceDirectory;
 	static std::string GetResource(std::string resource);
+
+    static bool source(sml::Agent* agent, const std::string& pCategoryName, const std::string& pTestName);
+    static void init_check_to_find_refcount_leaks(sml::Agent* agent);
+    static void agent_command(sml::Agent* agent, const char* pCmd);
+    static void add_log_dir_if_exists(std::string &lPath);
+    static void start_log(sml::Agent* agent, const char* path);
+    static void continue_log(sml::Agent* agent, const char* path);
+    static void close_log(sml::Agent* agent);
+
 private:
 	static std::string FindFile(std::string filename, std::string path);
 	

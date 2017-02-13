@@ -556,7 +556,7 @@ class cli_command_params
 void    init_soar_agent(agent* thisAgent);
 agent*  create_soar_agent(char* name);
 void    destroy_soar_agent(agent* soar_agent);
-bool    reinitialize_agent(agent* thisAgent);
+void    reinitialize_agent(agent* thisAgent);
 
 #endif
 

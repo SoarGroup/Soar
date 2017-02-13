@@ -41,9 +41,25 @@
 
 #include <sstream>
 
-//#define DEBUG_TRACE_REFCOUNT_FOR "L1"
+ /* DEBUG_TRACE_REFCOUNT_FOR prints refcount trace messages for a specific Soar
+  * identifier.  You must enable DT_ID_LEAKING to see the messages printing.
+  * DEBUG_MAC_STACKTRACE enables the building of a small library to print the
+  * call stack within debug messages. Tested on OSX only.
+  * Note: DEBUG_TRACE_REFCOUNT_FOR is currently dependent on DEBUG_MAC_STACKTRACE.
+  *       This could be changed by commenting out the code that prints the stack
+  *       in the symbol and symbol_manager code.*/
+
+#ifndef SOAR_RELEASE_VERSION
+    //#define DEBUG_TRACE_REFCOUNT_FOR "S1"
+    //#define DEBUG_MAC_STACKTRACE
+
+    #ifdef DEBUG_MAC_STACKTRACE
+    std::string get_stacktrace(const char* prefix = NULL);
+    #endif
+#endif
 
 /* -- Forward declarations needed for symbol base struct -- */
+
 struct floatSymbol;
 struct idSymbol;
 struct varSymbol;
@@ -71,7 +87,7 @@ struct strSymbol;
  * bugs where some part of the kernel may be treating a symbol as the wrong type.
  *
  * WARNING: next_in_hash_table MUST be the first field.  This field is used
- *       by the resizable hash table routines.
+ *          by the resizable hash table routines.
  *
  * Explanations of all the fields are at the end of the file.
  *
@@ -210,7 +226,6 @@ struct idSymbol    : public Symbol
     struct slot_struct* operator_slot;
     struct preference_struct* preferences_from_goal;
 
-    Symbol* reward_header;
     struct rl_data_struct* rl_info;
 
     struct epmem_data_struct*   epmem_info;
@@ -304,6 +319,7 @@ inline void Symbol::mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_
 /* -- Functions related to symbols.  Descriptions in symtab.cpp -- */
 
 char first_letter_from_symbol(Symbol* sym);
+bool make_string_rereadable(std::string &pStr);
 
 /* -- This function returns a numeric value from a symbol -- */
 double get_number_from_symbol(Symbol* sym);

@@ -53,7 +53,7 @@ void filtered_print_wme_add(agent* thisAgent, wme* w);
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-const std::string string_to_escaped_string(char* s, char first_and_last_char);
+const std::string string_to_escaped_string(const char* s, char first_and_last_char);
 
 /* -----------------------------------------------------------------------
              Print Condition List, Action List, Production
@@ -101,7 +101,7 @@ void print_production(agent* thisAgent, production* p, bool internal);
 void print_condition(agent* thisAgent, condition* cond);
 void print_action(agent* thisAgent, action* a);
 char preference_to_char(byte type);
-void print_preference(agent* thisAgent, preference* pref);
+void print_preference(agent* thisAgent, preference* pref, bool add_lf = true);
 void print_wme(agent* thisAgent, wme* w);
 void print_wme_without_timetag(agent* thisAgent, wme* w);
 void print_instantiation_with_wmes(agent* thisAgent,

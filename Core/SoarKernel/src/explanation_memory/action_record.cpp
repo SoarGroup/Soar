@@ -36,7 +36,7 @@ void action_record::init(agent* myAgent, preference* pPref, action* pAction, uin
 void action_record::clean_up()
 {
     dprint(DT_EXPLAIN_CONDS, "   Deleting action record a%u for: %p\n", actionID, instantiated_pref);
-    deallocate_preference(thisAgent, instantiated_pref);
+    deallocate_preference(thisAgent, instantiated_pref, true);
     deallocate_action_list(thisAgent, variablized_action);
     if (identities_used)
     {

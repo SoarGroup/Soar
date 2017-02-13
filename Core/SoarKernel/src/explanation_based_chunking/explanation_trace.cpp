@@ -2,13 +2,6 @@
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
-
-/* =======================================================================
- *                    Test Utilities
- * This file contains various utility routines for tests.
- *
- * =======================================================================
- */
 #include "ebc.h"
 
 #include "agent.h"
@@ -26,6 +19,26 @@
 
 #include <assert.h>
 
+uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
+{
+    int64_t existing_o_id = 0;
+
+    auto iter_sym = instantiation_identities->find(orig_var);
+    if (iter_sym != instantiation_identities->end())
+    {
+        existing_o_id = iter_sym->second;
+    }
+
+    if (!existing_o_id)
+    {
+        increment_counter(ovar_id_counter);
+        (*instantiation_identities)[orig_var] = ovar_id_counter;
+
+        return ovar_id_counter;
+    }
+    return existing_o_id;
+}
+
 void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
                                        byte field_num,
                                        rete_node_level levels_up)
@@ -34,6 +47,16 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
 
     t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
+}
+
+void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
+{
+    if (pSym->is_sti()) (*instantiation_identities)[pSym] = pID;
+}
+
+void Explanation_Based_Chunker::add_identity_to_test(test pTest)
+{
+    if (!pTest->identity) pTest->identity = get_or_create_identity(pTest->data.referent);
 }
 
 void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
@@ -126,7 +149,7 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         return;
     }
 
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rete_test* rt = node->b.posneg.other_tests;
 

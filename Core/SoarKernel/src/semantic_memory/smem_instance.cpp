@@ -30,55 +30,55 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     }
     dprint(DT_SMEM_INSTANCE, "install_buffered_triple_list called in state %y.  Creating architectural instantiation.\n", state);
 
-    instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_architectural_instantiation_for_memory_system(thisAgent, state, &cue_wmes, &my_list, true);
     for (preference* pref = inst->preferences_generated; pref;)
     {
-
+        assert(!pref->in_tm);  // Can this already be in TM with our new smem model?
         // add the preference to temporary memory
-        if (!pref->in_tm && add_preference_to_tm(thisAgent, pref))
+        if (!pref->in_tm)
         {
-            // and add it to the list of preferences to be removed
-            // when the goal is removed
-            dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
-            insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-            pref->on_goal_list = true;
-            if (meta)
+            if (add_preference_to_tm(thisAgent, pref))
             {
-                // if this is a meta wme, then it is completely local
-                // to the state and thus we will manually remove it
-                // (via preference removal) when the time comes
-                state->id->smem_info->smem_wmes->push_back(pref);
+                // and add it to the list of preferences to be removed
+                // when the goal is removed
+                dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
+                insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+                pref->on_goal_list = true;
+                if (meta)
+                {
+                    // if this is a meta wme, then it is completely local
+                    // to the state and thus we will manually remove it
+                    // (via preference removal) when the time comes
+                    state->id->smem_info->smem_wmes->push_back(pref);
+                }
             }
-        }
-        else
-        {
-            dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
-            if (pref->reference_count == 0)
+            else
             {
-                preference* previous = pref;
-                pref = pref->inst_next;
-                possibly_deallocate_preference_and_clones(thisAgent, previous);
-                continue;
+                dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
+                if (pref->reference_count == 0)
+                {
+                    preference* previous = pref;
+                    pref = pref->inst_next;
+                    possibly_deallocate_preference_and_clones(thisAgent, previous, true);
+                    continue;
+                }
             }
         }
         if (stripLTILinks)
         {
             pref->id->id->LTI_ID = 0;
-            if (pref->value->is_lti()) pref->value->id->LTI_ID = 0;
+            if (pref->value->is_sti()) pref->value->id->LTI_ID = 0;
         }
         pref = pref->inst_next;
     }
 
     if (!meta)
     {
-        // otherwise, we submit the fake instantiation to backtracing
-        // such as to potentially produce justifications that can follow
-        // it to future adventures (potentially on new states)
+        // Create an architectural instantiation to allow backtracing
+        // for chunks, justifications and the GDS.
+
         instantiation* my_justification_list = NIL;
         dprint(DT_MILESTONES, "Asserting preferences of new architectural instantiation in _smem_process_buffered_wme_list...\n");
-//        thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-//        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &my_justification_list);
-
         // if any justifications are created, assert their preferences manually
         // (copied mainly from assert_new_preferences with respect to our circumstances)
         if (my_justification_list != NIL)
@@ -112,7 +112,7 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
                         {
                             preference* previous = just_pref;
                             just_pref = just_pref->inst_next;
-                            possibly_deallocate_preference_and_clones(thisAgent, previous);
+                            possibly_deallocate_preference_and_clones(thisAgent, previous, true);
                             continue;
                         }
                     }
@@ -149,43 +149,8 @@ void SMem_Manager::add_triple_to_recall_buffer(symbol_triple_list& my_list, Symb
 void SMem_Manager::clear_instance_mappings()
 {
     lti_to_sti_map.clear();
-    sti_to_identity_map.clear();
     iSti_to_lti_map.clear();
-    dprint(DT_SMEM_INSTANCE, "Clearing instance mapping %d %d %d.\n", lti_to_sti_map.size(), sti_to_identity_map.size(), iSti_to_lti_map.size());
-}
-
-void SMem_Manager::force_add_identity_for_STI(Symbol* pSym, uint64_t pID)
-{
-    if (!pSym->is_sti()) return;
-    sti_to_identity_map[pSym] = pID;
-}
-
-uint64_t SMem_Manager::get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID)
-{
-    sym_to_id_map::iterator lIter;
-
-    if (!pSym->is_sti()) return NIL;
-
-    lIter = sti_to_identity_map.find(pSym);
-
-    if (lIter != sti_to_identity_map.end())
-    {
-        return lIter->second;
-    } else {
-        uint64_t lID = thisAgent->explanationBasedChunker->get_or_create_identity(pSym, pI_ID);
-        sti_to_identity_map[pSym] = lID;
-        return lID;
-    }
-}
-
-void SMem_Manager::add_identity_to_iSTI_test(test pTest, uint64_t pI_ID)
-{
-    sym_to_id_map::iterator lIter;
-    Symbol* lSTI;
-
-    if (pTest->identity) return;
-
-    pTest->identity = get_identity_for_iSTI(pTest->data.referent, pI_ID);
+    dprint(DT_SMEM_INSTANCE, "Clearing iSti/LTI mappings %d %d.\n", lti_to_sti_map.size(), iSti_to_lti_map.size());
 }
 
 Symbol* SMem_Manager::get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar)

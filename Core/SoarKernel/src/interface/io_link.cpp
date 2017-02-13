@@ -444,7 +444,7 @@ void update_for_top_state_wme_addition(agent* thisAgent, wme* w)
 
     ol->status = NEW_OL_STATUS;
     ol->link_wme = w;
-    wme_add_ref(w);
+    wme_add_ref(w, true);
     ol->ids_in_tc = NIL;
     ol->cb = cb;
     /* --- make wme point to the structure --- */

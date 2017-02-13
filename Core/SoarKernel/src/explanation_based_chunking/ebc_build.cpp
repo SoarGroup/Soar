@@ -19,6 +19,7 @@
 #include "condition.h"
 #include "decide.h"
 #include "debug.h"
+#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
@@ -43,7 +44,7 @@
 #include <ebc_repair.h>
 
 using namespace soar_TraceNames;
-void sanity_check_conditions(condition* top_cond);
+
 /* =====================================================================
 
                            Results Calculation
@@ -136,6 +137,8 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     m_results = pref;
     if (pref->identities.id && linked_id)
     {
+        assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
         thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
         add_identity_unification(pref->identities.id, linked_id);
@@ -593,6 +596,8 @@ void Explanation_Based_Chunker::make_clones_of_results()
             thisAgent->symbolManager->symbol_add_ref(lClonedPref->referent);
         }
         lClonedPref->inst = m_chunk_inst;
+        lClonedPref->level = m_chunk_inst->match_goal_level;
+
         dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
@@ -643,7 +648,7 @@ void Explanation_Based_Chunker::remove_chunk_instantiation()
         lNext = lResultPref->inst_next;
         assert(lResultPref->reference_count == 0);
         dprint(DT_EBC_CLEANUP, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
-        lRemoved = remove_preference_from_clones(thisAgent, lResultPref);
+        lRemoved = remove_preference_from_clones_and_deallocate(thisAgent, lResultPref);
         assert(lRemoved);
     }
     m_chunk_inst = NULL;
@@ -698,7 +703,10 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-
+        if (pref->slot && pref->slot->OSK_prefs)
+        {
+            backtrace_through_OSK(pref->slot->OSK_prefs, grounds_level, 0);
+        }
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagBacktraceResult);
@@ -853,7 +861,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "   Match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule for match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
 
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
@@ -895,6 +903,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 //        dprint(DT_DEBUG, "Chunk found.\n");
 //    }
     thisAgent->explanationMemory->add_chunk_record(m_inst);
+    debug_refcount_change_start(thisAgent, false);
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -933,7 +942,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
-        clean_up();
+        clean_up(false);
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
@@ -970,20 +979,26 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
 
-    /* Variablize the LHS */
-    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
-    variablize_condition_list(m_lhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        /* Variablize the LHS */
+        thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+        variablize_condition_list(m_lhs);
+        dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
-    #ifdef EBC_SANITY_CHECK_RULES
-    if (m_rule_type == ebc_chunk) sanity_check_conditions(m_lhs);
-    #endif
+        #ifdef EBC_SANITY_CHECK_RULES
+        if (m_rule_type == ebc_chunk) sanity_chunk_conditions(m_lhs);
+        #endif
 
-    /* Merge redundant conditions (same identity sets in each element) */
-    merge_conditions();
+        /* Merge redundant conditions (same identity sets in each element) */
+        merge_conditions();
 
-    /* Variablize the RHS preferences into actions */
-    m_rhs = variablize_results_into_actions();
+        /* Variablize the RHS preferences into actions */
+        m_rhs = variablize_results_into_actions();
+    } else {
+        m_rhs = convert_results_into_actions();
+    }
+
 
     /* Add isa_goal tests for first conditions seen with a goal identifier */
     add_goal_or_impasse_tests();
@@ -1017,7 +1032,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
-                clean_up();
+                clean_up(false);
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
                 return;
             } else {
@@ -1038,9 +1053,20 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * This changes during re-instantiation.  If the rule being formed is a justification,
      * both m_lhs and m_rhs will become instantiated as well. */
 
-    l_inst_top = reinstantiate_current_rule();
-    l_inst_bottom = l_inst_top;
-    while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        l_inst_top = reinstantiate_current_rule();
+        l_inst_bottom = l_inst_top;
+        while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+    } else {
+        copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
+    }
+
+    /* MToDo | Remove.  Just to see that nothing is being created when learning is off */
+    //    assert(unification_map->size() == 0);
+    //    assert(instantiation_identities->size() == 0);
+    //    assert(identity_to_var_map->size() == 0);
+    //    assert(constraints->size() == 0);
 
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
@@ -1064,8 +1090,16 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->creates_deep_copy                 = m_tested_deep_copy;
     m_chunk_inst->tested_LTM                        = m_tested_ltm_recall;
     m_chunk_inst->tested_quiescence                 = m_tested_quiescence;
+
+    find_match_goal(thisAgent, m_chunk_inst);
     make_clones_of_results();
-    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst);
+    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst, true);
+
+    /* Add this function to inventory deallocation inventory if that is enabled.
+     * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
+     *       though, we don't have the final rule name set up until now, so we call it here. */
+    IDI_add(thisAgent, m_chunk_inst);
+    debug_refcount_change_end(thisAgent, (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
@@ -1084,13 +1118,15 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         m_chunk_inst = NULL;
         clean_up();
 
-        /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
-         * which is what would have been created if the chunk had fired on its goal level */
-        dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
-        set_learning_for_instantiation(*new_inst_list);
-        learn_EBC_rule(*new_inst_list, new_inst_list);
-        dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
-
+        if ((*new_inst_list)->match_goal_level > TOP_GOAL_LEVEL)
+        {
+            /* Initiate bottom-up chunking, i.e. tell EBC to learn a rule for the chunk instantiation,
+             * which is what would have been created if the chunk had fired on its goal level */
+            dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
+            set_learning_for_instantiation(*new_inst_list);
+            learn_EBC_rule(*new_inst_list, new_inst_list);
+            dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
+        }
     } else {
         /* Clean up failed chunk completely*/
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
@@ -1102,15 +1138,17 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 }
 
-void Explanation_Based_Chunker::clean_up ()
+void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 {
     if (m_chunk_new_i_id)
     {
-        thisAgent->explanationBasedChunker->cleanup_after_instantiation_creation();
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
     }
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
+        if (clean_up_inst_inventory) IDI_remove(thisAgent, m_chunk_inst->i_id);
+
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
     }
@@ -1133,6 +1171,9 @@ void Explanation_Based_Chunker::clean_up ()
     m_prod_name                         = NULL;
     m_rule_type                         = ebc_no_rule;
     m_failure_type                      = ebc_success;
+
+    //dprint(DT_DEBUG, "unification_map: %d, identity_to_var_map: %d, constraints: %d" , static_cast<int64_t>(unification_map->size()) , static_cast<int64_t>(identity_to_var_map->size()) , static_cast<int64_t>(constraints->size()));
+
     clear_variablization_maps();
     clear_cached_constraints();
     clear_o_id_substitution_map();

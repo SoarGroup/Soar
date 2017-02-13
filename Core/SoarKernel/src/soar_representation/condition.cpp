@@ -85,7 +85,6 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     cond->bt.wme_ = NULL;
     cond->bt.level = NO_WME_LEVEL;
     cond->bt.trace = NULL;
-    cond->bt.OSK_prefs = NULL;
     /* Other data initialized to 0 in struct initializers */
     return cond;
 }

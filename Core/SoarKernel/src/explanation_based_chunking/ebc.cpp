@@ -8,6 +8,7 @@
 #include "ebc.h"
 
 #include "agent.h"
+#include "condition.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc_settings.h"
@@ -127,8 +128,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (ebc_settings[SETTING_EBC_EXCEPT] &&
-            member_of_list(inst->match_goal, chunk_free_problem_spaces))
+    if (ebc_settings[SETTING_EBC_EXCEPT] && member_of_list(inst->match_goal, chunk_free_problem_spaces))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
@@ -147,8 +147,7 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
         return false;
     }
 
-    if (ebc_settings[SETTING_EBC_ONLY]  &&
-            !member_of_list(inst->match_goal, chunky_problem_spaces))
+    if (ebc_settings[SETTING_EBC_ONLY]  && !member_of_list(inst->match_goal, chunky_problem_spaces))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
         {
@@ -417,23 +416,53 @@ void Explanation_Based_Chunker::clear_variablization_maps()
     identity_to_var_map->clear();
 }
 
-uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var, uint64_t pI_id)
+void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
 {
-    int64_t existing_o_id = 0;
-
-    auto iter_sym = instantiation_identities->find(orig_var);
-    if (iter_sym != instantiation_identities->end())
+    if (pTest->type == CONJUNCTIVE_TEST)
     {
-        existing_o_id = iter_sym->second;
+        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            sanity_chunk_test(static_cast<test>(c->first));
+        }
+    } else {
+        assert(!test_has_referent(pTest) || !pTest->data.referent->is_sti());
     }
-
-    if (!existing_o_id)
-    {
-        increment_counter(ovar_id_counter);
-        break_if_id_matches(ovar_id_counter, 8351);
-        (*instantiation_identities)[orig_var] = ovar_id_counter;
-
-        return ovar_id_counter;
-    }
-    return existing_o_id;
 }
+
+void Explanation_Based_Chunker::sanity_chunk_conditions(condition* top_cond)
+{
+    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            sanity_chunk_test(cond->data.tests.id_test);
+            sanity_chunk_test(cond->data.tests.attr_test);
+            sanity_chunk_test(cond->data.tests.value_test);
+        }
+        else
+        {
+            sanity_chunk_conditions(cond->data.ncc.top);
+        }
+    }
+}
+
+void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsNCC)
+{
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
+        {
+            sanity_justification_test(static_cast<test>(c->first), pIsNCC);
+        }
+    } else {
+        if (pIsNCC)
+        {
+            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
+
+        } else {
+            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity);
+        }
+    }
+}
+
+

@@ -1,6 +1,7 @@
 #include "working_memory.h"
 
 #include "agent.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "ebc.h"
 #include "episodic_memory.h"
@@ -85,7 +86,7 @@ void reset_wme_timetags(agent* thisAgent)
     if (thisAgent->num_existing_wmes != 0)
     {
         thisAgent->outputManager->printa(thisAgent,  "Internal warning:  wanted to reset wme timetag generator, but\n");
-        thisAgent->outputManager->printa(thisAgent,  "there are still some wmes allocated. (Probably a memory leak.)\n");
+        thisAgent->outputManager->printa_sf(thisAgent,  "there are still %u wmes allocated. (Probably a memory leak.)\n", thisAgent->num_existing_wmes);
         thisAgent->outputManager->printa(thisAgent,  "(Leaving timetag numbers alone.)\n");
         xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
         return;
@@ -121,9 +122,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->rete_next = NIL;
     w->rete_prev = NIL;
 
-    /* When we first create a WME, it had no gds value.
-       Do this for ALL wmes, regardless of the operand mode, so that no undefined pointers
-       are floating around. */
     w->gds = NIL;
     w->gds_prev = NIL;
     w->gds_next = NIL;
@@ -133,6 +131,8 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
 
     w->epmem_id = EPMEM_NODEID_BAD;
     w->epmem_valid = NIL;
+
+    WDI_add(thisAgent, w);
 
     return w;
 }
@@ -188,21 +188,18 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
     {
         dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and value %y.\n", w->id, w->value);
         post_link_removal(thisAgent, w->id, w->value);
-    #ifdef DEBUG_ATTR_AS_LINKS
-    if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-    {
-        dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
-        post_link_removal(thisAgent, w->id, w->attr);
-    }
-    #endif
-    if (w->id->is_state() && w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+#ifdef DEBUG_ATTR_AS_LINKS
+        if (w->attr->symbol_type == IDENTIFIER_SYMBOL_TYPE)
         {
-            /* Do this afterward so that gSKI can know that this is an operator */
+            dprint(DT_WME_CHANGES, "Calling post-link removal for id %y and attr %y.\n", w->id, w->attr);
+            post_link_removal(thisAgent, w->id, w->attr);
+        }
+#endif
+        if (w->id->is_state() && w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol)
+        {
             w->value->id->isa_operator--;
         }
     }
-
-    /* REW: begin 09.15.96 */
     /* When we remove a WME, we always have to determine if it's on a GDS, and, if
     so, after removing the WME, if there are no longer any WMEs on the GDS,
     then we can free the GDS memory */
@@ -217,11 +214,10 @@ void remove_wme_from_wm(agent* thisAgent, wme* w)
             {
                 w->gds->goal->id->gds = NIL;
             }
+            GDI_remove(thisAgent, w->gds);
             thisAgent->memoryManager->free_with_pool(MP_gds, w->gds);
-            /* printf("REMOVING GDS FROM MEMORY. \n"); */
         }
     }
-    /* REW: end   09.15.96 */
 }
 
 void remove_wme_list_from_wm(agent* thisAgent, wme* w, bool updateWmeMap)
@@ -383,7 +379,7 @@ void do_buffered_wm_changes(agent* thisAgent)
         }
 
         dprint(DT_WME_CHANGES, "      %w:\n",w);
-        wme_add_ref(w);
+        wme_add_ref(w, true);
         free_cons(thisAgent, c);
         thisAgent->wme_addition_count++;
     }
@@ -413,6 +409,8 @@ void do_buffered_wm_changes(agent* thisAgent)
 void deallocate_wme(agent* thisAgent, wme* w)
 {
     dprint(DT_WME_CHANGES, "Deallocating wme %w\n", w);
+    WDI_remove(thisAgent, w);
+
     if (wma_enabled(thisAgent))
     {
         wma_remove_decay_element(thisAgent, w);

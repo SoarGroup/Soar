@@ -61,7 +61,7 @@ void decide_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "decide select %-<operator ID>\n");
     outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "decide set-random-seed %-[<seed>] \n");
-    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n");
+    outputManager->printa(thisAgent,    "-----------------------------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:    help decide\n");
 }
 
@@ -91,8 +91,8 @@ void decide_param_container::print_summary(agent* thisAgent)
         std::to_string(exploration_get_parameter_value(thisAgent, EXPLORATION_PARAM_TEMPERATURE)).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Temperature Reduction Policy:",
         exploration_convert_reduction_policy(exploration_get_reduction_policy(thisAgent, EXPLORATION_PARAM_TEMPERATURE)), 55).c_str());
-    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "For a full list of sub-commands and settings:  decide ?");
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n\n");
+    outputManager->printa_sf(thisAgent, "Use 'decide ?' for a command overview or 'help decide' for the manual page.");
 }
 
 load_param_container::load_param_container(agent* new_agent): soar_module::param_container(new_agent)
@@ -132,7 +132,7 @@ void load_param_container::print_settings(agent* thisAgent)
     outputManager->printa(thisAgent,    "------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "load percepts %---open <filename>\n");
     outputManager->printa_sf(thisAgent, "load percepts %---close\n");
-    outputManager->printa(thisAgent,    "------------------------------------------------------------\n");
+    outputManager->printa(thisAgent,    "------------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:        help load\n");
 }
 void load_param_container::print_summary(agent* thisAgent)
@@ -175,7 +175,7 @@ void save_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "save percepts %-[--close --flush]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "save rete-network %---save <filename>\n");
-    outputManager->printa(thisAgent,    "------------------------------------------------------\n");
+    outputManager->printa(thisAgent,    "------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:  help save\n");
 
 }
@@ -250,7 +250,7 @@ void production_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "production optimize-attribute [symbol [n]]\n");
     outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "production watch %-[--disable --enable] <prod-name>\n");
-    outputManager->printa(thisAgent,    "------------------------------------------------------------------\n");
+    outputManager->printa(thisAgent,    "------------------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:    help production\n");
 }
 
@@ -277,7 +277,7 @@ void production_param_container::print_summary(agent* thisAgent)
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Total", std::to_string(totalProductions), 55).c_str());
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Use 'production ?' for a command overview or 'help production' for the manual page.");
+    outputManager->printa_sf(thisAgent, "\nUse 'production ?' for a command overview or 'help production' for the manual page.");
 }
 
 
@@ -335,7 +335,7 @@ void wm_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "wm watch %-[--list-filter ] [--type <t>]\n");
     outputManager->printa_sf(thisAgent, "         %-[--reset-filter]\n");
     outputManager->printa_sf(thisAgent, "              %-<t> = [adds | removes | both]\n");
-    outputManager->printa(thisAgent,    "---------------------------------------------------------\n");
+    outputManager->printa(thisAgent,    "---------------------------------------------------------\n\n");
     outputManager->printa_sf(thisAgent, "For a detailed explanation of sub-commands:       help wm\n");
 }
 void wm_param_container::print_summary(agent* thisAgent)

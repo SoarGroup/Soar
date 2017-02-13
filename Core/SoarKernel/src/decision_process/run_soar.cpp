@@ -181,7 +181,7 @@ void init_trace_settings(agent* thisAgent)
 
     /* --- set all params to zero, except the following: --- */
     thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM] = true;
-    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE; /* RPM 6/05 Changed from timetag to none */
+    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = FULL_WME_TRACE;
 }
 
 /* ===================================================================
@@ -345,7 +345,7 @@ void reset_max_stats(agent* thisAgent)
 #endif // NO_TIMING_STUFF
 }
 
-bool reinitialize_soar(agent* thisAgent)
+void reinitialize_soar(agent* thisAgent)
 {
     ++thisAgent->init_count;
     ++thisAgent->RL->rl_init_count;
@@ -362,9 +362,9 @@ bool reinitialize_soar(agent* thisAgent)
         /* Temporarily disable tracing: */
         set_trace_setting(thisAgent, i, false);
     }
-    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
+    set_trace_setting(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
 
-    bool ok = reinitialize_agent(thisAgent);
+    reinitialize_agent(thisAgent);
 
     /* Reinitializing the various halt and stop flags */
     thisAgent->system_halted = false;
@@ -393,7 +393,6 @@ bool reinitialize_soar(agent* thisAgent)
     delete thisAgent->stats_db;
     thisAgent->stats_db = new soar_module::sqlite_database();
 
-    return ok ;
 }
 
 /* ===================================================================

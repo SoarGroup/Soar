@@ -10,6 +10,8 @@
 #pragma once
 
 #include "kernel.h"
+#include "symbol.h"
+
 #ifdef DEBUG_MAC_STACKTRACE
 #include <string>
 

@@ -6,6 +6,7 @@
 #include <condition_record.cpp>
 #include <condition.cpp>
 #include <consistency.cpp>
+#include <debug_inventories.cpp>
 #include <debug_stacktrace.cpp>
 #include <debug.cpp>
 #include <decide.cpp>
@@ -16,6 +17,7 @@
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
 #include <ebc_merge.cpp>
+#include <ebc_osk.cpp>
 #include <ebc_print.cpp>
 #include <ebc_repair.cpp>
 #include <ebc_settings.cpp>

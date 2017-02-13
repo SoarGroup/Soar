@@ -85,14 +85,11 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
     cons* fl=NULL, *new_fl=NULL;
 
-    if (rhs_value_is_reteloc(rv))
+    if (!rv) {
+            return NULL;
+    } else if ((rhs_value_is_reteloc(rv)) || (rhs_value_is_unboundvar(rv)))
     {
         return rv;
-    } else if (rhs_value_is_unboundvar(rv))
-    {
-        return rv;
-    } else if (!rv) {
-        return NULL;
     } else if (rhs_value_is_funcall(rv))
     {
         fl = rhs_value_to_funcall_list(rv);
@@ -420,7 +417,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             if (add_original_vars && pI_id)
             {
-                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym, pI_id);
+                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
@@ -433,7 +430,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
         if (add_original_vars && pI_id)
         {
-            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym, pI_id);
+            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
         }
 
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u\n", sym, lO_id, pI_id);

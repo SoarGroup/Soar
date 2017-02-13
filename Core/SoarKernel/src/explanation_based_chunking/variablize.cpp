@@ -35,10 +35,13 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
     lVarInfo->variable_sym = variable;
     variable->var->instantiated_sym = pMatched_sym;
-    lVarInfo->identity = this->get_or_create_identity(variable, m_chunk_new_i_id);
+    lVarInfo->identity = this->get_or_create_identity(variable);
     thisAgent->symbolManager->symbol_add_ref(variable);
     (*identity_to_var_map)[pIdentity] = lVarInfo;
-    thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+    }
     return lVarInfo;
 }
 
@@ -430,7 +433,21 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     return rhs;
 }
 
-action* Explanation_Based_Chunker::variablize_result_into_actions(preference* result, tc_number lti_link_tc)
+action* Explanation_Based_Chunker::convert_result_into_action(preference* result)
+{
+    action* a = make_action(thisAgent);
+    a->type = MAKE_ACTION;
+    a->preference_type = result->type;
+    a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, NULL_IDENTITY_SET, result->was_unbound_vars.id);
+    a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, NULL_IDENTITY_SET, result->was_unbound_vars.attr);
+    a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, NULL_IDENTITY_SET, result->was_unbound_vars.value);
+    if (preference_is_binary(result->type)) a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, NULL_IDENTITY_SET, result->was_unbound_vars.referent);
+    dprint(DT_RHS_VARIABLIZATION, "Variablized result: %a\n", a);
+
+    return a;
+}
+
+action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
 
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
@@ -601,7 +618,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
 
     for (lPref = m_results; lPref; lPref = lPref->next_result)
     {
-        lAction = variablize_result_into_actions(lPref, lti_link_tc);
+        lAction = variablize_result_into_action(lPref, lti_link_tc);
         if (!returnAction)  returnAction = lAction;
         if (lLastAction) lLastAction->next = lAction;
         lLastAction = lAction;
@@ -617,6 +634,31 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
     return returnAction;
 }
 
+
+action* Explanation_Based_Chunker::convert_results_into_actions()
+{
+    dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
+    dprint_unification_map(DT_RHS_VARIABLIZATION);
+
+    action* returnAction, *lAction, *lLastAction;
+    preference* lPref;
+
+    thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
+    returnAction = lAction = lLastAction = NULL;
+
+    for (lPref = m_results; lPref; lPref = lPref->next_result)
+    {
+        lAction = convert_result_into_action(lPref);
+        if (!returnAction)  returnAction = lAction;
+        if (lLastAction) lLastAction->next = lAction;
+        lLastAction = lAction;
+    }
+
+    dprint(DT_VARIABLIZATION_MANAGER, "Actions after conversion: \n%2", returnAction);
+
+    return returnAction;
+}
+
 void Explanation_Based_Chunker::reinstantiate_test (test pTest)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
@@ -626,7 +668,7 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
             reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->data.referent->var->instantiated_sym)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
     {
     /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
      * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */
@@ -634,61 +676,6 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-    }
-}
-
-void sanity_test_chunk (test pTest)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_test_chunk(static_cast<test>(c->first));
-        }
-    } else {
-        assert(!test_has_referent(pTest) || !pTest->data.referent->is_sti());
-    }
-}
-
-void sanity_check_conditions(condition* top_cond)
-{
-    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
-    {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-//            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
-            if (cond->data.tests.id_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.id_test);
-            if (cond->data.tests.attr_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.attr_test);
-            if (cond->data.tests.value_test->type == CONJUNCTIVE_TEST)
-                sanity_test_chunk(cond->data.tests.value_test);
-        }
-        else
-        {
-//            dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
-//            dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
-            sanity_check_conditions(cond->data.ncc.top);
-        }
-    }
-}
-
-void sanity_test_justification (test pTest, bool pIsNCC = false)
-{
-    if (pTest->type == CONJUNCTIVE_TEST)
-    {
-        for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
-        {
-            sanity_test_justification(static_cast<test>(c->first), pIsNCC);
-        }
-    } else {
-        if (pIsNCC)
-        {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
-
-        } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable());
-        }
     }
 }
 
@@ -709,12 +696,9 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
         reinstantiate_test(cond->data.tests.value_test);
         dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
         #ifdef EBC_SANITY_CHECK_RULES
-        if (cond->type == POSITIVE_CONDITION)
-        {
-            sanity_test_justification(cond->data.tests.id_test, pIsNCC);
-            sanity_test_justification(cond->data.tests.attr_test, pIsNCC);
-            sanity_test_justification(cond->data.tests.value_test, pIsNCC);
-        }
+        sanity_justification_test(cond->data.tests.id_test, pIsNCC);
+        sanity_justification_test(cond->data.tests.attr_test, pIsNCC);
+        sanity_justification_test(cond->data.tests.value_test, pIsNCC);
         #endif
     } else {
         reinstantiate_condition_list(cond->data.ncc.top, true);
@@ -828,12 +812,12 @@ condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 
     dprint(DT_REINSTANTIATE, "m_lhs after reinstantiation: \n%1", m_lhs);
 
+    dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
     if (m_rule_type == ebc_justification)
     {
-        dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
         reinstantiate_actions(m_rhs);
-        dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
     }
+    dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
 
     return returnConds;
 }

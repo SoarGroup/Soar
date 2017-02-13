@@ -235,7 +235,7 @@ void Soar_Instance::Print_Agent_Table()
     }
 }
 
-sml::AgentSML* Soar_Instance::Get_Agent_Info(char* pAgentName)
+sml::AgentSML* Soar_Instance::Get_Agent_Info(const char* pAgentName)
 {
     std::unordered_map< std::string, sml::AgentSML* >::iterator iter = (*m_agent_table).find(pAgentName);
     if (iter != (*m_agent_table).end())

@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -38,8 +38,18 @@
 
 /* --------------- Compiler directives that alter Soar behavior --------------------*/
 
-//#define DO_TOP_LEVEL_REF_CTS          /* Maintains refcounts on wme/pref at top level.  May be more safe, but less efficient.  Was standard in v6-v8.6 */
-#define BUG_139_WORKAROUND_WARNING      /* Print a warning whenever we are ignoring a situation when there's no instance to retract for a justification */
+/* Whether to increment refcounts on prefs and WMEs for the conditions in top level
+ * instantiation matches.  May be more safe, but allows a situations where many
+ * data structures are never deallocated because of a sequence of dependent
+ * instantiation firings in the top state.
+ * - This option was turned on in Soar 6 to 8.6 and turned off in 9.0 to 9.5.1b
+ */
+//#define DO_TOP_LEVEL_COND_REF_CTS
+
+/* Print a warning whenever we are ignoring a situation when there's no instance to
+ * retract for a justification.  We can't find documentation on what the original bug
+ * was.  We have seen the warning pop up in agents still.  */
+//#define BUG_139_WORKAROUND_WARNING
 #define BUG_139_WORKAROUND
 
 /* -------- Compiler directives for potentially expensive statistics ---------------*/
@@ -62,7 +72,6 @@
  *   Note: #defines that enable trace messages pf SQL processing and errors   *
  *   can be found in soar_db.cpp                                              */
 /* =============================== */
-
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
@@ -71,9 +80,8 @@
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-    #define DEBUG_MEMORY            /* Zeroes out memory on init and fills with garbage on dealloc */
-    //#define DEBUG_ATTR_AS_LINKS   /* Experimental link count setting */
-    //#define DEBUG_MAC_STACKTRACE    /* Enables the printing of the call stack within debug messages. Tested on OSX only. Might work ok linux.*/
+    //#define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
+    //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */
 
     //#define DEBUG_EPMEM_WME_ADD
     //#define DEBUG_WATERFALL       /* Use DT_WATERFALL. This setting adds retraction and nil goal retraction list printing */

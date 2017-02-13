@@ -81,7 +81,7 @@ void decider_param_container::print_status(agent* thisAgent)
 {
     std::string stateStackStr, enabledStr, disabledStr;
     int soarStackDepth;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     soarStackDepth = thisAgent->Decider->get_state_stack_string(stateStackStr);
     thisAgent->Decider->get_enabled_module_strings(enabledStr, disabledStr);
@@ -106,14 +106,15 @@ void decider_param_container::print_status(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("State stack", stateStackStr.c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Current number of states", std::to_string(soarStackDepth).c_str(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s\n", concatJustified("Next phase", thisAgent->outputManager->phase_to_string(thisAgent->current_phase), 55).c_str());
+    outputManager->printa(thisAgent,    "-------------------------------------------------------\n");
 
-    outputManager->printa_sf(thisAgent, "\nFor a full list of sub-commands and settings:  soar ?");
+    outputManager->printa_sf(thisAgent, "\nUse 'soar ?' for a command overview or 'help soar' for the manual page.");
 }
 
 void decider_param_container::print_settings(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     outputManager->reset_column_indents();
 //    outputManager->set_column_indent(0, 40);

@@ -14,7 +14,7 @@ sp {apply*not-so-fast
 sp {failure
    (state <s> ^foo bar)
 -->
-   (exec test-failure)
+   (failed)
    (write (crlf) |test-failure|)
    (halt)
 }

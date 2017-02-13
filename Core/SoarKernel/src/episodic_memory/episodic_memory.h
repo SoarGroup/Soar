@@ -401,11 +401,10 @@ typedef struct epmem_data_struct
 
     epmem_time_id last_memory;                              // last retrieved memory
 
-    Symbol* epmem_header;
-    Symbol* epmem_cmd_header;
-    Symbol* epmem_result_header;
-
-    struct wme_struct* epmem_time_wme;
+    wme* epmem_link_wme;
+    wme* cmd_wme;
+    wme* result_wme;
+    wme* epmem_time_wme;
 
     epmem_wme_stack* epmem_wmes;                            // preferences generated in last epmem
 } epmem_data;

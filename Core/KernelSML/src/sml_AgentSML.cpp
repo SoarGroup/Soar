@@ -258,12 +258,16 @@ bool AgentSML::Reinitialize()
 {
     m_pKernelSML->FireAgentEvent(this, smlEVENT_BEFORE_AGENT_REINITIALIZED) ;
 
-    bool ok = reinitialize_soar(m_agent);
+    reinitialize_soar(m_agent);
 
-    // This must happen now because old output link identifiers get shipped over during do_output_phase above
-    // and then the new identifiers get shipped out during do_output_phase inside init_agent_memory below.
-    // With smem, those identifier details can change (output-link not being I3) and this causes problems.
-    // Can't use smlEVENT_AFTER_AGENT_REINITIALIZED because that happens too late.
+    /* This must happen now because old output link identifiers get shipped over during do_output_phase above
+       and then the new identifiers get shipped out during do_output_phase inside init_agent_memory below.
+       With smem, those identifier details can change (output-link not being I3) and this causes problems.
+       Can't use smlEVENT_AFTER_AGENT_REINITIALIZED because that happens too late.
+
+       Mazin: This may no longer be true with the new model of smem in Soar 9.6.  Not sure what would need
+              to be changed back or whether it needs to be. */
+
     this->m_OutputListener.SendOutputInitEvent();
 
     init_agent_memory(m_agent);
@@ -272,7 +276,7 @@ bool AgentSML::Reinitialize()
 
     ResetCaptureReplay();
     m_pKernelSML->FireAgentEvent(this, smlEVENT_AFTER_AGENT_REINITIALIZED) ;
-    return ok ;
+    return true ;
 }
 
 void AgentSML::RemoveAllListeners(Connection* pConnection)

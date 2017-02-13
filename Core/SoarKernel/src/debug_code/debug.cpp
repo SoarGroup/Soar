@@ -9,7 +9,6 @@
    @brief debug.cpp provides some utility functions for inspecting and
           manipulating the data structures of the Soar kernel at run
           time.
-
 ------------------------------------------------------------------ */
 
 #include "debug.h"
@@ -19,10 +18,12 @@
 #include "ebc.h"
 #include "episodic_memory.h"
 #include "lexer.h"
+#include "preference.h"
 #include "print.h"
 #include "rhs.h"
 #include "soar_module.h"
 #include "soar_instance.h"
+#include "symbol.h"
 #include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
@@ -32,24 +33,17 @@
 #include <sstream>
 #include "dprint.h"
 
-/* -- For stack trace printing (works on Mac.  Not sure about other platforms) --*/
-#ifdef DEBUG_MAC_STACKTRACE
-#include <execinfo.h>
-#include <cxxabi.h>
-#include "debug_stacktrace.h"
-#endif
-
 using namespace soar_module;
 
 bool break_if_symbol_matches_string(Symbol* sym, const char* match)
 {
-    if (sym->to_string() == match)
+    if (std::string(sym->to_string()) == std::string(match))
         return true;
     return false;
 }
 bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value)
 {
-    if(break_if_symbol_matches_string(w->id, match_id) && break_if_symbol_matches_string(w->attr, match_attr) && break_if_symbol_matches_string(w->value, match_value))
+    if ((std::string(w->id->to_string()) == std::string(match_id)) && (std::string(w->attr->to_string()) == std::string(match_attr)) && (std::string(w->value->to_string()) == std::string(match_value)))
         return true;
     return false;
 }
@@ -59,7 +53,19 @@ bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match)
         return true;
     return false;
 }
-
+bool break_if_test_symbol_matches_string(test t, const char* match)
+{
+    if (!t || !test_has_referent(t)) return false;
+    if (std::string(t->data.referent->to_string()) == std::string(match))
+        return true;
+    return false;
+}
+bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value)
+{
+    if ((std::string(w->id->to_string()) == std::string(match_id)) && (std::string(w->attr->to_string()) == std::string(match_attr)) && (std::string(w->value->to_string()) == std::string(match_value)))
+        return true;
+    return false;
+}
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)
@@ -146,6 +152,8 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
     mode_info[DT_DEEP_COPY].prefix =                    strdup("DeepCopy| ");
     mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
+    mode_info[DT_OSK].prefix =                          strdup("OSK | ");
+
 
     /* In case we forget to add a trace prefix */
     for (int i=0; i < num_trace_modes; i++)
@@ -162,48 +170,6 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     debug_set_mode_info(mode_info, false);
 #endif
 }
-
-#ifdef DEBUG_MAC_STACKTRACE
-std::string get_stacktrace(const char* prefix)
-{
-    // storage array for stack trace data
-    // you can change the size of the array to increase the depth of
-    // the stack summarized in the string returned
-    void* addrlist[12];
-
-    // retrieve current stack addresses
-    int addrlen = backtrace(addrlist, sizeof(addrlist) / sizeof(void*));
-
-    if (addrlen == 0)
-    {
-        return std::string("<empty, possibly corrupt>");
-    }
-
-    char** symbollist = backtrace_symbols(addrlist, addrlen);
-
-    // allocate string which will be filled with the demangled function name
-    size_t funcnamesize = 256;
-    char* funcname = (char*)malloc(funcnamesize);
-    std::string return_string;
-    if (prefix)
-    {
-        return_string += prefix;
-        return_string +=  " | ";
-    }
-    // iterate over the returned symbol lines. skip the first two
-    for (int i = 2; i < addrlen; i++)
-    {
-        return_string += tracey::demangle(std::string(symbollist[i]));
-        if (i < (addrlen - 1))
-        {
-            return_string += " | ";
-        }
-    }
-    free(funcname);
-    free(symbollist);
-    return return_string;
-}
-#endif
 
 void debug_trace_off()
 {

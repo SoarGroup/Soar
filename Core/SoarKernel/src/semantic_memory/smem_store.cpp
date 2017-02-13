@@ -406,7 +406,7 @@ void SMem_Manager::LTM_to_DB(uint64_t pLTI_ID, ltm_slot_map* children, bool remo
     uint64_t new_edges = (existing_edges + const_new.size() + lti_new.size());
     uint64_t new_lti_edges = existing_lti_edges + lti_new.size();
     bool after_above;
-    double web_act = static_cast<double>(SMEM_ACT_MAX);
+    double web_act = static_cast<double>(SMEM_ACT_LOW);
     {
         uint64_t thresh = static_cast<uint64_t>(settings->thresh->get_value());
         after_above = (new_edges >= thresh);

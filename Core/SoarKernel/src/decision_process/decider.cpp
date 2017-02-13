@@ -27,7 +27,7 @@ SoarDecider::SoarDecider(agent* myAgent)
 {
     /* Cache agent and Output Manager pointer */
     thisAgent = myAgent;
-    outputManager = &Output_Manager::Get_OM();
+    outputManager = myAgent->outputManager;
 
     thisAgent->Decider = this;
 

@@ -1,0 +1,445 @@
+# Settings
+
+chunk always
+#chunk only
+chunk bottom-only off
+chunk add-osk on
+chunk lhs-repair on
+chunk rhs-repair on
+chunk allow-local-negations on
+chunk add-ltm-links on
+chunk max-chunks 50
+chunk max-dupes 3
+soar max-elaborations 100
+soar max-goal-depth 100
+soar wait-snc off
+
+# Give information to the rule reording algorithm to make the match more efficient.
+multi-attributes ontop 3
+multi-attributes clear 4
+multi-attributes in-place 3
+multi-attributes objects 4
+multi-attributes operator 9
+
+
+chunk singleton any gripper any
+chunk singleton any type any
+chunk singleton any holding any 
+chunk singleton any bottom-block any 
+chunk singleton any top-block any
+chunk singleton any last-bottom any
+
+# Procedural Memory
+sp {dumb*init
+    (state <s> ^superstate nil)
+-->
+    (<s> ^dumb-test2 IWASTESTED2  ^dumb-test1 IWASTESTED1)
+    }
+
+sp {elaborate*state*operator*name
+    "Elaborate substates with name of operator."
+    :default
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name <name>)
+    -->
+    (<s> ^name <name> +)
+}
+
+sp {elaborate*state*top-state
+    :default
+    (state <s> ^superstate <ss>)
+   -{ (<ss> ^operator <o*1>)
+      (<o*1> ^name evaluate-operator)}
+    (<ss> ^top-state <ts>)
+    -->
+    (<s> ^top-state <ts> +)
+}
+
+sp {elaborate*top-state
+    :default
+    (state <s> ^superstate nil)
+    -->
+    (<s> ^top-state <s> +)
+}
+
+sp {default*elaborate*state*io
+    "Elaborate each substate with io pointer."
+    :default
+    (state <s> ^impasse no-change)
+    (<s> ^superstate <s*1>)
+    (<s*1> ^io <io>)
+    -->
+    (<s> ^io <io> +)
+}
+
+sp {pick-up*select*move-gripper-down
+    (state <s> ^name pick-up)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^above <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^name move-gripper-down)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {pick-up*propose*move-gripper-down
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^gripper <g*1>)
+    (<g*1> ^position up)
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name move-gripper-down +)
+}
+# Problem op proposal
+sp {pick-up*propose*move-gripper-above
+    (state <s> ^state-type gripper-operators)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g>)
+    (<g> ^position up)
+    (<g> ^above <x>)
+    (<ts> ^clear { <> <x> <y> })
+    -->
+    (<s> ^operator <op> +)
+    (<s> ^operator <op> =)
+    (<op> ^name move-gripper-above +)
+    (<op> ^destination <y> +)
+}
+
+# Problem op not being backtraced through
+sp {pick-up*select*move-gripper-above-BACKTRACE_ME
+    (state <s> ^name pick-up ^top-state.dumb-test1 IWASTESTED1)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <mblock>)
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <mblock>)
+    (<op1> ^name move-gripper-above)
+    -->
+    (<s> ^operator <op1> >)
+}
+# Problem op apply
+sp {apply*move-gripper-above*pass*top-state
+    (state <s> ^operator <op>)
+    (<op> ^name move-gripper-above)
+    (<op> ^destination <des>)
+    (<s> ^top-state <t*1>)
+    (<t*1> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <gripper>)
+    -->
+    (<gripper> ^command move-gripper-above +)
+    (<gripper> ^destination <des> +)
+    (interrupt)
+}
+
+sp {gripper-operators*elaborate*problem-space
+    (state <s> ^state-type gripper-operators)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name gripper +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {pick-up*elaborate*desired
+    (state <s> ^name pick-up)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name pick-up)
+    (<so> ^moving-block <block>)
+    -->
+    (<s> ^desired <d> +)
+    (<d> ^moving-block <block> +)
+}
+
+sp {pick-up*put-down*elaborate*substate*gripper-operators
+    (state <s> ^name { << pick-up put-down >> <n*1> })
+    -->
+    (<s> ^state-type gripper-operators +)
+}
+
+sp {move-block*monitor*pickup
+    (state <s> ^name move-block)
+    (<s> ^operator <o>)
+    (<o> ^name pick-up)
+    (<o> ^moving-block <m*1>)
+    (<m*1> ^name <name>)
+    -->
+    (write (crlf) |Pickup block | <name>)
+}
+# problem op real
+sp {move-block*propose*pick-up*only-correct
+    (state <s> ^name move-block)
+    (<s> ^desired <d*1>)
+    (<d*1> ^moving-block <block>)
+    (<block> ^type block)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g*1> ^dumb-test2 IWASTESTED2)
+    (<g*1> ^holding nothing)
+    (<s> ^operator <op> +)
+    (<op> ^moving-block <block>)
+    (<op> ^name pick-up)
+    -->
+    (<s> ^operator <op> >)
+}
+
+sp {move-block*propose*pick-up
+    (state <s> ^name move-block)
+    (<s> ^top-state <ts>)
+    (<ts> ^gripper <g*1>)
+    (<g*1> ^holding nothing)
+    (<ts> ^clear <block>)
+    (<block> ^type block)
+    -->
+    (<s> ^operator <op> +)
+    (<op> ^name pick-up +)
+    (<op> ^moving-block <block> +)
+}
+
+sp {move-block*elaborate*problem-space
+    (state <s> ^name move-block)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name pick-up-put-down +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {move-block*elaborate*desired
+    (state <s> ^name move-block)
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <so>)
+    (<so> ^name move-block)
+    (<so> ^destination <dest>)
+    (<so> ^moving-block <block>)
+    -->
+    (<s> ^desired <d> +)
+    (<d> ^moving-block <block> +)
+    (<d> ^destination <dest> +)
+}
+
+sp {P6*evaluate*move-block*best*move-block-to-table
+    (state <s> ^name blocks-world)
+    (<s> ^object <table>)
+    (<table> ^name table)
+    (<s> ^desired <d>)
+    (<s> ^ontop <ontop>)
+    (<ontop> ^top-block <block1>)
+    (<s> -^inplace-object <block1>)
+    (<ontop> ^bottom-block { <> <table> <block2> })
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <table>)
+    (<op1> ^moving-block <block1>)
+    (<op1> ^name move-block)
+    -->
+    (<s> ^operator <op1> >)
+}
+
+sp {P7*evaluate*move-block*better*move-to-goal
+    (state <s> ^name blocks-world)
+    (<s> ^inplace-object <block2>)
+    (<s> ^desired <d>)
+    (<d> ^ontop <ontop>)
+    (<ontop> ^bottom-block <block2>)
+    (<ontop> ^top-block <block1>)
+    (<s> ^operator <op1> +)
+    (<op1> ^destination <block2>)
+    (<op1> ^moving-block <block1>)
+    (<op1> ^name move-block)
+    (<s> ^operator { <> <op1> <op2> } +)
+    -->
+    (<s> ^operator <op1> > <op2>)
+}
+
+sp {P5*propose*move-block
+    (state <s> ^name blocks-world)
+    (<s> ^moveable <blockA>)
+   -{ (<s> ^gripper <g*1>)
+      (<g*1> ^holding { <> nothing <h*2> })
+      (<g*1> ^holding { <> <blockA> <h*1> })}
+    (<blockA> ^type block)
+    (<s> ^clear { <> <blockA> <object> })
+   -{ (<s> ^ontop <ontop>)
+      (<ontop> ^top-block <blockA>)
+      (<ontop> ^bottom-block <object>)}
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-block +)
+    (<o> ^moving-block <blockA> +)
+    (<o> ^destination <object> +)
+}
+
+sp {blocks-world*apply*initialize
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name initialize-blocks-world)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <out>)
+    -->
+    (<out> ^gripper <gripper> +)
+    (<s> ^name blocks-world +)
+    (<s> ^ontop <ontop1> +)
+    (<s> ^ontop <ontop2> +)
+    (<s> ^ontop <ontop3> +)
+    (<s> ^object <blockA> +)
+    (<s> ^object <blockB> +)
+    (<s> ^object <blockC> +)
+    (<s> ^object <table> +)
+    (<s> ^desired <ds> +)
+    (<s> ^gripper <g> +)
+    (<g> ^holding nothing +)
+    (<g> ^position up +)
+    (<g> ^above <table> +)
+    (<g> ^open yes +)
+    (<ontop1> ^top-block <blockC> +)
+    (<ontop1> ^bottom-block <blockA> +)
+    (<ontop2> ^top-block <blockA> +)
+    (<ontop2> ^bottom-block <table> +)
+    (<ontop3> ^top-block <blockB> +)
+    (<ontop3> ^bottom-block <table> +)
+    (<blockA> ^name A +)
+    (<blockA> ^type block +)
+    (<blockB> ^name B +)
+    (<blockB> ^type block +)
+    (<blockC> ^name C +)
+    (<blockC> ^type block +)
+    (<table> ^name table +)
+    (<table> ^type table +)
+    (write (crlf) |Simple Blocks World - just move blocks.|)
+    (write (crlf) |Initial state has C on A, A on table, and B on the table.|)
+    (<ds> ^ontop <dontop1> +)
+    (<ds> ^ontop <dontop2> +)
+    (<ds> ^ontop <dontop3> +)
+    (<dontop1> ^top-block <blockA> +)
+    (<dontop1> ^bottom-block <blockB> +)
+    (<dontop2> ^top-block <blockB> +)
+    (<dontop2> ^bottom-block <blockC> +)
+    (<dontop3> ^top-block <blockC> +)
+    (<dontop3> ^bottom-block <table> +)
+    (write (crlf) |The goal is to get A on B on C on the table.|)
+}
+
+sp {blocks-world*propose*initialize-blocks-world
+    (state <s> ^superstate nil)
+    (<s> -^name <n*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-blocks-world +)
+}
+
+sp {apply*move-gripper-above*external
+    :o-support
+    (state <s> ^gripper <g>)
+    (<g> ^above <objx>)
+    (<s> ^io <i*1>)
+    (<i*1> ^output-link <o*1>)
+    (<o*1> ^gripper <grip>)
+    (<grip> ^command move-gripper-above)
+    (<grip> ^destination { <> <objx> <des> })
+    (<des> ^name <name>)
+    -->
+    (write (crlf) |X Move gripper above | <name>)
+    (<g> ^above <objx> -)
+    (<g> ^above <des> +)
+    (<grip> ^command move-gripper-above -)
+    (<grip> ^destination <des> -)
+}
+
+sp {blocks-world*elaborate*problem-space
+    (state <s> ^name blocks-world)
+    -->
+    (<s> ^problem-space <p> +)
+    (<p> ^name move-blocks +)
+    (<p> ^default-state-copy yes +)
+    (<p> ^dont-copy top-state +)
+    (<p> ^dont-copy clear +)
+    (<p> ^dont-copy inplace-object +)
+    (<p> ^dont-copy moveable +)
+    (<p> ^two-level-attributes desired +)
+    (<p> ^two-level-attributes ontop +)
+    (<p> ^two-level-attributes gripper +)
+    (<p> ^one-level-attributes object +)
+}
+
+sp {elaborate*block*moveable
+    (state <s> ^name blocks-world)
+    (<s> ^object <block>)
+   -{ (<s> ^ontop <o*2>)
+      (<o*2> ^last-bottom <block>)}
+   -{ (<s> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+    -->
+    (<s> ^moveable <block> +)
+}
+
+sp {blocks-world*monitor*operator-application*move-block
+    (state <s> ^operator <o>)
+    (<o> ^name move-block)
+    (<o> ^destination <d*1>)
+    (<o> ^moving-block <m*1>)
+    (<d*1> ^name <dob-name>)
+    (<m*1> ^name <mob-name>)
+    -->
+    (write (crlf) |  APPLYING | <o> |: move-block(| <mob-name> |,| <dob-name> |)|)
+}
+
+sp {P3*elaborate*object-on-table
+    (state <s> ^object <table>)
+    (<table> ^name table)
+    -->
+    (<s> ^inplace-object <table> +)
+}
+
+sp {P2*elaborate*table*clear*top
+    (state <s> ^superstate nil)
+    (<s> ^object <object>)
+    (<object> ^type table)
+    -->
+    (<s> ^clear <object> +)
+}
+
+sp {P1*elaborate*block*clear*top
+    (state <s> ^superstate nil)
+    (<s> ^object <block>)
+   -{ (<s> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+   -{ (<s> ^gripper <g*1>)
+      (<g*1> ^holding <block>)}
+    -->
+    (<s> ^clear <block> +)
+}
+
+sp {P2*elaborate*table*clear
+    (state <ts> ^top-state <ts>)
+    (<ts> ^object <object>)
+    (<object> ^type table)
+    -->
+    (<ts> ^clear <object> +)
+}
+
+sp {P1*elaborate*block*clear
+    (state <ts> ^top-state <ts>)
+    (<ts> ^object <block>)
+   -{ (<ts> ^ontop <o*1>)
+      (<o*1> ^bottom-block <block>)}
+   -{ (<ts> ^gripper <g*1>)
+      (<g*1> ^holding <block>)}
+    -->
+    (<ts> ^clear <block> +)
+}
+
+
+
+# Semantic memory is not enabled.  Did not save.

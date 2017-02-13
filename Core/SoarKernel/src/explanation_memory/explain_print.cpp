@@ -328,12 +328,12 @@ void Explanation_Memory::print_explain_summary()
 {
     outputManager->set_column_indent(0, 55);
     outputManager->set_column_indent(1, 54);
-    outputManager->printa_sf(thisAgent,    "%e=======================================================\n");
-    outputManager->printa(thisAgent,    "                       Explainer Summary\n");
-    outputManager->printa(thisAgent,    "=======================================================\n");
-    outputManager->printa_sf(thisAgent, "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Number of specific rules watched  %-%d\n", num_rules_watched);
+    outputManager->printa_sf(thisAgent, "%e=======================================================\n");
+    outputManager->printa(thisAgent,      "                   Explainer Summary\n");
+    outputManager->printa(thisAgent,      "=======================================================\n");
+    outputManager->printa_sf(thisAgent,   "Watch all chunk formations        %-%s\n", (m_all_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent,   "Explain justifications            %-%s\n", (m_justifications_enabled ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent,   "Number of specific rules watched  %-%d\n", num_rules_watched);
 
     /* Print specific watched rules and time interval when watch all disabled */
     if (!m_all_enabled)
@@ -358,10 +358,11 @@ void Explanation_Memory::print_explain_summary()
         (current_discussed_chunk ? current_discussed_chunk->name->sc->name : "None" ));
     if (current_discussed_chunk)
     {
-        outputManager->printa_sf(thisAgent, "(c %u)\n\n", current_discussed_chunk->chunkID);
+        outputManager->printa_sf(thisAgent, "(c %u)\n", current_discussed_chunk->chunkID);
     } else {
-        outputManager->printa(thisAgent, "\n\n");
+        outputManager->printa(thisAgent, "\n");
     }
+    outputManager->printa(thisAgent,    "=======================================================\n\n");
     outputManager->printa(thisAgent, "Use 'explain chunk [ <chunk-name> | id ]' to discuss the formation of that chunk.\n");
     outputManager->printa_sf(thisAgent, "Use 'explain ?' to learn more about explain's sub-command and settings.\n");
 }
@@ -440,7 +441,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Skipped because no super-state knowledge tested                    %-%u\n", stats.no_grounds);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-CHUNKS exceeded in a decision cycle            %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-DUPES exceeded for rule this decision cycle    %-%u\n", stats.max_dupes);
-#ifndef SOAR_RELEASE_VERSION
+//#ifndef SOAR_RELEASE_VERSION
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                      Technical Debugging Statistics \n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
@@ -457,7 +458,7 @@ void Explanation_Memory::print_global_stats()
 //    outputManager->printa_sf(thisAgent, "- Problem-solving used OSK but EBC ignored                         %-?\n");
 //    outputManager->printa_sf(thisAgent, "Uncertain knowledge or opaque knowledge retrieval:\n");
 //    outputManager->printa_sf(thisAgent, "- Analyzed reasoning of operators selected probabilistically       %-?\n");
-#endif
+//#endif
 }
 
 

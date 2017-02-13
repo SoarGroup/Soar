@@ -24,23 +24,34 @@ typedef struct instantiation_struct
     struct instantiation_struct*    next, *prev;            /* dll of inst's from same prod */
     struct token_struct*            rete_token;             /* used by Rete for retractions */
     wme*                            rete_wme;               /* ditto */
+
     condition*                      top_of_instantiated_conditions;
     condition*                      bottom_of_instantiated_conditions;
+
     preference*                     preferences_generated;  /* prefs created by instantiation that are still in WM*/
     preference*                     preferences_cached;     /* shallow copies of retracted prefs for explainer*/
+
+    cons*                           OSK_prefs;              /* list of OSK prefs to backtrace through */
+    cons*                           OSK_proposal_prefs;     /* OSK prefs that temporarily exist for a proposal while operator is selected */
+    slot*                           OSK_proposal_slot;
+
     Symbol*                         match_goal;             /* symbol, or NIL if none */
     goal_stack_level                match_goal_level;       /* level, or ATTRIBUTE_IMPASSE_LEVEL */
+
     bool                            tested_quiescence;
     bool                            tested_local_negation;
     bool                            tested_LTM;
     bool                            creates_deep_copy;
+
     bool                            in_ms;                  /* true iff this inst. is still in the match set */
     bool                            in_newly_created;       /* true iff this inst. is in the newly_created_instantiation list*/
     bool                            in_newly_deleted;       /* true iff this inst. is in the newly_deleted_instantiation list*/
+
     tc_number                       backtrace_number;
     bool                            GDS_evaluated_already;
     uint64_t                        i_id;                   /* id number used by EBC */
     Symbol*                         prod_name;
+
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;
@@ -49,21 +60,23 @@ typedef struct instantiation_struct
 void                init_instantiation_pool(agent* thisAgent);
 void                init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_name, production* prod = NULL, struct token_struct* tok = NULL, wme* w = NULL);
 void                create_instantiation(agent* thisAgent, production* prod, struct token_struct* tok, wme* w);
-void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst);
+void                finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation* original_inst, bool addToGoal);
 void                retract_instantiation(agent* thisAgent, instantiation* inst);
 void                deallocate_instantiation(agent* thisAgent, instantiation*& inst);
 
 goal_stack_level    get_match_goal(condition* top_cond);
+void                find_match_goal(agent* thisAgent, instantiation* inst);
 preference*         find_clone_for_level(preference* p, goal_stack_level level);
-void                copy_OSK(agent* thisAgent, instantiation* inst);
+
 Symbol*             instantiate_rhs_value(agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct* tok, wme* w, bool& wasUnboundVar);
 
 inline void         possibly_deallocate_instantiation(agent* thisAgent, instantiation* inst)
 {
-    if ((!(inst)->preferences_generated) && (!(inst)->in_ms)) deallocate_instantiation(thisAgent, inst);
+    if ((!(inst)->preferences_generated) && (!(inst)->in_ms))
+        deallocate_instantiation(thisAgent, inst);
 }
 
-instantiation*      make_architectural_instantiation(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions);
+instantiation*      make_architectural_instantiation_for_memory_system(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions, bool forSMem);
 preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
 
 /* -------------------------------------------------------------------

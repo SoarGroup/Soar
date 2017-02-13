@@ -32,6 +32,8 @@
     typedef std::list< rhs_value, soar_module::soar_memory_pool_allocator< rhs_value > >                            rhs_value_list;
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
+    typedef std::list< deep_copy_wme*, soar_module::soar_memory_pool_allocator< deep_copy_wme* > >                  deep_copy_wme_list;
+
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
     typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
@@ -89,6 +91,7 @@
     typedef std::list< condition_record* >                      condition_record_list;
     typedef std::list< condition* >                             condition_list;
     typedef std::list< constraint* >                            constraint_list;
+    typedef std::list< deep_copy_wme* >                         deep_copy_wme_list;
     typedef std::list< uint64_t >                               id_list;
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation* >                         inst_list;
@@ -140,6 +143,9 @@ typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, sym_identity_info* >      id_to_sym_id_map;
 //typedef std::unordered_map< uint64_t, chunk_element* >          id_to_element_map;
+typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
+typedef std::unordered_map< uint64_t, preference* >             id_to_pref_map;
+
 typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
 
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;

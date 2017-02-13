@@ -60,7 +60,7 @@ using namespace soar_TraceNames;
    representation.  The rhs_value MUST NOT be a reteloc.
 ----------------------------------------------------------------------- */
 
-const std::string string_to_escaped_string(char* s, char first_and_last_char)
+const std::string string_to_escaped_string(const char* s, char first_and_last_char)
 {
     std::string returnStr;
     returnStr.push_back(first_and_last_char);
@@ -624,7 +624,7 @@ void print_action(agent* thisAgent, action* a)
     a->next = old_next;
 }
 
-void print_preference(agent* thisAgent, preference* pref)
+void print_preference(agent* thisAgent, preference* pref, bool add_lf)
 {
     char pref_type = preference_to_char(pref->type);
 
@@ -638,8 +638,15 @@ void print_preference(agent* thisAgent, preference* pref)
     {
         thisAgent->outputManager->printa(thisAgent, "  :O ");
     }
-    thisAgent->outputManager->printa(thisAgent, ")\n");
+    if (pref->level > TOP_GOAL_LEVEL)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, ") [level %d]", static_cast<int64_t>(pref->level));
+    } else {
+        thisAgent->outputManager->printa(thisAgent, ")");
+    }
+    if (add_lf) thisAgent->outputManager->printa(thisAgent, "\n");
 
+    
     // <preference id="s1" attr="foo" value="123" pref_type=">"></preference>
     xml_begin_tag(thisAgent, kTagPreference);
     xml_att_val(thisAgent, kWME_Id, pref->id);
@@ -721,8 +728,7 @@ void print_wme_without_timetag(agent* thisAgent, wme* w)
     xml_object(thisAgent, w, XML_WME_NO_TIMETAG);
 }
 
-void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
-                                   wme_trace_type wtt, int action)
+void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst, wme_trace_type wtt, int action)
 {
     int PRINTING = -1;
     int FIRING = 0;
@@ -783,26 +789,25 @@ void print_instantiation_with_wmes(agent* thisAgent, instantiation* inst,
 
                     break;
                 case FULL_WME_TRACE:
-                    // Not all conds and wme_'s available when retracting, depending on DO_TOP_LEVEL_REF_CTS
-#ifdef DO_TOP_LEVEL_REF_CTS
-                    thisAgent->outputManager->printa_sf(thisAgent,  " ");
-                    print_wme(thisAgent, cond->bt.wme_);
-#else
-                    if (action != RETRACTING && cond->bt.level > TOP_GOAL_LEVEL)
-                    {
-                        thisAgent->outputManager->printa_sf(thisAgent, " ");
+                    // Not all conds and wme_'s available when retracting
+                    #ifdef DO_TOP_LEVEL_COND_REF_CTS
+                        thisAgent->outputManager->printa_sf(thisAgent,  " ");
                         print_wme(thisAgent, cond->bt.wme_);
-                    }
-                    else
-                    {
-                        // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
-                        thisAgent->outputManager->printa_sf(thisAgent, " %u", cond->bt.wme_->timetag);
-
-                        xml_begin_tag(thisAgent, kTagWME);
-                        xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
-                        xml_end_tag(thisAgent, kTagWME);
-                    }
-#endif
+                    #else
+                        if (action != RETRACTING && cond->bt.level > TOP_GOAL_LEVEL)
+                        {
+                            thisAgent->outputManager->printa_sf(thisAgent, " ");
+                            print_wme(thisAgent, cond->bt.wme_);
+                        }
+                        else
+                        {
+                            // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
+                            thisAgent->outputManager->printa_sf(thisAgent, "WME with time tag %u\n", cond->bt.wme_->timetag);
+                            xml_begin_tag(thisAgent, kTagWME);
+                            xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
+                            xml_end_tag(thisAgent, kTagWME);
+                        }
+                    #endif
                     break;
             }
         }

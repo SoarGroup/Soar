@@ -16,6 +16,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "mem.h"
+#include "instantiation.h"
 #include "preference.h"
 #include "symbol.h"
 #include "symbol_manager.h"
@@ -100,6 +101,7 @@ slot* make_slot(agent* thisAgent, Symbol* id, Symbol* attr)
     s->wmes = NIL;
     s->all_preferences = NIL;
     s->OSK_prefs = NIL;
+    s->instantiation_with_temp_OSK = NULL;
 
     /* JC: This is the same as all_preferences
      *  except they are indexed by type.
@@ -177,27 +179,6 @@ void mark_slot_for_possible_removal(agent* thisAgent, slot* s)
     push(thisAgent, s, thisAgent->slots_for_possible_removal);
 }
 
-void clear_OSK_prefs(agent* thisAgent, slot* s)
-{
-
-    cons* cond_current, *cond_old;
-    preference* pref;
-
-    /* The OSK prefs should never exist on a top-level slot, so we do
-     * not need to worry about checking for DO_TOP_LEVEL_REF_CTS. */
-
-    cond_old = cond_current = s->OSK_prefs;
-    s->OSK_prefs = NIL;
-    for (; cond_current != NIL; cond_current = cond_current->rest)
-    {
-        pref = static_cast<preference*>(cond_current->first);
-        preference_remove_ref(thisAgent, pref);
-    }
-    free_list(thisAgent, cond_old);
-
-}
-/* MMA 8-2012 end */
-
 void remove_garbage_slots(agent* thisAgent)
 {
     cons* c;
@@ -219,13 +200,16 @@ void remove_garbage_slots(agent* thisAgent)
 
         /* --- deallocate the slot --- */
         dprint(DT_DEALLOCATE_SLOT, "Deallocating slot %y ^%y.\n", s->id, s->attr);
-        /* MMA 9-2012 */
-        if (s->OSK_prefs && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK])
+        if (s->OSK_prefs)
         {
-            clear_OSK_prefs(thisAgent, s);
+            clear_preference_list(thisAgent, s->OSK_prefs);
         }
-        /* MMA 9-2012 end */
-
+        if (s->instantiation_with_temp_OSK)
+        {
+            free_list(thisAgent, s->instantiation_with_temp_OSK->OSK_proposal_prefs);
+            s->instantiation_with_temp_OSK->OSK_proposal_prefs = NULL;
+            s->instantiation_with_temp_OSK->OSK_proposal_slot = NULL;
+        }
         if (s->changed && (!s->isa_context_slot))
         {
             remove_from_dll(thisAgent->changed_slots, s->changed, next, prev);

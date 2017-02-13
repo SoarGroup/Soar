@@ -128,43 +128,37 @@ sp {init-superstate
             ^operators 4
             ^bests 2 3
             ^betters <bbp1>)
-   (<test8> ^name test8
+  (<test8> ^name test8
             ^impasse-type nc
             ^test-finished 0
             ^test-num 8
-            ^operators 23
-            ^unary-indifferents 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
-   (<test9> ^name test9
-            ^impasse-type nc
-            ^test-finished 0
-            ^test-num 9
             ^operators 5
             ^prohibits 1
             ^worsts 1 2 3
             ^unary-indifferents 4 5)
-   (<test10> ^name test10
+   (<test9> ^name test9
             ^impasse-type nc
             ^test-finished 0
-            ^test-num 10
+            ^test-num 9
             ^operators 7
             ^numerics <bnp1>
             ^unary-indifferents 2
             ^binary-indifferents <bip1> <bip2> <bip3> <bip4> <bip5> <bip6> <bip7> <bip8> <bip9> <bip10>
                                  <bip11> <bip12> <bip13> <bip14> <bip15> <bip16> <bip17> <bip18> <bip19> <bip20>
                                  <bip21> <bip22> <bip23> <bip24> <bip25> <bip26> <bip27> <bip28>)
-   (<test11> ^name test11
+   (<test10> ^name test10
             ^impasse-type nc
             ^test-finished 1
-            ^test-num 11
+            ^test-num 10
             ^operators 23
             ^unary-indifferents 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
             ^random-numerics 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
             ^bests 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
             ^worsts 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
-   (<test12> ^name test12
+   (<test11> ^name test11
             ^impasse-type nc
             ^test-finished 1
-            ^test-num 12
+            ^test-num 11
             ^operators 23
             ^betters <b1> <b2> <b3> <b4> <b5> <b6> <b7> <b8> <b9> <b10> <b11> <b12> <b13> <b14> <b15> <b16> <b17> <b18> <b19> <b20> <b21> <b22>
             )

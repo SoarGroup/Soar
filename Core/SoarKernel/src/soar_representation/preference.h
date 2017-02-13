@@ -38,6 +38,8 @@
 #define PREFMEM_H
 
 #include "kernel.h"
+
+#include "instantiation.h"
 #include "stl_typedefs.h"
 
 /* ------------------------------------------------------------------------
@@ -143,25 +145,40 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
+    goal_stack_level                level;
+    uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
-extern preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false, const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
-extern preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
-extern bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref);
-inline void preference_add_ref(preference* p) { (p)->reference_count++;}
-inline void preference_remove_ref(agent* thisAgent, preference* p) {(p)->reference_count--; if ((p)->reference_count == 0) { possibly_deallocate_preference_and_clones(thisAgent, p);}}
-extern void deallocate_preference(agent* thisAgent, preference* pref);
-extern bool add_preference_to_tm(agent* thisAgent, preference* pref);
-extern void remove_preference_from_tm(agent* thisAgent, preference* pref);
-extern bool remove_preference_from_clones(agent* thisAgent, preference* pref);
-extern void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo);
+preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
+                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false,
+                                   const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
+preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
+void cache_preference_if_necessary(agent* thisAgent, preference* pref);
+bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);
+void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);
+void deallocate_preference_contents(agent* thisAgent, preference* pref, bool dont_cache);
+bool add_preference_to_tm(agent* thisAgent, preference* pref);
+void remove_preference_from_tm(agent* thisAgent, preference* pref);
+bool remove_preference_from_clones_and_deallocate(agent* thisAgent, preference* pref);
+void process_o_rejects_and_deallocate_them(agent* thisAgent, preference* o_rejects, preference_list& bufdeallo);
 inline bool preference_is_unary(byte p) { return (p < 9);}
 inline bool preference_is_binary(byte p) { return (p > 8); }
+void clear_preference_list(agent* thisAgent, cons* &lPrefList);
+
+inline void preference_add_ref(preference* p)
+{
+    (p)->reference_count++;
+}
+
+inline bool preference_remove_ref(agent* thisAgent, preference* p, bool dont_cache = false)
+{
+    if ((p)->reference_count != 0) (p)->reference_count--;
+    if ((p)->reference_count == 0) return possibly_deallocate_preference_and_clones(thisAgent, p, dont_cache);
+    return false;
+}
 
 inline const char* preference_name(byte pNum)
 {
-
     if (pNum == ACCEPTABLE_PREFERENCE_TYPE) return "acceptable";
     if (pNum == REQUIRE_PREFERENCE_TYPE) return "require";
     if (pNum == REJECT_PREFERENCE_TYPE) return "reject";

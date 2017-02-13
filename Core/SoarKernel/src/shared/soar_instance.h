@@ -31,45 +31,35 @@ class EXPORT Soar_Instance
         }
         ~Soar_Instance();
 
-        void init_Soar_Instance(sml::Kernel* pKernel);
-        void Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
-        std::string Tcl_Message_Library(const char* pMessage);
-        std::string Message_Library(std::string &pMessage);
-        void Clean_Up_Libraries();
+        void            init_Soar_Instance(sml::Kernel* pKernel);
 
-        void Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
-        void Delete_Agent(char* pAgentName);
+        void            Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
+        std::string     Tcl_Message_Library(const char* pMessage);
+        bool            is_Tcl_on() { return m_tcl_enabled; };
+        std::string     Message_Library(std::string &pMessage);
+        void            Clean_Up_Libraries();
 
-        void Set_Kernel(sml::Kernel* pKernel)
-        {
-            m_Kernel = pKernel;
-        };
-        sml::Kernel* Get_Kernel()
-        {
-            return m_Kernel;
-        };
+        void            Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
+        void            Delete_Agent(char* pAgentName);
+        sml::AgentSML*  Get_Agent_Info(const char* pAgentName);
 
-        void Set_OM(Output_Manager* pOutput_Manager)
-        {
-            m_Output_Manager = pOutput_Manager;
-        };
-        Output_Manager* Get_OM()
-        {
-            return m_Output_Manager;
-        };
+        void            CLI_Debug_Print(const char* text);
 
-        void CLI_Debug_Print(const char* text);
-        void configure_for_unit_tests() { m_launched_by_unit_test = true; }
-        bool was_run_from_unit_test() { return m_launched_by_unit_test; };
-        bool is_Tcl_on() { return m_tcl_enabled; };
+        void            configure_for_unit_tests()              { m_launched_by_unit_test = true; }
+        bool            was_run_from_unit_test()                { return m_launched_by_unit_test; };
+
+        void            Set_Kernel(sml::Kernel* pKernel)        { m_Kernel = pKernel; };
+        void            Set_OM(Output_Manager* pOutput_Manager) { m_Output_Manager = pOutput_Manager; };
+        sml::Kernel*    Get_Kernel()                            { return m_Kernel; };
+        Output_Manager* Get_OM()                                { return m_Output_Manager; };
 
     private:
 
         Soar_Instance();
-
-        /* The following two functions are declared but not implemented to avoid copies of singletons */
         Soar_Instance(Soar_Instance const&) {};
         void operator=(Soar_Instance const&) {};
+
+        void Print_Agent_Table();
 
         sml::Kernel*            m_Kernel;
         Output_Manager*         m_Output_Manager;
@@ -79,10 +69,6 @@ class EXPORT Soar_Instance
 
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;
-
-        sml::AgentSML* Get_Agent_Info(char* pAgentName);
-        void Print_Agent_Table();
-
 };
 
 /* -- getSoarInstance is used by libraries to retrieve the

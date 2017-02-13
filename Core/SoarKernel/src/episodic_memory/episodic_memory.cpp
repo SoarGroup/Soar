@@ -1295,7 +1295,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
         return;
     }
 
-    instantiation* inst = make_architectural_instantiation(thisAgent, state, &cue_wmes, &my_list);
+    instantiation* inst = make_architectural_instantiation_for_memory_system(thisAgent, state, &cue_wmes, &my_list, false);
 
     for (preference* pref = inst->preferences_generated; pref;)
     {
@@ -1321,7 +1321,7 @@ inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wm
 			{
 				preference* previous = pref;
 				pref = pref->inst_next;
-				possibly_deallocate_preference_and_clones(thisAgent, previous);
+				possibly_deallocate_preference_and_clones(thisAgent, previous, true);
 				continue;
 			}
         }
@@ -3125,7 +3125,7 @@ void epmem_new_episode(agent* thisAgent)
                     soar_module::remove_module_wme(thisAgent, state->id->epmem_info->epmem_time_wme);
                 }
 
-                state->id->epmem_info->epmem_time_wme = soar_module::add_module_wme(thisAgent, state->id->epmem_info->epmem_header, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
+                state->id->epmem_info->epmem_time_wme = soar_module::add_module_wme(thisAgent, state->id->epmem_info->epmem_link_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_present_id, my_time_sym);
 
                 state = state->id->higher_goal;
             }
@@ -3237,7 +3237,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
     ////////////////////////////////////////////////////////////////////////////
 
     // get the ^result header for this state
-    Symbol* result_header = state->id->epmem_info->epmem_result_header;
+    Symbol* result_header = state->id->epmem_info->result_wme->value;
 
     // initialize stat
     int64_t num_wmes = 0;
@@ -4327,14 +4327,14 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
     // a query must contain a positive cue
     if (pos_query == NULL)
     {
-        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
+        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
         return;
     }
 
     // before and after, if specified, must be valid relative to each other
     if (before != EPMEM_MEMID_NONE && after != EPMEM_MEMID_NONE && before <= after)
     {
-        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
+        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
         return;
     }
 
@@ -4881,10 +4881,10 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
         // otherwise, put the episode in working memory
         if (best_episode == EPMEM_MEMID_NONE)
         {
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, pos_query);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, pos_query);
             if (neg_query)
             {
-                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, neg_query);
+                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, neg_query);
             }
         }
         else
@@ -4897,41 +4897,41 @@ void epmem_process_query(agent* thisAgent, Symbol* state, Symbol* pos_query, Sym
             epmem_id_mapping node_mem_map;
             // cue size
             temp_sym = thisAgent->symbolManager->make_int_constant(leaf_literals.size());
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_cue_size, temp_sym);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_cue_size, temp_sym);
             thisAgent->symbolManager->symbol_remove_ref(&temp_sym);
             // match cardinality
             temp_sym = thisAgent->symbolManager->make_int_constant(best_cardinality);
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_match_cardinality, temp_sym);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_match_cardinality, temp_sym);
             thisAgent->symbolManager->symbol_remove_ref(&temp_sym);
             // match score
             temp_sym = thisAgent->symbolManager->make_float_constant(best_score);
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_match_score, temp_sym);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_match_score, temp_sym);
             thisAgent->symbolManager->symbol_remove_ref(&temp_sym);
             // normalized match score
             temp_sym = thisAgent->symbolManager->make_float_constant(best_score / perfect_score);
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_normalized_match_score, temp_sym);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_normalized_match_score, temp_sym);
             thisAgent->symbolManager->symbol_remove_ref(&temp_sym);
             // status
-            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_success, pos_query);
+            epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_success, pos_query);
             if (neg_query)
             {
-                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_success, neg_query);
+                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_success, neg_query);
             }
             // give more metadata if graph match is turned on
             if (do_graph_match)
             {
                 // graph match
                 temp_sym = thisAgent->symbolManager->make_int_constant((best_graph_matched ? 1 : 0));
-                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_graph_match, temp_sym);
+                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_graph_match, temp_sym);
                 thisAgent->symbolManager->symbol_remove_ref(&temp_sym);
 
                 // mapping
                 if (best_graph_matched)
                 {
-                    goal_stack_level level = state->id->epmem_info->epmem_result_header->id->level;
+                    goal_stack_level level = state->id->epmem_info->result_wme->value->id->level;
                     // mapping identifier
                     Symbol* mapping = thisAgent->symbolManager->make_new_identifier('M', level);
-                    epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_graph_match_mapping, mapping);
+                    epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_graph_match_mapping, mapping);
                     thisAgent->symbolManager->symbol_remove_ref(&mapping);
 
                     for (epmem_literal_node_pair_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++)
@@ -5684,7 +5684,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             Symbol* parent_sym;
 
             // initialize BFS at command
-            syms.push(state->id->epmem_info->epmem_cmd_header);
+            syms.push(state->id->epmem_info->cmd_wme->value);
 
             while (!syms.empty())
             {
@@ -5759,7 +5759,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             if (good_cue)
             {
                 dprint(DT_EPMEM_CMD, "--- ...good cue.\n");
-                thisAgent->SMem->clear_instance_mappings();
+                thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
                 // retrieve
                 if (path == 1)
@@ -5793,12 +5793,12 @@ void epmem_respond_to_cmd(agent* thisAgent)
                     if (state->id->epmem_info->last_memory == EPMEM_MEMID_NONE)
                     {
                         dprint(DT_EPMEM_CMD, "--- ...adding failure result wmes.\n");
-                        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, ((next) ? (next) : (previous)));
+                        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_failure, ((next) ? (next) : (previous)));
                     }
                     else
                     {
                         dprint(DT_EPMEM_CMD, "--- ...adding success result wmes.\n");
-                        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_success, ((next) ? (next) : (previous)));
+                        epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_success, ((next) ? (next) : (previous)));
                     }
                 }
                 // query
@@ -5814,7 +5814,7 @@ void epmem_respond_to_cmd(agent* thisAgent)
             else
             {
                 dprint(DT_EPMEM_CMD, "--- ...adding bad command result wmes.\n");
-                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->epmem_result_header, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
+                epmem_buffer_add_wme(thisAgent, meta_wmes, state->id->epmem_info->result_wme->value, thisAgent->symbolManager->soarSymbols.epmem_sym_status, thisAgent->symbolManager->soarSymbols.epmem_sym_bad_cmd);
             }
 
             // clear prohibit list
@@ -6014,7 +6014,7 @@ void EpMem_Manager::clean_up_for_agent_deletion()
 void epmem_param_container::print_settings(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
 //    outputManager->reset_column_indents();
 //    outputManager->set_column_indent(0, 25);
@@ -6092,7 +6092,7 @@ void epmem_param_container::print_settings(agent* thisAgent)
 void epmem_param_container::print_summary(agent* thisAgent)
 {
     std::string tempString;
-    Output_Manager* outputManager = &Output_Manager::Get_OM();
+    Output_Manager* outputManager = thisAgent->outputManager;
 
     std::string lStr("Episodic memory is ");
     lStr.append(thisAgent->EpMem->epmem_params->learning->get_value() ? "enabled." : "not enabled.");

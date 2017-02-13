@@ -80,9 +80,6 @@ class SMem_Manager
         /* Methods for creating an instance of a LTM using STIs */
         void        clear_instance_mappings();
         Symbol*     get_current_iSTI_for_LTI(uint64_t pLTI_ID, goal_stack_level pLevel, char pChar = 'L');
-        void        add_identity_to_iSTI_test(test pTest, uint64_t pI_ID);
-        uint64_t    get_identity_for_iSTI(Symbol* pSym, uint64_t pI_ID);
-        void        force_add_identity_for_STI(Symbol* pSym, uint64_t pID);
 
         /* Methods that brings in a portion or all of smem into an ltm_set data structure */
         void        create_store_set(ltm_set* store_set, uint64_t lti_id, uint64_t depth = 1);
@@ -123,7 +120,6 @@ class SMem_Manager
 
         /* Temporary maps used when creating an instance of an LTM */
         id_to_sym_map                   lti_to_sti_map;
-        sym_to_id_map                   sti_to_identity_map;
         sym_to_id_map                   iSti_to_lti_map;
 
         /* Methods for smem link interface */

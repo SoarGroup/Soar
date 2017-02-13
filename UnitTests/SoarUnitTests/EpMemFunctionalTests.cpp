@@ -15,9 +15,17 @@
 
 #include "SoarHelper.hpp"
 
+void EpMemFunctionalTests::tearDown(bool caught)
+{
+    SoarHelper::init_check_to_find_refcount_leaks(agent);
+    FunctionalTestHarness::tearDown(caught);
+}
+
 void EpMemFunctionalTests::testCountEpMem()
 {
-	runTest("testCountEpMem", 1693);
+    //SoarHelper::start_log(agent, "testCountEpmem");
+	runTest("testCountEpMem", -1);
+    //SoarHelper::close_log(agent);
 }
 
 void EpMemFunctionalTests::testHamilton()
