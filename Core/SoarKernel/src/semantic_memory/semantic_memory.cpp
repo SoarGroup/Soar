@@ -136,6 +136,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
     wme_set cue_wmes;
 
     Symbol* query;
+    std::list<Symbol*> orquery;
     Symbol* negquery;
     Symbol* retrieve;
     Symbol* math;
@@ -296,7 +297,15 @@ void SMem_Manager::respond_to_cmd(bool store_only)
 
                         {
                             query = (*w_p)->value;
+                            orquery.push_back((*w_p)->value);
                             path = cmd_query;
+                        }
+                        else if ((path == cmd_query) && (query != NIL))
+                        {
+                            //Since we have already received a query command and now we are receiving another, this must be an or-query.
+                            //This means that we will issue several queries and return the winner among the multiple queries.
+                            //The logic amounts to performing an or/union operation over the separate queries.
+                            orquery.push_back((*w_p)->value);
                         }
                         else
                         {
@@ -480,7 +489,7 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                     {
                         prohibit_lti.insert((*sym_p)->id->LTI_ID);
                     }
-                    process_query(state, query, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
+                    process_query(state, orquery, negquery, math, &(prohibit_lti), cue_wmes, meta_wmes, retrieval_wmes, qry_full, 1, NIL, depth, wm_install);
 
                     // add one to the cbr stat
                     thisAgent->SMem->statistics->queries->set_value(thisAgent->SMem->statistics->queries->get_value() + 1);
