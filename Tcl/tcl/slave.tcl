@@ -70,58 +70,31 @@ proc defineSoarCommands { commands } {
 # below. Dir commands also have tcl implementations: cd dirs popd pushd pwd
 
 defineSoarCommands [set allSoarCommands {
-    add-wme
-    allocate
-    capture-input
-    chunk
-    clog
-    command-to-file
-    debug
-    echo
-    epmem
-    excise
-    explain
-    firing-counts
-    gds-print
-    gp
-    help
-    indifferent-selection
-    init-soar
-    load-library
-    matches
-    memories
-    multi-attributes
-    numeric-indifferent-mode
-    output
-    pbreak
-    predict
-    preferences
-    print
-    production-find
-    pwatch
-    rand
-    remove-wme
-    replay-input
-    rete-net
-    rl
-    run
-    select
-    smem
-    soar
-    sp
-    srand
-    stats
-    stop-soar
-    svs
-    tcl
-    time
-    timers
-    version
-    visualize
-    watch
-    watch-wmes
-    wma
- }]
+  chunk
+  debug
+  decide
+  echo
+  epmem
+  explain
+  gp
+  help
+  load
+  output
+  preferences
+  print
+  production
+  rl
+  run
+  save
+  smem
+  soar
+  sp
+  stats
+  svs
+  trace
+  visualize
+  wm
+}]
 
 global outputStringsStack currentOutputStringsProc
 
