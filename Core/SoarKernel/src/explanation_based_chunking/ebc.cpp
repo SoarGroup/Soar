@@ -475,30 +475,24 @@ void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsN
 }
 ebc_timer_container::ebc_timer_container(agent* new_agent): soar_module::timer_container(new_agent)
 {
-    osk_add = new ebc_timer("1.01 Operator selection knowledge addition", thisAgent, soar_module::timer::one);
-    instantiation_creation = new ebc_timer("1.02 Instantiation creation", thisAgent, soar_module::timer::one);
+    instantiation_creation = new ebc_timer("1.00 Instantiation creation", thisAgent, soar_module::timer::one);
     chunk_instantiation_creation = new ebc_timer("2.01 Chunk instantiation creation", thisAgent, soar_module::timer::one);
     dependency_analysis = new ebc_timer("2.02 Dependency analysis", thisAgent, soar_module::timer::one);
-    dependency_analysis_osk = new ebc_timer("2.03 Dependency analysis for OSK", thisAgent, soar_module::timer::one);
-    identity_add = new ebc_timer("2.04 Identity mapping creation", thisAgent, soar_module::timer::one);
-    identity_unification = new ebc_timer("2.05 Identity unification", thisAgent, soar_module::timer::one);
-    identity_update = new ebc_timer("2.06 Identity transitive updates", thisAgent, soar_module::timer::one);
-    variablization_lhs = new ebc_timer("2.07 Variablizing LHS", thisAgent, soar_module::timer::one);
-    variablization_rhs = new ebc_timer("2.08 Variablizing RHS", thisAgent, soar_module::timer::one);
-    merging = new ebc_timer("2.09 Merging Conditions", thisAgent, soar_module::timer::one);
-    reorder = new ebc_timer("2.10 Validation and reordering", thisAgent, soar_module::timer::one);
-    repair = new ebc_timer("2.11 Rule repair", thisAgent, soar_module::timer::one);
-    reinstantiate = new ebc_timer("2.12 Reinstantiation", thisAgent, soar_module::timer::one);
-    add_to_rete = new ebc_timer("2.13 Adding rule to RETE", thisAgent, soar_module::timer::one);
-    clean_up = new ebc_timer("2.14 EBC Clean-Up", thisAgent, soar_module::timer::one);
-    ebc_total = new ebc_timer("2.15 EBC Total", thisAgent, soar_module::timer::one);
-    explainer_storage = new ebc_timer("3.01 Explainer", thisAgent, soar_module::timer::one);
+    identity_unification = new ebc_timer("2.03 Identity unification", thisAgent, soar_module::timer::one);
+    identity_update = new ebc_timer("2.04 Identity transitive updates", thisAgent, soar_module::timer::one);
+    variablization_lhs = new ebc_timer("2.05 Variablizing LHS", thisAgent, soar_module::timer::one);
+    variablization_rhs = new ebc_timer("2.06 Variablizing RHS", thisAgent, soar_module::timer::one);
+    merging = new ebc_timer("2.07 Merging Conditions", thisAgent, soar_module::timer::one);
+    reorder = new ebc_timer("2.08 Validation and reordering", thisAgent, soar_module::timer::one);
+    repair = new ebc_timer("2.09 Rule repair", thisAgent, soar_module::timer::one);
+    reinstantiate = new ebc_timer("2.10 Reinstantiation", thisAgent, soar_module::timer::one);
+    add_to_rete = new ebc_timer("2.11 Adding rule to RETE", thisAgent, soar_module::timer::one);
+    clean_up = new ebc_timer("2.12 EBC Clean-Up", thisAgent, soar_module::timer::one);
+    ebc_total = new ebc_timer("2.13 EBC Total", thisAgent, soar_module::timer::one);
 
     add(instantiation_creation);
     add(ebc_total);
-    add(explainer_storage);
     add(dependency_analysis);
-    add(dependency_analysis_osk);
     add(chunk_instantiation_creation);
     add(variablization_lhs);
     add(variablization_rhs);
@@ -508,12 +502,10 @@ ebc_timer_container::ebc_timer_container(agent* new_agent): soar_module::timer_c
     add(reinstantiate);
     add(add_to_rete);
     add(clean_up);
-    add(osk_add);
-    add(identity_add);
     add(identity_unification);
     add(identity_update);
-
 }
+
 ebc_timer_level_predicate::ebc_timer_level_predicate(agent* new_agent): soar_module::agent_predicate<soar_module::timer::timer_level>(new_agent) {}
 
 bool ebc_timer_level_predicate::operator()(soar_module::timer::timer_level val)

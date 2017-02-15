@@ -14,11 +14,10 @@ class ebc_timer_container: public soar_module::timer_container
 {
     public:
         soar_module::timer* instantiation_creation;
-        soar_module::timer* ebc_total;
-        soar_module::timer* explainer_storage;
-        soar_module::timer* dependency_analysis;
-        soar_module::timer* dependency_analysis_osk;
         soar_module::timer* chunk_instantiation_creation;
+        soar_module::timer* dependency_analysis;
+        soar_module::timer* identity_unification;
+        soar_module::timer* identity_update;
         soar_module::timer* variablization_lhs;
         soar_module::timer* variablization_rhs;
         soar_module::timer* merging;
@@ -27,10 +26,7 @@ class ebc_timer_container: public soar_module::timer_container
         soar_module::timer* reinstantiate;
         soar_module::timer* add_to_rete;
         soar_module::timer* clean_up;
-        soar_module::timer* osk_add;
-        soar_module::timer* identity_add;
-        soar_module::timer* identity_unification;
-        soar_module::timer* identity_update;
+        soar_module::timer* ebc_total;
 
         ebc_timer_container(agent* thisAgent);
 };

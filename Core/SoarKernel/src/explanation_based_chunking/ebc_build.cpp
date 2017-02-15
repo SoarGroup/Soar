@@ -139,11 +139,14 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     if (pref->identities.id && linked_id)
     {
         assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+        ebc_timers->chunk_instantiation_creation->stop();
 
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
         thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
         add_identity_unification(pref->identities.id, linked_id);
+        ebc_timers->chunk_instantiation_creation->start();
     }
+
     /* --- follow transitive closure through value, referent links --- */
     add_results_if_needed(pref->value, pref->identities.value);
     if (preference_is_binary(pref->type))
@@ -686,6 +689,8 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
 
+    ebc_timers->dependency_analysis->start();
+
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
     grounds = NIL;
@@ -717,6 +722,9 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     trace_locals(grounds_level);
 
     outputManager->clear_print_test_format();
+
+    ebc_timers->dependency_analysis->stop();
+
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
     dprint_unification_map(DT_BACKTRACE);
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
@@ -849,6 +857,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_failure_type = ebc_success;
 
     ebc_timers->ebc_total->start();
+    ebc_timers->chunk_instantiation_creation->start();
     if (!can_learn_from_instantiation()) { m_inst = NULL; return; }
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
@@ -859,6 +868,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (!m_results) {
         m_extra_results = NULL;
         m_inst = NULL;
+        ebc_timers->chunk_instantiation_creation->stop();
+        ebc_timers->ebc_total->stop();
         return;
     }
 
@@ -875,6 +886,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         thisAgent->explanationMemory->increment_stat_max_dupes();
         m_extra_results = NULL;
         m_inst = NULL;
+        ebc_timers->chunk_instantiation_creation->stop();
+        ebc_timers->ebc_total->stop();
         return;
     }
 
@@ -922,9 +935,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_tested_local_negation = false;
     m_tested_ltm_recall = false;
     m_tested_quiescence = false;
-    ebc_timers->dependency_analysis->start();
+    ebc_timers->chunk_instantiation_creation->stop();
     perform_dependency_analysis();
-    ebc_timers->dependency_analysis->stop();
+    ebc_timers->chunk_instantiation_creation->start();
 
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
 
@@ -982,6 +995,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     set_up_rule_name();
 
     thisAgent->explanationMemory->add_result_instantiations(m_inst, m_results);
+
+    /* Stop creation timer for the next few stages */
+    ebc_timers->chunk_instantiation_creation->stop();
 
     if (ebc_settings[SETTING_EBC_LEARNING_ON])
     {
@@ -1076,12 +1092,16 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
     }
     ebc_timers->reinstantiate->stop();
+    ebc_timers->chunk_instantiation_creation->start();
 
-    /* MToDo | Remove.  Just to see that nothing is being created when learning is off */
-    //    assert(unification_map->size() == 0);
-    //    assert(instantiation_identities->size() == 0);
-    //    assert(identity_to_var_map->size() == 0);
-    //    assert(constraints->size() == 0);
+    /* MToDo | Remove.  Sanity check to see that nothing is being created when learning is off */
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON])
+//    {
+//        assert(unification_map->size() == 0);
+//        assert(instantiation_identities->size() == 0);
+//        assert(identity_to_var_map->size() == 0);
+//        assert(constraints->size() == 0);
+//    }
 
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
@@ -1090,8 +1110,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     {
         m_prod->explain_its_chunks = true;
     }
-    m_prod_name = NULL;     /* Production struct is now responsible for the production name, so clear local pointer so we don't accidentally delete. */
 
+    m_prod_name = NULL;     /* Production struct is now responsible for the production name, so clear local pointer so we don't accidentally delete. */
 
     /* Fill out the instantiation for the chunk */
     m_chunk_inst->top_of_instantiated_conditions    = l_inst_top;
@@ -1120,6 +1140,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     /* Add to RETE */
+    ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->add_to_rete->start();
     bool lAddedSuccessfully = add_chunk_to_rete();
     ebc_timers->add_to_rete->stop();
@@ -1158,6 +1179,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
 void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 {
+    ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->clean_up->start();
 
     if (m_chunk_new_i_id)

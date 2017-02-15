@@ -12,6 +12,7 @@
    ==================================================================== */
 
 #include "ebc.h"
+#include "ebc_timers.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -157,7 +158,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
 
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
+        ebc_timers->dependency_analysis->stop();
         unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
+        ebc_timers->dependency_analysis->start();
     }
 
     ++bt_depth;

@@ -437,7 +437,7 @@ void Explanation_Based_Chunker::print_chunking_settings()
     outputManager->printa(thisAgent,    "           Chunk Commands and Settings\n");
     outputManager->printa(thisAgent,    "===================================================\n");
     outputManager->printa_sf(thisAgent, "? | help %-%-%s\n", "Print this help listing");
-    outputManager->printa_sf(thisAgent, "timers                  %-%s%-%s\n", capitalizeOnOff(ebc_params->timers_cmd->get_value()), "No arguments prints timing statistics");
+    outputManager->printa_sf(thisAgent, "timers                  %-%s%-%s\n", capitalizeOnOff(ebc_params->timers_cmd->get_value()), "Timing statistics (no arguments to print stats)");
     outputManager->printa_sf(thisAgent, "stats %-%-%s\n", "Print statistics on learning that has occurred");
     outputManager->printa_sf(thisAgent, "------------------- Settings ----------------------\n");
     outputManager->printa_sf(thisAgent, "%s | %s | %s | %s                   %-%s\n",
