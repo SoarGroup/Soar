@@ -123,15 +123,6 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
     }
 }
 
-/* This is the wme which is causing this production to be backtraced through.
-   It is NULL when backtracing for a result preference.                   */
-
-inline bool condition_is_operational(condition* cond, goal_stack_level grounds_level)
-{
-    Symbol* thisID = cond->data.tests.id_test->eq_test->data.referent;
-    return  (thisID->id->level <= grounds_level);
-}
-
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
@@ -211,6 +202,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
+            /* Might be able to only cache constraints for non-operational conds.  The others should show
+             * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
+             * ones needed. */
             cache_constraints_in_cond(c);
             if (condition_is_operational(c, grounds_level))
             {

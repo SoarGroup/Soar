@@ -92,6 +92,7 @@ enum TraceMode
     DT_RHS_LTI_LINKING          = 56,
     DT_VALIDATE                 = 57,
     DT_OSK                      = 58,
+    DT_BACKTRACE1               = 59,
     num_trace_modes
 };
 

@@ -14,6 +14,8 @@
 
 #include "ebc_structs.h"
 #include "stl_typedefs.h"
+#include "condition.h"
+#include "symbol.h"
 #include "test.h"
 
 #include <list>
@@ -240,6 +242,7 @@ class Explanation_Based_Chunker
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
         void add_to_locals(condition* cond);
+        bool condition_is_operational(condition* cond, goal_stack_level grounds_level) { return  (cond->data.tests.id_test->eq_test->data.referent->id->level <= grounds_level); }
         void trace_locals(goal_stack_level grounds_level);
         void backtrace_through_instantiation(
                 instantiation* inst,
@@ -251,6 +254,17 @@ class Explanation_Based_Chunker
                 BTSourceType bt_type);
         void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
+
+        void btpass1_backtrace_through_instantiation(
+            instantiation* inst,
+            goal_stack_level grounds_level,
+            condition* trace_cond,
+            const identity_quadruple o_ids_to_replace,
+            const rhs_quadruple rhs_funcs,
+            uint64_t bt_depth,
+            BTSourceType bt_type);
+        void btpass1_backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
+        void btpass1_trace_locals(goal_stack_level grounds_level);
 
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);

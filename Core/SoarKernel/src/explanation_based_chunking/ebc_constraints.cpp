@@ -189,7 +189,7 @@ void Explanation_Based_Chunker::prune_redundant_constraints()
     dprint(DT_CONSTRAINTS, "Pruning redundant constraints from set of size %u.\n", static_cast<uint64_t>(constraints->size()));
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
     {
-        if ((*iter)->constraint_test->tc_num == tc_num_found)
+        if ((*iter)->constraint_test->constraint_tc_num == tc_num_found)
         {
             iter = constraints->erase(iter);
         }

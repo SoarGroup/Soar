@@ -123,6 +123,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
             new_ct->identity = t->identity;
+            new_ct->identity_set = t->identity_set;
             if (t->type == EQUALITY_TEST)
             {
                 new_ct->eq_test = new_ct;
@@ -135,7 +136,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  * already in a condition, which most should be. */
                 if (t->type != EQUALITY_TEST)
                 {
-                    t->tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
+                    t->constraint_tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
                 }
                 if (new_ct->identity)
                 {
@@ -967,7 +968,9 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
-    new_ct->tc_num = 0;
+    new_ct->constraint_tc_num = 0;
+    new_ct->identity_set = NULL_IDENTITY_SET;
+    new_ct->id_set_tc_num = 0;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;
