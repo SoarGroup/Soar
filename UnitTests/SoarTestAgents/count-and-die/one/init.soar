@@ -12,6 +12,6 @@ sp {apply*init
    (state <s> ^operator <op>)
    (<op> ^name init)
 -->
-   (<s> ^max 5000 
+   (<s> ^max 75000 
         ^count 1)
 }
