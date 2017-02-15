@@ -8,6 +8,7 @@
 #include "ebc.h"
 #include "ebc_settings.h"
 #include "ebc_timers.h"
+#include "ebc_identity_sets.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -65,6 +66,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     local_singletons = new symbol_set();
     singletons = new symbol_set();
+    identitySets = new Identity_Sets(thisAgent);
 
     local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();
@@ -91,6 +93,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete local_singletons;
     clear_singletons();
     delete singletons;
+    delete identitySets;
     delete chunk_history;
 }
 

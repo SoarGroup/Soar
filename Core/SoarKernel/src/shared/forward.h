@@ -78,6 +78,7 @@ class production_param_container;
 class wm_param_container;
 
 class Explanation_Based_Chunker;
+class Identity_Sets;
 class ebc_timer_container;
 class Repair_Path;
 class Explanation_Memory;

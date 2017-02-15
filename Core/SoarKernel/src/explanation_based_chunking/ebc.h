@@ -127,6 +127,7 @@ class Explanation_Based_Chunker
 
         agent*              thisAgent;
         Output_Manager*     outputManager;
+        Identity_Sets*      identitySets;
 
         /* Statistics on learning performed so far */
         uint64_t            chunk_naming_counter;
