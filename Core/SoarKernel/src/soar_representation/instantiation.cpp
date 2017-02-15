@@ -31,6 +31,7 @@
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_timers.h"
 #include "episodic_memory.h"
 #include "instantiation.h"
 #include "mem.h"
@@ -1060,6 +1061,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
     assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
     #endif
+    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
 
     debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
@@ -1227,6 +1229,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     {
         thisAgent->explanationBasedChunker->clear_symbol_identity_map();
     }
+
+    thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
 
     if (isSubGoalMatch)
     {

@@ -14,6 +14,7 @@
  */
 
 #include "ebc.h"
+#include "ebc_timers.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -847,6 +848,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_new_i_id = 0;
     m_failure_type = ebc_success;
 
+    ebc_timers->ebc_total->start();
     if (!can_learn_from_instantiation()) { m_inst = NULL; return; }
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
@@ -920,7 +922,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_tested_local_negation = false;
     m_tested_ltm_recall = false;
     m_tested_quiescence = false;
+    ebc_timers->dependency_analysis->start();
     perform_dependency_analysis();
+    ebc_timers->dependency_analysis->stop();
 
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
 
@@ -982,8 +986,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     if (ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         /* Variablize the LHS */
+        ebc_timers->variablization_lhs->start();
         thisAgent->symbolManager->reset_variable_generator(m_lhs, NIL);
         variablize_condition_list(m_lhs);
+        ebc_timers->variablization_lhs->stop();
         dprint(DT_VARIABLIZATION_MANAGER, "Conditions after variablizing: \n%1", m_lhs);
 
         #ifdef EBC_SANITY_CHECK_RULES
@@ -991,12 +997,18 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         #endif
 
         /* Merge redundant conditions (same identity sets in each element) */
+        ebc_timers->merging->start();
         merge_conditions();
+        ebc_timers->merging->stop();
 
         /* Variablize the RHS preferences into actions */
+        ebc_timers->variablization_rhs->start();
         m_rhs = variablize_results_into_actions();
+        ebc_timers->variablization_rhs->stop();
     } else {
+        ebc_timers->variablization_rhs->start();
         m_rhs = convert_results_into_actions();
+        ebc_timers->variablization_rhs->stop();
     }
 
 
@@ -1030,6 +1042,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         } else {
             if (ebc_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS]){
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
+                ebc_timers->clean_up->start();
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
                 clean_up(false);
@@ -1053,6 +1066,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * This changes during re-instantiation.  If the rule being formed is a justification,
      * both m_lhs and m_rhs will become instantiated as well. */
 
+    ebc_timers->reinstantiate->start();
     if (ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         l_inst_top = reinstantiate_current_rule();
@@ -1061,6 +1075,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     } else {
         copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
     }
+    ebc_timers->reinstantiate->stop();
 
     /* MToDo | Remove.  Just to see that nothing is being created when learning is off */
     //    assert(unification_map->size() == 0);
@@ -1105,7 +1120,9 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
 
     /* Add to RETE */
+    ebc_timers->add_to_rete->start();
     bool lAddedSuccessfully = add_chunk_to_rete();
+    ebc_timers->add_to_rete->stop();
 
     if (lAddedSuccessfully)
     {
@@ -1131,6 +1148,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         /* Clean up failed chunk completely*/
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
         m_chunk_inst->in_newly_created = false;
+        ebc_timers->clean_up->start();
         excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
         remove_chunk_instantiation();
@@ -1140,6 +1158,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
 void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 {
+    ebc_timers->clean_up->start();
+
     if (m_chunk_new_i_id)
     {
         thisAgent->explanationBasedChunker->clear_symbol_identity_map();
@@ -1190,7 +1210,8 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
         debug_trace_off();
     }
     #endif
-
+    ebc_timers->clean_up->stop();
+    ebc_timers->ebc_total->stop();
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     local_timer.stop();
     thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);

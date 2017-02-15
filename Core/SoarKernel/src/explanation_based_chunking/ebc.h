@@ -34,6 +34,7 @@ class Explanation_Based_Chunker
 
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
+        ebc_timer_container*    ebc_timers;
         bool                    ebc_settings[num_ebc_settings];
         ebc_rule_type           m_rule_type;
         uint64_t                max_chunks, max_dupes;

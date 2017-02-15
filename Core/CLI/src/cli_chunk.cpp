@@ -18,6 +18,7 @@
 
 #include "agent.h"
 #include "ebc.h"
+#include "ebc_timers.h"
 #include "explanation_memory.h"
 
 #include "print.h"
@@ -69,9 +70,34 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
         thisAgent->explanationBasedChunker->ebc_params->update_ebc_settings(thisAgent, static_cast<soar_module::boolean_param*>(my_param));
         return true;
     }
-    else if (my_param == thisAgent->explanationBasedChunker->ebc_params->history_cmd)
+    else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->timers_cmd) && !pArg2)
     {
-        PrintCLIMessage_Header("Chunking History", 60);
+        struct foo: public soar_module::accumulator< soar_module::timer* >
+        {
+            private:
+                bool raw;
+                cli::CommandLineInterface* this_cli;
+                std::ostringstream& m_Result;
+
+                foo& operator=(const foo&)
+                {
+                    return *this;
+                }
+
+            public:
+                foo(bool m_RawOutput, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), this_cli(new_cli), m_Result(m_Result) {};
+
+
+                void operator()(soar_module::timer* t)
+                {
+                    std::string output(t->get_name());
+                    output += ":";
+                    this_cli->PrintCLIMessage_Item(output.c_str(), t, 70);
+                }
+        } bar(m_RawOutput, this, m_Result);
+
+        PrintCLIMessage_Header("EBC Timers (in seconds)", 70);
+        thisAgent->explanationBasedChunker->ebc_timers->for_each(bar);
     }
     else if (my_param == thisAgent->explanationBasedChunker->ebc_params->singleton)
     {

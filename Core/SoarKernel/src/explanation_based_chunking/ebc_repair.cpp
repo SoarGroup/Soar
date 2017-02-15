@@ -1,5 +1,6 @@
-#include <ebc_repair.h>
 #include "ebc.h"
+#include "ebc_repair.h"
+#include "ebc_timers.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -425,8 +426,10 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
         {
             thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_progress_repairing, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
 
+            ebc_timers->repair->start();
             Repair_Manager* lRepairManager = new Repair_Manager(thisAgent, m_results_match_goal_level, m_chunk_new_i_id);
             lRepairManager->repair_rule(m_lhs, unconnected_syms);
+            ebc_timers->repair->stop();
 
             delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
             unconnected_syms = new matched_symbol_list();

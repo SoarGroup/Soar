@@ -6,6 +6,7 @@
  */
 
 #include "ebc.h"
+#include "ebc_timers.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -77,6 +78,7 @@ void Explanation_Based_Chunker::unify_preference_identities(preference* lPref)
 }
 void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
 {
+    ebc_timers->identity_update->start();
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
@@ -90,6 +92,7 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
             thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_transitive, iter->first, pNew_o_id);
         }
     }
+    ebc_timers->identity_update->stop();
 }
 
 void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
@@ -97,10 +100,14 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     if (pOld_o_id == NULL_IDENTITY_SET) return;
+    ebc_timers->variablization_rhs->start();
+    ebc_timers->variablization_rhs->stop();
+    ebc_timers->identity_add->start();
 
     if (pOld_o_id == pNew_o_id)
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Attempting to unify identical conditions for identity %u].  Skipping.\n", pNew_o_id);
+        ebc_timers->identity_add->stop();
         return;
     }
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding identity unification %u -> %u\n", pOld_o_id, pNew_o_id);
@@ -128,6 +135,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
             /* Circular reference */
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Transitive mapping %u -> %u would be self referential.  Not adding.\n",
                 pNew_o_id, iter->second, pOld_o_id, iter->second);
+            ebc_timers->identity_add->stop();
             return;
         }
         else
@@ -153,16 +161,18 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * literalize any tests with identity of parent in this trace */
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, pNew_o_id);
                 (*unification_map)[newID] = 0;
+                ebc_timers->identity_add->stop();
                 thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0);
-
                 update_unification_table(newID, 0);
             } else {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %u -> 0.\n", pOld_o_id, pNew_o_id);
+                ebc_timers->identity_add->stop();
             }
         } else {
             if (newID == existing_mapping)
             {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %u -> %u already exists.  Skipping.\n", pOld_o_id, newID);
+                ebc_timers->identity_add->stop();
                 return;
             }
             else if (newID == 0)
@@ -171,6 +181,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * a different trace.  So, literalize the identity, that it is already remapped to.*/
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, existing_mapping);
                 (*unification_map)[existing_mapping] = 0;
+                ebc_timers->identity_add->stop();
                 thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0);
                 update_unification_table(existing_mapping, 0, pOld_o_id);
             } else {
@@ -179,6 +190,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
                  * of the parent in this trace */
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %u -> %u.\n", pOld_o_id, existing_mapping, pNew_o_id);
                 (*unification_map)[newID] = existing_mapping;
+                ebc_timers->identity_add->stop();
                 thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping);
                 update_unification_table(newID, existing_mapping);
                 if (pNew_o_id != newID)
@@ -191,6 +203,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
         }
     } else {
         (*unification_map)[pOld_o_id] = newID;
+        ebc_timers->identity_add->stop();
         thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID);
         update_unification_table(pOld_o_id, newID);
     }
@@ -246,6 +259,9 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     lValue = parent_cond->data.tests.value_test->eq_test;
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
+    ebc_timers->identity_unification->start();
+
 
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
 
@@ -312,6 +328,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
         literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
     }
+    ebc_timers->identity_unification->stop();
 }
 
 /* Requires: pCond is a local condition */

@@ -24,6 +24,7 @@
 #include "decider.h"
 #include "episodic_memory.h"
 #include "ebc.h"
+#include "ebc_timers.h"
 #include "explanation_memory.h"
 #include "output_manager.h"
 #include "print.h"
@@ -288,6 +289,7 @@ void reset_statistics(agent* thisAgent)
 
     thisAgent->WM->wma_timers->reset();
     thisAgent->EpMem->epmem_timers->reset();
+    thisAgent->explanationBasedChunker->ebc_timers->reset();
     thisAgent->SMem->timers->reset();
 
     thisAgent->WM->wma_d_cycle_count = 0;
