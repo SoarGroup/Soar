@@ -37,6 +37,17 @@ proc buildExecuteCommandArgumentString { name argList } {
   set result $name
   foreach arg $argList {
     append result " "
+
+    # This loop will escape any existing quotes in the string
+    if { $name == "sp" } {
+      set i [string first "\"" $arg]
+      while {$i >= 0 } {
+        set arg [string replace $arg $i $i "\\\""]
+        set i [string first "\"" $arg [expr $i + 2]]
+      }
+    }
+
+    # Now wrap the argument with quotes (if it has a space in it)
     if { [string first " " $arg] >= 0 } {
       append result "\"$arg\""
     } else {
@@ -64,12 +75,38 @@ proc defineSoarCommands { commands } {
   }
 }
 
+####
+# sp
+# @param args - the production being sourced
+# We define a custom procedure to handle sp commands
+# If a production is replaced (duplicate name), it prints out the rule's name
+# This is partly because the command 'source filename -v' doesn't work
+# (Tcl source can't accept command line arguments)
+#######
+
+proc sp { args } {
+    global output_buffer
+    set argstr [buildExecuteCommandArgumentString "sp" $args]
+    set r [executeCommandLine $argstr]
+    if { $r == "#*" } {
+        set rule [lindex $argstr 1]
+        set rulename  [string range $rule 0 [string first " " $rule]]
+        appendOutputBuffer "\nREPLACING RULE $rulename\n"
+    } elseif {$r != "*"} {
+        appendOutputBuffer "\n$r\n"
+    } else {
+        appendOutputBuffer $r
+    }
+    return ""
+}
+
+
 ##
 # Create TCL procs for all soar commands
 # Some commands like source, alias and unalias have special implementations
 # below. Dir commands also have tcl implementations: cd dirs popd pushd pwd
-
 defineSoarCommands [set allSoarCommands {
+  alias
   chunk
   debug
   decide
@@ -88,7 +125,8 @@ defineSoarCommands [set allSoarCommands {
   save
   smem
   soar
-  sp
+  #sp # handled by custom procedure above
+  srand
   stats
   svs
   trace
@@ -236,6 +274,8 @@ proc source {arg} {
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
+    puts "ERROR sourcing File $file"
+    puts $errorMessage
     popd
     error $errorMessage
   }
