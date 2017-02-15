@@ -691,6 +691,29 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     ebc_timers->dependency_analysis->start();
 
+//    increment_counter(backtrace_number);
+//    increment_counter(grounds_tc);
+//    grounds = NIL;
+//    locals = NIL;
+//
+//    thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
+//
+//    /* Backtrace through the instantiation that produced each result --- */
+//    for (pref = m_results; pref != NIL; pref = pref->next_result)
+//    {
+//        dprint(DT_BACKTRACE1, "Starting dependency analysis of result preference %p...\n", pref);
+//        btpass1_backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
+////        if (pref->slot && pref->slot->OSK_prefs)
+////        {
+////            btpass1_backtrace_through_OSK(pref->slot->OSK_prefs, grounds_level, 0);
+////        }
+//    }
+//
+//    btpass1_trace_locals(grounds_level);
+//
+//    if (locals) free_list(thisAgent, grounds);
+//    if (locals) free_list(thisAgent, locals);
+
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
     grounds = NIL;
@@ -709,10 +732,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             thisAgent->outputManager->printa(thisAgent, " ");
         }
         backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-        if (pref->slot && pref->slot->OSK_prefs)
-        {
-            backtrace_through_OSK(pref->slot->OSK_prefs, grounds_level, 0);
-        }
+
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
             xml_end_tag(thisAgent, kTagBacktraceResult);
