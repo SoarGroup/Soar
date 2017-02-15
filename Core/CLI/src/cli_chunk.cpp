@@ -25,6 +25,8 @@
 #include "ebc_settings.h"
 #include "output_manager.h"
 
+#include <cstdio>
+
 using namespace cli;
 using namespace sml;
 
@@ -72,10 +74,15 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
     }
     else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->timers_cmd) && !pArg2)
     {
+        double lEBC_total = thisAgent->explanationBasedChunker->ebc_timers->ebc_total->value();
+        double lKernel_total = thisAgent->timers_total_kernel_time.get_sec();
+
         struct foo: public soar_module::accumulator< soar_module::timer* >
         {
             private:
                 bool raw;
+                double m_total;
+
                 cli::CommandLineInterface* this_cli;
                 std::ostringstream& m_Result;
 
@@ -85,19 +92,45 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
                 }
 
             public:
-                foo(bool m_RawOutput, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), this_cli(new_cli), m_Result(m_Result) {};
-
+                foo(bool m_RawOutput, double pEBC_total, cli::CommandLineInterface* new_cli, std::ostringstream& m_Result): raw(m_RawOutput), m_total(pEBC_total), this_cli(new_cli), m_Result(m_Result) {};
 
                 void operator()(soar_module::timer* t)
                 {
                     std::string output(t->get_name());
+                    std::string output_value;
+                    std::snprintf(&output_value[0], output_value.capacity(), "%.2f sec", t->value());
+                    std::string percentage;
+
+                    bool isChunkSubTimer = (output != std::string("1.00 Instantiation creation"));
+                    bool isEBCTimer = (output == std::string("2.13 EBC Total"));
                     output += ":";
-                    this_cli->PrintCLIMessage_Item(output.c_str(), t, 70);
+                    if (!isChunkSubTimer || !m_total)
+                    {
+                        this_cli->PrintCLIMessage_Justify(output.c_str(), output_value.c_str(), 70);
+                    }
+                    else if (isEBCTimer)
+                    {
+                        this_cli->PrintCLIMessage_Section("", 70);
+                        this_cli->PrintCLIMessage_Justify(output.c_str(), output_value.c_str(), 70);
+                    }
+                    else
+                    {
+                        std::snprintf(&percentage[0], percentage.capacity(), "(%.2f%%)", (t->value()/m_total)*100);
+                        this_cli->PrintCLIMessage_Justify(output.c_str(), output_value.c_str(), 70, percentage.c_str());
+                    }
                 }
-        } bar(m_RawOutput, this, m_Result);
+        } bar(m_RawOutput, lEBC_total, this, m_Result);
 
         PrintCLIMessage_Header("EBC Timers (in seconds)", 70);
         thisAgent->explanationBasedChunker->ebc_timers->for_each(bar);
+        std::string tkt, percentage;
+        std::snprintf(&tkt[0], tkt.capacity(), "%.2f sec", thisAgent->timers_total_kernel_time.get_sec());
+        if (lKernel_total)
+        {
+            std::snprintf(&percentage[0], percentage.capacity(), "(%.2f%% in EBC)", (lEBC_total/lKernel_total)*100);
+        }
+        PrintCLIMessage_Section("", 70);
+        PrintCLIMessage_Justify("Kernel Total:", tkt.c_str(), 70, percentage.c_str());
     }
     else if (my_param == thisAgent->explanationBasedChunker->ebc_params->singleton)
     {
