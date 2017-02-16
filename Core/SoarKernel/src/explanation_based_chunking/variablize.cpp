@@ -40,7 +40,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     (*identity_to_var_map)[pIdentity] = lVarInfo;
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_new_i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+        thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_inst->i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
     }
     return lVarInfo;
 }

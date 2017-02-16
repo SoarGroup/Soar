@@ -123,6 +123,76 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
     }
 }
 
+void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* trace_cond)
+{
+    if (trace_cond->data.tests.id_test->eq_test->identity)
+    {
+        trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.id_test->eq_test->identity);
+        if (!trace_cond->data.tests.id_test->eq_test->identity_set)
+        {
+            trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->data.tests.id_test->eq_test->identity;
+        }
+    } else {
+        trace_cond->data.tests.id_test->eq_test->identity_set = NULL_IDENTITY_SET;
+    }
+    if (trace_cond->data.tests.attr_test->eq_test->identity)
+    {
+        trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.attr_test->eq_test->identity);
+        if (!trace_cond->data.tests.attr_test->eq_test->identity_set)
+        {
+            trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->data.tests.attr_test->eq_test->identity;
+        }
+    } else {
+        trace_cond->data.tests.attr_test->eq_test->identity_set = NULL_IDENTITY_SET;
+    }
+    if (trace_cond->data.tests.value_test->eq_test->identity)
+    {
+        trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.value_test->eq_test->identity);
+        if (!trace_cond->data.tests.value_test->eq_test->identity_set)
+        {
+            trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->data.tests.value_test->eq_test->identity;
+        }
+    } else {
+        trace_cond->data.tests.value_test->eq_test->identity_set = NULL_IDENTITY_SET;
+    }
+
+}
+
+void Explanation_Based_Chunker::propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace)
+{
+    if (trace_cond)
+    {
+//        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set;
+        if (o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set)
+        {
+            assert(identity_set_mappings->find(o_ids_to_replace.id) != identity_set_mappings->end());
+            auto iter = identity_set_mappings->find(o_ids_to_replace.id);
+            if (iter->second == NULL_IDENTITY_SET)
+            {
+                (*identity_set_mappings)[o_ids_to_replace.id] = trace_cond->data.tests.id_test->eq_test->identity_set;
+            }
+        }
+        if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set)
+        {
+            assert(identity_set_mappings->find(o_ids_to_replace.attr) != identity_set_mappings->end());
+            auto iter = identity_set_mappings->find(o_ids_to_replace.attr);
+            if (iter->second == NULL_IDENTITY_SET)
+            {
+                (*identity_set_mappings)[o_ids_to_replace.attr] = trace_cond->data.tests.attr_test->eq_test->identity_set;
+            }
+        }
+        if (o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set)
+        {
+            assert(identity_set_mappings->find(o_ids_to_replace.value) != identity_set_mappings->end());
+            auto iter = identity_set_mappings->find(o_ids_to_replace.value);
+            if (iter->second == NULL_IDENTITY_SET)
+            {
+                (*identity_set_mappings)[o_ids_to_replace.value] = trace_cond->data.tests.value_test->eq_test->identity_set;
+            }
+        }
+    }
+}
+
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
                                      goal_stack_level grounds_level,
                                      condition* trace_cond,
@@ -150,8 +220,19 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
+        propagate_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace);
         unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
         ebc_timers->dependency_analysis->start();
+        dprint(DT_BACKTRACE1,  "Backtraced instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
+        if (inst->bt_identity_set_mappings->size() > 0)
+        {
+            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: ");
+            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+            {
+                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+            }
+            dprint_noprefix(DT_BACKTRACE1, "\n\n");
+        }
     }
 
     ++bt_depth;
@@ -325,6 +406,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         }
         if (bt_pref)
         {
+            add_starting_identity_sets_to_cond(cond);
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
@@ -388,4 +470,75 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
     xml_end_tag(thisAgent, kTagLocalNegation);
 
     free_list(thisAgent, negated_to_print);
+}
+
+void Explanation_Based_Chunker::perform_dependency_analysis()
+{
+    preference* pref;
+    goal_stack_level grounds_level = m_inst->match_goal_level - 1;
+
+//    outputManager->set_print_test_format(true, false);
+    outputManager->set_print_test_format(true, true);
+    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
+    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
+
+    ebc_timers->dependency_analysis->start();
+
+//    increment_counter(backtrace_number);
+//    increment_counter(grounds_tc);
+//    increment_counter(id_set_pass1_tc);
+//    grounds = NIL;
+//    locals = NIL;
+//
+//    /* MToDo | When do we want to do this? */
+//    //thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
+//
+//    /* Backtrace through the instantiation that produced each result --- */
+//    for (pref = m_results; pref != NIL; pref = pref->next_result)
+//    {
+//        dprint(DT_BACKTRACE1, "Starting dependency analysis of result preference %p...\n", pref);
+//        btpass1_backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
+//    }
+//
+//    btpass1_trace_locals(grounds_level);
+//
+//    if (locals) free_list(thisAgent, grounds);
+//    if (locals) free_list(thisAgent, locals);
+
+    increment_counter(backtrace_number);
+    increment_counter(grounds_tc);
+    grounds = NIL;
+    locals = NIL;
+
+    thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
+
+    /* Backtrace through the instantiation that produced each result --- */
+    for (pref = m_results; pref != NIL; pref = pref->next_result)
+    {
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+        {
+            thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
+            xml_begin_tag(thisAgent, kTagBacktraceResult);
+            print_preference(thisAgent, pref);
+            thisAgent->outputManager->printa(thisAgent, " ");
+        }
+        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
+
+        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
+        {
+            xml_end_tag(thisAgent, kTagBacktraceResult);
+        }
+    }
+
+    trace_locals(grounds_level);
+
+    outputManager->clear_print_test_format();
+
+    ebc_timers->dependency_analysis->stop();
+
+    dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
+    dprint_unification_map(DT_BACKTRACE);
+    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
+    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
+
 }

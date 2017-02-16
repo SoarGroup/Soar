@@ -15,6 +15,7 @@
 #include "ebc_structs.h"
 #include "stl_typedefs.h"
 #include "condition.h"
+#include "instantiation.h"
 #include "symbol.h"
 #include "test.h"
 
@@ -34,11 +35,12 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
+        instantiation*          instantiation_being_built;
+        ebc_timer_container*    ebc_timers;
+
         /* Settings and cli command related functions */
         ebc_param_container*    ebc_params;
-        ebc_timer_container*    ebc_timers;
         bool                    ebc_settings[num_ebc_settings];
-        ebc_rule_type           m_rule_type;
         uint64_t                max_chunks, max_dupes;
 
         /* Cached pointer to lti link rhs function since it may be used often */
@@ -60,8 +62,8 @@ class Explanation_Based_Chunker
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
-        void     set_new_chunk_id() {m_chunk_new_i_id = get_new_inst_id();};
-        void     clear_chunk_id() {m_chunk_new_i_id = 0;};
+        void     set_new_chunk_id() {m_chunk_inst->i_id = get_new_inst_id();};
+        void     clear_chunk_id() {m_chunk_inst->i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
 
         /* identity generation functions */
@@ -159,7 +161,7 @@ class Explanation_Based_Chunker
         tc_number           backtrace_number;
         uint64_t            m_current_bt_inst_id;
 
-        /* Flags for potentialissues encountered during dependency analysis */
+        /* Flags for potential issues encountered during dependency analysis */
         bool                m_correctness_issue_possible;
         bool                m_tested_quiescence;
         bool                m_tested_local_negation;
@@ -173,7 +175,7 @@ class Explanation_Based_Chunker
 
         /* Variables to indicate current type of rule learning */
         bool                m_learning_on_for_instantiation;
-        uint64_t            m_chunk_new_i_id;
+        ebc_rule_type       m_rule_type;
 
         /* Intermediate rule structures */
         instantiation*      m_inst;
@@ -209,7 +211,7 @@ class Explanation_Based_Chunker
          * merge or eliminate positive conditions on the LHS of a chunk. */
         triple_merge_map*               cond_merge_map;
 
-        /* List of STIs created in the substate that are linked to LTMs.  Used to add link-stm-to-ltm actions */
+        /* List of STIs created in the sub-state that are linked to LTMs.  Used to add link-stm-to-ltm actions */
         rhs_value_list*               local_linked_STIs;
 
         /* Explanation/identity generation methods */
@@ -255,6 +257,9 @@ class Explanation_Based_Chunker
                 BTSourceType bt_type);
         void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
+
+        void add_starting_identity_sets_to_cond(condition* trace_cond);
+        void propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace);
 
         void btpass1_backtrace_through_instantiation(
             instantiation* inst,

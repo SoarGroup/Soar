@@ -55,6 +55,9 @@ typedef struct instantiation_struct
     tc_number                       explain_tc_num;
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;
+
+    id_to_id_map*                   bt_identity_set_mappings;
+
 } instantiation;
 
 void                init_instantiation_pool(agent* thisAgent);

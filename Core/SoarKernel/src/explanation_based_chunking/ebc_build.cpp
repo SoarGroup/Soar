@@ -680,77 +680,6 @@ bool Explanation_Based_Chunker::can_learn_from_instantiation()
     return (pref != NULL);
 }
 
-void Explanation_Based_Chunker::perform_dependency_analysis()
-{
-    preference* pref;
-    goal_stack_level grounds_level = m_inst->match_goal_level - 1;
-
-//    outputManager->set_print_test_format(true, false);
-    outputManager->set_print_test_format(true, true);
-    dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
-    dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
-
-    ebc_timers->dependency_analysis->start();
-
-    increment_counter(backtrace_number);
-    increment_counter(grounds_tc);
-    increment_counter(id_set_pass1_tc);
-    grounds = NIL;
-    locals = NIL;
-
-    /* MToDo | When do we want to do this? */
-    //thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
-
-    /* Backtrace through the instantiation that produced each result --- */
-    for (pref = m_results; pref != NIL; pref = pref->next_result)
-    {
-        dprint(DT_BACKTRACE1, "Starting dependency analysis of result preference %p...\n", pref);
-        btpass1_backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-    }
-
-    btpass1_trace_locals(grounds_level);
-
-    if (locals) free_list(thisAgent, grounds);
-    if (locals) free_list(thisAgent, locals);
-
-    increment_counter(backtrace_number);
-    increment_counter(grounds_tc);
-    grounds = NIL;
-    locals = NIL;
-
-    thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
-
-    /* Backtrace through the instantiation that produced each result --- */
-    for (pref = m_results; pref != NIL; pref = pref->next_result)
-    {
-        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-        {
-            thisAgent->outputManager->printa(thisAgent, "\nFor result preference ");
-            xml_begin_tag(thisAgent, kTagBacktraceResult);
-            print_preference(thisAgent, pref);
-            thisAgent->outputManager->printa(thisAgent, " ");
-        }
-        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-
-        if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
-        {
-            xml_end_tag(thisAgent, kTagBacktraceResult);
-        }
-    }
-
-    trace_locals(grounds_level);
-
-    outputManager->clear_print_test_format();
-
-    ebc_timers->dependency_analysis->stop();
-
-    dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
-    dprint_unification_map(DT_BACKTRACE);
-    dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
-    dprint(DT_BACKTRACE, "Locals:\n%3", locals);
-
-}
-
 void Explanation_Based_Chunker::deallocate_failed_chunk()
 {
     deallocate_condition_list(thisAgent, m_lhs);
@@ -872,7 +801,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     m_inst = inst;
-    m_chunk_new_i_id = 0;
     m_failure_type = ebc_success;
 
     ebc_timers->ebc_total->start();
@@ -916,23 +844,22 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_chunk_inst->creates_deep_copy         = m_inst->creates_deep_copy;
     m_chunk_inst->tested_LTM                = m_inst->tested_LTM;
     m_chunk_inst->tested_quiescence         = m_inst->tested_quiescence;
-    m_chunk_new_i_id = m_chunk_inst->i_id;
 
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
-    if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+    if (m_chunk_inst->i_id == DEBUG_ONLY_CHUNK_ID)
     #else
-    if ((m_chunk_new_i_id >= DEBUG_ONLY_CHUNK_ID) && (m_chunk_new_i_id <= DEBUG_ONLY_CHUNK_ID_LAST))
+    if ((m_chunk_inst->i_id >= DEBUG_ONLY_CHUNK_ID) && (m_chunk_inst->i_id <= DEBUG_ONLY_CHUNK_ID_LAST))
     #endif
         {
-            dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_new_i_id);
+            dprint(DT_DEBUG, "Turning on debug tracing for chunk ID %u that is flagged for debugging.\n", m_chunk_inst->i_id);
             debug_trace_on();
         }
     #endif
 
-    dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_new_i_id, m_inst->prod_name);
-//    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_new_i_id);
-//    if (m_chunk_new_i_id == 9)
+    dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_inst->i_id, m_inst->prod_name);
+//    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_inst->i_id);
+//    if (m_chunk_inst->i_id == 9)
 //    {
 //        dprint(DT_DEBUG, "Chunk found.\n");
 //    }
@@ -981,7 +908,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         clean_up(false);
         return;
     }
-    dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_new_i_id, inst->prod_name, inst->i_id);
+    dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_lhs);
 
     /* Determine if we create a justification or chunk */
@@ -1156,7 +1083,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     debug_refcount_change_end(thisAgent, (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
 
     dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
-    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_new_i_id, m_inst->prod_name);
+    dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_inst->i_id, m_inst->prod_name);
 
     /* Add to RETE */
     ebc_timers->chunk_instantiation_creation->stop();
@@ -1201,10 +1128,6 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
     ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->clean_up->start();
 
-    if (m_chunk_new_i_id)
-    {
-        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-    }
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
@@ -1235,6 +1158,7 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
 
     //dprint(DT_DEBUG, "unification_map: %d, identity_to_var_map: %d, constraints: %d" , static_cast<int64_t>(unification_map->size()) , static_cast<int64_t>(identity_to_var_map->size()) , static_cast<int64_t>(constraints->size()));
 
+    clear_symbol_identity_map();
     clear_variablization_maps();
     clear_cached_constraints();
     clear_o_id_substitution_map();
@@ -1242,12 +1166,12 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
     clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
-    if (m_chunk_new_i_id == DEBUG_ONLY_CHUNK_ID)
+    if (m_chunk_inst->i_id == DEBUG_ONLY_CHUNK_ID)
     #else
-    if (m_chunk_new_i_id >= DEBUG_ONLY_CHUNK_ID_LAST)
+    if (m_chunk_inst->i_id >= DEBUG_ONLY_CHUNK_ID_LAST)
     #endif
     {
-        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_new_i_id);
+        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_inst->i_id);
         debug_trace_off();
     }
     #endif

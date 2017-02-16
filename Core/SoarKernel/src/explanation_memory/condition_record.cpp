@@ -31,7 +31,7 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-    assert(condition_tests.id->eq_test->identity_set);
+//    assert(condition_tests.id->eq_test->identity_set);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);

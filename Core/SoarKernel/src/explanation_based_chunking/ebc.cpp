@@ -68,7 +68,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     singletons = new symbol_set();
     identitySets = new Identity_Sets(thisAgent);
 
-    local_singleton_superstate_identity = NULL;
     chunk_history = new std::string();
     lti_link_function = NULL;
     reinit();
@@ -102,10 +101,9 @@ void Explanation_Based_Chunker::reinit()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
     ebc_timers->reset();
-
+    instantiation_being_built           = NULL;
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
-    m_chunk_new_i_id                    = 0;
     ovar_id_counter                     = 0;
     backtrace_number                    = 0;
     chunk_naming_counter                = 0;
@@ -125,7 +123,7 @@ void Explanation_Based_Chunker::reinit()
     m_prod_name                         = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
-    local_singleton_superstate_identity = NULL_IDENTITY_SET;
+    local_singleton_superstate_identity = NULL;
     m_failure_type                      = ebc_success;
     m_rule_type                         = ebc_no_rule;
     m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
