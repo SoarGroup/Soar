@@ -374,6 +374,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     }
                                     destString += "[";
                                     destString += std::to_string(t->identity);
+                                    if (t->identity_set)
+                                    {
+                                        destString += "s";
+                                        destString += std::to_string(t->identity_set);
+//                                        destString += "(";
+//                                        destString += std::to_string(t->id_set_tc_num);
+//                                        destString += ")";
+                                    }
                                     destString += "]";
                                 } else {
                                     test_to_string(t, destString);
@@ -394,6 +402,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                         if (!isFirst) destString += ' '; else isFirst = false;
                                         destString += "[";
                                         destString += std::to_string(ct->identity);
+                                        if (ct->identity_set)
+                                        {
+                                            destString += "s";
+                                            destString += std::to_string(ct->identity_set);
+//                                            destString += "(";
+//                                            destString += std::to_string(ct->id_set_tc_num);
+//                                            destString += ")";
+                                        }
                                         destString += "]";
                                     } else {
                                         test_to_string(ct, destString);

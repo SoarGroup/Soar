@@ -315,9 +315,8 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
             print_wme(thisAgent, cond->bt.wme_);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
-        thisAgent->outputManager->set_print_test_format(true, true);
+
         dprint(DT_BACKTRACE, "Tracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
-        thisAgent->outputManager->clear_print_test_format();
 
         bt_pref = NULL;
         if (cond->bt.trace)

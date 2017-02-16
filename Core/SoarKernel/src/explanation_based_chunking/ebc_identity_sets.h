@@ -21,7 +21,11 @@ class Identity_Sets
 
         void        reset();
 
-        uint64_t    get_base_id_set(uint64_t base_identity);
+        void        add_id_set_propagation(uint64_t pID, uint64_t pID_set);
+        uint64_t    get_or_create_id_set(uint64_t base_identity);
+        uint64_t    get_id_set(uint64_t base_identity);
+        void        clear_inst_id_sets() { inst_id_to_id_set_map.clear(); }
+
         uint64_t    get_intermediate_id_set(uint64_t base_identity);
         bool        in_null_identity_set(test t)                        { return (literalized_id_sets.find(t->identity) != literalized_id_sets.end()); }
 
@@ -34,7 +38,7 @@ class Identity_Sets
 
         uint64_t                id_set_counter;
 
-        id_to_id_map            base_id_to_id_set_map;
+        id_to_id_map            inst_id_to_id_set_map;
         id_to_id_map            interm_id_to_id_set_map;
         id_to_id_map            id_set_unifications;
         id_set                  literalized_id_sets;

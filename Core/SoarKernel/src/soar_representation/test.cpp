@@ -58,13 +58,9 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 
 test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
-//    Symbol* referent;
     test new_ct;
 
-    if (!t)
-    {
-        return NULL;
-    }
+    if (!t) return NULL;
 
     switch (t->type)
     {
@@ -93,6 +89,8 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
                 new_ct->identity = t->eq_test->identity;
+                new_ct->identity_set = t->eq_test->identity_set;
+
                 if (pUnify_variablization_identity)
                 {
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);

@@ -13,6 +13,7 @@
 
 #include "ebc.h"
 #include "ebc_timers.h"
+#include "ebc_identity_sets.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -79,39 +80,103 @@ void Explanation_Based_Chunker::btpass1_backtrace_through_instantiation(instanti
     }
     Symbol* thisID, *value;
 
-    bool id_has_set, attr_has_set, value_has_set;
     if (trace_cond)
     {
-        id_has_set = o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set;
-        attr_has_set = o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set;
-        value_has_set = o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set;
-    } else {
-        id_has_set = attr_has_set = value_has_set = false;
+        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set)
+        {
+            identitySets->add_id_set_propagation(o_ids_to_replace.id, trace_cond->data.tests.id_test->eq_test->identity_set);
+        }
+        if (o_ids_to_replace.attr && (trace_cond->data.tests.attr_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.attr_test->eq_test->identity_set)
+        {
+            identitySets->add_id_set_propagation(o_ids_to_replace.attr, trace_cond->data.tests.attr_test->eq_test->identity_set);
+        }
+        if (o_ids_to_replace.value && (trace_cond->data.tests.value_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.value_test->eq_test->identity_set)
+        {
+            identitySets->add_id_set_propagation(o_ids_to_replace.value, trace_cond->data.tests.value_test->eq_test->identity_set);
+        }
     }
     /* --- scan through conditions, collect grounds and locals --- */
+    bool isOperational;
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
         {
             // Substitute in identity sets for any v_identity
-            if (!condition_is_operational(c, grounds_level))
+            isOperational = condition_is_operational(c, grounds_level);
+            if (!isOperational)
             {
                 dprint(DT_BACKTRACE1, "... adding cond %l to locals...\n", c);
                 add_to_locals(c);
             } else {
                 dprint(DT_BACKTRACE1, "... skipping operational cond %l...\n", c);
             }
-        }
-        else
-        {
-            dprint(DT_BACKTRACE1, "... skipping negative cond %l...\n", c);
-            /* Will need to update identity sets of negated.  Maybe we still do this part in pass 1 */
-//            dprint(DT_BACKTRACE1, "Adding negated condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
-//            add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
+            dprint(DT_BACKTRACE1, "... adding identity sets to local cond %l...\n", c);
+            test id_test = c->data.tests.id_test->eq_test;
+            test attr_test = c->data.tests.attr_test->eq_test;
+            test value_test = c->data.tests.value_test->eq_test;
+            if (id_test->identity && (id_test->id_set_tc_num != id_set_pass1_tc))
+            {
+                id_test->identity_set = identitySets->get_or_create_id_set(id_test->identity);
+                id_test->id_set_tc_num = id_set_pass1_tc;
+            }
+            if (attr_test->identity && (attr_test->id_set_tc_num != id_set_pass1_tc))
+            {
+                attr_test->identity_set = identitySets->get_or_create_id_set(attr_test->identity);
+                attr_test->id_set_tc_num = id_set_pass1_tc;
+            }
+            if (value_test->identity && (value_test->id_set_tc_num != id_set_pass1_tc))
+            {
+                value_test->identity_set = identitySets->get_or_create_id_set(value_test->identity);
+                value_test->id_set_tc_num = id_set_pass1_tc;
+            }
         }
     }
-
+    update_remaining_identity_sets(inst->top_of_instantiated_conditions);
+    identitySets->clear_inst_id_sets();
     m_current_bt_inst_id = last_bt_inst_id;
+}
+
+void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t)
+{
+    cons* c;
+    switch (t->type)
+        {
+            case GOAL_ID_TEST:
+            case IMPASSE_ID_TEST:
+            case SMEM_LINK_UNARY_TEST:
+            case SMEM_LINK_UNARY_NOT_TEST:
+            case DISJUNCTION_TEST:
+            case CONJUNCTIVE_TEST:
+                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                {
+                    update_remaining_identity_sets_in_test(static_cast<test>(c->first));
+                }
+                break;
+            default:
+                if (t->identity && (t->id_set_tc_num != id_set_pass1_tc))
+                {
+                    t->identity_set = identitySets->get_id_set(t->identity);
+                    t->id_set_tc_num = id_set_pass1_tc;
+                }
+                break;
+        }
+}
+
+void Explanation_Based_Chunker::update_remaining_identity_sets(condition* pCondTop)
+{
+    condition* c;
+
+    for (c = pCondTop; c != NIL; c = c->next)
+    {
+        if (c->type == POSITIVE_CONDITION)
+        {
+            update_remaining_identity_sets_in_test(c->data.tests.id_test);
+            update_remaining_identity_sets_in_test(c->data.tests.attr_test);
+            update_remaining_identity_sets_in_test(c->data.tests.value_test);
+        } else {
+            update_remaining_identity_sets(c->data.ncc.top);
+        }
+    }
 }
 
 /* ---------------------------------------------------------------
@@ -148,9 +213,7 @@ void Explanation_Based_Chunker::btpass1_trace_locals(goal_stack_level grounds_le
         cond = static_cast<condition_struct*>(c->first);
         free_cons(thisAgent, c);
 
-        thisAgent->outputManager->set_print_test_format(true, true);
         dprint(DT_BACKTRACE1, "Tracing through local condition of of instantiation %y (i%u): %l\n", cond->inst->prod_name, cond->inst->i_id, cond);
-        thisAgent->outputManager->clear_print_test_format();
 
         bt_pref = NULL;
         if (cond->bt.trace)

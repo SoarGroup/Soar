@@ -155,6 +155,7 @@ class Explanation_Based_Chunker
         cons*               locals;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
+        tc_number           id_set_pass1_tc;
         tc_number           backtrace_number;
         uint64_t            m_current_bt_inst_id;
 
@@ -265,6 +266,8 @@ class Explanation_Based_Chunker
             BTSourceType bt_type);
         void btpass1_backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void btpass1_trace_locals(goal_stack_level grounds_level);
+        void update_remaining_identity_sets(condition* pCondTop);
+        void update_remaining_identity_sets_in_test(test pTest);
 
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);

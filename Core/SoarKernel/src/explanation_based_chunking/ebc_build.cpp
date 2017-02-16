@@ -685,7 +685,8 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     preference* pref;
     goal_stack_level grounds_level = m_inst->match_goal_level - 1;
 
-    outputManager->set_print_test_format(true, false);
+//    outputManager->set_print_test_format(true, false);
+    outputManager->set_print_test_format(true, true);
     dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
 
@@ -693,10 +694,12 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
+    increment_counter(id_set_pass1_tc);
     grounds = NIL;
     locals = NIL;
 
-    thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
+    /* MToDo | When do we want to do this? */
+    //thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
 
     /* Backtrace through the instantiation that produced each result --- */
     for (pref = m_results; pref != NIL; pref = pref->next_result)
