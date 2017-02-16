@@ -131,12 +131,12 @@ void Explanation_Based_Chunker::btpass1_backtrace_through_instantiation(instanti
             }
         }
     }
-    update_remaining_identity_sets(inst->top_of_instantiated_conditions);
+    update_remaining_identity_sets_in_condlist(inst->top_of_instantiated_conditions, inst);
     identitySets->clear_inst_id_sets();
     m_current_bt_inst_id = last_bt_inst_id;
 }
 
-void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t)
+void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, instantiation* pInst)
 {
     cons* c;
     switch (t->type)
@@ -149,32 +149,39 @@ void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t)
             case CONJUNCTIVE_TEST:
                 for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                 {
-                    update_remaining_identity_sets_in_test(static_cast<test>(c->first));
+                    update_remaining_identity_sets_in_test(static_cast<test>(c->first), pInst);
                 }
                 break;
             default:
                 if (t->identity && (t->id_set_tc_num != id_set_pass1_tc))
                 {
-                    t->identity_set = identitySets->get_id_set(t->identity);
+                    if (pInst->bt_identity_set_mappings->find(t->identity) == pInst->bt_identity_set_mappings->end())
+                    {
+                        for (auto iter = pInst->bt_identity_set_mappings->begin(); iter != pInst->bt_identity_set_mappings->end(); ++iter)
+                        {
+                            dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+                        }
+                    }
+                    t->identity_set = pInst->bt_identity_set_mappings->at(t->identity);
                     t->id_set_tc_num = id_set_pass1_tc;
                 }
                 break;
         }
 }
 
-void Explanation_Based_Chunker::update_remaining_identity_sets(condition* pCondTop)
+void Explanation_Based_Chunker::update_remaining_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst)
 {
-    condition* c;
+    condition* pCond;
 
-    for (c = pCondTop; c != NIL; c = c->next)
+    for (pCond = pCondTop; pCond != NIL; pCond = pCond->next)
     {
-        if (c->type == POSITIVE_CONDITION)
+        if (pCond->type == POSITIVE_CONDITION)
         {
-            update_remaining_identity_sets_in_test(c->data.tests.id_test);
-            update_remaining_identity_sets_in_test(c->data.tests.attr_test);
-            update_remaining_identity_sets_in_test(c->data.tests.value_test);
+            update_remaining_identity_sets_in_test(pCond->data.tests.id_test, pInst);
+            update_remaining_identity_sets_in_test(pCond->data.tests.attr_test, pInst);
+            update_remaining_identity_sets_in_test(pCond->data.tests.value_test, pInst);
         } else {
-            update_remaining_identity_sets(c->data.ncc.top);
+            update_remaining_identity_sets_in_condlist(pCond->data.ncc.top, pInst);
         }
     }
 }

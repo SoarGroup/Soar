@@ -4,6 +4,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
+#include "ebc.h"
 #include "explanation_memory.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
@@ -31,7 +32,7 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-//    assert(condition_tests.id->eq_test->identity_set);
+
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);
@@ -253,9 +254,7 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
         {
             if (pTestIdentity->identity_set)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTestIdentity->identity, pTestIdentity->identity_set);
-            } else if (pTest->identity_set) {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTestIdentity->identity, pTest->identity_set);
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u-s%u) ", pTest, pTestIdentity->identity, pTestIdentity->identity_set);
             } else {
                 thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTestIdentity->identity);
             }

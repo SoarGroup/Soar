@@ -71,6 +71,10 @@ class Explanation_Based_Chunker
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
 
+        /* Identity set mapping functions */
+        void update_remaining_identity_sets_in_test(test pTest, instantiation* pInst);
+        void update_remaining_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
+
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
         void    copy_OSK(instantiation* inst);
@@ -238,7 +242,7 @@ class Explanation_Based_Chunker
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
         bool            reorder_and_validate_chunk();
         void            deallocate_failed_chunk();
-        void            clean_up(bool clean_up_inst_inventory = true);
+        void            clean_up(uint64_t pClean_up_id, bool clean_up_inst_inventory = true);
         bool            add_chunk_to_rete();
 
         /* Dependency analysis methods */
@@ -271,8 +275,6 @@ class Explanation_Based_Chunker
             BTSourceType bt_type);
         void btpass1_backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void btpass1_trace_locals(goal_stack_level grounds_level);
-        void update_remaining_identity_sets(condition* pCondTop);
-        void update_remaining_identity_sets_in_test(test pTest);
 
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);

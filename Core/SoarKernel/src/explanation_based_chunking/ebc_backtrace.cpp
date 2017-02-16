@@ -217,6 +217,23 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         xml_att_val(thisAgent, kProduction_Name, inst->prod ? inst->prod_name: thisAgent->symbolManager->soarSymbols.architecture_inst_symbol);
     }
 
+    if (inst->backtrace_number != backtrace_number)
+    {
+        if (inst->bt_identity_set_mappings->size() > 0)
+        {
+            dprint_noprefix(DT_BACKTRACE1, "\nClearing identity set mapping entries.\n");
+            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+            {
+                iter->second = NULL_IDENTITY_SET;
+            }
+            dprint_noprefix(DT_BACKTRACE1, "Identity set mapping entries:\n");
+            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+            {
+                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+            }
+        }
+    }
+
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
@@ -226,7 +243,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         dprint(DT_BACKTRACE1,  "Backtraced instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
         if (inst->bt_identity_set_mappings->size() > 0)
         {
-            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: ");
+            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: \n");
             for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
             {
                 dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
@@ -283,6 +300,10 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
+            update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
+            update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
+            update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
+
             /* Might be able to only cache constraints for non-operational conds.  The others should show
              * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
              * ones needed. */
@@ -304,7 +325,15 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         }
         else
         {
-            dprint(DT_BACKTRACE, "Adding negated condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
+            dprint(DT_BACKTRACE, "Adding NC or NCC condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
+            if (c->type == NEGATIVE_CONDITION)
+            {
+                update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
+                update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
+                update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
+            } else {
+                update_remaining_identity_sets_in_condlist(c->data.ncc.top, inst);
+            }
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }
@@ -486,7 +515,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
 
 //    increment_counter(backtrace_number);
 //    increment_counter(grounds_tc);
-//    increment_counter(id_set_pass1_tc);
+    increment_counter(id_set_pass1_tc);
 //    grounds = NIL;
 //    locals = NIL;
 //

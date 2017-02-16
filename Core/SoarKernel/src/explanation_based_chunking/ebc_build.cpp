@@ -784,6 +784,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     bool                lChunkValidated = true;
     condition*          l_inst_top = NULL;
     condition*          l_inst_bottom = NULL;
+    uint64_t            l_clean_up_id;
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     soar_timer local_timer;
@@ -840,11 +841,12 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
 
     /* Set up a new instantiation and ID for this chunk's refracted match */
     init_instantiation(thisAgent, m_chunk_inst, NULL);
+    l_clean_up_id = m_chunk_inst->i_id;
+
     m_chunk_inst->tested_local_negation     = m_inst->tested_local_negation;
     m_chunk_inst->creates_deep_copy         = m_inst->creates_deep_copy;
     m_chunk_inst->tested_LTM                = m_inst->tested_LTM;
     m_chunk_inst->tested_quiescence         = m_inst->tested_quiescence;
-
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (m_chunk_inst->i_id == DEBUG_ONLY_CHUNK_ID)
@@ -1123,7 +1125,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 }
 
-void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
+void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_inst_inventory)
 {
     ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->clean_up->start();
@@ -1166,12 +1168,12 @@ void Explanation_Based_Chunker::clean_up (bool clean_up_inst_inventory)
     clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
-    if (m_chunk_inst->i_id == DEBUG_ONLY_CHUNK_ID)
+    if (pClean_up_id == DEBUG_ONLY_CHUNK_ID)
     #else
-    if (m_chunk_inst->i_id >= DEBUG_ONLY_CHUNK_ID_LAST)
+    if (pClean_up_id >= DEBUG_ONLY_CHUNK_ID_LAST)
     #endif
     {
-        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", m_chunk_inst->i_id);
+        dprint(DT_DEBUG, "Turning off debug tracing for chunk ID %u.\n", pClean_up_id);
         debug_trace_off();
     }
     #endif
