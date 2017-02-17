@@ -297,26 +297,26 @@ void GraphViz_Visualizer::viz_table_end()
     graphviz_output += "              \xF3/TABLE\xF2\n";
 }
 
-void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
+void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor, const char* pModStr)
 {
     if (pNodeID)
     {
         outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
             (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "), pModStr);
     }
     viz_table_start();
 }
 
-void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
+void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor, const char* pModStr)
 {
     if (pNodeID)
     {
         outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
             (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "), pModStr);
     }
 }
 

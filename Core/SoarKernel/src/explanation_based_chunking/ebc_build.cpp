@@ -907,7 +907,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
-        clean_up(false);
+        clean_up(l_clean_up_id, false);
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
@@ -1009,7 +1009,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
                 ebc_timers->clean_up->start();
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
-                clean_up(false);
+                clean_up(l_clean_up_id, false);
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
                 return;
             } else {
@@ -1102,7 +1102,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         /* Clean up.  (Now that m_chunk_inst s on the list of insts to be asserted, we
          *             set it to to null because so that clean_up() won't delete it.) */
         m_chunk_inst = NULL;
-        clean_up();
+        clean_up(l_clean_up_id);
 
         if ((*new_inst_list)->match_goal_level > TOP_GOAL_LEVEL)
         {
@@ -1121,7 +1121,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
         remove_chunk_instantiation();
-        clean_up();
+        clean_up(l_clean_up_id);
     }
 }
 

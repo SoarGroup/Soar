@@ -199,7 +199,8 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false, isSuper);
+        visualizer->viz_table_element_conj_start(printInitialPort ? pNode_id : 0, 'c', false, isSuper,
+            (printIdentity && pTestIdentity->eq_test->identity && pTestIdentity->eq_test->identity_set) ? " BORDER=\"3\" " : " ");
         if (pTestIdentity->type == CONJUNCTIVE_TEST)
         {
             c2 =  pTestIdentity->data.conjunct_list;
@@ -237,9 +238,11 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     } else {
         if (printInitialPort || printFinalPort)
         {
-            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort, isSuper);
+            visualizer->viz_table_element_start(pNode_id, 'c', printInitialPort, isSuper,
+                (printIdentity && pTestIdentity->identity && pTestIdentity->identity_set) ? " BORDER=\"3\" " : " ");
         } else {
-            visualizer->viz_table_element_start(0, ' ', true, isSuper);
+            visualizer->viz_table_element_start(0, ' ', true, isSuper,
+                (printIdentity && pTestIdentity->identity && pTestIdentity->identity_set) ? " BORDER=\"3\" " : " ");
         }
         if (isAttribute)
         {
