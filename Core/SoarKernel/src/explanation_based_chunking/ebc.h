@@ -264,6 +264,8 @@ class Explanation_Based_Chunker
 
         void add_starting_identity_sets_to_cond(condition* trace_cond);
         void propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace);
+        void propagate_and_unify_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
+        void propagate_and_unify_element(id_to_id_map* identity_set_mappings, test parent_test, int64_t replaceID, rhs_value pRhs_func, uint64_t parent_inst_i_id);
 
         void btpass1_backtrace_through_instantiation(
             instantiation* inst,

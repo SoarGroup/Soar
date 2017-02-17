@@ -160,35 +160,32 @@ void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* tr
 
 void Explanation_Based_Chunker::propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace)
 {
-    if (trace_cond)
+    //        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set;
+    if (o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set)
     {
-//        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set;
-        if (o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set)
+        assert(identity_set_mappings->find(o_ids_to_replace.id) != identity_set_mappings->end());
+        auto iter = identity_set_mappings->find(o_ids_to_replace.id);
+        if (iter->second == NULL_IDENTITY_SET)
         {
-            assert(identity_set_mappings->find(o_ids_to_replace.id) != identity_set_mappings->end());
-            auto iter = identity_set_mappings->find(o_ids_to_replace.id);
-            if (iter->second == NULL_IDENTITY_SET)
-            {
-                (*identity_set_mappings)[o_ids_to_replace.id] = trace_cond->data.tests.id_test->eq_test->identity_set;
-            }
+            (*identity_set_mappings)[o_ids_to_replace.id] = trace_cond->data.tests.id_test->eq_test->identity_set;
         }
-        if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set)
+    }
+    if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set)
+    {
+        assert(identity_set_mappings->find(o_ids_to_replace.attr) != identity_set_mappings->end());
+        auto iter = identity_set_mappings->find(o_ids_to_replace.attr);
+        if (iter->second == NULL_IDENTITY_SET)
         {
-            assert(identity_set_mappings->find(o_ids_to_replace.attr) != identity_set_mappings->end());
-            auto iter = identity_set_mappings->find(o_ids_to_replace.attr);
-            if (iter->second == NULL_IDENTITY_SET)
-            {
-                (*identity_set_mappings)[o_ids_to_replace.attr] = trace_cond->data.tests.attr_test->eq_test->identity_set;
-            }
+            (*identity_set_mappings)[o_ids_to_replace.attr] = trace_cond->data.tests.attr_test->eq_test->identity_set;
         }
-        if (o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set)
+    }
+    if (o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set)
+    {
+        assert(identity_set_mappings->find(o_ids_to_replace.value) != identity_set_mappings->end());
+        auto iter = identity_set_mappings->find(o_ids_to_replace.value);
+        if (iter->second == NULL_IDENTITY_SET)
         {
-            assert(identity_set_mappings->find(o_ids_to_replace.value) != identity_set_mappings->end());
-            auto iter = identity_set_mappings->find(o_ids_to_replace.value);
-            if (iter->second == NULL_IDENTITY_SET)
-            {
-                (*identity_set_mappings)[o_ids_to_replace.value] = trace_cond->data.tests.value_test->eq_test->identity_set;
-            }
+            (*identity_set_mappings)[o_ids_to_replace.value] = trace_cond->data.tests.value_test->eq_test->identity_set;
         }
     }
 }
@@ -237,8 +234,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
-        propagate_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace);
-        unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
+//        propagate_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace);
+//        unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
+        propagate_and_unify_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace, rhs_funcs);
         ebc_timers->dependency_analysis->start();
         dprint(DT_BACKTRACE1,  "Backtraced instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
         if (inst->bt_identity_set_mappings->size() > 0)
