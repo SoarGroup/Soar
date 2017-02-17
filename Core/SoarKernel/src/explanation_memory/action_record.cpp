@@ -298,7 +298,7 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
 void action_record::viz_preference()
 {
     thisAgent->visualizationManager->viz_record_start();
-    thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
+    thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
     thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", instantiated_pref->id);
     thisAgent->visualizationManager->viz_table_element_end();
     thisAgent->visualizationManager->viz_table_element_start();
@@ -310,11 +310,11 @@ void action_record::viz_preference()
         thisAgent->visualizationManager->viz_table_element_start();
         thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, "%y", instantiated_pref->value);
         thisAgent->visualizationManager->viz_table_element_end();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', NO_ELEMENT);
         thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " %c %y", preference_to_char(instantiated_pref->type), instantiated_pref->referent);
         thisAgent->visualizationManager->viz_table_element_end();
     } else {
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
         thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " %y %c", instantiated_pref->value, preference_to_char(instantiated_pref->type));
         thisAgent->visualizationManager->viz_table_element_end();
     }
@@ -328,10 +328,10 @@ void action_record::viz_action(action* pAction)
     if (pAction->type == FUNCALL_ACTION)
     {
         thisAgent->visualizationManager->viz_record_start();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
         thisAgent->visualizationManager->graphviz_output += "RHS Funcall";
         thisAgent->visualizationManager->viz_table_element_end();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
         tempString = "";
         thisAgent->outputManager->rhs_value_to_string(pAction->value, tempString);
         thisAgent->visualizationManager->graphviz_output += tempString;
@@ -339,7 +339,7 @@ void action_record::viz_action(action* pAction)
         thisAgent->visualizationManager->viz_record_end();
     } else {
         thisAgent->visualizationManager->viz_record_start();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', true);
+        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
         viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id);
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start();
@@ -350,12 +350,12 @@ void action_record::viz_action(action* pAction)
             thisAgent->visualizationManager->viz_table_element_start();
             viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->viz_table_element_end();
-            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
             viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent);
             thisAgent->visualizationManager->viz_table_element_end();
         } else {
-            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', false);
+            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
             viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);

@@ -297,26 +297,31 @@ void GraphViz_Visualizer::viz_table_end()
     graphviz_output += "              \xF3/TABLE\xF2\n";
 }
 
-void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor, const char* pModStr)
+void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, WME_Field pField, bool pRowBorder, const char* pModStr)
 {
+    const char* borderString;
+    if (pRowBorder) borderString =  " BORDER=\"3\""; else borderString =  " ";
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
-            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s%sPORT=\"%c_%u%s\"\xF2 ",
+            borderString, pModStr, pTypeChar, pNodeID, ((pField == ID_ELEMENT) ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "), pModStr);
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s%s\xF2 ", borderString, pModStr);
     }
     viz_table_start();
 }
 
-void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor, const char* pModStr)
+void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, WME_Field pField, bool pRowBorder, const char* pModStr)
 {
+    const char* borderString;
+    if (pRowBorder) borderString =  " BORDER=\"3\""; else borderString =  " ";
+
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
-            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%sPORT=\"%c_%u%s\"\xF2 ",
+            borderString, pModStr, pTypeChar, pNodeID, ((pField == ID_ELEMENT) ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "), pModStr);
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%s\xF2 ", borderString, pModStr);
     }
 }
 

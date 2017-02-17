@@ -45,9 +45,9 @@ class GraphViz_Visualizer
         void viz_record_end(bool pLeftJustify = true);
         void viz_endl();
         void viz_text_record(const char* pMsg);
-        void viz_table_element_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true, bool pColor = false, const char* pModStr = " ");
+        void viz_table_element_start(uint64_t pNodeID = 0, char pTypeChar = ' ', WME_Field pField = NO_ELEMENT, bool pRowBorder = false, const char* pModStr = " ");
         void viz_table_element_end();
-        void viz_table_element_conj_start(uint64_t pNodeID = 0, char pTypeChar = ' ', bool pIsLeftPort = true, bool pColor = false, const char* pModStr = " ");
+        void viz_table_element_conj_start(uint64_t pNodeID = 0, char pTypeChar = ' ', WME_Field pField = NO_ELEMENT, bool pRowBorder = false, const char* pModStr = " ");
 
         void escape_graphviz_chars();
         void clear_visualization();
