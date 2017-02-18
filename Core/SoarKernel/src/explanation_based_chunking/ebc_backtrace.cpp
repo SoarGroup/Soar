@@ -132,6 +132,7 @@ void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* tr
         {
             trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->data.tests.id_test->eq_test->identity;
         }
+        trace_cond->data.tests.id_test->eq_test->id_set_tc_num = id_set_pass1_tc;
     } else {
         trace_cond->data.tests.id_test->eq_test->identity_set = NULL_IDENTITY_SET;
     }
@@ -142,6 +143,7 @@ void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* tr
         {
             trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->data.tests.attr_test->eq_test->identity;
         }
+        trace_cond->data.tests.attr_test->eq_test->id_set_tc_num = id_set_pass1_tc;
     } else {
         trace_cond->data.tests.attr_test->eq_test->identity_set = NULL_IDENTITY_SET;
     }
@@ -152,6 +154,7 @@ void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* tr
         {
             trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->data.tests.value_test->eq_test->identity;
         }
+        trace_cond->data.tests.value_test->eq_test->id_set_tc_num = id_set_pass1_tc;
     } else {
         trace_cond->data.tests.value_test->eq_test->identity_set = NULL_IDENTITY_SET;
     }

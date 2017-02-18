@@ -233,11 +233,11 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r ", static_cast<char*>(c->first));
                 assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
                 rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-                dprint_noprefix(DT_RHS_FUN_VARIABLIZATION, "[%y %u]\n", rs->referent, rs->o_id);
-                if (rs->o_id && !rs->referent->is_sti())
+                dprint_noprefix(DT_RHS_FUN_VARIABLIZATION, "[%y %u]\n", rs->referent, rs->identity);
+                if (rs->identity && !rs->referent->is_sti())
                 {
-                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->o_id, 0);
-                    add_identity_unification(rs->o_id, 0);
+                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity, 0);
+                    add_identity_unification(rs->identity, 0);
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }
             }
@@ -509,6 +509,7 @@ void Explanation_Based_Chunker::propagate_and_unify_element(id_to_id_map* identi
     if (replaceID)
         {
             lIdentitySet = get_id_set(identity_set_mappings, replaceID);
+            /* May need to check tc_num */
             if (parent_test->identity_set)
             {
                 if (!lIdentitySet)
@@ -520,6 +521,7 @@ void Explanation_Based_Chunker::propagate_and_unify_element(id_to_id_map* identi
                 }
             } else if (parent_test->identity)
             {
+                assert(false);
                 /* Maybe shouldn't be possible.  Definitely not if we do two passes. */
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", replaceID, parent_test->identity);
                 if (!lIdentitySet)
@@ -533,6 +535,7 @@ void Explanation_Based_Chunker::propagate_and_unify_element(id_to_id_map* identi
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", replaceID, parent_test);
                 if (!lIdentitySet)
                 {
+                    (*identity_set_mappings)[replaceID] = replaceID;
                     add_identity_unification(replaceID, 0);
                 } else {
                     /* Already has an identity set, so do an identity set unification */
@@ -544,7 +547,7 @@ void Explanation_Based_Chunker::propagate_and_unify_element(id_to_id_map* identi
         {
             literalize_RHS_function_args(pRhs_func, parent_inst_i_id);
             if (parent_test->identity_set) add_identity_unification(parent_test->identity_set, NULL_IDENTITY_SET);
-            else if (parent_test->identity) add_identity_unification(parent_test->identity, NULL_IDENTITY_SET);
+            else assert(false); //if (parent_test->identity) add_identity_unification(parent_test->identity, NULL_IDENTITY_SET);
         }
         else
         {

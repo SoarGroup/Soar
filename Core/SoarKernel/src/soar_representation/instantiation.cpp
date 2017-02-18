@@ -523,7 +523,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), false, was_unbound_vars);
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), identity_quadruple(0,0,0,0), false, was_unbound_vars);
     newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
     newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
     newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);

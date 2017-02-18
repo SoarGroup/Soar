@@ -28,7 +28,7 @@
 
 preference* make_preference(agent* thisAgent, PreferenceType type, 
                             Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                            const identity_quadruple o_ids, bool pUnify_identities, const bool_quadruple pWas_unbound_vars)
+                            const identity_quadruple o_ids, const identity_quadruple o_idsets, bool pUnify_identities, const bool_quadruple pWas_unbound_vars)
 {
     preference* p;
 
@@ -69,6 +69,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
         if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
         if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
         if (o_ids.referent) p->identities.referent = thisAgent->explanationBasedChunker->get_identity(o_ids.referent); else p->identities.referent = 0;
+        if (o_idsets.id) p->identity_sets.id = thisAgent->explanationBasedChunker->get_identity(o_idsets.id); else p->identities.id = 0;
+        if (o_idsets.attr) p->identity_sets.attr = thisAgent->explanationBasedChunker->get_identity(o_idsets.attr); else p->identities.attr = 0;
+        if (o_idsets.value) p->identity_sets.value = thisAgent->explanationBasedChunker->get_identity(o_idsets.value); else p->identities.value = 0;
+        if (o_idsets.referent) p->identity_sets.referent = thisAgent->explanationBasedChunker->get_identity(o_idsets.referent); else p->identities.referent = 0;
     }
     else
     {
@@ -76,6 +80,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
         p->identities.attr = o_ids.attr;
         p->identities.value = o_ids.value;
         p->identities.referent = o_ids.referent;
+        p->identity_sets.id = o_idsets.id;
+        p->identity_sets.attr = o_idsets.attr;
+        p->identity_sets.value = o_idsets.value;
+        p->identity_sets.referent = o_idsets.referent;
     }
     p->clone_identities.id = p->identities.id;
     p->clone_identities.attr = p->identities.attr;
@@ -128,6 +136,10 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->identities.attr = pPref->identities.attr;
     p->identities.value = pPref->identities.value;
     p->identities.referent = pPref->identities.referent;
+    p->identity_sets.id = pPref->identity_sets.id;
+    p->identity_sets.attr = pPref->identity_sets.attr;
+    p->identity_sets.value = pPref->identity_sets.value;
+    p->identity_sets.referent = pPref->identity_sets.referent;
     p->clone_identities.id = pPref->clone_identities.id;
     p->clone_identities.attr = pPref->clone_identities.attr;
     p->clone_identities.value = pPref->clone_identities.value;

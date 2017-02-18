@@ -293,7 +293,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     {
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
-        if (this->m_print_actual_effective || (!pEmptyStringForNullIdentity && (!rsym->o_id)))
+        if (this->m_print_actual_effective || (!pEmptyStringForNullIdentity && (!rsym->identity)))
         {
             if (rsym->referent)
             {
@@ -302,8 +302,8 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 destString += '#';
             }
         }
-        if (m_print_identity_effective && rsym->o_id) {
-            sprint_sf(destString, " [%u]", rsym->o_id);
+        if (m_print_identity_effective && rsym->identity) {
+            sprint_sf(destString, " [%u]", rsym->identity);
         }
     }
     else if (rhs_value_is_reteloc(rv))
