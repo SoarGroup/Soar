@@ -398,6 +398,22 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, uint64_t pIDSet, std::string &destString)
+{
+//    if (!pID || !pIDSet) return;
+    destString += " [";
+//    if (pID)
+    {
+        destString += std::to_string(pID);
+    }
+    //if (pIDSet)
+    {
+        destString += "s";
+        destString += std::to_string(pIDSet);
+    }
+    destString += "]";
+}
+
 void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::string &destString)
 {
     assert(thisAgent && pref);
@@ -411,28 +427,29 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     }
     if (m_print_identity_effective)
     {
-        std::string lID, lAttr, lValue;
-        if (pref->identities.id) {
-            lID = "[" + std::to_string(pref->identities.id) + "]";
-        } else {
+        std::string lID, lAttr, lValue, lReferent;
+        if (pref->identities.id)
+            identity_to_string(thisAgent, pref->identities.id, pref->identity_sets.id, lID);
+        else
             lID = pref->id->to_string(true);
-        }
-        if (pref->identities.attr) {
-            lAttr = "[" + std::to_string(pref->identities.attr) + "]";
-        } else {
+        if (pref->identities.attr)
+            identity_to_string(thisAgent, pref->identities.attr, pref->identity_sets.attr, lAttr);
+        else
             lAttr = pref->attr->to_string(true);
-        }
-        if (pref->identities.value) {
-            lValue = "[" + std::to_string(pref->identities.value) + "]";
-        } else {
+        if (pref->identities.value)
+            identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue);
+        else
             lValue = pref->value->to_string(true);
-        }
+
         sprinta_sf(thisAgent, destString, "%s(%s ^%s %s) %c", (m_print_actual_effective) ? ", " : "",
             lID.c_str(), lAttr.c_str(), lValue.c_str(), preference_to_char(pref->type));
 
         if (preference_is_binary(pref->type))
         {
-            sprinta_sf(thisAgent, destString, " %y", pref->referent);
+            if (pref->identities.referent)
+                identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue);
+            else
+                sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }
         if (pref->o_supported)
         {

@@ -372,17 +372,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string(t->type);
                                     }
-                                    destString += "[";
-                                    destString += std::to_string(t->identity);
-                                    if (t->identity_set)
-                                    {
-                                        destString += "s";
-                                        destString += std::to_string(t->identity_set);
-//                                        destString += "(";
-//                                        destString += std::to_string(t->id_set_tc_num);
-//                                        destString += ")";
-                                    }
-                                    destString += "]";
+                                    identity_to_string(thisAgent, t->identity, t->identity_set, destString);
                                 } else {
                                     test_to_string(t, destString);
                                 }
@@ -400,17 +390,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                             destString += test_type_to_string(ct->type);
                                         }
                                         if (!isFirst) destString += ' '; else isFirst = false;
-                                        destString += "[";
-                                        destString += std::to_string(ct->identity);
-                                        if (ct->identity_set)
-                                        {
-                                            destString += "s";
-                                            destString += std::to_string(ct->identity_set);
-//                                            destString += "(";
-//                                            destString += std::to_string(ct->id_set_tc_num);
-//                                            destString += ")";
-                                        }
-                                        destString += "]";
+                                        identity_to_string(thisAgent, ct->identity, ct->identity_set, destString);
                                     } else {
                                         test_to_string(ct, destString);
                                     }
