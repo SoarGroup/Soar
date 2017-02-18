@@ -790,6 +790,10 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
+inline void propagate_identity(test condTest, uint64_t parentIDSet)
+{
+        condTest->identity_set = condTest->identity ? parentIDSet ? parentIDSet : condTest->identity : NULL_IDENTITY_SET;
+}
 
 void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
 {
@@ -823,6 +827,15 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     if (cond->bt.trace)
                     {
                         preference_add_ref(cond->bt.trace);
+                        propagate_identity(cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                        propagate_identity(cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                        propagate_identity(cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                    }
+                    else
+                    {
+                        cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                        cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                        cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                     }
                 }
             }
