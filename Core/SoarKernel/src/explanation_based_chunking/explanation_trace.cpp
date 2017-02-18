@@ -33,7 +33,7 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
     {
         increment_counter(ovar_id_counter);
         (*instantiation_identities)[orig_var] = ovar_id_counter;
-        instantiation_being_built->bt_identity_set_mappings->insert({ovar_id_counter, 0});
+//        instantiation_being_built->bt_identity_set_mappings->insert({ovar_id_counter, 0});
 
         return ovar_id_counter;
     }

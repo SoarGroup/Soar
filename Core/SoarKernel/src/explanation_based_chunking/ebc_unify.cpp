@@ -504,79 +504,79 @@ inline bool get_id_set(id_to_id_map* identity_set_mappings, uint64_t pIdentity)
 void Explanation_Based_Chunker::propagate_and_unify_element(id_to_id_map* identity_set_mappings, test parent_test,
                                                             int64_t replaceID, rhs_value pRhs_func, uint64_t parent_inst_i_id)
 {
-    uint64_t lIdentitySet;
-
-    if (replaceID)
-        {
-            lIdentitySet = get_id_set(identity_set_mappings, replaceID);
-            /* May need to check tc_num */
-            if (parent_test->identity_set)
-            {
-                if (!lIdentitySet)
-                {
-                    (*identity_set_mappings)[replaceID] = parent_test->identity_set;
-                } else {
-                    /* Already has an identity set, so do an identity set unification */
-                    add_identity_unification(parent_test->identity_set, lIdentitySet);
-                }
-            } else if (parent_test->identity)
-            {
-                assert(false);
-                /* Maybe shouldn't be possible.  Definitely not if we do two passes. */
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", replaceID, parent_test->identity);
-                if (!lIdentitySet)
-                {
-                    add_identity_unification(parent_test->identity, replaceID);
-                } else {
-                    /* Already has an identity set, so do an identity set unification */
-                    add_identity_unification(parent_test->identity, lIdentitySet);
-                }
-            } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", replaceID, parent_test);
-                if (!lIdentitySet)
-                {
-                    (*identity_set_mappings)[replaceID] = replaceID;
-                    add_identity_unification(replaceID, 0);
-                } else {
-                    /* Already has an identity set, so do an identity set unification */
-                    add_identity_unification(lIdentitySet, 0);
-                }
-            }
-        }
-        else if (rhs_value_is_literalizing_function(pRhs_func))
-        {
-            literalize_RHS_function_args(pRhs_func, parent_inst_i_id);
-            if (parent_test->identity_set) add_identity_unification(parent_test->identity_set, NULL_IDENTITY_SET);
-            else assert(false); //if (parent_test->identity) add_identity_unification(parent_test->identity, NULL_IDENTITY_SET);
-        }
-        else
-        {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", parent_test->data.referent->is_sti() ? "is identifier " : "", !replaceID ? "RHS pref is literal " : "");
-        }
+//    uint64_t lIdentitySet;
+//
+//    if (replaceID)
+//        {
+//            lIdentitySet = get_id_set(identity_set_mappings, replaceID);
+//            /* May need to check tc_num */
+//            if (parent_test->identity_set)
+//            {
+//                if (!lIdentitySet)
+//                {
+//                    (*identity_set_mappings)[replaceID] = parent_test->identity_set;
+//                } else {
+//                    /* Already has an identity set, so do an identity set unification */
+//                    add_identity_unification(parent_test->identity_set, lIdentitySet);
+//                }
+//            } else if (parent_test->identity)
+//            {
+//                assert(false);
+//                /* Maybe shouldn't be possible.  Definitely not if we do two passes. */
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", replaceID, parent_test->identity);
+//                if (!lIdentitySet)
+//                {
+//                    add_identity_unification(parent_test->identity, replaceID);
+//                } else {
+//                    /* Already has an identity set, so do an identity set unification */
+//                    add_identity_unification(parent_test->identity, lIdentitySet);
+//                }
+//            } else {
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", replaceID, parent_test);
+//                if (!lIdentitySet)
+//                {
+//                    (*identity_set_mappings)[replaceID] = replaceID;
+//                    add_identity_unification(replaceID, 0);
+//                } else {
+//                    /* Already has an identity set, so do an identity set unification */
+//                    add_identity_unification(lIdentitySet, 0);
+//                }
+//            }
+//        }
+//        else if (rhs_value_is_literalizing_function(pRhs_func))
+//        {
+//            literalize_RHS_function_args(pRhs_func, parent_inst_i_id);
+//            if (parent_test->identity_set) add_identity_unification(parent_test->identity_set, NULL_IDENTITY_SET);
+//            else assert(false); //if (parent_test->identity) add_identity_unification(parent_test->identity, NULL_IDENTITY_SET);
+//        }
+//        else
+//        {
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", parent_test->data.referent->is_sti() ? "is identifier " : "", !replaceID ? "RHS pref is literal " : "");
+//        }
 }
 
 void Explanation_Based_Chunker::propagate_and_unify_identity_sets(id_to_id_map* identity_set_mappings, condition* parent_cond,
                                                                   const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs)
 {
-    test lId, lAttr, lValue;
-    uint64_t lIdentitySet;
-    lId = parent_cond->data.tests.id_test->eq_test;
-    lAttr = parent_cond->data.tests.attr_test->eq_test;
-    lValue = parent_cond->data.tests.value_test->eq_test;
-
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
-
-    propagate_and_unify_element(identity_set_mappings, lId, o_ids_to_replace.id, rhs_funcs.id, parent_cond->inst->i_id);
-    propagate_and_unify_element(identity_set_mappings, lAttr, o_ids_to_replace.attr, rhs_funcs.attr, parent_cond->inst->i_id);
-    propagate_and_unify_element(identity_set_mappings, lValue, o_ids_to_replace.value, rhs_funcs.value, parent_cond->inst->i_id);
-
-    assert(!o_ids_to_replace.referent);
-    if (rhs_value_is_literalizing_function(rhs_funcs.referent))
-    {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
-        literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
-    }
+//    test lId, lAttr, lValue;
+//    uint64_t lIdentitySet;
+//    lId = parent_cond->data.tests.id_test->eq_test;
+//    lAttr = parent_cond->data.tests.attr_test->eq_test;
+//    lValue = parent_cond->data.tests.value_test->eq_test;
+//
+//    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+//
+//    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
+//
+//    propagate_and_unify_element(identity_set_mappings, lId, o_ids_to_replace.id, rhs_funcs.id, parent_cond->inst->i_id);
+//    propagate_and_unify_element(identity_set_mappings, lAttr, o_ids_to_replace.attr, rhs_funcs.attr, parent_cond->inst->i_id);
+//    propagate_and_unify_element(identity_set_mappings, lValue, o_ids_to_replace.value, rhs_funcs.value, parent_cond->inst->i_id);
+//
+//    assert(!o_ids_to_replace.referent);
+//    if (rhs_value_is_literalizing_function(rhs_funcs.referent))
+//    {
+//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
+//        literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
+//    }
 }
 

@@ -125,72 +125,72 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
 
 void Explanation_Based_Chunker::add_starting_identity_sets_to_cond(condition* trace_cond)
 {
-    if (trace_cond->data.tests.id_test->eq_test->identity)
-    {
-        trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.id_test->eq_test->identity);
-        if (!trace_cond->data.tests.id_test->eq_test->identity_set)
-        {
-            trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->data.tests.id_test->eq_test->identity;
-        }
-        trace_cond->data.tests.id_test->eq_test->id_set_tc_num = id_set_pass1_tc;
-    } else {
-        trace_cond->data.tests.id_test->eq_test->identity_set = NULL_IDENTITY_SET;
-    }
-    if (trace_cond->data.tests.attr_test->eq_test->identity)
-    {
-        trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.attr_test->eq_test->identity);
-        if (!trace_cond->data.tests.attr_test->eq_test->identity_set)
-        {
-            trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->data.tests.attr_test->eq_test->identity;
-        }
-        trace_cond->data.tests.attr_test->eq_test->id_set_tc_num = id_set_pass1_tc;
-    } else {
-        trace_cond->data.tests.attr_test->eq_test->identity_set = NULL_IDENTITY_SET;
-    }
-    if (trace_cond->data.tests.value_test->eq_test->identity)
-    {
-        trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.value_test->eq_test->identity);
-        if (!trace_cond->data.tests.value_test->eq_test->identity_set)
-        {
-            trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->data.tests.value_test->eq_test->identity;
-        }
-        trace_cond->data.tests.value_test->eq_test->id_set_tc_num = id_set_pass1_tc;
-    } else {
-        trace_cond->data.tests.value_test->eq_test->identity_set = NULL_IDENTITY_SET;
-    }
+//    if (trace_cond->data.tests.id_test->eq_test->identity)
+//    {
+//        trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.id_test->eq_test->identity);
+//        if (!trace_cond->data.tests.id_test->eq_test->identity_set)
+//        {
+//            trace_cond->data.tests.id_test->eq_test->identity_set = trace_cond->data.tests.id_test->eq_test->identity;
+//        }
+//        trace_cond->data.tests.id_test->eq_test->id_set_tc_num = id_set_pass1_tc;
+//    } else {
+//        trace_cond->data.tests.id_test->eq_test->identity_set = NULL_IDENTITY_SET;
+//    }
+//    if (trace_cond->data.tests.attr_test->eq_test->identity)
+//    {
+//        trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.attr_test->eq_test->identity);
+//        if (!trace_cond->data.tests.attr_test->eq_test->identity_set)
+//        {
+//            trace_cond->data.tests.attr_test->eq_test->identity_set = trace_cond->data.tests.attr_test->eq_test->identity;
+//        }
+//        trace_cond->data.tests.attr_test->eq_test->id_set_tc_num = id_set_pass1_tc;
+//    } else {
+//        trace_cond->data.tests.attr_test->eq_test->identity_set = NULL_IDENTITY_SET;
+//    }
+//    if (trace_cond->data.tests.value_test->eq_test->identity)
+//    {
+//        trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->inst->bt_identity_set_mappings->at(trace_cond->data.tests.value_test->eq_test->identity);
+//        if (!trace_cond->data.tests.value_test->eq_test->identity_set)
+//        {
+//            trace_cond->data.tests.value_test->eq_test->identity_set = trace_cond->data.tests.value_test->eq_test->identity;
+//        }
+//        trace_cond->data.tests.value_test->eq_test->id_set_tc_num = id_set_pass1_tc;
+//    } else {
+//        trace_cond->data.tests.value_test->eq_test->identity_set = NULL_IDENTITY_SET;
+//    }
 
 }
 
 void Explanation_Based_Chunker::propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace)
 {
-    //        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set;
-    if (o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set)
-    {
-        assert(identity_set_mappings->find(o_ids_to_replace.id) != identity_set_mappings->end());
-        auto iter = identity_set_mappings->find(o_ids_to_replace.id);
-        if (iter->second == NULL_IDENTITY_SET)
-        {
-            (*identity_set_mappings)[o_ids_to_replace.id] = trace_cond->data.tests.id_test->eq_test->identity_set;
-        }
-    }
-    if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set)
-    {
-        assert(identity_set_mappings->find(o_ids_to_replace.attr) != identity_set_mappings->end());
-        auto iter = identity_set_mappings->find(o_ids_to_replace.attr);
-        if (iter->second == NULL_IDENTITY_SET)
-        {
-            (*identity_set_mappings)[o_ids_to_replace.attr] = trace_cond->data.tests.attr_test->eq_test->identity_set;
-        }
-    }
-    if (o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set)
-    {
-        assert(identity_set_mappings->find(o_ids_to_replace.value) != identity_set_mappings->end());
-        auto iter = identity_set_mappings->find(o_ids_to_replace.value);
-        if (iter->second == NULL_IDENTITY_SET)
-        {
-            (*identity_set_mappings)[o_ids_to_replace.value] = trace_cond->data.tests.value_test->eq_test->identity_set;
-        }
-    }
+//    //        if (o_ids_to_replace.id && (trace_cond->data.tests.id_test->eq_test->id_set_tc_num == id_set_pass1_tc) && trace_cond->data.tests.id_test->eq_test->identity_set;
+//    if (o_ids_to_replace.id && trace_cond->data.tests.id_test->eq_test->identity_set)
+//    {
+//        assert(identity_set_mappings->find(o_ids_to_replace.id) != identity_set_mappings->end());
+//        auto iter = identity_set_mappings->find(o_ids_to_replace.id);
+//        if (iter->second == NULL_IDENTITY_SET)
+//        {
+//            (*identity_set_mappings)[o_ids_to_replace.id] = trace_cond->data.tests.id_test->eq_test->identity_set;
+//        }
+//    }
+//    if (o_ids_to_replace.attr && trace_cond->data.tests.attr_test->eq_test->identity_set)
+//    {
+//        assert(identity_set_mappings->find(o_ids_to_replace.attr) != identity_set_mappings->end());
+//        auto iter = identity_set_mappings->find(o_ids_to_replace.attr);
+//        if (iter->second == NULL_IDENTITY_SET)
+//        {
+//            (*identity_set_mappings)[o_ids_to_replace.attr] = trace_cond->data.tests.attr_test->eq_test->identity_set;
+//        }
+//    }
+//    if (o_ids_to_replace.value && trace_cond->data.tests.value_test->eq_test->identity_set)
+//    {
+//        assert(identity_set_mappings->find(o_ids_to_replace.value) != identity_set_mappings->end());
+//        auto iter = identity_set_mappings->find(o_ids_to_replace.value);
+//        if (iter->second == NULL_IDENTITY_SET)
+//        {
+//            (*identity_set_mappings)[o_ids_to_replace.value] = trace_cond->data.tests.value_test->eq_test->identity_set;
+//        }
+//    }
 }
 
 void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
@@ -217,40 +217,40 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         xml_att_val(thisAgent, kProduction_Name, inst->prod ? inst->prod_name: thisAgent->symbolManager->soarSymbols.architecture_inst_symbol);
     }
 
-    if (inst->backtrace_number != backtrace_number)
-    {
-        if (inst->bt_identity_set_mappings->size() > 0)
-        {
-            dprint_noprefix(DT_BACKTRACE1, "\nClearing identity set mapping entries.\n");
-            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-            {
-                iter->second = NULL_IDENTITY_SET;
-            }
-            dprint_noprefix(DT_BACKTRACE1, "Identity set mapping entries:\n");
-            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-            {
-                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
-            }
-        }
-    }
+//    if (inst->backtrace_number != backtrace_number)
+//    {
+//        if (inst->bt_identity_set_mappings->size() > 0)
+//        {
+//            dprint_noprefix(DT_BACKTRACE1, "\nClearing identity set mapping entries.\n");
+//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+//            {
+//                iter->second = NULL_IDENTITY_SET;
+//            }
+//            dprint_noprefix(DT_BACKTRACE1, "Identity set mapping entries:\n");
+//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+//            {
+//                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+//            }
+//        }
+//    }
 
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
 //        propagate_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace);
-//        unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
-        propagate_and_unify_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace, rhs_funcs);
+        unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
+//        propagate_and_unify_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace, rhs_funcs);
         ebc_timers->dependency_analysis->start();
-        dprint(DT_BACKTRACE1,  "Backtraced instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-        if (inst->bt_identity_set_mappings->size() > 0)
-        {
-            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: \n");
-            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-            {
-                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
-            }
-            dprint_noprefix(DT_BACKTRACE1, "\n\n");
-        }
+//        dprint(DT_BACKTRACE1,  "Backtracing through instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
+//        if (inst->bt_identity_set_mappings->size() > 0)
+//        {
+//            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: \n");
+//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+//            {
+//                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+//            }
+//            dprint_noprefix(DT_BACKTRACE1, "\n\n");
+//        }
     }
 
     ++bt_depth;
@@ -301,9 +301,9 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
-            update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
-            update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
+//            update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
+//            update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
+//            update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
 
             /* Might be able to only cache constraints for non-operational conds.  The others should show
              * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
@@ -327,14 +327,14 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         else
         {
             dprint(DT_BACKTRACE, "Adding NC or NCC condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
-            if (c->type == NEGATIVE_CONDITION)
-            {
-                update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
-                update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
-                update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
-            } else {
-                update_remaining_identity_sets_in_condlist(c->data.ncc.top, inst);
-            }
+//            if (c->type == NEGATIVE_CONDITION)
+//            {
+//                update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
+//                update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
+//                update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
+//            } else {
+//                update_remaining_identity_sets_in_condlist(c->data.ncc.top, inst);
+//            }
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }
@@ -436,7 +436,7 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         }
         if (bt_pref)
         {
-            add_starting_identity_sets_to_cond(cond);
+//            add_starting_identity_sets_to_cond(cond);
             backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])

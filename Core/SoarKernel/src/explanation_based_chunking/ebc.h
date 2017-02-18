@@ -62,8 +62,6 @@ class Explanation_Based_Chunker
                                           AddAdditionalTestsMode additional_tests);
         uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
-        void     set_new_chunk_id() {m_chunk_inst->i_id = get_new_inst_id();};
-        void     clear_chunk_id() {m_chunk_inst->i_id = 0;};
         uint64_t get_instantiation_count() { return inst_id_counter; };
 
         /* identity generation functions */

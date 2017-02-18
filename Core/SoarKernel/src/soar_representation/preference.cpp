@@ -69,10 +69,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
         if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
         if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
         if (o_ids.referent) p->identities.referent = thisAgent->explanationBasedChunker->get_identity(o_ids.referent); else p->identities.referent = 0;
-        if (o_idsets.id) p->identity_sets.id = thisAgent->explanationBasedChunker->get_identity(o_idsets.id); else p->identities.id = 0;
-        if (o_idsets.attr) p->identity_sets.attr = thisAgent->explanationBasedChunker->get_identity(o_idsets.attr); else p->identities.attr = 0;
-        if (o_idsets.value) p->identity_sets.value = thisAgent->explanationBasedChunker->get_identity(o_idsets.value); else p->identities.value = 0;
-        if (o_idsets.referent) p->identity_sets.referent = thisAgent->explanationBasedChunker->get_identity(o_idsets.referent); else p->identities.referent = 0;
+        if (o_idsets.id) p->identity_sets.id = thisAgent->explanationBasedChunker->get_identity(o_idsets.id); else p->identity_sets.id = 0;
+        if (o_idsets.attr) p->identity_sets.attr = thisAgent->explanationBasedChunker->get_identity(o_idsets.attr); else p->identity_sets.attr = 0;
+        if (o_idsets.value) p->identity_sets.value = thisAgent->explanationBasedChunker->get_identity(o_idsets.value); else p->identity_sets.value = 0;
+        if (o_idsets.referent) p->identity_sets.referent = thisAgent->explanationBasedChunker->get_identity(o_idsets.referent); else p->identity_sets.referent = 0;
     }
     else
     {

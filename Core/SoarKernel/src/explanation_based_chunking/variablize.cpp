@@ -40,7 +40,7 @@ sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIde
     (*identity_to_var_map)[pIdentity] = lVarInfo;
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        thisAgent->explanationMemory->add_identity_set_mapping(m_chunk_inst->i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
     }
     return lVarInfo;
 }
@@ -179,9 +179,9 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
 
-            if (!pTest->eq_test->identity_set) pTest->eq_test->identity_set = pTest->eq_test->identity;
+//            if (!pTest->eq_test->identity_set) pTest->eq_test->identity_set = pTest->eq_test->identity;
 
-            var_info = get_variablization(pTest->eq_test->identity_set);
+            var_info = get_variablization(pTest->eq_test->identity);
             if (var_info)
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
@@ -215,7 +215,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 prefix[1] = 0;
                 lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
 
-                var_info = store_variablization(pTest->eq_test->identity_set, lNewVariable, pTest->eq_test->data.referent);
+                var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
 
                 thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
                 pTest->eq_test->data.referent = var_info->variable_sym;
@@ -254,7 +254,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-    found_variablization =  get_variablization(t->identity_set);
+    found_variablization =  get_variablization(t->identity);
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
@@ -466,40 +466,40 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     if (!result->rhs_funcs.id)
     {
-        iter = (*unification_map).find(result->identity_sets.id);
+        iter = (*unification_map).find(result->identities.id);
         if (iter != (*unification_map).end())
         {
-            lO_idset = iter->second;
+            lO_id = iter->second;
         } else {
-            lO_idset = result->identity_sets.id;
+            lO_id = result->identities.id;
         }
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->identities.id, lO_idset, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lO_id, lO_idset, result->was_unbound_vars.id);
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
     }
     if (!result->rhs_funcs.attr)
     {
-        iter = (*unification_map).find(result->identity_sets.attr);
+        iter = (*unification_map).find(result->identities.attr);
         if (iter != (*unification_map).end())
         {
-            lO_idset = iter->second;
+            lO_id = iter->second;
         } else {
-            lO_idset = result->identities.attr;
+            lO_id = result->identities.attr;
         }
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->identities.attr, lO_idset, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lO_id, lO_idset, result->was_unbound_vars.attr);
     } else {
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
     }
     if (!result->rhs_funcs.value)
     {
-        iter = (*unification_map).find(result->identity_sets.value);
+        iter = (*unification_map).find(result->identities.value);
         if (iter != (*unification_map).end())
         {
-            lO_idset = iter->second;
+            lO_id = iter->second;
         } else {
-            lO_idset = result->identities.value;
+            lO_id = result->identities.value;
         }
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->identities.value, lO_idset, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lO_id, lO_idset, result->was_unbound_vars.value);
     } else {
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
     }
@@ -507,14 +507,14 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     {
         if (!result->rhs_funcs.referent)
         {
-            iter = (*unification_map).find(result->identity_sets.referent);
+            iter = (*unification_map).find(result->identities.referent);
             if (iter != (*unification_map).end())
             {
-                lO_idset = iter->second;
+                lO_id = iter->second;
             } else {
-                lO_idset = result->identities.referent;
+                lO_id = result->identities.referent;
             }
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, result->identities.referent, lO_idset, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lO_id, lO_idset, result->was_unbound_vars.referent);
         } else {
             a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
         }
@@ -610,7 +610,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
     dprint_unification_map(DT_RHS_VARIABLIZATION);
-
+    dprint_variablization_table(DT_RHS_VARIABLIZATION);
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
 

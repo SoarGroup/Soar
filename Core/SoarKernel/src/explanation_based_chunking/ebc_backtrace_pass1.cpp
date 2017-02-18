@@ -155,14 +155,14 @@ void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, i
             default:
                 if (t->identity && (t->id_set_tc_num != id_set_pass1_tc))
                 {
-                    if (pInst->bt_identity_set_mappings->find(t->identity) == pInst->bt_identity_set_mappings->end())
-                    {
-                        for (auto iter = pInst->bt_identity_set_mappings->begin(); iter != pInst->bt_identity_set_mappings->end(); ++iter)
-                        {
-                            dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
-                        }
-                    }
-                    t->identity_set = pInst->bt_identity_set_mappings->at(t->identity);
+//                    if (pInst->bt_identity_set_mappings->find(t->identity) == pInst->bt_identity_set_mappings->end())
+//                    {
+//                        for (auto iter = pInst->bt_identity_set_mappings->begin(); iter != pInst->bt_identity_set_mappings->end(); ++iter)
+//                        {
+//                            dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
+//                        }
+//                    }
+//                    t->identity_set = pInst->bt_identity_set_mappings->at(t->identity);
                     t->id_set_tc_num = id_set_pass1_tc;
                 }
                 break;

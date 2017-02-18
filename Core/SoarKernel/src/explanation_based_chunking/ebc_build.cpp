@@ -822,7 +822,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
 
     dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule for match of %y (i%u):\n%5", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule for match of %y (i%u):\n%5\n...which produced results...\n%6", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated, NULL, m_results);
 
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {

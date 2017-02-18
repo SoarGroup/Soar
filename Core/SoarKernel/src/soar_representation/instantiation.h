@@ -56,7 +56,7 @@ typedef struct instantiation_struct
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;
 
-    id_to_id_map*                   bt_identity_set_mappings;
+//    id_to_id_map*                   bt_identity_set_mappings;
 
 } instantiation;
 

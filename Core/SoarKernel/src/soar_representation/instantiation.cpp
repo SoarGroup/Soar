@@ -1036,7 +1036,7 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     }
 
     thisAgent->explanationBasedChunker->instantiation_being_built = inst;
-    inst->bt_identity_set_mappings = new id_to_id_map();
+//    inst->bt_identity_set_mappings = new id_to_id_map();
 
 }
 
@@ -1229,15 +1229,15 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-    if (inst->bt_identity_set_mappings->size() > 0)
-    {
-        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\nIdentity set mapping entries created for: ");
-        for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-        {
-            dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%u ", iter->first);
-        }
-        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\n\n");
-    }
+//    if (inst->bt_identity_set_mappings->size() > 0)
+//    {
+//        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\nIdentity set mapping entries created for: ");
+//        for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
+//        {
+//            dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%u ", iter->first);
+//        }
+//        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\n\n");
+//    }
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
     if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE))
@@ -1477,7 +1477,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating prod and final deallocation of inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
         thisAgent->symbolManager->symbol_remove_ref(&lDelInst->prod_name);
-        delete lDelInst->bt_identity_set_mappings;
+//        delete lDelInst->bt_identity_set_mappings;
 
         if (lDelInst->prod)
         {
