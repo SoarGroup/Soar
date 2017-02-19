@@ -109,8 +109,8 @@ void Explanation_Based_Chunker::reinit()
     chunk_naming_counter                = 0;
     justification_naming_counter        = 0;
     grounds_tc                          = 0;
-    id_set_pass1_tc                     = 0;
     m_results_match_goal_level          = 0;
+    m_goal_level                        = 0;
     m_results_tc                        = 0;
     m_correctness_issue_possible        = true;
     m_inst                              = NULL;

@@ -175,13 +175,14 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        if (pTest->eq_test->identity)
+        assert(!pTest->eq_test->identity || (pTest->eq_test->identity && pTest->eq_test->identity_set));
+        if (pTest->eq_test->identity_set)
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity_set, pTest);
 
 //            if (!pTest->eq_test->identity_set) pTest->eq_test->identity_set = pTest->eq_test->identity;
 
-            var_info = get_variablization(pTest->eq_test->identity);
+            var_info = get_variablization(pTest->eq_test->identity_set);
             if (var_info)
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
@@ -215,7 +216,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 prefix[1] = 0;
                 lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
 
-                var_info = store_variablization(pTest->eq_test->identity, lNewVariable, pTest->eq_test->data.referent);
+                var_info = store_variablization(pTest->eq_test->identity_set, lNewVariable, pTest->eq_test->data.referent);
 
                 thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
                 pTest->eq_test->data.referent = var_info->variable_sym;
@@ -246,7 +247,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
 {
     sym_identity_info* found_variablization = NULL;
 
-    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity);
+    dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity_set);
 
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
     {
@@ -254,7 +255,8 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         dprint(DT_CONSTRAINTS, "Not variablizing constraint b/c equality test in second variablization pass.\n");
         return true;
     }
-    found_variablization =  get_variablization(t->identity);
+    assert(!t->identity || (t->identity && t->identity_set));
+    found_variablization =  get_variablization(t->identity_set);
     if (found_variablization)
     {
         // It has been variablized before, so just variablize
@@ -312,7 +314,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
                         continue;
                     }
                 }
-                else if (tt->identity && !tt->data.referent->is_variable())
+                else if (tt->identity_set && !tt->data.referent->is_variable())
                 {
                     variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
                 }
@@ -325,7 +327,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
     }
     else
     {
-        if (test_has_referent(t) && t->identity)
+        if (test_has_referent(t) && t->identity_set)
         {
             variablize_test_by_lookup(t, pSkipTopLevelEqualities);
         }

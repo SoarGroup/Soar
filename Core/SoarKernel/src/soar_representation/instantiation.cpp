@@ -836,7 +836,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             #endif
             {
                 wme_add_ref(cond->bt.wme_);
-
+                break_if_test_symbol_matches_string(cond->data.tests.attr_test->eq_test, "item2");
                 /* if trace is for a lower level, find one for this level */
                 if (cond->bt.trace)
                 {
@@ -847,9 +847,16 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     if (cond->bt.trace)
                     {
                         preference_add_ref(cond->bt.trace);
-                        propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                        propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                        propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                        if (cond->bt.trace->level == inst->match_goal_level)
+                        {
+                            propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                            propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                            propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                        } else {
+                            cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                            cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                            cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
+                        }
                     }
                 }
                 /* Architectural WME or we couldn't find a pref at the current level, so start a new identity set */

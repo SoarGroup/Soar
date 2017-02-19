@@ -123,21 +123,19 @@ void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
     }
 }
 
-void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* inst,
-                                     goal_stack_level grounds_level,
-                                     condition* trace_cond,
-                                     const identity_quadruple o_ids_to_replace,
-                                     const rhs_quadruple rhs_funcs,
-                                     uint64_t bt_depth,
-                                     BTSourceType bt_type)
+void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPref, condition* trace_cond, uint64_t bt_depth, BTSourceType bt_type)
 {
+
+    instantiation* inst = pPref->inst;
+    identity_quadruple o_ids_to_replace = pPref->identity_sets;
+    rhs_quadruple rhs_funcs = pPref->rhs_funcs;
 
     condition* c;
     cons* grounds_to_print, *locals_to_print, *negateds_to_print;
     uint64_t last_bt_inst_id = m_current_bt_inst_id;
     m_current_bt_inst_id = inst->i_id;
 
-    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(grounds_level));
+    dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(m_goal_level));
 
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
@@ -147,40 +145,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         xml_att_val(thisAgent, kProduction_Name, inst->prod ? inst->prod_name: thisAgent->symbolManager->soarSymbols.architecture_inst_symbol);
     }
 
-//    if (inst->backtrace_number != backtrace_number)
-//    {
-//        if (inst->bt_identity_set_mappings->size() > 0)
-//        {
-//            dprint_noprefix(DT_BACKTRACE1, "\nClearing identity set mapping entries.\n");
-//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-//            {
-//                iter->second = NULL_IDENTITY_SET;
-//            }
-//            dprint_noprefix(DT_BACKTRACE1, "Identity set mapping entries:\n");
-//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-//            {
-//                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
-//            }
-//        }
-//    }
-
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
-//        propagate_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace);
         unify_backtraced_conditions(trace_cond, o_ids_to_replace, rhs_funcs);
-//        propagate_and_unify_identity_sets(inst->bt_identity_set_mappings, trace_cond, o_ids_to_replace, rhs_funcs);
         ebc_timers->dependency_analysis->start();
-//        dprint(DT_BACKTRACE1,  "Backtracing through instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-//        if (inst->bt_identity_set_mappings->size() > 0)
-//        {
-//            dprint_noprefix(DT_BACKTRACE1, "\nIdentity set mapping entries: \n");
-//            for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-//            {
-//                dprint_noprefix(DT_BACKTRACE1, "%u -> %u\n", iter->first, iter->second);
-//            }
-//            dprint_noprefix(DT_BACKTRACE1, "\n\n");
-//        }
     }
 
     ++bt_depth;
@@ -215,11 +184,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     /* We must backtrace through OSK even if we're not adding OSK because prohibits also use this mechanism */
     if (inst->OSK_prefs)
     {
-        backtrace_through_OSK(inst->OSK_prefs, grounds_level, inst->explain_depth);
+        backtrace_through_OSK(inst->OSK_prefs, inst->explain_depth);
     }
     if (inst->OSK_proposal_prefs)
     {
-        backtrace_through_OSK(inst->OSK_proposal_prefs, grounds_level, inst->explain_depth);
+        backtrace_through_OSK(inst->OSK_proposal_prefs, inst->explain_depth);
     }
     Symbol* thisID, *value;
 
@@ -231,15 +200,11 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
     {
         if (c->type == POSITIVE_CONDITION)
         {
-//            update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
-//            update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
-//            update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
-
             /* Might be able to only cache constraints for non-operational conds.  The others should show
              * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
              * ones needed. */
             cache_constraints_in_cond(c);
-            if (condition_is_operational(c, grounds_level))
+            if (condition_is_operational(c))
             {
                 if (c->bt.wme_->tc != grounds_tc)                   /* First time we've seen something matching this wme*/
                 {
@@ -257,14 +222,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
         else
         {
             dprint(DT_BACKTRACE, "Adding NC or NCC condition %y (i%u): %l\n", c->inst->prod_name, c->inst->i_id, c);
-//            if (c->type == NEGATIVE_CONDITION)
-//            {
-//                update_remaining_identity_sets_in_test(c->data.tests.id_test, inst);
-//                update_remaining_identity_sets_in_test(c->data.tests.attr_test, inst);
-//                update_remaining_identity_sets_in_test(c->data.tests.value_test, inst);
-//            } else {
-//                update_remaining_identity_sets_in_condlist(c->data.ncc.top, inst);
-//            }
             add_to_chunk_cond_set(&negated_set, make_chunk_cond_for_negated_condition(c));
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM]) push(thisAgent, c, negateds_to_print);
         }
@@ -304,7 +261,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(instantiation* i
    This routine backtraces through locals, and keeps doing so until
    there are no more locals to BT.
 --------------------------------------------------------------- */
-void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, goal_stack_level grounds_level, uint64_t lExplainDepth)
+void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, uint64_t lExplainDepth)
 {
     cons* l_OSK_prefs;
     preference* p;
@@ -319,7 +276,7 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, goal_s
         }
 
         dprint(DT_BACKTRACE, "Tracing through OSK pref %p for instantiation \n", p);
-        backtrace_through_instantiation(p->inst, grounds_level, NULL, p->identities, p->rhs_funcs, lExplainDepth, BT_OSK);
+        backtrace_through_instantiation(p, NULL, lExplainDepth, BT_OSK);
 
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -327,7 +284,7 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, goal_s
         }
     }
 }
-void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
+void Explanation_Based_Chunker::trace_locals()
 {
 
     /* mvp 5-17-94 */
@@ -362,12 +319,12 @@ void Explanation_Based_Chunker::trace_locals(goal_stack_level grounds_level)
         bt_pref = NULL;
         if (cond->bt.trace)
         {
-            bt_pref = (cond->bt.trace->level != grounds_level + 1) ? find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(grounds_level + 1)) : cond->bt.trace;
+            /* MToDo | Once stable, should be able to change m_goal_level + 1 to m_results_match_goal_level */
+            bt_pref = (cond->bt.trace->level != m_goal_level + 1) ? find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(m_goal_level + 1)) : cond->bt.trace;
         }
         if (bt_pref)
         {
-//            add_starting_identity_sets_to_cond(cond);
-            backtrace_through_instantiation(bt_pref->inst, grounds_level, cond, bt_pref->identities, bt_pref->rhs_funcs, cond->inst->explain_depth, BT_Normal);
+            backtrace_through_instantiation(bt_pref, cond, cond->inst->explain_depth, BT_Normal);
 
             if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
             {
@@ -435,35 +392,13 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
 void Explanation_Based_Chunker::perform_dependency_analysis()
 {
     preference* pref;
-    goal_stack_level grounds_level = m_inst->match_goal_level - 1;
+    m_goal_level = m_inst->match_goal_level - 1;
 
-//    outputManager->set_print_test_format(true, false);
     outputManager->set_print_test_format(true, true);
     dprint(DT_BACKTRACE,  "\nBacktracing through base instantiation %y: \n", m_inst->prod_name);
     dprint_header(DT_BACKTRACE, PrintBefore, "Starting dependency analysis...\n");
 
     ebc_timers->dependency_analysis->start();
-
-//    increment_counter(backtrace_number);
-//    increment_counter(grounds_tc);
-    increment_counter(id_set_pass1_tc);
-//    grounds = NIL;
-//    locals = NIL;
-//
-//    /* MToDo | When do we want to do this? */
-//    //thisAgent->explanationMemory->set_backtrace_number(backtrace_number);
-//
-//    /* Backtrace through the instantiation that produced each result --- */
-//    for (pref = m_results; pref != NIL; pref = pref->next_result)
-//    {
-//        dprint(DT_BACKTRACE1, "Starting dependency analysis of result preference %p...\n", pref);
-//        btpass1_backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
-//    }
-//
-//    btpass1_trace_locals(grounds_level);
-//
-//    if (locals) free_list(thisAgent, grounds);
-//    if (locals) free_list(thisAgent, locals);
 
     increment_counter(backtrace_number);
     increment_counter(grounds_tc);
@@ -482,7 +417,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
             print_preference(thisAgent, pref);
             thisAgent->outputManager->printa(thisAgent, " ");
         }
-        backtrace_through_instantiation(pref->inst, grounds_level, NULL, pref->identities, pref->rhs_funcs, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
+        backtrace_through_instantiation(pref, NULL, 0, (pref->inst == m_inst) ? BT_BaseInstantiation : BT_ExtraResults);
 
         if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
         {
@@ -490,7 +425,7 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
         }
     }
 
-    trace_locals(grounds_level);
+    trace_locals();
 
     outputManager->clear_print_test_format();
 

@@ -161,7 +161,6 @@ class Explanation_Based_Chunker
         cons*               locals;
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
-        tc_number           id_set_pass1_tc;
         tc_number           backtrace_number;
         uint64_t            m_current_bt_inst_id;
 
@@ -174,6 +173,7 @@ class Explanation_Based_Chunker
 
         /* Variables used by result building methods */
         goal_stack_level    m_results_match_goal_level;
+        goal_stack_level    m_goal_level;
         tc_number           m_results_tc;
         preference*         m_extra_results;
 
@@ -249,17 +249,10 @@ class Explanation_Based_Chunker
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
         void add_to_locals(condition* cond);
-        bool condition_is_operational(condition* cond, goal_stack_level grounds_level) { return  (cond->data.tests.id_test->eq_test->data.referent->id->level <= grounds_level); }
-        void trace_locals(goal_stack_level grounds_level);
-        void backtrace_through_instantiation(
-                instantiation* inst,
-                goal_stack_level grounds_level,
-                condition* trace_cond,
-                const identity_quadruple o_ids_to_replace,
-                const rhs_quadruple rhs_funcs,
-                uint64_t bt_depth,
-                BTSourceType bt_type);
-        void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
+        bool condition_is_operational(condition* cond) { return  (cond->data.tests.id_test->eq_test->data.referent->id->level <= m_goal_level); }
+        void trace_locals();
+        void backtrace_through_instantiation(preference* pPref, condition* trace_cond, uint64_t bt_depth, BTSourceType bt_type);
+        void backtrace_through_OSK(cons* pOSKPref, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
