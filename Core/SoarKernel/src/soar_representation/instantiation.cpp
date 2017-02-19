@@ -524,10 +524,12 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
         }
     }
     newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), identity_quadruple(0,0,0,0), false, was_unbound_vars);
-    newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
-    newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
-    newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
-    newPref->rhs_funcs.referent = copy_rhs_value(thisAgent, f_referent);
+
+    /* We don't copy these because unify_preference_identities will copy to unify anyway */
+    newPref->rhs_funcs.id = f_id;
+    newPref->rhs_funcs.attr = f_attr;
+    newPref->rhs_funcs.value = f_value;
+    newPref->rhs_funcs.referent = f_referent;
     newPref->parent_action = a;
     return newPref;
 
@@ -790,9 +792,27 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
-inline void propagate_identity(test condTest, uint64_t parentIDSet)
+inline void propagate_identity(agent* thisAgent, test condTest, uint64_t parentIDSet)
 {
-        condTest->identity_set = condTest->identity ? parentIDSet ? parentIDSet : condTest->identity : NULL_IDENTITY_SET;
+//        condTest->identity_set = condTest->identity ? parentIDSet ? parentIDSet : condTest->identity : NULL_IDENTITY_SET;
+
+        if (condTest->identity)
+        {
+//            if (parentIDSet && thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet))
+            if (parentIDSet)
+            {
+                thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet);
+                condTest->identity_set = parentIDSet;
+            }
+            else
+            {
+                /* Either tests an architecturally created WME or  different condition with this identity
+                 * already joined an identity set, so we start a new identity set using this identity */
+                condTest->identity_set = condTest->identity;
+            }
+        } else {
+            condTest->identity_set = NULL_IDENTITY_SET;
+        }
 }
 
 void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
@@ -827,26 +847,48 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     if (cond->bt.trace)
                     {
                         preference_add_ref(cond->bt.trace);
-                        propagate_identity(cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                        propagate_identity(cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                        propagate_identity(cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                        propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                        propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                        propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
                     }
-                    else
-                    {
-                        cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-                        cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-                        cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
-                    }
+                }
+                /* Architectural WME or we couldn't find a pref at the current level, so start a new identity set */
+                if (!cond->bt.trace)
+                {
+                    cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                    cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                    cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                 }
             }
         }
         cond->inst = inst;
     }
-
-    if (addToGoal)
+    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        assert(inst->match_goal);
-        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        if (cond->type == POSITIVE_CONDITION)
+        {
+            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
+            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
+            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
+        }
+        else
+        {
+            if (cond->type == NEGATIVE_CONDITION)
+            {
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
+            } else {
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
+            }
+        }
+    }
+    assert(inst->match_goal);
+    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+    {
+        thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p);
+
+        if (addToGoal)
         {
             insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
             p->on_goal_list = true;
@@ -1242,15 +1284,9 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-//    if (inst->bt_identity_set_mappings->size() > 0)
-//    {
-//        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\nIdentity set mapping entries created for: ");
-//        for (auto iter = inst->bt_identity_set_mappings->begin(); iter != inst->bt_identity_set_mappings->end(); ++iter)
-//        {
-//            dprint_noprefix(DT_PRINT_INSTANTIATIONS, "%u ", iter->first);
-//        }
-//        dprint_noprefix(DT_PRINT_INSTANTIATIONS, "\n\n");
-//    }
+    //dprint_unification_map(DT_PRINT_INSTANTIATIONS);
+    thisAgent->explanationBasedChunker->clear_unification_map();
+
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
     if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE))

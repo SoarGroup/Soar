@@ -47,7 +47,6 @@ typedef struct test_struct
     test_struct*     eq_test;
     tc_number        constraint_tc_num;
     uint64_t         identity;
-    tc_number        id_set_tc_num;
     uint64_t         identity_set;
 } test_info;
 

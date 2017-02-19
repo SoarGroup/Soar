@@ -303,7 +303,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
         }
         if (m_print_identity_effective && rsym->identity) {
-            sprint_sf(destString, " [%u]", rsym->identity);
+            sprint_sf(destString, " [%us%u]", rsym->identity, rsym->identity_set);
         }
     }
     else if (rhs_value_is_reteloc(rv))

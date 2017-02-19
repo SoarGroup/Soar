@@ -286,3 +286,43 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
     }
     add_test(thisAgent, dest_test_address, new_test);
 }
+
+void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, instantiation* pInst)
+{
+    cons* c;
+    switch (t->type)
+        {
+            case GOAL_ID_TEST:
+            case IMPASSE_ID_TEST:
+            case SMEM_LINK_UNARY_TEST:
+            case SMEM_LINK_UNARY_NOT_TEST:
+            case DISJUNCTION_TEST:
+                break;
+            case CONJUNCTIVE_TEST:
+                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
+                {
+                    update_remaining_identity_sets_in_test(static_cast<test>(c->first), pInst);
+                }
+                break;
+            default:
+                if (!t->identity_set) t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
+                break;
+        }
+}
+
+void Explanation_Based_Chunker::update_remaining_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst)
+{
+    condition* pCond;
+
+    for (pCond = pCondTop; pCond != NIL; pCond = pCond->next)
+    {
+        if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            update_remaining_identity_sets_in_test(pCond->data.tests.id_test, pInst);
+            update_remaining_identity_sets_in_test(pCond->data.tests.attr_test, pInst);
+            update_remaining_identity_sets_in_test(pCond->data.tests.value_test, pInst);
+        } else {
+            update_remaining_identity_sets_in_condlist(pCond->data.ncc.top, pInst);
+        }
+    }
+}

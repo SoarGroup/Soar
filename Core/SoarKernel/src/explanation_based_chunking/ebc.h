@@ -82,10 +82,11 @@ class Explanation_Based_Chunker
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
         void        unify_identity(test t) { t->identity = get_identity(t->identity); }
-        void        unify_preference_identities(preference* lPref);                         /* Not used currently */
+        void        update_identity_sets_in_preferences(preference* lPref);                         /* Not used currently */
         uint64_t    get_identity(uint64_t pID);
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
+        bool        add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -127,6 +128,7 @@ class Explanation_Based_Chunker
         void reinit();
         void clear_symbol_identity_map() { instantiation_identities->clear(); }
         void clear_variablization_maps();
+        void clear_unification_map()     { unification_map->clear(); }
         void clear_singletons();
 
     private:
@@ -260,22 +262,6 @@ class Explanation_Based_Chunker
         void backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
         void report_local_negation(condition* c);
 
-        void add_starting_identity_sets_to_cond(condition* trace_cond);
-        void propagate_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace);
-        void propagate_and_unify_identity_sets(id_to_id_map* identity_set_mappings, condition* trace_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
-        void propagate_and_unify_element(id_to_id_map* identity_set_mappings, test parent_test, int64_t replaceID, rhs_value pRhs_func, uint64_t parent_inst_i_id);
-
-        void btpass1_backtrace_through_instantiation(
-            instantiation* inst,
-            goal_stack_level grounds_level,
-            condition* trace_cond,
-            const identity_quadruple o_ids_to_replace,
-            const rhs_quadruple rhs_funcs,
-            uint64_t bt_depth,
-            BTSourceType bt_type);
-        void btpass1_backtrace_through_OSK(cons* pOSKPref, goal_stack_level grounds_level, uint64_t lExplainDepth = 0);
-        void btpass1_trace_locals(goal_stack_level grounds_level);
-
         /* Identity analysis and unification methods */
         void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
         void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
@@ -334,7 +320,6 @@ class Explanation_Based_Chunker
         void clear_merge_map();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_o_id_substitution_map()      { unification_map->clear(); }
         void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
         void clear_local_arch_singletons()      { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
         void clear_data();

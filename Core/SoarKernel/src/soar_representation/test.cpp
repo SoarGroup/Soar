@@ -968,7 +968,6 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->constraint_tc_num = 0;
     new_ct->identity_set = NULL_IDENTITY_SET;
-    new_ct->id_set_tc_num = 0;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

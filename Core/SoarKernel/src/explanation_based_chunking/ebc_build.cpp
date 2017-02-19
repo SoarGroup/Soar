@@ -1163,7 +1163,7 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     clear_symbol_identity_map();
     clear_variablization_maps();
     clear_cached_constraints();
-    clear_o_id_substitution_map();
+    clear_unification_map();
     clear_attachment_map();
     clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID

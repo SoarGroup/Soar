@@ -402,7 +402,7 @@ void Explanation_Based_Chunker::clear_data()
     clear_variablization_maps();
     clear_merge_map();
     clear_rulesym_to_identity_map();
-    clear_o_id_substitution_map();
+    clear_unification_map();
     clear_attachment_map();
     clear_local_arch_singletons();
 }
