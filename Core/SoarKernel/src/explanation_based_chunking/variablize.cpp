@@ -407,13 +407,13 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
     rhs_symbol lRS = rhs_value_to_rhs_symbol(pRLAction->id);
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, lRS->identity, lRS->identity_set, was_unbound_vars.id);
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.id);
     lRS = rhs_value_to_rhs_symbol(pRLAction->attr);
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, lRS->identity, lRS->identity_set, was_unbound_vars.attr);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.attr);
     lRS = rhs_value_to_rhs_symbol(pRLAction->value);
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, lRS->identity, lRS->identity_set, was_unbound_vars.value);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.value);
     lRS = rhs_value_to_rhs_symbol(pRLAction->referent);
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, lRS->identity, lRS->identity_set, was_unbound_vars.referent);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.referent);
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
     thisAgent->symbolManager->symbol_remove_ref(&id_sym);

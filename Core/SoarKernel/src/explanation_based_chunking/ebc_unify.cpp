@@ -34,7 +34,8 @@ bool Explanation_Based_Chunker::in_null_identity_set(test t)
 
 uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
 {
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
+    /* MToDo | I had to disable this because of RL templates on top level */
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end()) return iter->second;
     return pID;
@@ -48,12 +49,6 @@ uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint6
         return iter->second;
     (*unification_map)[pID] = pIDSet;
     return pIDSet;
-}
-
-void Explanation_Based_Chunker::force_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
-{
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-    (*unification_map)[pID] = pIDSet;
 }
 
 /* We don't deallocate because this is only called from execute_action which doesn't

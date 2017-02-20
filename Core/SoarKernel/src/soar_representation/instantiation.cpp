@@ -820,7 +820,7 @@ inline void set_identity_set(agent* thisAgent, test condTest, uint64_t pIDSet)
     }
 }
 
-void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal, bool isTemplate)
 {
     condition* cond;
     preference* p;
@@ -868,13 +868,13 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     }
                 }
             }
-            if (inst->match_goal_level > TOP_GOAL_LEVEL)
+            /* Check for local singletons */
+            if (cond->bt.wme_->local_singleton_superstate_identity_set && (inst->match_goal_level > TOP_GOAL_LEVEL))
             {
-                /* Check for local singletons */
-                if (cond->bt.wme_->local_singleton_superstate_identity_set)
-                {
-                    set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
-                }
+                set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
+            }
+            if ((inst->match_goal_level > TOP_GOAL_LEVEL) || isTemplate)
+            {
                 /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->data.tests.id_test->eq_test->identity);
                 if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->data.tests.attr_test->eq_test->identity);
@@ -1248,7 +1248,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         {
             dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
             pref = NIL;
-            finalize_instantiation(thisAgent, inst, false, NIL, true);
+            finalize_instantiation(thisAgent, inst, false, NIL, true, true);
             /* Finalize turns this off, but we need it a little longer for rl rule being built */
             thisAgent->explanationBasedChunker->instantiation_being_built = inst;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);

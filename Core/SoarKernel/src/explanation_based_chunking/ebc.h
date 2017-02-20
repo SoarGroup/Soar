@@ -88,7 +88,7 @@ class Explanation_Based_Chunker
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
         uint64_t    add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
-        void        force_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
+        void        force_identity_set_mapping(uint64_t pID, uint64_t pIDSet) { (*unification_map)[pID] = pIDSet; }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
