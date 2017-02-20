@@ -321,7 +321,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
-    uint64_t sym_identity = NULL_IDENTITY_SET;
+    uint64_t sym_identity = NULL_IDENTITY_SET, sym_identity_set = NULL_IDENTITY_SET;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
@@ -355,6 +355,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
             sym = ct->eq_test->data.referent;
             sym_identity = ct->eq_test->identity;
+            sym_identity_set = ct->eq_test->identity_set;
             dprint(DT_REORDERER, "...Setting equality symbol %y as index.\n", sym);
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
@@ -392,6 +393,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
                     saved->var_identity = sym_identity;
+                    saved->var_identity_set = sym_identity_set;
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -438,6 +440,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             old_sts = saved;
             saved->var = var;
             saved->var_identity = NULL_IDENTITY_SET;
+            saved->var_identity_set = NULL_IDENTITY_SET;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -576,6 +579,7 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
                         st->the_test->identity = st->var_identity;
+                        st->the_test->identity_set = st->var_identity_set;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;

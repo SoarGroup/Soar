@@ -106,14 +106,14 @@ void Explanation_Based_Chunker::find_attachment_points(condition* pCond)
         {
             dprint(DT_CONSTRAINTS, "Adding attachment points for positive condition %l\n", pCond);
             test lTest = pCond->data.tests.value_test->eq_test;
-            if (lTest && lTest->identity)
+            if (lTest && lTest->identity_set)
             {
-                set_attachment_point(lTest->identity, pCond, VALUE_ELEMENT);
+                set_attachment_point(lTest->identity_set, pCond, VALUE_ELEMENT);
             }
             lTest = pCond->data.tests.attr_test->eq_test;
-            if (lTest && lTest->identity)
+            if (lTest && lTest->identity_set)
             {
-                set_attachment_point(lTest->identity, pCond, ATTR_ELEMENT);
+                set_attachment_point(lTest->identity_set, pCond, ATTR_ELEMENT);
             }
         }
         pCond = pCond->next;
@@ -163,8 +163,8 @@ void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRe
 
 void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRelational_test)
 {
-    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity, pEq_test, pEq_test->identity);
-    attachment_point* attachment_info = get_attachment_point(pEq_test->identity);
+    dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity_set, pEq_test, pEq_test->identity_set);
+    attachment_point* attachment_info = get_attachment_point(pEq_test->identity_set);
     if (attachment_info)
     {
         if (attachment_info->field == VALUE_ELEMENT)
@@ -230,14 +230,14 @@ void Explanation_Based_Chunker::add_additional_constraints()
 
         dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
 
-        if (eq_copy->identity && has_positive_condition(eq_copy->identity))
+        if (eq_copy->identity_set && has_positive_condition(eq_copy->identity_set))
         {
             /* Attach to a positive chunk condition test of eq_test */
             dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
             attach_relational_test(eq_copy, constraint_test);
         } else {
             /* Original identity constraint was attached to was literalized */
-            if (constraint_test->identity && has_positive_condition(constraint_test->identity))
+            if (constraint_test->identity_set && has_positive_condition(constraint_test->identity_set))
             {
                 /* Relational tests referent was not literalized, so make complement and
                  * add to a positive chunk condition test for the referent */

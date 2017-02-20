@@ -468,10 +468,10 @@ void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsN
     } else {
         if (pIsNCC)
         {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
+            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity_set));
 
         } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity);
+            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity_set);
         }
     }
 }

@@ -233,7 +233,9 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
 
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
+    /* MToDo | Not sure if we want to set both of these */
     pTest->identity = lMatchedIdentity;
+    pTest->identity_set = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
 }
 
@@ -296,7 +298,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym)
             {
-                add_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity);
+                add_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity_set);
             }
 
             /* Check if the value element is a state */
@@ -315,7 +317,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym && lMatchedSym->is_sti())
             {
-                add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
+                add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity_set);
             }
         }
     }

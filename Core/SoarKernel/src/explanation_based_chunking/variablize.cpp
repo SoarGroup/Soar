@@ -226,7 +226,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 pTest->eq_test->identity = var_info->identity;
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", var_info->variable_sym, var_info->identity);
             }
-            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%us%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest->eq_test->identity_set, pTest);
         } else {
             /* Literalized identity, so set identity in chunk to 0 */
             pTest->eq_test->identity = NULL_IDENTITY_SET;
@@ -266,19 +266,22 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
 
         t->identity = found_variablization->identity;
+        /* MToDo | Not sure if we want this.  It doesn't seem like the production needs identity sets */
+        t->identity_set = found_variablization->identity;
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", found_variablization->variable_sym, found_variablization->identity);
     }
     else
     {
         /* Could be a literalized identity, so set identity in chunk to 0 */
         t->identity = NULL_IDENTITY_SET;
+        t->identity_set = NULL_IDENTITY_SET;
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in relational test.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
         return false;
     }
 
-    dprint(DT_LHS_VARIABLIZATION, "Result: %t [%u]\n", t, t->identity);
+    dprint(DT_LHS_VARIABLIZATION, "Result: %t [%us%u]\n", t, t->identity, t->identity_set);
     dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 
     return true;
@@ -674,7 +677,7 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
             reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity_set)
     {
     /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
      * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */

@@ -136,7 +136,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                 {
                     t->constraint_tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
                 }
-                if (new_ct->identity)
+                if (new_ct->identity_set)
                 {
                     thisAgent->explanationBasedChunker->unify_identity(new_ct);
                 }
@@ -550,7 +550,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             }
             if (considerIdentity)
             {
-                return (t1->identity == t2->identity);
+                return (t1->identity_set == t2->identity_set);
             }
             return true;
         }
