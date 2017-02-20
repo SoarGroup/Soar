@@ -28,7 +28,6 @@ class identity_record
         void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID);
         void    set_original_ebc_mappings(id_to_id_map* pIdentitySetMappings) { original_ebc_mappings = new id_to_id_map(); (*original_ebc_mappings) = (*pIdentitySetMappings); }
         void    generate_identity_sets(uint64_t pInstID, condition* lhs);
-        void    map_originals_to_sets();
 
         void    print_mappings();
         void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
@@ -40,7 +39,7 @@ class identity_record
         agent*                  thisAgent;
         id_set*                 identities_in_chunk;
         id_to_id_map*           original_ebc_mappings;
-        id_to_sym_id_map*       id_to_id_set_mappings;
+        id_to_sym_map*          idset_to_var_map;
         inst_identities_map*    instantiation_mappings;
 
         void    clear_mappings();

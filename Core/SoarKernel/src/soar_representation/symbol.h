@@ -54,7 +54,7 @@
     //#define DEBUG_MAC_STACKTRACE
 
     #ifdef DEBUG_MAC_STACKTRACE
-    std::string get_stacktrace(const char* prefix = NULL);
+    void get_stacktrace(const char* prefix, std::string& return_string);
     #endif
 #endif
 
