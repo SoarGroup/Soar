@@ -113,9 +113,9 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         uint64_t lIDSet = r->identity_set;
         if (unify_identities)
         {
-            /* MToDo | Probably only need to unify identity sets */
-            lID = thisAgent->explanationBasedChunker->get_identity(lID);
-            if (lIDSet)
+            if (!lIDSet)
+                lIDSet = thisAgent->explanationBasedChunker->get_identity(lID);
+            else
                 lIDSet = thisAgent->explanationBasedChunker->get_identity(lIDSet);
         }
         return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);

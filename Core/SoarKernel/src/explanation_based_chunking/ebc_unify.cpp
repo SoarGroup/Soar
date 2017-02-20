@@ -64,7 +64,7 @@ void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* 
     if (lPref->identities.referent) lPref->identity_sets.referent = get_identity(lPref->identities.referent);
     if (lPref->rhs_funcs.id)
     {
-        lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);;
+        lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
     }
     if (lPref->rhs_funcs.attr)
     {
