@@ -794,23 +794,19 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  ----------------------------------------------------------------------- */
 inline void propagate_identity(agent* thisAgent, test condTest, uint64_t parentIDSet)
 {
-//        condTest->identity_set = condTest->identity ? parentIDSet ? parentIDSet : condTest->identity : NULL_IDENTITY_SET;
-
         if (condTest->identity)
         {
-//            if (parentIDSet && thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet))
             if (parentIDSet)
             {
-                thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet);
-                condTest->identity_set = parentIDSet;
+                condTest->identity_set = thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet);
             }
             else
             {
-                /* Either tests an architecturally created WME or  different condition with this identity
-                 * already joined an identity set, so we start a new identity set using this identity */
+                /* Tests an architecturally created WME */
                 condTest->identity_set = condTest->identity;
             }
         } else {
+            /* Tests a literal value */
             condTest->identity_set = NULL_IDENTITY_SET;
         }
 }

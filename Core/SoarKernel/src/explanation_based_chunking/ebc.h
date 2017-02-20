@@ -81,12 +81,12 @@ class Explanation_Based_Chunker
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void        unify_identity(test t) { t->identity = get_identity(t->identity); }
+        void        unify_identity(test t) { t->identity_set = get_identity(t->identity_set); }
         void        update_identity_sets_in_preferences(preference* lPref);                         /* Not used currently */
         uint64_t    get_identity(uint64_t pID);
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
-        bool        add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
+        uint64_t    add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);

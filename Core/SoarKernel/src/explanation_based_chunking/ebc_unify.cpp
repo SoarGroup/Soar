@@ -40,14 +40,14 @@ uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
     return pID;
 }
 
-bool Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
+uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
 {
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end())
-        return (iter->second == pIDSet);
+        return iter->second;
     (*unification_map)[pID] = pIDSet;
-    return true;
+    return pIDSet;
 }
 
 /* We don't deallocate because this is only called from execute_action which doesn't
