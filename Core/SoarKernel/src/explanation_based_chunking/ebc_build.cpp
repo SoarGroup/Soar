@@ -1174,7 +1174,6 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     clear_cached_constraints();
     clear_unification_map();
     clear_attachment_map();
-    clear_local_arch_singletons();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (pClean_up_id == DEBUG_ONLY_CHUNK_ID)

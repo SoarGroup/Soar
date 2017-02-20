@@ -195,7 +195,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     /* --- scan through conditions, collect grounds and locals --- */
     negateds_to_print = NIL;
 
-
     for (c = inst->top_of_instantiated_conditions; c != NIL; c = c->next)
     {
         if (c->type == POSITIVE_CONDITION)
@@ -203,7 +202,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
             /* Might be able to only cache constraints for non-operational conds.  The others should show
              * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
              * ones needed. */
-            cache_constraints_in_cond(c);
             if (condition_is_operational(c))
             {
                 if (c->bt.wme_->tc != grounds_tc)                   /* First time we've seen something matching this wme*/
@@ -215,8 +213,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
                     add_to_grounds(c);
                 }
             } else {                                                /* A local sub-state WME */
+                cache_constraints_in_cond(c);
                 add_to_locals(c);
-                add_local_singleton_unification_if_needed(c);
             }
         }
         else

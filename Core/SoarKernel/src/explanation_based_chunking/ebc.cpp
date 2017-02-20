@@ -8,7 +8,6 @@
 #include "ebc.h"
 #include "ebc_settings.h"
 #include "ebc_timers.h"
-#include "ebc_identity_sets.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -64,9 +63,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     chunk_name_prefix = make_memory_block_for_string(thisAgent, "chunk");
     justification_name_prefix = make_memory_block_for_string(thisAgent, "justify");
 
-    local_singletons = new symbol_set();
     singletons = new symbol_set();
-    identitySets = new Identity_Sets(thisAgent);
 
     chunk_history = new std::string();
     lti_link_function = NULL;
@@ -89,10 +86,8 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete local_linked_STIs;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
-    delete local_singletons;
     clear_singletons();
     delete singletons;
-    delete identitySets;
     delete chunk_history;
 }
 
@@ -123,7 +118,6 @@ void Explanation_Based_Chunker::reinit()
     m_prod_name                         = NULL;
     chunk_free_problem_spaces           = NIL;
     chunky_problem_spaces               = NIL;
-    local_singleton_superstate_identity = NULL;
     m_failure_type                      = ebc_success;
     m_rule_type                         = ebc_no_rule;
     m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
@@ -404,7 +398,6 @@ void Explanation_Based_Chunker::clear_data()
     clear_rulesym_to_identity_map();
     clear_unification_map();
     clear_attachment_map();
-    clear_local_arch_singletons();
 }
 
 void Explanation_Based_Chunker::clear_attachment_map()

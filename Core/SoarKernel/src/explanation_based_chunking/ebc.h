@@ -85,11 +85,12 @@ class Explanation_Based_Chunker
         void        unify_identity(test t) { t->identity_set = get_identity(t->identity_set); }
         void        update_identity_sets_in_preferences(preference* lPref);                         /* Not used currently */
         uint64_t    get_identity(uint64_t pID);
+        uint64_t    get_identity_and_add(uint64_t pID);
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
         uint64_t    add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
         void        force_identity_set_mapping(uint64_t pID, uint64_t pIDSet) { (*unification_map)[pID] = pIDSet; }
-
+        bool        has_identity_set_mapping(uint64_t pID) { return (unification_map->find(pID) != unification_map->end()); }
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
         bool                wme_is_a_singleton(wme* pWME);
@@ -137,7 +138,6 @@ class Explanation_Based_Chunker
 
         agent*              thisAgent;
         Output_Manager*     outputManager;
-        Identity_Sets*      identitySets;
 
         /* Statistics on learning performed so far */
         uint64_t            chunk_naming_counter;
@@ -205,8 +205,6 @@ class Explanation_Based_Chunker
 
         /* Map to unify variable identities into identity sets */
         id_to_id_map*       unification_map;
-        identity_quadruple  local_singleton_superstate_identity;
-        symbol_set*         local_singletons;
         symbol_set*         singletons;
 
         /* Data structures used to track and assign loose constraints */
@@ -263,7 +261,6 @@ class Explanation_Based_Chunker
         void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
         void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
-        void add_local_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
         void merge_conditions();
 
@@ -316,7 +313,6 @@ class Explanation_Based_Chunker
         void clear_attachment_map();
         void clear_cached_constraints();
         void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
-        void clear_local_arch_singletons()      { local_singleton_superstate_identity = { 0, 0, 0, 0}; }
         void clear_data();
 
 };

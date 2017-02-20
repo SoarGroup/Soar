@@ -40,6 +40,15 @@ uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
     if (iter != (*unification_map).end()) return iter->second;
     return pID;
 }
+uint64_t Explanation_Based_Chunker::get_identity_and_add(uint64_t pID)
+{
+    /* MToDo | I had to disable this because of RL templates on top level */
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
+    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
+    if (iter != (*unification_map).end()) return iter->second;
+    (*unification_map)[pID] = pID;
+    return pID;
+}
 
 uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
 {
@@ -342,33 +351,6 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in referent element %r\n", rhs_funcs.referent);
         literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
     }
-}
-
-/* Requires: pCond is a local condition */
-void Explanation_Based_Chunker::add_local_singleton_unification_if_needed(condition* pCond)
-{
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-
-    if ((pCond->bt.wme_->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) &&
-        (pCond->bt.wme_->id->id->isa_goal) && (pCond->bt.wme_->value->is_sti() && pCond->bt.wme_->value->id->isa_goal))
-    {
-        ebc_timers->dependency_analysis->stop();
-        if (local_singleton_superstate_identity.id == 0)
-        {
-//            dprint(DT_UNIFY_SINGLETONS, "Storing identities for local singleton wme: %l\n", pCond);
-            local_singleton_superstate_identity = { pCond->data.tests.id_test->eq_test->identity_set, pCond->data.tests.attr_test->eq_test->identity_set, pCond->data.tests.value_test->eq_test->identity_set };
-        } else {
-//            dprint(DT_UNIFY_SINGLETONS, "Unifying local singleton wme: %l\n", pCond);
-            if (pCond->data.tests.value_test->eq_test->identity_set || local_singleton_superstate_identity.value)
-            {
-//                dprint(DT_UNIFY_SINGLETONS, "...unifying value element %u -> %u\n", pCond->data.tests.value_test->eq_test->identity_set, local_singleton_superstate_identity.value);
-                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set, local_singleton_superstate_identity.value);
-                add_identity_unification(pCond->data.tests.value_test->eq_test->identity_set, local_singleton_superstate_identity.value);
-            }
-        }
-        ebc_timers->dependency_analysis->start();
-    }
-
 }
 
 /* Requires: pCond is being added to grounds and is the second condition being added to grounds
