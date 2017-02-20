@@ -832,36 +832,34 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             #endif
             {
                 wme_add_ref(cond->bt.wme_);
-                break_if_test_symbol_matches_string(cond->data.tests.attr_test->eq_test, "item2");
-                /* if trace is for a lower level, find one for this level */
+            }
+            if (inst->match_goal_level > TOP_GOAL_LEVEL && cond->bt.trace)
+            {
+                if (cond->bt.trace->level > inst->match_goal_level)
+                {
+                    cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
+                }
                 if (cond->bt.trace)
                 {
-                    if (cond->bt.trace->level > inst->match_goal_level)
+                    preference_add_ref(cond->bt.trace);
+                    if (cond->bt.trace->level == inst->match_goal_level)
                     {
-                        cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
-                    }
-                    if (cond->bt.trace)
-                    {
-                        preference_add_ref(cond->bt.trace);
-                        if (cond->bt.trace->level == inst->match_goal_level)
-                        {
-                            propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                            propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                            propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
-                        } else {
-                            cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-                            cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-                            cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
-                        }
+                        propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                        propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                        propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                    } else {
+                        cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                        cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                        cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                     }
                 }
-                /* Architectural WME or we couldn't find a pref at the current level, so start a new identity set */
-                if (!cond->bt.trace)
-                {
-                    cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-                    cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-                    cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
-                }
+            }
+            /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
+            if (!cond->data.tests.id_test->eq_test->identity_set)
+            {
+                cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
             }
         }
         cond->inst = inst;
@@ -1240,8 +1238,10 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         {
             dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
             pref = NIL;
+            finalize_instantiation(thisAgent, inst, false, NIL, true);
+            /* Finalize turns this off, but we need it a little longer for rl rule being built */
+            thisAgent->explanationBasedChunker->instantiation_being_built = inst;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
-
         }
         if (pref)
         {
@@ -1271,7 +1271,13 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
 
     /* fill in lots of other stuff */
-    finalize_instantiation(thisAgent, inst, false, NIL, true);
+    if (prod->type != TEMPLATE_PRODUCTION_TYPE)
+    {
+        finalize_instantiation(thisAgent, inst, false, NIL, true);
+    } else {
+        /* Because we called finalize_instantiation early for templates */
+        thisAgent->explanationBasedChunker->instantiation_being_built = NULL;
+    }
 
     /* Print rule firing trace info RHS (must be after fill_in_new_instantiation) */
     if (trace_it)
