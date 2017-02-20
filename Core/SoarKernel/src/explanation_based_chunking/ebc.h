@@ -68,6 +68,7 @@ class Explanation_Based_Chunker
         uint64_t get_or_create_identity(Symbol* orig_var);
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
+        uint64_t get_floating_identity();
 
         /* Identity set mapping functions */
         void update_remaining_identity_sets_in_test(test pTest, instantiation* pInst);
@@ -87,6 +88,7 @@ class Explanation_Based_Chunker
         bool        in_null_identity_set(test t);
         tc_number   get_constraint_found_tc_num() { return tc_num_found; };
         uint64_t    add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
+        void        force_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);

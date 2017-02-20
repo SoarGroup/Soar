@@ -116,7 +116,7 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->deep_copied_wme = NULL;
     w->is_singleton = false;
     w->singleton_status_checked = false;
-
+    w->local_singleton_superstate_identity_set = NULL_IDENTITY_SET;
     w->next = NIL;
     w->prev = NIL;
     w->rete_next = NIL;

@@ -792,9 +792,9 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
-inline void propagate_identity(agent* thisAgent, test condTest, uint64_t parentIDSet)
+inline void propagate_identity_set(agent* thisAgent, test condTest, uint64_t parentIDSet, uint64_t local_singleton_superstate_identity_set = NULL_IDENTITY_SET)
 {
-        if (condTest->identity)
+    if (condTest->identity)
         {
             if (parentIDSet)
             {
@@ -809,6 +809,15 @@ inline void propagate_identity(agent* thisAgent, test condTest, uint64_t parentI
             /* Tests a literal value */
             condTest->identity_set = NULL_IDENTITY_SET;
         }
+}
+inline void set_identity_set(agent* thisAgent, test condTest, uint64_t pIDSet)
+{
+    assert(pIDSet);
+    if (condTest->identity)
+    {
+        thisAgent->explanationBasedChunker->force_identity_set_mapping(condTest->identity, pIDSet);
+        condTest->identity_set = pIDSet;
+    }
 }
 
 void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
@@ -844,44 +853,45 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     preference_add_ref(cond->bt.trace);
                     if (cond->bt.trace->level == inst->match_goal_level)
                     {
-                        propagate_identity(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                        propagate_identity(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                        propagate_identity(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                        propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                        propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                        propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value, cond->bt.wme_->local_singleton_superstate_identity_set);
+                    } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
+                        if (cond->data.tests.id_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->data.tests.id_test->eq_test->identity);
+                        if (cond->data.tests.attr_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->data.tests.attr_test->eq_test->identity);
+                        if (cond->data.tests.value_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->data.tests.value_test->eq_test->identity);
                     } else {
+                        assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
                         cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
                         cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
                         cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                     }
                 }
             }
-            /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
-            if (!cond->data.tests.id_test->eq_test->identity_set)
+            if (inst->match_goal_level > TOP_GOAL_LEVEL)
             {
-                cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-                cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-                cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
+                /* Check for local singletons */
+                if (cond->bt.wme_->local_singleton_superstate_identity_set)
+                {
+                    set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
+                }
+                /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
+                if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->data.tests.id_test->eq_test->identity);
+                if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->data.tests.attr_test->eq_test->identity);
+                if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity) set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->data.tests.value_test->eq_test->identity);
             }
         }
         cond->inst = inst;
     }
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        if (cond->type == POSITIVE_CONDITION)
+        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
         {
             thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
             thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
             thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
-        }
-        else
-        {
-            if (cond->type == NEGATIVE_CONDITION)
-            {
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
-            } else {
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
-            }
+        } else {
+            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
         }
     }
     assert(inst->match_goal);

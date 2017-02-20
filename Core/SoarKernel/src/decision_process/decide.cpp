@@ -1881,7 +1881,7 @@ byte run_preference_semantics(agent* thisAgent,
    (if non-NIL) for backtracing.
 ------------------------------------------------------------------ */
 
-void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p, bool isSingleton = false)
+wme* add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, preference* p, bool isSingleton = false)
 {
     wme* w;
 
@@ -1893,6 +1893,7 @@ void add_impasse_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, 
     {
         thisAgent->explanationBasedChunker->add_to_singletons(w);
     }
+    return w;
 }
 
 /* ------------------------------------------------------------------
@@ -1919,7 +1920,9 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         thisAgent->memoryManager->allocate_with_pool(MP_smem_info, &(impasseID->id->smem_info));
         thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
-        add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
+        wme* lSSWME = add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
+        if (level > TOP_GOAL_LEVEL)
+            lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity();
 
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
         impasseID->id->rl_info->rl_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, lreward_header, true);

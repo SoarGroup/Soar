@@ -18,7 +18,11 @@
 #include "working_memory.h"
 
 #include <assert.h>
-
+uint64_t Explanation_Based_Chunker::get_floating_identity()
+{
+    increment_counter(ovar_id_counter);
+    return ovar_id_counter;
+}
 uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
 {
     int64_t existing_o_id = 0;
@@ -305,7 +309,8 @@ void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, i
                 }
                 break;
             default:
-                if (!t->identity_set) t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
+//                if (!t->identity_set) t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
+                t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
                 break;
         }
 }
