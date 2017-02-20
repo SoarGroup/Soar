@@ -1236,7 +1236,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
-            dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
+//            dprint(DT_RL_VARIABLIZATION, "Executing action %a\n", a);
             if (a2 && isSubGoalMatch)
             {
                 pref = execute_action(thisAgent, a, tok, w, a2);
