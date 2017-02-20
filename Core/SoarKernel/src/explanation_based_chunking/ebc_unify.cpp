@@ -121,7 +121,6 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uin
         ebc_timers->identity_unification->stop();
         return;
     }
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding identity unification %u -> %u\n", pOld_o_id, pNew_o_id);
 
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t newID;
@@ -265,7 +264,10 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  lhs condition = %l, rhs preference identities = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
+    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition (%y ^%y %y):  (%u ^%u %u)  --> (%u ^%u %u)\n",
+        parent_cond->data.tests.id_test->eq_test->data.referent, parent_cond->data.tests.attr_test->eq_test->data.referent, parent_cond->data.tests.value_test->eq_test->data.referent,
+        parent_cond->data.tests.id_test->eq_test->identity_set, parent_cond->data.tests.attr_test->eq_test->identity_set, parent_cond->data.tests.value_test->eq_test->identity_set,
+        o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value);
 
     if (o_ids_to_replace.id)
     {

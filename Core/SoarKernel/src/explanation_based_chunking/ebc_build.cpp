@@ -136,22 +136,22 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     /* --- add this preference to the result list --- */
     pref->next_result = m_results;
     m_results = pref;
-    if (pref->identities.id && linked_id)
+    if (pref->identity_sets.id && linked_id)
     {
         assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
         ebc_timers->chunk_instantiation_creation->stop();
 
-        dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identities.id, linked_id);
-        thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identities.id, linked_id);
-        add_identity_unification(pref->identities.id, linked_id);
+        dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id, linked_id);
+        thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, linked_id);
+        add_identity_unification(pref->identity_sets.id, linked_id);
         ebc_timers->chunk_instantiation_creation->start();
     }
 
     /* --- follow transitive closure through value, referent links --- */
-    add_results_if_needed(pref->value, pref->identities.value);
+    add_results_if_needed(pref->value, pref->identity_sets.value);
     if (preference_is_binary(pref->type))
     {
-        add_results_if_needed(pref->referent, pref->identities.referent);
+        add_results_if_needed(pref->referent, pref->identity_sets.referent);
     }
 }
 
@@ -167,7 +167,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_i
     dprint(DT_EXTRA_RESULTS, "...iterating through input wmes...\n");
     for (w = id->id->input_wmes; w != NIL; w = w->next)
     {
-        add_results_if_needed(w->value, w->preference ? w->preference->identities.value : 0);
+        add_results_if_needed(w->value, w->preference ? w->preference->identity_sets.value : 0);
     }
     dprint(DT_EXTRA_RESULTS, "...iterating through slots...\n");
     for (s = id->id->slots; s != NIL; s = s->next)
@@ -180,7 +180,7 @@ void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_i
         dprint(DT_EXTRA_RESULTS, "...iterating through wmes of slot...\n");
         for (w = s->wmes; w != NIL; w = w->next)
         {
-            add_results_if_needed(w->value, w->preference ? w->preference->identities.value : 0);
+            add_results_if_needed(w->value, w->preference ? w->preference->identity_sets.value : 0);
         }
     } /* end of for slots loop */
     dprint(DT_EXTRA_RESULTS, "...iterating through extra results looking for id...\n");
@@ -708,6 +708,14 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
+            /* We'll interrupt on justification learning only if explainer is recording justifications.  In
+             * most cases I think we wouldn't want to interrupt on every justification learned */
+            if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
+            {
+                thisAgent->stop_soar = true;
+                thisAgent->reason_for_stopping = "Soar learned a new justification.";
+
+            }
         } else {
             thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT])
