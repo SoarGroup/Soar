@@ -285,8 +285,8 @@ class Explanation_Based_Chunker
         void variablize_equality_tests(test t);
         bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        sym_identity_info* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
-        sym_identity_info* get_variablization(uint64_t index_id);
+        sym_identity* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
+        sym_identity* get_variablization(uint64_t index_id);
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);

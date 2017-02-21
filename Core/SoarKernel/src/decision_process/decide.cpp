@@ -1824,10 +1824,12 @@ byte run_preference_semantics(agent* thisAgent,
 
                     /* This decision was non-numeric, so add all non-numeric preferences associated with the
                      * chosen candidate to the OSK prefs.*/
-                    /* MToDo | Temporarily removed because it was causing problems for John in demo agents.  All of the OSK
-                     *         prefs that involve uncertainty now seem weird. Will need to reconsider how we handle them now
-                     *         that we have a better handle for correctness issues and are thinking more about probabilistic
-                     *         chunks.*/
+
+                    /* Note:  We've disabled unary indifferents because they were causing problems in certain demo agents
+                     *        All of the OSK prefs that involve uncertainty now seem weird. Will need to reconsider how
+                     *        we handle them now  that we have a better handle for correctness issues and are thinking
+                     *        about the possibility of probabilistic chunks.*/
+
 //                    for (p = s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p != NIL; p = p->next)
 //                    {
 //                        if (p->value == (*result_candidates)->value)

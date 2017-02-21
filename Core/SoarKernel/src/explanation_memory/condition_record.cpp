@@ -242,7 +242,6 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
             visualizer->viz_table_element_start(pNode_id, 'c', pField, isSuper,
                 highlight_identity_sets ? " BGCOLOR=\"yellow\" " : " ");
         } else {
-            /* MToDo | Was working with third argument of true, which doesn't make sense.  Trying to change. */
             visualizer->viz_table_element_start(0, ' ', ID_ELEMENT, isSuper,
                 highlight_identity_sets ? " BGCOLOR=\"yellow\" " : " ");
         }

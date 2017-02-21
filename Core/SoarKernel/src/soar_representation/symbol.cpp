@@ -85,15 +85,9 @@ bool make_string_rereadable(std::string &pStr)
 
     has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
 
-    /* MToDo | Why do we even need has_angle_bracket? */
-    assert(!has_angle_bracket || possible_var);
-
-    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-        (!is_rereadable) || has_angle_bracket)
+    if ((!possible_sc)   || possible_var || possible_ic || possible_fc || (!is_rereadable))
     {
-        /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
-         *        - Shouldn't it also check whether dest char * was passed in and get a printed
-         *          output string instead?  */
+        /* BUGBUG - if in context where id's could occur, should check possible_id flag here also */
         pStr = string_to_escaped_string(pCStr, '|');
         return true;
     }

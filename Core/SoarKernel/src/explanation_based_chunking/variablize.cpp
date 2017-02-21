@@ -21,17 +21,17 @@
 
 #include <assert.h>
 
-sym_identity_info* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
+sym_identity* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
 {
     if (index_id == 0) return NULL;
     auto iter = (*identity_to_var_map).find(index_id);
     if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
 }
 
-sym_identity_info* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
+sym_identity* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
 {
     assert(pIdentity);
-    sym_identity_info* lVarInfo;
+    sym_identity* lVarInfo;
     thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
     lVarInfo->variable_sym = variable;
     variable->var->instantiated_sym = pMatched_sym;
@@ -65,7 +65,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
 {
     char prefix[2];
     Symbol* var;
-    sym_identity_info* found_variablization = NULL;
+    sym_identity* found_variablization = NULL;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -121,7 +121,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         rhs_value lMatchedSym_with_LTI_Link = NULL;
 
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y with identity %u.\n", found_variablization->variable_sym, found_variablization->identity);
-        /* MToDo | Add test that symbol is local to the substate analyzed */
         if (rs->referent->is_lti() && lti_link_tc && (rs->referent->id->level == m_inst->match_goal_level) && (rs->referent->tc_num != lti_link_tc))
         {
             dprint(DT_RHS_LTI_LINKING, "Found RHS symbol with LTI link during variablization: %y and LTI %u \n", rs->referent, rs->referent->id->LTI_ID);
@@ -168,7 +167,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-    sym_identity_info* var_info;
+    sym_identity* var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
     assert(pTest && pTest->eq_test);
@@ -246,7 +245,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-    sym_identity_info* found_variablization = NULL;
+    sym_identity* found_variablization = NULL;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity_set);
 
@@ -266,8 +265,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         thisAgent->symbolManager->symbol_add_ref(found_variablization->variable_sym);
 
         t->identity = found_variablization->identity;
-        /* MToDo | Not sure if we want this.  It doesn't seem like the production needs identity sets */
-        t->identity_set = found_variablization->identity;
+//        t->identity_set = found_variablization->identity;
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", found_variablization->variable_sym, found_variablization->identity);
     }
     else

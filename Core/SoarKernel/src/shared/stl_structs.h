@@ -64,7 +64,7 @@ typedef struct deep_copy_struct
 typedef struct sym_identity_struct {
         uint64_t    identity;
         Symbol*     variable_sym;
-} sym_identity_info;
+} sym_identity;
 
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
@@ -72,6 +72,11 @@ typedef struct identity_mapping_struct {
         IDSet_Mapping_Type  mappingType;
 } identity_mapping;
 
+
+typedef struct identity_pair_struct {
+        uint64_t            identity;
+        uint64_t            identity_set;
+} identity_pair;
 
 typedef struct chunk_element_struct {
         Symbol*     variable_sym;

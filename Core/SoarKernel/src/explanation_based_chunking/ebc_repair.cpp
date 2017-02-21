@@ -197,10 +197,8 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     assert(lMatchedSym->is_sti());
 
     /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
-    std::unordered_map< Symbol*, Symbol* >::iterator iter_sym;
-    std::unordered_map< Symbol*, uint64_t >::iterator iter_id;
 
-    iter_sym = m_sym_to_var_map.find(lMatchedSym);
+    auto iter_sym = m_sym_to_var_map.find(lMatchedSym);
     if (iter_sym == m_sym_to_var_map.end())
     {
         /* Create a new variable.  If constant is being variablized just used
@@ -223,19 +221,15 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
     }
     else
     {
-        lNewVar = iter_sym->second;
+        lNewVar = iter_sym->second->variable_sym;
         thisAgent->symbolManager->symbol_add_ref(lNewVar);
-        iter_id = m_sym_to_id_map.find(lMatchedSym);
-        /* Always added in pairs.  Should use a single map */
-        assert(iter_id != m_sym_to_id_map.end());
-        lMatchedIdentity = iter_id->second;
+        lMatchedIdentity = iter_sym->second->identity;
     }
 
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
-    /* MToDo | Not sure if we want to set both of these.  Maybe want to copy the set as well? */
     pTest->identity = lMatchedIdentity;
-    pTest->identity_set = lMatchedIdentity;
+//    pTest->identity_set = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
 }
 
@@ -262,8 +256,12 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 void Repair_Manager::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
 {
     dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
-    m_sym_to_var_map[pSym] = pVar;
-    m_sym_to_id_map[pSym] = pIdentity;
+    sym_identity* lVarInfo;
+    thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
+    lVarInfo->variable_sym = pVar;
+    pVar->var->instantiated_sym = pSym;
+    lVarInfo->identity = pIdentity;
+    m_sym_to_var_map[pSym] = lVarInfo;
     assert(!pVar->is_variable() || pIdentity);
 }
 
