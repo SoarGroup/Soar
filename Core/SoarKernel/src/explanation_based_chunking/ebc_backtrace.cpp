@@ -66,7 +66,7 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
         (cond)->bt.wme_->tc = grounds_tc;
         cond->bt.wme_->chunker_bt_last_ground_cond = cond;
     }
-    if (cond->bt.wme_->chunker_bt_last_ground_cond != cond)
+    if ((cond->bt.wme_->chunker_bt_last_ground_cond != cond) && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         add_singleton_unification_if_needed(cond);
     }

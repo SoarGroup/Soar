@@ -150,9 +150,8 @@ typedef struct preference_struct
     uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
-preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
+preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent = NULL,
                                    const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0),
-                                   const identity_quadruple o_idsets = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false,
                                    const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
 preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 void cache_preference_if_necessary(agent* thisAgent, preference* pref);

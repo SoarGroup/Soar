@@ -523,7 +523,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), identity_quadruple(0,0,0,0), false, was_unbound_vars);
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), was_unbound_vars);
 
     /* We don't copy these because unify_preference_identities will copy to unify anyway */
     newPref->rhs_funcs.id = f_id;
@@ -825,6 +825,8 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     condition* cond;
     preference* p;
 
+    bool lDoIdentities = ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) || isTemplate;
+
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
     if (inst->prod && (inst->prod->type != JUSTIFICATION_PRODUCTION_TYPE))
@@ -850,40 +852,43 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 if (cond->bt.trace)
                 {
                     preference_add_ref(cond->bt.trace);
-                    if (cond->bt.trace->level == inst->match_goal_level)
+                    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
                     {
-                        propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                        propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                        propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value, cond->bt.wme_->local_singleton_superstate_identity_set);
-                    } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
-                        if (cond->data.tests.id_test->eq_test->identity)
+                        if (cond->bt.trace->level == inst->match_goal_level)
                         {
-                            cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.id_test->eq_test->identity);
+                            propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
+                            propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
+                            propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value, cond->bt.wme_->local_singleton_superstate_identity_set);
+                        } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
+                            if (cond->data.tests.id_test->eq_test->identity)
+                            {
+                                cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.id_test->eq_test->identity);
+                            }
+                            if (cond->data.tests.attr_test->eq_test->identity)
+                            {
+                                cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.attr_test->eq_test->identity);
+                            }
+                            if (cond->data.tests.value_test->eq_test->identity)
+                            {
+                                cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.value_test->eq_test->identity);
+                            }
+                        } else {
+                            assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
+                            cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
+                            cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
+                            cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                         }
-                        if (cond->data.tests.attr_test->eq_test->identity)
-                        {
-                            cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.attr_test->eq_test->identity);
-                        }
-                        if (cond->data.tests.value_test->eq_test->identity)
-                        {
-                            cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.value_test->eq_test->identity);
-                        }
-                    } else {
-                        assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
-                        cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-                        cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-                        cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
                     }
                 }
             }
             /* Check for local singletons */
-            if (cond->bt.wme_->local_singleton_superstate_identity_set && (inst->match_goal_level > TOP_GOAL_LEVEL))
+            if (cond->bt.wme_->local_singleton_superstate_identity_set && lDoIdentities)
             {
                 set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
 //                dprint(DT_DEBUG, "Unification map after propagating local singleton identity for %t\n", cond->data.tests.value_test->eq_test);
 //                dprint_unification_map(DT_DEBUG);
             }
-            if ((inst->match_goal_level > TOP_GOAL_LEVEL) || isTemplate)
+            if (lDoIdentities)
             {
                 /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
@@ -904,21 +909,24 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     }
 //    dprint(DT_DEBUG, "Unification map after first pass at propagating:\n");
 //    dprint_unification_map(DT_DEBUG);
-    for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
+    if (lDoIdentities)
     {
-        if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
-            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
-            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
-            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
-        } else {
-            thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
+            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
+            {
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
+            } else {
+                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
+            }
         }
     }
     assert(inst->match_goal);
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
-        thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p);
+        if (lDoIdentities) thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p);
 
         if (addToGoal)
         {
@@ -1010,7 +1018,7 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
 {
     preference* pref;
 
-    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue);
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
@@ -1057,7 +1065,7 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, lNewDC_WME->deep_copied_wme);
 
         /* Add the copied preference */
-        lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value, NULL);
+        lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value);
 
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
         {
@@ -1123,8 +1131,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     }
 
     thisAgent->explanationBasedChunker->instantiation_being_built = inst;
-//    inst->bt_identity_set_mappings = new id_to_id_map();
-
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
@@ -1205,8 +1211,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
 
     /* record the level of each of the wmes that was positively tested */
-//    set_bt_and_find_match_goal(inst);
-
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         if (cond->type == POSITIVE_CONDITION)
         {

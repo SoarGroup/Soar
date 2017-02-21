@@ -54,6 +54,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
+    literalized_identity_sets = new id_set();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
 
@@ -82,6 +83,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete constraints;
     delete attachment_points;
     delete unification_map;
+    delete literalized_identity_sets;
     delete cond_merge_map;
     delete local_linked_STIs;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
@@ -418,6 +420,7 @@ void Explanation_Based_Chunker::clear_variablization_maps()
         thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
     }
     identity_to_var_map->clear();
+    literalized_identity_sets->clear();
 }
 
 void Explanation_Based_Chunker::sanity_chunk_test (test pTest)

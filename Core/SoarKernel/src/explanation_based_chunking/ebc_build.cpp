@@ -591,7 +591,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
     {
         /* --- copy the preference --- */
         dprint(DT_CLONES, "Creating clone for result preference %p (instantiation i%u %y)\n", lResultPref, lResultPref->inst->i_id, lResultPref->inst->prod_name);
-        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr, lResultPref->value, lResultPref->referent, lResultPref->clone_identities, lResultPref->identity_sets, true);
+        lClonedPref = make_preference(thisAgent, lResultPref->type, lResultPref->id, lResultPref->attr, lResultPref->value, lResultPref->referent, lResultPref->clone_identities);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->id);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->attr);
         thisAgent->symbolManager->symbol_add_ref(lClonedPref->value);
@@ -602,7 +602,10 @@ void Explanation_Based_Chunker::make_clones_of_results()
         lClonedPref->inst = m_chunk_inst;
         lClonedPref->level = m_chunk_inst->match_goal_level;
 
-        dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
+        lClonedPref->identity_sets.id = lResultPref->identity_sets.id;
+        lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
+        lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
+        lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
         if (lResultPref->cloned_rhs_funcs.id)
@@ -625,6 +628,8 @@ void Explanation_Based_Chunker::make_clones_of_results()
             lClonedPref->rhs_funcs.referent = lResultPref->cloned_rhs_funcs.referent;
             lResultPref->cloned_rhs_funcs.referent = NULL;
         }
+
+        dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
 
         /* --- put it onto the list for chunk_inst --- */
         insert_at_head_of_dll(m_chunk_inst->preferences_generated, lClonedPref, inst_next, inst_prev);

@@ -34,16 +34,12 @@ bool Explanation_Based_Chunker::in_null_identity_set(test t)
 
 uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
 {
-    /* MToDo | I had to disable this because of RL templates on top level */
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end()) return iter->second;
     return pID;
 }
 uint64_t Explanation_Based_Chunker::get_identity_and_add(uint64_t pID)
 {
-    /* MToDo | I had to disable this because of RL templates on top level */
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end()) return iter->second;
     (*unification_map)[pID] = pID;
@@ -52,7 +48,6 @@ uint64_t Explanation_Based_Chunker::get_identity_and_add(uint64_t pID)
 
 uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
 {
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return NULL_IDENTITY_SET;
     std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
     if (iter != (*unification_map).end())
         return iter->second;
@@ -60,17 +55,16 @@ uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint6
     return pIDSet;
 }
 
-/* We don't deallocate because this is only called from execute_action which doesn't
- * have ownership of these rhs functions and needs to make copies for the preference
- * that it's creating. */
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-
     if (lPref->identities.id) lPref->identity_sets.id = get_identity(lPref->identities.id);
     if (lPref->identities.attr) lPref->identity_sets.attr = get_identity(lPref->identities.attr);
     if (lPref->identities.value) lPref->identity_sets.value = get_identity(lPref->identities.value);
     if (lPref->identities.referent) lPref->identity_sets.referent = get_identity(lPref->identities.referent);
+
+    /* We don't deallocate the old rhs_funcs because they are created in execute_action
+     * which doesn't have ownership of these rhs functions and needs to make copies for the preference
+     * that it's creating. */
     if (lPref->rhs_funcs.id)
     {
         lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);

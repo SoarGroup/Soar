@@ -28,7 +28,7 @@
 
 preference* make_preference(agent* thisAgent, PreferenceType type, 
                             Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                            const identity_quadruple o_ids, const identity_quadruple o_idsets, bool pUnify_identities, const bool_quadruple pWas_unbound_vars)
+                            const identity_quadruple o_ids, const bool_quadruple pWas_unbound_vars)
 {
     preference* p;
 
@@ -63,40 +63,29 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->parent_action = NULL;
     p->level = 0;
 
-    if (pUnify_identities)
-    {
-        if (o_ids.id) p->identities.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->identities.id = 0;
-        if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
-        if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
-        if (o_ids.referent) p->identities.referent = thisAgent->explanationBasedChunker->get_identity(o_ids.referent); else p->identities.referent = 0;
-        if (o_idsets.id) p->identity_sets.id = thisAgent->explanationBasedChunker->get_identity(o_idsets.id); else p->identity_sets.id = 0;
-        if (o_idsets.attr) p->identity_sets.attr = thisAgent->explanationBasedChunker->get_identity(o_idsets.attr); else p->identity_sets.attr = 0;
-        if (o_idsets.value) p->identity_sets.value = thisAgent->explanationBasedChunker->get_identity(o_idsets.value); else p->identity_sets.value = 0;
-        if (o_idsets.referent) p->identity_sets.referent = thisAgent->explanationBasedChunker->get_identity(o_idsets.referent); else p->identity_sets.referent = 0;
-    }
-    else
-    {
-        p->identities.id = o_ids.id;
-        p->identities.attr = o_ids.attr;
-        p->identities.value = o_ids.value;
-        p->identities.referent = o_ids.referent;
-        p->identity_sets.id = o_idsets.id;
-        p->identity_sets.attr = o_idsets.attr;
-        p->identity_sets.value = o_idsets.value;
-        p->identity_sets.referent = o_idsets.referent;
-    }
-    p->clone_identities.id = p->identities.id;
-    p->clone_identities.attr = p->identities.attr;
-    p->clone_identities.value = p->identities.value;
-    p->clone_identities.referent = p->identities.referent;
+    p->identities.id = o_ids.id;
+    p->identities.attr = o_ids.attr;
+    p->identities.value = o_ids.value;
+    p->identities.referent = o_ids.referent;
 
-    /* We set these to NULL an leave the code creating this preference responsible
+    p->identity_sets.id = NIL;
+    p->identity_sets.attr = NIL;
+    p->identity_sets.value = NIL;
+    p->identity_sets.referent = NIL;
+
+    /* We set these to NULL. The code creating this preference responsible
      * for allocating these rhs_values if needed. These rhs values are used to
-     * store the variablization identities of variables used in the rhs functions */
+     * store the identities of variables used in the rhs functions */
     p->rhs_funcs.id = NULL;
     p->rhs_funcs.attr = NULL;
     p->rhs_funcs.value = NULL;
     p->rhs_funcs.referent = NULL;
+
+    p->clone_identities.id = NIL;
+    p->clone_identities.attr = NIL;
+    p->clone_identities.value = NIL;
+    p->clone_identities.referent = NIL;
+
     p->cloned_rhs_funcs.id = NULL;
     p->cloned_rhs_funcs.attr = NULL;
     p->cloned_rhs_funcs.value = NULL;

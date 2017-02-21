@@ -82,7 +82,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during condition copying to make unification and constraint
          * attachment more effecient */
-        void        unify_identity(test t) { t->identity_set = get_identity(t->identity_set); }
+        void        unify_identity(test t) { t->identity_set = t->identity_set ? get_identity(t->identity_set) : get_identity(t->identity); }
         void        update_identity_sets_in_preferences(preference* lPref);                         /* Not used currently */
         uint64_t    get_identity(uint64_t pID);
         uint64_t    get_identity_and_add(uint64_t pID);
@@ -206,6 +206,7 @@ class Explanation_Based_Chunker
         /* Map to unify variable identities into identity sets */
         id_to_id_map*       unification_map;
         symbol_set*         singletons;
+        id_set*             literalized_identity_sets;
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
