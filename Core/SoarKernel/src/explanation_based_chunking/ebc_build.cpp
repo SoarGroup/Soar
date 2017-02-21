@@ -1051,7 +1051,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     ebc_timers->reinstantiate->stop();
     ebc_timers->chunk_instantiation_creation->start();
 
-    /* MToDo | Remove.  Sanity check to see that nothing is being created when learning is off */
+    /* Sanity check to see that nothing is being created when learning is off */
 //    if (!ebc_settings[SETTING_EBC_LEARNING_ON])
 //    {
 //        assert(unification_map->size() == 0);

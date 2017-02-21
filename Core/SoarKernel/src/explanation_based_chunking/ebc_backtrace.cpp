@@ -317,8 +317,7 @@ void Explanation_Based_Chunker::trace_locals()
         bt_pref = NULL;
         if (cond->bt.trace)
         {
-            /* MToDo | Once stable, should be able to change m_goal_level + 1 to m_results_match_goal_level */
-            bt_pref = (cond->bt.trace->level != m_goal_level + 1) ? find_clone_for_level(cond->bt.trace, static_cast<goal_stack_level>(m_goal_level + 1)) : cond->bt.trace;
+            bt_pref = (cond->bt.trace->level != m_results_match_goal_level) ? find_clone_for_level(cond->bt.trace, m_results_match_goal_level) : cond->bt.trace;
         }
         if (bt_pref)
         {

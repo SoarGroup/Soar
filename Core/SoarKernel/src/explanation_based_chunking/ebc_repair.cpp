@@ -233,7 +233,7 @@ void Repair_Manager::variablize_connecting_sti(test pTest)
 
     add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
     pTest->data.referent = lNewVar;
-    /* MToDo | Not sure if we want to set both of these */
+    /* MToDo | Not sure if we want to set both of these.  Maybe want to copy the set as well? */
     pTest->identity = lMatchedIdentity;
     pTest->identity_set = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);

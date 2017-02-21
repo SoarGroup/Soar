@@ -309,8 +309,13 @@ void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, i
                 }
                 break;
             default:
-//                if (!t->identity_set) t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
-                t->identity_set = t->identity ?  get_identity(t->identity) : t->identity;
+                if (t->identity)
+                {
+                    t->identity_set = get_identity(t->identity);
+                } else
+                {
+                    t->identity_set = t->identity;
+                }
                 break;
         }
 }

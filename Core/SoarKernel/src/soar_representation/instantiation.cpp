@@ -1688,7 +1688,7 @@ instantiation* make_architectural_instantiation_for_memory_system(agent* thisAge
     inst->tested_LTM = true;
 
     /* MToDo | Remove. */
-    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+//    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 
@@ -1776,7 +1776,7 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
     assert(ap_wme && ss_link_wme);
 
     /* MToDo | Remove */
-    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+//    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 
