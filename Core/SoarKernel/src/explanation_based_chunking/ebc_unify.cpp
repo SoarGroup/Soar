@@ -104,113 +104,212 @@ void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uin
     ebc_timers->identity_unification->start();
 }
 
-void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
+//void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
+//{
+//    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+//
+//    if (pOld_o_id == NULL_IDENTITY_SET) return;
+//    ebc_timers->variablization_rhs->start();
+//    ebc_timers->variablization_rhs->stop();
+//    ebc_timers->identity_unification->start();
+//
+//    if (pOld_o_id == pNew_o_id)
+//    {
+//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Attempting to unify identical conditions for identity %u].  Skipping.\n", pNew_o_id);
+//        ebc_timers->identity_unification->stop();
+//        return;
+//    }
+//
+//    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+//    uint64_t newID;
+//
+//    if (pNew_o_id == 0)
+//    {
+//        /* Do not check if a unification already exists if we're propagating back a literalization */
+//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding literalization substitution: %u -> 0.\n", pOld_o_id);
+//        newID = 0;
+//    } else {
+//        /* See if a unification already exists for the new identity propagating back*/
+//        iter = (*unification_map).find(pNew_o_id);
+//
+//        if (iter == (*unification_map).end())
+//        {
+//            /* Map all cases of this identity with its parent identity */
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not find existing mapping for %u.  Adding %u -> %u.\n", pNew_o_id, pOld_o_id, pNew_o_id);
+//            newID = pNew_o_id;
+//        }
+//        else if (iter->second == pOld_o_id)
+//        {
+//            /* Circular reference */
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Transitive mapping %u -> %u would be self referential.  Not adding.\n",
+//                pNew_o_id, iter->second, pOld_o_id, iter->second);
+//            ebc_timers->identity_unification->stop();
+//            return;
+//        }
+//        else
+//        {
+//            /* Map all cases of what this identity is already remapped to with its parent identity */
+//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Adding transitive mapping %u -> %u.\n",
+//                pNew_o_id, iter->second, pOld_o_id, iter->second);
+//            newID = iter->second;
+//        }
+//    }
+//
+//    /* See if a unification already exists for the identity being replaced in this instantiation*/
+//    iter = (*unification_map).find(pOld_o_id);
+//    uint64_t existing_mapping;
+//    if (iter != (*unification_map).end())
+//    {
+//        existing_mapping = iter->second;
+//        if (existing_mapping == 0)
+//        {
+//            if (newID != 0)
+//            {
+//                /* The existing identity we're unifying with is already literalized from a different trace.  So,
+//                 * literalize any tests with identity of parent in this trace */
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, pNew_o_id);
+//                (*unification_map)[newID] = 0;
+//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0);
+//                update_unification_table(newID, 0);
+//            } else {
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %u -> 0.\n", pOld_o_id, pNew_o_id);
+//            }
+//        } else {
+//            if (newID == existing_mapping)
+//            {
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %u -> %u already exists.  Skipping.\n", pOld_o_id, newID);
+//            }
+//            else if (newID == 0)
+//            {
+//                /* The existing identity we're literalizing is already unified with another identity from
+//                 * a different trace.  So, literalize the identity, that it is already remapped to.*/
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, existing_mapping);
+//                (*unification_map)[existing_mapping] = 0;
+//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0);
+//                update_unification_table(existing_mapping, 0, pOld_o_id);
+//            } else {
+//                /* The existing identity we're unifying with is already unified with another identity from
+//                 * a different trace.  So, unify the identity that it is already remapped to with identity
+//                 * of the parent in this trace */
+//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %u -> %u.\n", pOld_o_id, existing_mapping, pNew_o_id);
+//                (*unification_map)[newID] = existing_mapping;
+//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping);
+//                update_unification_table(newID, existing_mapping);
+//                if (pNew_o_id != newID)
+//                {
+//                    (*unification_map)[pNew_o_id] = existing_mapping;
+//                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping);
+//                    update_unification_table(pNew_o_id, existing_mapping);
+//                }
+//            }
+//        }
+//    } else {
+//        (*unification_map)[pOld_o_id] = newID;
+//        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID);
+//        update_unification_table(pOld_o_id, newID);
+//    }
+//    ebc_timers->identity_unification->stop();
+//
+//    /* Unify identity in this instantiation with final identity */
+////    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
+////    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
+//}
+
+void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint64_t pToID)
 {
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    if (pOld_o_id == NULL_IDENTITY_SET) return;
+//    assert((pFromID != NULL_IDENTITY_SET) && (pFromID != pToID));
+
+    if ((pFromID == NULL_IDENTITY_SET) || (pFromID == pToID)) return;
     ebc_timers->variablization_rhs->start();
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
-    if (pOld_o_id == pNew_o_id)
+    id_to_join_map::iterator iter;
+    identity_join_set* lFromJoinSet = NULL;
+    identity_join_set* lToJoinSet = NULL;
+
+    /* MToDo | If we always choose to map from the smaller number to the highest number, maybe we can avoid this check.  It would be
+     *         impossible to get an inverse mapping, and we will just re-assign an identical mapping which costs the same as checking.
+     *         We'd have to resolve the transitive mappings later. */
+    if (pToID == 0)
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Attempting to unify identical conditions for identity %u].  Skipping.\n", pNew_o_id);
-        ebc_timers->identity_unification->stop();
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u n", pFromID);
+        literalized_identity_sets->insert(pFromID);
+        /* MToDo | If it has a join set, we may want to store that it has been literalized.  Can avoid lookup later */
         return;
     }
 
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-    uint64_t newID;
 
-    if (pNew_o_id == 0)
+    /* See if a join set already exists */
+    iter = (*identity_set_join_map).find(pFromID);
+    if (iter != (*identity_set_join_map).end()) lFromJoinSet = iter->second;
+    iter = (*identity_set_join_map).find(pToID);
+    if (iter != (*identity_set_join_map).end()) lToJoinSet = iter->second;
+
+
+    if (!lFromJoinSet && !lToJoinSet)
     {
-        /* Do not check if a unification already exists if we're propagating back a literalization */
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding literalization substitution: %u -> 0.\n", pOld_o_id);
-        newID = 0;
-    } else {
-        /* See if a unification already exists for the new identity propagating back*/
-        iter = (*unification_map).find(pNew_o_id);
-
-        if (iter == (*unification_map).end())
-        {
-            /* Map all cases of this identity with its parent identity */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not find existing mapping for %u.  Adding %u -> %u.\n", pNew_o_id, pOld_o_id, pNew_o_id);
-            newID = pNew_o_id;
-        }
-        else if (iter->second == pOld_o_id)
-        {
-            /* Circular reference */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Transitive mapping %u -> %u would be self referential.  Not adding.\n",
-                pNew_o_id, iter->second, pOld_o_id, iter->second);
-            ebc_timers->identity_unification->stop();
-            return;
-        }
-        else
-        {
-            /* Map all cases of what this identity is already remapped to with its parent identity */
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Adding transitive mapping %u -> %u.\n",
-                pNew_o_id, iter->second, pOld_o_id, iter->second);
-            newID = iter->second;
-        }
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Creating new join set for identity sets %u and %u.\n", pFromID, pToID);
+        // Create a join set and add entries for both id sets
+        identity_join_set* new_join_set = new identity_join_set();
+        increment_counter(ovar_id_counter);
+        new_join_set->identity = ovar_id_counter;
+        new_join_set->super_join = NULL;
+        new_join_set->identity_sets.push_back(pToID);
+        new_join_set->identity_sets.push_back(pFromID);
+        (*identity_set_join_map)[pFromID] = new_join_set;
+        (*identity_set_join_map)[pToID] = new_join_set;
     }
-
-    /* See if a unification already exists for the identity being replaced in this instantiation*/
-    iter = (*unification_map).find(pOld_o_id);
-    uint64_t existing_mapping;
-    if (iter != (*unification_map).end())
+    else if (!(lFromJoinSet && lToJoinSet))
     {
-        existing_mapping = iter->second;
-        if (existing_mapping == 0)
+        // Create an entry mapping the new identity to the same join set
+        if (lFromJoinSet)
         {
-            if (newID != 0)
-            {
-                /* The existing identity we're unifying with is already literalized from a different trace.  So,
-                 * literalize any tests with identity of parent in this trace */
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, pNew_o_id);
-                (*unification_map)[newID] = 0;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0);
-                update_unification_table(newID, 0);
-            } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %u -> 0.\n", pOld_o_id, pNew_o_id);
-            }
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pToID, pFromID);
+            (*identity_set_join_map)[pToID] = lFromJoinSet;
+            lFromJoinSet->identity_sets.push_back(pToID);
         } else {
-            if (newID == existing_mapping)
-            {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %u -> %u already exists.  Skipping.\n", pOld_o_id, newID);
-            }
-            else if (newID == 0)
-            {
-                /* The existing identity we're literalizing is already unified with another identity from
-                 * a different trace.  So, literalize the identity, that it is already remapped to.*/
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, existing_mapping);
-                (*unification_map)[existing_mapping] = 0;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0);
-                update_unification_table(existing_mapping, 0, pOld_o_id);
-            } else {
-                /* The existing identity we're unifying with is already unified with another identity from
-                 * a different trace.  So, unify the identity that it is already remapped to with identity
-                 * of the parent in this trace */
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %u -> %u.\n", pOld_o_id, existing_mapping, pNew_o_id);
-                (*unification_map)[newID] = existing_mapping;
-                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping);
-                update_unification_table(newID, existing_mapping);
-                if (pNew_o_id != newID)
-                {
-                    (*unification_map)[pNew_o_id] = existing_mapping;
-                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping);
-                    update_unification_table(pNew_o_id, existing_mapping);
-                }
-            }
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pFromID, pToID);
+            (*identity_set_join_map)[pFromID] = lToJoinSet;
+            lToJoinSet->identity_sets.push_back(pFromID);
         }
-    } else {
-        (*unification_map)[pOld_o_id] = newID;
-        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID);
-        update_unification_table(pOld_o_id, newID);
+    } else
+    {
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", pFromID, pToID);
+
+        /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
+         * otherwise.  Not sure if this, especially the latter case, will really help efficiency
+         * especially with forward propagation determining identity set values */
+        if ((lFromJoinSet->super_join && !lToJoinSet->super_join) ||
+            ((!lFromJoinSet->super_join && !lToJoinSet->super_join) && (pFromID > pToID)))
+        {
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", pFromID, pToID);
+            uint64_t temp = pFromID;
+            identity_join_set* tempJoin = lFromJoinSet;
+            pFromID = pToID;
+            lFromJoinSet = lToJoinSet;
+            pToID = temp;
+            lToJoinSet = tempJoin;
+        }
+
+        // Iterate through identity sets in lFromJoinSet and set their super join set point  to lToJoinSet
+        cons* last_cons;
+        for (auto it = lFromJoinSet->identity_sets.begin(); it != lFromJoinSet->identity_sets.end(); it++)
+        {
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", *it, pToID);
+            iter = (*identity_set_join_map).find(*it);
+            assert(iter != (*identity_set_join_map).end());
+            iter->second->super_join = lToJoinSet;
+            iter->second->identity = lToJoinSet->identity;
+            lToJoinSet->identity_sets.push_back(*it);
+        }
+        lFromJoinSet->identity_sets.clear();
     }
+
     ebc_timers->identity_unification->stop();
 
-    /* Unify identity in this instantiation with final identity */
 //    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
 //    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
 }

@@ -131,7 +131,7 @@ class Explanation_Based_Chunker
         void reinit();
         void clear_symbol_identity_map() { instantiation_identities->clear(); }
         void clear_variablization_maps();
-        void clear_unification_map()     { unification_map->clear(); }
+        void clear_unification_map()     { unification_map->clear(); identity_set_join_map->clear(); }
         void clear_singletons();
 
     private:
@@ -205,6 +205,8 @@ class Explanation_Based_Chunker
 
         /* Map to unify variable identities into identity sets */
         id_to_id_map*       unification_map;
+        id_to_join_map*     identity_set_join_map;
+
         symbol_set*         singletons;
         id_set*             literalized_identity_sets;
 

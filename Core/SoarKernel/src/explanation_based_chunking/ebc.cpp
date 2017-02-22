@@ -54,6 +54,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
     unification_map = new id_to_id_map();
+    identity_set_join_map = new id_to_join_map();
     literalized_identity_sets = new id_set();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
@@ -83,6 +84,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete constraints;
     delete attachment_points;
     delete unification_map;
+    delete identity_set_join_map;
     delete literalized_identity_sets;
     delete cond_merge_map;
     delete local_linked_STIs;

@@ -3,6 +3,12 @@
 
 #include "kernel.h"
 
+#ifdef USE_MEM_POOL_ALLOCATORS
+    typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >      id_list;
+#else
+    typedef std::list< uint64_t >                                                           id_list;
+#endif
+
 typedef struct symbol_triple_struct
 {
         Symbol* id;
@@ -31,6 +37,12 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
+typedef struct identity_join_set_struct
+{
+        uint64_t                    identity;
+        identity_join_set_struct*   super_join;
+        id_list                     identity_sets;
+} identity_join_set;
 
 typedef struct bool_quadruple_struct
 {
