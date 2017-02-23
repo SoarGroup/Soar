@@ -80,12 +80,6 @@ void Explanation_Based_Chunker::join_identity_sets(uint64_t pFromID, uint64_t pT
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
-    id_to_join_map::iterator iter;
-    identity_join* lFromJoinSet = NULL;
-    identity_join* lToJoinSet = NULL;
-    identity_join* lNewJoinSet1 = NULL;
-    identity_join* lNewJoinSet2 = NULL;
-
     /* MToDo | If we always choose to map from the smaller number to the highest number, maybe we can avoid this check.  It would be
      *         impossible to get an inverse mapping, and we will just re-assign an identical mapping which costs the same as checking.
      *         We'd have to resolve the transitive mappings later. */
@@ -96,6 +90,12 @@ void Explanation_Based_Chunker::join_identity_sets(uint64_t pFromID, uint64_t pT
         /* MToDo | If it has a join set, we may want to store that it has been literalized.  Can avoid lookup later */
         return;
     }
+
+    id_to_join_map::iterator iter;
+    identity_join* lFromJoinSet = NULL;
+    identity_join* lToJoinSet = NULL;
+    identity_join* lNewJoinSet1 = NULL;
+    identity_join* lNewJoinSet2 = NULL;
 
     /* See if a join set already exists */
     iter = (*identity_set_join_map).find(pFromID);

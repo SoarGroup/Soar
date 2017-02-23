@@ -184,7 +184,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     {
         // This assert may no longer make sense.  Identity set literalization is still a mapping
 //        assert(!pTest->eq_test->identity || (pTest->eq_test->identity && pTest->eq_test->identity_set));
-        if (pTest->eq_test->identity_set)
+        if (pTest->eq_test->identity_set && (literalized_identity_sets->find(pTest->eq_test->identity_set) == literalized_identity_sets->end()))
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity_set, pTest);
 
