@@ -80,7 +80,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
    Returns a new copy of the given rhs_value.
 --------------------------------------------------------------*/
 
-rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
+rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, bool unify_identity_set, bool get_cloned_identity)
 {
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
     cons* fl=NULL, *new_fl=NULL;
@@ -99,7 +99,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first), unify_identities);
+            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first), get_identity_set, get_cloned_identity);
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
         }
@@ -111,12 +111,12 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
         uint64_t lIDSet = r->identity_set;
-        if (unify_identities)
+        if (get_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+        if (unify_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(lIDSet);
+        if (get_cloned_identity)
         {
-            if (!lIDSet)
-                lIDSet = thisAgent->explanationBasedChunker->get_identity(lID);
-            else
-                lIDSet = thisAgent->explanationBasedChunker->get_identity(lIDSet);
+            lID = thisAgent->explanationBasedChunker->get_joined_id_set_cloned_identity(lIDSet);
+            lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
         }
         return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
     }

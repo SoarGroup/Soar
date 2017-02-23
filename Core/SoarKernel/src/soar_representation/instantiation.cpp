@@ -798,7 +798,7 @@ inline void propagate_identity_set(agent* thisAgent, test condTest, uint64_t par
         {
             if (parentIDSet)
             {
-                condTest->identity_set = thisAgent->explanationBasedChunker->add_identity_set_mapping(condTest->identity, parentIDSet);
+                condTest->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(condTest->identity, parentIDSet);
             }
             else
             {
@@ -809,15 +809,6 @@ inline void propagate_identity_set(agent* thisAgent, test condTest, uint64_t par
             /* Tests a literal value */
             condTest->identity_set = NULL_IDENTITY_SET;
         }
-}
-inline void set_identity_set(agent* thisAgent, test condTest, uint64_t pIDSet)
-{
-    assert(pIDSet);
-    if (condTest->identity)
-    {
-        thisAgent->explanationBasedChunker->force_identity_set_mapping(condTest->identity, pIDSet);
-        condTest->identity_set = pIDSet;
-    }
 }
 
 void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal, bool isTemplate)
@@ -862,15 +853,15 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                         } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
                             if (cond->data.tests.id_test->eq_test->identity)
                             {
-                                cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.id_test->eq_test->identity);
+                                cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.id_test->eq_test->identity);
                             }
                             if (cond->data.tests.attr_test->eq_test->identity)
                             {
-                                cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.attr_test->eq_test->identity);
+                                cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.attr_test->eq_test->identity);
                             }
                             if (cond->data.tests.value_test->eq_test->identity)
                             {
-                                cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.value_test->eq_test->identity);
+                                cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.value_test->eq_test->identity);
                             }
                         } else {
                             assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
@@ -882,44 +873,45 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 }
             }
             /* Check for local singletons */
-            if (cond->bt.wme_->local_singleton_superstate_identity_set && lDoIdentities)
+            if (cond->bt.wme_->local_singleton_superstate_identity_set && lDoIdentities && cond->data.tests.value_test->eq_test->identity)
             {
-                set_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
+                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_superstate_identity_set);
+                cond->data.tests.value_test->eq_test->identity_set = cond->bt.wme_->local_singleton_superstate_identity_set;
 //                dprint(DT_DEBUG, "Unification map after propagating local singleton identity for %t\n", cond->data.tests.value_test->eq_test);
-//                dprint_unification_map(DT_DEBUG);
+//                dprint_identity_to_id_set_map(DT_DEBUG);
             }
             if (lDoIdentities)
             {
                 /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
                 {
-                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.id_test->eq_test->identity);
+                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.id_test->eq_test->identity);
                 }
                 if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity)
                 {
-                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.attr_test->eq_test->identity);
+                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.attr_test->eq_test->identity);
                 }
                 if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity)
                 {
-                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_identity_and_add(cond->data.tests.value_test->eq_test->identity);
+                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.value_test->eq_test->identity);
                 }
             }
         }
         cond->inst = inst;
     }
 //    dprint(DT_DEBUG, "Unification map after first pass at propagating:\n");
-//    dprint_unification_map(DT_DEBUG);
+//    dprint_identity_to_id_set_map(DT_DEBUG);
     if (lDoIdentities)
     {
         for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.id_test, inst);
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.attr_test, inst);
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_test(cond->data.tests.value_test, inst);
+                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.id_test, inst);
+                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.attr_test, inst);
+                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.value_test, inst);
             } else {
-                thisAgent->explanationBasedChunker->update_remaining_identity_sets_in_condlist(cond->data.ncc.top, inst);
+                thisAgent->explanationBasedChunker->update_identity_sets_in_condlist(cond->data.ncc.top, inst);
             }
         }
     }
@@ -1328,8 +1320,8 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-    //dprint_unification_map(DT_PRINT_INSTANTIATIONS);
-    thisAgent->explanationBasedChunker->clear_unification_map();
+    //dprint_identity_to_id_set_map(DT_PRINT_INSTANTIATIONS);
+    thisAgent->explanationBasedChunker->clear_identity_to_id_set_map();
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 

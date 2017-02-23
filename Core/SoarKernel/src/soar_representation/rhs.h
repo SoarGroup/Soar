@@ -99,7 +99,7 @@ action*     create_RHS_action_list(agent* thisAgent, action* actions, condition*
                                uint64_t pI_id, AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 void        deallocate_rhs_value(agent* thisAgent, rhs_value rv);
 void        deallocate_action_list(agent* thisAgent, action* actions);
-rhs_value   copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities = false);
+rhs_value   copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set = false, bool unify_identity_set = false, bool get_cloned_identity = false);
 void        add_all_variables_in_action(agent* thisAgent, action* a, tc_number tc, cons** var_list);
 void        add_all_variables_in_action_list(agent* thisAgent, action* actions, tc_number tc, cons** var_list);
 char        first_letter_from_rhs_value(rhs_value rv);

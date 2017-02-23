@@ -66,7 +66,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
+test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
 
 bool add_test(agent* thisAgent, test* dest_address, test new_test, bool merge_disjunctions = false);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg, bool merge_disjunctions = false);

@@ -143,7 +143,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
 
         dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id, linked_id);
         thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, linked_id);
-        add_identity_unification(pref->identity_sets.id, linked_id);
+        join_identity_sets(pref->identity_sets.id, linked_id);
         ebc_timers->chunk_instantiation_creation->start();
     }
 
@@ -710,7 +710,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, identities_to_id_sets, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             /* We'll interrupt on justification learning only if explainer is recording justifications.  In
@@ -779,7 +779,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
 
         assert(m_prod);
-        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, unification_map, m_inst, m_chunk_inst);
+        thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, identities_to_id_sets, m_inst, m_chunk_inst);
 
         m_chunk_inst->in_ms = false;
         return true;
@@ -925,7 +925,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_lhs);
-    dprint_unification_map(DT_VARIABLIZATION_MANAGER);
+    dprint_identity_to_id_set_map(DT_VARIABLIZATION_MANAGER);
 
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;
@@ -1056,15 +1056,6 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     ebc_timers->reinstantiate->stop();
     ebc_timers->chunk_instantiation_creation->start();
 
-    /* Sanity check to see that nothing is being created when learning is off */
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON])
-//    {
-//        assert(unification_map->size() == 0);
-//        assert(instantiation_identities->size() == 0);
-//        assert(identity_to_var_map->size() == 0);
-//        assert(constraints->size() == 0);
-//    }
-
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
 
@@ -1177,7 +1168,7 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     clear_symbol_identity_map();
     clear_variablization_maps();
     clear_cached_constraints();
-    clear_unification_map();
+    clear_identity_to_id_set_map();
     clear_attachment_map();
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST

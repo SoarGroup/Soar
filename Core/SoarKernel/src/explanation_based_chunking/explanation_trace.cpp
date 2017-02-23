@@ -18,50 +18,11 @@
 #include "working_memory.h"
 
 #include <assert.h>
-uint64_t Explanation_Based_Chunker::get_floating_identity()
+
+void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up)
 {
-    increment_counter(ovar_id_counter);
-    return ovar_id_counter;
-}
-uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
-{
-    int64_t existing_o_id = 0;
-
-    auto iter_sym = instantiation_identities->find(orig_var);
-    if (iter_sym != instantiation_identities->end())
-    {
-        existing_o_id = iter_sym->second;
-    }
-
-    if (!existing_o_id)
-    {
-        increment_counter(ovar_id_counter);
-        (*instantiation_identities)[orig_var] = ovar_id_counter;
-//        instantiation_being_built->bt_identity_set_mappings->insert({ovar_id_counter, 0});
-
-        return ovar_id_counter;
-    }
-    return existing_o_id;
-}
-
-void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond,
-                                       byte field_num,
-                                       rete_node_level levels_up)
-{
-    test t = 0;
-
-    t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
+    test t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
-}
-
-void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
-{
-    if (pSym->is_sti()) (*instantiation_identities)[pSym] = pID;
-}
-
-void Explanation_Based_Chunker::add_identity_to_test(test pTest)
-{
-    if (!pTest->identity) pTest->identity = get_or_create_identity(pTest->data.referent);
 }
 
 void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
@@ -88,17 +49,11 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
         /* --- on hashed nodes, add equality test for the hash function --- */
         if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
         {
-            add_identity_to_id_test(cond,
-                node->left_hash_loc_field_num,
-                node->left_hash_loc_levels_up);
-
+            add_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
         }
         else if (node->node_type == POSITIVE_BNODE)
         {
-            add_identity_to_id_test(cond,
-                node->parent->left_hash_loc_field_num,
-                node->parent->left_hash_loc_levels_up);
-
+            add_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
         }
 
         /* -- Now process any additional relational test -- */
@@ -114,9 +69,7 @@ void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
                 if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
                 {
-                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                        rt->data.variable_referent.field_num,
-                        rt->data.variable_referent.levels_up);
+                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
                     if (ref_test->data.referent->is_sti())
                     {
                         chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
@@ -204,14 +157,12 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
             if (test_is_constant_relational_test(rt->type))
             {
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                    chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
+                chunk_test = make_test(thisAgent, rt->data.constant_referent, test_type);
             }
             else if (test_is_variable_relational_test(rt->type))
             {
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond,
-                    rt->data.variable_referent.field_num,
-                    rt->data.variable_referent.levels_up);
+                test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
                 chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
                 chunk_test->identity = ref_test->identity;
             }
@@ -291,48 +242,3 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
     add_test(thisAgent, dest_test_address, new_test);
 }
 
-void Explanation_Based_Chunker::update_remaining_identity_sets_in_test(test t, instantiation* pInst)
-{
-    cons* c;
-    switch (t->type)
-        {
-            case GOAL_ID_TEST:
-            case IMPASSE_ID_TEST:
-            case SMEM_LINK_UNARY_TEST:
-            case SMEM_LINK_UNARY_NOT_TEST:
-            case DISJUNCTION_TEST:
-                break;
-            case CONJUNCTIVE_TEST:
-                for (c = t->data.conjunct_list; c != NIL; c = c->rest)
-                {
-                    update_remaining_identity_sets_in_test(static_cast<test>(c->first), pInst);
-                }
-                break;
-            default:
-                if (t->identity)
-                {
-                    t->identity_set = get_identity(t->identity);
-                } else
-                {
-                    t->identity_set = t->identity;
-                }
-                break;
-        }
-}
-
-void Explanation_Based_Chunker::update_remaining_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst)
-{
-    condition* pCond;
-
-    for (pCond = pCondTop; pCond != NIL; pCond = pCond->next)
-    {
-        if (pCond->type != CONJUNCTIVE_NEGATION_CONDITION)
-        {
-            update_remaining_identity_sets_in_test(pCond->data.tests.id_test, pInst);
-            update_remaining_identity_sets_in_test(pCond->data.tests.attr_test, pInst);
-            update_remaining_identity_sets_in_test(pCond->data.tests.value_test, pInst);
-        } else {
-            update_remaining_identity_sets_in_condlist(pCond->data.ncc.top, pInst);
-        }
-    }
-}

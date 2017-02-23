@@ -25,197 +25,51 @@
 
 #include <assert.h>
 
-bool Explanation_Based_Chunker::in_null_identity_set(test t)
+identity_join* Explanation_Based_Chunker::get_joined_id_set(uint64_t pIDSet)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(t->identity_set);
-    if (iter != (*unification_map).end()) return (iter->second == NULL_IDENTITY_SET);
-    return (t->identity_set == NULL_IDENTITY_SET);
+    id_to_join_map::iterator iter;
+    iter = (*identity_set_join_map).find(pIDSet);
+    assert(iter != (*identity_set_join_map).end());
+    if (iter->second->super_join) return iter->second->super_join;
+    else return iter->second;
 }
 
-uint64_t Explanation_Based_Chunker::get_identity(uint64_t pID)
+uint64_t Explanation_Based_Chunker::get_joined_id_set_identity(uint64_t pIDSet)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
-    if (iter != (*unification_map).end()) return iter->second;
-    return pID;
-}
-uint64_t Explanation_Based_Chunker::get_identity_and_add(uint64_t pID)
-{
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
-    if (iter != (*unification_map).end()) return iter->second;
-    (*unification_map)[pID] = pID;
-    return pID;
-}
-
-uint64_t Explanation_Based_Chunker::add_identity_set_mapping(uint64_t pID, uint64_t pIDSet)
-{
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*unification_map).find(pID);
-    if (iter != (*unification_map).end())
-        return iter->second;
-    (*unification_map)[pID] = pIDSet;
+    id_to_join_map::iterator iter;
+    iter = (*identity_set_join_map).find(pIDSet);
+//    assert(iter != (*identity_set_join_map).end());
+    if (iter != (*identity_set_join_map).end())
+    {
+        if (iter->second->super_join) return iter->second->super_join->identity;
+        else return iter->second->identity;
+    }
     return pIDSet;
 }
 
-void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
+uint64_t Explanation_Based_Chunker::get_joined_id_set_cloned_identity(uint64_t pIDSet)
 {
-    if (lPref->identities.id) lPref->identity_sets.id = get_identity(lPref->identities.id);
-    if (lPref->identities.attr) lPref->identity_sets.attr = get_identity(lPref->identities.attr);
-    if (lPref->identities.value) lPref->identity_sets.value = get_identity(lPref->identities.value);
-    if (lPref->identities.referent) lPref->identity_sets.referent = get_identity(lPref->identities.referent);
-
-    /* We don't deallocate the old rhs_funcs because they are created in execute_action
-     * which doesn't have ownership of these rhs functions and needs to make copies for the preference
-     * that it's creating. */
-    if (lPref->rhs_funcs.id)
-    {
-        lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
-    }
-    if (lPref->rhs_funcs.attr)
-    {
-        lPref->rhs_funcs.attr = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
-    }
-    if (lPref->rhs_funcs.value)
-    {
-        lPref->rhs_funcs.value = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
-    }
-    if (lPref->rhs_funcs.referent)
-    {
-        lPref->rhs_funcs.referent = copy_rhs_value(thisAgent, lPref->rhs_funcs.referent, true);
-    }
-
-}
-void Explanation_Based_Chunker::update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2)
-{
-    ebc_timers->identity_unification->stop();
-    ebc_timers->identity_update->start();
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    for (iter = unification_map->begin(); iter != unification_map->end(); ++iter)
-    {
-
-        if ((iter->second == pOld_o_id) || (pOld_o_id_2 && (iter->second == pOld_o_id_2)))
-        {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "...found secondary o_id unification mapping that needs updated: %u = %u -> %u = %u.\n", iter->first, iter->second, iter->first, pNew_o_id);
-            (*unification_map)[iter->first] = pNew_o_id;
-            thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_transitive, iter->first, pNew_o_id);
-        }
-    }
-    ebc_timers->identity_update->stop();
-    ebc_timers->identity_unification->start();
+    id_to_join_map::iterator iter;
+    iter = (*identity_set_join_map).find(pIDSet);
+    assert(iter != (*identity_set_join_map).end());
+    if (iter->second->super_join) return iter->second->super_join->clone_identity;
+    else return iter->second->clone_identity;
 }
 
-//void Explanation_Based_Chunker::add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id)
-//{
-//    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-//
-//    if (pOld_o_id == NULL_IDENTITY_SET) return;
-//    ebc_timers->variablization_rhs->start();
-//    ebc_timers->variablization_rhs->stop();
-//    ebc_timers->identity_unification->start();
-//
-//    if (pOld_o_id == pNew_o_id)
-//    {
-//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Attempting to unify identical conditions for identity %u].  Skipping.\n", pNew_o_id);
-//        ebc_timers->identity_unification->stop();
-//        return;
-//    }
-//
-//    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-//    uint64_t newID;
-//
-//    if (pNew_o_id == 0)
-//    {
-//        /* Do not check if a unification already exists if we're propagating back a literalization */
-//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding literalization substitution: %u -> 0.\n", pOld_o_id);
-//        newID = 0;
-//    } else {
-//        /* See if a unification already exists for the new identity propagating back*/
-//        iter = (*unification_map).find(pNew_o_id);
-//
-//        if (iter == (*unification_map).end())
-//        {
-//            /* Map all cases of this identity with its parent identity */
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not find existing mapping for %u.  Adding %u -> %u.\n", pNew_o_id, pOld_o_id, pNew_o_id);
-//            newID = pNew_o_id;
-//        }
-//        else if (iter->second == pOld_o_id)
-//        {
-//            /* Circular reference */
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Transitive mapping %u -> %u would be self referential.  Not adding.\n",
-//                pNew_o_id, iter->second, pOld_o_id, iter->second);
-//            ebc_timers->identity_unification->stop();
-//            return;
-//        }
-//        else
-//        {
-//            /* Map all cases of what this identity is already remapped to with its parent identity */
-//            dprint(DT_ADD_IDENTITY_SET_MAPPING, "o_id unification (%u -> %u) already exists.  Adding transitive mapping %u -> %u.\n",
-//                pNew_o_id, iter->second, pOld_o_id, iter->second);
-//            newID = iter->second;
-//        }
-//    }
-//
-//    /* See if a unification already exists for the identity being replaced in this instantiation*/
-//    iter = (*unification_map).find(pOld_o_id);
-//    uint64_t existing_mapping;
-//    if (iter != (*unification_map).end())
-//    {
-//        existing_mapping = iter->second;
-//        if (existing_mapping == 0)
-//        {
-//            if (newID != 0)
-//            {
-//                /* The existing identity we're unifying with is already literalized from a different trace.  So,
-//                 * literalize any tests with identity of parent in this trace */
-//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalization exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, pNew_o_id);
-//                (*unification_map)[newID] = 0;
-//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_literalized_identity, newID, 0);
-//                update_unification_table(newID, 0);
-//            } else {
-//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing %u which is already literalized.  Skipping %u -> 0.\n", pOld_o_id, pNew_o_id);
-//            }
-//        } else {
-//            if (newID == existing_mapping)
-//            {
-//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "The unification %u -> %u already exists.  Skipping.\n", pOld_o_id, newID);
-//            }
-//            else if (newID == 0)
-//            {
-//                /* The existing identity we're literalizing is already unified with another identity from
-//                 * a different trace.  So, literalize the identity, that it is already remapped to.*/
-//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Propagating literalization substitution with %u -> 0.\n", pOld_o_id, existing_mapping);
-//                (*unification_map)[existing_mapping] = 0;
-//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_literalize_mappings_exist, existing_mapping, 0);
-//                update_unification_table(existing_mapping, 0, pOld_o_id);
-//            } else {
-//                /* The existing identity we're unifying with is already unified with another identity from
-//                 * a different trace.  So, unify the identity that it is already remapped to with identity
-//                 * of the parent in this trace */
-//                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unification with another identity exists for %u.  Adding %u -> %u.\n", pOld_o_id, existing_mapping, pNew_o_id);
-//                (*unification_map)[newID] = existing_mapping;
-//                thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, newID, existing_mapping);
-//                update_unification_table(newID, existing_mapping);
-//                if (pNew_o_id != newID)
-//                {
-//                    (*unification_map)[pNew_o_id] = existing_mapping;
-//                    thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_unified_with_existing_mappings, pNew_o_id, existing_mapping);
-//                    update_unification_table(pNew_o_id, existing_mapping);
-//                }
-//            }
-//        }
-//    } else {
-//        (*unification_map)[pOld_o_id] = newID;
-//        thisAgent->explanationMemory->add_identity_set_mapping(m_current_bt_inst_id, IDS_no_existing_mapping, pOld_o_id, newID);
-//        update_unification_table(pOld_o_id, newID);
-//    }
-//    ebc_timers->identity_unification->stop();
-//
-//    /* Unify identity in this instantiation with final identity */
-////    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
-////    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
-//}
+identity_join* Explanation_Based_Chunker::make_join_set(uint64_t pIDSet)
+{
+    identity_join* new_join_set = new identity_join();
+//    increment_counter(ovar_id_counter);
+//    new_join_set->identity = ovar_id_counter;
+    new_join_set->identity = pIDSet;
+    new_join_set->clone_identity = NULL_IDENTITY_SET;
+    new_join_set->new_var = NULL;
+    new_join_set->super_join = NULL;
+    (*identity_set_join_map)[pIDSet] = new_join_set;
+    return new_join_set;
+}
 
-void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint64_t pToID)
+void Explanation_Based_Chunker::join_identity_sets(uint64_t pFromID, uint64_t pToID)
 {
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
@@ -227,8 +81,10 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
     ebc_timers->identity_unification->start();
 
     id_to_join_map::iterator iter;
-    identity_join_set* lFromJoinSet = NULL;
-    identity_join_set* lToJoinSet = NULL;
+    identity_join* lFromJoinSet = NULL;
+    identity_join* lToJoinSet = NULL;
+    identity_join* lNewJoinSet1 = NULL;
+    identity_join* lNewJoinSet2 = NULL;
 
     /* MToDo | If we always choose to map from the smaller number to the highest number, maybe we can avoid this check.  It would be
      *         impossible to get an inverse mapping, and we will just re-assign an identical mapping which costs the same as checking.
@@ -241,7 +97,6 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
         return;
     }
 
-
     /* See if a join set already exists */
     iter = (*identity_set_join_map).find(pFromID);
     if (iter != (*identity_set_join_map).end()) lFromJoinSet = iter->second;
@@ -253,14 +108,16 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Creating new join set for identity sets %u and %u.\n", pFromID, pToID);
         // Create a join set and add entries for both id sets
-        identity_join_set* new_join_set = new identity_join_set();
-        increment_counter(ovar_id_counter);
-        new_join_set->identity = ovar_id_counter;
-        new_join_set->super_join = NULL;
-        new_join_set->identity_sets.push_back(pToID);
-        new_join_set->identity_sets.push_back(pFromID);
-        (*identity_set_join_map)[pFromID] = new_join_set;
-        (*identity_set_join_map)[pToID] = new_join_set;
+        lNewJoinSet1 = make_join_set(pToID);
+        lNewJoinSet2 = make_join_set(pFromID);
+        if (pFromID > pToID)
+        {
+            lNewJoinSet1->identity_sets.push_back(lNewJoinSet2);
+            lNewJoinSet2->super_join = lNewJoinSet1;
+        } else {
+            lNewJoinSet2->identity_sets.push_back(lNewJoinSet1);
+            lNewJoinSet1->super_join = lNewJoinSet2;
+        }
     }
     else if (!(lFromJoinSet && lToJoinSet))
     {
@@ -268,12 +125,14 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
         if (lFromJoinSet)
         {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pToID, pFromID);
-            (*identity_set_join_map)[pToID] = lFromJoinSet;
-            lFromJoinSet->identity_sets.push_back(pToID);
+            lNewJoinSet1 = make_join_set(pToID);
+            lNewJoinSet1->super_join = lFromJoinSet;
+            lToJoinSet->identity_sets.push_back(lNewJoinSet1);
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pFromID, pToID);
-            (*identity_set_join_map)[pFromID] = lToJoinSet;
-            lToJoinSet->identity_sets.push_back(pFromID);
+            lNewJoinSet1 = make_join_set(pFromID);
+            lNewJoinSet1->super_join = lToJoinSet;
+            lToJoinSet->identity_sets.push_back(lNewJoinSet1);
         }
     } else
     {
@@ -282,15 +141,13 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
         /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
          * otherwise.  Not sure if this, especially the latter case, will really help efficiency
          * especially with forward propagation determining identity set values */
-        if ((lFromJoinSet->super_join && !lToJoinSet->super_join) ||
-            ((!lFromJoinSet->super_join && !lToJoinSet->super_join) && (pFromID > pToID)))
+        uint64_t lTargetID = pToID;
+        if (lFromJoinSet->identity_sets.size() > lToJoinSet->identity_sets.size())
         {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", pFromID, pToID);
-            uint64_t temp = pFromID;
-            identity_join_set* tempJoin = lFromJoinSet;
-            pFromID = pToID;
+            lTargetID = pFromID;
+            identity_join* tempJoin = lFromJoinSet;
             lFromJoinSet = lToJoinSet;
-            pToID = temp;
             lToJoinSet = tempJoin;
         }
 
@@ -298,11 +155,8 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
         cons* last_cons;
         for (auto it = lFromJoinSet->identity_sets.begin(); it != lFromJoinSet->identity_sets.end(); it++)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", *it, pToID);
-            iter = (*identity_set_join_map).find(*it);
-            assert(iter != (*identity_set_join_map).end());
-            iter->second->super_join = lToJoinSet;
-            iter->second->identity = lToJoinSet->identity;
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", (*it)->identity, pFromID);
+            (*it)->super_join = lToJoinSet;
             lToJoinSet->identity_sets.push_back(*it);
         }
         lFromJoinSet->identity_sets.clear();
@@ -311,7 +165,7 @@ void Explanation_Based_Chunker::add_identity_unification(uint64_t pFromID, uint6
     ebc_timers->identity_unification->stop();
 
 //    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
-//    dprint_unification_map(DT_ADD_IDENTITY_SET_MAPPING);
+//    dprint_identity_to_id_set_map(DT_ADD_IDENTITY_SET_MAPPING);
 }
 
 void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id)
@@ -342,7 +196,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 if (rs->identity_set && !rs->referent->is_sti())
                 {
                     thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
-                    add_identity_unification(rs->identity_set, 0);
+                    join_identity_sets(rs->identity_set, 0);
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }
             }
@@ -373,18 +227,18 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.id != lId->identity_set)
             {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u -> %u\n", o_ids_to_replace.id, lId->identity_set);
-                add_identity_unification(o_ids_to_replace.id, lId->identity_set);
+                join_identity_sets(o_ids_to_replace.id, lId->identity_set);
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %u -> %t\n", o_ids_to_replace.id, lId);
-            add_identity_unification(o_ids_to_replace.id, NULL_IDENTITY_SET);
+            join_identity_sets(o_ids_to_replace.id, NULL_IDENTITY_SET);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
         literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
-        if (lId->identity_set) add_identity_unification(lId->identity_set, NULL_IDENTITY_SET);
+        if (lId->identity_set) join_identity_sets(lId->identity_set, NULL_IDENTITY_SET);
     }
 //    else
 //    {
@@ -397,18 +251,18 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.attr != lAttr->identity_set)
             {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of attribute element: %u -> %u\n", o_ids_to_replace.attr, lAttr->identity_set);
-                add_identity_unification(o_ids_to_replace.attr, lAttr->identity_set);
+                join_identity_sets(o_ids_to_replace.attr, lAttr->identity_set);
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of attribute element: %u -> %t\n", o_ids_to_replace.attr, lAttr);
-            add_identity_unification(o_ids_to_replace.attr, NULL_IDENTITY_SET);
+            join_identity_sets(o_ids_to_replace.attr, NULL_IDENTITY_SET);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in attribute element %r\n", rhs_funcs.attr);
         literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
-        if (lAttr->identity_set) add_identity_unification(lAttr->identity_set, NULL_IDENTITY_SET);
+        if (lAttr->identity_set) join_identity_sets(lAttr->identity_set, NULL_IDENTITY_SET);
     }
 //    else
 //    {
@@ -421,18 +275,18 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.value != lValue->identity_set)
             {
                 dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of value element: %u -> %u\n", o_ids_to_replace.value, lValue->identity_set);
-                add_identity_unification(o_ids_to_replace.value, lValue->identity_set);
+                join_identity_sets(o_ids_to_replace.value, lValue->identity_set);
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of value element: %u -> %t\n", o_ids_to_replace.value, lValue);
-            add_identity_unification(o_ids_to_replace.value, NULL_IDENTITY_SET);
+            join_identity_sets(o_ids_to_replace.value, NULL_IDENTITY_SET);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in value element %r\n", rhs_funcs.value);
         literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
-        if (lValue->identity_set) add_identity_unification(lValue->identity_set, NULL_IDENTITY_SET);
+        if (lValue->identity_set) join_identity_sets(lValue->identity_set, NULL_IDENTITY_SET);
     }
 //    else
 //    {
@@ -464,7 +318,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         {
             ebc_timers->dependency_analysis->stop();
             thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
-            add_identity_unification(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
+            join_identity_sets(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
             ebc_timers->dependency_analysis->start();
         }
     }
@@ -479,7 +333,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         {
             ebc_timers->dependency_analysis->stop();
             thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
-            add_identity_unification(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
+            join_identity_sets(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
             ebc_timers->dependency_analysis->start();
         }
     }

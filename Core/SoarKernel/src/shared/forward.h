@@ -17,7 +17,7 @@ typedef struct dl_cons_struct dl_cons;
 typedef struct exploration_parameter_struct exploration_parameter;
 typedef struct gds_struct goal_dependency_set;
 typedef struct hash_table_struct hash_table;
-typedef struct identity_join_set_struct identity_join_set;
+typedef struct identity_join_struct identity_join;
 typedef struct instantiation_struct instantiation;
 typedef struct io_wme_struct io_wme;
 typedef struct memory_pool_struct memory_pool;

@@ -60,19 +60,21 @@ class Explanation_Based_Chunker
         void add_explanation_to_condition(rete_node* node, condition* cond,
                                           node_varnames* nvn, uint64_t pI_id,
                                           AddAdditionalTestsMode additional_tests);
-        uint64_t get_new_inst_id() { increment_counter(inst_id_counter); return inst_id_counter; };
-        uint64_t get_new_prod_id() { increment_counter(prod_id_counter); return prod_id_counter; };
-        uint64_t get_instantiation_count() { return inst_id_counter; };
+        uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
+        uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
+        uint64_t    get_instantiation_count()       { return inst_id_counter; };
+        tc_number   get_constraint_found_tc_num()   { return tc_num_found; };
 
         /* identity generation functions */
         uint64_t get_or_create_identity(Symbol* orig_var);
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
-        uint64_t get_floating_identity();
+        uint64_t get_floating_identity_set();
 
         /* Identity set mapping functions */
-        void update_remaining_identity_sets_in_test(test pTest, instantiation* pInst);
-        void update_remaining_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
+        void update_identity_sets_in_test(test pTest, instantiation* pInst);
+        void update_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
+        void update_identity_sets_in_preferences(preference* lPref);
 
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
@@ -80,17 +82,14 @@ class Explanation_Based_Chunker
         void    copy_proposal_OSK(instantiation* inst, cons* newOSK);
         void    update_proposal_OSK(slot* s, preference* winner);
 
-        /* Methods used during condition copying to make unification and constraint
-         * attachment more effecient */
-        void        unify_identity(test t) { t->identity_set = t->identity_set ? get_identity(t->identity_set) : get_identity(t->identity); }
-        void        update_identity_sets_in_preferences(preference* lPref);                         /* Not used currently */
-        uint64_t    get_identity(uint64_t pID);
-        uint64_t    get_identity_and_add(uint64_t pID);
-        bool        in_null_identity_set(test t);
-        tc_number   get_constraint_found_tc_num() { return tc_num_found; };
-        uint64_t    add_identity_set_mapping(uint64_t pID, uint64_t pIDSet);
-        void        force_identity_set_mapping(uint64_t pID, uint64_t pIDSet) { (*unification_map)[pID] = pIDSet; }
-        bool        has_identity_set_mapping(uint64_t pID) { return (unification_map->find(pID) != unification_map->end()); }
+        uint64_t    get_id_set_for_identity(uint64_t pID);
+        uint64_t    get_or_add_id_set_for_identity(uint64_t pID, uint64_t pIDSet = 0);
+        uint64_t    get_joined_id_set_identity(uint64_t pIDSet);
+        uint64_t    get_joined_id_set_cloned_identity(uint64_t pIDSet);
+        void        unify_identity_set(test t)                                      { t->identity_set = t->identity_set ? get_id_set_for_identity(t->identity_set) : get_id_set_for_identity(t->identity); }
+        void        force_identity_to_id_set_mapping(uint64_t pID, uint64_t pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
+        bool        in_null_identity_set(test t)                                    { return (literalized_identity_sets->find(t->identity) != literalized_identity_sets->end()); }
+
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
         bool                wme_is_a_singleton(wme* pWME);
@@ -120,7 +119,8 @@ class Explanation_Based_Chunker
         void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_instantiation_identities_map(TraceMode mode);
-        void print_unification_map(TraceMode mode);
+        void print_identity_to_id_set_map(TraceMode mode);
+        void print_identity_set_join_map(TraceMode mode);
 
         void print_singleton_summary();
         const char* singletonTypeToString(singleton_element_type pType);
@@ -129,9 +129,9 @@ class Explanation_Based_Chunker
 
         /* Clean-up */
         void reinit();
-        void clear_symbol_identity_map() { instantiation_identities->clear(); }
+        void clear_symbol_identity_map()        { instantiation_identities->clear(); }
+        void clear_identity_to_id_set_map()     { identities_to_id_sets->clear(); }
         void clear_variablization_maps();
-        void clear_unification_map()     { unification_map->clear(); identity_set_join_map->clear(); }
         void clear_singletons();
 
     private:
@@ -204,7 +204,7 @@ class Explanation_Based_Chunker
         id_to_sym_id_map*   identity_to_var_map;
 
         /* Map to unify variable identities into identity sets */
-        id_to_id_map*       unification_map;
+        id_to_id_map*       identities_to_id_sets;
         id_to_join_map*     identity_set_join_map;
 
         symbol_set*         singletons;
@@ -240,6 +240,7 @@ class Explanation_Based_Chunker
         void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);
         chunk_cond*     make_chunk_cond_for_negated_condition(condition* cond);
+        void            merge_conditions();
         void            make_clones_of_results();
         void            remove_chunk_instantiation();
         void            remove_from_chunk_cond_set(chunk_cond_set* set, chunk_cond* cc);
@@ -259,13 +260,12 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void add_identity_unification(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        void update_unification_table(uint64_t pOld_o_id, uint64_t pNew_o_id, uint64_t pOld_o_id_2 = 0);
-        void create_consistent_identity_for_result_element(preference* result, uint64_t pNew_i_id, WME_Field field);
-        void unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
-        void add_singleton_unification_if_needed(condition* pCond);
-        void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
-        void merge_conditions();
+        identity_join*      make_join_set(uint64_t pIDSet);
+        identity_join*      get_joined_id_set(uint64_t pIDSet);
+        void                join_identity_sets(uint64_t pOld_o_id, uint64_t pNew_o_id);
+        void                unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
+        void                add_singleton_unification_if_needed(condition* pCond);
+        void                literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
 
         /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
@@ -315,7 +315,6 @@ class Explanation_Based_Chunker
         void clear_merge_map();
         void clear_attachment_map();
         void clear_cached_constraints();
-        void clear_rulesym_to_identity_map()    { instantiation_identities->clear(); }
         void clear_data();
 
 };

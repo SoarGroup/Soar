@@ -28,20 +28,28 @@ sym_identity* Explanation_Based_Chunker::get_variablization(uint64_t index_id)
     if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
 }
 
-sym_identity* Explanation_Based_Chunker::store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym)
+sym_identity* Explanation_Based_Chunker::store_variablization(uint64_t pIdentitySet, Symbol* variable, Symbol* pMatched_sym)
 {
-    assert(pIdentity);
+    assert(pIdentitySet);
     sym_identity* lVarInfo;
+    //    identity_join* lFinalIdentitySet = get_joined_id_set(pIdentitySet);
+    //    assert(lFinalIdentitySet);
+
     thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
     lVarInfo->variable_sym = variable;
-    variable->var->instantiated_sym = pMatched_sym;
-    lVarInfo->identity = this->get_or_create_identity(variable);
     thisAgent->symbolManager->symbol_add_ref(variable);
-    (*identity_to_var_map)[pIdentity] = lVarInfo;
+    variable->var->instantiated_sym = pMatched_sym;
+
+    //    lFinalIdentitySet->new_var = variable;
+    //    lVarInfo->identity = lFinalIdentitySet->identity;
+    lVarInfo->identity = this->get_or_create_identity(variable);
+
+    (*identity_to_var_map)[pIdentitySet] = lVarInfo;
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentity, lVarInfo->identity);
+        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
     }
+
     return lVarInfo;
 }
 
@@ -74,7 +82,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         rhs_value lRhsValue, *lc;
 
         dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall %r\n", pRhs_val);
-        dprint_unification_map(DT_RHS_FUN_VARIABLIZATION);
+        dprint_identity_to_id_set_map(DT_RHS_FUN_VARIABLIZATION);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             lRhsValue = static_cast<rhs_value>(c->first);
@@ -405,13 +413,13 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
     rhs_symbol lRS = rhs_value_to_rhs_symbol(pRLAction->id);
-    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.id);
+    rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, lRS->identity, get_id_set_for_identity(lRS->identity), was_unbound_vars.id);
     lRS = rhs_value_to_rhs_symbol(pRLAction->attr);
-    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.attr);
+    rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, lRS->identity, get_id_set_for_identity(lRS->identity), was_unbound_vars.attr);
     lRS = rhs_value_to_rhs_symbol(pRLAction->value);
-    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.value);
+    rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, lRS->identity, get_id_set_for_identity(lRS->identity), was_unbound_vars.value);
     lRS = rhs_value_to_rhs_symbol(pRLAction->referent);
-    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, lRS->identity, get_identity(lRS->identity), was_unbound_vars.referent);
+    rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, lRS->identity, get_id_set_for_identity(lRS->identity), was_unbound_vars.referent);
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */
     thisAgent->symbolManager->symbol_remove_ref(&id_sym);
@@ -470,61 +478,70 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     if (!result->rhs_funcs.id)
     {
-        lIdentity = result->identity_sets.id;
-        iter = (*unification_map).find(result->identity_sets.id);
-        if (iter != (*unification_map).end())
-        {
-            lIdentitySet = iter->second;
-        } else {
-            lIdentitySet = result->identity_sets.id;
-        }
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentity, lIdentitySet, result->was_unbound_vars.id);
+        lIdentitySet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(result->identity_sets.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentitySet, lIdentitySet, result->was_unbound_vars.id);
+
+//        lIdentity = result->identity_sets.id;
+//        iter = (*identities_to_id_sets).find(result->identity_sets.id);
+//        if (iter != (*identities_to_id_sets).end())
+//        {
+//            lIdentitySet = iter->second;
+//        } else {
+//            lIdentitySet = result->identity_sets.id;
+//        }
+//        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentity, lIdentitySet, result->was_unbound_vars.id);
     } else {
-        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, true);
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, false, true);
     }
     if (!result->rhs_funcs.attr)
     {
-        lIdentity = result->identity_sets.attr;
-        iter = (*unification_map).find(result->identity_sets.attr);
-        if (iter != (*unification_map).end())
-        {
-            lIdentitySet = iter->second;
-        } else {
-            lIdentitySet = result->identity_sets.attr;
-        }
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, lIdentitySet, result->was_unbound_vars.attr);
+        lIdentitySet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(result->identity_sets.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentitySet, lIdentitySet, result->was_unbound_vars.attr);
+//        lIdentity = result->identity_sets.attr;
+//        iter = (*identities_to_id_sets).find(result->identity_sets.attr);
+//        if (iter != (*identities_to_id_sets).end())
+//        {
+//            lIdentitySet = iter->second;
+//        } else {
+//            lIdentitySet = result->identity_sets.attr;
+//        }
+//        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, lIdentitySet, result->was_unbound_vars.attr);
     } else {
-        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, true);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, false, true);
     }
     if (!result->rhs_funcs.value)
     {
-        lIdentity = result->identity_sets.value;
-        iter = (*unification_map).find(result->identity_sets.value);
-        if (iter != (*unification_map).end())
-        {
-            lIdentitySet = iter->second;
-        } else {
-            lIdentitySet = result->identity_sets.value;
-        }
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, lIdentitySet, result->was_unbound_vars.value);
+        lIdentitySet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(result->identity_sets.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentitySet, lIdentitySet, result->was_unbound_vars.value);
+//        lIdentity = result->identity_sets.value;
+//        iter = (*identities_to_id_sets).find(result->identity_sets.value);
+//        if (iter != (*identities_to_id_sets).end())
+//        {
+//            lIdentitySet = iter->second;
+//        } else {
+//            lIdentitySet = result->identity_sets.value;
+//        }
+//        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, lIdentitySet, result->was_unbound_vars.value);
     } else {
-        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, true);
+        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, false, true);
     }
     if (preference_is_binary(result->type))
     {
         if (!result->rhs_funcs.referent)
         {
-            lIdentity = result->identity_sets.referent;
-            iter = (*unification_map).find(result->identity_sets.referent);
-            if (iter != (*unification_map).end())
-            {
-                lIdentitySet = iter->second;
-            } else {
-                lIdentitySet = result->identity_sets.referent;
-            }
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, lIdentitySet, result->was_unbound_vars.referent);
+            lIdentitySet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(result->identity_sets.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentitySet, lIdentitySet, result->was_unbound_vars.referent);
+//            lIdentity = result->identity_sets.referent;
+//            iter = (*identities_to_id_sets).find(result->identity_sets.referent);
+//            if (iter != (*identities_to_id_sets).end())
+//            {
+//                lIdentitySet = iter->second;
+//            } else {
+//                lIdentitySet = result->identity_sets.referent;
+//            }
+//            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, lIdentitySet, result->was_unbound_vars.referent);
         } else {
-            a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, true);
+            a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, false, true);
         }
     }
 
@@ -537,7 +554,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->clone_identities.id = lIdentity;
         result->cloned_rhs_funcs.id = a->id;
-        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, true);
+        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, false, false, true);
     }
 
     lIdentity = variablize_rhs_symbol(a->attr, lti_link_tc);
@@ -547,7 +564,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->clone_identities.attr = lIdentity;
         result->cloned_rhs_funcs.attr = a->attr;
-        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, true);
+        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, false, false, true);
     }
 
     lIdentity = variablize_rhs_symbol(a->value, lti_link_tc);
@@ -557,7 +574,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     } else {
         result->clone_identities.value = lIdentity;
         result->cloned_rhs_funcs.value = a->value;
-        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, true);
+        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, false, false, true);
     }
 
     if (preference_is_binary(result->type))
@@ -569,7 +586,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         } else {
             result->clone_identities.referent = lIdentity;
             result->cloned_rhs_funcs.referent = a->value;
-            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent, true);
+            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent, false, false, true);
         }
     }
 
@@ -617,7 +634,7 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
 action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
-    dprint_unification_map(DT_RHS_VARIABLIZATION);
+    dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
     dprint_variablization_table(DT_RHS_VARIABLIZATION);
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
@@ -649,7 +666,7 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
 action* Explanation_Based_Chunker::convert_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
-    dprint_unification_map(DT_RHS_VARIABLIZATION);
+    dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
 
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;

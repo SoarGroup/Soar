@@ -56,7 +56,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
+test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
     test new_ct;
 
@@ -85,24 +85,27 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
-            {
-                new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
-                new_ct->identity = t->eq_test->identity;
-                new_ct->identity_set = t->eq_test->identity_set;
+            /* MToDo | Need to move this somewhere else.  We don't want to look up literalization twice since table could be huge in agents that use a lot of RHS functions */
+//            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
+//            {
+//                new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
+//                new_ct->identity = t->eq_test->identity;
+//                new_ct->identity_set = t->eq_test->identity_set;
+//
+//                if (pUnify_variablization_identity)
+//                {
+//                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
+//                }
+//            } else
 
-                if (pUnify_variablization_identity)
-                {
-                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
-                }
-            } else if (remove_state_impasse)
+                if (remove_state_impasse)
             {
                 new_ct = NULL;
                 test temp;
                 cons* c;
                  for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                  {
-                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts,
+                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUseUnifiedIdentitySet, pStripLiteralConjuncts,
                                       remove_state_impasse, removed_goal, removed_impasse);
                      if (temp)
                      {
@@ -115,7 +118,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUseUnifiedIdentitySet, pStripLiteralConjuncts);
             }
             break;
         default:
@@ -126,7 +129,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             {
                 new_ct->eq_test = new_ct;
             }
-            if (pUnify_variablization_identity && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
             {
                 /* Mark this test as seen.  The tests in the constraint lists are copies of
                  * the pointers in grounds, so we use this tc_num later to later check if
@@ -138,7 +141,7 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                 }
                 if (new_ct->identity_set)
                 {
-                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
+                    new_ct->identity_set = thisAgent->explanationBasedChunker->get_joined_id_set_identity(new_ct->identity_set);
                 }
             }
             break;

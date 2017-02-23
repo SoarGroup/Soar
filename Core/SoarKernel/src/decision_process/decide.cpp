@@ -1924,7 +1924,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 
         wme* lSSWME = add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
         if (level > TOP_GOAL_LEVEL)
-            lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity();
+            lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
 
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
         impasseID->id->rl_info->rl_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, lreward_header, true);
