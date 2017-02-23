@@ -1045,33 +1045,11 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                                 (*str_to_LTMs)[temp_key2] = l_ltm_temp;
                                                 lexer->get_lexeme();
 
-                                                if (lexer->current_lexeme.type == L_PAREN_LEXEME)
-                                                {
-                                                    lexer->get_lexeme();
-                                                    if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
-                                                    {
-                                                        l_ltm_value->val_lti.edge_weight = lexer->current_lexeme.float_val;
-                                                    }
-                                                    else
-                                                    {
-                                                        //error: The syntax suggested that an edge-weight value was going to be provided
-                                                        //but this was not encountered
-                                                    }
-                                                    lexer->get_lexeme();
-                                                }
-                                                else
-                                                {
-                                                    if (lexer->current_lexeme.type == R_PAREN_LEXEME)
-                                                    {
-                                                        dont_consume = true;
-                                                    }
-                                                    l_ltm_value->val_lti.edge_weight = 0;
-                                                }
-
                                                 // possibly a newbie (could be a self-loop)
                                                 newbies->insert(l_ltm_temp);
                                             }
                                         }
+
                                     } else {
                                         /* Bad clause.  Print it out */
                                         thisAgent->outputManager->printa_sf(thisAgent, "Value of smem -add clause for @%u is invalid: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
@@ -1081,11 +1059,41 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                 if (l_ltm_value != NIL)
                                 {
                                     // consume
-                                    if (!dont_consume)
+                                    /*if (!dont_consume)
                                     {
                                         lexer->get_lexeme();
+                                    }*/
+                                    lexer->get_lexeme();
+                                    if (lexer->current_lexeme.type == L_PAREN_LEXEME)
+                                    {
+                                        lexer->get_lexeme();
+                                        if (lexer->current_lexeme.type == FLOAT_CONSTANT_LEXEME)
+                                        {
+                                            l_ltm_value->val_lti.edge_weight = lexer->current_lexeme.float_val;
+                                        }
+                                        else
+                                        {
+                                            //error: The syntax suggested that an edge-weight value was going to be provided
+                                            //but this was not encountered
+                                        }
+                                        lexer->get_lexeme();
+                                        if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                        {
+                                            lexer->get_lexeme();
+                                        }
+                                        else
+                                        {
+                                            //horrible syntax error. missing right paren. fix.
+                                        }
                                     }
-                                    //lexer->get_lexeme();
+                                    else
+                                    {
+                                        /*if (lexer->current_lexeme.type == R_PAREN_LEXEME)
+                                        {
+                                            dont_consume = true;
+                                        }*/
+                                        l_ltm_value->val_lti.edge_weight = 0;
+                                    }
 
                                     // add to appropriate slot
                                     l_ltm_slot = make_ltm_slot(l_ltm_intermediate_parent->slots, l_ltm_attr);
