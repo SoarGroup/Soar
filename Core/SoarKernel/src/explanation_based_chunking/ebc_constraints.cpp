@@ -108,12 +108,12 @@ void Explanation_Based_Chunker::find_attachment_points(condition* pCond)
             test lTest = pCond->data.tests.value_test->eq_test;
             if (lTest && lTest->identity_set)
             {
-                set_attachment_point(lTest->identity_set, pCond, VALUE_ELEMENT);
+                set_attachment_point(lTest->identity_set->identity, pCond, VALUE_ELEMENT);
             }
             lTest = pCond->data.tests.attr_test->eq_test;
             if (lTest && lTest->identity_set)
             {
-                set_attachment_point(lTest->identity_set, pCond, ATTR_ELEMENT);
+                set_attachment_point(lTest->identity_set->identity, pCond, ATTR_ELEMENT);
             }
         }
         pCond = pCond->next;
@@ -164,27 +164,27 @@ void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRe
 void Explanation_Based_Chunker::attach_relational_test(test pEq_test, test pRelational_test)
 {
     dprint(DT_CONSTRAINTS, "Attempting to attach %t(o%u) %t(o%u).\n", pRelational_test, pRelational_test->identity_set, pEq_test, pEq_test->identity_set);
-    attachment_point* attachment_info = get_attachment_point(pEq_test->identity_set);
-    if (attachment_info)
-    {
-        if (attachment_info->field == VALUE_ELEMENT)
-        {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, true);
-        } else if (attachment_info->field == ATTR_ELEMENT)
-        {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test, true);
-        } else
-        {
-            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test, true);
-        }
-        thisAgent->explanationMemory->increment_stat_constraints_attached();
-        return;
-    }
+//    attachment_point* attachment_info = get_attachment_point(pEq_test->identity_set);
+//    if (attachment_info)
+//    {
+//        if (attachment_info->field == VALUE_ELEMENT)
+//        {
+//            add_test(thisAgent, &(attachment_info->cond->data.tests.value_test), pRelational_test, true);
+//        } else if (attachment_info->field == ATTR_ELEMENT)
+//        {
+//            add_test(thisAgent, &(attachment_info->cond->data.tests.attr_test), pRelational_test, true);
+//        } else
+//        {
+//            add_test(thisAgent, &(attachment_info->cond->data.tests.id_test), pRelational_test, true);
+//        }
+//        thisAgent->explanationMemory->increment_stat_constraints_attached();
+//        return;
+//    }
     dprint(DT_CONSTRAINTS, "Did not find attachment point!\n");
     assert(false);
 }
 
-void Explanation_Based_Chunker::prune_redundant_constraints()
+void Explanation_Based_Chunker::prune_constraints_and_move_to_identity_sets()
 {
     dprint(DT_CONSTRAINTS, "Pruning redundant constraints from set of size %u.\n", static_cast<uint64_t>(constraints->size()));
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
@@ -214,7 +214,7 @@ void Explanation_Based_Chunker::add_additional_constraints()
      * them with a tc_num as they were copied from the grounds to the
      * chunk condition, so that we can prune them from the list here. */
 
-    prune_redundant_constraints();
+    prune_constraints_and_move_to_identity_sets();
     if (constraints->empty())
     {
         dprint_header(DT_CONSTRAINTS, PrintAfter, "All constraints already in chunk conditions.  Done propagating additional constraints.\n");
@@ -222,37 +222,37 @@ void Explanation_Based_Chunker::add_additional_constraints()
     }
 
     find_attachment_points(m_lhs);
-    for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
-    {
-        lConstraint = *iter;
-        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
-        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
-
-        dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
-
-        if (eq_copy->identity_set && has_positive_condition(eq_copy->identity_set))
-        {
-            /* Attach to a positive chunk condition test of eq_test */
-            dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
-            attach_relational_test(eq_copy, constraint_test);
-        } else {
-            /* Original identity constraint was attached to was literalized */
-            if (constraint_test->identity_set && has_positive_condition(constraint_test->identity_set))
-            {
-                /* Relational tests referent was not literalized, so make complement and
-                 * add to a positive chunk condition test for the referent */
-                dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
-                invert_relational_test(&eq_copy, &constraint_test);
-                attach_relational_test(eq_copy, constraint_test);
-
-            } else {
-                // Both tests are literals.  Delete.
-                dprint(DT_CONSTRAINTS, "...both tests are literals.  Oh my god.\n");
-                deallocate_test(thisAgent, constraint_test);
-            }
-        }
-        /* eq_test no longer needed so deallocate.  relational test now attached */
-        deallocate_test(thisAgent, eq_copy);
-    }
+//    for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end(); ++iter)
+//    {
+//        lConstraint = *iter;
+//        constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
+//        eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
+//
+//        dprint(DT_CONSTRAINTS, "...unattached test found: %t[%g] %t[%g]\n", eq_copy, eq_copy, constraint_test, constraint_test);
+//
+//        if (eq_copy->identity_set && has_positive_condition(eq_copy->identity_set))
+//        {
+//            /* Attach to a positive chunk condition test of eq_test */
+//            dprint(DT_CONSTRAINTS, "...equality test has an identity, so attaching.\n");
+//            attach_relational_test(eq_copy, constraint_test);
+//        } else {
+//            /* Original identity constraint was attached to was literalized */
+//            if (constraint_test->identity_set && has_positive_condition(constraint_test->identity_set))
+//            {
+//                /* Relational tests referent was not literalized, so make complement and
+//                 * add to a positive chunk condition test for the referent */
+//                dprint(DT_CONSTRAINTS, "...equality test is a literal but referent has identity, so attaching complement to referent.\n");
+//                invert_relational_test(&eq_copy, &constraint_test);
+//                attach_relational_test(eq_copy, constraint_test);
+//
+//            } else {
+//                // Both tests are literals.  Delete.
+//                dprint(DT_CONSTRAINTS, "...both tests are literals.  Oh my god.\n");
+//                deallocate_test(thisAgent, constraint_test);
+//            }
+//        }
+//        /* eq_test no longer needed so deallocate.  relational test now attached */
+//        deallocate_test(thisAgent, eq_copy);
+//    }
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
 }

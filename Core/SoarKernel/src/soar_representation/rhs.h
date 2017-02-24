@@ -32,10 +32,10 @@
 typedef char* rhs_value;
 typedef struct rhs_struct
 {
-    Symbol* referent;
-    uint64_t identity;
-    uint64_t identity_set;
-    bool was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
+    Symbol*         referent;
+    uint64_t        identity;
+    identity_join*  identity_set;
+    bool            was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
 } rhs_info;
 typedef rhs_info* rhs_symbol;
 
@@ -91,8 +91,8 @@ typedef struct binding_structure
 /* -- RHS Methods-- */
 action*     make_action(agent* thisAgent);
 action*     copy_action(agent* thisAgent, action* pAction);
-rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, uint64_t pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
-rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, uint64_t pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
 rhs_value   create_RHS_value(agent* thisAgent, rhs_value rv, condition* cond, char first_letter,
                            uint64_t pI_id, AddAdditionalTestsMode add_original_vars = DONT_EXPLAIN);
 action*     create_RHS_action_list(agent* thisAgent, action* actions, condition* cond,
@@ -115,7 +115,6 @@ inline bool rhs_value_is_unboundvar(rhs_value rv) { return (reinterpret_cast<uin
 inline rhs_symbol rhs_value_to_rhs_symbol(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv); }
 inline Symbol*    rhs_value_to_symbol(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->referent; }
 inline uint64_t   rhs_value_to_o_id(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->identity; }
-inline uint64_t   rhs_value_to_o_id_set(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->identity_set; }
 inline uint64_t   rhs_value_to_was_unbound_var(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->was_unbound_var; }
 inline cons*      rhs_value_to_funcall_list(rhs_value rv) { return reinterpret_cast< cons* >(reinterpret_cast<char*>(rv) - 1); }
 inline uint8_t    rhs_value_to_reteloc_field_num(rhs_value rv) { return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3); }
@@ -125,6 +124,7 @@ inline rhs_value  rhs_symbol_to_rhs_value(rhs_symbol rs) { return reinterpret_ca
 inline rhs_value  unboundvar_to_rhs_value(uint64_t n) { return reinterpret_cast<rhs_value>((n << 2) + 3); }
 inline rhs_value  funcall_list_to_rhs_value(cons* fl) { return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1); }
 inline rhs_value  reteloc_to_rhs_value(byte field_num, rete_node_level levels_up) { return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2; }
+inline identity_join* rhs_value_to_o_id_set(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->identity_set; }
 
 /* -- Comparison functions -- */
 inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2) { return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);

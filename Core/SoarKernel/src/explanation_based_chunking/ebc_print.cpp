@@ -47,14 +47,14 @@ void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "        Identity Set Join Map       \n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
-    if (identity_set_join_map->size() == 0)
+    if (identities_to_id_sets->size() == 0)
     {
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
     uint64_t            lIDSet, lIDSetID;
     identity_join*  lJoinSet, *lJoinSuperSet;
 
-    for (auto iter = identity_set_join_map->begin(); iter != identity_set_join_map->end(); ++iter)
+    for (auto iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
     {
         lIDSet = iter->first;
         lJoinSet = iter->second;
@@ -140,11 +140,11 @@ void Explanation_Based_Chunker::print_identity_to_id_set_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
-    id_to_id_map::iterator iter;
+    id_to_join_map::iterator iter;
 
     for (iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
     {
-        outputManager->printa_sf(thisAgent, "   %u = %u\n", iter->first, iter->second);
+        outputManager->printa_sf(thisAgent, "   %u = %u\n", iter->first, iter->second->super_join->identity);
     }
 
     outputManager->printa_sf(thisAgent, "------------------------------------\n");

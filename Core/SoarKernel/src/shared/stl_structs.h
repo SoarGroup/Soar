@@ -5,8 +5,10 @@
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     typedef std::list< identity_join*, soar_module::soar_memory_pool_allocator< identity_join* > >      identity_join_list;
+    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >            constraint_list;
 #else
     typedef std::list< identity_join* >                                                                 identity_join_list;
+    typedef std::list< constraint* >                                                                    constraint_list;
 #endif
 
 typedef struct symbol_triple_struct
@@ -44,7 +46,22 @@ typedef struct identity_join_struct
         Symbol*                     new_var;
         identity_join_struct*       super_join;
         identity_join_list          identity_sets;
+        constraint_list*            constraints;
+        bool                        literalization_checked;
+        bool                        literalized;
+        uint64_t                    refcount;
 } identity_join;
+
+
+typedef struct identity_set_quadruple_struct
+{
+        identity_join* id;
+        identity_join* attr;
+        identity_join* value;
+        identity_join* referent;
+
+        identity_set_quadruple_struct(identity_join* new_id = NULL, identity_join* new_attr = NULL, identity_join* new_value = NULL, identity_join* new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} identity_set_quadruple;
 
 typedef struct bool_quadruple_struct
 {

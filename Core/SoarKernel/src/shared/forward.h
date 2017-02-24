@@ -13,6 +13,7 @@ typedef struct agent_struct agent;
 typedef struct chunk_cond_struct chunk_cond;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
+typedef struct constraint_struct constraint;
 typedef struct dl_cons_struct dl_cons;
 typedef struct exploration_parameter_struct exploration_parameter;
 typedef struct gds_struct goal_dependency_set;

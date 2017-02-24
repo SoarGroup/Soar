@@ -90,7 +90,7 @@ void chunk_record::clean_up()
     dprint(DT_EXPLAIN, "Done deleting chunk record c%u\n", chunkID);
 }
 
-void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
+void chunk_record::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation)
 {
     name = pProduction->name;
     thisAgent->symbolManager->symbol_add_ref(name);
@@ -209,8 +209,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-    identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
-    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
+//    identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
+//    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }

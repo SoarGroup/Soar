@@ -93,6 +93,7 @@ enum TraceMode
     DT_VALIDATE                 = 57,
     DT_OSK                      = 58,
     DT_BACKTRACE1               = 59,
+    DT_PROPAGATE_ID_SETS        = 60,
     num_trace_modes
 };
 

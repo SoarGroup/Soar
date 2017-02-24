@@ -72,6 +72,9 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
         {
             thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         }
+        /* MToDo | Not sure if we have to do this for rhs */
+//        if (r->identity_set) thisAgent->explanationBasedChunker->join_set_remove_ref(r->identity_set);
+
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
 }
@@ -110,12 +113,12 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
-        uint64_t lIDSet = r->identity_set;
+        identity_join* lIDSet = r->identity_set;
         if (get_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
-        if (unify_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_joined_id_set_identity(lIDSet);
+//        if (unify_identity_set) lIDSet = lIDSet->super_join;
         if (get_cloned_identity)
         {
-            lID = thisAgent->explanationBasedChunker->get_joined_id_set_cloned_identity(lIDSet);
+            lID = lIDSet->super_join->clone_identity;
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
         }
         return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
@@ -467,8 +470,8 @@ rhs_value create_RHS_value(agent* thisAgent,
         /* Literal values including those in function calls. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->identity : 0;
-        uint64_t lO_idset = (add_original_vars != DONT_EXPLAIN) ? rs->identity_set : 0;
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, lO_id);
+        identity_join* lO_idset = (add_original_vars != DONT_EXPLAIN) ? rs->identity_set : 0;
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %us%u\n", rs->referent, lO_id, lO_idset ? lO_idset->identity : 0);
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id, lO_idset, rs->was_unbound_var);
     }
 }
@@ -530,7 +533,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, uint64_t pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -539,12 +542,14 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
     new_rhs_symbol->identity_set = pIDSet;
+    /* MToDo | Not sure if we have to do this for rhs */
+//    if (pIDSet) thisAgent->explanationBasedChunker->join_set_add_ref(pIDSet);
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, uint64_t pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet, bool pWasUnbound)
 {
     if (sym)
     {

@@ -321,7 +321,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
-    uint64_t sym_identity = NULL_IDENTITY_SET, sym_identity_set = NULL_IDENTITY_SET;
+    uint64_t sym_identity = NULL_IDENTITY_SET;
+    identity_join* sym_identity_set = NULL;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 

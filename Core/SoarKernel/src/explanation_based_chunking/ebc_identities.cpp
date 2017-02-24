@@ -55,31 +55,41 @@ void Explanation_Based_Chunker::add_identity_to_test(test pTest)
 
 /* Methods for assigning/propagating identity sets during instantiation creation */
 
-uint64_t Explanation_Based_Chunker::get_floating_identity_set()
+identity_join* Explanation_Based_Chunker::get_floating_identity_set()
 {
     increment_counter(ovar_id_counter);
-    return ovar_id_counter;
+    dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", ovar_id_counter);
+    return make_join_set(ovar_id_counter);
 }
 
-uint64_t Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
+identity_join* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*identities_to_id_sets).find(pID);
-    if (iter != (*identities_to_id_sets).end()) return iter->second;
-    return pID;
+    auto iter = (*identities_to_id_sets).find(pID);
+    assert(iter != (*identities_to_id_sets).end());
+    return iter->second;
 }
 
-uint64_t Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, uint64_t pIDSet)
+identity_join* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, identity_join* pIDSet)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter = (*identities_to_id_sets).find(pID);
+    dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u\n", pID);
+    auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
+    {
+        join_set_add_ref(iter->second);
+        dprint(DT_PROPAGATE_ID_SETS, "Found id set %u already used in rule.  Increased refcount of %u\n", iter->second->identity, iter->second->refcount);
         return iter->second;
+    }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
+        join_set_add_ref(pIDSet);
+        dprint(DT_PROPAGATE_ID_SETS, "First time parent id set %u used in rule.  Increasing refcount of identity join to %u\n", pIDSet->identity, pIDSet->refcount);
         return pIDSet;
     } else {
-        (*identities_to_id_sets)[pID] = pID;
-        return pID;
+        identity_join* newJoinSet = make_join_set(pID);
+        (*identities_to_id_sets)[pID] = newJoinSet;
+        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->identity, pID);
+        return newJoinSet;
     }
 }
 
@@ -103,10 +113,8 @@ void Explanation_Based_Chunker::update_identity_sets_in_test(test t, instantiati
             default:
                 if (t->identity)
                 {
+//                    if (t->identity_set) identity_set_remove_ref(t->identity_set);
                     t->identity_set = get_id_set_for_identity(t->identity);
-                } else
-                {
-                    t->identity_set = t->identity;
                 }
                 break;
         }
@@ -131,10 +139,10 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
 
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    if (lPref->identities.id) lPref->identity_sets.id = get_id_set_for_identity(lPref->identities.id);
-    if (lPref->identities.attr) lPref->identity_sets.attr = get_id_set_for_identity(lPref->identities.attr);
-    if (lPref->identities.value) lPref->identity_sets.value = get_id_set_for_identity(lPref->identities.value);
-    if (lPref->identities.referent) lPref->identity_sets.referent = get_id_set_for_identity(lPref->identities.referent);
+    if (lPref->identities.id) lPref->identity_sets.id = get_or_add_id_set_for_identity(lPref->identities.id);
+    if (lPref->identities.attr) lPref->identity_sets.attr = get_or_add_id_set_for_identity(lPref->identities.attr);
+    if (lPref->identities.value) lPref->identity_sets.value = get_or_add_id_set_for_identity(lPref->identities.value);
+    if (lPref->identities.referent) lPref->identity_sets.referent = get_or_add_id_set_for_identity(lPref->identities.referent);
 
     /* We don't deallocate the old rhs_funcs because they are created in execute_action
      * which doesn't have ownership of these rhs functions and needs to make copies for the preference

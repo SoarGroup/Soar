@@ -54,10 +54,10 @@ void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pIn
     if (test_has_referent(pTest)) {
         if (pTest->identity_set)
         {
-            if (pID_Set->find(pTest->identity_set) == pID_Set->end())
+            if (pID_Set->find(pTest->identity_set->super_join->identity) == pID_Set->end())
             {
-                pID_Set->insert(pTest->identity_set);
-                pID_Set_Map->insert({pTest->identity_set, pTest->data.referent});
+                pID_Set->insert(pTest->identity_set->super_join->identity);
+                pID_Set_Map->insert({pTest->identity_set->super_join->identity, pTest->data.referent});
                 thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
                 //thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity_set, lNewIDSet->identity);
             }

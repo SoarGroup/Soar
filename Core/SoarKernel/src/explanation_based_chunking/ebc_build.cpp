@@ -61,7 +61,7 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, uint64_t linked_id)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, identity_join* linked_id)
 {
     dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y (parent identity %u)", sym, linked_id);
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -76,7 +76,7 @@ void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, uint64_t link
     dprint(DT_EXTRA_RESULTS, "...not identifier.\n");
 }
 
-void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t linked_id)
+void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_join* linked_id)
 {
     preference* p;
 
@@ -155,7 +155,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, uint64_t l
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(Symbol* id, uint64_t linked_id)
+void Explanation_Based_Chunker::add_results_for_id(Symbol* id, identity_join* linked_id)
 {
     slot* s;
     preference* pref;
@@ -208,7 +208,7 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
         if ((pref->id->id->level < m_results_match_goal_level) &&
                 (pref->id->tc_num != m_results_tc))
         {
-            add_pref_to_results(pref, 0);
+            add_pref_to_results(pref, NULL);
         } else {
             dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, static_cast<int64_t>(pref->id->id->level), static_cast<int64_t>(m_results_match_goal_level));
         }

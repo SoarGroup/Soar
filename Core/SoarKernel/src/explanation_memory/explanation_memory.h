@@ -94,14 +94,14 @@ class Explanation_Memory
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID)
-                                { if (current_recording_chunk) current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromID, pToID); }
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_join* pFromJoinSet, identity_join* pToJoinSet)
+                                { if (current_recording_chunk) current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSet->identity, pToJoinSet->identity); }
         void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 

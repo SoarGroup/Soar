@@ -69,7 +69,6 @@ class Explanation_Based_Chunker
         uint64_t get_or_create_identity(Symbol* orig_var);
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
-        uint64_t get_floating_identity_set();
 
         /* Identity set mapping functions */
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
@@ -82,13 +81,17 @@ class Explanation_Based_Chunker
         void    copy_proposal_OSK(instantiation* inst, cons* newOSK);
         void    update_proposal_OSK(slot* s, preference* winner);
 
-        uint64_t    get_id_set_for_identity(uint64_t pID);
-        uint64_t    get_or_add_id_set_for_identity(uint64_t pID, uint64_t pIDSet = 0);
-        uint64_t    get_joined_id_set_identity(uint64_t pIDSet);
-        uint64_t    get_joined_id_set_cloned_identity(uint64_t pIDSet);
-        void        unify_identity_set(test t)                                      { t->identity_set = t->identity_set ? get_id_set_for_identity(t->identity_set) : get_id_set_for_identity(t->identity); }
-        void        force_identity_to_id_set_mapping(uint64_t pID, uint64_t pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
-        bool        in_null_identity_set(test t)                                    { return (literalized_identity_sets->find(t->identity) != literalized_identity_sets->end()); }
+        /* Methods for identity set propagation and analysis */
+        identity_join*  make_join_set(uint64_t pIDSet);
+        void            join_set_add_ref(identity_join* pIDSet) { ++(pIDSet->refcount);}
+        void            join_set_remove_ref(identity_join* &pIDSet) { if (--(pIDSet->refcount) == 0) { delete pIDSet; pIDSet = NULL; } }
+        identity_join*  get_id_set_for_identity(uint64_t pID);
+        identity_join*  get_or_add_id_set_for_identity(uint64_t pID, identity_join* pIDSet = NULL);
+        uint64_t        get_joined_id_set_identity(uint64_t pIDSet);
+        uint64_t        get_joined_id_set_cloned_identity(uint64_t pIDSet);
+        identity_join*  get_floating_identity_set();
+        void            force_identity_to_id_set_mapping(uint64_t pID, identity_join* pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
+        bool            in_null_identity_set(test t)                                          { return (literalized_identity_sets.find(t->identity_set) != literalized_identity_sets.end()); }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -203,12 +206,13 @@ class Explanation_Based_Chunker
         sym_to_id_map*      instantiation_identities;
         id_to_sym_id_map*   identity_to_var_map;
 
-        /* Map to unify variable identities into identity sets */
-        id_to_id_map*       identities_to_id_sets;
-        id_to_join_map*     identity_set_join_map;
+        /* Maps/lists for identity set propagation */
+        id_to_join_map*     identities_to_id_sets;
+//        id_to_join_map*     identity_set_join_map;
+        identity_join_list  identity_sets_to_clean_up;
+        identity_join_set   literalized_identity_sets;
 
         symbol_set*         singletons;
-        id_set*             literalized_identity_sets;
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
@@ -232,9 +236,9 @@ class Explanation_Based_Chunker
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
-        void            add_pref_to_results(preference* pref, uint64_t linked_id);
-        void            add_results_for_id(Symbol* id, uint64_t linked_id);
-        void            add_results_if_needed(Symbol* sym, uint64_t linked_id);
+        void            add_pref_to_results(preference* pref, identity_join* linked_id);
+        void            add_results_for_id(Symbol* id, identity_join* linked_id);
+        void            add_results_if_needed(Symbol* sym, identity_join* linked_id);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
         void            create_initial_chunk_condition_lists();
@@ -260,10 +264,8 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        identity_join*      make_join_set(uint64_t pIDSet);
-        identity_join*      get_joined_id_set(uint64_t pIDSet);
-        void                join_identity_sets(uint64_t pOld_o_id, uint64_t pNew_o_id);
-        void                unify_backtraced_conditions(condition* parent_cond, const identity_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
+        void                join_identity_sets(identity_join* lFromJoinSet, identity_join* lToJoinSet);
+        void                unify_backtraced_conditions(condition* parent_cond, const identity_set_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void                add_singleton_unification_if_needed(condition* pCond);
         void                literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
 
@@ -276,20 +278,20 @@ class Explanation_Based_Chunker
         attachment_point* get_attachment_point(uint64_t pO_id);
         void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
         void find_attachment_points(condition* cond);
-        void prune_redundant_constraints();
+        void prune_constraints_and_move_to_identity_sets();
         void invert_relational_test(test* pEq_test, test* pRelational_test);
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        action* variablize_results_into_actions();
-        action* variablize_result_into_action(preference* result, tc_number lti_link_tc);
-        uint64_t variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
-        void add_LTM_linking_actions(action* pLastAction);
-        void variablize_equality_tests(test t);
-        bool variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        sym_identity* store_variablization(uint64_t pIdentity, Symbol* variable, Symbol* pMatched_sym);
-        sym_identity* get_variablization(uint64_t index_id);
+        void        store_variablization(identity_join* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
+        void        variablize_equality_tests(test t);
+        void        variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        bool        variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        action*     variablize_results_into_actions();
+        action*     variablize_result_into_action(preference* result, tc_number lti_link_tc);
+        uint64_t    variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
+
+        void        add_LTM_linking_actions(action* pLastAction);
 
         void reinstantiate_test(test pTest);
         void reinstantiate_rhs_symbol(rhs_value pRhs_val);
@@ -312,6 +314,7 @@ class Explanation_Based_Chunker
         condition*  get_previously_seen_cond(condition* pCond);
 
         /* Clean-up methods */
+        void clean_up_identity_sets();
         void clear_merge_map();
         void clear_attachment_map();
         void clear_cached_constraints();

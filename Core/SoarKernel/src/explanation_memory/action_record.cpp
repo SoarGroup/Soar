@@ -339,23 +339,23 @@ void action_record::viz_action(action* pAction)
     } else {
         thisAgent->visualizationManager->viz_record_start();
         thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, instantiated_pref->identity_sets.id);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, instantiated_pref->identity_sets.id->super_join->identity);
         thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start();
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr, instantiated_pref->identity_sets.attr);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr, instantiated_pref->identity_sets.attr->super_join->identity);
         thisAgent->visualizationManager->viz_table_element_end();
         if (pAction->referent)
         {
             thisAgent->visualizationManager->viz_table_element_start();
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value->super_join->identity);
             thisAgent->visualizationManager->viz_table_element_end();
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, instantiated_pref->identity_sets.referent);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, instantiated_pref->identity_sets.referent->super_join->identity);
             thisAgent->visualizationManager->viz_table_element_end();
         } else {
             thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value->super_join->identity);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
             thisAgent->visualizationManager->viz_table_element_end();

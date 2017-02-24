@@ -141,7 +141,9 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 }
                 if (new_ct->identity_set)
                 {
-                    new_ct->identity_set = thisAgent->explanationBasedChunker->get_joined_id_set_identity(new_ct->identity_set);
+                    /* MToDo | Do we need to increase refcount of superjoin set here? */
+                    new_ct->identity     = new_ct->identity_set->super_join->identity;
+                    new_ct->identity_set = new_ct->identity_set->super_join;
                 }
             }
             break;
@@ -194,7 +196,8 @@ void deallocate_test(agent* thisAgent, test t)
      *    which was all over the kernel.  We did not copy the test or increment the
      *    refcount, so we don't need to deallocate the test here. -- */
     t->eq_test = NULL;
-
+    /* MToDo | Not sure if we have to do this for rhs */
+//    if (t->identity_set) thisAgent->explanationBasedChunker->join_set_remove_ref(t->identity_set);
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
 
@@ -553,7 +556,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             }
             if (considerIdentity)
             {
-                return (t1->identity_set == t2->identity_set);
+                return (t1->identity_set->super_join == t2->identity_set->super_join);
             }
             return true;
         }
@@ -970,7 +973,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->constraint_tc_num = 0;
-    new_ct->identity_set = NULL_IDENTITY_SET;
+    new_ct->identity_set = NULL;
     if (test_type == EQUALITY_TEST)
     {
         new_ct->eq_test = new_ct;

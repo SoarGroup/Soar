@@ -51,7 +51,7 @@ class chunk_record
         void init(agent* myAgent, uint64_t pChunkID);
         void clean_up();
 
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    generate_dependency_paths();
         void                    end_chunk_record();
 

@@ -25,57 +25,50 @@
 
 #include <assert.h>
 
-identity_join* Explanation_Based_Chunker::get_joined_id_set(uint64_t pIDSet)
-{
-    id_to_join_map::iterator iter;
-    iter = (*identity_set_join_map).find(pIDSet);
-    assert(iter != (*identity_set_join_map).end());
-    if (iter->second->super_join) return iter->second->super_join;
-    else return iter->second;
-}
-
-uint64_t Explanation_Based_Chunker::get_joined_id_set_identity(uint64_t pIDSet)
-{
-    id_to_join_map::iterator iter;
-    iter = (*identity_set_join_map).find(pIDSet);
-//    assert(iter != (*identity_set_join_map).end());
-    if (iter != (*identity_set_join_map).end())
-    {
-        if (iter->second->super_join) return iter->second->super_join->identity;
-        else return iter->second->identity;
-    }
-    return pIDSet;
-}
-
-uint64_t Explanation_Based_Chunker::get_joined_id_set_cloned_identity(uint64_t pIDSet)
-{
-    id_to_join_map::iterator iter;
-    iter = (*identity_set_join_map).find(pIDSet);
-    assert(iter != (*identity_set_join_map).end());
-    if (iter->second->super_join) return iter->second->super_join->clone_identity;
-    else return iter->second->clone_identity;
-}
-
-identity_join* Explanation_Based_Chunker::make_join_set(uint64_t pIDSet)
+identity_join* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
 {
     identity_join* new_join_set = new identity_join();
 //    increment_counter(ovar_id_counter);
 //    new_join_set->identity = ovar_id_counter;
-    new_join_set->identity = pIDSet;
+    new_join_set->identity = pIdentity;
     new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->new_var = NULL;
-    new_join_set->super_join = NULL;
-    (*identity_set_join_map)[pIDSet] = new_join_set;
+    new_join_set->super_join = new_join_set;
+    new_join_set->refcount = 1;
+    new_join_set->literalization_checked = false;
+    new_join_set->literalized = false;
+    identity_sets_to_clean_up.push_back(new_join_set);
     return new_join_set;
 }
 
-void Explanation_Based_Chunker::join_identity_sets(uint64_t pFromID, uint64_t pToID)
+void Explanation_Based_Chunker::clean_up_identity_sets()
+{
+    for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
+    {
+        identity_join* lJoin_set = *it;
+        if (lJoin_set->super_join != lJoin_set)
+        {
+            join_set_remove_ref(lJoin_set->super_join);
+            lJoin_set->super_join = lJoin_set;
+        }
+        lJoin_set->identity_sets.clear();
+        if (lJoin_set->new_var)
+        {
+            thisAgent->symbolManager->symbol_remove_ref(&lJoin_set->new_var);
+        }
+        lJoin_set->refcount = 1;
+        lJoin_set->literalization_checked = false;
+        lJoin_set->literalized = false;
+        if (lJoin_set->constraints) delete lJoin_set->constraints;
+    }
+    identity_sets_to_clean_up.clear();
+}
+
+void Explanation_Based_Chunker::join_identity_sets(identity_join* lFromJoinSet, identity_join* lToJoinSet)
 {
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+    assert(lFromJoinSet && (lFromJoinSet != lToJoinSet));
 
-//    assert((pFromID != NULL_IDENTITY_SET) && (pFromID != pToID));
-
-    if ((pFromID == NULL_IDENTITY_SET) || (pFromID == pToID)) return;
     ebc_timers->variablization_rhs->start();
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
@@ -83,84 +76,40 @@ void Explanation_Based_Chunker::join_identity_sets(uint64_t pFromID, uint64_t pT
     /* MToDo | If we always choose to map from the smaller number to the highest number, maybe we can avoid this check.  It would be
      *         impossible to get an inverse mapping, and we will just re-assign an identical mapping which costs the same as checking.
      *         We'd have to resolve the transitive mappings later. */
-    if (pToID == 0)
+    if (lToJoinSet == NULL)
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u n", pFromID);
-        literalized_identity_sets->insert(pFromID);
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u n", lFromJoinSet->super_join->identity);
+        literalized_identity_sets.insert(lFromJoinSet->super_join);
         /* MToDo | If it has a join set, we may want to store that it has been literalized.  Can avoid lookup later */
         return;
     }
 
-    id_to_join_map::iterator iter;
-    identity_join* lFromJoinSet = NULL;
-    identity_join* lToJoinSet = NULL;
-    identity_join* lNewJoinSet1 = NULL;
-    identity_join* lNewJoinSet2 = NULL;
+    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
 
-    /* See if a join set already exists */
-    iter = (*identity_set_join_map).find(pFromID);
-    if (iter != (*identity_set_join_map).end()) lFromJoinSet = iter->second;
-    iter = (*identity_set_join_map).find(pToID);
-    if (iter != (*identity_set_join_map).end()) lToJoinSet = iter->second;
-
-
-    if (!lFromJoinSet && !lToJoinSet)
+    /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
+     * otherwise.  Not sure if this, especially the latter case, will really help efficiency
+     * especially with forward propagation determining identity set values */
+    uint64_t lTargetID = lToJoinSet->super_join->identity;
+    if (lFromJoinSet->identity_sets.size() > lToJoinSet->identity_sets.size())
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Creating new join set for identity sets %u and %u.\n", pFromID, pToID);
-        // Create a join set and add entries for both id sets
-        lNewJoinSet1 = make_join_set(pToID);
-        lNewJoinSet2 = make_join_set(pFromID);
-        if (pFromID > pToID)
-        {
-            lNewJoinSet1->identity_sets.push_back(lNewJoinSet2);
-            lNewJoinSet2->super_join = lNewJoinSet1;
-        } else {
-            lNewJoinSet2->identity_sets.push_back(lNewJoinSet1);
-            lNewJoinSet1->super_join = lNewJoinSet2;
-        }
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
+        lTargetID = lFromJoinSet->super_join->identity;
+        identity_join* tempJoin = lFromJoinSet;
+        lFromJoinSet = lToJoinSet;
+        lToJoinSet = tempJoin;
     }
-    else if (!(lFromJoinSet && lToJoinSet))
-    {
-        // Create an entry mapping the new identity to the same join set
-        if (lFromJoinSet)
-        {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pToID, pFromID);
-            lNewJoinSet1 = make_join_set(pToID);
-            lNewJoinSet1->super_join = lFromJoinSet;
-            lToJoinSet->identity_sets.push_back(lNewJoinSet1);
-        } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Adding %u to join set for %u.\n", pFromID, pToID);
-            lNewJoinSet1 = make_join_set(pFromID);
-            lNewJoinSet1->super_join = lToJoinSet;
-            lToJoinSet->identity_sets.push_back(lNewJoinSet1);
-        }
-    } else
-    {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", pFromID, pToID);
 
-        /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
-         * otherwise.  Not sure if this, especially the latter case, will really help efficiency
-         * especially with forward propagation determining identity set values */
-        uint64_t lTargetID = pToID;
-        if (lFromJoinSet->identity_sets.size() > lToJoinSet->identity_sets.size())
-        {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", pFromID, pToID);
-            lTargetID = pFromID;
-            identity_join* tempJoin = lFromJoinSet;
-            lFromJoinSet = lToJoinSet;
-            lToJoinSet = tempJoin;
-        }
-
-        // Iterate through identity sets in lFromJoinSet and set their super join set point  to lToJoinSet
-        cons* last_cons;
-        for (auto it = lFromJoinSet->identity_sets.begin(); it != lFromJoinSet->identity_sets.end(); it++)
-        {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", (*it)->identity, pFromID);
-            (*it)->super_join = lToJoinSet;
-            lToJoinSet->identity_sets.push_back(*it);
-        }
-        lFromJoinSet->identity_sets.clear();
+    // Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet
+    cons* last_cons;
+    for (auto it = lFromJoinSet->identity_sets.begin(); it != lFromJoinSet->identity_sets.end(); it++)
+    {
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", (*it)->identity, lFromJoinSet->super_join->identity);
+        (*it)->super_join = lToJoinSet;
+        join_set_remove_ref(lFromJoinSet);
+        lToJoinSet->identity_sets.push_back(*it);
+        join_set_add_ref(lToJoinSet);
     }
+    lFromJoinSet->identity_sets.clear();
 
     ebc_timers->identity_unification->stop();
 
@@ -205,7 +154,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
 }
 
 void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
-                                                         const identity_quadruple o_ids_to_replace,
+                                                         const identity_set_quadruple o_ids_to_replace,
                                                          const rhs_quadruple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
@@ -215,22 +164,26 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition (%y ^%y %y):  (%u ^%u %u)  --> (%u ^%u %u)\n",
-        parent_cond->data.tests.id_test->eq_test->data.referent, parent_cond->data.tests.attr_test->eq_test->data.referent, parent_cond->data.tests.value_test->eq_test->data.referent,
-        parent_cond->data.tests.id_test->eq_test->identity_set, parent_cond->data.tests.attr_test->eq_test->identity_set, parent_cond->data.tests.value_test->eq_test->identity_set,
-        o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value);
+    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond,
+        o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
+//    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition (%y ^%y %y):  (%u ^%u %u)  --> (%u ^%u %u)\n",
+//        parent_cond->data.tests.id_test->eq_test->data.referent, parent_cond->data.tests.attr_test->eq_test->data.referent, parent_cond->data.tests.value_test->eq_test->data.referent,
+//        parent_cond->data.tests.id_test->eq_test->identity_set->identity, parent_cond->data.tests.attr_test->eq_test->identity_set->identity, parent_cond->data.tests.value_test->eq_test->identity_set->identity,
+//        o_ids_to_replace.id->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.value->identity);
 
     if (o_ids_to_replace.id)
     {
         if (lId->identity_set)
         {
-            if (o_ids_to_replace.id != lId->identity_set)
+            if (o_ids_to_replace.id->super_join != lId->identity_set->super_join)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u -> %u\n", o_ids_to_replace.id, lId->identity_set);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
                 join_identity_sets(o_ids_to_replace.id, lId->identity_set);
+            } else {
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %u -> %t\n", o_ids_to_replace.id, lId);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity, lId);
             join_identity_sets(o_ids_to_replace.id, NULL_IDENTITY_SET);
         }
     }
@@ -250,11 +203,13 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             if (o_ids_to_replace.attr != lAttr->identity_set)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of attribute element: %u -> %u\n", o_ids_to_replace.attr, lAttr->identity_set);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
                 join_identity_sets(o_ids_to_replace.attr, lAttr->identity_set);
+            } else {
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of attribute element: %u -> %t\n", o_ids_to_replace.attr, lAttr);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity, lAttr);
             join_identity_sets(o_ids_to_replace.attr, NULL_IDENTITY_SET);
         }
     }
@@ -274,11 +229,13 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             if (o_ids_to_replace.value != lValue->identity_set)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of value element: %u -> %u\n", o_ids_to_replace.value, lValue->identity_set);
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
                 join_identity_sets(o_ids_to_replace.value, lValue->identity_set);
+            } else {
+                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of value element: %u -> %t\n", o_ids_to_replace.value, lValue);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity, lValue);
             join_identity_sets(o_ids_to_replace.value, NULL_IDENTITY_SET);
         }
     }

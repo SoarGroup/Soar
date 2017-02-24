@@ -398,18 +398,23 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
-void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, uint64_t pIDSet, std::string &destString)
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, identity_join* pIDSet, std::string &destString)
 {
 //    if (!pID || !pIDSet) return;
-    destString += " [";
+    destString += "[";
 //    if (pID)
     {
         destString += std::to_string(pID);
     }
-    //if (pIDSet)
+    if (pIDSet)
     {
         destString += "s";
-        destString += std::to_string(pIDSet);
+        destString += std::to_string(pIDSet->identity);
+        if (pIDSet->super_join->identity != pIDSet->identity)
+        {
+            destString += "j";
+            destString += std::to_string(pIDSet->super_join->identity);
+        }
     }
     destString += "]";
 }
