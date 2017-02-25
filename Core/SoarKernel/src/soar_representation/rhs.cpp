@@ -121,10 +121,10 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
                     lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->clone_identity);
                 else
                     lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->identity);
-            else
+            else if (lID)
                 lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
         }
-        else if (get_cloned_identity)
+        else if (lIDSet && get_cloned_identity)
         {
             lID = lIDSet->super_join->clone_identity;
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing

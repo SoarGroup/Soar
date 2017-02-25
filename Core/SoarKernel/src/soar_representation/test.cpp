@@ -89,11 +89,17 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
-                if (t->eq_test->identity_set && pUseUnifiedIdentitySet)
+                if (pUseUnifiedIdentitySet)
                 {
-                    /* MToDo | Do we need to increase refcount of superjoin set here? */
-                    new_ct->identity     = new_ct->identity_set->super_join->identity;
-                    new_ct->identity_set = new_ct->identity_set->super_join;
+                    if (t->eq_test->identity_set)
+                    {
+                        /* MToDo | Do we need to increase refcount of superjoin set here? */
+                        new_ct->identity     = t->eq_test->identity_set->super_join->identity;
+                        new_ct->identity_set = t->eq_test->identity_set->super_join;
+                    } else {
+                        new_ct->identity = t->eq_test->identity;
+                        new_ct->identity_set = t->eq_test->identity_set;
+                    }
                 } else {
                     new_ct->identity = t->eq_test->identity;
                     new_ct->identity_set = t->eq_test->identity_set;

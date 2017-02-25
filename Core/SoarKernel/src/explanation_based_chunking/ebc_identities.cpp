@@ -65,8 +65,8 @@ identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 {
     auto iter = (*identities_to_id_sets).find(pID);
-    assert(iter != (*identities_to_id_sets).end());
-    return iter->second;
+    if (iter != (*identities_to_id_sets).end()) return iter->second;
+    else return NULL;
 }
 
 identity_set* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet)
