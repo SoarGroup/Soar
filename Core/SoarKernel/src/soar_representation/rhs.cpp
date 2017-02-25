@@ -83,7 +83,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
    Returns a new copy of the given rhs_value.
 --------------------------------------------------------------*/
 
-rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, bool unify_identity_set, bool get_cloned_identity)
+rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, bool get_cloned_identity)
 {
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
     cons* fl=NULL, *new_fl=NULL;
@@ -114,9 +114,17 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
         identity_set* lIDSet = r->identity_set;
-        if (get_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
-//        if (unify_identity_set) lIDSet = lIDSet->super_join;
-        if (get_cloned_identity)
+        if (get_identity_set)
+        {
+            if (lIDSet)
+                if (lIDSet->super_join->clone_identity)
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->clone_identity);
+                else
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->identity);
+            else
+                lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+        }
+        else if (get_cloned_identity)
         {
             lID = lIDSet->super_join->clone_identity;
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
