@@ -85,20 +85,21 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            /* MToDo | Need to move this somewhere else.  We don't want to look up literalization twice since table could be huge in agents that use a lot of RHS functions */
-//            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
-//            {
-//                new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
-//                new_ct->identity = t->eq_test->identity;
-//                new_ct->identity_set = t->eq_test->identity_set;
-//
-//                if (pUnify_variablization_identity)
-//                {
-//                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
-//                }
-//            } else
-
-                if (remove_state_impasse)
+            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] &&
+                thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
+            {
+                new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
+                if (t->eq_test->identity_set && pUseUnifiedIdentitySet)
+                {
+                    /* MToDo | Do we need to increase refcount of superjoin set here? */
+                    new_ct->identity     = new_ct->identity_set->super_join->identity;
+                    new_ct->identity_set = new_ct->identity_set->super_join;
+                } else {
+                    new_ct->identity = t->eq_test->identity;
+                    new_ct->identity_set = t->eq_test->identity_set;
+                }
+            }
+            else if (remove_state_impasse)
             {
                 new_ct = NULL;
                 test temp;

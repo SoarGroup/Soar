@@ -50,7 +50,6 @@ typedef struct identity_set_struct
         identity_set_struct*        super_join;
         identity_set_list*          identity_sets;
         constraint_list*            constraints;
-        bool                        literalization_checked;
         bool                        literalized;
         uint64_t                    refcount;
 } identity_set;

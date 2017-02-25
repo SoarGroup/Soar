@@ -38,7 +38,6 @@ identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
     new_join_set->new_var = NULL;
     new_join_set->super_join = new_join_set;
     new_join_set->refcount = 1;
-    new_join_set->literalization_checked = false;
     new_join_set->literalized = false;
     dprint(DT_PROPAGATE_ID_SETS, "Created join set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
     return new_join_set;
@@ -79,8 +78,6 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     {
         identity_set* lJoin_set = *it;
         clean_up_identity_set_transient(lJoin_set);
-        lJoin_set->refcount = 1;
-        lJoin_set->literalization_checked = false;
         lJoin_set->literalized = false;
     }
     identity_sets_to_clean_up.clear();
@@ -89,23 +86,13 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
 void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet)
 {
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    assert(lFromJoinSet && (lFromJoinSet != lToJoinSet));
+    assert(lFromJoinSet && lToJoinSet && (lFromJoinSet != lToJoinSet));
 
     ebc_timers->variablization_rhs->start();
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
     identity_sets_to_clean_up.insert(lFromJoinSet);
-
-    if (lToJoinSet == NULL)
-    {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u\n", lFromJoinSet->super_join->identity);
-        literalized_identity_sets.insert(lFromJoinSet->super_join);
-
-        /* MToDo | If it has a join set, we may want to store that it has been literalized.  Can avoid lookup later */
-        return;
-    }
-
     identity_sets_to_clean_up.insert(lToJoinSet);
 
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
@@ -140,11 +127,14 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
             join_set_remove_ref(lFromJoinSet);
             lToJoinSet->identity_sets->push_back(lPreviouslyJoinedIdentity);
             join_set_add_ref(lToJoinSet);
+            if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
         }
         delete lFromJoinSet->identity_sets;
     }
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
     lToJoinSet->identity_sets->push_back(lFromJoinSet);
+
+    if (lFromJoinSet->literalized) lToJoinSet->literalized = true;
 
     ebc_timers->identity_unification->stop();
 
@@ -180,7 +170,8 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 if (rs->identity_set && !rs->referent->is_sti())
                 {
                     thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
-                    join_identity_sets(rs->identity_set, 0);
+//                    join_identity_sets(rs->identity_set, 0);
+                    rs->identity_set->super_join->literalized = true;
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }
             }
@@ -201,10 +192,6 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond,
         o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
-//    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition (%y ^%y %y):  (%u ^%u %u)  --> (%u ^%u %u)\n",
-//        parent_cond->data.tests.id_test->eq_test->data.referent, parent_cond->data.tests.attr_test->eq_test->data.referent, parent_cond->data.tests.value_test->eq_test->data.referent,
-//        parent_cond->data.tests.id_test->eq_test->identity_set->identity, parent_cond->data.tests.attr_test->eq_test->identity_set->identity, parent_cond->data.tests.value_test->eq_test->identity_set->identity,
-//        o_ids_to_replace.id->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.value->identity);
 
     if (o_ids_to_replace.id)
     {
@@ -219,19 +206,15 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity, lId);
-            join_identity_sets(o_ids_to_replace.id, NULL_IDENTITY_SET);
+            o_ids_to_replace.id->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
         literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
-        if (lId->identity_set) join_identity_sets(lId->identity_set, NULL_IDENTITY_SET);
+        lId->identity_set->super_join->literalized = true;
     }
-//    else
-//    {
-//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is identifier " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
-//    }
     if (o_ids_to_replace.attr)
     {
         if (lAttr->identity_set)
@@ -245,19 +228,15 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity, lAttr);
-            join_identity_sets(o_ids_to_replace.attr, NULL_IDENTITY_SET);
+            o_ids_to_replace.attr->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in attribute element %r\n", rhs_funcs.attr);
         literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
-        if (lAttr->identity_set) join_identity_sets(lAttr->identity_set, NULL_IDENTITY_SET);
+        if (lAttr->identity_set) lAttr->identity_set->super_join->literalized = true;
     }
-//    else
-//    {
-//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lAttr->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
-//    }
     if (o_ids_to_replace.value)
     {
         if (lValue->identity_set)
@@ -271,19 +250,15 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity, lValue);
-            join_identity_sets(o_ids_to_replace.value, NULL_IDENTITY_SET);
+            o_ids_to_replace.value->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in value element %r\n", rhs_funcs.value);
         literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
-        if (lValue->identity_set) join_identity_sets(lValue->identity_set, NULL_IDENTITY_SET);
+        if (lValue->identity_set) lValue->identity_set->super_join->literalized = true;
     }
-//    else
-//    {
-//        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
-//    }
     assert(!o_ids_to_replace.referent);
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {

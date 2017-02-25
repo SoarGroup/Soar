@@ -82,16 +82,16 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        identity_set*  make_join_set(uint64_t pIDSet);
+        identity_set*   make_join_set(uint64_t pIDSet);
         void            join_set_add_ref(identity_set* pIDSet) { ++(pIDSet->refcount);}
         void            join_set_remove_ref(identity_set* &pIDSet);
-        identity_set*  get_id_set_for_identity(uint64_t pID);
-        identity_set*  get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet = NULL);
+        identity_set*   get_id_set_for_identity(uint64_t pID);
+        identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet = NULL);
         uint64_t        get_joined_id_set_identity(uint64_t pIDSet);
         uint64_t        get_joined_id_set_cloned_identity(uint64_t pIDSet);
-        identity_set*  get_floating_identity_set();
-        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
-        bool            in_null_identity_set(test t)                                          { return (literalized_identity_sets.find(t->identity_set) != literalized_identity_sets.end()); }
+        identity_set*   get_floating_identity_set();
+        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
+        bool            in_null_identity_set(test t)                                            { if (t->identity_set) return t->identity_set->super_join->literalized; return false; }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -207,7 +207,6 @@ class Explanation_Based_Chunker
 
         /* These sets are temporary and cleaned up after a rule is learned */
         identity_join_set   identity_sets_to_clean_up;
-        identity_join_set   literalized_identity_sets;
 
         /* Set of all attribute symbols that may be singletons */
         symbol_set*         singletons;

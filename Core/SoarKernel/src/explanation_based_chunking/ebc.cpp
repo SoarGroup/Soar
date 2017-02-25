@@ -411,7 +411,6 @@ void Explanation_Based_Chunker::clear_variablization_maps()
 {
     dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing variablization map...\n");
     clean_up_identity_sets();
-    literalized_identity_sets.clear();
 }
 
 void Explanation_Based_Chunker::sanity_chunk_test (test pTest)

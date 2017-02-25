@@ -160,21 +160,15 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-//    sym_identity* var_info;
 
     dprint(DT_LHS_VARIABLIZATION, "Variablizing equality tests in: %t\n", pTest);
     assert(pTest && pTest->eq_test);
     
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        // This assert may no longer make sense.  Identity set literalization is still a mapping
-//        assert(!pTest->eq_test->identity || (pTest->eq_test->identity && pTest->eq_test->identity_set));
-        if (pTest->eq_test->identity_set && (literalized_identity_sets.find(pTest->eq_test->identity_set->super_join) == literalized_identity_sets.end()))
+        if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->super_join->literalized)
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t%g from %t%g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-
-//            if (!pTest->eq_test->identity_set) pTest->eq_test->identity_set = pTest->eq_test->identity;
-            break_if_id_matches(pTest->eq_test->identity_set->identity, 59);
             if (pTest->eq_test->identity_set->super_join->new_var)
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
@@ -182,8 +176,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_add_ref(pTest->eq_test->identity_set->super_join->new_var);
                 pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
                 dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %t%g\n", pTest->eq_test, pTest->eq_test);
-                /* MToDo | I think we want to set identity_set to null and possibly decrease refcount.  I think they will get populated when we finalize instantiation  */
-//                 pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
                 pTest->eq_test->identity_set = NULL;
             } else {
                 /* Create a new variable.  If constant is being variablized just used
@@ -218,8 +210,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 
                 pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", lNewVariable, pTest->eq_test->identity);
-                /* MToDo | I think we want to set identity_set to null and possibly decrease refcount.  I think they will get populated when we finalize instantiation  */
-//                pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
                 pTest->eq_test->identity_set = NULL;
 
             }
@@ -244,8 +234,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
  * ========================================================================= */
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
-//    sym_identity* found_variablization = NULL;
-
     dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t [%u]\n", t, t->identity_set);
 
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
@@ -255,9 +243,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         return true;
     }
     assert(!t->identity || (t->identity && t->identity_set));
-//    found_variablization =  get_variablization(t->identity_set);
-//    if (found_variablization)
-        if (t->identity_set && (literalized_identity_sets.find(t->identity_set->super_join) == literalized_identity_sets.end()))
+        if (t->identity_set && !t->identity_set->super_join->literalized)
    {
         // It has been variablized before, so just variablize
         thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
@@ -265,7 +251,6 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         thisAgent->symbolManager->symbol_add_ref(t->identity_set->super_join->new_var);
 
         t->identity = t->identity_set->super_join->clone_identity;
-//        t->identity_set = found_variablization->identity;
         dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", t->data.referent, t->identity_set->super_join->clone_identity);
     }
     else
@@ -474,16 +459,6 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         lIdentity = result->identities.id;
         lIdentitySet = result->identity_sets.id ? result->identity_sets.id->super_join : NULL;
         a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentity, lIdentitySet, result->was_unbound_vars.id);
-
-//        lIdentity = result->identity_sets.id;
-//        iter = (*identities_to_id_sets).find(result->identity_sets.id);
-//        if (iter != (*identities_to_id_sets).end())
-//        {
-//            lIdentitySet = iter->second;
-//        } else {
-//            lIdentitySet = result->identity_sets.id;
-//        }
-//        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentity, lIdentitySet, result->was_unbound_vars.id);
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, false, true);
     }
@@ -492,15 +467,6 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         lIdentity = result->identities.attr;
         lIdentitySet = result->identity_sets.attr ? result->identity_sets.attr->super_join : NULL;
         a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, lIdentitySet, result->was_unbound_vars.attr);
-//        lIdentity = result->identity_sets.attr;
-//        iter = (*identities_to_id_sets).find(result->identity_sets.attr);
-//        if (iter != (*identities_to_id_sets).end())
-//        {
-//            lIdentitySet = iter->second;
-//        } else {
-//            lIdentitySet = result->identity_sets.attr;
-//        }
-//        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, lIdentitySet, result->was_unbound_vars.attr);
     } else {
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, false, true);
     }
@@ -509,15 +475,6 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         lIdentity = result->identities.value;
         lIdentitySet = result->identity_sets.value ? result->identity_sets.value->super_join : NULL;
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, lIdentitySet, result->was_unbound_vars.value);
-//        lIdentity = result->identity_sets.value;
-//        iter = (*identities_to_id_sets).find(result->identity_sets.value);
-//        if (iter != (*identities_to_id_sets).end())
-//        {
-//            lIdentitySet = iter->second;
-//        } else {
-//            lIdentitySet = result->identity_sets.value;
-//        }
-//        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, lIdentitySet, result->was_unbound_vars.value);
     } else {
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, false, true);
     }
@@ -528,15 +485,6 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
             lIdentity = result->identities.referent;
             lIdentitySet = result->identity_sets.referent ? result->identity_sets.referent->super_join : NULL;
             a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, lIdentitySet, result->was_unbound_vars.referent);
-//            lIdentity = result->identity_sets.referent;
-//            iter = (*identities_to_id_sets).find(result->identity_sets.referent);
-//            if (iter != (*identities_to_id_sets).end())
-//            {
-//                lIdentitySet = iter->second;
-//            } else {
-//                lIdentitySet = result->identity_sets.referent;
-//            }
-//            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, lIdentitySet, result->was_unbound_vars.referent);
         } else {
             a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, false, true);
         }

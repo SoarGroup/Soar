@@ -11,8 +11,8 @@
 
 
 //#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
-#define TURN_EXPLAINER_ON
-#define INIT_AFTER_RUN
+//#define TURN_EXPLAINER_ON
+//#define INIT_AFTER_RUN
 #define CONFIGURE_SOAR_FOR_UNIT_TESTS
 
 #include "sml_ClientAgent.h"
