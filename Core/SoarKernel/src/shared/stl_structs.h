@@ -51,6 +51,8 @@ typedef struct identity_set_struct
         identity_set_list*          identity_sets;
         constraint_list*            constraints;
         bool                        literalized;
+        condition*                  operational_cond;
+        WME_Field                   operational_field;
         uint64_t                    refcount;
 } identity_set;
 

@@ -240,6 +240,7 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
     {
         add_test_to_tc(thisAgent, c->data.tests.id_test, tc, id_list, var_list);
         add_test_to_tc(thisAgent, c->data.tests.value_test, tc, id_list, var_list);
+
     }
 }
 

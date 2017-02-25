@@ -261,23 +261,18 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void                join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet);
-        void                unify_backtraced_conditions(condition* parent_cond, const identity_set_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
-        void                add_singleton_unification_if_needed(condition* pCond);
-        void                literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
+        void join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet);
+        void unify_backtraced_conditions(condition* parent_cond, const identity_set_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
+        void add_singleton_unification_if_needed(condition* pCond);
+        void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
 
         /* Constraint analysis and enforcement methods */
         void cache_constraints_in_cond(condition* c);
         void add_additional_constraints();
-        bool has_positive_condition(uint64_t pO_id);
         void cache_constraints_in_test(test t);
         void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
-        attachment_point* get_attachment_point(uint64_t pO_id);
-        void set_attachment_point(uint64_t pO_id, condition* pCond, WME_Field pField);
-        void find_attachment_points(condition* cond);
-        void prune_constraints_and_move_to_identity_sets();
         void invert_relational_test(test* pEq_test, test* pRelational_test);
-        void attach_relational_test(test pEq_test, test pRelational_test);
+        void attach_relational_test(test pRelational_test, condition* pCond, WME_Field pField);
 
         /* Variablization methods */
         void        store_variablization(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);

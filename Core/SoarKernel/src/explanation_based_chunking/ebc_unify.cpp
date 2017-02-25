@@ -31,11 +31,11 @@ identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
     new_join_set->identity_sets = NULL;
-//    new_join_set->identity_sets = new identity_set_list();
-//    new_join_set->identity_sets->insert(new_join_set);
     new_join_set->constraints = NULL;
     new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->new_var = NULL;
+    new_join_set->operational_cond = NULL;
+    new_join_set->operational_field = NO_ELEMENT;
     new_join_set->super_join = new_join_set;
     new_join_set->refcount = 1;
     new_join_set->literalized = false;
@@ -70,6 +70,8 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
     pIDSet->constraints = NULL;
     pIDSet->identity_sets = NULL;
     pIDSet->new_var = NULL;
+    pIDSet->operational_cond = NULL;
+    pIDSet->operational_field = NO_ELEMENT;
 }
 
 void Explanation_Based_Chunker::clean_up_identity_sets()

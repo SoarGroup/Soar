@@ -447,7 +447,24 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
         c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
         c_vrblz->inst = ground->inst;
-         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
+        add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
+
+        /* Set up attachment points for transitive constraints */
+        if (c_vrblz->data.tests.id_test->eq_test->identity_set && !c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_cond)
+        {
+            c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
+            c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_field = ID_ELEMENT;
+        }
+        if (c_vrblz->data.tests.attr_test->eq_test->identity_set && !c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond)
+        {
+            c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
+            c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_field = ATTR_ELEMENT;
+        }
+        if (c_vrblz->data.tests.value_test->eq_test->identity_set && !c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond)
+        {
+            c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
+            c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_field = VALUE_ELEMENT;
+        }
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
         add_cond_to_tc(thisAgent, ground, tc_to_use, NIL, NIL);
