@@ -34,7 +34,7 @@ enum TraceMode
     DT_VARIABLIZATION_MANAGER   = 6,
     DT_EXTRA_RESULTS            = 7,
     DT_BACKTRACE                = 8,
-    DT_ADD_IDENTITY_SET_MAPPING = 9,
+    DT_UNIFY_IDENTITY_SETS      = 9,
     DT_UNIFY_SINGLETONS         = 10,
     DT_BUILD_CHUNK_CONDS        = 11,
     DT_LHS_VARIABLIZATION       = 12,

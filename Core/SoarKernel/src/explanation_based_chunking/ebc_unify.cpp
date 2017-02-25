@@ -97,8 +97,7 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     identity_sets_to_clean_up.insert(lFromJoinSet);
     identity_sets_to_clean_up.insert(lToJoinSet);
 
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
-
+    dprint(DT_UNIFY_IDENTITY_SETS, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
     /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
      * otherwise.  Not sure if this, especially the latter case, will really help efficiency
      * especially with forward propagation determining identity set values */
@@ -107,7 +106,7 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
 
     if (lFromSize > lToSize)
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
+        dprint(DT_UNIFY_IDENTITY_SETS, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
         identity_set* tempJoin = lFromJoinSet;
         lFromJoinSet = lToJoinSet;
         lToJoinSet = tempJoin;
@@ -124,7 +123,7 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
         for (auto it = lFromJoinSet->identity_sets->begin(); it != lFromJoinSet->identity_sets->end(); it++)
         {
             lPreviouslyJoinedIdentity = *it;
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
+            dprint(DT_UNIFY_IDENTITY_SETS, "Changing additional join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
             lPreviouslyJoinedIdentity->super_join = lToJoinSet;
             join_set_remove_ref(lFromJoinSet);
             lToJoinSet->identity_sets->push_back(lPreviouslyJoinedIdentity);
@@ -136,7 +135,12 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
     lToJoinSet->identity_sets->push_back(lFromJoinSet);
 
+    /* Propagate literalization */
     if (lFromJoinSet->literalized) lToJoinSet->literalized = true;
+
+    /* Point super_join to joined identity set */
+    lFromJoinSet->super_join = lToJoinSet;
+    join_set_add_ref(lToJoinSet);
 
     ebc_timers->identity_unification->stop();
 
@@ -192,7 +196,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond,
+    dprint(DT_UNIFY_IDENTITY_SETS, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond,
         o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
 
     if (o_ids_to_replace.id)
@@ -201,19 +205,19 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             if (o_ids_to_replace.id->super_join != lId->identity_set->super_join)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
                 join_identity_sets(o_ids_to_replace.id, lId->identity_set);
             } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity, lId);
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity, lId);
             o_ids_to_replace.id->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
+        dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
         literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
         lId->identity_set->super_join->literalized = true;
     }
@@ -223,19 +227,19 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             if (o_ids_to_replace.attr != lAttr->identity_set)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
                 join_identity_sets(o_ids_to_replace.attr, lAttr->identity_set);
             } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity, lAttr);
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity, lAttr);
             o_ids_to_replace.attr->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in attribute element %r\n", rhs_funcs.attr);
+        dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in attribute element %r\n", rhs_funcs.attr);
         literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
         if (lAttr->identity_set) lAttr->identity_set->super_join->literalized = true;
     }
@@ -245,26 +249,26 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         {
             if (o_ids_to_replace.value != lValue->identity_set)
             {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
                 join_identity_sets(o_ids_to_replace.value, lValue->identity_set);
             } else {
-                dprint(DT_ADD_IDENTITY_SET_MAPPING, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
+                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
             }
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity, lValue);
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity, lValue);
             o_ids_to_replace.value->super_join->literalized = true;
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in value element %r\n", rhs_funcs.value);
+        dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in value element %r\n", rhs_funcs.value);
         literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
         if (lValue->identity_set) lValue->identity_set->super_join->literalized = true;
     }
     assert(!o_ids_to_replace.referent);
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing arguments of RHS function in referent element %r\n", rhs_funcs.referent);
+        dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in referent element %r\n", rhs_funcs.referent);
         literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
     }
 }

@@ -71,19 +71,18 @@ identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 
 identity_set* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet)
 {
-    dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u\n", pID);
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
         join_set_add_ref(iter->second);
-        dprint(DT_PROPAGATE_ID_SETS, "Found id set %u already used in rule.  Increased refcount of %u\n", iter->second->identity, iter->second->refcount);
+        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with id set %u already used in rule.  Increased refcount of %u\n", pID, iter->second->identity, iter->second->refcount);
         return iter->second;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
         join_set_add_ref(pIDSet);
-        dprint(DT_PROPAGATE_ID_SETS, "First time parent id set %u used in rule.  Increasing refcount of identity join to %u\n", pIDSet->identity, pIDSet->refcount);
+        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with parent id set %u.  Increasing refcount of identity join to %u\n", pID, pIDSet->identity, pIDSet->refcount);
         return pIDSet;
     } else {
         identity_set* newJoinSet = make_join_set(pID);

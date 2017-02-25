@@ -256,12 +256,8 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
         }
         if (printIdentity && pTestIdentity->identity)
         {
-            if (pTestIdentity->identity_set)
-            {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u-s%u) ", pTest, pTestIdentity->identity, pTestIdentity->identity_set);
-            } else {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTestIdentity->identity);
-            }
+            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
+            thisAgent->outputManager->identity_to_string(thisAgent, pTestIdentity->identity, pTestIdentity->identity_set, visualizer->graphviz_output);
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
         }
@@ -308,12 +304,8 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         {
             if (pTest->identity)
             {
-                if (pTest->identity_set)
-                {
-                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%us%u) ", pTest, pTest->identity, pTest->identity_set);
-                } else {
-                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t (%u) ", pTest, pTest->identity);
-                }
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
+                thisAgent->outputManager->identity_to_string(thisAgent, pTest->identity, pTest->identity_set, visualizer->graphviz_output);
             } else {
                 thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
             }

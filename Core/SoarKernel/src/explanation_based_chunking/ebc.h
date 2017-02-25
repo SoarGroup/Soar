@@ -92,6 +92,7 @@ class Explanation_Based_Chunker
         identity_set*   get_floating_identity_set();
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
         bool            in_null_identity_set(test t)                                            { if (t->identity_set) return t->identity_set->super_join->literalized; return false; }
+        uint64_t        get_superjoin_id(identity_set* pIDSet)                                  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);

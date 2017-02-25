@@ -795,8 +795,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 inline void propagate_identity_set(agent* thisAgent, test condTest, identity_set* parentIDSet = NULL)
 {
     /* If this tests an architectural WME, parentIDSet will be null and EBC will great a new identity set */
-    dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test %t\n", condTest);
-
     if (condTest->identity)
         condTest->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(condTest->identity, parentIDSet);
     else

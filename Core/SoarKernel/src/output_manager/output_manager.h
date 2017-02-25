@@ -115,7 +115,6 @@ class Output_Manager
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
-        void identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString);
 
         void vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list args);
 
@@ -167,6 +166,7 @@ class Output_Manager
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
 
+        void identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
         void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
@@ -234,6 +234,7 @@ class Output_Manager
         void print_varnames_node(TraceMode mode, node_varnames* var_names_node);
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
+        void print_identity_sets(TraceMode mode);
 
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */

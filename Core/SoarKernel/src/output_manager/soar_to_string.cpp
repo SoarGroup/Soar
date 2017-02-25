@@ -837,3 +837,12 @@ void Output_Manager::print_variables(TraceMode mode)
     do_for_all_items_in_hash_table(m_defaultAgent, m_defaultAgent->symbolManager->variable_hash_table, om_print_sym, &mode);
 }
 
+
+void Output_Manager::print_identity_sets(TraceMode mode)
+{
+    if (!is_trace_enabled(mode)) return;
+
+    if (!m_defaultAgent) return;
+
+  /* Not sure how to do this yet.  There's no central list of them.  Can we somehow iterate through memory pool? */
+}
