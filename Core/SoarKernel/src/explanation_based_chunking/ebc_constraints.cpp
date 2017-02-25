@@ -154,9 +154,9 @@ void Explanation_Based_Chunker::add_additional_constraints()
                 dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lConstraint->constraint_test->identity_set->super_join->operational_cond);
                 thisAgent->explanationMemory->increment_stat_constraints_attached();
             } else {
-                dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s, %l\n    reltest: %t %g, literalized = %s, %l\n",
-                       lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->super_join->literalized) ? "true" : "false", lConstraint->eq_test->identity_set->super_join->operational_cond,
-                       lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->super_join->literalized) ? "true" : "false", lConstraint->constraint_test->identity_set->super_join->operational_cond);
+                dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
+                       lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->super_join->literalized) ? "true" : "false",
+                       lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->super_join->literalized) ? "true" : "false");
             }
             ++iter;
         }

@@ -49,7 +49,6 @@ typedef struct identity_set_struct
         Symbol*                     new_var;
         identity_set_struct*        super_join;
         identity_set_list*          identity_sets;
-        constraint_list*            constraints;
         bool                        literalized;
         condition*                  operational_cond;
         WME_Field                   operational_field;

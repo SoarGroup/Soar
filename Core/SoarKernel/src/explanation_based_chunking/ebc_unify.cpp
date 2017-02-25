@@ -31,7 +31,6 @@ identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
     new_join_set->identity_sets = NULL;
-    new_join_set->constraints = NULL;
     new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->new_var = NULL;
     new_join_set->operational_cond = NULL;
@@ -65,9 +64,7 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
     {
         thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
     }
-    if (pIDSet->constraints) delete pIDSet->constraints;
     if (pIDSet->identity_sets) delete pIDSet->identity_sets;
-    pIDSet->constraints = NULL;
     pIDSet->identity_sets = NULL;
     pIDSet->new_var = NULL;
     pIDSet->operational_cond = NULL;
@@ -131,6 +128,7 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
             if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
         }
         delete lFromJoinSet->identity_sets;
+        lFromJoinSet->identity_sets = NULL;
     }
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
     lToJoinSet->identity_sets->push_back(lFromJoinSet);
