@@ -49,7 +49,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     ebc_timers = new ebc_timer_container(thisAgent);
 
     /* Create data structures used for EBC */
-    identity_to_var_map = new id_to_sym_id_map();
     instantiation_identities = new sym_to_id_map();
     constraints = new constraint_list();
     attachment_points = new attachment_points_map();
@@ -77,7 +76,6 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete ebc_params;
     delete ebc_timers;
 
-    delete identity_to_var_map;
     delete instantiation_identities;
     delete constraints;
     delete attachment_points;
@@ -412,14 +410,8 @@ void Explanation_Based_Chunker::clear_attachment_map()
 void Explanation_Based_Chunker::clear_variablization_maps()
 {
     dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing variablization map...\n");
-    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&it->second->variable_sym);
-        thisAgent->memoryManager->free_with_pool(MP_sym_identity, it->second);
-    }
-    identity_to_var_map->clear();
-    literalized_identity_sets.clear();
     clean_up_identity_sets();
+    literalized_identity_sets.clear();
 }
 
 void Explanation_Based_Chunker::sanity_chunk_test (test pTest)

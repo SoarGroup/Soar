@@ -303,7 +303,21 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
         }
         if (m_print_identity_effective && rsym->identity) {
-            sprint_sf(destString, " [%us%u]", rsym->identity, rsym->identity_set);
+            if (rsym->identity_set)
+            {
+                if (rsym->identity_set->super_join != rsym->identity_set)
+                {
+                    sprint_sf(destString, " [v%us%uj%u]", rsym->identity, rsym->identity_set->identity, rsym->identity_set->super_join->identity);
+                }
+                else
+                {
+                    sprint_sf(destString, " [v%us%u]", rsym->identity, rsym->identity_set->identity);
+                }
+            }
+            else
+            {
+                sprint_sf(destString, " [v%u]", rsym->identity);
+            }
         }
     }
     else if (rhs_value_is_reteloc(rv))
@@ -398,10 +412,10 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
-void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, identity_join* pIDSet, std::string &destString)
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString)
 {
 //    if (!pID || !pIDSet) return;
-    destString += "[";
+    destString += "[v";
 //    if (pID)
     {
         destString += std::to_string(pID);

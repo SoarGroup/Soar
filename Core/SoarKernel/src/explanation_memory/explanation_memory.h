@@ -100,7 +100,7 @@ class Explanation_Memory
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_join* pFromJoinSet, identity_join* pToJoinSet)
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet)
                                 { if (current_recording_chunk) current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSet->identity, pToJoinSet->identity); }
         void                    reset_identity_set_counter() { id_set_counter = 0; };
         uint64_t                get_identity_set_counter() { return ++id_set_counter; };

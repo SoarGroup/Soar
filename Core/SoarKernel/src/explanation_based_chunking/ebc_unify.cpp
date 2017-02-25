@@ -25,46 +25,68 @@
 
 #include <assert.h>
 
-identity_join* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
+identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
 {
-    identity_join* new_join_set = new identity_join();
-//    increment_counter(ovar_id_counter);
-//    new_join_set->identity = ovar_id_counter;
+    identity_set* new_join_set;;
+    thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
+    new_join_set->identity_sets = NULL;
+//    new_join_set->identity_sets = new identity_set_list();
+//    new_join_set->identity_sets->insert(new_join_set);
+    new_join_set->constraints = NULL;
     new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->new_var = NULL;
     new_join_set->super_join = new_join_set;
     new_join_set->refcount = 1;
     new_join_set->literalization_checked = false;
     new_join_set->literalized = false;
-    identity_sets_to_clean_up.push_back(new_join_set);
+    dprint(DT_PROPAGATE_ID_SETS, "Created join set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
     return new_join_set;
+}
+
+void Explanation_Based_Chunker::join_set_remove_ref(identity_set* &pIDSet)
+{
+    if (--(pIDSet->refcount) == 0)
+    {
+        dprint(DT_PROPAGATE_ID_SETS, "Deallocating join set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
+        clean_up_identity_set_transient(pIDSet);
+        thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
+        pIDSet = NULL;
+    }
+}
+
+void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pIDSet)
+{
+    if (pIDSet->super_join != pIDSet)
+    {
+        join_set_remove_ref(pIDSet->super_join);
+        pIDSet->super_join = pIDSet;
+    }
+    if (pIDSet->new_var)
+    {
+        thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
+    }
+    if (pIDSet->constraints) delete pIDSet->constraints;
+    if (pIDSet->identity_sets) delete pIDSet->identity_sets;
+    pIDSet->constraints = NULL;
+    pIDSet->identity_sets = NULL;
+    pIDSet->new_var = NULL;
 }
 
 void Explanation_Based_Chunker::clean_up_identity_sets()
 {
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
-        identity_join* lJoin_set = *it;
-        if (lJoin_set->super_join != lJoin_set)
-        {
-            join_set_remove_ref(lJoin_set->super_join);
-            lJoin_set->super_join = lJoin_set;
-        }
-        lJoin_set->identity_sets.clear();
-        if (lJoin_set->new_var)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&lJoin_set->new_var);
-        }
+        identity_set* lJoin_set = *it;
+        clean_up_identity_set_transient(lJoin_set);
         lJoin_set->refcount = 1;
         lJoin_set->literalization_checked = false;
         lJoin_set->literalized = false;
-        if (lJoin_set->constraints) delete lJoin_set->constraints;
     }
     identity_sets_to_clean_up.clear();
 }
 
-void Explanation_Based_Chunker::join_identity_sets(identity_join* lFromJoinSet, identity_join* lToJoinSet)
+void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet)
 {
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     assert(lFromJoinSet && (lFromJoinSet != lToJoinSet));
@@ -73,43 +95,56 @@ void Explanation_Based_Chunker::join_identity_sets(identity_join* lFromJoinSet, 
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
-    /* MToDo | If we always choose to map from the smaller number to the highest number, maybe we can avoid this check.  It would be
-     *         impossible to get an inverse mapping, and we will just re-assign an identical mapping which costs the same as checking.
-     *         We'd have to resolve the transitive mappings later. */
+    identity_sets_to_clean_up.insert(lFromJoinSet);
+
     if (lToJoinSet == NULL)
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u n", lFromJoinSet->super_join->identity);
+        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing identity set %u\n", lFromJoinSet->super_join->identity);
         literalized_identity_sets.insert(lFromJoinSet->super_join);
+
         /* MToDo | If it has a join set, we may want to store that it has been literalized.  Can avoid lookup later */
         return;
     }
+
+    identity_sets_to_clean_up.insert(lToJoinSet);
 
     dprint(DT_ADD_IDENTITY_SET_MAPPING, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
 
     /* Swapping to consistently favor keeping the join set if bigger joins and higher identities set value
      * otherwise.  Not sure if this, especially the latter case, will really help efficiency
      * especially with forward propagation determining identity set values */
-    uint64_t lTargetID = lToJoinSet->super_join->identity;
-    if (lFromJoinSet->identity_sets.size() > lToJoinSet->identity_sets.size())
+    uint64_t lFromSize = lFromJoinSet->identity_sets ? lFromJoinSet->identity_sets->size() : 0;
+    uint64_t lToSize = lToJoinSet->identity_sets ? lToJoinSet->identity_sets->size() : 0;
+
+    if (lFromSize > lToSize)
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
-        lTargetID = lFromJoinSet->super_join->identity;
-        identity_join* tempJoin = lFromJoinSet;
+        identity_set* tempJoin = lFromJoinSet;
         lFromJoinSet = lToJoinSet;
         lToJoinSet = tempJoin;
     }
 
-    // Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet
-    cons* last_cons;
-    for (auto it = lFromJoinSet->identity_sets.begin(); it != lFromJoinSet->identity_sets.end(); it++)
+    if (!lToJoinSet->identity_sets)
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", (*it)->identity, lFromJoinSet->super_join->identity);
-        (*it)->super_join = lToJoinSet;
-        join_set_remove_ref(lFromJoinSet);
-        lToJoinSet->identity_sets.push_back(*it);
-        join_set_add_ref(lToJoinSet);
+        lToJoinSet->identity_sets = new identity_set_list();
     }
-    lFromJoinSet->identity_sets.clear();
+    // Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet
+    identity_set* lPreviouslyJoinedIdentity;
+    if (lFromJoinSet->identity_sets)
+    {
+        for (auto it = lFromJoinSet->identity_sets->begin(); it != lFromJoinSet->identity_sets->end(); it++)
+        {
+            lPreviouslyJoinedIdentity = *it;
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Changing additional join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
+            lPreviouslyJoinedIdentity->super_join = lToJoinSet;
+            join_set_remove_ref(lFromJoinSet);
+            lToJoinSet->identity_sets->push_back(lPreviouslyJoinedIdentity);
+            join_set_add_ref(lToJoinSet);
+        }
+        delete lFromJoinSet->identity_sets;
+    }
+    /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
+    lToJoinSet->identity_sets->push_back(lFromJoinSet);
 
     ebc_timers->identity_unification->stop();
 

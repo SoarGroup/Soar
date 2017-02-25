@@ -19,10 +19,8 @@
     typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
-    typedef std::list< uint64_t, soar_module::soar_memory_pool_allocator< uint64_t > >                              id_list;
     typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > >                  inst_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
-    typedef std::list< inst_record_list*, soar_module::soar_memory_pool_allocator< inst_record_list* > >            inst_path_list;
     typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
     typedef std::list< chunk_element*, soar_module::soar_memory_pool_allocator< chunk_element* > >                  matched_symbol_list;
     typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > >                        preference_list;
@@ -60,41 +58,14 @@
     typedef std::map< Symbol*, uint64_t, std::less< Symbol* >,
                       soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > >                   wma_sym_reference_map;
 
-//    typedef std::unordered_set< uint64_t, std::hash< uint64_t >,  std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< uint64_t > >                                        id_set;
-//    typedef std::unordered_map< uint64_t, uint64_t, std::hash< uint64_t >, std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair< uint64_t const, uint64_t> > >             id_to_id_map_type;
-//    typedef std::unordered_map< const Symbol*, uint64_t, std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, uint64_t> > >        sym_to_id_map_type;
-//    typedef std::unordered_map< uint64_t, Symbol*, std::hash< uint64_t >,  std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, Symbol* > > >             id_to_sym_map_type;
-//    typedef std::unordered_map< uint64_t, identity_set_info*, std::hash< uint64_t >, std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, identity_set_info* > > >  id_to_idset_map_type;
-//    typedef std::unordered_map< uint64_t, attachment_point*, std::hash< uint64_t >, std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair<uint64_t const, attachment_point* > > >   attachment_points_map_type;
-//    typedef std::unordered_map< uint64_t, sym_to_id_map_type, std::hash< uint64_t >, std::equal_to< uint64_t >,
-//                       soar_module::soar_memory_pool_allocator_n< std::pair<const uint64_t, sym_to_id_map_type > > >  inst_to_id_map_type;
-//
-//    typedef std::unordered_map< const Symbol*, condition*,
-//            std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-//            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, condition* > > >                sym_to_cond_map;
-//    typedef std::unordered_map< const Symbol*, sym_to_cond_map,
-//            std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-//            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, sym_to_cond_map > > >           sym_to_sym_to_cond_map;
-//    typedef std::unordered_map< const Symbol*, sym_to_sym_to_cond_map,
-//            std::hash< const Symbol* >, std::equal_to< const Symbol* >,
-//            soar_module::soar_memory_pool_allocator_n< std::pair<const Symbol* const, sym_to_sym_to_cond_map > > >    triple_merge_map;
-
 #else
     typedef std::list< action_record* >                         action_record_list;
     typedef std::list< condition_record* >                      condition_record_list;
     typedef std::list< condition* >                             condition_list;
     typedef std::list< deep_copy_wme* >                         deep_copy_wme_list;
-    typedef std::list< uint64_t >                               id_list;
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation* >                         inst_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
-    typedef std::list< inst_record_list* >                      inst_path_list;
     typedef std::list< chunk_element* >                         matched_symbol_list;
     typedef std::list< Repair_Path* >                           repair_path_list;
     typedef std::list< preference* >                            preference_list;
@@ -137,15 +108,12 @@
 typedef std::unordered_map< uint64_t, attachment_point* >       attachment_points_map;
 typedef std::unordered_set< augmentation* >                     augmentation_set;
 typedef std::unordered_set< uint64_t >                          id_set;
-typedef std::unordered_set< identity_join* >                    identity_join_set;
+typedef std::unordered_set< identity_set* >                     identity_join_set;
 
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
-typedef std::unordered_map< uint64_t, sym_identity* >           id_to_sym_id_map;
-typedef std::unordered_map< uint64_t, identity_pair>            id_to_id_pair_map;
-typedef std::unordered_map< uint64_t, identity_join*>           id_to_join_map;
+typedef std::unordered_map< uint64_t, identity_set*>            id_to_join_map;
 
-//typedef std::unordered_map< uint64_t, chunk_element* >          id_to_element_map;
 typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
 typedef std::unordered_map< uint64_t, preference* >             id_to_pref_map;
 
@@ -154,8 +122,7 @@ typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
 typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
-typedef std::unordered_map< Symbol*, Symbol* >                  sym_to_sym_map;
-typedef std::unordered_map< Symbol*, sym_identity* >            sym_to_sym_id_map;
+typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
 typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
 typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
 

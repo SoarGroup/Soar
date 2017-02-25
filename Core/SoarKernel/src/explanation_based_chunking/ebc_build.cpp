@@ -61,7 +61,7 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, identity_join* linked_id)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, identity_set* linked_id)
 {
     dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y (parent identity %u)", sym, linked_id);
     if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -76,7 +76,7 @@ void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, identity_join
     dprint(DT_EXTRA_RESULTS, "...not identifier.\n");
 }
 
-void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_join* linked_id)
+void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_set* linked_id)
 {
     preference* p;
 
@@ -155,7 +155,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_j
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(Symbol* id, identity_join* linked_id)
+void Explanation_Based_Chunker::add_results_for_id(Symbol* id, identity_set* linked_id)
 {
     slot* s;
     preference* pref;
@@ -738,7 +738,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
 
         }
-        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation matched.\n");
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: Refracted instantiation matched.\n", m_chunk_inst->prod_name);
         return true;
     } else if (rete_addition_result == DUPLICATE_PRODUCTION) {
         if (m_inst->prod)
@@ -753,7 +753,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         }
         thisAgent->explanationMemory->increment_stat_duplicates(duplicate_rule);
         thisAgent->explanationMemory->cancel_chunk_record();
-        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Duplicate production.\n");
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: Duplicate production.\n", m_chunk_inst->prod_name);
         return false;
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
@@ -776,7 +776,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 print_current_built_rule("Chunk that did not match WM: ");
             }
         }
-        dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: Refracted instantiation did not match.\n");
+        dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: Refracted instantiation did not match.\n", m_chunk_inst->prod_name);
 
         assert(m_prod);
         thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, identities_to_id_sets, m_inst, m_chunk_inst);
@@ -786,7 +786,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     }
 
     /* Don't think this can happen */
-    dprint(DT_VARIABLIZATION_MANAGER, "Add production to rete result: No refracted instantiation given.\n");
+    dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: No refracted instantiation given.\n", m_chunk_inst->prod_name);
     assert(false);
     return false;
 }
@@ -1162,8 +1162,6 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     m_prod_name                         = NULL;
     m_rule_type                         = ebc_no_rule;
     m_failure_type                      = ebc_success;
-
-    //dprint(DT_DEBUG, "unification_map: %d, identity_to_var_map: %d, constraints: %d" , static_cast<int64_t>(unification_map->size()) , static_cast<int64_t>(identity_to_var_map->size()) , static_cast<int64_t>(constraints->size()));
 
     clear_symbol_identity_map();
     clear_variablization_maps();

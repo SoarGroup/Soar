@@ -256,8 +256,8 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 void Repair_Manager::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
 {
     dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
-    sym_identity* lVarInfo;
-    thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
+    chunk_element* lVarInfo;
+    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
     lVarInfo->variable_sym = pVar;
     pVar->var->instantiated_sym = pSym;
     lVarInfo->identity = pIdentity;

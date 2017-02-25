@@ -21,14 +21,7 @@
 
 #include <assert.h>
 
-//sym_identity* Explanation_Based_Chunker::get_variablization(identity_join* pIdentitySet)
-//{
-//    if (index_id == 0) return NULL;
-//    auto iter = (*identity_to_var_map).find(pIdentitySet);
-//    if (iter != (*identity_to_var_map).end()) return iter->second; else return NULL;
-//}
-
-void Explanation_Based_Chunker::store_variablization(identity_join* pIdentitySet, Symbol* variable, Symbol* pMatched_sym)
+void Explanation_Based_Chunker::store_variablization(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym)
 {
     assert(pIdentitySet);
     assert(!pIdentitySet->super_join->new_var);
@@ -36,19 +29,7 @@ void Explanation_Based_Chunker::store_variablization(identity_join* pIdentitySet
     pIdentitySet->super_join->new_var = variable;
     pIdentitySet->super_join->clone_identity = this->get_or_create_identity(variable);;
     variable->var->instantiated_sym = pMatched_sym;
-
-//    sym_identity* lVarInfo;
-//
-//    thisAgent->memoryManager->allocate_with_pool(MP_sym_identity, &lVarInfo);
-//    lVarInfo->variable_sym = variable;
-//    thisAgent->symbolManager->symbol_add_ref(variable);
-//    variable->var->instantiated_sym = pMatched_sym;
-//
-//    //    lFinalIdentitySet->new_var = variable;
-//    //    lVarInfo->identity = lFinalIdentitySet->identity;
-//    lVarInfo->identity = this->get_or_create_identity(variable);
-//
-//    (*identity_to_var_map)[pIdentitySet] = lVarInfo;
+    identity_sets_to_clean_up.insert(pIdentitySet);
 
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
@@ -190,20 +171,20 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 //        assert(!pTest->eq_test->identity || (pTest->eq_test->identity && pTest->eq_test->identity_set));
         if (pTest->eq_test->identity_set && (literalized_identity_sets.find(pTest->eq_test->identity_set->super_join) == literalized_identity_sets.end()))
         {
-            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t [%u] from %t\n", pTest->eq_test, pTest->eq_test->identity_set, pTest);
+            dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t%g from %t%g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
 
 //            if (!pTest->eq_test->identity_set) pTest->eq_test->identity_set = pTest->eq_test->identity;
-
+            break_if_id_matches(pTest->eq_test->identity_set->identity, 59);
             if (pTest->eq_test->identity_set->super_join->new_var)
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
                 pTest->eq_test->data.referent = pTest->eq_test->identity_set->super_join->new_var;
                 thisAgent->symbolManager->symbol_add_ref(pTest->eq_test->identity_set->super_join->new_var);
                 pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
+                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %t%g\n", pTest->eq_test, pTest->eq_test);
                 /* MToDo | I think we want to set identity_set to null and possibly decrease refcount.  I think they will get populated when we finalize instantiation  */
-                 pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
-//                pTest->eq_test->identity_set = NULL;
-                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", pTest->eq_test->identity_set->super_join->new_var, pTest->eq_test->identity_set->super_join->identity);
+//                 pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
+                pTest->eq_test->identity_set = NULL;
             } else {
                 /* Create a new variable.  If constant is being variablized just used
                  * 'c' instead of first letter of id name.  We now avoid using 'o' for
@@ -236,17 +217,18 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
                 pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
+                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", lNewVariable, pTest->eq_test->identity);
                 /* MToDo | I think we want to set identity_set to null and possibly decrease refcount.  I think they will get populated when we finalize instantiation  */
-                pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
-//                pTest->eq_test->identity_set = NULL;
+//                pTest->eq_test->identity_set = pTest->eq_test->identity_set->super_join;
+                pTest->eq_test->identity_set = NULL;
 
-                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", pTest->eq_test->identity_set->super_join->new_var, pTest->eq_test->identity_set->super_join->identity);
             }
-            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t [%u] and test is %t\n", pTest->eq_test, pTest->eq_test->identity, pTest);
+            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t%g and test is %t%g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
         } else {
             /* Literalized identity, so set identity in chunk to 0 */
             pTest->eq_test->identity = NULL_IDENTITY_SET;
             pTest->eq_test->identity_set = NULL_IDENTITY_SET;
+            dprint(DT_LHS_VARIABLIZATION, "Identity values cleared for literalized identity: %t%g\n", pTest->eq_test, pTest->eq_test);
         }
     }
 }
@@ -275,16 +257,16 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
     assert(!t->identity || (t->identity && t->identity_set));
 //    found_variablization =  get_variablization(t->identity_set);
 //    if (found_variablization)
-        if (t->eq_test->identity_set && (literalized_identity_sets.find(t->eq_test->identity_set->super_join) == literalized_identity_sets.end()))
+        if (t->identity_set && (literalized_identity_sets.find(t->identity_set->super_join) == literalized_identity_sets.end()))
    {
         // It has been variablized before, so just variablize
         thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
-        t->data.referent = t->eq_test->identity_set->super_join->new_var;
-        thisAgent->symbolManager->symbol_add_ref(t->eq_test->identity_set->super_join->new_var);
+        t->data.referent = t->identity_set->super_join->new_var;
+        thisAgent->symbolManager->symbol_add_ref(t->identity_set->super_join->new_var);
 
-        t->identity = t->eq_test->identity_set->super_join->clone_identity;
+        t->identity = t->identity_set->super_join->clone_identity;
 //        t->identity_set = found_variablization->identity;
-        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", t->data.referent, t->eq_test->identity_set->super_join->clone_identity);
+        dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u]\n", t->data.referent, t->identity_set->super_join->clone_identity);
     }
     else
     {
@@ -356,7 +338,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
 
 void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, bool pInNegativeCondition)
 {
-    dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS condition list:\n");
+    dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Variablizing LHS condition list:\n");
 
     dprint(DT_LHS_VARIABLIZATION, "Pass 1: Variablizing equality tests in positive conditions...\n");
 
@@ -366,7 +348,7 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
         {
             if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
             {
-                dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive condition equality tests: %l\n", cond);
+                dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Variablizing equality test in LHS positive condition: %l\n", cond);
                 variablize_equality_tests(cond->data.tests.id_test);
                 variablize_equality_tests(cond->data.tests.attr_test);
                 variablize_equality_tests(cond->data.tests.value_test);
@@ -378,7 +360,7 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
     {
         if (cond->type == POSITIVE_CONDITION)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS positive non-equality tests: %l\n", cond);
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Variablizing LHS positive non-equality tests in: %l\n", cond);
             if ((cond->data.tests.id_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
             if ((cond->data.tests.attr_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
@@ -388,14 +370,14 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
-            dprint_header(DT_LHS_VARIABLIZATION, PrintBoth, "Variablizing LHS negative condition: %l\n", cond);
+            dprint_header(DT_LHS_VARIABLIZATION, PrintBefore, "Variablizing LHS negative condition: %l\n", cond);
             variablize_tests_by_lookup(cond->data.tests.id_test, !pInNegativeCondition);
             variablize_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
             variablize_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            dprint_header(DT_NCC_VARIABLIZATION, PrintBoth, "Variablizing LHS negative conjunctive condition:\n");
+            dprint_header(DT_NCC_VARIABLIZATION, PrintBefore, "Variablizing LHS negative conjunctive condition:\n");
             dprint_noprefix(DT_NCC_VARIABLIZATION, "%1", cond->data.ncc.top);
             variablize_condition_list(cond->data.ncc.top, true);
         }
@@ -481,7 +463,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lIdentity = 0;
-    identity_join* lIdentitySet;
+    identity_set* lIdentitySet;
 
     action* a = make_action(thisAgent);
     a->type = MAKE_ACTION;
@@ -711,7 +693,7 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
             reinstantiate_test(static_cast<test>(c->first));
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity_set)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
     {
     /* We test for pTest->data.referent->var->instantiated_sym because that won't exist for variables in NCCs
      * that don't appear in a positive condition.  Those do not match anything and cannot be reinstantiated */

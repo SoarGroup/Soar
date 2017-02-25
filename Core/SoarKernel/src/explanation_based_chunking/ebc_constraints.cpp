@@ -198,6 +198,9 @@ void Explanation_Based_Chunker::prune_constraints_and_move_to_identity_sets()
             ++iter;
         }
     }
+    /* Will need to set this for any identity sets we attach a constraint list to */
+//    identity_sets_to_clean_up.insert(lFromJoinSet);
+
     dprint(DT_CONSTRAINTS, "Final pruned constraints is a set of size %u.\n", static_cast<uint64_t>(constraints->size()));
 }
 

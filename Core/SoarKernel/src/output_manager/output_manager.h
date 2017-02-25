@@ -115,7 +115,7 @@ class Output_Manager
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
-        void identity_to_string(agent* thisAgent, uint64_t pID, identity_join* pIDSet, std::string &destString);
+        void identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString);
 
         void vsnprint_sf(agent* thisAgent, std::string &destString, const char* format, va_list args);
 

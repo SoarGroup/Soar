@@ -52,7 +52,7 @@ void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
     uint64_t            lIDSet, lIDSetID;
-    identity_join*  lJoinSet, *lJoinSuperSet;
+    identity_set*  lJoinSet, *lJoinSuperSet;
 
     for (auto iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
     {
@@ -61,9 +61,9 @@ void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
         lJoinSuperSet = lJoinSet->super_join;
         outputManager->printa_sf(thisAgent, "%u: %u", lIDSet, lJoinSet->identity);
         if (lJoinSuperSet) outputManager->printa_sf(thisAgent, " --> %u", lJoinSuperSet->identity);
-        if (lJoinSet->identity_sets.size() > 0)
+        if (lJoinSet->identity_sets && (lJoinSet->identity_sets->size() > 0))
         {
-            for (auto iter2 = lJoinSet->identity_sets.begin(); iter2 != lJoinSet->identity_sets.end(); ++iter2)
+            for (auto iter2 = lJoinSet->identity_sets->begin(); iter2 != lJoinSet->identity_sets->end(); ++iter2)
             {
                 outputManager->printa_sf(thisAgent, " %u\n", *iter2);
             }
@@ -192,14 +192,7 @@ void Explanation_Based_Chunker::print_variablization_table(TraceMode mode)
     if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "== Identity Set -> Variablization ==\n");
-    if (identity_to_var_map->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-    }
-    for (auto it = (*identity_to_var_map).begin(); it != (*identity_to_var_map).end(); ++it)
-    {
-        outputManager->printa_sf(thisAgent, "%u -> %y (%u)\n", it->first, it->second->variable_sym, it->second->identity);
-    }
+//        outputManager->printa_sf(thisAgent, "%u -> %y (%u)\n", it->first, it->second->variable_sym, it->second->identity);
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 

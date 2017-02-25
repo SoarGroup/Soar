@@ -113,7 +113,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
-        identity_join* lIDSet = r->identity_set;
+        identity_set* lIDSet = r->identity_set;
         if (get_identity_set)  lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
 //        if (unify_identity_set) lIDSet = lIDSet->super_join;
         if (get_cloned_identity)
@@ -470,7 +470,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         /* Literal values including those in function calls. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->identity : 0;
-        identity_join* lO_idset = (add_original_vars != DONT_EXPLAIN) ? rs->identity_set : 0;
+        identity_set* lO_idset = (add_original_vars != DONT_EXPLAIN) ? rs->identity_set : 0;
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %us%u\n", rs->referent, lO_id, lO_idset ? lO_idset->identity : 0);
         return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id, lO_idset, rs->was_unbound_var);
     }
@@ -533,7 +533,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_set* pIDSet, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -549,7 +549,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_join* pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, identity_set* pIDSet, bool pWasUnbound)
 {
     if (sym)
     {

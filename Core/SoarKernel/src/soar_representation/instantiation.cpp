@@ -792,7 +792,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
-inline void propagate_identity_set(agent* thisAgent, test condTest, identity_join* parentIDSet = NULL)
+inline void propagate_identity_set(agent* thisAgent, test condTest, identity_set* parentIDSet = NULL)
 {
     /* If this tests an architectural WME, parentIDSet will be null and EBC will great a new identity set */
     dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test %t\n", condTest);

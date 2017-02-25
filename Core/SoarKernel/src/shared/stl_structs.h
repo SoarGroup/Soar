@@ -2,12 +2,15 @@
 #define CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_
 
 #include "kernel.h"
+#include "mempool_allocator.h"
+
+#include <unordered_set>
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    typedef std::list< identity_join*, soar_module::soar_memory_pool_allocator< identity_join* > >      identity_join_list;
     typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >            constraint_list;
+    typedef std::list< identity_set*, soar_module::soar_memory_pool_allocator< identity_set* > >      identity_set_list;
 #else
-    typedef std::list< identity_join* >                                                                 identity_join_list;
+    typedef std::list< identity_set* >                                                                 identity_set_list;
     typedef std::list< constraint* >                                                                    constraint_list;
 #endif
 
@@ -39,28 +42,28 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
-typedef struct identity_join_struct
+typedef struct identity_set_struct
 {
         uint64_t                    identity;
         uint64_t                    clone_identity;
         Symbol*                     new_var;
-        identity_join_struct*       super_join;
-        identity_join_list          identity_sets;
+        identity_set_struct*        super_join;
+        identity_set_list*          identity_sets;
         constraint_list*            constraints;
         bool                        literalization_checked;
         bool                        literalized;
         uint64_t                    refcount;
-} identity_join;
+} identity_set;
 
 
 typedef struct identity_set_quadruple_struct
 {
-        identity_join* id;
-        identity_join* attr;
-        identity_join* value;
-        identity_join* referent;
+        identity_set* id;
+        identity_set* attr;
+        identity_set* value;
+        identity_set* referent;
 
-        identity_set_quadruple_struct(identity_join* new_id = NULL, identity_join* new_attr = NULL, identity_join* new_value = NULL, identity_join* new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+        identity_set_quadruple_struct(identity_set* new_id = NULL, identity_set* new_attr = NULL, identity_set* new_value = NULL, identity_set* new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_set_quadruple;
 
 typedef struct bool_quadruple_struct
@@ -92,22 +95,11 @@ typedef struct deep_copy_struct
         deep_copy_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL, wme* new_wme = NULL): id(new_id), attr(new_attr), value(new_value), deep_copied_wme(new_wme) {}
 } deep_copy_wme;
 
-typedef struct sym_identity_struct {
-        uint64_t    identity;
-        Symbol*     variable_sym;
-} sym_identity;
-
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
         uint64_t            to_identity;
         IDSet_Mapping_Type  mappingType;
 } identity_mapping;
-
-
-typedef struct identity_pair_struct {
-        uint64_t            identity;
-        uint64_t            identity_set;
-} identity_pair;
 
 typedef struct chunk_element_struct {
         Symbol*     variable_sym;

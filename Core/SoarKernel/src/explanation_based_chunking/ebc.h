@@ -8,7 +8,7 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
-//#define EBC_SANITY_CHECK_RULES
+#define EBC_SANITY_CHECK_RULES
 
 #include "kernel.h"
 
@@ -82,15 +82,15 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        identity_join*  make_join_set(uint64_t pIDSet);
-        void            join_set_add_ref(identity_join* pIDSet) { ++(pIDSet->refcount);}
-        void            join_set_remove_ref(identity_join* &pIDSet) { if (--(pIDSet->refcount) == 0) { delete pIDSet; pIDSet = NULL; } }
-        identity_join*  get_id_set_for_identity(uint64_t pID);
-        identity_join*  get_or_add_id_set_for_identity(uint64_t pID, identity_join* pIDSet = NULL);
+        identity_set*  make_join_set(uint64_t pIDSet);
+        void            join_set_add_ref(identity_set* pIDSet) { ++(pIDSet->refcount);}
+        void            join_set_remove_ref(identity_set* &pIDSet);
+        identity_set*  get_id_set_for_identity(uint64_t pID);
+        identity_set*  get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet = NULL);
         uint64_t        get_joined_id_set_identity(uint64_t pIDSet);
         uint64_t        get_joined_id_set_cloned_identity(uint64_t pIDSet);
-        identity_join*  get_floating_identity_set();
-        void            force_identity_to_id_set_mapping(uint64_t pID, identity_join* pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
+        identity_set*  get_floating_identity_set();
+        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet) { (*identities_to_id_sets)[pID] = pIDSet; }
         bool            in_null_identity_set(test t)                                          { return (literalized_identity_sets.find(t->identity_set) != literalized_identity_sets.end()); }
 
         /* Methods to handle identity unification of conditions that test singletons */
@@ -202,16 +202,14 @@ class Explanation_Based_Chunker
 
         /* Core tables used by EBC during identity assignment during instantiation
          * creation. The data stored within them is temporary and cleared after use. */
-
         sym_to_id_map*      instantiation_identities;
-        id_to_sym_id_map*   identity_to_var_map;
-
-        /* Maps/lists for identity set propagation */
         id_to_join_map*     identities_to_id_sets;
-//        id_to_join_map*     identity_set_join_map;
-        identity_join_list  identity_sets_to_clean_up;
+
+        /* These sets are temporary and cleaned up after a rule is learned */
+        identity_join_set   identity_sets_to_clean_up;
         identity_join_set   literalized_identity_sets;
 
+        /* Set of all attribute symbols that may be singletons */
         symbol_set*         singletons;
 
         /* Data structures used to track and assign loose constraints */
@@ -236,9 +234,9 @@ class Explanation_Based_Chunker
         bool            can_learn_from_instantiation();
         void            get_results_for_instantiation();
         void            add_goal_or_impasse_tests();
-        void            add_pref_to_results(preference* pref, identity_join* linked_id);
-        void            add_results_for_id(Symbol* id, identity_join* linked_id);
-        void            add_results_if_needed(Symbol* sym, identity_join* linked_id);
+        void            add_pref_to_results(preference* pref, identity_set* linked_id);
+        void            add_results_for_id(Symbol* id, identity_set* linked_id);
+        void            add_results_if_needed(Symbol* sym, identity_set* linked_id);
         action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
         void            create_initial_chunk_condition_lists();
@@ -264,7 +262,7 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void                join_identity_sets(identity_join* lFromJoinSet, identity_join* lToJoinSet);
+        void                join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet);
         void                unify_backtraced_conditions(condition* parent_cond, const identity_set_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void                add_singleton_unification_if_needed(condition* pCond);
         void                literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
@@ -283,7 +281,7 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pEq_test, test pRelational_test);
 
         /* Variablization methods */
-        void        store_variablization(identity_join* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
+        void        store_variablization(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
         void        variablize_equality_tests(test t);
         void        variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         bool        variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
@@ -314,6 +312,7 @@ class Explanation_Based_Chunker
         condition*  get_previously_seen_cond(condition* pCond);
 
         /* Clean-up methods */
+        void clean_up_identity_set_transient(identity_set* pIDSet);
         void clean_up_identity_sets();
         void clear_merge_map();
         void clear_attachment_map();
