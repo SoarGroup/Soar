@@ -1,8 +1,8 @@
 sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t91-1
-        (state <s1> ^rootstate <s2> ^props-can-evaluate <c3>
+    (state <s1> ^rootstate <s2> ^props-can-evaluate <c3>
           ^props-instructions <l2> ^const <l1>
           ^name { << props-eval instruction >> <c1> })
-    (<s2> -^<c4> <val>)
+    (<s2> -^cheese <val>)
     (<l2> ^lti-name <c3> ^{ << condition action >> <c2> } _P101)
     -->
     (<l2> ^status fail +)

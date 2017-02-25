@@ -1,7 +1,7 @@
 sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t91-2
-        (state <s1> ^rootstate <s2> ^props-can-evaluate <c2>
-          ^props-instructions <l1>)
-    (<s2> -^<c3> <val>)
+    (state <s1> ^rootstate <s2> ^props-instructions <l1>
+          ^props-can-evaluate <c2>)
+    (<s2> -^cheese <val>)
     (<l1> ^lti-name <c2> ^{ << condition action >> <c1> } _P101)
     -->
     (<l1> ^status fail +)
