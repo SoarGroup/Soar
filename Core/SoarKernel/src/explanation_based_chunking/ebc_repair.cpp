@@ -296,8 +296,8 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym)
             {
-                assert(lCond->data.tests.id_test->eq_test->identity_set->super_join->new_var == lSym);
-//                add_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity_set->super_join);
+//                assert(lCond->data.tests.id_test->eq_test->identity_set->super_join->new_var == lSym);
+                add_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity);
             }
 
             /* Check if the value element is a state */
@@ -316,8 +316,8 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym && lMatchedSym->is_sti())
             {
-                assert(lCond->data.tests.id_test->eq_test->identity_set->super_join->new_var == lSym);
-//                add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity_set->super_join);
+//                assert(lCond->data.tests.id_test->eq_test->identity_set->super_join->new_var == lSym);
+                add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
             }
         }
     }
