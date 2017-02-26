@@ -5,20 +5,10 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include "condition.h"
 #include "dprint.h"
-#include "instantiation.h"
-#include "output_manager.h"
 #include "preference.h"
-#include "print.h"
-#include "rete.h"
 #include "rhs.h"
-#include "symbol.h"
-#include "symbol_manager.h"
 #include "test.h"
-#include "working_memory.h"
-
-#include <assert.h>
 
 uint64_t        get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
 

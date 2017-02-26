@@ -8,22 +8,11 @@
 #include "ebc.h"
 #include "ebc_timers.h"
 
-#include "agent.h"
-#include "condition.h"
 #include "dprint.h"
 #include "explanation_memory.h"
-#include "instantiation.h"
-#include "output_manager.h"
-#include "preference.h"
-#include "print.h"
 #include "rhs.h"
 #include "rhs_functions.h"
-#include "symbol.h"
-#include "symbol_manager.h"
-#include "test.h"
 #include "working_memory.h"
-
-#include <assert.h>
 
 identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
 {
