@@ -63,7 +63,6 @@ class Explanation_Based_Chunker
         uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
-        tc_number   get_constraint_found_tc_num()   { return tc_num_found; };
 
         /* identity generation functions */
         uint64_t get_or_create_identity(Symbol* orig_var);
@@ -157,8 +156,6 @@ class Explanation_Based_Chunker
         uint64_t inst_id_counter;
         uint64_t ovar_id_counter;
         uint64_t prod_id_counter;
-
-        tc_number tc_num_found;
 
         /* Variables used by dependency analysis methods */
         cons*               grounds;
@@ -269,7 +266,6 @@ class Explanation_Based_Chunker
         void cache_constraints_in_cond(condition* c);
         void add_additional_constraints();
         void cache_constraints_in_test(test t);
-        void reset_constraint_found_tc_num() { if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; tc_num_found = get_new_tc_number(thisAgent); };
         void invert_relational_test(test* pEq_test, test* pRelational_test);
         void attach_relational_test(test pRelational_test, condition* pCond, WME_Field pField);
 

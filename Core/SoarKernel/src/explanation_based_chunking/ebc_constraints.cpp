@@ -128,42 +128,31 @@ void Explanation_Based_Chunker::add_additional_constraints()
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
     {
         lConstraint = *iter;
-        if (lConstraint->constraint_test->constraint_tc_num == tc_num_found)
+        dprint(DT_CONSTRAINTS, "Attempting to add constraint %t %g to %t %g: ", lConstraint->constraint_test, lConstraint->constraint_test, lConstraint->eq_test, lConstraint->eq_test);
+        if (lConstraint->eq_test->identity_set && !lConstraint->eq_test->identity_set->super_join->literalized && lConstraint->eq_test->identity_set->super_join->operational_cond)
         {
-            /* MToDo | Looks like we can get rid of the whole tc_num thing now that we just cache constraints in non-operational conditions */
-            //            iter = constraints->erase(iter);
-            assert(false);
+            constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
+            attach_relational_test(constraint_test, lConstraint->eq_test->identity_set->super_join->operational_cond, lConstraint->eq_test->identity_set->super_join->operational_field);
+            dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lConstraint->eq_test->identity_set->super_join->operational_cond);
+            thisAgent->explanationMemory->increment_stat_constraints_attached();
         }
-        else
+        else if (lConstraint->constraint_test->identity_set && !lConstraint->constraint_test->identity_set->super_join->literalized && lConstraint->constraint_test->identity_set->super_join->operational_cond)
         {
-            dprint(DT_CONSTRAINTS, "Attempting to add constraint %t %g to %t %g: ", lConstraint->constraint_test, lConstraint->constraint_test, lConstraint->eq_test, lConstraint->eq_test);
-            if (lConstraint->eq_test->identity_set && !lConstraint->eq_test->identity_set->super_join->literalized && lConstraint->eq_test->identity_set->super_join->operational_cond)
-            {
-                constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
-                attach_relational_test(constraint_test, lConstraint->eq_test->identity_set->super_join->operational_cond, lConstraint->eq_test->identity_set->super_join->operational_field);
-                dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lConstraint->eq_test->identity_set->super_join->operational_cond);
-                thisAgent->explanationMemory->increment_stat_constraints_attached();
-            }
-            else if (lConstraint->constraint_test->identity_set && !lConstraint->constraint_test->identity_set->super_join->literalized && lConstraint->constraint_test->identity_set->super_join->operational_cond)
-            {
-                eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
-                constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
-                invert_relational_test(&eq_copy, &constraint_test);
-                attach_relational_test(constraint_test, lConstraint->constraint_test->identity_set->super_join->operational_cond, lConstraint->constraint_test->identity_set->super_join->operational_field);
-                deallocate_test(thisAgent, eq_copy);
-                dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lConstraint->constraint_test->identity_set->super_join->operational_cond);
-                thisAgent->explanationMemory->increment_stat_constraints_attached();
-            } else {
-                dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
-                       lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->super_join->literalized) ? "true" : "false",
-                       lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->super_join->literalized) ? "true" : "false");
-            }
-            ++iter;
+            eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
+            constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
+            invert_relational_test(&eq_copy, &constraint_test);
+            attach_relational_test(constraint_test, lConstraint->constraint_test->identity_set->super_join->operational_cond, lConstraint->constraint_test->identity_set->super_join->operational_field);
+            deallocate_test(thisAgent, eq_copy);
+            dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lConstraint->constraint_test->identity_set->super_join->operational_cond);
+            thisAgent->explanationMemory->increment_stat_constraints_attached();
+        } else {
+            dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
+                lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->super_join->literalized) ? "true" : "false",
+                    lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->super_join->literalized) ? "true" : "false");
         }
+        ++iter;
     }
     clear_cached_constraints();
-    /* Will need to set this for any identity sets we attach a constraint list to */
-//    identity_sets_to_clean_up.insert(lFromJoinSet);
 
     dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
 }

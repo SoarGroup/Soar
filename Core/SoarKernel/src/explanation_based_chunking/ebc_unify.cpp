@@ -38,6 +38,8 @@ identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
     new_join_set->super_join = new_join_set;
     new_join_set->refcount = 1;
     new_join_set->literalized = false;
+    new_join_set->dirty = false;
+
     dprint(DT_PROPAGATE_ID_SETS, "Created join set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
     return new_join_set;
 }

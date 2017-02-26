@@ -45,9 +45,8 @@ typedef struct test_struct
         cons*        conjunct_list;      /* for conjunctive tests */
     } data;
     test_struct*     eq_test;
-    tc_number        constraint_tc_num;
     uint64_t         identity;
-    identity_set*   identity_set;
+    identity_set*    identity_set;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

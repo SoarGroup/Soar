@@ -434,9 +434,8 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     dprint(DT_BUILD_CHUNK_CONDS, "Building conditions for new chunk...\n");
     dprint(DT_BUILD_CHUNK_CONDS, "Grounds from backtrace: \n");
     dprint_noprefix(DT_BUILD_CHUNK_CONDS, "%3", grounds);
-    dprint(DT_BUILD_CHUNK_CONDS, "...creating positive conditions from final ground set.\n");
-    /* --- build instantiated conds for grounds and setup their TC --- */
-    reset_constraint_found_tc_num();
+
+    /* --- build instantiated conds for grounds --- */
     prev_vrblz = NIL;
     while (grounds)
     {
@@ -456,16 +455,19 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         {
             c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_field = ID_ELEMENT;
+            identity_sets_to_clean_up.insert(c_vrblz->data.tests.id_test->eq_test->identity_set->super_join);
         }
         if (c_vrblz->data.tests.attr_test->eq_test->identity_set && !c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond)
         {
             c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_field = ATTR_ELEMENT;
+            identity_sets_to_clean_up.insert(c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join);
         }
         if (c_vrblz->data.tests.value_test->eq_test->identity_set && !c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond)
         {
             c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_field = VALUE_ELEMENT;
+            identity_sets_to_clean_up.insert(c_vrblz->data.tests.value_test->eq_test->identity_set->super_join);
         }
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */

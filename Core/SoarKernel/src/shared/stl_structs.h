@@ -44,15 +44,29 @@ typedef struct identity_quadruple_struct
 
 typedef struct identity_set_struct
 {
+        /* First two variables are static and never changes after instantiation creation:
+         * - identity: An ID used for printing and to make debugging easier.
+         *             Not used by identity analysis logic.
+         * - refcount: Increased for every identity set pointed to this one */
+
         uint64_t                    identity;
-        uint64_t                    clone_identity;
-        Symbol*                     new_var;
+        uint64_t                    refcount;
+
+        /* The remaining fields are transient based on the explanation trace being analyzed */
+        bool                        dirty;
+
+        /* Fields that link this identity_set node to others in the identity graph */
         identity_set_struct*        super_join;
         identity_set_list*          identity_sets;
+
+        /* Fields for variablization and chunk instantiation identity creation */
+        Symbol*                     new_var;
+        uint64_t                    clone_identity;
         bool                        literalized;
+
+        /* Fields for transitive constraint attachment  */
         condition*                  operational_cond;
         WME_Field                   operational_field;
-        uint64_t                    refcount;
 } identity_set;
 
 

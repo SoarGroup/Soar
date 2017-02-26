@@ -135,22 +135,11 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             {
                 new_ct->eq_test = new_ct;
             }
-            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                /* Mark this test as seen.  The tests in the constraint lists are copies of
-                 * the pointers in grounds, so we use this tc_num later to later check if
-                 * an entry in the constraint propagation list is a duplicate of a test
-                 * already in a condition, which most should be. */
-                if (t->type != EQUALITY_TEST)
-                {
-                    t->constraint_tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
-                }
-                if (new_ct->identity_set)
-                {
-                    /* MToDo | Do we need to increase refcount of superjoin set here? */
-                    new_ct->identity     = new_ct->identity_set->super_join->identity;
-                    new_ct->identity_set = new_ct->identity_set->super_join;
-                }
+                /* MToDo | Do we need to increase refcount of superjoin set here? */
+                new_ct->identity     = new_ct->identity_set->super_join->identity;
+                new_ct->identity_set = new_ct->identity_set->super_join;
             }
             break;
     }
@@ -974,23 +963,12 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     test new_ct;
 
     thisAgent->memoryManager->allocate_with_pool(MP_test, &new_ct);
-
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
-    new_ct->constraint_tc_num = 0;
     new_ct->identity_set = NULL;
-    if (test_type == EQUALITY_TEST)
-    {
-        new_ct->eq_test = new_ct;
-    } else {
-        new_ct->eq_test = NULL;
-    }
-
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
+    new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
+    if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 
     return new_ct;
 }
@@ -1022,10 +1000,7 @@ cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
     {
         // Iterate from head of list to find the previous item and fix its link
         prev = (*t)->data.conjunct_list;
-        while (prev->rest != pDeleteItem)
-        {
-            prev = prev->rest;
-        }
+        while (prev->rest != pDeleteItem) prev = prev->rest;
         prev->rest = pDeleteItem->rest;
     }
 
