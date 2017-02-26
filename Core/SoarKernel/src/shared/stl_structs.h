@@ -44,16 +44,15 @@ typedef struct identity_quadruple_struct
 
 typedef struct identity_set_struct
 {
-        /* First two variables are static and never changes after instantiation creation:
-         * - identity: An ID used for printing and to make debugging easier.
-         *             Not used by identity analysis logic.
-         * - refcount: Increased for every identity set pointed to this one */
+        /* Identity ID is static and never changes after instantiation creation.
+         * The remaining fields are transient based on the explanation trace
+         * being analyzed */
 
+        /* An ID used for printing and to make debugging easier. Not used by identity analysis logic. */
         uint64_t                    identity;
-        uint64_t                    refcount;
 
-        /* The remaining fields are transient based on the explanation trace being analyzed */
-        bool                        dirty;
+        uint64_t                    refcount;   // Increased for every identity set pointed to this one
+        bool                        dirty;      // Flag to avoid adding to clean up list if already on it
 
         /* Fields that link this identity_set node to others in the identity graph */
         identity_set_struct*        super_join;

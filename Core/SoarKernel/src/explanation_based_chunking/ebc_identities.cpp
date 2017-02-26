@@ -51,7 +51,7 @@ identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 {
     increment_counter(ovar_id_counter);
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", ovar_id_counter);
-    return make_join_set(ovar_id_counter);
+    return make_identity_set(ovar_id_counter);
 }
 
 identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
@@ -66,18 +66,18 @@ identity_set* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
-        join_set_add_ref(iter->second);
+        identity_set_add_ref(iter->second);
         dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with id set %u already used in rule.  Increased refcount of %u\n", pID, iter->second->identity, iter->second->refcount);
         return iter->second;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
-        join_set_add_ref(pIDSet);
+        identity_set_add_ref(pIDSet);
         dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with parent id set %u.  Increasing refcount of identity join to %u\n", pID, pIDSet->identity, pIDSet->refcount);
         return pIDSet;
     } else {
-        identity_set* newJoinSet = make_join_set(pID);
+        identity_set* newJoinSet = make_identity_set(pID);
         (*identities_to_id_sets)[pID] = newJoinSet;
         dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->identity, pID);
         return newJoinSet;

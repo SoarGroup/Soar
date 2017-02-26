@@ -81,15 +81,16 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        identity_set*   make_join_set(uint64_t pIDSet);
-        void            join_set_add_ref(identity_set* pIDSet) { ++(pIDSet->refcount);}
-        void            join_set_remove_ref(identity_set* &pIDSet);
+        identity_set*   make_identity_set(uint64_t pIDSet);
+        void            identity_set_add_ref(identity_set* pIDSet) { ++(pIDSet->refcount);}
+        void            identity_set_remove_ref(identity_set* &pIDSet);
         identity_set*   get_id_set_for_identity(uint64_t pID);
         identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet = NULL);
         uint64_t        get_joined_id_set_identity(uint64_t pIDSet);
         uint64_t        get_joined_id_set_cloned_identity(uint64_t pIDSet);
         identity_set*   get_floating_identity_set();
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
+        void            touch_identity_set(identity_set* pIDSet)                                { assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);

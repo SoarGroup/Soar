@@ -14,30 +14,30 @@
 #include "rhs_functions.h"
 #include "working_memory.h"
 
-identity_set* Explanation_Based_Chunker::make_join_set(uint64_t pIdentity)
+identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
     identity_set* new_join_set;;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
+    new_join_set->refcount = 1;
+    new_join_set->dirty = false;
+    new_join_set->super_join = new_join_set;
     new_join_set->identity_sets = NULL;
-    new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->new_var = NULL;
+    new_join_set->clone_identity = NULL_IDENTITY_SET;
+    new_join_set->literalized = false;
     new_join_set->operational_cond = NULL;
     new_join_set->operational_field = NO_ELEMENT;
-    new_join_set->super_join = new_join_set;
-    new_join_set->refcount = 1;
-    new_join_set->literalized = false;
-    new_join_set->dirty = false;
 
-    dprint(DT_PROPAGATE_ID_SETS, "Created join set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
+    dprint(DT_PROPAGATE_ID_SETS, "Created identity set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
     return new_join_set;
 }
 
-void Explanation_Based_Chunker::join_set_remove_ref(identity_set* &pIDSet)
+void Explanation_Based_Chunker::identity_set_remove_ref(identity_set* &pIDSet)
 {
     if (--(pIDSet->refcount) == 0)
     {
-        dprint(DT_PROPAGATE_ID_SETS, "Deallocating join set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
+        dprint(DT_PROPAGATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
         clean_up_identity_set_transient(pIDSet);
         thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
         pIDSet = NULL;
@@ -48,16 +48,20 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
 {
     if (pIDSet->super_join != pIDSet)
     {
-        join_set_remove_ref(pIDSet->super_join);
-        pIDSet->super_join = pIDSet;
+        identity_set_remove_ref(pIDSet->super_join);
     }
     if (pIDSet->new_var)
     {
         thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
     }
     if (pIDSet->identity_sets) delete pIDSet->identity_sets;
+    pIDSet->refcount = 1;
+    pIDSet->dirty = false;
+    pIDSet->super_join = pIDSet;
     pIDSet->identity_sets = NULL;
     pIDSet->new_var = NULL;
+    pIDSet->clone_identity = NULL_IDENTITY_SET;
+    pIDSet->literalized = false;
     pIDSet->operational_cond = NULL;
     pIDSet->operational_field = NO_ELEMENT;
 }
@@ -68,7 +72,6 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     {
         identity_set* lJoin_set = *it;
         clean_up_identity_set_transient(lJoin_set);
-        lJoin_set->literalized = false;
     }
     identity_sets_to_clean_up.clear();
 }
@@ -114,9 +117,9 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
             lPreviouslyJoinedIdentity = *it;
             dprint(DT_UNIFY_IDENTITY_SETS, "Changing previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
             lPreviouslyJoinedIdentity->super_join = lToJoinSet;
-            join_set_remove_ref(lFromJoinSet);
+            identity_set_remove_ref(lFromJoinSet);
             lToJoinSet->identity_sets->push_back(lPreviouslyJoinedIdentity);
-            join_set_add_ref(lToJoinSet);
+            identity_set_add_ref(lToJoinSet);
             if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
         }
         delete lFromJoinSet->identity_sets;
@@ -131,7 +134,7 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
 
     /* Point super_join to joined identity set */
     lFromJoinSet->super_join = lToJoinSet;
-    join_set_add_ref(lToJoinSet);
+    identity_set_add_ref(lToJoinSet);
 
     ebc_timers->identity_unification->stop();
 
