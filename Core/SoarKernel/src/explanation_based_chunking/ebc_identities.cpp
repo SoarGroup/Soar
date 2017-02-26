@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+uint64_t        get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
+
 /* Methods for generating variable identities during instantiation creation */
 
 uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)

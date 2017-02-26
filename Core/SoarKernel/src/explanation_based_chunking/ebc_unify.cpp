@@ -176,7 +176,6 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 if (rs->identity_set && !rs->referent->is_sti())
                 {
                     thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
-//                    join_identity_sets(rs->identity_set, 0);
                     rs->identity_set->super_join->literalized = true;
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }

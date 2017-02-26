@@ -22,6 +22,8 @@
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900
 
+uint64_t get_superjoin_id(identity_set* pIDSet);
+
 Explanation_Memory::Explanation_Memory(agent* myAgent)
 {
     /* Cache agent and Output Manager pointer */
@@ -598,44 +600,10 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-//bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
-//{
-//    /* First argument must be an object type.  Current valid types are 'chunk',
-//     * and 'instantiation' */
-//    bool lSuccess = false;
-//    uint64_t lObjectID = 0;
-//    char lFirstChar = pObjectTypeString->at(0);
-//    if (lFirstChar == 'c')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
-//        }
-//            lSuccess = print_chunk_explanation_for_id(lObjectID);
-//        }
-//    else if (lFirstChar == 'i')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
-//        }
-//            lSuccess = print_instantiation_explanation_for_id(lObjectID);
-//        }
-//    else if (lFirstChar == 'l')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
-//        }
-//        lSuccess = print_condition_explanation_for_id(lObjectID);
-//    } else
-//    {
-//        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
-//        return false;
-//    }
-//
-//    return lSuccess;
-//}
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet)
+{
+    if (current_recording_chunk)
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, get_superjoin_id(pFromJoinSet), get_superjoin_id(pToJoinSet)); }
 
 
 bool Explanation_Memory::current_discussed_chunk_exists()

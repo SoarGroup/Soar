@@ -239,15 +239,15 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
             print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.id), false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, get_superjoin_id(instantiated_pref->identity_sets.id), false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.attr), false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, get_superjoin_id(instantiated_pref->identity_sets.attr), false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.value), false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, get_superjoin_id(instantiated_pref->identity_sets.value), false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.referent), false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, get_superjoin_id(instantiated_pref->identity_sets.referent), false);
         }
 //        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
 //        outputManager->printa(thisAgent, " ^");
@@ -276,26 +276,26 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.id), true);
+        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, get_superjoin_id(instantiated_pref->identity_sets.id), true);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.attr), true);
+        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, get_superjoin_id(instantiated_pref->identity_sets.attr), true);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.value), true);
+        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, get_superjoin_id(instantiated_pref->identity_sets.value), true);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.referent), true);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, get_superjoin_id(instantiated_pref->identity_sets.referent), true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.id), false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, get_superjoin_id(instantiated_pref->identity_sets.id), false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.attr), false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, get_superjoin_id(instantiated_pref->identity_sets.attr), false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.value), false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, get_superjoin_id(instantiated_pref->identity_sets.value), false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, thisAgent->explanationBasedChunker->get_superjoin_id(instantiated_pref->identity_sets.referent), false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, get_superjoin_id(instantiated_pref->identity_sets.referent), false);
         }
         outputManager->printa(thisAgent, ")\n");
     }

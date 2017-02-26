@@ -96,4 +96,7 @@ inline bool test_can_be_transitive_constraint(test t)
     return ((t->type != EQUALITY_TEST) && (t->type != CONJUNCTIVE_TEST) &&
             (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST));
 };
+
+inline bool in_null_identity_set(test t) { if (t->identity_set) return t->identity_set->super_join->literalized; return true; };
+
 #endif /* TEST_H_ */
