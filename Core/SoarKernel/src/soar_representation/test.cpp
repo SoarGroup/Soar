@@ -183,16 +183,12 @@ void deallocate_test(agent* thisAgent, test t)
                 c = next_c;
             }
             break;
-        default: /* relational tests other than equality */
+        default: /* tests with a referent */
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
             break;
     }
-    /* -- The eq_test is a cache to prevent repeated searches on conjunctive tests
-     *    which was all over the kernel.  We did not copy the test or increment the
-     *    refcount, so we don't need to deallocate the test here. -- */
-    t->eq_test = NULL;
-    /* MToDo | Not sure if we have to do this for rhs */
-//    if (t->identity_set) thisAgent->explanationBasedChunker->join_set_remove_ref(t->identity_set);
+
+    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->deallocate_identity_set(t->identity_set);
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
 
@@ -967,6 +963,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->data.referent = sym;
     new_ct->identity = NULL_IDENTITY_SET;
     new_ct->identity_set = NULL;
+    new_ct->owns_identity_set = false;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 

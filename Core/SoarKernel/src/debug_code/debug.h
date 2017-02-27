@@ -40,6 +40,7 @@ bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match
 bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value);
 bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 bool break_if_test_symbol_matches_string(test t, const char* match);
+bool break_if_bool(bool shouldBreak);
 
 void debug_test(int type = 1);
 

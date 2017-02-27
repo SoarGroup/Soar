@@ -422,7 +422,7 @@ void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
             sanity_chunk_test(static_cast<test>(c->first));
         }
     } else {
-        assert(!test_has_referent(pTest) || !pTest->data.referent->is_sti());
+        assert((!test_has_referent(pTest) || !pTest->data.referent->is_sti()) && !pTest->identity_set);
     }
 }
 

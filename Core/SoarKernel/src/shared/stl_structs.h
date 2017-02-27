@@ -8,9 +8,9 @@
 
 #ifdef USE_MEM_POOL_ALLOCATORS
     typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >            constraint_list;
-    typedef std::list< identity_set*, soar_module::soar_memory_pool_allocator< identity_set* > >      identity_set_list;
+    typedef std::list< identity_set*, soar_module::soar_memory_pool_allocator< identity_set* > >        identity_set_list;
 #else
-    typedef std::list< identity_set* >                                                                 identity_set_list;
+    typedef std::list< identity_set* >                                                                  identity_set_list;
     typedef std::list< constraint* >                                                                    constraint_list;
 #endif
 
@@ -45,14 +45,14 @@ typedef struct identity_quadruple_struct
 typedef struct identity_set_struct
 {
         /* Identity ID is static and never changes after instantiation creation.
-         * The remaining fields are transient based on the explanation trace
-         * being analyzed */
+         * The remaining fields are transient based on the explanation trace being analyzed
+         * and are cleaned up after a learning episode. */
 
         /* An ID used for printing and to make debugging easier. Not used by identity analysis logic. */
         uint64_t                    identity;
 
-        uint64_t                    refcount;   // Increased for every identity set pointed to this one
-        bool                        dirty;      // Flag to avoid adding to clean up list if already on it
+        /* Flag to avoid adding to identity set clean up list if it is already on it */
+        bool                        dirty;
 
         /* Fields that link this identity_set node to others in the identity graph */
         identity_set_struct*        super_join;
@@ -66,6 +66,9 @@ typedef struct identity_set_struct
         /* Fields for transitive constraint attachment  */
         condition*                  operational_cond;
         WME_Field                   operational_field;
+
+        /* This is an ID used by DEBUG_IDSET_INVENTORY.  Not used otherwise. */
+        uint64_t                    is_id;
 } identity_set;
 
 

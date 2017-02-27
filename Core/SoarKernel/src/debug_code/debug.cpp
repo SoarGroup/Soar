@@ -66,6 +66,13 @@ bool break_if_pref_matches_string(preference *w, const char* match_id, const cha
         return true;
     return false;
 }
+bool break_if_bool(bool shouldBreak)
+{
+    if (shouldBreak)
+        return true;
+    return false;
+}
+
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)
@@ -155,6 +162,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_OSK].prefix =                          strdup("OSK     | ");
     mode_info[DT_BACKTRACE1].prefix =                   strdup("BT_Pass1| ");
     mode_info[DT_PROPAGATE_ID_SETS].prefix =            strdup("IDS Prop| ");
+    mode_info[DT_DEALLOCATE_ID_SETS].prefix =           strdup("DelIDSet| ");
 
     /* In case we forget to add a trace prefix */
     for (int i=0; i < num_trace_modes; i++)

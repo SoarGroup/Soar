@@ -8,6 +8,7 @@
 #include "ebc.h"
 #include "ebc_timers.h"
 
+#include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "rhs.h"
@@ -16,10 +17,9 @@
 
 identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
-    identity_set* new_join_set;;
+    identity_set* new_join_set;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
-    new_join_set->refcount = 1;
     new_join_set->dirty = false;
     new_join_set->super_join = new_join_set;
     new_join_set->identity_sets = NULL;
@@ -28,34 +28,40 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     new_join_set->literalized = false;
     new_join_set->operational_cond = NULL;
     new_join_set->operational_field = NO_ELEMENT;
+    ISI_add(thisAgent, new_join_set);
 
-    dprint(DT_PROPAGATE_ID_SETS, "Created identity set %us%u.\n", new_join_set->identity, new_join_set->super_join->identity);
+    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u\n", new_join_set->identity);
     return new_join_set;
 }
 
-void Explanation_Based_Chunker::identity_set_remove_ref(identity_set* &pIDSet)
+void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet)
 {
-    if (--(pIDSet->refcount) == 0)
+    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
+    if (pIDSet->super_join != pIDSet)
     {
-        dprint(DT_PROPAGATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
-        clean_up_identity_set_transient(pIDSet);
-        thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
-        pIDSet = NULL;
+        dprint(DT_DEALLOCATE_ID_SETS, "Removing identity set %u from super-join %u's identity_sets\n", pIDSet->identity, pIDSet->super_join->identity);
+        pIDSet->super_join->identity_sets->remove(pIDSet);
     }
+    if (pIDSet->identity_sets)
+    {
+        identity_set* lPreviouslyJoinedIdentity;
+        for (auto it = pIDSet->identity_sets->begin(); it != pIDSet->identity_sets->end(); it++)
+        {
+            lPreviouslyJoinedIdentity = *it;
+            dprint(DT_DEALLOCATE_ID_SETS, "Resetting previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, pIDSet->identity);
+            lPreviouslyJoinedIdentity->super_join = lPreviouslyJoinedIdentity;
+        }
+    }
+    clean_up_identity_set_transient(pIDSet);
+    ISI_remove(thisAgent, pIDSet);
+    thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
+    pIDSet = NULL;
 }
 
 void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pIDSet)
 {
-    if (pIDSet->super_join != pIDSet)
-    {
-        identity_set_remove_ref(pIDSet->super_join);
-    }
-    if (pIDSet->new_var)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
-    }
+    if (pIDSet->new_var) thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
     if (pIDSet->identity_sets) delete pIDSet->identity_sets;
-    pIDSet->refcount = 1;
     pIDSet->dirty = false;
     pIDSet->super_join = pIDSet;
     pIDSet->identity_sets = NULL;
@@ -88,8 +94,8 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
-    identity_sets_to_clean_up.insert(lFromJoinSet);
-    identity_sets_to_clean_up.insert(lToJoinSet);
+    touch_identity_set(lFromJoinSet);
+    touch_identity_set(lToJoinSet);
 
     dprint(DT_UNIFY_IDENTITY_SETS, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
 
@@ -108,7 +114,8 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     {
         lToJoinSet->identity_sets = new identity_set_list();
     }
-    // Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet
+
+    /* Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet */
     identity_set* lPreviouslyJoinedIdentity;
     if (lFromJoinSet->identity_sets)
     {
@@ -117,11 +124,9 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
             lPreviouslyJoinedIdentity = *it;
             dprint(DT_UNIFY_IDENTITY_SETS, "Changing previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
             lPreviouslyJoinedIdentity->super_join = lToJoinSet;
-            identity_set_remove_ref(lFromJoinSet);
-            lToJoinSet->identity_sets->push_back(lPreviouslyJoinedIdentity);
-            identity_set_add_ref(lToJoinSet);
             if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
         }
+        lToJoinSet->identity_sets->splice(lToJoinSet->identity_sets->begin(), (*lFromJoinSet->identity_sets));
         delete lFromJoinSet->identity_sets;
         lFromJoinSet->identity_sets = NULL;
     }
@@ -134,12 +139,9 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
 
     /* Point super_join to joined identity set */
     lFromJoinSet->super_join = lToJoinSet;
-    identity_set_add_ref(lToJoinSet);
 
     ebc_timers->identity_unification->stop();
 
-//    dprint(DT_ADD_IDENTITY_SET_MAPPING, "New identity propagation map:\n");
-//    dprint_identity_to_id_set_map(DT_ADD_IDENTITY_SET_MAPPING);
 }
 
 void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id)
@@ -170,7 +172,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 if (rs->identity_set && !rs->referent->is_sti())
                 {
                     thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
-                    rs->identity_set->super_join->literalized = true;
+                    literalize_identity_set(rs->identity_set->super_join);
                     thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
                 }
             }
@@ -205,14 +207,14 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity, lId);
-            o_ids_to_replace.id->super_join->literalized = true;
+            literalize_identity_set(o_ids_to_replace.id->super_join);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.id))
     {
         dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
         literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
-        lId->identity_set->super_join->literalized = true;
+        if (lId->identity_set) literalize_identity_set(lId->identity_set->super_join);
     }
     if (o_ids_to_replace.attr)
     {
@@ -227,14 +229,14 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity, lAttr);
-            o_ids_to_replace.attr->super_join->literalized = true;
+            literalize_identity_set(o_ids_to_replace.attr->super_join);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
     {
         dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in attribute element %r\n", rhs_funcs.attr);
         literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
-        if (lAttr->identity_set) lAttr->identity_set->super_join->literalized = true;
+        if (lAttr->identity_set) literalize_identity_set(lAttr->identity_set->super_join);
     }
     if (o_ids_to_replace.value)
     {
@@ -249,14 +251,14 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity, lValue);
-            o_ids_to_replace.value->super_join->literalized = true;
+            literalize_identity_set(o_ids_to_replace.value->super_join);
         }
     }
     else if (rhs_value_is_literalizing_function(rhs_funcs.value))
     {
         dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in value element %r\n", rhs_funcs.value);
         literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
-        if (lValue->identity_set) lValue->identity_set->super_join->literalized = true;
+        if (lValue->identity_set) literalize_identity_set(lValue->identity_set->super_join);
     }
     assert(!o_ids_to_replace.referent);
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))

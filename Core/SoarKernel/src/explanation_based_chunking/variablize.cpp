@@ -29,7 +29,7 @@ void Explanation_Based_Chunker::store_variablization(identity_set* pIdentitySet,
     pIdentitySet->super_join->new_var = variable;
     pIdentitySet->super_join->clone_identity = this->get_or_create_identity(variable);;
     variable->var->instantiated_sym = pMatched_sym;
-    identity_sets_to_clean_up.insert(pIdentitySet);
+    touch_identity_set(pIdentitySet);
 
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
@@ -86,7 +86,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     if (rs->identity_set)
     {
         dprint(DT_RHS_VARIABLIZATION, "...searching for variablization for identity %u...\n", rs->identity_set);
-        has_variablization = rs->identity_set->new_var;
+        has_variablization = (rs->identity_set->new_var != NULL);
     }
     else
     {
@@ -125,6 +125,8 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         thisAgent->symbolManager->symbol_add_ref(rs->identity_set->super_join->new_var);
         rs->referent = rs->identity_set->super_join->new_var;
         rs->identity = rs->identity_set->super_join->identity;
+        uint64_t returnID = rs->identity_set->clone_identity;
+        rs->identity_set = NULL;
 
         /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
         if (lMatchedSym_with_LTI_Link)
@@ -132,7 +134,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
             dprint(DT_RHS_LTI_LINKING, "Adding %r to local_linked_STIs\n", lMatchedSym_with_LTI_Link);
             local_linked_STIs->push_back(lMatchedSym_with_LTI_Link);
         }
-        return rs->identity_set->clone_identity;
+        return returnID;
     }
     else
     {
@@ -212,11 +214,10 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 pTest->eq_test->identity_set = NULL;
 
             }
-//            dprint(DT_LHS_VARIABLIZATION, "Equality test is now: %t %g and test is %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
         } else {
             /* Literalized identity, so set identity in chunk to 0 */
             pTest->eq_test->identity = NULL_IDENTITY_SET;
-            pTest->eq_test->identity_set = NULL_IDENTITY_SET;
+            pTest->eq_test->identity_set = NULL;
         }
     }
 }
@@ -245,19 +246,18 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         t->data.referent = t->identity_set->super_join->new_var;
         thisAgent->symbolManager->symbol_add_ref(t->identity_set->super_join->new_var);
         t->identity = t->identity_set->super_join->clone_identity;
+        t->identity_set = NULL;
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
         t->identity = NULL_IDENTITY_SET;
-        t->identity_set = NULL_IDENTITY_SET;
+        t->identity_set = NULL;
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in relational test.  Will delete during consolidation phase.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
         return false;
     }
-
-//    dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
 
     return true;
 }
@@ -745,6 +745,13 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
+        if (rs->identity_set)
+        {
+            if (rs->identity_set->super_join->clone_identity) rs->identity = rs->identity_set->super_join->clone_identity;
+            /* MToDo | Is there a chance this could be an unbound rhs var with a new identity that it owns? 
+             *         May want to place an assert outside of this function that checks the preference ownership */
+            rs->identity_set = NULL;
+        }
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->identity);
     }

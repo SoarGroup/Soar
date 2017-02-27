@@ -123,6 +123,7 @@ typedef struct preference_struct
     identity_quadruple              identities;         /* identities for a preferences in relation to instantiation that created*/
     identity_quadruple              clone_identities;   /* identities for a result preference in relation to chunk formed*/
     identity_set_quadruple          identity_sets;      /* identity join sets for all four elements */
+    bool_quadruple                  owns_identity_set;
     bool_quadruple                  was_unbound_vars;
     rhs_quadruple                   rhs_funcs;          /* identities of syms in rhs functions*/
     rhs_quadruple                   cloned_rhs_funcs;   /* identities of syms in clone prefs rhs functions*/

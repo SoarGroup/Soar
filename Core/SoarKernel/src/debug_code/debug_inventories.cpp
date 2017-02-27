@@ -12,6 +12,7 @@
 #include "instantiation.h"
 #include "misc.h"
 #include "preference.h"
+#include "soar_instance.h"
 #include "symbol_manager.h"
 #include "output_manager.h"
 #include "working_memory.h"
@@ -334,3 +335,78 @@
     void WDI_print_and_cleanup(agent* thisAgent) {}
 #endif
 
+#ifdef DEBUG_IDSET_INVENTORY
+    id_to_string_map idset_deallocation_map;
+
+    uint64_t ISI_id_counter = 0;
+    bool     ISI_double_deallocation_seen = false;
+
+    void ISI_add(agent* thisAgent, identity_set* pIDSet)
+    {
+        std::string lPrefString;
+        pIDSet->is_id = ++ISI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "Identity set %u", pIDSet->identity);
+        idset_deallocation_map[pIDSet->is_id] = lPrefString;
+    }
+    void ISI_remove(agent* thisAgent, identity_set* pIDSet)
+    {
+        auto it = idset_deallocation_map.find(pIDSet->is_id);
+        assert (it != idset_deallocation_map.end());
+//        if (it == idset_deallocation_map.end())
+//        {
+//            dprint(DT_DEBUG, "Did not find preference to remove!  %p\nRemaining preference deallocation map:\n", pIDSet);
+//            std::string lPrefString;
+//            for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
+//            {
+//                lPrefString = it->second;
+//                if (!lPrefString.empty()) dprint(DT_DEBUG, "%u: %s\n", it->first, lPrefString.c_str());
+//            }
+//            return;
+//        }
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            idset_deallocation_map[pIDSet->is_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "Identity set %u was deallocated twice!\n", it->first);
+            break_if_bool(true);
+            ISI_double_deallocation_seen = true;
+        }
+    }
+    void ISI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lPrefString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "Identity set inventory:            ");
+        for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
+        {
+            lPrefString = it->second;
+            if (!lPrefString.empty())
+            {
+                bugCount++;
+            }
+        }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ISI_id_counter);
+        if (ISI_double_deallocation_seen)
+            thisAgent->outputManager->printa_sf(thisAgent, " and some identities were deallocated twice!\n");
+        else if (bugCount)
+            thisAgent->outputManager->printa_sf(thisAgent, "!");
+        else thisAgent->outputManager->printa_sf(thisAgent, ".");
+
+        if (bugCount <= 23)
+        {
+            for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
+            {
+                lPrefString = it->second;
+                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...identity set %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
+            }
+        }
+        if (((bugCount > 0) || ISI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) assert(false);
+        idset_deallocation_map.clear();
+        ISI_id_counter = 0;
+    }
+#else
+    void ISI_add(agent* thisAgent, identity_set* pIDSet) {}
+    void ISI_remove(agent* thisAgent, identity_set* pIDSet) {}
+    void ISI_print_and_cleanup(agent* thisAgent) {}
+#endif

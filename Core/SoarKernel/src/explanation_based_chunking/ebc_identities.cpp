@@ -61,24 +61,25 @@ identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
     else return NULL;
 }
 
-identity_set* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet)
+identity_set* Explanation_Based_Chunker::get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet)
 {
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
-        identity_set_add_ref(iter->second);
-        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with id set %u already used in rule.  Increased refcount of %u\n", pID, iter->second->identity, iter->second->refcount);
+        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.  Increased refcount of %u\n", pID, iter->second->identity);
+        (*pOwnsIdentitySet) = false;
         return iter->second;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
-        identity_set_add_ref(pIDSet);
-        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity for test with identity %u with parent id set %u.  Increasing refcount of identity join to %u\n", pID, pIDSet->identity, pIDSet->refcount);
+        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->identity);
+        (*pOwnsIdentitySet) = false;
         return pIDSet;
     } else {
         identity_set* newJoinSet = make_identity_set(pID);
         (*identities_to_id_sets)[pID] = newJoinSet;
+        (*pOwnsIdentitySet) = true;
         dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->identity, pID);
         return newJoinSet;
     }
@@ -104,8 +105,14 @@ void Explanation_Based_Chunker::update_identity_sets_in_test(test t, instantiati
             default:
                 if (t->identity)
                 {
-//                    if (t->identity_set) identity_set_remove_ref(t->identity_set);
-                    t->identity_set = get_id_set_for_identity(t->identity);
+                    identity_set* updated_id_set = get_id_set_for_identity(t->identity);
+                    if (t->identity_set && t->owns_identity_set && (t->identity_set != updated_id_set))
+                    {
+                        deallocate_identity_set(t->identity_set);
+                        /* We no longer own our identity set.  A previous test in the rule or a singleton wme own it */
+                        t->owns_identity_set = false;
+                    }
+                    t->identity_set = updated_id_set;
                 }
                 break;
         }
@@ -130,30 +137,46 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
 
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    if (lPref->identities.id) lPref->identity_sets.id = get_or_add_id_set_for_identity(lPref->identities.id);
-    if (lPref->identities.attr) lPref->identity_sets.attr = get_or_add_id_set_for_identity(lPref->identities.attr);
-    if (lPref->identities.value) lPref->identity_sets.value = get_or_add_id_set_for_identity(lPref->identities.value);
-    if (lPref->identities.referent) lPref->identity_sets.referent = get_or_add_id_set_for_identity(lPref->identities.referent);
+    identity_set* updated_id_set;
+    bool lOwnedIdentitySet;
 
-    /* We don't deallocate the old rhs_funcs because they are created in execute_action
-     * which doesn't have ownership of these rhs functions and needs to make copies for the preference
-     * that it's creating. */
-    if (lPref->rhs_funcs.id)
+    if (lPref->identities.id)
     {
-        lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
+        lOwnedIdentitySet = lPref->owns_identity_set.id;
+        identity_set* updated_id_set = get_or_add_id_set_for_identity(lPref->identities.id, NULL, &(lPref->owns_identity_set.id));
+        if (lPref->identity_sets.id && lOwnedIdentitySet && (lPref->identity_sets.id != updated_id_set)) deallocate_identity_set(lPref->identity_sets.id);
+        lPref->identity_sets.id = updated_id_set;
     }
-    if (lPref->rhs_funcs.attr)
+    if (lPref->identities.attr)
     {
-        lPref->rhs_funcs.attr = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
+        lOwnedIdentitySet = lPref->owns_identity_set.attr;
+        identity_set* updated_id_set = get_or_add_id_set_for_identity(lPref->identities.attr, NULL, &(lPref->owns_identity_set.attr));
+        if (lPref->identity_sets.attr && lOwnedIdentitySet && (lPref->identity_sets.attr != updated_id_set)) deallocate_identity_set(lPref->identity_sets.attr);
+        lPref->identity_sets.attr = updated_id_set;
     }
-    if (lPref->rhs_funcs.value)
+    if (lPref->identities.value)
     {
-        lPref->rhs_funcs.value = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
+        lOwnedIdentitySet = lPref->owns_identity_set.value;
+        identity_set* updated_id_set = get_or_add_id_set_for_identity(lPref->identities.value, NULL, &(lPref->owns_identity_set.value));
+        if (lPref->identity_sets.value && lOwnedIdentitySet && (lPref->identity_sets.value != updated_id_set)) deallocate_identity_set(lPref->identity_sets.value);
+        lPref->identity_sets.value = updated_id_set;
     }
-    if (lPref->rhs_funcs.referent)
+    if (lPref->identities.referent)
     {
-        lPref->rhs_funcs.referent = copy_rhs_value(thisAgent, lPref->rhs_funcs.referent, true);
+        lOwnedIdentitySet = lPref->owns_identity_set.referent;
+        identity_set* updated_id_set = get_or_add_id_set_for_identity(lPref->identities.referent, NULL, &(lPref->owns_identity_set.referent));
+        if (lPref->identity_sets.referent && lOwnedIdentitySet && (lPref->identity_sets.referent != updated_id_set)) deallocate_identity_set(lPref->identity_sets.referent);
+        lPref->identity_sets.referent = updated_id_set;
     }
+
+    /* Note:  We don't deallocate the existing rhs_funcs before replacing them because they are created in
+     *        execute_action which doesn't have ownership of these rhs functions and previously made copies
+     *        for the preference that it's creating. We now just moved it here so that it can be done after
+     *        identity sets have been fully unified. */
+    if (lPref->rhs_funcs.id) lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
+    if (lPref->rhs_funcs.attr) lPref->rhs_funcs.attr = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
+    if (lPref->rhs_funcs.value) lPref->rhs_funcs.value = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
+    if (lPref->rhs_funcs.referent) lPref->rhs_funcs.referent = copy_rhs_value(thisAgent, lPref->rhs_funcs.referent, true);
 
 }
 

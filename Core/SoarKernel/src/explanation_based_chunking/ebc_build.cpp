@@ -217,57 +217,6 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
     }
 }
 
-action* Explanation_Based_Chunker::copy_action_list(action* actions)
-{
-    action* old, *New, *prev, *first;
-    char first_letter;
-
-    prev = NIL;
-    first = NIL;  /* unneeded, but without it gcc -Wall warns here */
-    old = actions;
-    while (old)
-    {
-        New = make_action(thisAgent);
-        if (prev)
-    {
-            prev->next = New;
-    }
-        else
-    {
-            first = New;
-    }
-        prev = New;
-        New->type = old->type;
-        New->preference_type = old->preference_type;
-        New->support = old->support;
-        if (old->type == FUNCALL_ACTION)
-    {
-            New->value = copy_rhs_value(thisAgent, old->value);
-    }
-        else
-    {
-            New->id = copy_rhs_value(thisAgent, old->id);
-            New->attr = copy_rhs_value(thisAgent, old->attr);
-            first_letter = first_letter_from_rhs_value(New->attr);
-            New->value = copy_rhs_value(thisAgent, old->value);
-            if (preference_is_binary(old->preference_type))
-    {
-                New->referent = copy_rhs_value(thisAgent, old->referent);
-            }
-    }
-        old = old->next;
-        }
-    if (prev)
-    {
-        prev->next = NIL;
-    }
-    else
-    {
-        first = NIL;
-    }
-    return first;
-}
-
 /* ====================================================================
 
      Chunk Conditions, and Chunk Conditions Set Manipulation Routines
@@ -455,19 +404,19 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         {
             c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.id_test->eq_test->identity_set->super_join->operational_field = ID_ELEMENT;
-            identity_sets_to_clean_up.insert(c_vrblz->data.tests.id_test->eq_test->identity_set->super_join);
+            touch_identity_set(c_vrblz->data.tests.id_test->eq_test->identity_set->super_join);
         }
         if (c_vrblz->data.tests.attr_test->eq_test->identity_set && !c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond)
         {
             c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join->operational_field = ATTR_ELEMENT;
-            identity_sets_to_clean_up.insert(c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join);
+            touch_identity_set(c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join);
         }
         if (c_vrblz->data.tests.value_test->eq_test->identity_set && !c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond)
         {
             c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_cond = c_vrblz;
             c_vrblz->data.tests.value_test->eq_test->identity_set->super_join->operational_field = VALUE_ELEMENT;
-            identity_sets_to_clean_up.insert(c_vrblz->data.tests.value_test->eq_test->identity_set->super_join);
+            touch_identity_set(c_vrblz->data.tests.value_test->eq_test->identity_set->super_join);
         }
 
         /* --- add this condition to the TC.  Needed to see if NCC are grounded. --- */
@@ -623,10 +572,11 @@ void Explanation_Based_Chunker::make_clones_of_results()
         lClonedPref->inst = m_chunk_inst;
         lClonedPref->level = m_chunk_inst->match_goal_level;
 
-        lClonedPref->identity_sets.id = lResultPref->identity_sets.id;
-        lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
-        lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
-        lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
+
+        if (lResultPref->identity_sets.id) lClonedPref->identity_sets.id = lResultPref->identity_sets.id;
+        if (lResultPref->identity_sets.attr) lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
+        if (lResultPref->identity_sets.value) lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
+        if (lResultPref->identity_sets.referent) lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
         if (lResultPref->cloned_rhs_funcs.id)

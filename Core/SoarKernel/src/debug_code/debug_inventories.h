@@ -22,6 +22,7 @@
 //#define DEBUG_INSTANTIATION_INVENTORY
 //#define DEBUG_PREFERENCE_INVENTORY
 //#define DEBUG_WME_INVENTORY
+//#define DEBUG_IDSET_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
@@ -47,5 +48,9 @@ void WDI_print_and_cleanup(agent* thisAgent);
 void GDI_add(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_print_and_cleanup(agent* thisAgent);
+
+void ISI_add(agent* thisAgent, identity_set* pIDSet);
+void ISI_remove(agent* thisAgent, identity_set* pIDSet);
+void ISI_print_and_cleanup(agent* thisAgent);
 
 #endif /* CORE_SOARKERNEL_SRC_DEBUG_CODE_DEBUG_INVENTORIES_H_ */

@@ -525,7 +525,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     }
     newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), was_unbound_vars);
 
-    /* We don't copy these because unify_preference_identities will copy to unify anyway */
+    /* We don't copy these rhs functions because updated_preference_identities needs to copy them to update identity set information later */
     newPref->rhs_funcs.id = f_id;
     newPref->rhs_funcs.attr = f_attr;
     newPref->rhs_funcs.value = f_value;
@@ -796,7 +796,10 @@ inline void propagate_identity_set(agent* thisAgent, test condTest, identity_set
 {
     /* If this tests an architectural WME, parentIDSet will be null and EBC will great a new identity set */
     if (condTest->identity)
-        condTest->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(condTest->identity, parentIDSet);
+    {
+        assert(!condTest->identity_set);
+        condTest->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(condTest->identity, parentIDSet, &(condTest->owns_identity_set));
+    }
     else
         condTest->identity_set = NULL;
 }
@@ -847,18 +850,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                             propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test);
                             propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test);
                             propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test);
-//                            if (cond->data.tests.id_test->eq_test->identity)
-//                            {
-//                                cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.id_test->eq_test->identity);
-//                            }
-//                            if (cond->data.tests.attr_test->eq_test->identity)
-//                            {
-//                                cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.attr_test->eq_test->identity);
-//                            }
-//                            if (cond->data.tests.value_test->eq_test->identity)
-//                            {
-//                                cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(cond->data.tests.value_test->eq_test->identity);
-//                            }
                         } else {
                             /* MToDo | I think these are just for top-level conds and are only used for RL templates. We'll fix later by variablizing differently */
                             assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
@@ -876,8 +867,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 
                 thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_superstate_identity_set);
                 cond->data.tests.value_test->eq_test->identity_set = cond->bt.wme_->local_singleton_superstate_identity_set;
-//                dprint(DT_DEBUG, "Unification map after propagating local singleton identity for %t\n", cond->data.tests.value_test->eq_test);
-//                dprint_identity_to_id_set_map(DT_DEBUG);
             }
             if (lDoIdentities)
             {
@@ -899,8 +888,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
         }
         cond->inst = inst;
     }
-//    dprint(DT_DEBUG, "Unification map after first pass at propagating:\n");
-//    dprint_identity_to_id_set_map(DT_DEBUG);
+
     if (lDoIdentities)
     {
         dprint(DT_PROPAGATE_ID_SETS, "Updating identity sets in conditions:\n%1\n", inst->top_of_instantiated_conditions);
@@ -1392,6 +1380,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         assert(lInst);
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 (prefs) for %u (%y)\n", lInst->i_id, lInst->prod_name);
+        //dprint(DT_DEALLOCATE_INST,  "Deallocating instantiation for match of %y (%u) in %y (%d) : \n%5", lInst->prod_name, lInst->i_id, lInst->match_goal, static_cast<long long>(lInst->match_goal_level), lInst->top_of_instantiated_conditions, lInst->preferences_generated);
         debug_refcount_change_start(thisAgent, false);
 
         for (condition* cond = lInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)

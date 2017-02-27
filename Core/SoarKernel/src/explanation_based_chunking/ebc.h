@@ -82,15 +82,13 @@ class Explanation_Based_Chunker
 
         /* Methods for identity set propagation and analysis */
         identity_set*   make_identity_set(uint64_t pIDSet);
-        void            identity_set_add_ref(identity_set* pIDSet) { ++(pIDSet->refcount);}
-        void            identity_set_remove_ref(identity_set* &pIDSet);
+        void            deallocate_identity_set(identity_set* &pIDSet);
         identity_set*   get_id_set_for_identity(uint64_t pID);
-        identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet = NULL);
-        uint64_t        get_joined_id_set_identity(uint64_t pIDSet);
-        uint64_t        get_joined_id_set_cloned_identity(uint64_t pIDSet);
+        identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
         identity_set*   get_floating_identity_set();
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
         void            touch_identity_set(identity_set* pIDSet)                                { assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
+        void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -233,7 +231,6 @@ class Explanation_Based_Chunker
         void            add_pref_to_results(preference* pref, identity_set* linked_id);
         void            add_results_for_id(Symbol* id, identity_set* linked_id);
         void            add_results_if_needed(Symbol* sym, identity_set* linked_id);
-        action*         copy_action_list(action* actions);
         void            init_chunk_cond_set(chunk_cond_set* set);
         void            create_initial_chunk_condition_lists();
         bool            add_to_chunk_cond_set(chunk_cond_set* set, chunk_cond* new_cc);

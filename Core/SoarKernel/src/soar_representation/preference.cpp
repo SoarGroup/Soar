@@ -63,38 +63,13 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->parent_action = NULL;
     p->level = 0;
 
-    p->identities.id = o_ids.id;
-    p->identities.attr = o_ids.attr;
-    p->identities.value = o_ids.value;
-    p->identities.referent = o_ids.referent;
-
-    p->identity_sets.id = NIL;
-    p->identity_sets.attr = NIL;
-    p->identity_sets.value = NIL;
-    p->identity_sets.referent = NIL;
-
-    /* We set these to NULL. The code creating this preference responsible
-     * for allocating these rhs_values if needed. These rhs values are used to
-     * store the identities of variables used in the rhs functions */
-    p->rhs_funcs.id = NULL;
-    p->rhs_funcs.attr = NULL;
-    p->rhs_funcs.value = NULL;
-    p->rhs_funcs.referent = NULL;
-
-    p->clone_identities.id = NIL;
-    p->clone_identities.attr = NIL;
-    p->clone_identities.value = NIL;
-    p->clone_identities.referent = NIL;
-
-    p->cloned_rhs_funcs.id = NULL;
-    p->cloned_rhs_funcs.attr = NULL;
-    p->cloned_rhs_funcs.value = NULL;
-    p->cloned_rhs_funcs.referent = NULL;
-
-    p->was_unbound_vars.id = pWas_unbound_vars.id;
-    p->was_unbound_vars.attr = pWas_unbound_vars.attr;
-    p->was_unbound_vars.value = pWas_unbound_vars.value;
-    p->was_unbound_vars.referent = pWas_unbound_vars.referent;
+    p->identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
+    p->identity_sets = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->clone_identities = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->owns_identity_set = { false, false, false, false };
+    p->was_unbound_vars = { pWas_unbound_vars.id, pWas_unbound_vars.attr, pWas_unbound_vars.value, pWas_unbound_vars.referent };
 
     PDI_add(thisAgent, p);
     dprint(DT_PREFS, "Created preference %p\n", p);
@@ -208,6 +183,11 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
     {
         wma_remove_pref_o_set(thisAgent, pref);
     }
+
+    if (pref->owns_identity_set.id && pref->identity_sets.id) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.id);
+    if (pref->owns_identity_set.attr && pref->identity_sets.attr) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.attr);
+    if (pref->owns_identity_set.value && pref->identity_sets.value) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.value);
+    if (pref->owns_identity_set.referent && pref->identity_sets.referent) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.referent);
 
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);

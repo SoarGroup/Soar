@@ -40,13 +40,14 @@ typedef struct test_struct
     TestType        type;                  /* see definitions in enums.h */
     union test_info_union
     {
-        Symbol*        referent;         /* for relational tests */
-        cons*        disjunction_list;   /* for disjunction tests */
-        cons*        conjunct_list;      /* for conjunctive tests */
+        Symbol*     referent;         /* for relational tests */
+        cons*       disjunction_list;   /* for disjunction tests */
+        cons*       conjunct_list;      /* for conjunctive tests */
     } data;
-    test_struct*     eq_test;
-    uint64_t         identity;
-    identity_set*    identity_set;
+    test_struct*    eq_test;
+    uint64_t        identity;
+    identity_set*   identity_set;
+    bool            owns_identity_set;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

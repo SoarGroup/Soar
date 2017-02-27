@@ -40,23 +40,12 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     cons* c;
     cons* fl;
 
-    if (rv == NULL) return;
+    if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
-    dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value ");
+    dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
 
-    if (rhs_value_is_reteloc(rv))
-    {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "reteloc. Ignoring.\n");
-        return;
-    }
-    if (rhs_value_is_unboundvar(rv))
-    {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "unboundvar.  Ignoring.\n");
-        return;
-    }
     if (rhs_value_is_funcall(rv))
     {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "which is a function call.\n");
        fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -67,14 +56,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "%y(%u)\n", r->referent, r->identity);
-        if (r->referent)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&r->referent);
-        }
-        /* MToDo | Not sure if we have to do this for rhs */
-//        if (r->identity_set) thisAgent->explanationBasedChunker->join_set_remove_ref(r->identity_set);
-
+        if (r->referent) thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
 }
@@ -116,15 +98,17 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
         identity_set* lIDSet = r->identity_set;
         if (get_identity_set)
         {
-            if (lIDSet)
-                if (lIDSet->super_join->clone_identity)
-                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->clone_identity);
+            if (r->identity_set)
+            {
+                if (r->identity_set->super_join->clone_identity)
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(r->identity_set->super_join->clone_identity);
                 else
-                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->super_join->identity);
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(r->identity_set->super_join->identity);
+            }
             else if (lID)
                 lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
         }
-        else if (lIDSet && get_cloned_identity)
+        if (lIDSet && get_cloned_identity)
         {
             lID = lIDSet->super_join->clone_identity;
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
@@ -550,8 +534,6 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
     new_rhs_symbol->identity_set = pIDSet;
-    /* MToDo | Not sure if we have to do this for rhs */
-//    if (pIDSet) thisAgent->explanationBasedChunker->join_set_add_ref(pIDSet);
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);

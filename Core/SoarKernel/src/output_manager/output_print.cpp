@@ -372,7 +372,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string(t->type);
                                     }
-                                    identity_to_string(thisAgent, t->identity, t->identity_set, destString);
+                                    identity_to_string(thisAgent, t->identity, t->identity_set, destString, t->owns_identity_set);
                                 } else {
                                     test_to_string(t, destString);
                                 }
