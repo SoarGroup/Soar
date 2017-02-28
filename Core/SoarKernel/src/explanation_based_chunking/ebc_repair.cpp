@@ -36,6 +36,16 @@ void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** uncon
     (*unconnected_syms) = NULL;
 }
 
+void Repair_Path::init(Symbol* new_root, wme_list* new_path, wme* new_wme)
+{
+    topSym = new_root;
+    wme_path = new wme_list();
+    if (new_path) {
+        (*wme_path) = (*new_path);
+        if (new_wme) wme_path->push_front(new_wme);
+    }
+}
+
 wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
 {
     repair_path_list ids_to_walk;
@@ -56,12 +66,6 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
 
     thisAgent->memoryManager->allocate_with_pool(MP_repair_path, &lNewPath);
     lNewPath->init(g);
-//    if (g == pNonOperationalSym)
-//    {
-////        return (new wme_list());
-//        return NULL;
-//    }
-
     ids_to_walk.push_back(lNewPath);
     g->tc_num = ground_lti_tc;
 

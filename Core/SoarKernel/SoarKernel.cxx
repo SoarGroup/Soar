@@ -16,7 +16,6 @@
 #include <ebc_backtrace.cpp>
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
-#include <ebc_identities.cpp>
 #include <ebc_merge.cpp>
 #include <ebc_osk.cpp>
 #include <ebc_print.cpp>
@@ -24,6 +23,7 @@
 #include <ebc_settings.cpp>
 #include <ebc_unify.cpp>
 #include <ebc.cpp>
+#include <ebc_identity_set_graph.cpp>
 #include <episodic_memory.cpp>
 #include <explain_print.cpp>
 #include <explanation_memory.cpp>

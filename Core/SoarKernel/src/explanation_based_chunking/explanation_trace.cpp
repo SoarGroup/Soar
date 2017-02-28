@@ -19,50 +19,41 @@
 
 #include <assert.h>
 
-void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up)
+/* Methods for generating variable identities during instantiation creation */
+
+uint64_t Explanation_Based_Chunker::get_or_create_identity_for_sym(Symbol* pSym)
+{
+    int64_t existing_o_id = 0;
+
+    auto iter_sym = instantiation_identities->find(pSym);
+    if (iter_sym != instantiation_identities->end())
+    {
+        existing_o_id = iter_sym->second;
+    }
+
+    if (!existing_o_id)
+    {
+        increment_counter(variablization_identity_counter);
+        (*instantiation_identities)[pSym] = variablization_identity_counter;
+        return variablization_identity_counter;
+    }
+    return existing_o_id;
+}
+
+void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
+{
+    if (pSym->is_sti()) (*instantiation_identities)[pSym] = pID;
+}
+
+void Explanation_Based_Chunker::add_identity_to_test(test pTest)
+{
+    if (!pTest->identity) pTest->identity = get_or_create_identity_for_sym(pTest->data.referent);
+}
+
+void Explanation_Based_Chunker::add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up)
 {
     test t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
-}
-
-void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node, condition* cond)
-{
-        rete_test* rt = node->b.posneg.other_tests;
-        dprint(DT_RL_VARIABLIZATION, "Adding explanation to RL condition %l\n", cond);
-
-        test chunk_test = NULL;
-        TestType test_type;
-        bool has_referent;
-        for (; rt != NIL; rt = rt->next)
-        {
-            dprint(DT_RL_VARIABLIZATION, "...found rete tests for RL condition");
-            chunk_test = NULL;
-            has_referent = true;
-            if (test_is_variable_relational_test(rt->type))
-            {
-                dprint(DT_RL_VARIABLIZATION, "...variable relational");
-                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
-                if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
-                {
-                    dprint(DT_RL_VARIABLIZATION, "...equality or not equal");
-                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
-                    if (ref_test->data.referent->is_sti() || ref_test->data.referent->is_variable())
-                    {
-                        dprint(DT_RL_VARIABLIZATION, "...STI or variable...Adding!");
-                        chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
-                    }
-                }
-            }
-            dprint(DT_RL_VARIABLIZATION, "\n");
-            if (chunk_test)
-            {
-                if (rt->right_field_num == 0) add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, has_referent);
-                else if (rt->right_field_num == 1) add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, has_referent);
-                else add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, has_referent);
-            }
-        }
-        dprint(DT_RL_VARIABLIZATION, "Final RL condition with explanation: %l\n", cond);
-
 }
 
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
@@ -95,11 +86,11 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
     /* --- on hashed nodes, add equality test for the hash function --- */
     if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
     {
-        add_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
+        add_var_test_bound_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
     }
     else if (node->node_type == POSITIVE_BNODE)
     {
-        add_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
+        add_var_test_bound_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
     }
 
     /* -- Now process any additional relational test -- */
@@ -198,5 +189,45 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
         }
     }
     add_test(thisAgent, dest_test_address, new_test);
+}
+
+void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node, condition* cond)
+{
+        rete_test* rt = node->b.posneg.other_tests;
+        dprint(DT_RL_VARIABLIZATION, "Adding explanation to RL condition %l\n", cond);
+
+        test chunk_test = NULL;
+        TestType test_type;
+        bool has_referent;
+        for (; rt != NIL; rt = rt->next)
+        {
+            dprint(DT_RL_VARIABLIZATION, "...found rete tests for RL condition");
+            chunk_test = NULL;
+            has_referent = true;
+            if (test_is_variable_relational_test(rt->type))
+            {
+                dprint(DT_RL_VARIABLIZATION, "...variable relational");
+                test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
+                if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
+                {
+                    dprint(DT_RL_VARIABLIZATION, "...equality or not equal");
+                    test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
+                    if (ref_test->data.referent->is_sti() || ref_test->data.referent->is_variable())
+                    {
+                        dprint(DT_RL_VARIABLIZATION, "...STI or variable...Adding!");
+                        chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
+                    }
+                }
+            }
+            dprint(DT_RL_VARIABLIZATION, "\n");
+            if (chunk_test)
+            {
+                if (rt->right_field_num == 0) add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, has_referent);
+                else if (rt->right_field_num == 1) add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, has_referent);
+                else add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, has_referent);
+            }
+        }
+        dprint(DT_RL_VARIABLIZATION, "Final RL condition with explanation: %l\n", cond);
+
 }
 

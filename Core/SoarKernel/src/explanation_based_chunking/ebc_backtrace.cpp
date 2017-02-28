@@ -92,37 +92,6 @@ void Explanation_Based_Chunker::add_to_locals(condition* cond)
         appropriate set (locals, grounds, negated_set).
 ------------------------------------------------------------------- */
 
-void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent)
-{
-    for (; c != NIL; c = c->rest)
-    {
-        if (thisAgent->outputManager->get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\n      ");
-        }
-
-        /* mvp 5-17-94 */
-        thisAgent->outputManager->print_spaces(thisAgent, indent);
-        print_condition(thisAgent, static_cast<condition_struct*>(c->first));
-    }
-}
-
-void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent)
-{
-    for (; c != NIL; c = c->rest)
-    {
-        if (thisAgent->outputManager->get_printer_output_column(thisAgent) >= COLUMNS_PER_LINE - 20)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\n      ");
-        }
-
-        /* mvp 5-17-94 */
-        thisAgent->outputManager->print_spaces(thisAgent, indent);
-        thisAgent->outputManager->printa_sf(thisAgent,  "     ");
-        print_wme(thisAgent, (static_cast<condition*>(c->first))->bt.wme_);
-    }
-}
-
 void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPref, condition* trace_cond, uint64_t bt_depth, BTSourceType bt_type)
 {
 
@@ -371,19 +340,6 @@ void Explanation_Based_Chunker::trace_locals()
     {
         xml_end_tag(thisAgent, kTagLocals);
     }
-}
-
-void Explanation_Based_Chunker::report_local_negation(condition* c)
-{
-    cons* negated_to_print = NIL;
-    push(thisAgent, c, negated_to_print);
-
-    thisAgent->outputManager->printa(thisAgent, "\n*** Rule learned that used negative reasoning about local sub-state.***\n");
-    xml_begin_tag(thisAgent, kTagLocalNegation);
-    print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
-    xml_end_tag(thisAgent, kTagLocalNegation);
-
-    free_list(thisAgent, negated_to_print);
 }
 
 void Explanation_Based_Chunker::perform_dependency_analysis()

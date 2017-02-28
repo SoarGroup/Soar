@@ -250,6 +250,8 @@ class Output_Manager
 
 inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
 inline const char* capitalizeYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
+inline const char* TorF(bool isTrue) { if (isTrue) return "true"; else return "false"; }
+inline const char* PassorFail(bool isTrue) { if (isTrue) return "Pass"; else return "Fail"; }
 
 inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {

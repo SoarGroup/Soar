@@ -534,22 +534,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     return newPref;
 
 abort_execute_action: /* control comes here when some error occurred */
-    if (lId)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lId);
-    }
-    if (lAttr)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lAttr);
-    }
-    if (lValue)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lValue);
-    }
-    if (lReferent)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lReferent);
-    }
+    if (lId) thisAgent->symbolManager->symbol_remove_ref(&lId);
+    if (lAttr) thisAgent->symbolManager->symbol_remove_ref(&lAttr);
+    if (lValue) thisAgent->symbolManager->symbol_remove_ref(&lValue);
+    if (lReferent)  thisAgent->symbolManager->symbol_remove_ref(&lReferent);
     return NIL;
 }
 
@@ -626,8 +614,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
         {
             for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next)
             {
-                if ((act->type == MAKE_ACTION)  &&
-                        (rhs_value_is_symbol(act->attr)) &&
+                if ((act->type == MAKE_ACTION)  && (rhs_value_is_symbol(act->attr)) &&
                         (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                         (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
@@ -646,8 +633,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     {
                         Symbol* lSym = rhs_value_to_symbol(act->id);
                         /* -- Not sure rhs id can even be a symbol at this point.  Temporary warning here. -- */
-                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences(). Please report"
-                              " to Soar Umich group.\n", lSym);
+                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences().\n", lSym);
                         if (lSym->is_state())
                         {
                             operator_proposal = true;
@@ -688,47 +674,30 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 
                         if (pass == 0)
                         {
-
                             if (w->id->id->isa_goal == true)
                             {
-
-                                if (lowest_goal_wme == NIL)
-                                {
-                                    lowest_goal_wme = w;
-                                }
-
+                                if (lowest_goal_wme == NIL) lowest_goal_wme = w;
                                 else
-                                {
-                                    if (w->id->id->level > lowest_goal_wme->id->id->level)
-                                    {
-                                        lowest_goal_wme = w;
-                                    }
-                                }
+                                    if (w->id->id->level > lowest_goal_wme->id->id->level) lowest_goal_wme = w;
                             }
 
                         }
 
                         else
                         {
-                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-                                (w->acceptable == false) &&
-                                (w->id == lowest_goal_wme->id))
+                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (w->acceptable == false) && (w->id == lowest_goal_wme->id))
                             {
-                                /* iff RHS has only operator elaborations
-                                    then it's IE_PROD, otherwise PE_PROD, so
-                                    look for non-op-elabs in the actions  KJC 1/00 */
+                                /* iff RHS has only operator elaborations then it's IE_PROD, otherwise PE_PROD, so look for non-op-elabs in the actions  */
                                 for (act = inst->prod->action_list;
                                     act != NIL ; act = act->next)
                                 {
                                     if (act->type == MAKE_ACTION)
                                     {
-                                        if ((rhs_value_is_symbol(act->id)) &&
-                                            (rhs_value_to_symbol(act->id) == w->value))
+                                        if ((rhs_value_is_symbol(act->id)) && (rhs_value_to_symbol(act->id) == w->value))
                                         {
                                             op_elab = true;
                                         }
-                                        else if (rhs_value_is_reteloc(act->id) &&
-                                            w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), inst->rete_token, w))
+                                        else if (rhs_value_is_reteloc(act->id) && w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), inst->rete_token, w))
                                         {
                                             op_elab = true;
                                         }
@@ -792,18 +761,6 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
-inline void propagate_identity_set(agent* thisAgent, test condTest, identity_set* parentIDSet = NULL)
-{
-    /* If this tests an architectural WME, parentIDSet will be null and EBC will great a new identity set */
-    if (condTest->identity)
-    {
-        assert(!condTest->identity_set);
-        condTest->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set_for_identity(condTest->identity, parentIDSet, &(condTest->owns_identity_set));
-    }
-    else
-        condTest->identity_set = NULL;
-}
-
 void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
 {
     condition* cond;
@@ -838,24 +795,27 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                     preference_add_ref(cond->bt.trace);
                     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
                     {
+                        test lTest_id = cond->data.tests.id_test->eq_test;
+                        test lTest_attr = cond->data.tests.attr_test->eq_test;
+                        test lTest_value = cond->data.tests.value_test->eq_test;
+
                         if (cond->bt.trace->level == inst->match_goal_level)
                         {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition at match goal level %l\n", cond);
-
-                            propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.trace->identity_sets.id);
-                            propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, cond->bt.trace->identity_sets.attr);
-                            propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.trace->identity_sets.value);
+                            if (lTest_id->identity)
+                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id, &(lTest_id->owns_identity_set));
+                            if (lTest_attr->identity)
+                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr, &(lTest_attr->owns_identity_set));
+                            if (lTest_value->identity)
+                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value, &(lTest_value->owns_identity_set));
                         } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition not at match goal level %l\n", cond);
-                            propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test);
-                            propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test);
-                            propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test);
-                        } else {
-                            /* MToDo | I think these are just for top-level conds and are only used for RL templates. We'll fix later by variablizing differently */
-                            assert(!cond->data.tests.id_test->eq_test->identity && cond->data.tests.attr_test->eq_test->identity && cond->data.tests.value_test->eq_test->identity);
-//                            cond->data.tests.id_test->eq_test->identity_set = cond->data.tests.id_test->eq_test->identity;
-//                            cond->data.tests.attr_test->eq_test->identity_set = cond->data.tests.attr_test->eq_test->identity;
-//                            cond->data.tests.value_test->eq_test->identity_set = cond->data.tests.value_test->eq_test->identity;
+                            if (lTest_id->identity)
+                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL, &(lTest_id->owns_identity_set));
+                            if (lTest_attr->identity)
+                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL, &(lTest_attr->owns_identity_set));
+                            if (lTest_value->identity)
+                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL, &(lTest_value->owns_identity_set));
                         }
                     }
                 }
@@ -871,41 +831,26 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             if (lDoIdentities)
             {
                 dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for cond with no pref at this level (possibly architectural or RL) %l\n", cond);
-                /* Architectural WME, RL template instance or we couldn't find a pref at the current level, so start a new identity set */
+                /* Architectural WME or we couldn't find a pref at the current level.  Start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
                 {
-                    propagate_identity_set(thisAgent, cond->data.tests.id_test->eq_test);
+                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL, &(cond->data.tests.id_test->eq_test->owns_identity_set));
                 }
                 if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity)
                 {
-                    propagate_identity_set(thisAgent, cond->data.tests.attr_test->eq_test);
+                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL, &(cond->data.tests.attr_test->eq_test->owns_identity_set));
                 }
                 if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity)
                 {
-                    propagate_identity_set(thisAgent, cond->data.tests.value_test->eq_test);
+                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL, &(cond->data.tests.value_test->eq_test->owns_identity_set));
                 }
             }
         }
         cond->inst = inst;
     }
 
-    if (lDoIdentities)
-    {
-        dprint(DT_PROPAGATE_ID_SETS, "Updating identity sets in conditions:\n%1\n", inst->top_of_instantiated_conditions);
-        for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
-        {
-            if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
-            {
-                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.id_test, inst);
-                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.attr_test, inst);
-                thisAgent->explanationBasedChunker->update_identity_sets_in_test(cond->data.tests.value_test, inst);
-            } else {
-                thisAgent->explanationBasedChunker->update_identity_sets_in_condlist(cond->data.ncc.top, inst);
-            }
-        }
-        dprint(DT_PROPAGATE_ID_SETS, "Conditions with final identity sets:\n%1\n", inst->top_of_instantiated_conditions);
-    }
-    assert(inst->match_goal);
+    if (lDoIdentities) thisAgent->explanationBasedChunker->update_identity_sets_in_condlist(cond = inst->top_of_instantiated_conditions, inst);
+
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
         if (lDoIdentities) thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p);
@@ -916,10 +861,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             p->on_goal_list = true;
         }
     }
-    if (need_to_do_support_calculations)
-    {
-        calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
-    }
+    if (need_to_do_support_calculations) calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
 }
 
 void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
@@ -1146,7 +1088,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     thisAgent->newly_created_instantiations = inst;
     inst->in_newly_created = true;
     inst->in_ms = true;
-    /* It seems we can get the match goal level and goal from the waterfall variables. No need to search */
     inst->match_goal_level = thisAgent->active_level;
     inst->match_goal = thisAgent->active_goal;
 
@@ -1238,7 +1179,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
         else
         {
-            dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
+            dprint(DT_RL_VARIABLIZATION, "RL template %y matched.  Building instance of it...\n", inst->prod_name);
             pref = NIL;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
         }
@@ -1257,17 +1198,13 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
-
         if (a2)  a2 = a2->next;
     }
 
     /* reset rhs_variable_bindings array to all zeros */
     index = 0;
     cell = thisAgent->rhs_variable_bindings;
-    while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index)
-    {
-        *(cell++) = NIL;
-    }
+    while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index) *(cell++) = NIL;
 
     /* fill in lots of other stuff */
     finalize_instantiation(thisAgent, inst, false, NIL, true);
@@ -1290,10 +1227,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
-    if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE))
-    {
-        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-    }
+    if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE)) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
 
@@ -1313,12 +1247,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
     }
 
-    if (!thisAgent->system_halted)
-    {
-        /* invoke callback function */
-        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
-
-    }
+    if (!thisAgent->system_halted) soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
 }
 
 /* -----------------------------------------------------------------------

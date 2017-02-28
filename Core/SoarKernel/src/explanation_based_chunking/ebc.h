@@ -68,6 +68,7 @@ class Explanation_Based_Chunker
 
         /* Identity set mapping functions */
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
+        void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);
         void update_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
         void update_identity_sets_in_preferences(preference* lPref);
 
@@ -81,7 +82,7 @@ class Explanation_Based_Chunker
         identity_set*   make_identity_set(uint64_t pIDSet);
         void            deallocate_identity_set(identity_set* &pIDSet);
         identity_set*   get_id_set_for_identity(uint64_t pID);
-        identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
+        identity_set*   get_or_add_id_set(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
         identity_set*   get_floating_identity_set();
         void            update_identity_set_clone_id(identity_set* pIdentitySet);
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
@@ -229,7 +230,7 @@ class Explanation_Based_Chunker
         rhs_value_list*               local_linked_STIs;
 
         /* Explanation/identity generation methods */
-        void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
+        void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond);
         /* Chunk building methods */
@@ -278,7 +279,7 @@ class Explanation_Based_Chunker
         void attach_relational_test(test pRelational_test, condition* pCond, WME_Field pField);
 
         /* Variablization methods */
-        void        store_variablization(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
+        void        store_variablization_in_identity_set(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
         void        variablize_rl_test(test t);
         bool        variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void        variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);

@@ -77,6 +77,8 @@ const std::string string_to_escaped_string(const char* s, char first_and_last_ch
 void print_condition_list(agent* thisAgent, condition* conds, int indent, bool internal);
 void print_action_list(agent* thisAgent, action* actions, int indent, bool internal);
 void print_production(agent* thisAgent, production* p, bool internal);
+void print_consed_list_of_condition_wmes(agent* thisAgent, cons* c, int indent);
+void print_consed_list_of_conditions(agent* thisAgent, cons* c, int indent);
 
 /* -----------------------------------------------------------------------
                        Other Printing Utilities

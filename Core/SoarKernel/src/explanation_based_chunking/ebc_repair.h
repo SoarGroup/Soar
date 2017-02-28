@@ -10,17 +10,8 @@ class Repair_Path
         Repair_Path() {};
         ~Repair_Path() {};
 
-        void init(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL)
-        {
-            topSym = new_root;
-            wme_path = new wme_list();
-            if (new_path) {
-                (*wme_path) = (*new_path);
-                if (new_wme) wme_path->push_front(new_wme);
-            }
-        }
+        void init(Symbol* new_root, wme_list* new_path = NULL, wme* new_wme = NULL);
         void clean_up() { delete wme_path; }
-
         Symbol* get_root() {return topSym;}
         wme_list* get_path() {return wme_path;}
 
@@ -47,7 +38,6 @@ class Repair_Manager
         wme_set                 m_repair_WMEs;
         goal_stack_level        m_match_goal_level;
         uint64_t                m_chunk_ID;
-
 
         wme_list*   find_path_to_goal_for_symbol(Symbol* targetLTI);
         void        mark_states_WMEs_and_store_variablizations(condition* pCondList, tc_number pTC);

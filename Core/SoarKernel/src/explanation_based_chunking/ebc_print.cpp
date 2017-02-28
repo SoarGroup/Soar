@@ -13,8 +13,10 @@
 #include "instantiation.h"
 #include "output_manager.h"
 #include "print.h"
+#include "soar_TraceNames.h"
 #include "test.h"
 #include "working_memory.h"
+#include "xml.h"
 
 #include <assert.h>
 
@@ -38,6 +40,19 @@ void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
         print_action_list(thisAgent, m_rhs, 3, false);
         outputManager->printa_sf(thisAgent, "}\n\n");
     }
+}
+
+void Explanation_Based_Chunker::report_local_negation(condition* c)
+{
+    cons* negated_to_print = NIL;
+    push(thisAgent, c, negated_to_print);
+
+    thisAgent->outputManager->printa(thisAgent, "\n*** Rule learned that used negative reasoning about local sub-state.***\n");
+    xml_begin_tag(thisAgent, soar_TraceNames::kTagLocalNegation);
+    print_consed_list_of_conditions(thisAgent, negated_to_print, 2);
+    xml_end_tag(thisAgent, soar_TraceNames::kTagLocalNegation);
+
+    free_list(thisAgent, negated_to_print);
 }
 
 void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)

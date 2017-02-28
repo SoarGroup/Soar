@@ -15,183 +15,6 @@
 #include "rhs_functions.h"
 #include "working_memory.h"
 
-identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
-{
-    identity_set* new_join_set;
-    thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
-    new_join_set->identity = pIdentity;
-    new_join_set->dirty = false;
-    new_join_set->super_join = new_join_set;
-    new_join_set->identity_sets = NULL;
-    new_join_set->new_var = NULL;
-    new_join_set->clone_identity = NULL_IDENTITY_SET;
-    new_join_set->literalized = false;
-    new_join_set->operational_cond = NULL;
-    new_join_set->operational_field = NO_ELEMENT;
-    ISI_add(thisAgent, new_join_set);
-
-    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u\n", new_join_set->identity);
-    return new_join_set;
-}
-
-
-void Explanation_Based_Chunker::update_identity_set_clone_id(identity_set* pIdentitySet)
-{
-    assert(pIdentitySet);
-    assert(!pIdentitySet->super_join->clone_identity);
-
-    increment_counter(variablization_identity_counter);
-    pIdentitySet->super_join->clone_identity = variablization_identity_counter;
-    touch_identity_set(pIdentitySet);
-
-}
-
-void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet)
-{
-    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
-    if (pIDSet->super_join != pIDSet)
-    {
-        dprint(DT_DEALLOCATE_ID_SETS, "Removing identity set %u from super-join %u's identity_sets\n", pIDSet->identity, pIDSet->super_join->identity);
-        pIDSet->super_join->identity_sets->remove(pIDSet);
-    }
-    if (pIDSet->identity_sets)
-    {
-        identity_set* lPreviouslyJoinedIdentity;
-        for (auto it = pIDSet->identity_sets->begin(); it != pIDSet->identity_sets->end(); it++)
-        {
-            lPreviouslyJoinedIdentity = *it;
-            dprint(DT_DEALLOCATE_ID_SETS, "Resetting previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, pIDSet->identity);
-            lPreviouslyJoinedIdentity->super_join = lPreviouslyJoinedIdentity;
-        }
-    }
-    clean_up_identity_set_transient(pIDSet);
-    ISI_remove(thisAgent, pIDSet);
-    thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
-    pIDSet = NULL;
-}
-
-void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pIDSet)
-{
-    if (pIDSet->new_var) thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
-    if (pIDSet->identity_sets) delete pIDSet->identity_sets;
-    pIDSet->dirty = false;
-    pIDSet->super_join = pIDSet;
-    pIDSet->identity_sets = NULL;
-    pIDSet->new_var = NULL;
-    pIDSet->clone_identity = NULL_IDENTITY_SET;
-    pIDSet->literalized = false;
-    pIDSet->operational_cond = NULL;
-    pIDSet->operational_field = NO_ELEMENT;
-}
-
-void Explanation_Based_Chunker::clean_up_identity_sets()
-{
-    for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
-    {
-        identity_set* lJoin_set = *it;
-        clean_up_identity_set_transient(lJoin_set);
-    }
-    identity_sets_to_clean_up.clear();
-}
-
-void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet)
-{
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    assert(lFromJoinSet && lToJoinSet && (lFromJoinSet->super_join != lToJoinSet->super_join));
-
-    lFromJoinSet = lFromJoinSet->super_join;
-    lToJoinSet = lToJoinSet->super_join;
-
-    ebc_timers->variablization_rhs->start();
-    ebc_timers->variablization_rhs->stop();
-    ebc_timers->identity_unification->start();
-
-    touch_identity_set(lFromJoinSet);
-    touch_identity_set(lToJoinSet);
-
-    dprint(DT_UNIFY_IDENTITY_SETS, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
-
-    /* Check size and swap if necessary to favor growing the bigger join set */
-    uint64_t lFromSize = lFromJoinSet->identity_sets ? lFromJoinSet->identity_sets->size() : 0;
-    uint64_t lToSize = lToJoinSet->identity_sets ? lToJoinSet->identity_sets->size() : 0;
-    if (lFromSize > lToSize)
-    {
-        dprint(DT_UNIFY_IDENTITY_SETS, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
-        identity_set* tempJoin = lFromJoinSet;
-        lFromJoinSet = lToJoinSet;
-        lToJoinSet = tempJoin;
-    }
-
-    if (!lToJoinSet->identity_sets)
-    {
-        lToJoinSet->identity_sets = new identity_set_list();
-    }
-
-    /* Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet */
-    identity_set* lPreviouslyJoinedIdentity;
-    if (lFromJoinSet->identity_sets)
-    {
-        for (auto it = lFromJoinSet->identity_sets->begin(); it != lFromJoinSet->identity_sets->end(); it++)
-        {
-            lPreviouslyJoinedIdentity = *it;
-            dprint(DT_UNIFY_IDENTITY_SETS, "Changing previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
-            lPreviouslyJoinedIdentity->super_join = lToJoinSet;
-            if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
-        }
-        lToJoinSet->identity_sets->splice(lToJoinSet->identity_sets->begin(), (*lFromJoinSet->identity_sets));
-        delete lFromJoinSet->identity_sets;
-        lFromJoinSet->identity_sets = NULL;
-    }
-    /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
-    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->identity, lFromJoinSet->super_join->identity, lFromJoinSet->identity, lToJoinSet->identity);
-    lToJoinSet->identity_sets->push_back(lFromJoinSet);
-
-    /* Propagate literalization */
-    if (lFromJoinSet->literalized) lToJoinSet->literalized = true;
-
-    /* Point super_join to joined identity set */
-    lFromJoinSet->super_join = lToJoinSet;
-
-    ebc_timers->identity_unification->stop();
-
-}
-
-void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id)
-{
-    /* Assign identities of all arguments in rhs fun call to null identity set*/
-    cons* fl = rhs_value_to_funcall_list(rv);
-    rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
-    cons* c;
-
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    if (rf->can_be_rhs_value)
-    {
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            if (rhs_value_is_funcall(static_cast<char*>(c->first)))
-            {
-                if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
-                {
-                    dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
-                    literalize_RHS_function_args(static_cast<char*>(c->first), inst_id);
-                }
-            } else {
-                dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r ", static_cast<char*>(c->first));
-                assert(rhs_value_is_symbol(static_cast<char*>(c->first)));
-                rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
-                dprint_noprefix(DT_RHS_FUN_VARIABLIZATION, "[%y %u %u]\n", rs->referent, rs->identity, rs->identity_set);
-                if (rs->identity_set && !rs->referent->is_sti())
-                {
-                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
-                    literalize_identity_set(rs->identity_set->super_join);
-                    thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
-                }
-            }
-        }
-    }
-}
-
 void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
                                                          const identity_set_quadruple o_ids_to_replace,
                                                          const rhs_quadruple rhs_funcs)
@@ -329,6 +152,40 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
     }
 }
 
+void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id)
+{
+    /* Assign identities of all arguments in rhs fun call to null identity set*/
+    cons* fl = rhs_value_to_funcall_list(rv);
+    rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
+    cons* c;
+
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
+    if (rf->can_be_rhs_value)
+    {
+        for (c = fl->rest; c != NIL; c = c->rest)
+        {
+            if (rhs_value_is_funcall(static_cast<char*>(c->first)))
+            {
+                if (rhs_value_is_literalizing_function(static_cast<char*>(c->first)))
+                {
+                    dprint(DT_RHS_FUN_VARIABLIZATION, "Recursive call to literalize RHS function argument %r\n", static_cast<char*>(c->first));
+                    literalize_RHS_function_args(static_cast<char*>(c->first), inst_id);
+                }
+            } else {
+                rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
+                dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
+                if (rs->identity_set && !rs->referent->is_sti())
+                {
+                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, rs->identity_set, 0);
+                    literalize_identity_set(rs->identity_set->super_join);
+                    thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
+                }
+            }
+        }
+    }
+}
+
 const std::string Explanation_Based_Chunker::add_new_singleton(singleton_element_type id_type, Symbol* attrSym, singleton_element_type value_type)
 {
     std::string returnVal;
@@ -403,9 +260,6 @@ void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
     pWME->singleton_status_checked = true;
     pWME->is_singleton = true;
 }
-
-const char* TorF(bool isTrue) { if (isTrue) return "true"; else return "false"; }
-const char* PassorFail(bool isTrue) { if (isTrue) return "Pass"; else return "Fail"; }
 
 bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
 {
