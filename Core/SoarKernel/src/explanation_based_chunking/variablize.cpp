@@ -1025,3 +1025,61 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
     }
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done updating LHS condition list.\n");
 }
+
+
+void Explanation_Based_Chunker::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
+{
+    dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
+    chunk_element* lVarInfo;
+    thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
+    lVarInfo->variable_sym = pVar;
+    pVar->var->instantiated_sym = pSym;
+    lVarInfo->identity = pIdentity;
+    m_sym_to_var_map[pSym] = lVarInfo;
+    assert(!pVar->is_variable() || pIdentity);
+}
+
+void Explanation_Based_Chunker::variablize_connecting_sti(test pTest)
+{
+    assert(pTest && pTest->type == EQUALITY_TEST);
+
+    char prefix[2];
+    Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
+    assert(lMatchedSym->is_sti());
+    uint64_t lMatchedIdentity = 0;
+
+    /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
+    auto iter_sym = m_sym_to_var_map.find(lMatchedSym);
+    if (iter_sym == m_sym_to_var_map.end())
+    {
+        /* Create a new variable.  If constant is being variablized just used
+         * 'c' instead of first letter of id name.  We now don't use 'o' for
+         * non-operators and don't use 's' for non-states.  That makes things
+         * clearer in chunks because of standard naming conventions. --- */
+        char prefix_char = static_cast<char>(tolower(lMatchedSym->id->name_letter));
+        if (((prefix_char == 's') || (prefix_char == 'S')) && !lMatchedSym->id->isa_goal)
+        {
+            prefix[0] = 'c';
+        } else if (((prefix_char == 'o') || (prefix_char == 'O')) && !lMatchedSym->id->isa_operator) {
+            prefix[0] = 'c';
+        } else {
+            prefix[0] = prefix_char;
+        }
+        prefix[1] = 0;
+        lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
+        lNewVar->var->instantiated_sym = lMatchedSym;
+        lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewVar);
+    }
+    else
+    {
+        lNewVar = iter_sym->second->variable_sym;
+        thisAgent->symbolManager->symbol_add_ref(lNewVar);
+        lMatchedIdentity = iter_sym->second->identity;
+    }
+
+    add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
+    pTest->data.referent = lNewVar;
+    pTest->identity = lMatchedIdentity;
+    thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
+}
+

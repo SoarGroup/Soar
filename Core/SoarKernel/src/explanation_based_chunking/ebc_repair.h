@@ -44,7 +44,6 @@ class Repair_Manager
     private:
 
         agent*                  thisAgent;
-        sym_to_sym_id_map       m_sym_to_var_map;
         wme_set                 m_repair_WMEs;
         goal_stack_level        m_match_goal_level;
         uint64_t                m_chunk_ID;
@@ -53,8 +52,6 @@ class Repair_Manager
         wme_list*   find_path_to_goal_for_symbol(Symbol* targetLTI);
         void        mark_states_WMEs_and_store_variablizations(condition* pCondList, tc_number pTC);
         condition*  make_condition_from_wme(wme* lWME);
-        void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
-        void        variablize_connecting_sti(test pTest);
         void        add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc);
         void        add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number pSeenTC);
 
