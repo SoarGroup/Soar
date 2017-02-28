@@ -103,14 +103,12 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
     }
 
     dprint(DT_RHS_VARIABLIZATION, "Converted result: %a\n", a);
-
     return a;
 }
 
 action* Explanation_Based_Chunker::convert_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before conversion: \n%6", NULL, m_results);
-    dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
 
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
@@ -127,7 +125,6 @@ action* Explanation_Based_Chunker::convert_results_into_actions()
     }
 
     dprint(DT_VARIABLIZATION_MANAGER, "Actions after conversion: \n%2", returnAction);
-
     return returnAction;
 }
 

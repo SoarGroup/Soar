@@ -128,7 +128,8 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     Symbol* lOldSym;
 
     assert(pTest && pTest->eq_test);
-    
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (!pTest->eq_test->data.referent->is_variable())
     {
         if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->super_join->literalized)
@@ -306,6 +307,7 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
 
 action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lIdentity = 0;

@@ -48,6 +48,8 @@ void Repair_Path::init(Symbol* new_root, wme_list* new_path, wme* new_wme)
 
 wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
 {
+    assert(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     repair_path_list ids_to_walk;
     Repair_Path*            lCurrentPath = NULL, *lNewPath = NULL;
     wme_list*               final_path = NULL;
@@ -181,6 +183,7 @@ void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number 
 Repair_Manager::Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID)
 {
     thisAgent = myAgent;
+    assert(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
     m_match_goal_level = p_goal_level;
     m_chunk_ID = p_chunk_ID;
 }
@@ -305,7 +308,6 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     dprint(DT_REPAIR, "Step 3: Iterating through goal stack to find linking ^superstate augmentations for marked states: \n");
     add_state_link_WMEs(targetLevel, tc);
 
-    /* Generate connecting wme's for each unconnected identifier and add to a set */
     dprint(DT_REPAIR, "Step 3: Adding WMEs to connect each dangling symbol...\n");
     for (auto it = p_dangling_syms->begin(); it != p_dangling_syms->end(); it++)
     {
@@ -319,7 +321,6 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
 
     thisAgent->explanationMemory->increment_stat_grounding_conds_added(m_repair_WMEs.size());
 
-    /* Create conditions based on set of wme's compiled */
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
     condition* new_cond, *prev_cond = p_lhs_top, *first_cond = p_lhs_top;
 
@@ -329,25 +330,16 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     {
         lWME = (*it);
         new_cond = make_condition_from_wme(lWME);
-        dprint(DT_REPAIR, "   Variablizing %l\n", new_cond);
-        /* Variablize and add to condition list */
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
         {
             thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.id_test);
             thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.value_test);
         }
-        dprint(DT_REPAIR, "   --> %l\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
 
     }
-    if (prev_cond)
-    {
-        prev_cond->next = NIL;
-    }
-    else if (first_cond)
-    {
-        first_cond->next = NIL;
-    }
+    if (prev_cond) prev_cond->next = NIL;
+    else if (first_cond) first_cond->next = NIL;
 
     p_lhs_top = first_cond;
 
@@ -357,6 +349,7 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     matched_symbol_list* unconnected_syms = new matched_symbol_list();
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_RHS]);
 

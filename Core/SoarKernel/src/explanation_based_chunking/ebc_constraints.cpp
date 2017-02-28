@@ -19,6 +19,8 @@
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
         /* We intentionally used the tests in the conditions backtraced through instead of copying
@@ -33,6 +35,8 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 {
     test ctest;
     constraint* new_constraint = NULL;
+
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
     {
@@ -52,6 +56,7 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 
 void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     if (c->data.tests.id_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.id_test);
@@ -101,6 +106,7 @@ void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRe
 
 void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, condition* pCond, WME_Field pField)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     dprint(DT_CONSTRAINTS, "Adding transitive constraint %t %g to field %d of %l.\n", pRelational_test, pRelational_test, static_cast<int64_t>(pField), pCond);
     if (pField == VALUE_ELEMENT)
     {
@@ -118,6 +124,8 @@ void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, co
 
 void Explanation_Based_Chunker::add_additional_constraints()
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     constraint* lConstraint = NULL;

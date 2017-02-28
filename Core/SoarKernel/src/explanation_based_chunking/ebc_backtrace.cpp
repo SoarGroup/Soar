@@ -180,7 +180,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
                     add_to_grounds(c);
                 }
             } else {                                                /* A local sub-state WME */
-                cache_constraints_in_cond(c);
+                if (ebc_settings[SETTING_EBC_LEARNING_ON])
+                    cache_constraints_in_cond(c);
                 add_to_locals(c);
             }
         }

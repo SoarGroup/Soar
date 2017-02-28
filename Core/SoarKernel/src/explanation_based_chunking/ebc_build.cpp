@@ -492,7 +492,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
     m_lhs = first_vrblz;
 
-    if (first_vrblz)
+    if (first_vrblz && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         add_additional_constraints();
     }
@@ -705,9 +705,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Soar learned a new rule from a watched production.";
             }
-            //            chunk_history += "Successfully created chunk\n";
-            //            outputManager->sprinta_sf(thisAgent, chunk_history, "Successfully built chunk %y at time %u.");
-
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: Refracted instantiation matched.\n", m_chunk_inst->prod_name);
         return true;
@@ -1132,10 +1129,12 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     m_failure_type                      = ebc_success;
 
     clear_symbol_identity_map();
-    clear_variablization_maps();
-    clear_cached_constraints();
-    clear_identity_to_id_set_map();
-    clear_attachment_map();
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        clear_identity_to_id_set_map();
+        clean_up_identity_sets();
+        clear_cached_constraints();
+    }
     #ifdef DEBUG_ONLY_CHUNK_ID
     #ifndef DEBUG_ONLY_CHUNK_ID_LAST
     if (pClean_up_id == DEBUG_ONLY_CHUNK_ID)

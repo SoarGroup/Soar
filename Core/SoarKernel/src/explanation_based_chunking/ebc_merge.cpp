@@ -88,6 +88,7 @@ void Explanation_Based_Chunker::merge_conditions()
 {
 //    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || !ebc_settings[SETTING_EBC_MERGE]) return;
     if (!ebc_settings[SETTING_EBC_MERGE]) return;
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", m_lhs);
     int64_t current_cond = 1, cond_diff, new_num_conds, old_num_conds = count_conditions(m_lhs);

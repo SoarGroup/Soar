@@ -51,7 +51,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Create data structures used for EBC */
     instantiation_identities = new sym_to_id_map();
     constraints = new constraint_list();
-    attachment_points = new attachment_points_map();
     identities_to_id_sets = new id_to_join_map();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
@@ -65,7 +64,6 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     singletons = new symbol_set();
 
-    chunk_history = new std::string();
     lti_link_function = NULL;
     reinit();
 }
@@ -79,16 +77,14 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 
     delete instantiation_identities;
     delete constraints;
-    delete attachment_points;
     delete identities_to_id_sets;
     delete cond_merge_map;
     delete local_linked_STIs;
     delete m_sym_to_var_map;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
-    clear_singletons();
+    if (ebc_settings[SETTING_EBC_LEARNING_ON]) clear_singletons();
     delete singletons;
-    delete chunk_history;
 }
 
 void Explanation_Based_Chunker::reinit()
@@ -120,8 +116,6 @@ void Explanation_Based_Chunker::reinit()
     m_failure_type                      = ebc_success;
     m_rule_type                         = ebc_no_rule;
     m_learning_on_for_instantiation     = ebc_settings[SETTING_EBC_LEARNING_ON];
-
-//    chunk_history += "Soar re-initialization performed.\n";
 }
 
 bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* inst)
@@ -142,11 +136,6 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
             xml_generate_verbose(thisAgent, message.str().c_str());
 
         }
-        //            chunk_history += "Did not attempt to learn a chunk for match of ";
-        //            chunk_history += inst->prod_name->to_string();
-        //            chunk_history += " because state ";
-        //            chunk_history += inst->match_goal->to_string();
-        //            chunk_history += " was flagged to prevent learning (chunk all-except)\n";        m_learning_on_for_instantiation = false;
         m_learning_on_for_instantiation = false;
         return false;
     }
@@ -160,18 +149,11 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
             thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
-        //            chunk_history += "Did not attempt to learn a chunk for match of ";
-        //            chunk_history += inst->prod_name->to_string();
-        //            chunk_history += " because state ";
-        //            chunk_history += inst->match_goal->to_string();
-        //            chunk_history += " was not flagged for learning.  (chunk only)\n";
         m_learning_on_for_instantiation = false;
         return false;
     }
 
-    /* allow_bottom_up_chunks will be false if a chunk was already
-       learned in a lower goal
-     */
+    /* Allow_bottom_up_chunks will be false if a chunk was already learned in a lower goal */
     if (ebc_settings[SETTING_EBC_BOTTOM_ONLY]  &&
             !inst->match_goal->id->allow_bottom_up_chunks)
     {
@@ -182,11 +164,6 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
             thisAgent->outputManager->printa_sf(thisAgent,  message.str().c_str());
             xml_generate_verbose(thisAgent, message.str().c_str());
         }
-//        chunk_history += "Did not attempt to learn a chunk for match of ";
-//        chunk_history += inst->prod_name->to_string();
-//        chunk_history += " because state ";
-//        chunk_history += inst->match_goal->to_string();
-//        chunk_history += " not the bottom state.  (chunk bottom-only)\n";
         m_learning_on_for_instantiation = false;
         return false;
     }
@@ -390,28 +367,15 @@ void Explanation_Based_Chunker::set_up_rule_name()
 }
 void Explanation_Based_Chunker::clear_data()
 {
-    dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
-    clear_cached_constraints();
-    clear_variablization_maps();
-    clear_merge_map();
-    clear_symbol_identity_map();
-    clear_identity_to_id_set_map();
-    clear_attachment_map();
-}
-
-void Explanation_Based_Chunker::clear_attachment_map()
-{
-    for (attachment_points_map::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
+    if (ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        thisAgent->memoryManager->free_with_pool(MP_attachments, it->second);
+        dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
+        clear_cached_constraints();
+        clean_up_identity_sets();
+        clear_merge_map();
+        clear_symbol_identity_map();
+        clear_identity_to_id_set_map();
     }
-    attachment_points->clear();
-}
-
-void Explanation_Based_Chunker::clear_variablization_maps()
-{
-    dprint(DT_EBC_CLEANUP, "Original_Variable_Manager clearing variablization map...\n");
-    clean_up_identity_sets();
 }
 
 void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
@@ -501,8 +465,6 @@ bool ebc_timer_level_predicate::operator()(soar_module::timer::timer_level val)
 {
     return (thisAgent->explanationBasedChunker->ebc_params->timers_cmd->get_value() == on);
 }
-
-//
 
 ebc_timer::ebc_timer(const char* new_name, agent* new_agent, soar_module::timer::timer_level new_level): soar_module::timer(new_name, new_agent, new_level, new ebc_timer_level_predicate(new_agent)) {}
 

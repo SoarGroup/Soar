@@ -24,6 +24,7 @@
 uint64_t Explanation_Based_Chunker::get_or_create_identity_for_sym(Symbol* pSym)
 {
     int64_t existing_o_id = 0;
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     auto iter_sym = instantiation_identities->find(pSym);
     if (iter_sym != instantiation_identities->end())
@@ -42,16 +43,19 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity_for_sym(Symbol* pSym)
 
 void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     if (pSym->is_sti()) (*instantiation_identities)[pSym] = pID;
 }
 
 void Explanation_Based_Chunker::add_identity_to_test(test pTest)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     if (!pTest->identity) pTest->identity = get_or_create_identity_for_sym(pTest->data.referent);
 }
 
 void Explanation_Based_Chunker::add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     test t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
 }
@@ -67,7 +71,9 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         return;
     }
 
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
+//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
 
     rete_test* rt = node->b.posneg.other_tests;
 

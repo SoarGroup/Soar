@@ -766,7 +766,8 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     condition* cond;
     preference* p;
 
-    bool lDoIdentities = ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
+    bool isSubGoalMatch = (inst->match_goal_level > TOP_GOAL_LEVEL);
+    bool lDoIdentities = (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
@@ -779,12 +780,12 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
         if (cond->type == POSITIVE_CONDITION)
         {
             #ifndef DO_TOP_LEVEL_COND_REF_CTS
-            if (inst->match_goal_level > TOP_GOAL_LEVEL)
+            if (isSubGoalMatch)
             #endif
             {
                 wme_add_ref(cond->bt.wme_);
             }
-            if (inst->match_goal_level > TOP_GOAL_LEVEL && cond->bt.trace)
+            if (isSubGoalMatch && cond->bt.trace)
             {
                 if (cond->bt.trace->level > inst->match_goal_level)
                 {
@@ -793,7 +794,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 if (cond->bt.trace)
                 {
                     preference_add_ref(cond->bt.trace);
-                    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+                    if (lDoIdentities)
                     {
                         test lTest_id = cond->data.tests.id_test->eq_test;
                         test lTest_attr = cond->data.tests.attr_test->eq_test;
@@ -1223,11 +1224,15 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-    thisAgent->explanationBasedChunker->clear_identity_to_id_set_map();
+
+    if (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        thisAgent->explanationBasedChunker->clear_identity_to_id_set_map();
+    }
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
-    if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE)) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
+    if (isSubGoalMatch) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
 

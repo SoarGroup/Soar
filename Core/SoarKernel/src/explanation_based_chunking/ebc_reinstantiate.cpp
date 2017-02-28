@@ -9,6 +9,7 @@
 
 void Explanation_Based_Chunker::reinstantiate_test (test pTest)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)

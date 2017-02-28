@@ -245,6 +245,7 @@ const std::string Explanation_Based_Chunker::remove_singleton(singleton_element_
 }
 void Explanation_Based_Chunker::clear_singletons()
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     Symbol* lSym;
     for (auto it = singletons->begin(); it != singletons->end(); ++it)
     {
@@ -263,6 +264,8 @@ void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
 
 bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
 {
+    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
+
     if (pWME->singleton_status_checked) return pWME->is_singleton;
     if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible || !ebc_settings[SETTING_EBC_USER_SINGLETONS]) return false;
 

@@ -165,24 +165,6 @@ void Explanation_Based_Chunker::print_identity_to_id_set_map(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
-void Explanation_Based_Chunker::print_attachment_points(TraceMode mode)
-{
-    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "   Attachment Points in Conditions\n");
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-
-    if (attachment_points->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-    }
-
-    for (std::unordered_map< uint64_t, attachment_point* >::iterator it = (*attachment_points).begin(); it != (*attachment_points).end(); ++it)
-    {
-        outputManager->printa_sf(thisAgent, "%u -> %s of %l\n", it->first, field_to_string(it->second->field), it->second->cond);
-    }
-}
-
 void Explanation_Based_Chunker::print_constraints(TraceMode mode)
 {
     if (!thisAgent->outputManager->is_trace_enabled(mode)) return;

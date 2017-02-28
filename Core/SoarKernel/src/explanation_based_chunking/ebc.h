@@ -81,9 +81,9 @@ class Explanation_Based_Chunker
         identity_set*   get_or_add_id_set(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
         identity_set*   get_floating_identity_set();
         void            update_identity_set_clone_id(identity_set* pIdentitySet);
-        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
-        void            touch_identity_set(identity_set* pIDSet)                                { assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
-        void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
+        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); (*identities_to_id_sets)[pID] = pIDSet; }
+        void            touch_identity_set(identity_set* pIDSet)                                { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
+        void            literalize_identity_set(identity_set* pIDSet)                           { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -120,7 +120,6 @@ class Explanation_Based_Chunker
         void print_variablization_table(TraceMode mode);
         void print_tables(TraceMode mode);
         void print_identity_tables(TraceMode mode);
-        void print_attachment_points(TraceMode mode);
         void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_instantiation_identities_map(TraceMode mode);
@@ -135,8 +134,7 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void clear_symbol_identity_map()        { instantiation_identities->clear(); }
-        void clear_identity_to_id_set_map()     { identities_to_id_sets->clear(); }
-        void clear_variablization_maps();
+        void clear_identity_to_id_set_map()     { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); identities_to_id_sets->clear(); }
         void clear_singletons();
 
     private:
@@ -149,8 +147,6 @@ class Explanation_Based_Chunker
         uint64_t            justification_naming_counter;
         uint64_t            chunks_this_d_cycle;
         uint64_t            justifications_this_d_cycle;
-
-        std::string*        chunk_history;
 
         /* String that every chunk name begins with */
         char*               chunk_name_prefix;
@@ -216,7 +212,6 @@ class Explanation_Based_Chunker
 
         /* Data structures used to track and assign loose constraints */
         constraint_list*           constraints;
-        attachment_points_map*     attachment_points;
 
         /* Table of previously seen conditions.  Used to determine whether to
          * merge or eliminate positive conditions on the LHS of a chunk. */
@@ -316,7 +311,6 @@ class Explanation_Based_Chunker
         void clean_up_identity_set_transient(identity_set* pIDSet);
         void clean_up_identity_sets();
         void clear_merge_map();
-        void clear_attachment_map();
         void clear_cached_constraints();
         void clear_data();
 
