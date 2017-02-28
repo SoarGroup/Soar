@@ -1027,15 +1027,15 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
 }
 
 
-void Explanation_Based_Chunker::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr)
+void Explanation_Based_Chunker::add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity)
 {
-    dprint(DT_REPAIR, "Adding %s variablization found for %y -> %y [%u]\n", pTypeStr, pSym, pVar, pIdentity);
+    dprint(DT_LHS_VARIABLIZATION, "Adding variablization found for %y -> %y [%u]\n", pSym, pVar, pIdentity);
     chunk_element* lVarInfo;
     thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
     lVarInfo->variable_sym = pVar;
     pVar->var->instantiated_sym = pSym;
     lVarInfo->identity = pIdentity;
-    m_sym_to_var_map[pSym] = lVarInfo;
+    (*m_sym_to_var_map)[pSym] = lVarInfo;
     assert(!pVar->is_variable() || pIdentity);
 }
 
@@ -1049,8 +1049,8 @@ void Explanation_Based_Chunker::variablize_connecting_sti(test pTest)
     uint64_t lMatchedIdentity = 0;
 
     /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
-    auto iter_sym = m_sym_to_var_map.find(lMatchedSym);
-    if (iter_sym == m_sym_to_var_map.end())
+    auto iter_sym = m_sym_to_var_map->find(lMatchedSym);
+    if (iter_sym == m_sym_to_var_map->end())
     {
         /* Create a new variable.  If constant is being variablized just used
          * 'c' instead of first letter of id name.  We now don't use 'o' for
@@ -1077,7 +1077,7 @@ void Explanation_Based_Chunker::variablize_connecting_sti(test pTest)
         lMatchedIdentity = iter_sym->second->identity;
     }
 
-    add_variablization(lMatchedSym, lNewVar, lMatchedIdentity, "new condition");
+    add_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
     pTest->data.referent = lNewVar;
     pTest->identity = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);

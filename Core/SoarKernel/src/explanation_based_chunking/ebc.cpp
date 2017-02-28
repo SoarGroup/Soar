@@ -55,6 +55,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     identities_to_id_sets = new id_to_join_map();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
+    m_sym_to_var_map = new sym_to_sym_id_map();
 
     init_chunk_cond_set(&negated_set);
 
@@ -82,6 +83,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete identities_to_id_sets;
     delete cond_merge_map;
     delete local_linked_STIs;
+    delete m_sym_to_var_map;
     free_memory_block_for_string(thisAgent, chunk_name_prefix);
     free_memory_block_for_string(thisAgent, justification_name_prefix);
     clear_singletons();

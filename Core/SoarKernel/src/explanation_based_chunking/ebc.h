@@ -111,8 +111,9 @@ class Explanation_Based_Chunker
          * 1 - Used by repair manager when creating grounding conditions
          * 2 - Used by reinforcement learning when building template instances. */
 
-        void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity, const char* pTypeStr = "existing state");
+        void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity);
         void        variablize_connecting_sti(test pTest);
+        void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };
 
         void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
@@ -210,7 +211,7 @@ class Explanation_Based_Chunker
         id_to_join_map*     identities_to_id_sets;
 
         /* A variablization map used for old school soar identifier variablization */
-        sym_to_sym_id_map       m_sym_to_var_map;
+        sym_to_sym_id_map*  m_sym_to_var_map;
 
         /* These sets are temporary and cleaned up after a rule is learned */
         identity_join_set   identity_sets_to_clean_up;
