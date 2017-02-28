@@ -56,9 +56,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */
-        void add_explanation_to_condition(rete_node* node, condition* cond,
-                                          node_varnames* nvn, uint64_t pI_id,
-                                          AddAdditionalTestsMode additional_tests);
+        void add_explanation_to_condition(rete_node* node, condition* cond, node_varnames* nvn, ExplainTraceType additional_tests);
         uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
@@ -110,8 +108,9 @@ class Explanation_Based_Chunker
          * 1 - Used by repair manager when creating grounding conditions
          * 2 - Used by reinforcement learning when building template instances. */
 
-        void        add_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity);
-        void        variablize_connecting_sti(test pTest);
+        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity);
+        void        sti_variablize_test(test pTest, bool generate_identity = true);
+        void        sti_variablize_rhs_symbol(rhs_value &pRhs_val, bool generate_identity = true);
         void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };
 
         void        variablize_rl_condition_list   (condition* top_cond);
@@ -231,9 +230,8 @@ class Explanation_Based_Chunker
 
         /* Explanation/identity generation methods */
         void            add_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
-        void            add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent = true);
-        void            add_explanation_to_RL_condition(rete_node* node, condition* cond, node_varnames* nvn,
-                                                        uint64_t pI_id, AddAdditionalTestsMode additional_tests);
+        void            add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent = true);
+        void            add_explanation_to_RL_condition(rete_node* node, condition* cond);
         /* Chunk building methods */
         Symbol*         generate_name_for_new_rule();
         void            set_up_rule_name();

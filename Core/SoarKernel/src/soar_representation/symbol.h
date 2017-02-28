@@ -50,7 +50,7 @@
   *       in the symbol and symbol_manager code.*/
 
 #ifndef SOAR_RELEASE_VERSION
-    //#define DEBUG_TRACE_REFCOUNT_FOR "S1"
+    //#define DEBUG_TRACE_REFCOUNT_FOR "O1"
     //#define DEBUG_MAC_STACKTRACE
 
     #ifdef DEBUG_MAC_STACKTRACE

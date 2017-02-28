@@ -236,7 +236,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym)
             {
-                thisAgent->explanationBasedChunker->add_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity);
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity);
             }
 
             /* Check if the value element is a state */
@@ -255,7 +255,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym && lMatchedSym->is_sti())
             {
-                thisAgent->explanationBasedChunker->add_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
             }
         }
     }
@@ -289,7 +289,7 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
             dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n",
                 static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level), static_cast<int64_t>(targetLevel));
         }
-        thisAgent->explanationBasedChunker->add_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->identity);
+        thisAgent->explanationBasedChunker->add_sti_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->identity);
     }
 
     tc_number tc;
@@ -329,8 +329,8 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
         /* Variablize and add to condition list */
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
         {
-            thisAgent->explanationBasedChunker->variablize_connecting_sti(new_cond->data.tests.id_test);
-            thisAgent->explanationBasedChunker->variablize_connecting_sti(new_cond->data.tests.value_test);
+            thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.id_test);
+            thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.value_test);
         }
         dprint(DT_REPAIR, "   --> %l\n", new_cond);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);

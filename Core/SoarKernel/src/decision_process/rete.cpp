@@ -2753,7 +2753,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
 }
 
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pNoConstantIdentities)
+void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, bool pNoConstantIdentities)
 {
 //    test New;
     cons* c;
@@ -2767,9 +2767,9 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64
     if (!t->data.referent->is_variable())
     {
         t->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(temp);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity o%u for varname %y from one_var in inst %u.\n", t->identity, temp, pI_id);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for var %y\n", t->identity, temp);
     } else {
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity for varname %y because ungrounded NCC var in inst %u.\n", temp, pI_id);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity to %y because ungrounded NCC var\n", temp);
     }
 
 }
@@ -4188,7 +4188,7 @@ abort_var_test_bound_in_reconstructed_conds:
    get filled in with the highest and lowest conditions built by this
    procedure.
 
-   additional_tests indicates whether we want to add original variables
+   ebcTraceType indicates whether we want to add original variables
    and tests to the condition generated (for chunk creation) and false if
    we just want the bound equality tests.
 
@@ -4203,8 +4203,7 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
-                             uint64_t pI_id,
-                             AddAdditionalTestsMode additional_tests)
+                             ExplainTraceType ebcTraceType)
 {
     condition* cond;
     alpha_mem* am;
@@ -4217,15 +4216,7 @@ void rete_node_to_conditions(agent* thisAgent,
     }
     else
     {
-        rete_node_to_conditions(thisAgent, real_parent_node(node),
-                                nvn ? nvn->parent : NIL,
-                                cutoff,
-                                tok ? tok->parent : NIL,
-                                tok ? tok->w : NIL,
-                                conds_for_cutoff_and_up,
-                                dest_top_cond, &(cond->prev),
-                                pI_id,
-                                additional_tests);
+        rete_node_to_conditions(thisAgent, real_parent_node(node), nvn ? nvn->parent : NIL, cutoff, tok ? tok->parent : NIL, tok ? tok->w : NIL, conds_for_cutoff_and_up, dest_top_cond, &(cond->prev), ebcTraceType);
         cond->prev->next = cond;
     }
     cond->next = NIL;
@@ -4235,16 +4226,7 @@ void rete_node_to_conditions(agent* thisAgent,
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
 //        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
-        rete_node_to_conditions(thisAgent, node->b.cn.partner->parent,
-                                nvn ? nvn->data.bottom_of_subconditions : NIL,
-                                node->parent,
-                                NIL,
-                                NIL,
-                                cond->prev,
-                                &(cond->data.ncc.top),
-                                &(cond->data.ncc.bottom),
-                                pI_id,
-                                additional_tests);
+        rete_node_to_conditions(thisAgent, node->b.cn.partner->parent, nvn ? nvn->data.bottom_of_subconditions : NIL, node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom), ebcTraceType);
         cond->data.ncc.top->prev = NIL;
     }
     else
@@ -4271,9 +4253,9 @@ void rete_node_to_conditions(agent* thisAgent,
 
             cond->test_for_acceptable_preference = w->acceptable;
             cond->bt.wme_ = w;
-            if (additional_tests != DONT_EXPLAIN)
+            if (ebcTraceType != WM_Trace)
             {
-                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
+                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType);
             }
 //            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4302,31 +4284,24 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (nvn)
             {
-                add_varnames_to_test(thisAgent, nvn->data.fields.id_varnames,
-                                     &(cond->data.tests.id_test));
-                add_varnames_to_test(thisAgent, nvn->data.fields.attr_varnames,
-                                     &(cond->data.tests.attr_test));
-                add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames,
-                                     &(cond->data.tests.value_test));
+                add_varnames_to_test(thisAgent, nvn->data.fields.id_varnames, &(cond->data.tests.id_test));
+                add_varnames_to_test(thisAgent, nvn->data.fields.attr_varnames, &(cond->data.tests.attr_test));
+                add_varnames_to_test(thisAgent, nvn->data.fields.value_varnames, &(cond->data.tests.value_test));
             }
 
             /* --- on hashed nodes, add equality test for the hash function --- */
             if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
             {
-                add_hash_info_to_id_test(thisAgent, cond,
-                                         node->left_hash_loc_field_num,
-                                         node->left_hash_loc_levels_up);
+                add_hash_info_to_id_test(thisAgent, cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
             }
             else if (node->node_type == POSITIVE_BNODE)
             {
-                add_hash_info_to_id_test(thisAgent, cond,
-                                         node->parent->left_hash_loc_field_num,
-                                         node->parent->left_hash_loc_levels_up);
+                add_hash_info_to_id_test(thisAgent, cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
             }
 
-            if (additional_tests != DONT_EXPLAIN)
+            if (ebcTraceType != WM_Trace)
             {
-                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, pI_id, additional_tests);
+                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType);
             }
             else
             {
@@ -4349,8 +4324,7 @@ void rete_node_to_conditions(agent* thisAgent,
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                 }
                 if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
-                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test),
-                                                first_letter_from_test(cond->data.tests.attr_test));
+                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
             }
         }
     }
@@ -4380,8 +4354,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                                    condition** dest_top_cond,
                                    condition** dest_bottom_cond,
                                   action** dest_rhs,
-                                  uint64_t pI_id,
-                                  AddAdditionalTestsMode additional_tests)
+                                  ExplainTraceType ebcTraceType)
 {
     cons* c;
     Symbol** cell;
@@ -4397,15 +4370,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
         w = NIL;    /* just for safety */
     }
     thisAgent->symbolManager->reset_variable_generator(NIL, NIL);  /* we'll be gensymming new vars */
-    rete_node_to_conditions(thisAgent,
-                            p_node->parent,
-                            p_node->b.p.parents_nvn,
-                            thisAgent->dummy_top_node,
-                            tok, w, NIL,
-                            dest_top_cond,
-                            dest_bottom_cond,
-                            pI_id,
-                            additional_tests);
+    rete_node_to_conditions(thisAgent, p_node->parent, p_node->b.p.parents_nvn, thisAgent->dummy_top_node, tok, w, NIL, dest_top_cond, dest_bottom_cond, ebcTraceType);
 
 
     if (dest_rhs)
@@ -4420,7 +4385,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
                 thisAgent->highest_rhs_unboundvar_index++;
             }
         }
-        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, pI_id, additional_tests);
+        *dest_rhs = create_RHS_action_list(thisAgent, prod->action_list, *dest_bottom_cond, ebcTraceType);
         index = 0;
         cell = thisAgent->rhs_variable_bindings;
         while (index++ <= thisAgent->highest_rhs_unboundvar_index)

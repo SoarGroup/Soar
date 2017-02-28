@@ -574,7 +574,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         condition* c_top;
         condition* c_bottom;
 
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, WM_Trace_w_Inequalities);
         my_template_instance->prod->rl_template_conds = c_top;
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
         dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);

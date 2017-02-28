@@ -1166,27 +1166,17 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
-    AddAdditionalTestsMode additional_test_mode = DONT_EXPLAIN;
+    ExplainTraceType ebcTraceType = WM_Trace;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE)
     {
-        additional_test_mode = JUST_INEQUALITIES;
-    } else if ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) {
-        additional_test_mode = ALL_ORIGINALS;
+        ebcTraceType = WM_Trace_w_Inequalities;
+    } else if ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        ebcTraceType = Explanation_Trace;
     }
 
     /* build the instantiated conditions, and bind LHS variables */
-    if (additional_test_mode == DONT_EXPLAIN)
-    {
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), NULL,
-            inst->i_id, additional_test_mode);
-    } else {
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-            inst->i_id, additional_test_mode);
-    }
+    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w, &(inst->top_of_instantiated_conditions), &(inst->bottom_of_instantiated_conditions), (ebcTraceType != WM_Trace) ? &(rhs_vars) : NULL , ebcTraceType);
 
     /* record the level of each of the wmes that was positively tested */
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)

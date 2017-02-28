@@ -25,85 +25,54 @@ void Explanation_Based_Chunker::add_identity_to_id_test(condition* cond, byte fi
     cond->data.tests.id_test->identity = t->identity;
 }
 
-void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node,
-    condition* cond,
-    node_varnames* nvn,
-    uint64_t pI_id,
-    AddAdditionalTestsMode additional_tests)
+void Explanation_Based_Chunker::add_explanation_to_RL_condition(rete_node* node, condition* cond)
 {
         rete_test* rt = node->b.posneg.other_tests;
+        dprint(DT_RL_VARIABLIZATION, "Adding explanation to RL condition %l\n", cond);
 
-        /* --- Store original referent information.  Note that sometimes the
-         *     original referent equality will be stored in the beta nodes extra tests
-         *     data structure rather than the alpha memory --- */
-        alpha_mem* am;
-        am = node->b.posneg.alpha_mem_;
-
-        if (nvn)
-        {
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id, true);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id, true);
-            add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id, true);
-        }
-
-        /* --- on hashed nodes, add equality test for the hash function --- */
-        if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
-        {
-            add_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
-        }
-        else if (node->node_type == POSITIVE_BNODE)
-        {
-            add_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
-        }
-
-        /* -- Now process any additional relational test -- */
         test chunk_test = NULL;
         TestType test_type;
         bool has_referent;
         for (; rt != NIL; rt = rt->next)
         {
+            dprint(DT_RL_VARIABLIZATION, "...found rete tests for RL condition");
             chunk_test = NULL;
             has_referent = true;
             if (test_is_variable_relational_test(rt->type))
             {
+                dprint(DT_RL_VARIABLIZATION, "...variable relational");
                 test_type = relational_test_type_to_test_type(kind_of_relational_test(rt->type));
                 if ((test_type == EQUALITY_TEST) || (test_type == NOT_EQUAL_TEST))
                 {
+                    dprint(DT_RL_VARIABLIZATION, "...equality or not equal");
                     test ref_test = var_test_bound_in_reconstructed_conds(thisAgent, cond, rt->data.variable_referent.field_num, rt->data.variable_referent.levels_up);
-                    if (ref_test->data.referent->is_sti())
+                    if (ref_test->data.referent->is_sti() || ref_test->data.referent->is_variable())
                     {
+                        dprint(DT_RL_VARIABLIZATION, "...STI or variable...Adding!");
                         chunk_test = make_test(thisAgent, ref_test->data.referent, test_type);
-                        chunk_test->identity = ref_test->identity;
                     }
                 }
             }
+            dprint(DT_RL_VARIABLIZATION, "\n");
             if (chunk_test)
             {
-                if (rt->right_field_num == 0)
-                {
-                    add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, pI_id, has_referent);
-                }
-                else if (rt->right_field_num == 1)
-                {
-                    add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, pI_id, has_referent);
-                }
-                else
-                {
-                    add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, pI_id, has_referent);
-                }
+                if (rt->right_field_num == 0) add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, has_referent);
+                else if (rt->right_field_num == 1) add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, has_referent);
+                else add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, has_referent);
             }
         }
+        dprint(DT_RL_VARIABLIZATION, "Final RL condition with explanation: %l\n", cond);
+
 }
 
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
                                         node_varnames* nvn,
-                                        uint64_t pI_id,
-                                        AddAdditionalTestsMode additional_tests)
+                                        ExplainTraceType ebcTraceType)
 {
-    if (additional_tests == JUST_INEQUALITIES)
+    if (ebcTraceType == WM_Trace_w_Inequalities)
     {
-        add_explanation_to_RL_condition(node, cond, nvn, pI_id, additional_tests);
+        add_explanation_to_RL_condition(node, cond);
         return;
     }
 
@@ -111,33 +80,26 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
 
     rete_test* rt = node->b.posneg.other_tests;
 
-    /* --- Store original referent information.  Note that sometimes the
-     *     original referent equality will be stored in the beta nodes extra tests
-     *     data structure rather than the alpha memory --- */
     alpha_mem* am;
     am = node->b.posneg.alpha_mem_;
 
-    dprint(DT_ADD_EXPLANATION_TRACE, "add_constraints_and_identities called for %s.\n%l\n",  thisAgent->newly_created_instantiations->prod_name->sc->name, cond);
+    dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition called for %s.\n%l\n",  thisAgent->newly_created_instantiations->prod_name->sc->name, cond);
 
     if (nvn)
     {
-        add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test, pI_id);
-        add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test, pI_id);
-        add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test, pI_id);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test);
+        add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test);
     }
 
     /* --- on hashed nodes, add equality test for the hash function --- */
     if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
     {
-        add_identity_to_id_test(cond,
-            node->left_hash_loc_field_num,
-            node->left_hash_loc_levels_up);
+        add_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
     }
     else if (node->node_type == POSITIVE_BNODE)
     {
-        add_identity_to_id_test(cond,
-            node->parent->left_hash_loc_field_num,
-            node->parent->left_hash_loc_levels_up);
+        add_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
     }
 
     /* -- Now process any additional relational test -- */
@@ -169,21 +131,12 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         }
         if (chunk_test)
         {
-            if (rt->right_field_num == 0)
-            {
-                add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, pI_id, has_referent);
-            }
-            else if (rt->right_field_num == 1)
-            {
-                add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, pI_id, has_referent);
-            }
-            else
-            {
-                add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, pI_id, has_referent);
-            }
+            if (rt->right_field_num == 0) add_constraint_to_explanation(&(cond->data.tests.id_test), chunk_test, has_referent);
+            else if (rt->right_field_num == 1) add_constraint_to_explanation(&(cond->data.tests.attr_test), chunk_test, has_referent);
+            else add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, has_referent);
         }
     }
-    dprint(DT_ADD_EXPLANATION_TRACE, "Final test after add_constraints_and_identities: %l\n", cond);
+    dprint(DT_ADD_EXPLANATION_TRACE, "Final condition after add_explanation_to_condition: %l\n", cond);
 }
 
 /* -- This function adds a constraint test from the rete's other tests lists.  This function
@@ -195,7 +148,7 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
  *    need that symbol to assign an identity, so we look for that case here.
  * -- */
 
-void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_address, test new_test, uint64_t pI_id, bool has_referent)
+void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent)
 {
     if (has_referent)
     {
@@ -217,6 +170,11 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                     else
                     {
                         /* Identical referents and possibly identical originals.  Ignore. */
+
+                        /* Seems like this should be deallocated if it's not added, but for a long
+                         * tim this was not here, and it didn't seem to leak.  Maybe it's not executed. */
+                        assert(false);
+                        deallocate_test(thisAgent, new_test);
                         return;
                     }
                 } // else different referents and should be added as new test

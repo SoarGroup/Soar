@@ -342,11 +342,11 @@ enum SymbolTypes
     UNDEFINED_SYMBOL_TYPE = 5
 };
 
-enum AddAdditionalTestsMode
+enum ExplainTraceType
 {
-    DONT_EXPLAIN,
-    ALL_ORIGINALS,
-    JUST_INEQUALITIES
+    WM_Trace,
+    Explanation_Trace,
+    WM_Trace_w_Inequalities
 };
 
 enum WME_Field
