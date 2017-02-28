@@ -420,6 +420,62 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     return rhs;
 }
 
+void Explanation_Based_Chunker::variablize_rl_test(test pTest)
+{
+
+    dprint(DT_RL_VARIABLIZATION, "Variablizing by lookup tests in: %t\n", pTest);
+
+    cons* c;
+    test tt;
+
+    if (pTest->type == CONJUNCTIVE_TEST)
+    {
+        for (c = pTest->data.conjunct_list; c != NIL; )
+        {
+            tt = reinterpret_cast<test>(c->first);
+            if (test_has_referent(tt) && tt->data.referent->is_sti())
+            {
+                variablize_connecting_sti(tt);
+            }
+            c = c->rest;
+        }
+        dprint(DT_LHS_VARIABLIZATION, "---------------------------------------\n");
+    }
+    else
+    {
+        if (test_has_referent(pTest) && pTest->data.referent->is_sti())
+        {
+            variablize_connecting_sti(pTest);
+        }
+    }
+}
+
+
+void Explanation_Based_Chunker::variablize_rl_condition_list(condition* top_cond)
+{
+    dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS condition list for RL instance:\n");
+
+    for (condition* cond = top_cond; cond != NIL; cond = cond->next)
+    {
+        if ((cond->type == POSITIVE_CONDITION) || (cond->type == NEGATIVE_CONDITION))
+        {
+            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS negative condition: %l\n", cond);
+            variablize_rl_test(cond->data.tests.id_test);
+            variablize_rl_test(cond->data.tests.attr_test);
+            variablize_rl_test(cond->data.tests.value_test);
+            dprint(DT_RL_VARIABLIZATION, "-->variablized condition: %l\n", cond);
+        }
+        else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
+        {
+            dprint_header(DT_RL_VARIABLIZATION, PrintBefore, "Variablizing LHS negative conjunctive condition:\n");
+            dprint_noprefix(DT_RL_VARIABLIZATION, "%1", cond->data.ncc.top);
+            variablize_rl_condition_list(cond->data.ncc.top);
+            dprint(DT_RL_VARIABLIZATION, "-->variablized NCC: %l\n", cond);
+        }
+    }
+    dprint_header(DT_RL_VARIABLIZATION, PrintAfter, "Done variablizing LHS condition list.\n");
+}
+
 action* Explanation_Based_Chunker::convert_result_into_action(preference* result)
 {
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
@@ -1041,8 +1097,6 @@ void Explanation_Based_Chunker::add_variablization(Symbol* pSym, Symbol* pVar, u
 
 void Explanation_Based_Chunker::variablize_connecting_sti(test pTest)
 {
-    assert(pTest && pTest->type == EQUALITY_TEST);
-
     char prefix[2];
     Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
     assert(lMatchedSym->is_sti());

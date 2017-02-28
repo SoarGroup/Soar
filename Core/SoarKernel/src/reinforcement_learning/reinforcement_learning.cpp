@@ -605,7 +605,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         thisAgent->explanationBasedChunker->set_rule_type(ebc_template);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
+        thisAgent->explanationBasedChunker->variablize_rl_condition_list(cond_top);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
@@ -639,8 +639,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_name_symbol = NULL;
         }
 
-        thisAgent->explanationBasedChunker->clear_variablization_maps();
-//        thisAgent->explanationBasedChunker->clear_chunk_id();
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
         thisAgent->explanationBasedChunker->set_rule_type(ebc_no_rule);
         deallocate_condition_list(thisAgent, cond_top);
 

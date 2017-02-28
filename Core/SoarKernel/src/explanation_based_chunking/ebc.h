@@ -35,7 +35,6 @@ class Explanation_Based_Chunker
         Explanation_Based_Chunker(agent* myAgent);
         ~Explanation_Based_Chunker();
 
-        instantiation*          instantiation_being_built;
         ebc_timer_container*    ebc_timers;
 
         /* Settings and cli command related functions */
@@ -115,7 +114,7 @@ class Explanation_Based_Chunker
         void        variablize_connecting_sti(test pTest);
         void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };
 
-        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
+        void        variablize_rl_condition_list   (condition* top_cond);
         action*     variablize_rl_action        (action* pRLAction, struct token_struct* tok, wme* w, double & initial_value);
 
         /* Methods for printing in Soar trace */
@@ -282,29 +281,32 @@ class Explanation_Based_Chunker
 
         /* Variablization methods */
         void        store_variablization(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym);
-        void        variablize_equality_tests(test t);
-        void        variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void        variablize_rl_test(test t);
         bool        variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        action*     variablize_results_into_actions();
-        action*     variablize_result_into_action(preference* result, tc_number lti_link_tc);
+        void        variablize_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void        variablize_equality_tests(test t);
+        void        variablize_condition_list   (condition* top_cond, bool pInNegativeCondition = false);
+
         uint64_t    variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc = 0);
+        action*     variablize_result_into_action(preference* result, tc_number lti_link_tc);
+        action*     variablize_results_into_actions();
 
         void        add_LTM_linking_actions(action* pLastAction);
 
-        void reinstantiate_test(test pTest);
-        void reinstantiate_rhs_symbol(rhs_value pRhs_val);
-        condition* reinstantiate_lhs(condition* top_cond);
-        void reinstantiate_condition_list(condition* top_cond, bool pIsNCC = false);
-        void reinstantiate_condition(condition* cond, bool pIsNCC = false);
-        void reinstantiate_actions(action* pActionList);
-        condition* reinstantiate_current_rule();
+        void        reinstantiate_test(test pTest);
+        void        reinstantiate_rhs_symbol(rhs_value pRhs_val);
+        condition*  reinstantiate_lhs(condition* top_cond);
+        void        reinstantiate_condition_list(condition* top_cond, bool pIsNCC = false);
+        void        reinstantiate_condition(condition* cond, bool pIsNCC = false);
+        void        reinstantiate_actions(action* pActionList);
+        condition*  reinstantiate_current_rule();
 
-        void    update_identities_in_equality_tests(test t);
-        void    update_identities_in_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
-        bool    update_identities_in_test_by_lookup(test t, bool pSkipTopLevelEqualities);
-        void    update_identities_in_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        action* convert_results_into_actions();
-        action* convert_result_into_action(preference* result);
+        void        update_identities_in_equality_tests(test t);
+        void        update_identities_in_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        bool        update_identities_in_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void        update_identities_in_condition_list(condition* top_cond, bool pInNegativeCondition = false);
+        action*     convert_results_into_actions();
+        action*     convert_result_into_action(preference* result);
 
         /* Methods to make sure that we didn't create rules that are bad but the RETE would accept */
         void sanity_chunk_conditions(condition* top_cond);

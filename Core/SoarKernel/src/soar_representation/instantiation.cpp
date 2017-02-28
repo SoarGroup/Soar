@@ -804,12 +804,12 @@ inline void propagate_identity_set(agent* thisAgent, test condTest, identity_set
         condTest->identity_set = NULL;
 }
 
-void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal, bool isTemplate)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
 {
     condition* cond;
     preference* p;
 
-    bool lDoIdentities = ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) || isTemplate;
+    bool lDoIdentities = ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
@@ -920,8 +920,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     {
         calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
     }
-
-    thisAgent->explanationBasedChunker->instantiation_being_built = NULL;
 }
 
 void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
@@ -1111,8 +1109,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
         thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
         IDI_add(thisAgent, inst);
     }
-
-    thisAgent->explanationBasedChunker->instantiation_being_built = inst;
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
@@ -1243,7 +1239,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
-//            dprint(DT_RL_VARIABLIZATION, "Executing action %a\n", a);
             if (a2 && isSubGoalMatch)
             {
                 pref = execute_action(thisAgent, a, tok, w, a2);
@@ -1255,9 +1250,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         {
             dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
             pref = NIL;
-            finalize_instantiation(thisAgent, inst, false, NIL, true, true);
-            /* Finalize turns this off, but we need it a little longer for rl rule being built */
-            thisAgent->explanationBasedChunker->instantiation_being_built = inst;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
         }
         if (pref)
@@ -1288,13 +1280,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
 
     /* fill in lots of other stuff */
-    if (prod->type != TEMPLATE_PRODUCTION_TYPE)
-    {
-        finalize_instantiation(thisAgent, inst, false, NIL, true);
-    } else {
-        /* Because we called finalize_instantiation early for templates */
-        thisAgent->explanationBasedChunker->instantiation_being_built = NULL;
-    }
+    finalize_instantiation(thisAgent, inst, false, NIL, true);
 
     /* Print rule firing trace info RHS (must be after fill_in_new_instantiation) */
     if (trace_it)
@@ -1310,7 +1296,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
-    //dprint_identity_to_id_set_map(DT_PRINT_INSTANTIATIONS);
     thisAgent->explanationBasedChunker->clear_identity_to_id_set_map();
 
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));

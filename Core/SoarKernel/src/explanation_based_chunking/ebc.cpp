@@ -96,7 +96,6 @@ void Explanation_Based_Chunker::reinit()
     dprint(DT_VARIABLIZATION_MANAGER, "Original_Variable_Manager reinitializing...\n");
     clear_data();
     ebc_timers->reset();
-    instantiation_being_built           = NULL;
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
     variablization_identity_counter                     = 0;
