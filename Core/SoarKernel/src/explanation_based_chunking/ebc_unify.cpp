@@ -34,6 +34,18 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     return new_join_set;
 }
 
+
+void Explanation_Based_Chunker::update_identity_set_clone_id(identity_set* pIdentitySet)
+{
+    assert(pIdentitySet);
+    assert(!pIdentitySet->super_join->clone_identity);
+
+    increment_counter(variablization_identity_counter);
+    pIdentitySet->super_join->clone_identity = variablization_identity_counter;
+    touch_identity_set(pIdentitySet);
+
+}
+
 void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet)
 {
     dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);

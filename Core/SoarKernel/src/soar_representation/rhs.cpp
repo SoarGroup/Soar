@@ -416,7 +416,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             if (add_original_vars && pI_id)
             {
-                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
+                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(sym);
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
@@ -429,7 +429,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
         if (add_original_vars && pI_id)
         {
-            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
+            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(sym);
         }
 
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u\n", sym, lO_id, pI_id);

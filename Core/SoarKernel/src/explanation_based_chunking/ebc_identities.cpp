@@ -14,11 +14,11 @@ uint64_t        get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pID
 
 /* Methods for generating variable identities during instantiation creation */
 
-uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
+uint64_t Explanation_Based_Chunker::get_or_create_identity_for_sym(Symbol* pSym)
 {
     int64_t existing_o_id = 0;
 
-    auto iter_sym = instantiation_identities->find(orig_var);
+    auto iter_sym = instantiation_identities->find(pSym);
     if (iter_sym != instantiation_identities->end())
     {
         existing_o_id = iter_sym->second;
@@ -26,11 +26,9 @@ uint64_t Explanation_Based_Chunker::get_or_create_identity(Symbol* orig_var)
 
     if (!existing_o_id)
     {
-        increment_counter(ovar_id_counter);
-        (*instantiation_identities)[orig_var] = ovar_id_counter;
-//        instantiation_being_built->bt_identity_set_mappings->insert({ovar_id_counter, 0});
-
-        return ovar_id_counter;
+        increment_counter(variablization_identity_counter);
+        (*instantiation_identities)[pSym] = variablization_identity_counter;
+        return variablization_identity_counter;
     }
     return existing_o_id;
 }
@@ -42,16 +40,16 @@ void Explanation_Based_Chunker::force_add_identity(Symbol* pSym, uint64_t pID)
 
 void Explanation_Based_Chunker::add_identity_to_test(test pTest)
 {
-    if (!pTest->identity) pTest->identity = get_or_create_identity(pTest->data.referent);
+    if (!pTest->identity) pTest->identity = get_or_create_identity_for_sym(pTest->data.referent);
 }
 
 /* Methods for assigning/propagating identity sets during instantiation creation */
 
 identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 {
-    increment_counter(ovar_id_counter);
-    dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", ovar_id_counter);
-    return make_identity_set(ovar_id_counter);
+    increment_counter(variablization_identity_counter);
+    dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", variablization_identity_counter);
+    return make_identity_set(variablization_identity_counter);
 }
 
 identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)

@@ -131,8 +131,8 @@ public:
     TEST(Demo_Water_Jug_Tie, -1);
     TEST(PRIMS_Sanity1, -1);
     TEST(PRIMS_Sanity2, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
     TEST(GamesAgent_Sanity1, -1);
+    TEST(Games_Nccx2_Long_Lived, -1);
 
     void All_Test_Types();
     void BUNCPS_0();

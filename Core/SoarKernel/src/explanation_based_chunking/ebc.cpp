@@ -97,7 +97,7 @@ void Explanation_Based_Chunker::reinit()
     instantiation_being_built           = NULL;
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
-    ovar_id_counter                     = 0;
+    variablization_identity_counter                     = 0;
     backtrace_number                    = 0;
     chunk_naming_counter                = 0;
     justification_naming_counter        = 0;

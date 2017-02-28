@@ -1006,11 +1006,11 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
     thisAgent->symbolManager->symbol_add_ref(pref->value);
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(pref->id);
+        pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->id);
         if (pref->attr->is_sti())
-            pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(pref->attr);
+            pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->attr);
         if (pref->value->is_sti())
-            pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(pref->value);
+            pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->value);
     }
     add_pref_to_inst(thisAgent, pref, inst);
 }
@@ -1053,9 +1053,9 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         {
             /* We set the identities of the preferences so that they are dependent on the explanation behind
              * the working memory elements that they were copied from */
-            lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->id);
-            lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->attr);
-            lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->value);
+            lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->id);
+            lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->attr);
+            lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->value);
         }
 
         /* Now add a preferences that will create the deep-copied WME */
@@ -1331,7 +1331,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
 
         /* build chunks/justifications if necessary */
         thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
+        thisAgent->explanationBasedChunker->learn_rule_from_instance(inst, &(thisAgent->newly_created_instantiations));
     }
     else
     {

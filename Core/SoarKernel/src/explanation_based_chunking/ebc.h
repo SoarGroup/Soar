@@ -8,7 +8,7 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
-#define EBC_SANITY_CHECK_RULES
+//#define EBC_SANITY_CHECK_RULES
 
 #include "kernel.h"
 
@@ -53,7 +53,7 @@ class Explanation_Based_Chunker
 
         /* Builds a chunk or justification based on a submitted instantiation
          * and adds it to the rete.  Called by create_instantiation, smem and epmem */
-        void learn_EBC_rule(instantiation* inst, instantiation** new_inst_list);
+        void learn_rule_from_instance(instantiation* inst, instantiation** new_inst_list);
 
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */
@@ -65,7 +65,7 @@ class Explanation_Based_Chunker
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
 
         /* identity generation functions */
-        uint64_t get_or_create_identity(Symbol* orig_var);
+        uint64_t get_or_create_identity_for_sym(Symbol* orig_var);
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
 
@@ -86,6 +86,7 @@ class Explanation_Based_Chunker
         identity_set*   get_id_set_for_identity(uint64_t pID);
         identity_set*   get_or_add_id_set_for_identity(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
         identity_set*   get_floating_identity_set();
+        void            update_identity_set_clone_id(identity_set* pIdentitySet);
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
         void            touch_identity_set(identity_set* pIDSet)                                { assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
         void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
@@ -153,7 +154,7 @@ class Explanation_Based_Chunker
 
         /* -- A counter for variablization and instantiation id's - */
         uint64_t inst_id_counter;
-        uint64_t ovar_id_counter;
+        uint64_t variablization_identity_counter;
         uint64_t prod_id_counter;
 
         /* Variables used by dependency analysis methods */
@@ -285,6 +286,11 @@ class Explanation_Based_Chunker
         void reinstantiate_condition(condition* cond, bool pIsNCC = false);
         void reinstantiate_actions(action* pActionList);
         condition* reinstantiate_current_rule();
+
+        void    update_identities_in_equality_tests(test t);
+        void    update_identities_in_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
+        bool    update_identities_in_test_by_lookup(test t, bool pSkipTopLevelEqualities);
+        void    update_identities_in_condition_list(condition* top_cond, bool pInNegativeCondition = false);
         action* convert_results_into_actions();
         action* convert_result_into_action(preference* result);
 

@@ -762,10 +762,11 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     return false;
 }
 
-void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiation** new_inst_list)
+void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, instantiation** new_inst_list)
 {
     preference*         pref;
     bool                lChunkValidated = true;
+    bool                lRevertedChunk = false;
     condition*          l_inst_top = NULL;
     condition*          l_inst_bottom = NULL;
     uint64_t            l_clean_up_id;
@@ -823,7 +824,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         return;
     }
 
-    /* Set up a new instantiation and ID for this chunk's refracted match */
+    /* Set up a new instantiation and ID for this chunk's refracted instantiation */
     init_instantiation(thisAgent, m_chunk_inst, NULL);
     l_clean_up_id = m_chunk_inst->i_id;
 
@@ -844,12 +845,8 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     #endif
 
     dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_inst->i_id, m_inst->prod_name);
-//    dprint(DT_DEBUG, "Chunk number %u\n", m_chunk_inst->i_id);
-//    if (m_chunk_inst->i_id == 9)
-//    {
-//        dprint(DT_DEBUG, "Chunk found.\n");
-//    }
     thisAgent->explanationMemory->add_chunk_record(m_inst);
+    thisAgent->explanationMemory->increment_stat_chunks_attempted();
     debug_refcount_change_start(thisAgent, false);
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
@@ -867,11 +864,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     m_tested_local_negation = false;
     m_tested_ltm_recall = false;
     m_tested_quiescence = false;
+
     ebc_timers->chunk_instantiation_creation->stop();
     perform_dependency_analysis();
     ebc_timers->chunk_instantiation_creation->start();
-
-    thisAgent->explanationMemory->increment_stat_chunks_attempted();
 
     /* Collect the grounds into the chunk condition lists */
     create_initial_chunk_condition_lists();
@@ -886,7 +882,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         }
         thisAgent->explanationMemory->increment_stat_no_grounds();
         thisAgent->explanationMemory->cancel_chunk_record();
-    if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
+        if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
         {
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
@@ -932,7 +928,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
     /* Stop creation timer for the next few stages */
     ebc_timers->chunk_instantiation_creation->stop();
 
-    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    if (ebc_settings[SETTING_EBC_LEARNING_ON] && (m_rule_type == ebc_chunk))
     {
         /* Variablize the LHS */
         ebc_timers->variablization_lhs->start();
@@ -955,6 +951,10 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         m_rhs = variablize_results_into_actions();
         ebc_timers->variablization_rhs->stop();
     } else {
+        ebc_timers->variablization_lhs->start();
+        update_identities_in_condition_list(m_lhs);
+        ebc_timers->variablization_lhs->stop();
+
         ebc_timers->variablization_rhs->start();
         m_rhs = convert_results_into_actions();
         ebc_timers->variablization_rhs->stop();
@@ -980,6 +980,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
         {
             /* Could not re-order chunk, so we create a justification for the results instead */
             m_rule_type = ebc_justification;
+            lRevertedChunk = true;
             thisAgent->symbolManager->symbol_remove_ref(&m_prod_name);
             m_prod_name = generate_name_for_new_rule();
             m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
@@ -1015,17 +1016,18 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
      * This changes during re-instantiation.  If the rule being formed is a justification,
      * both m_lhs and m_rhs will become instantiated as well. */
 
-    ebc_timers->reinstantiate->start();
-    if (ebc_settings[SETTING_EBC_LEARNING_ON])
+    if (ebc_settings[SETTING_EBC_LEARNING_ON] && ((m_rule_type == ebc_chunk) || lRevertedChunk))
     {
+        ebc_timers->reinstantiate->start();
         l_inst_top = reinstantiate_current_rule();
         l_inst_bottom = l_inst_top;
         while (l_inst_bottom->next) l_inst_bottom = l_inst_bottom->next;
+        ebc_timers->reinstantiate->stop();
+        ebc_timers->chunk_instantiation_creation->start();
     } else {
+        ebc_timers->chunk_instantiation_creation->start();
         copy_condition_list(thisAgent, m_lhs, &l_inst_top, &l_inst_bottom, false, false, false, false);
     }
-    ebc_timers->reinstantiate->stop();
-    ebc_timers->chunk_instantiation_creation->start();
 
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
@@ -1086,7 +1088,7 @@ void Explanation_Based_Chunker::learn_EBC_rule(instantiation* inst, instantiatio
              * which is what would have been created if the chunk had fired on its goal level */
             dprint(DT_MILESTONES, "Starting bottom-up call to learn_ebc_rule() from %y\n", (*new_inst_list)->prod_name);
             set_learning_for_instantiation(*new_inst_list);
-            learn_EBC_rule(*new_inst_list, new_inst_list);
+            learn_rule_from_instance(*new_inst_list, new_inst_list);
             dprint(DT_MILESTONES, "Finished bottom-up call to learn_ebc_rule()\n");
         }
     } else {
