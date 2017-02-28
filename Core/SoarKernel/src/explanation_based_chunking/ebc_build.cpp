@@ -1009,12 +1009,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
      * The next step in EBC will create an instantiated list of conditions based on the
      * variablized conditions.  This is used as the instantiation for the chunk at the goal
      * level (m_chunk_inst).  After being submitted to the RETE, it is then chunked over
-     * if necessary for bottom up chunking.
-     *
-     * Note:  Until this point, justification and chunk learning has been nearly identical.
-     * The only difference is that a justification has not had its conditions re-ordered.
-     * This changes during re-instantiation.  If the rule being formed is a justification,
-     * both m_lhs and m_rhs will become instantiated as well. */
+     * if necessary for bottom up chunking. */
 
     if (ebc_settings[SETTING_EBC_LEARNING_ON] && ((m_rule_type == ebc_chunk) || lRevertedChunk))
     {

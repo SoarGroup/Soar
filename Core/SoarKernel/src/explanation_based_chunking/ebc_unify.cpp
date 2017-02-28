@@ -8,16 +8,17 @@
 #include "ebc.h"
 #include "ebc_timers.h"
 
+#include "condition.h"
 #include "debug_inventories.h"
 #include "dprint.h"
 #include "explanation_memory.h"
+#include "instantiation.h"
 #include "rhs.h"
 #include "rhs_functions.h"
+#include "test.h"
 #include "working_memory.h"
 
-void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
-                                                         const identity_set_quadruple o_ids_to_replace,
-                                                         const rhs_quadruple rhs_funcs)
+void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond, const identity_set_quadruple o_ids_to_replace, const rhs_quadruple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
     lId = parent_cond->data.tests.id_test->eq_test;
@@ -26,8 +27,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    dprint(DT_UNIFY_IDENTITY_SETS, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond,
-        o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
+    dprint(DT_UNIFY_IDENTITY_SETS, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond, o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
 
     if (o_ids_to_replace.id)
     {

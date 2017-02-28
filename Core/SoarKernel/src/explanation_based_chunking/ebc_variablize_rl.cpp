@@ -1,18 +1,12 @@
 #include "ebc.h"
+
 #include "agent.h"
 #include "dprint.h"
-#include "explanation_memory.h"
-#include "instantiation.h"
 #include "condition.h"
-#include "preference.h"
-#include "symbol.h"
+#include "instantiation.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "print.h"
 #include "rhs.h"
-#include "xml.h"
-
-#include <assert.h>
 
 // creates an action for a template instantiation
 action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struct token_struct* tok, wme* w, double & initial_value)
@@ -34,16 +28,12 @@ action* Explanation_Based_Chunker::variablize_rl_action(action* pRLAction, struc
     rhs->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
     rhs_symbol lRS = rhs_value_to_rhs_symbol(pRLAction->id);
-    assert(!lRS->identity && !lRS->identity_set);
     rhs->id = allocate_rhs_value_for_symbol(thisAgent, id_sym, lRS->identity, NULL, was_unbound_vars.id);
     lRS = rhs_value_to_rhs_symbol(pRLAction->attr);
-    assert(!lRS->identity && !lRS->identity_set);
     rhs->attr = allocate_rhs_value_for_symbol(thisAgent, attr_sym, lRS->identity, NULL, was_unbound_vars.attr);
     lRS = rhs_value_to_rhs_symbol(pRLAction->value);
-    assert(!lRS->identity && !lRS->identity_set);
     rhs->value = allocate_rhs_value_for_symbol(thisAgent, val_sym, lRS->identity, NULL, was_unbound_vars.value);
     lRS = rhs_value_to_rhs_symbol(pRLAction->referent);
-    assert(!lRS->identity && !lRS->identity_set);
     rhs->referent = allocate_rhs_value_for_symbol(thisAgent, ref_sym, lRS->identity, NULL, was_unbound_vars.referent);
 
     /* instantiate and allocate both increased refcount by 1.  Decrease one here.  Variablize may decrease also */

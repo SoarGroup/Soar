@@ -14,10 +14,6 @@
 
 #include "ebc_structs.h"
 #include "stl_typedefs.h"
-#include "condition.h"
-#include "instantiation.h"
-#include "symbol.h"
-#include "test.h"
 
 #include <list>
 #include <set>
@@ -259,7 +255,6 @@ class Explanation_Based_Chunker
         void perform_dependency_analysis();
         void add_to_grounds(condition* cond);
         void add_to_locals(condition* cond);
-        bool condition_is_operational(condition* cond) { return  (cond->data.tests.id_test->eq_test->data.referent->id->level <= m_goal_level); }
         void trace_locals();
         void backtrace_through_instantiation(preference* pPref, condition* trace_cond, uint64_t bt_depth, BTSourceType bt_type);
         void backtrace_through_OSK(cons* pOSKPref, uint64_t lExplainDepth = 0);
@@ -327,6 +322,7 @@ class Explanation_Based_Chunker
 
 };
 
-uint64_t        get_superjoin_id(identity_set* pIDSet);
+inline uint64_t get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
+
 
 #endif /* EBC_MANAGER_H_ */

@@ -1,18 +1,10 @@
 #include "ebc.h"
+
 #include "agent.h"
 #include "dprint.h"
-#include "explanation_memory.h"
-#include "instantiation.h"
-#include "condition.h"
-#include "preference.h"
-#include "symbol.h"
 #include "symbol_manager.h"
-#include "test.h"
-#include "print.h"
 #include "rhs.h"
-#include "xml.h"
-
-#include <assert.h>
+#include "test.h"
 
 void Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity)
 {
@@ -85,7 +77,6 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
             lRhsValue = static_cast<rhs_value>(c->first);
             dprint(DT_RHS_FUN_VARIABLIZATION, "STI-variablizing RHS funcall argument %r\n", lRhsValue);
             sti_variablize_rhs_symbol(lRhsValue, false);
-            assert(c->first == lRhsValue);
             dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
     }
@@ -117,7 +108,6 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     if (has_variablization)
     {
         dprint(DT_RHS_VARIABLIZATION, "... using variablization %y\n", var);
-
         thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         thisAgent->symbolManager->symbol_add_ref(var);
         rs->referent = var;
@@ -128,9 +118,6 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     else
     {
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
-        assert(!rs->referent->is_sti());
-        assert(!rs->identity);
-        assert(!rs->identity_set);
         rs->identity = NULL_IDENTITY_SET;
         rs->identity_set = NULL;
     }

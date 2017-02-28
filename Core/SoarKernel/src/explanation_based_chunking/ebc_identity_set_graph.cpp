@@ -6,13 +6,13 @@
 #include "ebc_timers.h"
 
 #include "agent.h"
+#include "condition.h"
 #include "debug_inventories.h"
 #include "dprint.h"
+#include "symbol_manager.h"
 #include "preference.h"
 #include "rhs.h"
 #include "test.h"
-
-uint64_t        get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
 
 identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 {

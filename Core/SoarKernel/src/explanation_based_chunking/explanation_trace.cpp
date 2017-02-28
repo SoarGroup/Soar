@@ -7,15 +7,15 @@
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
-#include "instantiation.h"
+//#include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
 #include "print.h"
 #include "rete.h"
-#include "symbol.h"
+//#include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "working_memory.h"
+//#include "working_memory.h"
 
 #include <assert.h>
 

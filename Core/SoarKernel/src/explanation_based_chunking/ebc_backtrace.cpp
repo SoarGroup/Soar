@@ -168,10 +168,8 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     {
         if (c->type == POSITIVE_CONDITION)
         {
-            /* Might be able to only cache constraints for non-operational conds.  The others should show
-             * up.  In fact, we may not need the whole tc_num mechanism if that would limit it to only the
-             * ones needed. */
-            if (condition_is_operational(c))
+            /* Check operationality */
+            if (c->data.tests.id_test->eq_test->data.referent->id->level <= m_goal_level)
             {
                 if (c->bt.wme_->tc != grounds_tc)                   /* First time we've seen something matching this wme*/
                 {

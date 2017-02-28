@@ -1,41 +1,12 @@
-/*
- * variablization_manager.cpp
- *
- *  Created on: Jul 25, 2013
- *      Author: mazzin
- */
-
 #include "ebc.h"
+
 #include "agent.h"
 #include "dprint.h"
-#include "explanation_memory.h"
-#include "instantiation.h"
 #include "condition.h"
 #include "preference.h"
-#include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "print.h"
 #include "rhs.h"
-#include "xml.h"
-
-#include <assert.h>
-
-/* ============================================================================
- *            Variablization_Manager::variablize_lhs_symbol
- *
- * Requires: Test must not be a conjunctive test.
- * Modifies: sym, variablization maps
- * Effect:   Replaces symbol with a variable.  Creates new variable if
- *           necessary.
- * Note:     Caller is responsible for determining whether this symbol should
- *           be variablized.  For example, we check the original symbol
- *           in the production to determine whether it is a literal and should
- *           not be variablized.
- *
- *           For RL rules, identity may be NULL
- *
- * ========================================================================= */
 
 action* Explanation_Based_Chunker::convert_result_into_action(preference* result)
 {
@@ -160,12 +131,10 @@ action* Explanation_Based_Chunker::convert_results_into_actions()
     return returnAction;
 }
 
-
 bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
 
-    assert(!t->identity || (t->identity && t->identity_set));
     if (t->identity_set && t->identity_set->super_join->clone_identity)
     {
         dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity_set->super_join->clone_identity);
@@ -188,8 +157,6 @@ void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, boo
 
     cons* c;
     test tt;
-
-    assert(t);
 
     if (t->type == CONJUNCTIVE_TEST)
     {
@@ -232,8 +199,6 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-
-    assert(pTest && pTest->eq_test);
 
     if (!pTest->eq_test->data.referent->is_variable())
     {

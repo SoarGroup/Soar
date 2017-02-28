@@ -1,18 +1,11 @@
 #include "ebc.h"
+
 #include "agent.h"
 #include "dprint.h"
-#include "explanation_memory.h"
-#include "instantiation.h"
 #include "condition.h"
-#include "preference.h"
-#include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
-#include "print.h"
 #include "rhs.h"
-#include "xml.h"
-
-#include <assert.h>
 
 void Explanation_Based_Chunker::reinstantiate_test (test pTest)
 {
@@ -143,8 +136,6 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->identity);
     }
-    assert(!rs->referent->is_variable());
-
 }
 
 void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
@@ -166,18 +157,17 @@ void Explanation_Based_Chunker::reinstantiate_actions(action* pActionList)
 
 condition* Explanation_Based_Chunker::reinstantiate_current_rule()
 {
-    dprint(DT_REINSTANTIATE, "m_lhs before reinstantiation: \n%1", m_lhs);
+    dprint(DT_REINSTANTIATE, "Before reinstantiation: \n%1-->\n%2", m_lhs, m_rhs);
 
     condition* returnConds = reinstantiate_lhs(m_lhs);
 
-    dprint(DT_REINSTANTIATE, "m_lhs after reinstantiation: \n%1", m_lhs);
-
-    dprint(DT_REINSTANTIATE, "m_rhs before reinstantiation: \n%2", m_rhs);
+    /* If this was a chunk failure that is being reverted to a justification, we must
+     * reinstantiate the actions as well */
     if (m_rule_type == ebc_justification)
     {
         reinstantiate_actions(m_rhs);
     }
-    dprint(DT_REINSTANTIATE, "m_rhs after reinstantiation: \n%2", m_rhs);
+    dprint(DT_REINSTANTIATE, "After reinstantiation: \n%1-->\n%2", m_lhs, m_rhs);
 
     return returnConds;
 }
