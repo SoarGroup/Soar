@@ -65,13 +65,11 @@ test find_eq_test(test t);
 test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
-
 test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
-
 bool add_test(agent* thisAgent, test* dest_address, test new_test, bool merge_disjunctions = false);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg, bool merge_disjunctions = false);
-
 cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem);
+void invert_relational_test(test* pEq_test, test* pRelational_test);
 
 /* --- Some functions related to tests that used to be in rete.cpp */
 

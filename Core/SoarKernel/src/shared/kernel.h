@@ -12,7 +12,7 @@
 #include "enums.h"
 #include "forward.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -75,12 +75,12 @@
 #ifndef SOAR_RELEASE_VERSION
 
     //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+//    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
     #endif
 
-    //#define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
+    #define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */
 
     //#define DEBUG_EPMEM_WME_ADD

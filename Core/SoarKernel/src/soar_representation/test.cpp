@@ -135,7 +135,6 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                /* MToDo | Do we need to increase refcount of superjoin set here? */
                 new_ct->identity     = new_ct->identity_set->super_join->identity;
                 new_ct->identity_set = new_ct->identity_set->super_join;
             }
@@ -152,7 +151,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t\n", t);
+    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t[%g]\n", t, t);
     if (!t)
     {
         return;
@@ -1086,3 +1085,38 @@ void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool consi
 }
 
 
+void invert_relational_test(test* pEq_test, test* pRelational_test)
+{
+    assert(pEq_test && pRelational_test && *pEq_test && *pRelational_test);
+    TestType tt = (*pRelational_test)->type;
+    if (tt == NOT_EQUAL_TEST)
+    {
+        (*pEq_test)->type = NOT_EQUAL_TEST;
+    }
+    else if (tt == LESS_TEST)
+    {
+        (*pEq_test)->type = GREATER_TEST;
+    }
+    else if (tt == GREATER_TEST)
+    {
+        (*pEq_test)->type = LESS_TEST;
+    }
+    else if (tt == LESS_OR_EQUAL_TEST)
+    {
+        (*pEq_test)->type = GREATER_OR_EQUAL_TEST;
+    }
+    else if (tt == GREATER_OR_EQUAL_TEST)
+    {
+        (*pEq_test)->type = LESS_OR_EQUAL_TEST;
+    }
+    else if (tt == SAME_TYPE_TEST)
+    {
+        (*pEq_test)->type = SAME_TYPE_TEST;
+    }
+    (*pRelational_test)->type = EQUALITY_TEST;
+
+    test temp = *pEq_test;
+    (*pEq_test) = (*pRelational_test);
+    (*pRelational_test) = temp;
+
+}

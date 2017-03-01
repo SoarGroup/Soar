@@ -169,11 +169,11 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "    Relational Constraints List\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    if (constraints->empty())
+    if (m_constraints->empty())
     {
         outputManager->printa_sf(thisAgent, "NO CONSTRAINTS RECORDED\n");
     }
-    for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
+    for (std::list< constraint* >::iterator it = m_constraints->begin(); it != m_constraints->end(); ++it)
     {
         outputManager->printa_sf(thisAgent, "%t[%g]:   %t[%g]\n", (*it)->eq_test, (*it)->eq_test, (*it)->constraint_test, (*it)->constraint_test);
     }

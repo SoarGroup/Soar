@@ -50,7 +50,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
 
     /* Create data structures used for EBC */
     instantiation_identities = new sym_to_id_map();
-    constraints = new constraint_list();
+    m_constraints = new constraint_list();
     identities_to_id_sets = new id_to_join_map();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
@@ -76,7 +76,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
     delete ebc_timers;
 
     delete instantiation_identities;
-    delete constraints;
+    delete m_constraints;
     delete identities_to_id_sets;
     delete cond_merge_map;
     delete local_linked_STIs;
