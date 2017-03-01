@@ -355,6 +355,7 @@ void MiscTests::testSoarRand()
 void MiscTests::testPreferenceDeallocation()
 {
 	source("testPreferenceDeallocation.soar");
+    SoarHelper::check_learning_override(agent);
 	agent->ExecuteCommandLine("run 10");
 	
 	sml::ClientAnalyzedXML response;

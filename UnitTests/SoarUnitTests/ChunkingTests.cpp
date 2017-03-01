@@ -180,11 +180,11 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
     #ifdef SAVE_LOG_FILES
         SoarHelper::agent_command(agent,"trace -CbL 2");
     #endif
+    SoarHelper::check_learning_override(agent);
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
     SoarHelper::init_check_to_find_refcount_leaks(agent);
-
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
 
@@ -249,6 +249,8 @@ void ChunkingTests::Singleton_Element_Types()
     #ifdef SAVE_LOG_FILES
         SoarHelper::agent_command(agent,"trace -CbL 2");
     #endif
+
+    SoarHelper::check_learning_override(agent);
 
     agent->RunSelf(3, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());

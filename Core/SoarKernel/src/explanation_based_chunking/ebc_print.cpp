@@ -18,8 +18,6 @@
 #include "working_memory.h"
 #include "xml.h"
 
-#include <assert.h>
-
 void Explanation_Based_Chunker::print_current_built_rule(const char* pHeader)
 {
     if (pHeader)

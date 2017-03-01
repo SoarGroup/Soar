@@ -172,7 +172,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id) && !rhs_value_to_was_unbound_var(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
-                assert(ungrounded_syms && lSym);
                 Symbol* lVarSym, *lInstSym;
                 uint64_t lNewID;
 
@@ -181,7 +180,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 {
                     lInstSym = lSym;
                 } else {
-                    assert(lSym->is_variable() && lSym->var->instantiated_sym);
                     lInstSym = lSym->var->instantiated_sym;
                 }
                 lNewID = rhs_value_to_o_id(lAction->id);
@@ -885,7 +883,6 @@ cons* collect_root_variables(agent* thisAgent,
             /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
-            assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
             dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
@@ -904,7 +901,6 @@ cons* collect_root_variables(agent* thisAgent,
             if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
 
             lSym = cond->data.tests.id_test->eq_test->data.referent;
-            assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
             dprint(DT_VALIDATE, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
@@ -998,7 +994,6 @@ cons* collect_root_variables(agent* thisAgent,
 
 bool test_covered_by_bound_vars(test t, tc_number tc, cons* extra_vars)
 {
-    assert(t && t->eq_test);
     Symbol* referent = t->eq_test->data.referent;
     if (referent->is_constant_or_marked_variable(tc))   return true;
     if (extra_vars)                                     return member_of_list(referent, extra_vars);

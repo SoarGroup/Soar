@@ -81,9 +81,9 @@ class Explanation_Based_Chunker
         identity_set*   get_or_add_id_set(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet);
         identity_set*   get_floating_identity_set();
         void            update_identity_set_clone_id(identity_set* pIdentitySet);
-        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); (*identities_to_id_sets)[pID] = pIDSet; }
-        void            touch_identity_set(identity_set* pIDSet)                                { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); assert (pIDSet); if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
-        void            literalize_identity_set(identity_set* pIDSet)                           { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
+        void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
+        void            touch_identity_set(identity_set* pIDSet)                                { if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
+        void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -134,7 +134,7 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void clear_symbol_identity_map()        { instantiation_identities->clear(); }
-        void clear_identity_to_id_set_map()     { assert(ebc_settings[SETTING_EBC_LEARNING_ON]); identities_to_id_sets->clear(); }
+        void clear_identity_to_id_set_map()     { identities_to_id_sets->clear(); }
         void clear_singletons();
 
     private:

@@ -140,7 +140,6 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_s
     {
         if (pref->identity_sets.id->super_join != linked_id->super_join)
         {
-            assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
             ebc_timers->chunk_instantiation_creation->stop();
             dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id, linked_id);
             thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, linked_id);
@@ -626,7 +625,6 @@ void Explanation_Based_Chunker::remove_chunk_instantiation()
     for (lResultPref = m_chunk_inst->preferences_generated; lResultPref != NIL; lResultPref = lNext)
     {
         lNext = lResultPref->inst_next;
-        assert(lResultPref->reference_count == 0);
         dprint(DT_EBC_CLEANUP, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
         lRemoved = remove_preference_from_clones_and_deallocate(thisAgent, lResultPref);
         assert(lRemoved);
@@ -680,7 +678,6 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     }
     if (rete_addition_result == REFRACTED_INST_MATCHED)
     {
-        assert(m_prod);
         thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, identities_to_id_sets, m_inst, m_chunk_inst);
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE) {
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
@@ -746,16 +743,12 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
         }
         dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: Refracted instantiation did not match.\n", m_chunk_inst->prod_name);
 
-        assert(m_prod);
         thisAgent->explanationMemory->record_chunk_contents(m_prod, m_lhs, m_rhs, m_results, identities_to_id_sets, m_inst, m_chunk_inst);
 
         m_chunk_inst->in_ms = false;
         return true;
     }
 
-    /* Don't think this can happen */
-    dprint(DT_VARIABLIZATION_MANAGER, "Add production %y to rete result: No refracted instantiation given.\n", m_chunk_inst->prod_name);
-    assert(false);
     return false;
 }
 

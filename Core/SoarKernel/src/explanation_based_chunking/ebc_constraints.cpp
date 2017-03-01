@@ -9,7 +9,6 @@
 
 #include "agent.h"
 #include "instantiation.h"
-#include <assert.h>
 #include "test.h"
 #include "working_memory.h"
 #include "print.h"
@@ -19,8 +18,6 @@
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
         /* We intentionally used the tests in the conditions backtraced through instead of copying
@@ -36,14 +33,11 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
     test ctest;
     constraint* new_constraint = NULL;
 
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
     {
         ctest = static_cast<test>(c->first);
         if (test_can_be_transitive_constraint(ctest))
         {
-            assert(t->eq_test);
             thisAgent->memoryManager->allocate_with_pool(MP_constraints, &new_constraint);
             new_constraint->eq_test = t->eq_test;
             new_constraint->constraint_test = ctest;
@@ -56,8 +50,6 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 
 void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
     dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     if (c->data.tests.id_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.id_test);
     if (c->data.tests.attr_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.attr_test);
@@ -66,11 +58,6 @@ void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 
 void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRelational_test)
 {
-    assert(test_has_referent(*pEq_test));
-    assert(test_has_referent(*pRelational_test));
-    assert((*pEq_test)->type == EQUALITY_TEST);
-    assert((*pRelational_test)->type != EQUALITY_TEST);
-
     TestType tt = (*pRelational_test)->type;
     if (tt == NOT_EQUAL_TEST)
     {
@@ -106,8 +93,7 @@ void Explanation_Based_Chunker::invert_relational_test(test* pEq_test, test* pRe
 
 void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, condition* pCond, WME_Field pField)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    dprint(DT_CONSTRAINTS, "Adding transitive constraint %t %g to field %d of %l.\n", pRelational_test, pRelational_test, static_cast<int64_t>(pField), pCond);
+    dprint(DT_CONSTRAINTS, "Attaching transitive constraint %t %g to field %d of %l.\n", pRelational_test, pRelational_test, static_cast<int64_t>(pField), pCond);
     if (pField == VALUE_ELEMENT)
     {
         add_test(thisAgent, &(pCond->data.tests.value_test), pRelational_test, true);
@@ -124,10 +110,6 @@ void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, co
 
 void Explanation_Based_Chunker::add_additional_constraints()
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return;
-
     constraint* lConstraint = NULL;
     test eq_copy = NULL, constraint_test = NULL;
 
@@ -162,5 +144,5 @@ void Explanation_Based_Chunker::add_additional_constraints()
     }
     clear_cached_constraints();
 
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "Done propagating additional constraints.\n");
+    dprint_header(DT_CONSTRAINTS, PrintAfter, "Done adding transitive constraints.\n");
 }

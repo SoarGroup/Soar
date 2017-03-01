@@ -15,9 +15,9 @@
 
 #include "kernel.h"
 
-#include <assert.h>
 #include <string>
 #include <list>
+#include <stdlib.h>
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000
@@ -141,7 +141,7 @@ class Output_Manager
         bool is_printing_to_stdout() { return stdout_mode; };
         void set_printing_to_stdout(bool pEnabled) { stdout_mode = pEnabled; };
 
-        void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
+        void set_default_agent(agent* pSoarAgent) { m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
 

@@ -16,7 +16,6 @@
 
 identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     increment_counter(variablization_identity_counter);
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", variablization_identity_counter);
     return make_identity_set(variablization_identity_counter);
@@ -24,7 +23,6 @@ identity_set* Explanation_Based_Chunker::get_floating_identity_set()
 
 identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end()) return iter->second;
     else return NULL;
@@ -32,7 +30,6 @@ identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 
 identity_set* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
@@ -57,7 +54,6 @@ identity_set* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, identit
 
 identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     identity_set* new_join_set;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
     new_join_set->identity = pIdentity;
@@ -77,7 +73,6 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 
 void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %us%u.\n", pIDSet->identity, pIDSet->super_join->identity);
     if (pIDSet->super_join != pIDSet)
     {
@@ -102,7 +97,6 @@ void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet)
 
 void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pIDSet)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     if (pIDSet->new_var) thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
     if (pIDSet->identity_sets) delete pIDSet->identity_sets;
     pIDSet->dirty = false;
@@ -117,7 +111,6 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
 
 void Explanation_Based_Chunker::clean_up_identity_sets()
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
         identity_set* lJoin_set = *it;
@@ -128,10 +121,6 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
 
 void Explanation_Based_Chunker::store_variablization_in_identity_set(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    assert(pIdentitySet &&!pIdentitySet->super_join->new_var);
-
     pIdentitySet->super_join->new_var = variable;
     variable->var->instantiated_sym = pMatched_sym;
 
@@ -140,28 +129,18 @@ void Explanation_Based_Chunker::store_variablization_in_identity_set(identity_se
 
     touch_identity_set(pIdentitySet);
 
-//    if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
-//    {
 //        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
-//    }
 }
 
 void Explanation_Based_Chunker::update_identity_set_clone_id(identity_set* pIdentitySet)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    assert(pIdentitySet && !pIdentitySet->super_join->clone_identity);
-
     increment_counter(variablization_identity_counter);
     pIdentitySet->super_join->clone_identity = variablization_identity_counter;
     touch_identity_set(pIdentitySet);
-
 }
 
 void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-    assert(lFromJoinSet && lToJoinSet && (lFromJoinSet->super_join != lToJoinSet->super_join));
-
     lFromJoinSet = lFromJoinSet->super_join;
     lToJoinSet = lToJoinSet->super_join;
 
@@ -220,7 +199,6 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
 
 void Explanation_Based_Chunker::update_identity_sets_in_test(test t, instantiation* pInst)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     cons* c;
     switch (t->type)
         {
@@ -275,8 +253,6 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
 
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     identity_set* updated_id_set;
     bool lOwnedIdentitySet;
 

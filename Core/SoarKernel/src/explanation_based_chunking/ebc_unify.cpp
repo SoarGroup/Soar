@@ -25,8 +25,6 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
     lAttr = parent_cond->data.tests.attr_test->eq_test;
     lValue = parent_cond->data.tests.value_test->eq_test;
 
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     dprint(DT_UNIFY_IDENTITY_SETS, "Unifying backtraced condition %l with rhs identities (%u ^%u %u)\n", parent_cond, o_ids_to_replace.id ? o_ids_to_replace.id->identity : 0, o_ids_to_replace.attr ? o_ids_to_replace.attr->identity : 0, o_ids_to_replace.value ? o_ids_to_replace.value->identity : 0);
 
     if (o_ids_to_replace.id)
@@ -95,7 +93,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
         literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
         if (lValue->identity_set) literalize_identity_set(lValue->identity_set->super_join);
     }
-    assert(!o_ids_to_replace.referent);
+
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {
         dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in referent element %r\n", rhs_funcs.referent);
@@ -108,13 +106,9 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
  *           first condition that matched. */
 void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
 {
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON]) return; // May need this if we have to add both conds when learning is off
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     if (wme_is_a_singleton(pCond->bt.wme_) || ebc_settings[SETTING_EBC_UNIFY_ALL])
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-        assert(last_cond);
         dprint(DT_UNIFY_SINGLETONS, "Unifying value element of second condition that matched singleton wme: %l\n", pCond);
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
@@ -136,7 +130,6 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         (!pCond->test_for_acceptable_preference))
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-        assert(last_cond);
         if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
         {
             identity_set* pCondIDSet = pCond->data.tests.value_test->eq_test->identity_set ? pCond->data.tests.value_test->eq_test->identity_set->super_join : NULL;
@@ -159,9 +152,7 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
     rhs_function_struct* rf = static_cast<rhs_function_struct*>(fl->first);
     cons* c;
 
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
-    if (rf->can_be_rhs_value)
+     if (rf->can_be_rhs_value)
     {
         for (c = fl->rest; c != NIL; c = c->rest)
         {
@@ -245,7 +236,6 @@ const std::string Explanation_Based_Chunker::remove_singleton(singleton_element_
 }
 void Explanation_Based_Chunker::clear_singletons()
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
     Symbol* lSym;
     for (auto it = singletons->begin(); it != singletons->end(); ++it)
     {
@@ -264,8 +254,6 @@ void Explanation_Based_Chunker::add_to_singletons(wme* pWME)
 
 bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     if (pWME->singleton_status_checked) return pWME->is_singleton;
     if (!pWME->attr->is_string() || !pWME->attr->sc->singleton.possible || !ebc_settings[SETTING_EBC_USER_SINGLETONS]) return false;
 
@@ -276,7 +264,6 @@ bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
     singleton_element_type id_type = pWME->attr->sc->singleton.id_type;
     singleton_element_type value_type = pWME->attr->sc->singleton.value_type;
 
-//    dprint(DT_DEBUG, "(%y ^%y %y) vs [%s ^%y %s] :", pWME->id, pWME->attr, pWME->value, singletonTypeToString(id_type), pWME->attr, singletonTypeToString(value_type));
     lIDPassed =     ((id_type == ebc_any) ||
                     ((id_type == ebc_identifier) && !pWME->id->is_state() && !pWME->id->is_operator()) ||
                     ((id_type == ebc_state)      && pWME->id->is_state()) ||
@@ -289,6 +276,5 @@ bool Explanation_Based_Chunker::wme_is_a_singleton(wme* pWME)
 
     pWME->is_singleton = lIDPassed && lValuePassed;
     pWME->singleton_status_checked = true;
-//    dprint_noprefix(DT_DEBUG, "%s! = %s + %s\n", PassorFail(pWME->is_singleton), TorF(lIDPassed), TorF(lValuePassed));
     return pWME->is_singleton;
 }

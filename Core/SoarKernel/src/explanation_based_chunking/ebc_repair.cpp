@@ -48,8 +48,6 @@ void Repair_Path::init(Symbol* new_root, wme_list* new_path, wme* new_wme)
 
 wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSym)
 {
-    assert(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     repair_path_list ids_to_walk;
     Repair_Path*            lCurrentPath = NULL, *lNewPath = NULL;
     wme_list*               final_path = NULL;
@@ -114,7 +112,7 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     lCurrentPath->clean_up();
     thisAgent->memoryManager->free_with_pool(MP_repair_path, lCurrentPath);
 
-//    assert(final_path);
+    //assert(final_path);
     return final_path;
 }
 
@@ -144,7 +142,6 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
     {
         if (g->tc_num != pSeenTC && (g->id->level < m_match_goal_level))
         {
-            assert(last_goal);
             dprint(DT_REPAIR, "Found marked state %y.  Looking for superstate wme in subgoal %y...", g, last_goal);
             for (w = last_goal->id->impasse_wmes; w != NIL; w = w->next)
             {
@@ -183,7 +180,6 @@ void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number 
 Repair_Manager::Repair_Manager(agent* myAgent, goal_stack_level  p_goal_level, uint64_t p_chunk_ID)
 {
     thisAgent = myAgent;
-    assert(thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
     m_match_goal_level = p_goal_level;
     m_chunk_ID = p_chunk_ID;
 }
@@ -214,7 +210,6 @@ condition* Repair_Manager::make_condition_from_wme(wme* lWME)
 
 void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCondList, tc_number tc)
 {
-    assert(pCondList);
     condition* lCond;
     Symbol* highest_goal = thisAgent->bottom_goal, *lSym, *lMatchedSym;
     test lID_test, lValue_test, lInst_ID_test, lInst_Value_test, highest_goal_test = NULL;
@@ -224,7 +219,6 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
         if (lCond->type == POSITIVE_CONDITION)
         {
             /* Mark the wme so that we don't add a duplicate */
-            assert(lCond->bt.wme_);
             lCond->bt.wme_->tc = tc;
 
             /* Check if the id element is a state */
@@ -330,14 +324,11 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     {
         lWME = (*it);
         new_cond = make_condition_from_wme(lWME);
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
-        {
-            thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.id_test);
-            thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.value_test);
-        }
+        thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.id_test);
+        thisAgent->explanationBasedChunker->sti_variablize_test(new_cond->data.tests.value_test);
         add_cond_to_lists(&new_cond, &prev_cond, &first_cond);
-
     }
+
     if (prev_cond) prev_cond->next = NIL;
     else if (first_cond) first_cond->next = NIL;
 
@@ -349,7 +340,6 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
 bool Explanation_Based_Chunker::reorder_and_validate_chunk()
 {
     matched_symbol_list* unconnected_syms = new matched_symbol_list();
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     reorder_and_validate_lhs_and_rhs(thisAgent, &m_lhs, &m_rhs, false, unconnected_syms, ebc_settings[SETTING_EBC_REPAIR_LHS], ebc_settings[SETTING_EBC_REPAIR_RHS]);
 

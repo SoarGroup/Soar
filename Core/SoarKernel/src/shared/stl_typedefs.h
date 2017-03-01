@@ -10,9 +10,8 @@
 #include <set>
 #include <unordered_set>
 #include <list>
-#include <functional>
-#include <assert.h>
-#include <cmath>
+//#include <functional>
+//#include <cmath>
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 

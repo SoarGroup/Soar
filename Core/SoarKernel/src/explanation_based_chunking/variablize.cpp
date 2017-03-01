@@ -18,8 +18,6 @@
 #include "print.h"
 #include "rhs.h"
 
-#include <assert.h>
-
 uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc)
 {
     char prefix[2];
@@ -39,7 +37,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
             lRhsValue = static_cast<rhs_value>(c->first);
             dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall argument %r\n", lRhsValue);
             variablize_rhs_symbol(lRhsValue);
-            assert(c->first == lRhsValue);
             dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
         /* Overall function does not have an identity */
@@ -102,10 +99,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         }
         return returnID;
     }
-    else
-    {
-        assert(!rs->referent->is_sti());
-    }
     return NULL_IDENTITY_SET;
 }
 
@@ -126,9 +119,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
     char prefix[2];
     Symbol* lNewVariable = NULL;
     Symbol* lOldSym;
-
-    assert(pTest && pTest->eq_test);
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     if (!pTest->eq_test->data.referent->is_variable())
     {
@@ -184,11 +174,8 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopLevelEqualities)
 {
 
-    if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST))
-    {
-        return true;
-    }
-    assert(!t->identity || (t->identity && t->identity_set));
+    if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
+
     if (t->identity_set && t->identity_set->super_join->new_var)
     {
         dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t %g...with found variablization info %y [%u]\n", t, t, t->identity_set->super_join->new_var, t->identity_set->super_join->clone_identity);
@@ -208,7 +195,6 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
         return false;
     }
-
     return true;
 }
 
@@ -307,8 +293,6 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
 
 action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
-    assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
-
     std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lIdentity = 0;
     identity_set* lIdentitySet;
@@ -437,7 +421,6 @@ action* Explanation_Based_Chunker::variablize_results_into_actions()
 void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
 {
     dprint(DT_RHS_LTI_LINKING, "Adding linked local STIs...\n");
-    assert(pLastAction);
 
     rhs_symbol lRSym = NULL;
     rhs_value lRV = NULL, lIntRV = NULL, lNewFuncallList = NULL;

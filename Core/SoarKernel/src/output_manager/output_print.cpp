@@ -382,7 +382,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                                 {
                                     ct = static_cast<test>(c->first);
-                                    assert(ct);
                                     if (ct->identity)
                                     {
                                         if (ct->type != EQUALITY_TEST)

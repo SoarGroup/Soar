@@ -46,6 +46,9 @@ void FunctionalTestHarness::runTestSetup(std::string testName)
 	
 	result = agent->ExecuteCommandLine("soar stop-phase apply");
 	runner->output << "Set Stop Phase: " << result << std::endl;
+
+    SoarHelper::check_learning_override(agent);
+
 }
 
 // this function assumes some other function has set up the agent (like runTestSetup)

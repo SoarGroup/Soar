@@ -23,8 +23,6 @@
 #include "symbol_manager.h"
 #include "working_memory.h"
 
-#include <assert.h>
-
 /* =================================================================
 
                       Utility Routines for Tests
@@ -251,12 +249,11 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
 {
-    test destination = 0;//, original = 0;
-    cons* c;//, *c_orig;
+    test destination = 0;
+    cons* c;
 
     destination = *dest_test_address;
 
-//    dprint(DT_DEBUG, "Merging disjunctive test %t into %t", new_test, destination);
     if (destination->type != CONJUNCTIVE_TEST)
     {
         if (destination->type == DISJUNCTION_TEST)
@@ -274,14 +271,11 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
         *dest_test_address = destination;
     }
 
-//    assert(destination->eq_test);
-
     for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
     {
         if (static_cast<test>(c->first)->type == DISJUNCTION_TEST)
         {
             merge_disjunction_tests(thisAgent, static_cast<test>(c->first), new_test);
-//            dprint(DT_DEBUG, "Found another disjunction.  Merged test is now %t", destination);
             return true;
         }
     }
@@ -291,7 +285,6 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
 
-//    dprint(DT_DEBUG, "No disjunction found.  Merged test is now %t", destination);
     return true;
 }
 
@@ -319,7 +312,6 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
     }
 
     destination = *dest_test_address;
-    assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
 
     /* Since this function is called frequently but merges infrequently, we call a special
      * version of this function instead */
@@ -537,7 +529,6 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             return false;
         }
         case CONJUNCTIVE_TEST:
-            assert(false);
             return false;
         default:  /* relational tests */
         {

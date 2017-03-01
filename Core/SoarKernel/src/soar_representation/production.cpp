@@ -494,7 +494,6 @@ void deallocate_production(agent* thisAgent, production* prod)
         for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
         {
             dprint(DT_DEALLOCATE_PROD, "Clearing production pointer from instantiation %u (%y).\n", lInst->i_id, lInst->prod_name);
-            assert(lInst->prod == prod);
             lInst->prod = NULL;
         }
     }

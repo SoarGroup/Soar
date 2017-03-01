@@ -248,7 +248,6 @@ uint64_t get_rhs_function_first_arg_identity(agent* thisAgent, rhs_value rv)
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
     firstArg =  static_cast<char*>(fl->rest->first);
-    assert(rhs_value_is_symbol(firstArg));
     uint64_t returnVal = rhs_value_to_o_id(static_cast<char*>(firstArg));
     thisAgent->explanationBasedChunker->deep_copy_sym_expanded = rhs_value_to_symbol(static_cast<char*>(firstArg));
     return returnVal;
@@ -270,10 +269,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     wasUnboundVar = false;
     if (rhs_value_is_symbol(rv))
     {
-
         result = rhs_value_to_symbol(rv);
-
-        assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -1286,7 +1282,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     while (next_iter != l_instantiation_list.end())
     {
         lInst = *next_iter;
-        assert(lInst);
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 (prefs) for %u (%y)\n", lInst->i_id, lInst->prod_name);
         //dprint(DT_DEALLOCATE_INST,  "Deallocating instantiation for match of %y (%u) in %y (%d) : \n%5", lInst->prod_name, lInst->i_id, lInst->match_goal, static_cast<long long>(lInst->match_goal_level), lInst->top_of_instantiated_conditions, lInst->preferences_generated);
@@ -1445,7 +1440,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
         if (lDelInst->OSK_proposal_slot)
         {
-            assert(lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = lDelInst);
             lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
         }
 
@@ -1462,7 +1456,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
         dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating prod and final deallocation of inst %u %y\n", lDelInst->i_id, lDelInst->prod_name);
         thisAgent->symbolManager->symbol_remove_ref(&lDelInst->prod_name);
-//        delete lDelInst->bt_identity_set_mappings;
 
         if (lDelInst->prod)
         {
@@ -1665,8 +1658,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
         if (ap_wme->value == cand->value) break;
     for (ss_link_wme = goal->id->impasse_wmes; ss_link_wme != NIL; ss_link_wme = ss_link_wme->next)
         if (ss_link_wme->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) break;
-
-    assert(ap_wme && ss_link_wme);
 
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 

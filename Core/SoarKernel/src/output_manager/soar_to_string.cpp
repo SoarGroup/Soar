@@ -33,8 +33,6 @@
 
 bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destString)
 {
-    assert(thisAgent && w);
-
     sprinta_sf(thisAgent, destString, "(t%u: %y ^%y %y%s    [lvl = %d-%d, rc = %u]",
         w->timetag, w->id, w->attr, w->value, (w->acceptable ? " +)" : ")"),
         static_cast<int64_t>(w->id->id->level),
@@ -48,7 +46,6 @@ bool Output_Manager::wme_to_string(agent* thisAgent, wme* w, std::string &destSt
 
 void Output_Manager::WM_to_string(agent* thisAgent, std::string &destString)
 {
-    assert(thisAgent);
     destString += "--------------------------- WMEs --------------------------\n";
     for (wme* w = m_defaultAgent->all_wmes_in_rete; w != NIL; w = w->rete_next)
     {
@@ -252,7 +249,6 @@ void Output_Manager::condition_list_to_string(agent* thisAgent, condition* top_c
 
     for (cond = top_cond; cond != NIL; cond = cond->next)
     {
-        assert(cond != cond->next);
         sprinta_sf(thisAgent, destString, "%s%d: %l\n", m_pre_string, ++count, cond);
     }
     return;
@@ -342,7 +338,6 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     }
     else
     {
-        assert(rhs_value_is_funcall(rv));
         /* -- function call -- */
         fl = rhs_value_to_funcall_list(rv);
         rf = static_cast<rhs_function_struct*>(fl->first);
@@ -376,7 +371,6 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
 
 void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &destString)
 {
-    assert(thisAgent && a);
     if (a->type == FUNCALL_ACTION)
     {
         if (m_pre_string) destString += m_pre_string;
@@ -402,7 +396,6 @@ void Output_Manager::action_to_string(agent* thisAgent, action* a, std::string &
 
 void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list, std::string &destString)
 {
-    assert(thisAgent && action_list);
     action* a = NIL;
 
     for (a = action_list; a != NIL; a = a->next)
@@ -436,7 +429,6 @@ void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, identity
 
 void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::string &destString)
 {
-    assert(thisAgent && pref);
     if (m_print_actual_effective)
     {
         sprinta_sf(thisAgent, destString, "(%y ^%y %y) %c", pref->id, pref->attr, pref->value, preference_to_char(pref->type));

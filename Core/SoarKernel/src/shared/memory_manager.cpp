@@ -1,15 +1,15 @@
-#include "mem.h"
+#include "memory_manager.h"
+
 #include "agent.h"
+#include "dprint.h"
+#include "mem.h"
 #include "print.h"
+#include "run_soar.h"
 #include "sml_Names.h"
 #include "stats.h"
 
-#include <stdlib.h>
-#include <assert.h>
-#include "run_soar.h"
-#include "memory_manager.h"
 #include <iostream>
-#include "dprint.h"
+#include <stdlib.h>
 
 /* ====================================================================
 
