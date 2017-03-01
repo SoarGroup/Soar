@@ -13,6 +13,7 @@
 #include "dprint.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
+#include "output_manager.h"
 #include "rhs.h"
 #include "rhs_functions.h"
 #include "test.h"
