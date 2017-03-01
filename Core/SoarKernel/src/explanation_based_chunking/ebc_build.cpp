@@ -396,6 +396,36 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
 
         c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
         c_vrblz->inst = ground->inst;
+        /* Attach any transitive constraints */
+//        if (ebc_settings[SETTING_EBC_LEARNING_ON])
+//        {
+//            identity_set* lIdentitySet;
+//            lIdentitySet = c_vrblz->data.tests.value_test->eq_test->identity_set ? c_vrblz->data.tests.value_test->eq_test->identity_set->super_join : NULL;
+//            if (lIdentitySet && !lIdentitySet->operational_cond)
+//            {
+//                lIdentitySet->operational_cond = c_vrblz;
+//                lIdentitySet->operational_field = VALUE_ELEMENT;
+////                if (lIdentitySet->constraints || lIdentitySet->has_joined_constraints) add_identity_set_constraints_to_test(lIdentitySet);
+//                touch_identity_set(lIdentitySet);
+//            }
+//            lIdentitySet = c_vrblz->data.tests.attr_test->eq_test->identity_set ? c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join : NULL;
+//            if (lIdentitySet && !lIdentitySet->operational_cond)
+//            {
+//                lIdentitySet->operational_cond = c_vrblz;
+//                lIdentitySet->operational_field = ATTR_ELEMENT;
+////                if (lIdentitySet->constraints || lIdentitySet->has_joined_constraints) add_identity_set_constraints_to_test(lIdentitySet);
+//                touch_identity_set(lIdentitySet);
+//            }
+//            lIdentitySet = c_vrblz->data.tests.id_test->eq_test->identity_set ? c_vrblz->data.tests.id_test->eq_test->identity_set->super_join : NULL;
+//            if (lIdentitySet && !lIdentitySet->operational_cond)
+//            {
+//                lIdentitySet->operational_cond = c_vrblz;
+//                lIdentitySet->operational_field = ID_ELEMENT;
+////                if (lIdentitySet->constraints || lIdentitySet->has_joined_constraints) add_identity_set_constraints_to_test(lIdentitySet);
+//                touch_identity_set(lIdentitySet);
+//            }
+//        }
+
         add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
 
         /* Set up attachment points for transitive constraints */
@@ -423,8 +453,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     }
 
     dprint(DT_BUILD_CHUNK_CONDS, "...adding negated conditions from backtraced negated set.\n");
-    /* --- scan through negated conditions and check which ones are connected
-       to the grounds --- */
+    /* --- scan through negated conditions and check which ones are connected to the grounds --- */
     if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
     {
         thisAgent->outputManager->printa(thisAgent, "\n\n*** Adding Grounded Negated Conditions ***\n");

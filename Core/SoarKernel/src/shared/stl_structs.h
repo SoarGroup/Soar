@@ -62,6 +62,9 @@ typedef struct identity_set_struct
         Symbol*                     new_var;
         uint64_t                    clone_identity;
         bool                        literalized;
+        bool                        has_joined_constraints;
+        cons*                       constraints;
+        cons*                       inverted_constraints;  // These need to be deleted, so they have their own list
 
         /* Fields for transitive constraint attachment  */
         condition*                  operational_cond;

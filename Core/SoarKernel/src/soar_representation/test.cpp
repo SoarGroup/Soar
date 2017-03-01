@@ -135,7 +135,6 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                /* MToDo | Do we need to increase refcount of superjoin set here? */
                 new_ct->identity     = new_ct->identity_set->super_join->identity;
                 new_ct->identity_set = new_ct->identity_set->super_join;
             }
@@ -152,7 +151,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t\n", t);
+    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t[%g]\n", t, t);
     if (!t)
     {
         return;
