@@ -84,7 +84,6 @@ class Explanation_Based_Chunker
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
         void            touch_identity_set(identity_set* pIDSet)                                { if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); } }
         void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
-        void            add_identity_set_constraints_to_test(identity_set* pID_Set);
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);

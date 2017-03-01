@@ -63,9 +63,6 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     new_join_set->new_var = NULL;
     new_join_set->clone_identity = NULL_IDENTITY_SET;
     new_join_set->literalized = false;
-    new_join_set->has_joined_constraints = false;
-    new_join_set->constraints = NULL;
-    new_join_set->inverted_constraints = NULL;
     new_join_set->operational_cond = NULL;
     new_join_set->operational_field = NO_ELEMENT;
     ISI_add(thisAgent, new_join_set);
@@ -110,22 +107,6 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
     pIDSet->literalized = false;
     pIDSet->operational_cond = NULL;
     pIDSet->operational_field = NO_ELEMENT;
-    pIDSet->has_joined_constraints = false;
-    if (pIDSet->constraints)
-    {
-        free_list(thisAgent, pIDSet->constraints);
-        pIDSet->constraints = NULL;
-    }
-    if (pIDSet->inverted_constraints)
-    {
-        for (cons* c = pIDSet->inverted_constraints; c; c = c->rest)
-        {
-            deallocate_test(thisAgent, static_cast<test>(c->first));
-        }
-        free_list(thisAgent, pIDSet->inverted_constraints);
-        pIDSet->inverted_constraints = NULL;
-    }
-
 }
 
 void Explanation_Based_Chunker::clean_up_identity_sets()
@@ -209,7 +190,6 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
 
     /* Propagate literalization and constraint info */
     if (lFromJoinSet->literalized) lToJoinSet->literalized = true;
-    if (lFromJoinSet->constraints || lFromJoinSet->inverted_constraints) lToJoinSet->has_joined_constraints = true;
 
     /* Point super_join to joined identity set */
     lFromJoinSet->super_join = lToJoinSet;
@@ -316,59 +296,3 @@ void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* 
 
 }
 
-/* pDestination must be the overall conjunctive test, IDSet must be the superjoin */
-void Explanation_Based_Chunker::add_identity_set_constraints_to_test(identity_set* pID_Set)
-{
-    cons* lCons;
-
-    test eq_copy = NULL, constraint_test = NULL;
-
-    if (pID_Set->constraints)
-    {
-        for (lCons = pID_Set->constraints; lCons; lCons = lCons->rest)
-        {
-            add_constraint_to_test(static_cast<test>(lCons->first), pID_Set);
-        }
-        free_list(thisAgent, pID_Set->constraints);
-        pID_Set->constraints = NULL;
-    }
-    if (pID_Set->inverted_constraints)
-    {
-        for (lCons = pID_Set->constraints; lCons; lCons = lCons->rest)
-        {
-            add_constraint_to_test(static_cast<test>(lCons->first), pID_Set);
-            deallocate_test(thisAgent, static_cast<test>(lCons->first));
-        }
-        free_list(thisAgent, pID_Set->inverted_constraints);
-        pID_Set->inverted_constraints = NULL;
-    }
-    identity_set* lPreviouslyJoinedIdentity;
-    if (pID_Set->has_joined_constraints)
-    {
-        for (auto it = pID_Set->identity_sets->begin(); it != pID_Set->identity_sets->end(); it++)
-        {
-            lPreviouslyJoinedIdentity = *it;
-            if (lPreviouslyJoinedIdentity->constraints)
-            {
-                for (lCons = lPreviouslyJoinedIdentity->constraints; lCons; lCons = lCons->rest)
-                {
-                    add_constraint_to_test(static_cast<test>(lCons->first), pID_Set);
-                }
-                free_list(thisAgent, lPreviouslyJoinedIdentity->constraints);
-                lPreviouslyJoinedIdentity->constraints = NULL;
-            }
-            if (lPreviouslyJoinedIdentity->inverted_constraints)
-            {
-                for (lCons = lPreviouslyJoinedIdentity->constraints; lCons; lCons = lCons->rest)
-                {
-                    add_constraint_to_test(static_cast<test>(lCons->first), pID_Set);
-                    deallocate_test(thisAgent, static_cast<test>(lCons->first));
-                }
-                free_list(thisAgent, lPreviouslyJoinedIdentity->inverted_constraints);
-                lPreviouslyJoinedIdentity->inverted_constraints = NULL;
-            }
-        }
-    }
-
-    dprint_header(DT_CONSTRAINTS, PrintAfter, "Done adding transitive constraints.\n");
-}
