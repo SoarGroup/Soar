@@ -191,14 +191,13 @@ void condition_record::create_identity_paths(const inst_record_list* pInstPath)
 
 }
 
-void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper)
+void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printAcceptable, bool isSuper)
 {
     cons* c, *c2;
     test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
-    bool highlight_identity_sets = (printIdentity && pTestIdentity->identity && pTestIdentity->identity_set);
     std::string highlight_str;
-    if (highlight_identity_sets)
+    if (pTestIdentity && pTestIdentity->identity_set && pTestIdentity->identity_set->super_join->identity)
     {
         highlight_str = " BGCOLOR=\"";
         highlight_str += visualizer->get_color_for_id(pTestIdentity->identity_set->super_join->identity);
@@ -226,13 +225,13 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
             if (c2)
             {
                 c2_test = static_cast<test>(c2->first);
-                viz_combo_test(c1_test, c2_test, pNode_id, NO_ELEMENT, false, printIdentity, printAcceptable, isSuper);
+                viz_combo_test(c1_test, c2_test, pNode_id, NO_ELEMENT, false, printAcceptable, isSuper);
             } else {
                 if (test_has_referent(c1_test) && c1_test->data.referent->is_variable())
                 {
-                    viz_combo_test(c1_test, c2_test, pNode_id, NO_ELEMENT, false, printIdentity, printAcceptable, isSuper);
+                    viz_combo_test(c1_test, c2_test, pNode_id, NO_ELEMENT, false, printAcceptable, isSuper);
                 } else {
-                    viz_combo_test(c1_test, NULL, pNode_id, NO_ELEMENT, false, false, printAcceptable, isSuper);
+                    viz_combo_test(c1_test, NULL, pNode_id, NO_ELEMENT, false, printAcceptable, isSuper);
                 }
             }
             visualizer->viz_record_end();
@@ -258,7 +257,7 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
                 visualizer->graphviz_output += "^";
             }
         }
-        if (printIdentity && pTestIdentity->identity)
+        if (pTestIdentity && pTestIdentity->identity)
         {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
             thisAgent->outputManager->identity_to_string(thisAgent, pTestIdentity->identity, pTestIdentity->identity_set, visualizer->graphviz_output);
@@ -352,9 +351,9 @@ void condition_record::visualize_for_explanation_trace(condition* pCond, goal_st
 {
     bool isSuper = (match_level > 0) && (wme_level_at_firing < match_level);
     thisAgent->visualizationManager->viz_record_start();
-    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, ID_ELEMENT, false, true, false, isSuper);
-    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, ATTR_ELEMENT, (type == NEGATIVE_CONDITION), true, false, isSuper);
-    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, VALUE_ELEMENT, false, true, test_for_acceptable_preference, isSuper);
+    viz_combo_test(pCond->data.tests.id_test, condition_tests.id, conditionID, ID_ELEMENT, false, false, isSuper);
+    viz_combo_test(pCond->data.tests.attr_test, condition_tests.attr, conditionID, ATTR_ELEMENT, (type == NEGATIVE_CONDITION), false, isSuper);
+    viz_combo_test(pCond->data.tests.value_test, condition_tests.value, conditionID, VALUE_ELEMENT, false, test_for_acceptable_preference, isSuper);
     thisAgent->visualizationManager->viz_record_end();
 }
 

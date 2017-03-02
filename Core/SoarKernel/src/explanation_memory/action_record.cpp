@@ -171,11 +171,23 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
     thisAgent->outputManager->clear_print_test_format();
 }
 
-void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, uint64_t pIDSet)
+void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, identity_set* pIDSet, uint64_t pNodeID, char pTypeChar, WME_Field pField)
 {
     std::string tempString;
     bool identity_printed = false;
     tempString = "";
+
+    bool highlight_identity_sets = (pID && pIDSet && pIDSet->super_join->identity);
+    std::string highlight_str;
+    if (highlight_identity_sets)
+    {
+        highlight_str = " BGCOLOR=\"";
+        highlight_str += thisAgent->visualizationManager->get_color_for_id(pIDSet->super_join->identity);
+        highlight_str += "\" ";
+    } else highlight_str = " ";
+
+    thisAgent->visualizationManager->viz_table_element_start(pNodeID, pTypeChar, pField, false, highlight_str.c_str());
+
     thisAgent->outputManager->set_print_test_format(true, false);
     thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
     thisAgent->visualizationManager->graphviz_output += tempString;
@@ -189,20 +201,16 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
             thisAgent->outputManager->set_print_test_format(true, false);
             if (!tempString.empty())
             {
-                thisAgent->visualizationManager->graphviz_output += " (";
-                thisAgent->visualizationManager->graphviz_output += tempString;
-                thisAgent->visualizationManager->graphviz_output += ')';
+                thisAgent->outputManager->identity_to_string(thisAgent, pID, pIDSet, thisAgent->visualizationManager->graphviz_output);
                 identity_printed = true;
             }
         }
     }
     if (!identity_printed && pID) {
-        thisAgent->visualizationManager->graphviz_output += " (";
-        thisAgent->visualizationManager->graphviz_output += std::to_string(pID);
-        thisAgent->visualizationManager->graphviz_output += 's';
-        thisAgent->visualizationManager->graphviz_output += std::to_string(pIDSet);
-        thisAgent->visualizationManager->graphviz_output += ')';
+        thisAgent->outputManager->identity_to_string(thisAgent, pID, pIDSet, thisAgent->visualizationManager->graphviz_output);
     }
+
+    thisAgent->visualizationManager->viz_table_element_end();
 }
 
 void action_record::viz_action_list(agent* thisAgent, action_record_list* pActionRecords, production* pOriginalRule, action* pRhs, production_record* pExcisedRule)
@@ -339,27 +347,17 @@ void action_record::viz_action(action* pAction)
         thisAgent->visualizationManager->viz_record_end();
     } else {
         thisAgent->visualizationManager->viz_record_start();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, get_superjoin_id(instantiated_pref->identity_sets.id));
-        thisAgent->visualizationManager->viz_table_element_end();
-        thisAgent->visualizationManager->viz_table_element_start();
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr, get_superjoin_id(instantiated_pref->identity_sets.attr));
-        thisAgent->visualizationManager->viz_table_element_end();
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, instantiated_pref->identity_sets.id, actionID, 'a', ID_ELEMENT);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr, instantiated_pref->identity_sets.attr);
         if (pAction->referent)
         {
-            thisAgent->visualizationManager->viz_table_element_start();
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, get_superjoin_id(instantiated_pref->identity_sets.value));
-            thisAgent->visualizationManager->viz_table_element_end();
-            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, get_superjoin_id(instantiated_pref->identity_sets.referent));
-            thisAgent->visualizationManager->viz_table_element_end();
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, instantiated_pref->identity_sets.referent, actionID, 'a', VALUE_ELEMENT);
         } else {
-            thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, get_superjoin_id(instantiated_pref->identity_sets.value));
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value, actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            thisAgent->visualizationManager->viz_table_element_end();
         }
         thisAgent->visualizationManager->viz_record_end();
     }

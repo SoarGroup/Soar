@@ -196,6 +196,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_inst_record:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
+                "      colorscheme=\"X11\"\n"
                 "      penwidth = \"0\"\n"
                 "      label = \xF3", node_id);
             viz_table_start();
@@ -207,6 +208,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   chunk%u [\n"
                 "      style = \"dashed, bold, rounded\"\n"
+                "      colorscheme=\"X11\"\n"
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
@@ -215,6 +217,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      penwidth = \"0\"\n"
                 "      label = \xF3", nodeName.c_str());
             viz_table_start();
@@ -224,19 +227,21 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_simple_inst:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"box\" style = \"rounded\"\n"
                 "      label = \"%s (i %u)", node_id, pName.c_str(), node_id);
             break;
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"circle\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
-
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"box\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
