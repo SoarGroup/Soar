@@ -96,16 +96,30 @@ proc destroySlave { slaveName } {
 ##
 proc smlfilter {agentName commandLine} {
   global _kernel
-  
+
   set slave [getSlave $agentName]
-  
   $slave eval clearOutputBuffer
-  # That evaluates the command within the child interpreter for this agent
-  if { [catch {$slave eval [concat uplevel #0 puts [list \[$commandLine\]]]} returnVal] } {
-    catch {$slave eval [list executeCommandLine $commandLine]} returnVal
-    $slave eval [list appendOutputBuffer $returnVal]
+
+  set commandName [lindex [split $commandLine " "] 0]
+  set hasProcedure [$slave eval [list hasProcedure $commandName]]
+
+  if { $hasProcedure == "true" } {
+	# The slave has the procedure, try executing it
+	if { [catch {$slave eval [concat uplevel #0 puts [list \[$commandLine\]]]} slaveResult] } {
+		# There was a tcl error, so throw it along with the previous output
+		error "[$slave eval getOutputBuffer]$slaveResult"
+	}
+  } else {
+	  # The slave doesn't have the procedure, try sending it to soar
+	  if { [catch {$slave eval [list executeCommandLine $commandLine]} soarResult] } {
+		# There was a soar error, so throw it along with the previous output
+		error "[$slave eval getOutputBuffer]$soarResult"
+	  } else {
+		# Soar properly handled the command, add the result to the output
+		$slave eval [list appendOutputBuffer $soarResult]
+	  }
   }
-  
+
   return [$slave eval getOutputBuffer]
 }
 
@@ -162,6 +176,7 @@ proc smlDestroyAgentCallback { id userData agent } {
 proc smlFilterCallback {id userData agent filterName commandXML} {
   global sml_Names_kFilterCommand
   global sml_Names_kFilterOutput
+  global sml_Names_kFilterError
   
   set name [$agent GetAgentName]
   
@@ -171,13 +186,15 @@ proc smlFilterCallback {id userData agent filterName commandXML} {
   # Any backslash characters should be preserved (I think) so that
   # source e:\file.soar is valid and the "\f" isn't interpreted as an escape character.
   set commandLine [string map {\\ \\\\} $commandLine]
-  
+
   # This is a complicated line where all the action happens.
   # At the core is "$slave eval $commandLine"
   # That evaluates the command within the child interpreter for this agent
   # The catch around that places whether this call succeeds or fails into "error"
   # and the result of the command's execution (or an error message) into result.
-  set errorResult [catch {smlfilter $name $commandLine} result]
+  if { [catch {smlfilter $name $commandLine} result] } {
+	  $xml AddAttribute $sml_Names_kFilterError "true"
+  }
   
   # Return the result of the command as the output string for the command
   # which in turn will appear in the debugger
