@@ -501,6 +501,7 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
+            thisAgent->visualizationManager->reset_colors_for_id();
         }
         current_discussed_chunk = pChunkRecord;
         current_discussed_chunk->generate_dependency_paths();

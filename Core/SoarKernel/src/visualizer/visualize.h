@@ -49,6 +49,9 @@ class GraphViz_Visualizer
         void viz_table_element_end();
         void viz_table_element_conj_start(uint64_t pNodeID = 0, char pTypeChar = ' ', WME_Field pField = NO_ELEMENT, bool pRowBorder = false, const char* pModStr = " ");
 
+        std::string         get_color_for_id(uint64_t pID);
+        void                reset_colors_for_id()           { m_identity_colors.clear(); };
+
         void escape_graphviz_chars();
         void clear_visualization();
 
@@ -57,11 +60,15 @@ class GraphViz_Visualizer
 
     private:
 
-        agent*              thisAgent;
-        Output_Manager*     outputManager;
+        agent*                      thisAgent;
+        Output_Manager*             outputManager;
 
-        uint64_t            m_file_count;
-        uint64_t            m_unique_counter;
+        uint64_t                    m_file_count;
+        uint64_t                    m_unique_counter;
+
+        uint64_t                    m_last_color;
+        id_to_id_map                m_identity_colors;
+
 };
 
 #endif /* CORE_SOARKERNEL_SRC_VISUALIZER_VISUALIZE_H_ */

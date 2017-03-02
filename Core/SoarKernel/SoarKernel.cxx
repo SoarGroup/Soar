@@ -80,6 +80,7 @@
 #include <test.cpp>
 #include <trace.cpp>
 #include <visualize.cpp>
+#include <visualize_colors.cpp>
 #include <visualize_wm.cpp>
 #include <visualize_settings.cpp>
 #include <working_memory_activation.cpp>

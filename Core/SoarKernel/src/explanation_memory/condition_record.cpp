@@ -197,11 +197,17 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     bool highlight_identity_sets = (printIdentity && pTestIdentity->identity && pTestIdentity->identity_set);
+    std::string highlight_str;
+    if (highlight_identity_sets)
+    {
+        highlight_str = " BGCOLOR=\"";
+        highlight_str += visualizer->get_color_for_id(pTestIdentity->identity_set->super_join->identity);
+        highlight_str += "\" ";
+    } else highlight_str = " ";
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        visualizer->viz_table_element_conj_start((pField == ID_ELEMENT) ? pNode_id : 0, 'c', NO_ELEMENT, isSuper,
-            highlight_identity_sets ? " BGCOLOR=\"yellow\" " : " ");
+        visualizer->viz_table_element_conj_start((pField == ID_ELEMENT) ? pNode_id : 0, 'c', NO_ELEMENT, isSuper, highlight_str.c_str());
         if (pTestIdentity->type == CONJUNCTIVE_TEST)
         {
             c2 =  pTestIdentity->data.conjunct_list;
@@ -239,11 +245,9 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     } else {
         if ((pField == ID_ELEMENT) || (pField == VALUE_ELEMENT))
         {
-            visualizer->viz_table_element_start(pNode_id, 'c', pField, isSuper,
-                highlight_identity_sets ? " BGCOLOR=\"yellow\" " : " ");
+            visualizer->viz_table_element_start(pNode_id, 'c', pField, isSuper, highlight_str.c_str());
         } else {
-            visualizer->viz_table_element_start(0, ' ', ID_ELEMENT, isSuper,
-                highlight_identity_sets ? " BGCOLOR=\"yellow\" " : " ");
+            visualizer->viz_table_element_start(0, ' ', ID_ELEMENT, isSuper, highlight_str.c_str());
         }
         if (pField == ATTR_ELEMENT)
         {
