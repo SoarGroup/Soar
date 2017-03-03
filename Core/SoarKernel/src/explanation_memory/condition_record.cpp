@@ -18,6 +18,34 @@
 #include "working_memory.h"
 #include "visualize.h"
 
+void simplify_identity_in_test(agent* thisAgent, test t)
+{
+    test new_ct;
+
+    if (!t) return;
+
+    switch (t->type)
+    {
+        case GOAL_ID_TEST:
+        case IMPASSE_ID_TEST:
+        case SMEM_LINK_UNARY_TEST:
+        case SMEM_LINK_UNARY_NOT_TEST:
+        case DISJUNCTION_TEST:
+            break;
+        case CONJUNCTIVE_TEST:
+            for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
+                simplify_identity_in_test(thisAgent, static_cast<test>(c->first));
+            t->identity = NULL_IDENTITY_SET;
+            t->identity_set = NULL;
+            break;
+        default:
+            if (t->identity_set) t->identity = t->identity_set->super_join->identity;
+            else t->identity = NULL_IDENTITY_SET;
+            t->identity_set = NULL;
+            break;
+    }
+}
+
 void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
 {
     thisAgent = myAgent;
@@ -32,7 +60,9 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-
+    simplify_identity_in_test(thisAgent, condition_tests.id);
+    simplify_identity_in_test(thisAgent, condition_tests.attr);
+    simplify_identity_in_test(thisAgent, condition_tests.value);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);
@@ -156,53 +186,26 @@ void condition_record::set_matched_wme_for_cond(condition* pCond)
     }
 }
 
-bool test_contains_identity_in_set(agent* thisAgent, test t, const id_set* pIDSet)
-{
-    if (!t || !t->eq_test || !t->eq_test->identity) return false;
-    auto it = pIDSet->find(t->eq_test->identity);
-    if (it != pIDSet->end()) return true;
-    return false;
-}
-
-bool condition_record::contains_identity_from_set(const id_set* pIDSet)
-{
-    bool returnVal = (test_contains_identity_in_set(thisAgent, condition_tests.value, pIDSet) ||
-                      test_contains_identity_in_set(thisAgent, condition_tests.id, pIDSet) ||
-                      test_contains_identity_in_set(thisAgent, condition_tests.attr, pIDSet));
-
-    dprint(DT_EXPLAIN_PATHS, "condition_record::contains_identity_from_set returning %s.\n", returnVal ? "TRUE" : "FALSE");
-
-    return returnVal;
-}
-
-void condition_record::create_identity_paths(const inst_record_list* pInstPath)
-{
-    if (path_to_base)
-    {
-        dprint(DT_EXPLAIN_PATHS, "      Condition already has a path to base.  Skipping (%t ^%t %t).\n", condition_tests.id, condition_tests.attr, condition_tests.value);
-        return;
-    } else
-    {
-        assert(!path_to_base);
-        path_to_base = new inst_record_list();
-        (*path_to_base) = (*pInstPath);
-        dprint(DT_EXPLAIN_PATHS, "      Condition record copied path_to_base %d = %d.\n", path_to_base->size(), pInstPath->size());
-    }
-
-}
-
 void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printAcceptable, bool isSuper)
 {
     cons* c, *c2;
     test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     std::string highlight_str;
-    if (pTestIdentity && pTestIdentity->identity_set && pTestIdentity->identity_set->super_join->identity)
+    if (pTestIdentity)
     {
-        highlight_str = " BGCOLOR=\"";
-        highlight_str += visualizer->get_color_for_id(pTestIdentity->identity_set->super_join->identity);
-        highlight_str += "\" ";
-    } else highlight_str = " ";
+        if ((pTest->type == CONJUNCTIVE_TEST) && pTestIdentity->eq_test->identity)
+        {
+            highlight_str = " BGCOLOR=\"";
+            highlight_str += visualizer->get_color_for_id(pTestIdentity->eq_test->identity);
+            highlight_str += "\" ";
+        } else  if (pTestIdentity && pTestIdentity->identity)
+        {
+            highlight_str = " BGCOLOR=\"";
+            highlight_str += visualizer->get_color_for_id(pTestIdentity->identity);
+            highlight_str += "\" ";
+        } else highlight_str = " ";
+    }
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -259,8 +262,7 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
         }
         if (pTestIdentity && pTestIdentity->identity)
         {
-            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
-            thisAgent->outputManager->identity_to_string(thisAgent, pTestIdentity->identity, pTestIdentity->identity_set, visualizer->graphviz_output);
+            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTestIdentity->identity);
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
         }
@@ -273,10 +275,23 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
 {
     cons* c;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
+    std::string highlight_str;
+    if (pTest->eq_test && pTest->eq_test->identity)
+    {
+        highlight_str = " BGCOLOR=\"";
+        if (pTest->type == CONJUNCTIVE_TEST)
+        {
+            highlight_str += visualizer->get_color_for_id(pTest->eq_test->identity);
+        } else {
+            highlight_str += visualizer->get_color_for_id(pTest->identity);
+        }
+        highlight_str += "\" ";
+    } else highlight_str = " ";
+
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
-        visualizer->viz_table_element_conj_start((pField == ID_ELEMENT) ? pNode_id : 0, 'c', VALUE_ELEMENT, isSuper);
+        visualizer->viz_table_element_conj_start((pField == ID_ELEMENT) ? pNode_id : 0, 'c', VALUE_ELEMENT, isSuper, highlight_str.c_str());
         for (c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
             visualizer->viz_record_start();
@@ -290,9 +305,9 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
     } else {
         if ((pField == ID_ELEMENT) || (pField == VALUE_ELEMENT))
         {
-            visualizer->viz_table_element_start(pNode_id, 'c', pField, isSuper);
+            visualizer->viz_table_element_start(pNode_id, 'c', pField, isSuper, highlight_str.c_str());
         } else {
-            visualizer->viz_table_element_start(0, ' ', NO_ELEMENT, isSuper);
+            visualizer->viz_table_element_start(0, ' ', NO_ELEMENT, isSuper, highlight_str.c_str());
         }
         if (pField == ATTR_ELEMENT)
         {
@@ -307,8 +322,7 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         {
             if (pTest->identity)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
-                thisAgent->outputManager->identity_to_string(thisAgent, pTest->identity, pTest->identity_set, visualizer->graphviz_output);
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTest->identity);
             } else {
                 thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
             }

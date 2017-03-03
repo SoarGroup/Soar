@@ -66,7 +66,7 @@ class GraphViz_Visualizer
         uint64_t                    m_file_count;
         uint64_t                    m_unique_counter;
 
-        uint64_t                    m_last_color;
+        uint64_t                    m_next_color;
         id_to_id_map                m_identity_colors;
 
 };

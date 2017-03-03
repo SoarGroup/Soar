@@ -317,7 +317,4 @@ class Explanation_Based_Chunker
 
 };
 
-inline uint64_t get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
-
-
 #endif /* EBC_MANAGER_H_ */

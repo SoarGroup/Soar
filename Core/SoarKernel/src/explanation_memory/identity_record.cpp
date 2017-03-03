@@ -22,12 +22,10 @@ void identity_record::init(agent* myAgent)
     idset_to_var_map = new id_to_sym_map();
     identities_in_chunk = new id_set();
     instantiation_mappings = new inst_identities_map();
-    original_ebc_mappings = NULL;
 }
 
 void identity_record::clean_up()
 {
-    if (original_ebc_mappings) delete original_ebc_mappings;
     if (idset_to_var_map)
     {
         Symbol* lSym;
@@ -105,22 +103,6 @@ void identity_record::print_identities_in_chunk()
     thisAgent->outputManager->printa(thisAgent, "\n");
 }
 
-void identity_record::print_original_ebc_mappings()
-{
-    thisAgent->outputManager->set_column_indent(0, 6);
-    thisAgent->outputManager->set_column_indent(1, 26);
-    thisAgent->outputManager->set_column_indent(2, 31);
-
-    thisAgent->outputManager->printa_sf(thisAgent, "\nOriginal EBC Mappings (%u):\n", original_ebc_mappings->size());
-    thisAgent->outputManager->printa_sf(thisAgent, "ID %-Original %-Set %-Final\n\n");
-
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
-    for (iter = original_ebc_mappings->begin(); iter != original_ebc_mappings->end(); ++iter)
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "%u%- %-%u%-\n", iter->first, iter->second);
-    }
-}
-
 void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
                                            uint64_t pFromID,  uint64_t pToID)
 {
@@ -174,12 +156,6 @@ void identity_record::print_mappings()
             printHeader = false;
         }
     }
-
-    #ifndef SOAR_RELEASE_VERSION
-    thisAgent->outputManager->printa(thisAgent, "\n\n---------------------------\n\n");
-
-    print_original_ebc_mappings();
-    #endif
 }
 
 void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool printHeader)

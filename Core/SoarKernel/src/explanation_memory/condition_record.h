@@ -38,8 +38,6 @@ class condition_record
 
         void        connect_to_action();
         void        viz_connect_to_action(goal_stack_level pMatchLevel);
-        void        create_identity_paths(const inst_record_list* pInstPath);
-        bool        contains_identity_from_set(const id_set* pIDs);
         void        set_path_to_base(inst_record_list* pPath)
                     {   assert(pPath);
                         if (!path_to_base) path_to_base = new inst_record_list();

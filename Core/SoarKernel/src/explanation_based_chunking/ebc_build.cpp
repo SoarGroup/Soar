@@ -142,7 +142,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_s
         {
             ebc_timers->chunk_instantiation_creation->stop();
             dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id, linked_id);
-            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, linked_id);
+            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->super_join, linked_id->super_join);
             join_identity_sets(pref->identity_sets.id, linked_id);
             ebc_timers->chunk_instantiation_creation->start();
         }

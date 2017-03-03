@@ -114,6 +114,7 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
         identity_set* lJoin_set = *it;
+        dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up transient data in identity set %u\n", lJoin_set->identity);
         clean_up_identity_set_transient(lJoin_set);
     }
     identity_sets_to_clean_up.clear();

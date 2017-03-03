@@ -18,15 +18,73 @@
 #include "working_memory.h"
 #include "visualize.h"
 
+void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
+{
+    if (!rv || (rhs_value_is_reteloc(rv)) || (rhs_value_is_unboundvar(rv))) return;
+
+    if (rhs_value_is_funcall(rv))
+    {
+        cons* fl = rhs_value_to_funcall_list(rv);
+        for (cons* c = fl->rest; c != NIL; c = c->rest)
+        {
+            simplify_identity_in_rhs_value(thisAgent, static_cast<char*>(c->first));
+        }
+        return;
+    }
+
+    rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+    uint64_t lID = r->identity;
+    if (r->identity_set) r->identity = r->identity_set->super_join->identity;
+    else r->identity = NULL_IDENTITY_SET;
+    r->identity_set = NULL;
+}
+
+void simplify_identity_in_action(agent* thisAgent, action* pAction)
+{
+    simplify_identity_in_rhs_value(thisAgent, pAction->id);
+    simplify_identity_in_rhs_value(thisAgent, pAction->attr);
+    simplify_identity_in_rhs_value(thisAgent, pAction->value);
+    if (preference_is_binary(pAction->preference_type))
+        simplify_identity_in_rhs_value(thisAgent, pAction->referent);
+}
+
+
+void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
+{
+    if (pPref->identity_sets.id)
+    {
+        pPref->identities.id = pPref->identity_sets.id->super_join->identity;
+        pPref->identity_sets.id = NULL;
+    }
+    if (pPref->identity_sets.attr)
+    {
+        pPref->identities.attr = pPref->identity_sets.attr->super_join->identity;
+        pPref->identity_sets.attr = NULL;
+    }
+    if (pPref->identity_sets.value)
+    {
+        pPref->identities.value = pPref->identity_sets.value->super_join->identity;
+        pPref->identity_sets.value = NULL;
+    }
+    if (preference_is_binary(pPref->type) && pPref->identity_sets.referent)
+    {
+        pPref->identities.referent = pPref->identity_sets.referent->super_join->identity;
+        pPref->identity_sets.referent = NULL;
+    }
+}
+
 void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
     thisAgent               = myAgent;
     actionID                = pActionID;
     instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
     original_pref           = pPref;
+    simplify_identity_in_preference(thisAgent, pPref);
+
     if (pAction)
     {
         variablized_action = copy_action(thisAgent, pAction);
+        simplify_identity_in_action(thisAgent, variablized_action);
     } else {
         variablized_action = NULL;
     }
@@ -44,72 +102,6 @@ void action_record::clean_up()
         delete identities_used;
     }
     dprint(DT_EXPLAIN_CONDS, "   Done deleting action record a%u\n", actionID);
-}
-
-void add_all_identities_in_rhs_value(agent* thisAgent, rhs_value rv, id_set* pIDSet)
-{
-    cons* fl;
-    cons* c;
-    Symbol* sym;
-
-    rv = rhs_value_true_null(rv);
-    if (rhs_value_is_symbol(rv))
-    {
-        /* --- ordinary values (i.e., symbols) --- */
-        sym = rhs_value_to_symbol(rv);
-        if (sym->is_variable())
-        {
-            dprint(DT_EXPLAIN_PATHS, "Adding identity %u from rhs value to id set...\n", rhs_value_to_o_id(rv));
-            pIDSet->insert(rhs_value_to_o_id(rv));
-        }
-    }
-    else
-    {
-        /* --- function calls --- */
-        fl = rhs_value_to_funcall_list(rv);
-        for (c = fl->rest; c != NIL; c = c->rest)
-        {
-            add_all_identities_in_rhs_value(thisAgent, static_cast<char*>(c->first), pIDSet);
-        }
-    }
-}
-
-void add_all_identities_in_action(agent* thisAgent, action* a, id_set* pIDSet)
-{
-    Symbol* id;
-
-    if (a->type == MAKE_ACTION)
-    {
-        /* --- ordinary make actions --- */
-        id = rhs_value_to_symbol(a->id);
-        if (id->is_variable())
-        {
-            dprint(DT_EXPLAIN_PATHS, "Adding identity %u from rhs action id to id set...\n", rhs_value_to_o_id(a->id));
-            pIDSet->insert(rhs_value_to_o_id(a->id));
-        }
-        add_all_identities_in_rhs_value(thisAgent, a->attr, pIDSet);
-        add_all_identities_in_rhs_value(thisAgent, a->value, pIDSet);
-        if (preference_is_binary(a->preference_type))
-        {
-            add_all_identities_in_rhs_value(thisAgent, a->referent, pIDSet);
-        }
-    }
-    else
-    {
-        /* --- function call actions --- */
-        add_all_identities_in_rhs_value(thisAgent, a->value, pIDSet);
-    }
-}
-
-id_set* action_record::get_identities()
-{
-    if (!identities_used)
-    {
-        identities_used = new id_set();
-        add_all_identities_in_action(thisAgent, variablized_action, identities_used);
-    }
-
-    return identities_used;
 }
 
 void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual)
@@ -143,7 +135,7 @@ void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_
     }
     thisAgent->outputManager->clear_print_test_format();
 }
-void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, uint64_t pIDSet, bool printActual)
+void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
 {
     std::string tempString("");
 
@@ -164,25 +156,24 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
                 thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
                 thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
             } else {
-                thisAgent->outputManager->printa_sf(thisAgent, "[%us%u]", pID, pIDSet);
+                thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
             }
         }
     }
     thisAgent->outputManager->clear_print_test_format();
 }
 
-void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, identity_set* pIDSet, uint64_t pNodeID, char pTypeChar, WME_Field pField)
+void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, uint64_t pID, uint64_t pNodeID, char pTypeChar, WME_Field pField)
 {
     std::string tempString;
     bool identity_printed = false;
     tempString = "";
 
-    bool highlight_identity_sets = (pID && pIDSet && pIDSet->super_join->identity);
     std::string highlight_str;
-    if (highlight_identity_sets)
+    if (pID)
     {
         highlight_str = " BGCOLOR=\"";
-        highlight_str += thisAgent->visualizationManager->get_color_for_id(pIDSet->super_join->identity);
+        highlight_str += thisAgent->visualizationManager->get_color_for_id(pID);
         highlight_str += "\" ";
     } else highlight_str = " ";
 
@@ -201,13 +192,13 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
             thisAgent->outputManager->set_print_test_format(true, false);
             if (!tempString.empty())
             {
-                thisAgent->outputManager->identity_to_string(thisAgent, pID, pIDSet, thisAgent->visualizationManager->graphviz_output);
+                thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
                 identity_printed = true;
             }
         }
     }
     if (!identity_printed && pID) {
-        thisAgent->outputManager->identity_to_string(thisAgent, pID, pIDSet, thisAgent->visualizationManager->graphviz_output);
+        thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
     }
 
     thisAgent->visualizationManager->viz_table_element_end();
@@ -347,15 +338,15 @@ void action_record::viz_action(action* pAction)
         thisAgent->visualizationManager->viz_record_end();
     } else {
         thisAgent->visualizationManager->viz_record_start();
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, instantiated_pref->identity_sets.id, actionID, 'a', ID_ELEMENT);
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr, instantiated_pref->identity_sets.attr);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->identities.id, actionID, 'a', ID_ELEMENT);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->identities.attr);
         if (pAction->referent)
         {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, instantiated_pref->identity_sets.referent, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->identities.referent, actionID, 'a', VALUE_ELEMENT);
         } else {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, instantiated_pref->identity_sets.value, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->identities.value, actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
         }

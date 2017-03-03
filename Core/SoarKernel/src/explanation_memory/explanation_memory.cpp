@@ -22,8 +22,6 @@
 /* This crashes in count-and-die if depth is around 1000 (Macbook Pro 2012, 8MB) */
 #define EXPLAIN_MAX_BT_DEPTH 900
 
-uint64_t get_superjoin_id(identity_set* pIDSet);
-
 Explanation_Memory::Explanation_Memory(agent* myAgent)
 {
     /* Cache agent and Output Manager pointer */
@@ -556,39 +554,6 @@ bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID
     return true;
 }
 
-bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
-{
-    std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    identity_quadruple lWatchIdentities;
-
-    iter_inst = all_conditions->find(pConditionID);
-    if (iter_inst == all_conditions->end())
-    {
-        outputManager->printa_sf(thisAgent, "Could not find a condition with ID %u.\n", pConditionID);
-        return false;
-    } else
-    {
-        if ((iter_inst->second->condition_tests.id->eq_test->identity == current_explained_ids.id) &&
-            (iter_inst->second->condition_tests.attr->eq_test->identity == current_explained_ids.attr) &&
-            (iter_inst->second->condition_tests.value->eq_test->identity == current_explained_ids.value))
-        {
-            current_explained_ids.id = 0;
-            current_explained_ids.attr = 0;
-            current_explained_ids.value = 0;
-            outputManager->printa_sf(thisAgent, "No longer highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
-                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
-        } else
-        {
-            current_explained_ids.id = iter_inst->second->condition_tests.id->eq_test->identity;
-            current_explained_ids.attr = iter_inst->second->condition_tests.attr->eq_test->identity;
-            current_explained_ids.value = iter_inst->second->condition_tests.value->eq_test->identity;
-            outputManager->printa_sf(thisAgent, "Highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
-                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
-        }
-    }
-    return true;
-}
-
 bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDString)
 {
     bool lSuccess = false;
@@ -601,11 +566,13 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
+inline uint64_t get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
+
 void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet)
 {
     if (current_recording_chunk)
-        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, get_superjoin_id(pFromJoinSet), get_superjoin_id(pToJoinSet)); }
-
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, get_superjoin_id(pFromJoinSet), get_superjoin_id(pToJoinSet));
+}
 
 bool Explanation_Memory::current_discussed_chunk_exists()
 {

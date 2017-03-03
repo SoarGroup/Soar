@@ -208,8 +208,6 @@ class Explanation_Memory
         void                    print_chunk_explanation();
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter = true);
-        bool                    print_condition_explanation_for_id(uint64_t pInstID);
-        void                    print_condition_explanation(uint64_t pCondID);
         void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
 
