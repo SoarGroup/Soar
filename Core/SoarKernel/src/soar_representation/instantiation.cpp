@@ -1452,7 +1452,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         {
             next_pref = lDelInst->preferences_cached->inst_next;
             dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached);
-            deallocate_preference(thisAgent, lDelInst->preferences_cached);
+            deallocate_preference(thisAgent, lDelInst->preferences_cached, true);
             lDelInst->preferences_cached = next_pref;
         }
 
@@ -1499,7 +1499,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
 
 void add_identity_set_to_inst_delete_list(agent* thisAgent, instantiation* inst, identity_set* pID_Set)
 {
-    dprint(DT_DEALLOCATE_ID_SETS, "Adding identity set %u's deallocation to instantiation delete queue...\n", pID_Set->identity);
+    dprint(DT_DEALLOCATE_ID_SETS, "Adding identity set %u's deallocation to instantiation %u's delete queue...\n", pID_Set->identity, inst->i_id);
     if (!inst->identity_sets_to_delete)
     {
         dprint(DT_DEALLOCATE_ID_SETS, "Creating new instantiation delete queue...\n");

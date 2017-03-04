@@ -96,28 +96,19 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->attr);
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
-    p->identities.id = pPref->identities.id;
-    p->identities.attr = pPref->identities.attr;
-    p->identities.value = pPref->identities.value;
-    p->identities.referent = pPref->identities.referent;
-    p->identity_sets.id = pPref->identity_sets.id;
-    p->identity_sets.attr = pPref->identity_sets.attr;
-    p->identity_sets.value = pPref->identity_sets.value;
-    p->identity_sets.referent = pPref->identity_sets.referent;
-    p->clone_identities.id = pPref->clone_identities.id;
-    p->clone_identities.attr = pPref->clone_identities.attr;
-    p->clone_identities.value = pPref->clone_identities.value;
-    p->clone_identities.referent = pPref->clone_identities.referent;
+
+    /* Note that we transfer ownership of any identity sets to the shallow copy */
+    p->identities = {pPref->identities.id, pPref->identities.attr, pPref->identities.value, pPref->identities.referent};
+    p->identity_sets = {pPref->identity_sets.id, pPref->identity_sets.attr, pPref->identity_sets.value, pPref->identity_sets.referent};
+    p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
+    p->owns_identity_set = {pPref->owns_identity_set.id, pPref->owns_identity_set.attr, pPref->owns_identity_set.value, pPref->owns_identity_set.referent};
+    pPref->owns_identity_set = { false, false, false, false };
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
     p->rhs_funcs.referent = copy_rhs_value(thisAgent, pPref->rhs_funcs.referent);
-
-    p->cloned_rhs_funcs.id = NULL;
-    p->cloned_rhs_funcs.attr = NULL;
-    p->cloned_rhs_funcs.value = NULL;
-    p->cloned_rhs_funcs.referent = NULL;
+    p->cloned_rhs_funcs = {NULL, NULL, NULL, NULL};
 
     /* Don't want this information or have the other things cleaned up*/
     p->inst = NULL;
@@ -238,7 +229,7 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
     dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u) at level %d \n", pref, pref->p_id, static_cast<int64_t>(pref->level));
     assert(pref->reference_count == 0);
-
+    break_if_pref_matches_string(pref, "L5", "value", "bar");
     /*  Remove from temporary memory and match goal if necessary */
     if (pref->in_tm) remove_preference_from_tm(thisAgent, pref);
     if (pref->on_goal_list) remove_from_dll(pref->inst->match_goal->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
