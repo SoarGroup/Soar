@@ -19,8 +19,8 @@
  *       inventory tracking maps somewhere that they can be agent specific. */
 
 //#define DEBUG_GDS_INVENTORY
-//#define DEBUG_INSTANTIATION_INVENTORY
-//#define DEBUG_PREFERENCE_INVENTORY
+#define DEBUG_INSTANTIATION_INVENTORY
+#define DEBUG_PREFERENCE_INVENTORY
 //#define DEBUG_WME_INVENTORY
 #define DEBUG_IDSET_INVENTORY
 
