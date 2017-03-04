@@ -18,10 +18,10 @@
  *       someone wanted to use this stuff with multiple agents, they'd need to move the
  *       inventory tracking maps somewhere that they can be agent specific. */
 
-//#define DEBUG_GDS_INVENTORY
+#define DEBUG_GDS_INVENTORY
 #define DEBUG_INSTANTIATION_INVENTORY
 #define DEBUG_PREFERENCE_INVENTORY
-//#define DEBUG_WME_INVENTORY
+#define DEBUG_WME_INVENTORY
 #define DEBUG_IDSET_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
