@@ -465,9 +465,9 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         }
         if (pref->o_supported)
         {
-            sprinta_sf(thisAgent, destString, " (o-support)");
+            sprinta_sf(thisAgent, destString, " (o-support at level %d)", static_cast<int64_t>(pref->level));
         } else {
-            sprinta_sf(thisAgent, destString, " (i-support)");
+            sprinta_sf(thisAgent, destString, " (i-support at level %d)", static_cast<int64_t>(pref->level));
         }
     }
 }
