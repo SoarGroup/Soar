@@ -100,6 +100,8 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         }
         return returnID;
     }
+    rs->identity_set = NULL;
+    rs->identity = NULL_IDENTITY_SET;
     return NULL_IDENTITY_SET;
 }
 

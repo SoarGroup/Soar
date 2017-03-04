@@ -575,10 +575,14 @@ void Explanation_Based_Chunker::make_clones_of_results()
         lClonedPref->level = m_chunk_inst->match_goal_level;
 
         /* MToDo | Shouldn't we set these to null? */
-        if (lResultPref->identity_sets.id) lClonedPref->identity_sets.id = lResultPref->identity_sets.id;
-        if (lResultPref->identity_sets.attr) lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
-        if (lResultPref->identity_sets.value) lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
-        if (lResultPref->identity_sets.referent) lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
+//        if (lResultPref->identity_sets.id) lClonedPref->identity_sets.id = lResultPref->identity_sets.id;
+//        if (lResultPref->identity_sets.attr) lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
+//        if (lResultPref->identity_sets.value) lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
+//        if (lResultPref->identity_sets.referent) lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
+        lClonedPref->identity_sets.id = NULL;
+        lClonedPref->identity_sets.attr = NULL;
+        lClonedPref->identity_sets.value = NULL;
+        lClonedPref->identity_sets.referent = NULL;
 
         assert(!lClonedPref->owns_identity_set.id);
         assert(!lClonedPref->owns_identity_set.attr);
@@ -1054,7 +1058,8 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     IDI_add(thisAgent, m_chunk_inst);
     debug_refcount_change_end(thisAgent, (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "m_chunk_inst adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "Chunk adding to RETE: \n%4", m_lhs, m_rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Chunk instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_inst->i_id, m_inst->prod_name);
 
     /* Add to RETE */
