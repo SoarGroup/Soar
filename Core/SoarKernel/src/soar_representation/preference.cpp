@@ -184,29 +184,35 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
+    /* In the following, three cases can happen:
+     * 1: Deallocating a preference during instantiation deallocation (and possibly for the OSK preference lists)
+     * 2: Deallocating a preference because it has been removed from TM
+     * 3: Deallocating a shallow copied preference that had been removed from TM and is being cached in the instantiation
+     *    for possible explainer use.
+     */
     if (pref->owns_identity_set.id && pref->identity_sets.id)
     {
         if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.id);
         else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.id);
-        else assert(false);
+        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.id);
     }
     if (pref->owns_identity_set.attr && pref->identity_sets.attr)
     {
         if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.attr);
         else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.attr);
-        else assert(false);
+        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.attr);
     }
     if (pref->owns_identity_set.value && pref->identity_sets.value)
     {
         if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.value);
         else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.value);
-        else assert(false);
+        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.value);
     }
     if (pref->owns_identity_set.referent && pref->identity_sets.referent)
     {
         if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.referent);
         else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.referent);
-        else assert(false);
+        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.referent);
     }
 
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);

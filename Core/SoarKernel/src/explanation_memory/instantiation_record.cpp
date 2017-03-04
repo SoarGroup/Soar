@@ -128,19 +128,22 @@ void instantiation_record::update_instantiation_contents()
 action_record* instantiation_record::find_rhs_action(preference* pPref)
 {
     action_record_list::iterator iter;
+    action_record* pAct;
 
     for (iter = actions->begin(); iter != actions->end(); ++iter)
     {
-        if ((*iter)->original_pref == pPref)
+        pAct = *iter;
+        if (pAct->original_pref == pPref)
         {
-            dprint(DT_EXPLAIN_CONDS, "...found RHS action a%u for condition preference %p.\n", (*iter)->get_actionID(), pPref);
+            dprint(DT_EXPLAIN_CONDS, "...found RHS action a%u for condition preference %p.\n", pAct->get_actionID(), pPref);
             return (*iter);
         }
     }
     dprint(DT_EXPLAIN_CONNECT, "...did not find pref %p among:\n", pPref);
     for (iter = actions->begin(); iter != actions->end(); ++iter)
     {
-        dprint(DT_EXPLAIN_CONNECT, "      %p\n", (*iter)->original_pref);
+        pAct = *iter;
+        dprint(DT_EXPLAIN_CONNECT, "      %p\n", pAct->original_pref);
     }
     return NULL;
 }

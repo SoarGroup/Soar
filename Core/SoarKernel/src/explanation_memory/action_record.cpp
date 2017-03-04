@@ -79,7 +79,7 @@ void action_record::init(agent* myAgent, preference* pPref, action* pAction, uin
     actionID                = pActionID;
     instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
     original_pref           = pPref;
-    simplify_identity_in_preference(thisAgent, pPref);
+    simplify_identity_in_preference(thisAgent, instantiated_pref);
 
     if (pAction)
     {

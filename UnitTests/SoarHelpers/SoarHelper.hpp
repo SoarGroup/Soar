@@ -12,8 +12,8 @@
 
 #define INIT_AFTER_RUN                    // Tests for Soar identifier leaks on soar init
 #define CONFIGURE_SOAR_FOR_UNIT_TESTS     // Insures debug printing and settings.soar file don't interfere
-//#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
-//#define TURN_EXPLAINER_ON               // Turns the explainer on for all chunking unit tests
+#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
+#define TURN_EXPLAINER_ON               // Turns the explainer on for all chunking unit tests
 //#define NEVER_LEARN                     // Overrides learning settings in many unit tests
 //#define ALWAYS_LEARN
 

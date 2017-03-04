@@ -56,7 +56,7 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
     identity_set* new_join_set;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
-    new_join_set->identity = pIdentity;
+//    new_join_set->identity = pIdentity;
     new_join_set->identity = get_new_identity_set_id();
     new_join_set->dirty = false;
     new_join_set->super_join = new_join_set;
