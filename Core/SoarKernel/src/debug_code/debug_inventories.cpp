@@ -345,8 +345,8 @@
     {
         std::string lPrefString;
         pIDSet->is_id = ++ISI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "Identity set %u", pIDSet->identity);
-        idset_deallocation_map[pIDSet->is_id] = lPrefString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "identity set %u", pIDSet->identity);
+        idset_deallocation_map[pIDSet->is_id].assign(lPrefString);
     }
     void ISI_remove(agent* thisAgent, identity_set* pIDSet)
     {
@@ -388,7 +388,7 @@
         }
         thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ISI_id_counter);
         if (ISI_double_deallocation_seen)
-            thisAgent->outputManager->printa_sf(thisAgent, " and some identities were deallocated twice!\n");
+            thisAgent->outputManager->printa_sf(thisAgent, " and some identity sets were deallocated twice!\n");
         else if (bugCount)
             thisAgent->outputManager->printa_sf(thisAgent, "!");
         else thisAgent->outputManager->printa_sf(thisAgent, ".");
@@ -398,12 +398,13 @@
             for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
             {
                 lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...identity set %u was not deallocated: %s!\n", it->first, lPrefString.c_str());
+                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, "...identity sets is%u was not deallocated: %s!\n", it->first, lPrefString.c_str());
             }
         }
         if (((bugCount > 0) || ISI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test()) assert(false);
         idset_deallocation_map.clear();
         ISI_id_counter = 0;
+        ISI_double_deallocation_seen = false;
     }
 #else
     void ISI_add(agent* thisAgent, identity_set* pIDSet) {}

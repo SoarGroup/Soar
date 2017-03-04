@@ -1915,6 +1915,7 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
     post_link_addition(thisAgent, NIL, impasseID);   /* add the special link */
 
     add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.type_symbol, isa_goal ? thisAgent->symbolManager->soarSymbols.state_symbol : thisAgent->symbolManager->soarSymbols.impasse_symbol, NIL, true);
+    dprint(DT_MILESTONES, "Adding new sub-state %y below %y\n", impasseID, object);
 
     if (isa_goal)
     {
@@ -1923,10 +1924,18 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         thisAgent->memoryManager->allocate_with_pool(MP_epmem_info, &(impasseID->id->epmem_info));
 
         wme* lSSWME = add_impasse_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.superstate_symbol, object, NIL, true);
-        if ((level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
         {
-            dprint(DT_DEALLOCATE_ID_SETS, "Creating floating identity join set for singleton: %w\n", lSSWME);
-            lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
+            if (level == (TOP_GOAL_LEVEL + 1))
+            {
+                dprint(DT_DEALLOCATE_ID_SETS, "Resetting identity join set counter for top sub-state %y\n", impasseID);
+                thisAgent->explanationBasedChunker->reset_identity_set_id_counter();
+            }
+            if (level > TOP_GOAL_LEVEL)
+            {
+                dprint(DT_DEALLOCATE_ID_SETS, "Creating floating identity join set for singleton: %w\n", lSSWME);
+                lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
+            }
         }
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
         impasseID->id->rl_info->rl_link_wme = soar_module::add_module_wme(thisAgent, impasseID, thisAgent->symbolManager->soarSymbols.rl_sym_reward_link, lreward_header, true);
@@ -2489,6 +2498,8 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
 
     ms_change* head, *tail;
 
+    dprint(DT_MILESTONES, "Removing goal %y and its descendents...\n", goal);
+
     /* --- remove descendents of this goal --- */
     // BUGBUG this recursion causes a stack overflow if the goal depth is large
     if (goal->id->lower_goal)
@@ -2497,9 +2508,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     }
 
     /* --- invoke callback routine --- */
-    soar_invoke_callbacks(thisAgent,
-                          POP_CONTEXT_STACK_CALLBACK,
-                          static_cast<soar_call_data>(goal));
+    soar_invoke_callbacks(thisAgent, POP_CONTEXT_STACK_CALLBACK, static_cast<soar_call_data>(goal));
 
     if ((goal != thisAgent->top_goal) && rl_enabled(thisAgent))
     {

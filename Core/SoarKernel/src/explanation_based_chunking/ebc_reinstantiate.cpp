@@ -7,13 +7,13 @@
 #include "test.h"
 #include "rhs.h"
 
-void Explanation_Based_Chunker::reinstantiate_test (test pTest)
+void Explanation_Based_Chunker::reinstantiate_test (test pTest, bool pIsInstantiationCond)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         for (cons* c = pTest->data.conjunct_list; c != NIL; c = c->rest)
         {
-            reinstantiate_test(static_cast<test>(c->first));
+            reinstantiate_test(static_cast<test>(c->first), pIsInstantiationCond);
         }
     }
     else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
@@ -23,23 +23,24 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest)
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
     }
+    if (test_has_referent(pTest) && pTest->identity && pIsInstantiationCond) pTest->identity = pTest->clone_identity;
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pIsNCC)
+void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pIsInstantiationCond, bool pIsNCC)
 {
     for (condition* cond = top_cond; cond != NIL; cond = cond->next)
     {
-        reinstantiate_condition(cond, pIsNCC);
+        reinstantiate_condition(cond, pIsInstantiationCond, pIsNCC);
     }
 }
 
-void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pIsNCC)
+void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pIsInstantiationCond, bool pIsNCC)
 {
     if (cond->type != CONJUNCTIVE_NEGATION_CONDITION)
     {
-        reinstantiate_test(cond->data.tests.id_test);
-        reinstantiate_test(cond->data.tests.attr_test);
-        reinstantiate_test(cond->data.tests.value_test);
+        reinstantiate_test(cond->data.tests.id_test, pIsInstantiationCond);
+        reinstantiate_test(cond->data.tests.attr_test, pIsInstantiationCond);
+        reinstantiate_test(cond->data.tests.value_test, pIsInstantiationCond);
         dprint(DT_REINSTANTIATE, "Reinstantiated condition is now %l\n", cond);
         #ifdef EBC_SANITY_CHECK_RULES
         sanity_justification_test(cond->data.tests.id_test, pIsNCC);
@@ -47,7 +48,7 @@ void Explanation_Based_Chunker::reinstantiate_condition(condition* cond, bool pI
         sanity_justification_test(cond->data.tests.value_test, pIsNCC);
         #endif
     } else {
-        reinstantiate_condition_list(cond->data.ncc.top, true);
+        reinstantiate_condition_list(cond->data.ncc.top, pIsInstantiationCond, true);
     }
 
 }
@@ -65,15 +66,18 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
 
         if (m_rule_type == ebc_justification)
         {
-            reinstantiate_condition(cond);
+            /* This case is rare (if it should happen at all any more).  It occurs when a learning attempt fails
+             * and is being reverted to a justification instead */
+            reinstantiate_condition(cond, false);
             lCond = copy_condition(thisAgent, cond, false, false, false);
+            reinstantiate_condition(cond, true);
             lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
         } else {
             lCond = copy_condition(thisAgent, cond, false, false, false);
             lCond->bt = cond->bt;
             lCond->inst = m_chunk_inst;
-            reinstantiate_condition(lCond);
+            reinstantiate_condition(lCond, true);
         }
 
         if (last_cond)

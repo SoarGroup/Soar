@@ -46,6 +46,7 @@ typedef struct test_struct
     } data;
     test_struct*    eq_test;
     uint64_t        identity;
+    uint64_t        clone_identity;
     identity_set*   identity_set;
     bool            owns_identity_set;
 } test_info;

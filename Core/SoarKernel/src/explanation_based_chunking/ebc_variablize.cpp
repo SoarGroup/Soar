@@ -56,6 +56,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     {
         if (rs->referent->is_sti())
         {
+            assert(false);
             /* I think this can only occur now when trying to variablize a locally promoted STI.*/
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
             return NULL_IDENTITY_SET;
@@ -159,13 +160,13 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 pTest->eq_test->data.referent = lNewVariable;
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
-                pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
+                pTest->eq_test->clone_identity = pTest->eq_test->identity_set->super_join->clone_identity;
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", lNewVariable, pTest->eq_test->identity);
                 pTest->eq_test->identity_set = NULL;
 
             }
         } else {
-            pTest->eq_test->identity = NULL_IDENTITY_SET;
+            pTest->eq_test->clone_identity = NULL_IDENTITY_SET;
             pTest->eq_test->identity_set = NULL;
         }
     }

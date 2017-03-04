@@ -101,8 +101,6 @@ class Explanation_Memory
         void                    excise_production_id(uint64_t pId);
 
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet);
-        void                    reset_identity_set_counter() { id_set_counter = 0; };
-        uint64_t                get_identity_set_counter() { return ++id_set_counter; };
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
@@ -223,7 +221,6 @@ class Explanation_Memory
         uint64_t            condition_id_count;
         uint64_t            chunk_id_count;
         uint64_t            action_id_count;
-        uint64_t            id_set_counter;
 
         /* Statistics on learning performed so far */
         chunking_stats      stats;

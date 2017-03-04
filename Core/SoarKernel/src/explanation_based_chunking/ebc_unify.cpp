@@ -35,7 +35,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.id->super_join != lId->identity_set->super_join)
             {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
-                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_unified_with_existing_mappings, o_ids_to_replace.id->super_join, lId->identity_set->super_join);
+                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.id->super_join, lId->identity_set->super_join);
                 join_identity_sets(o_ids_to_replace.id, lId->identity_set);
             } else {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->identity, lId->identity_set->super_join->identity, o_ids_to_replace.id->identity, o_ids_to_replace.id->super_join->identity);
@@ -63,7 +63,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.attr->super_join != lAttr->identity_set->super_join)
             {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
-                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_unified_with_existing_mappings, o_ids_to_replace.attr->super_join, lAttr->identity_set->super_join);
+                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.attr->super_join, lAttr->identity_set->super_join);
                 join_identity_sets(o_ids_to_replace.attr, lAttr->identity_set);
             } else {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->identity, lAttr->identity_set->super_join->identity, o_ids_to_replace.attr->identity, o_ids_to_replace.attr->super_join->identity);
@@ -91,7 +91,7 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_co
             if (o_ids_to_replace.value->super_join != lValue->identity_set->super_join)
             {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);
-                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_unified_with_existing_mappings, o_ids_to_replace.value->super_join, lValue->identity_set->super_join);
+                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.value->super_join, lValue->identity_set->super_join);
                 join_identity_sets(o_ids_to_replace.value, lValue->identity_set);
             } else {
                 dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->identity, lValue->identity_set->super_join->identity, o_ids_to_replace.value->identity, o_ids_to_replace.value->super_join->identity);

@@ -177,9 +177,9 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
         SoarHelper::agent_command(agent,"explain all on");
         SoarHelper::agent_command(agent,"explain just on");
     #endif
-    #ifdef SAVE_LOG_FILES
-        SoarHelper::agent_command(agent,"trace -CbL 2");
-    #endif
+//    #ifdef SAVE_LOG_FILES
+//        SoarHelper::agent_command(agent,"trace -CbL 2");
+//    #endif
     SoarHelper::check_learning_override(agent);
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());

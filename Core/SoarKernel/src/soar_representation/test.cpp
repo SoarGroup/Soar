@@ -90,7 +90,6 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 {
                     if (t->eq_test->identity_set)
                     {
-                        /* MToDo | Do we need to increase refcount of superjoin set here? */
                         new_ct->identity     = t->eq_test->identity_set->super_join->identity;
                         new_ct->identity_set = t->eq_test->identity_set->super_join;
                     } else {
@@ -185,7 +184,7 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
 
-    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->deallocate_identity_set(t->identity_set);
+    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->deallocate_identity_set(t->identity_set, IDS_test_dealloc);
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
 
@@ -951,7 +950,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     thisAgent->memoryManager->allocate_with_pool(MP_test, &new_ct);
     new_ct->type = test_type;
     new_ct->data.referent = sym;
-    new_ct->identity = NULL_IDENTITY_SET;
+    new_ct->identity = new_ct->clone_identity = NULL_IDENTITY_SET;
     new_ct->identity_set = NULL;
     new_ct->owns_identity_set = false;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;

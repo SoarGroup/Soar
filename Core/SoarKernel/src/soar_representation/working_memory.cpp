@@ -376,7 +376,7 @@ void deallocate_wme(agent* thisAgent, wme* w)
     }
     if (w->local_singleton_superstate_identity_set)
     {
-        thisAgent->explanationBasedChunker->deallocate_identity_set(w->local_singleton_superstate_identity_set);
+        thisAgent->explanationBasedChunker->deallocate_identity_set(w->local_singleton_superstate_identity_set, IDS_wme_dealloc);
     }
     thisAgent->symbolManager->symbol_remove_ref(&w->id);
     thisAgent->symbolManager->symbol_remove_ref(&w->attr);

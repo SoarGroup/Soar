@@ -184,10 +184,10 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
-    if (pref->owns_identity_set.id && pref->identity_sets.id) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.id);
-    if (pref->owns_identity_set.attr && pref->identity_sets.attr) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.attr);
-    if (pref->owns_identity_set.value && pref->identity_sets.value) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.value);
-    if (pref->owns_identity_set.referent && pref->identity_sets.referent) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.referent);
+    if (pref->owns_identity_set.id && pref->identity_sets.id) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.id, IDS_pref_dealloc);
+    if (pref->owns_identity_set.attr && pref->identity_sets.attr) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.attr, IDS_pref_dealloc);
+    if (pref->owns_identity_set.value && pref->identity_sets.value) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.value, IDS_pref_dealloc);
+    if (pref->owns_identity_set.referent && pref->identity_sets.referent) thisAgent->explanationBasedChunker->deallocate_identity_set(pref->identity_sets.referent, IDS_pref_dealloc);
 
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);

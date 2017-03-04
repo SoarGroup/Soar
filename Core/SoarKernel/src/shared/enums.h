@@ -172,16 +172,20 @@ enum ChunkingSettings {
  };
 
 enum IDSet_Mapping_Type {
-    IDS_no_existing_mapping,
-    IDS_transitive,
-    IDS_literalize_mappings_exist,
-    IDS_unified_with_existing_mappings,
-    IDS_unified_with_literalized_identity,
+    IDS_join,
     IDS_unified_with_local_singleton,
     IDS_unified_with_singleton,
     IDS_unified_child_result,
+    IDS_literalized,
     IDS_literalized_RHS_function_arg,
-    IDS_base_instantiation
+};
+
+enum IDSet_Deallocation_Type {
+    IDS_pref_dealloc,
+    IDS_test_dealloc,
+    IDS_wme_dealloc,
+    IDS_update_test,
+    IDS_update_pref,
 };
 
 enum BTSourceType {

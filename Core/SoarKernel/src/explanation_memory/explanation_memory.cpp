@@ -55,7 +55,6 @@ void Explanation_Memory::initialize_counters()
     chunk_id_count = 1;
     condition_id_count = 0;
     action_id_count = 0;
-    id_set_counter = 0;
 
     stats.duplicates = 0;
     stats.justification_did_not_match = 0;

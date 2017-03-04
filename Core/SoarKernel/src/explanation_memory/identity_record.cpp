@@ -83,8 +83,9 @@ void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
     /* Generate identity sets and add mappings for all conditions in chunk */
 
     dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
-    thisAgent->explanationMemory->reset_identity_set_counter();
     generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, idset_to_var_map);
+
+    /* MToDo | Might need to generate identity sets for RHS as well for unbound vars */
 }
 
 void identity_record::print_identity_mappings_for_instantiation(instantiation_record* pInstRecord)
@@ -194,38 +195,26 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         }
         switch (lMapping->mappingType)
         {
-            case IDS_no_existing_mapping:
-                outputManager->printa_sf(thisAgent, "%-| New identity set\n");
-                break;
-            case IDS_transitive:
-                outputManager->printa_sf(thisAgent, "%-| Identity set merge\n");
-                break;
-            case IDS_literalize_mappings_exist:
-                outputManager->printa_sf(thisAgent, "%-| Literalized an existing identity set\n");
-                break;
-            case IDS_unified_with_existing_mappings:
-                outputManager->printa_sf(thisAgent, "%-| Added to identity set\n");
-                break;
-            case IDS_unified_with_literalized_identity:
-                outputManager->printa_sf(thisAgent, "%-| Added to identity set already literalized\n");
-                break;
-            case IDS_base_instantiation:
-                outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
+            case IDS_join:
+                outputManager->printa_sf(thisAgent, "%-| Two identity sets were joined\n");
                 break;
             case IDS_unified_with_local_singleton:
-                outputManager->printa_sf(thisAgent, "%-| Unified with local singleton WME set\n");
+                outputManager->printa_sf(thisAgent, "%-| Identity assigned from local singleton identity set\n");
                 break;
             case IDS_unified_with_singleton:
-                outputManager->printa_sf(thisAgent, "%-| Unified with singleton WME set\n");
+                outputManager->printa_sf(thisAgent, "%-| Unified with identity set from previous condition that matched a singleton WME\n");
                 break;
             case IDS_unified_child_result:
-                outputManager->printa_sf(thisAgent, "%-| Unified child result\n");
+                outputManager->printa_sf(thisAgent, "%-| Unified with parent WME that was a result preference\n");
+                break;
+            case IDS_literalized:
+                outputManager->printa_sf(thisAgent, "%-| Variable compared against literal\n");
                 break;
             case IDS_literalized_RHS_function_arg:
-                outputManager->printa_sf(thisAgent, "%-| Literalized RHS function argument\n");
+                outputManager->printa_sf(thisAgent, "%-| Variable was an intermediate RHS function argument\n");
                 break;
             default:
-                outputManager->printa_sf(thisAgent, "%-| Chunk or base instantiation\n");
+                outputManager->printa_sf(thisAgent, "%-| Bad identity mapping type\n");
                 break;
         }
     }
