@@ -1037,6 +1037,7 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->OSK_prefs = NULL;
     inst->OSK_proposal_prefs = NULL;
     inst->OSK_proposal_slot = NULL;
+    inst->identity_sets_to_delete = NULL;
 
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
@@ -1276,6 +1277,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     inst_list l_instantiation_list;
     instantiation* lInst;
     std::string lDebugRefcountString = std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation: ");
+
     l_instantiation_list.push_back(inst);
     inst_list::iterator next_iter = l_instantiation_list.begin();
 
@@ -1472,12 +1474,38 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
+        if (lDelInst->identity_sets_to_delete)
+        {
+            identity_set* lID_Set;
+            for (auto it = lDelInst->identity_sets_to_delete->begin(); it != lDelInst->identity_sets_to_delete->end(); it++)
+            {
+                lID_Set = *it;
+                dprint(DT_DEALLOCATE_ID_SETS, "Moving identity set %u's deallocation from instantiation delete queue to global queue...\n", lID_Set->identity);
+                thisAgent->explanationBasedChunker->queue_identity_set_deallocation(lID_Set);
+            }
+            delete lDelInst->identity_sets_to_delete;
+        }
         debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("final cleanup")).c_str(), false);
         IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
-    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.\n");
+    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.  Deallocating identity sets...\n");
+
+    thisAgent->explanationBasedChunker->deallocate_queued_identity_sets();
     inst = NULL;
+
+    dprint(DT_DEALLOCATE_INST, "All stages of deallocate_instantiation() call complete.\n");
+}
+
+void add_identity_set_to_inst_delete_list(agent* thisAgent, instantiation* inst, identity_set* pID_Set)
+{
+    dprint(DT_DEALLOCATE_ID_SETS, "Adding identity set %u's deallocation to instantiation delete queue...\n", pID_Set->identity);
+    if (!inst->identity_sets_to_delete)
+    {
+        dprint(DT_DEALLOCATE_ID_SETS, "Creating new instantiation delete queue...\n");
+        inst->identity_sets_to_delete = new identity_set_list();
+    }
+    inst->identity_sets_to_delete->push_back(pID_Set);
 }
 
 /* -----------------------------------------------------------------------

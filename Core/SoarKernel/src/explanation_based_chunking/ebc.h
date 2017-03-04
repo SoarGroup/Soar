@@ -84,8 +84,10 @@ class Explanation_Based_Chunker
         identity_set*   get_floating_identity_set();
         void            update_identity_set_clone_id(identity_set* pIdentitySet);
         void            force_identity_to_id_set_mapping(uint64_t pID, identity_set* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; }
-        void            touch_identity_set(identity_set* pIDSet)                                ;
+        void            touch_identity_set(identity_set* pIDSet)                                { if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet);} };
         void            literalize_identity_set(identity_set* pIDSet)                           { if (!pIDSet->super_join->literalized) { pIDSet->super_join->literalized = true; touch_identity_set(pIDSet); } }
+        void            queue_identity_set_deallocation(identity_set* pID_Set);//                  { identity_sets_to_delete.insert(pID_Set);};
+        void            deallocate_queued_identity_sets();
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -207,8 +209,9 @@ class Explanation_Based_Chunker
         /* A variablization map used for old school soar identifier variablization */
         sym_to_sym_id_map*  m_sym_to_var_map;
 
-        /* These sets are temporary and cleaned up after a rule is learned */
-        identity_join_set   identity_sets_to_clean_up;
+        /* These sets are temporary */
+        identity_join_set   identity_sets_to_clean_up;  // cleaned up after a rule is learned
+        identity_join_set   identity_sets_to_delete;    // used to buffer deletes in deallocate_instantiation()
 
         /* Set of all attribute symbols that may be singletons */
         symbol_set*         singletons;
@@ -227,6 +230,7 @@ class Explanation_Based_Chunker
         void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond);
+
         /* Chunk building methods */
         Symbol*         generate_name_for_new_rule();
         void            set_up_rule_name();

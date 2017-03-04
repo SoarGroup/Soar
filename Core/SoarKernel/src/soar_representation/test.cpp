@@ -184,7 +184,7 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
 
-    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->deallocate_identity_set(t->identity_set, IDS_test_dealloc);
+    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(t->identity_set);
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
 

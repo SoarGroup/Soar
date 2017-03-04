@@ -116,7 +116,25 @@ void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pI
     pIDSet->operational_cond = NULL;
     pIDSet->operational_field = NO_ELEMENT;
 }
-void Explanation_Based_Chunker::touch_identity_set(identity_set* pIDSet) { if (!pIDSet->dirty) { pIDSet->dirty = true; identity_sets_to_clean_up.insert(pIDSet); dprint(DT_DEALLOCATE_ID_SETS, "...added identity set %u to clean-up list.\n", pIDSet->identity);} }
+
+void Explanation_Based_Chunker::queue_identity_set_deallocation(identity_set* pID_Set)
+{
+    dprint(DT_DEALLOCATE_ID_SETS, "Added identity set %u to global identity set deletion queue...\n", pID_Set->identity);
+    identity_sets_to_delete.insert(pID_Set);
+};
+
+void Explanation_Based_Chunker::deallocate_queued_identity_sets(){
+    identity_set* lID_Set;
+    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating global identity set deletion queue...\n");
+
+    for (auto it = identity_sets_to_delete.begin(); it != identity_sets_to_delete.end(); it++)
+    {
+        lID_Set = (*it);
+        deallocate_identity_set(lID_Set, IDS_test_dealloc);
+    }
+    identity_sets_to_delete.clear();
+};
+
 void Explanation_Based_Chunker::clean_up_identity_sets()
 {
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up transient data in all %d identity sets in clean-up list\n", identity_sets_to_clean_up.size());
