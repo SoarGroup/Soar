@@ -1451,7 +1451,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         while (lDelInst->preferences_cached)
         {
             next_pref = lDelInst->preferences_cached->inst_next;
-            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached);
+            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation i%u (match of %y): p%u (^%y ^%y ^%y) at level %d\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached->p_id,
+                lDelInst->preferences_cached->id, lDelInst->preferences_cached->attr, lDelInst->preferences_cached->value, static_cast<int64_t>(lDelInst->preferences_cached->level));
             deallocate_preference(thisAgent, lDelInst->preferences_cached, true);
             lDelInst->preferences_cached = next_pref;
         }

@@ -78,11 +78,42 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
 }
 
 /* This function just copies the elements of a preferences we need for the EBC explanation mechanism */
-preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
+preference* shallow_copy_preference(agent* thisAgent, preference* pPref, bool transfer_id_sets_owners)
 {
     preference* p;
 
     thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
+
+    /* Initialize stuff we don't want to copy over */
+    p->inst = NULL;
+    p->in_tm = false;
+    p->on_goal_list = false;
+    p->reference_count = 0;
+    p->slot = NIL;
+    p->total_preferences_for_candidate = 0;
+    p->rl_contribution = false;
+    p->rl_rho = 1.0;
+    p->wma_o_set = NIL;
+    p->next_clone = NIL;
+    p->prev_clone = NIL;
+    p->next = NIL;
+    p->prev = NIL;
+    p->inst_next = NIL;
+    p->inst_prev = NIL;
+    p->all_of_slot_next = NIL;
+    p->all_of_slot_prev = NIL;
+    p->all_of_goal_next = NIL;
+    p->all_of_goal_prev = NIL;
+    p->next_candidate = NIL;
+    p->next_result = NIL;
+    p->parent_action = NULL;
+
+    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->owns_identity_set = { false, false, false, false };
+    p->was_unbound_vars = { false, false, false, false };
+
+    /* Now copy over stuff that we do want */
+
     p->type = pPref->type;
     p->numeric_value = pPref->numeric_value;
     p->o_supported = pPref->o_supported;
@@ -97,45 +128,24 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
 
-    /* Note that we transfer ownership of any identity sets to the shallow copy */
     p->identities = {pPref->identities.id, pPref->identities.attr, pPref->identities.value, pPref->identities.referent};
-    p->identity_sets = {pPref->identity_sets.id, pPref->identity_sets.attr, pPref->identity_sets.value, pPref->identity_sets.referent};
     p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
-    p->owns_identity_set = {pPref->owns_identity_set.id, pPref->owns_identity_set.attr, pPref->owns_identity_set.value, pPref->owns_identity_set.referent};
-    pPref->owns_identity_set = { false, false, false, false };
+    p->identity_sets = {pPref->identity_sets.id, pPref->identity_sets.attr, pPref->identity_sets.value, pPref->identity_sets.referent};
+
+    PDI_add(thisAgent, p, true);
+    break_if_id_matches(pPref->p_id, 26);
+
+    /* Transfer ownership of any identity sets to the shallow copy.  Calls from the explainer won't transfer ownership. */
+    if (transfer_id_sets_owners)
+    {
+        p->owns_identity_set = {pPref->owns_identity_set.id, pPref->owns_identity_set.attr, pPref->owns_identity_set.value, pPref->owns_identity_set.referent};
+        pPref->owns_identity_set = { false, false, false, false };
+    }
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
     p->rhs_funcs.referent = copy_rhs_value(thisAgent, pPref->rhs_funcs.referent);
-    p->cloned_rhs_funcs = {NULL, NULL, NULL, NULL};
-
-    /* Don't want this information or have the other things cleaned up*/
-    p->inst = NULL;
-    p->in_tm = false;
-    p->on_goal_list = false;
-    p->reference_count = 0;
-    p->slot = NULL;
-    p->total_preferences_for_candidate = 1;
-    p->rl_contribution = false;
-    p->rl_rho = 0;
-    p->wma_o_set = NULL;
-
-    /* Don't want to copy links to other preferences */
-    p->next_clone = NULL;
-    p->prev_clone = NULL;
-    p->next = NULL;
-    p->prev = NULL;
-    p->inst_next = NULL;
-    p->inst_prev = NULL;
-    p->all_of_slot_next = NULL;
-    p->all_of_slot_prev = NULL;
-    p->all_of_goal_next = NULL;
-    p->all_of_goal_prev = NULL;
-    p->next_candidate = NULL;
-    p->next_result = NULL;
-
-    PDI_add(thisAgent, p, true);
 
     dprint(DT_PREFS, "Created shallow copy of preference %p (%u)\n", p, p->p_id);
 
@@ -227,7 +237,8 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
 /* IMPORTANT: Any changes made to deallocate_preference should also be made to corresponding code in deallocate_instantiation */
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
-    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u) at level %d \n", pref, pref->p_id, static_cast<int64_t>(pref->level));
+    /* We don't print the preference out directly with %p because identity set pointer may not be valid */
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference p%u (^%y ^%y ^%y) at level %d\n", pref->p_id, pref->id, pref->attr, pref->value, static_cast<int64_t>(pref->level));
     assert(pref->reference_count == 0);
     break_if_pref_matches_string(pref, "L5", "value", "bar");
     /*  Remove from temporary memory and match goal if necessary */

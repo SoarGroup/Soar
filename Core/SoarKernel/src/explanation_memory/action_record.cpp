@@ -71,13 +71,18 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         pPref->identities.referent = pPref->identity_sets.referent->super_join->identity;
         pPref->identity_sets.referent = NULL;
     }
+    assert (!pPref->owns_identity_set.id);
+    assert (!pPref->owns_identity_set.attr);
+    assert (!pPref->owns_identity_set.value);
+    assert (!pPref->owns_identity_set.referent);
+//    pPref->owns_identity_set = { false, false, false, false };
 }
 
 void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
 {
     thisAgent               = myAgent;
     actionID                = pActionID;
-    instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
+    instantiated_pref       = shallow_copy_preference(thisAgent, pPref, false);
     original_pref           = pPref;
     simplify_identity_in_preference(thisAgent, instantiated_pref);
 

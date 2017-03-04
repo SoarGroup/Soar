@@ -154,7 +154,7 @@ typedef struct preference_struct
 preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent = NULL,
                                    const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0),
                                    const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
-preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
+preference* shallow_copy_preference(agent* thisAgent, preference* pPref, bool transfer_id_sets_owners = true);
 void cache_preference_if_necessary(agent* thisAgent, preference* pref);
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache = false);

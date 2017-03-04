@@ -68,6 +68,7 @@ identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     new_join_set->operational_field = NO_ELEMENT;
     ISI_add(thisAgent, new_join_set);
 
+    break_if_id_matches(new_join_set->identity, 33);
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", new_join_set->identity, pIdentity);
     return new_join_set;
 }
