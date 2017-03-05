@@ -8,6 +8,8 @@
 #ifndef CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_
 #define CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_
 
+#include <memory>
+
 typedef struct action_struct action;
 typedef struct agent_struct agent;
 typedef struct chunk_cond_struct chunk_cond;
@@ -91,6 +93,9 @@ class ebc_param_container;
 class identity_record;
 class instantiation_record;
 class production_record;
+class IdentitySet;
+typedef std::shared_ptr<IdentitySet> IdentitySetSharedPtr;
+
 
 class EpMem_Manager;
 class epmem_common_statement_container;
