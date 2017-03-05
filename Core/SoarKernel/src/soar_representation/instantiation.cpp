@@ -800,19 +800,19 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                         {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition at match goal level %l\n", cond);
                             if (lTest_id->identity)
-                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id, &(lTest_id->owns_identity_set));
+                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id);
                             if (lTest_attr->identity)
-                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr, &(lTest_attr->owns_identity_set));
+                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr);
                             if (lTest_value->identity)
-                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value, &(lTest_value->owns_identity_set));
+                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value);
                         } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition not at match goal level %l\n", cond);
                             if (lTest_id->identity)
-                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL, &(lTest_id->owns_identity_set));
+                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL_ID_SET);
                             if (lTest_attr->identity)
-                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL, &(lTest_attr->owns_identity_set));
+                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL_ID_SET);
                             if (lTest_value->identity)
-                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL, &(lTest_value->owns_identity_set));
+                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL_ID_SET);
                         }
                     }
                 }
@@ -831,15 +831,15 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 /* Architectural WME or we couldn't find a pref at the current level.  Start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
                 {
-                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL, &(cond->data.tests.id_test->eq_test->owns_identity_set));
+                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL_ID_SET);
                 }
                 if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity)
                 {
-                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL, &(cond->data.tests.attr_test->eq_test->owns_identity_set));
+                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL_ID_SET);
                 }
                 if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity)
                 {
-                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL, &(cond->data.tests.value_test->eq_test->owns_identity_set));
+                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL_ID_SET);
                 }
             }
         }
@@ -1037,7 +1037,6 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->OSK_prefs = NULL;
     inst->OSK_proposal_prefs = NULL;
     inst->OSK_proposal_slot = NULL;
-    inst->identity_sets_to_delete = NULL;
 
     inst->explain_status = explain_unrecorded;
     inst->explain_depth = 0;
@@ -1475,38 +1474,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        if (lDelInst->identity_sets_to_delete)
-        {
-            identity_set* lID_Set;
-            for (auto it = lDelInst->identity_sets_to_delete->begin(); it != lDelInst->identity_sets_to_delete->end(); it++)
-            {
-                lID_Set = *it;
-                dprint(DT_DEALLOCATE_ID_SETS, "Moving identity set %u's deallocation from instantiation delete queue to global queue...\n", lID_Set->identity);
-                thisAgent->explanationBasedChunker->queue_identity_set_deallocation(lID_Set);
-            }
-            delete lDelInst->identity_sets_to_delete;
-        }
         debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("final cleanup")).c_str(), false);
         IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
     dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.  Deallocating identity sets...\n");
 
-    thisAgent->explanationBasedChunker->deallocate_queued_identity_sets();
     inst = NULL;
 
     dprint(DT_DEALLOCATE_INST, "All stages of deallocate_instantiation() call complete.\n");
-}
-
-void add_identity_set_to_inst_delete_list(agent* thisAgent, instantiation* inst, identity_set* pID_Set)
-{
-    dprint(DT_DEALLOCATE_ID_SETS, "Adding identity set %u's deallocation to instantiation %u's delete queue...\n", pID_Set->identity, inst->i_id);
-    if (!inst->identity_sets_to_delete)
-    {
-        dprint(DT_DEALLOCATE_ID_SETS, "Creating new instantiation delete queue...\n");
-        inst->identity_sets_to_delete = new identity_set_list();
-    }
-    inst->identity_sets_to_delete->push_back(pID_Set);
 }
 
 /* -----------------------------------------------------------------------

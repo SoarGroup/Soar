@@ -118,27 +118,30 @@ void Explanation_Based_Chunker::add_additional_constraints()
     for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
     {
         lConstraint = *iter;
+        condition* lOperationalCond = lConstraint->eq_test->identity_set ? lConstraint->eq_test->identity_set->get_operational_cond() : NULL;
+        condition* lOperationalConstraintCond = lConstraint->constraint_test->identity_set ? lConstraint->constraint_test->identity_set->get_operational_cond() : NULL;
         dprint(DT_CONSTRAINTS, "Attempting to add constraint %t %g to %t %g: ", lConstraint->constraint_test, lConstraint->constraint_test, lConstraint->eq_test, lConstraint->eq_test);
-        if (lConstraint->eq_test->identity_set && !lConstraint->eq_test->identity_set->super_join->literalized && lConstraint->eq_test->identity_set->super_join->operational_cond)
+
+        if (lConstraint->eq_test->identity_set && !lConstraint->eq_test->identity_set->literalized() && lOperationalCond)
         {
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
-            attach_relational_test(constraint_test, lConstraint->eq_test->identity_set->super_join->operational_cond, lConstraint->eq_test->identity_set->super_join->operational_field);
-            dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lConstraint->eq_test->identity_set->super_join->operational_cond);
+            attach_relational_test(constraint_test, lOperationalCond, lConstraint->eq_test->identity_set->get_operational_field());
+            dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lOperationalCond);
             thisAgent->explanationMemory->increment_stat_constraints_attached();
         }
-        else if (lConstraint->constraint_test->identity_set && !lConstraint->constraint_test->identity_set->super_join->literalized && lConstraint->constraint_test->identity_set->super_join->operational_cond)
+        else if (lConstraint->constraint_test->identity_set && !lConstraint->constraint_test->identity_set->literalized() && lOperationalConstraintCond)
         {
             eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
             invert_relational_test(&eq_copy, &constraint_test);
-            attach_relational_test(constraint_test, lConstraint->constraint_test->identity_set->super_join->operational_cond, lConstraint->constraint_test->identity_set->super_join->operational_field);
+            attach_relational_test(constraint_test, lOperationalConstraintCond, lConstraint->constraint_test->identity_set->get_operational_field());
             deallocate_test(thisAgent, eq_copy);
-            dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lConstraint->constraint_test->identity_set->super_join->operational_cond);
+            dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lOperationalConstraintCond);
             thisAgent->explanationMemory->increment_stat_constraints_attached();
         } else {
             dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
-                lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->super_join->literalized) ? "true" : "false",
-                    lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->super_join->literalized) ? "true" : "false");
+                lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->literalized()) ? "true" : "false",
+                    lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->literalized()) ? "true" : "false");
         }
         ++iter;
     }

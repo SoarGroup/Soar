@@ -5,6 +5,7 @@
 #include "condition_record.h"
 #include "condition.h"
 #include "dprint.h"
+#include "ebc.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
 #include "memory_manager.h"
@@ -565,12 +566,10 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-inline uint64_t get_superjoin_id(identity_set* pIDSet)  { if (pIDSet) return pIDSet->super_join->identity; else return NULL_IDENTITY_SET; }
-
-void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet)
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID)
 {
     if (current_recording_chunk)
-        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, get_superjoin_id(pFromJoinSet), get_superjoin_id(pToJoinSet));
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSetID, pToJoinSetID);
 }
 
 bool Explanation_Memory::current_discussed_chunk_exists()

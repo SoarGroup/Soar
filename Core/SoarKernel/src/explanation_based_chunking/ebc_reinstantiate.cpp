@@ -130,12 +130,11 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-        if (rs->identity_set)
+        IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
+        if (lIDSet)
         {
-            if (rs->identity_set->super_join->clone_identity) rs->identity = rs->identity_set->super_join->clone_identity;
-            /* MToDo | Is there a chance this could be an unbound rhs var with a new identity that it owns?
-             *         May want to place an assert outside of this function that checks the preference ownership */
-            rs->identity_set = NULL;
+            rs->identity = lIDSet->get_clone_identity();
+            rs->identity_set_wp.reset();
         }
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->identity);

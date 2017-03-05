@@ -22,7 +22,7 @@ void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_id
     char prefix[2];
     Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
     assert(lMatchedSym->is_sti());
-    uint64_t lMatchedIdentity = NULL_IDENTITY_SET;
+    uint64_t lMatchedIdentity = LITERAL_VALUE;
 
     /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */
     auto iter_sym = m_sym_to_var_map->find(lMatchedSym);
@@ -63,7 +63,7 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
     char prefix[2];
     Symbol* var;
     bool has_variablization = false, was_unbound = false;
-    uint64_t lMatchedIdentity = NULL_IDENTITY_SET;
+    uint64_t lMatchedIdentity = LITERAL_VALUE;
 
     if (rhs_value_is_funcall(pRhs_val))
     {
@@ -112,13 +112,13 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         thisAgent->symbolManager->symbol_add_ref(var);
         rs->referent = var;
         rs->identity = lMatchedIdentity;
-        rs->identity_set = NULL;
+        rs->identity_set_wp.reset();
         rs->was_unbound_var = was_unbound;
     }
     else
     {
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
-        rs->identity = NULL_IDENTITY_SET;
-        rs->identity_set = NULL;
+        rs->identity = LITERAL_VALUE;
+        rs->identity_set_wp.reset();
     }
 }

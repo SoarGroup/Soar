@@ -101,7 +101,7 @@ void init_soar_agent(agent* thisAgent)
     thisAgent->memoryManager->init_memory_pool(MP_sym_triple, sizeof(symbol_triple), "symbol_triple");
     thisAgent->memoryManager->init_memory_pool(MP_identity_mapping, sizeof(identity_mapping), "identity_map");
     thisAgent->memoryManager->init_memory_pool(MP_chunk_element, sizeof(chunk_element), "chunk_element");
-    thisAgent->memoryManager->init_memory_pool(MP_identity_sets, sizeof(identity_set), "identity_set");
+//    thisAgent->memoryManager->init_memory_pool(MP_identity_sets, sizeof(identity_set), "identity_set");
 
     thisAgent->memoryManager->init_memory_pool(MP_action_record, sizeof(action_record), "action_record");
     thisAgent->memoryManager->init_memory_pool(MP_condition_record, sizeof(condition_record), "cond_record");

@@ -19,17 +19,14 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.id)
     {
-        if (!result->identity_sets.id)
-        {
-            result->identity_sets.id = get_or_add_id_set(result->identities.id, NULL, &(result->owns_identity_set.id));
-        }
-        if (!result->identity_sets.id->super_join->clone_identity) update_identity_set_clone_id(result->identity_sets.id->super_join);
-        lIdentity = result->identity_sets.id->super_join->clone_identity;
-    } else lIdentity = NULL_IDENTITY_SET;
+        result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id);
+        if (!result->identity_sets.id->get_clone_identity()) result->identity_sets.id->update_clone_id();
+        lIdentity = result->identity_sets.id->get_clone_identity();
+    } else lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  lIdentity, NULL, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  lIdentity);
         result->clone_identities.id = lIdentity;
     } else {
         result->clone_identities.id = lIdentity;
@@ -40,17 +37,14 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.attr)
     {
-        if (!result->identity_sets.attr)
-        {
-            result->identity_sets.attr = get_or_add_id_set(result->identities.attr, NULL, &(result->owns_identity_set.attr));
-        }
-        if (!result->identity_sets.attr->super_join->clone_identity) update_identity_set_clone_id(result->identity_sets.attr->super_join);
-        lIdentity = result->identity_sets.attr->super_join->clone_identity;
-    } else lIdentity = NULL_IDENTITY_SET;
+        result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr);
+        if (!result->identity_sets.attr->get_clone_identity()) result->identity_sets.attr->update_clone_id();
+        lIdentity = result->identity_sets.attr->get_clone_identity();
+    } else lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, NULL, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, result->was_unbound_vars.attr);
         result->clone_identities.attr = lIdentity;
     } else {
         result->clone_identities.attr = lIdentity;
@@ -61,16 +55,13 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.value)
     {
-        if (!result->identity_sets.value)
-        {
-            result->identity_sets.value = get_or_add_id_set(result->identities.value, NULL, &(result->owns_identity_set.value));
-        }
-        if (!result->identity_sets.value->super_join->clone_identity) update_identity_set_clone_id(result->identity_sets.value->super_join);
-        lIdentity = result->identity_sets.value->super_join->clone_identity;
-    } else lIdentity = NULL_IDENTITY_SET;
+        result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value);
+        if (!result->identity_sets.value->get_clone_identity()) result->identity_sets.value->update_clone_id();
+        lIdentity = result->identity_sets.value->get_clone_identity();
+    } else lIdentity = LITERAL_VALUE;
     if (!result->rhs_funcs.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, NULL, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, result->was_unbound_vars.value);
         result->clone_identities.value = lIdentity;
     } else {
         result->clone_identities.value = lIdentity;
@@ -81,18 +72,15 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.referent)
     {
-        if (!result->identity_sets.referent)
-        {
-            result->identity_sets.referent = get_or_add_id_set(result->identities.referent, NULL, &(result->owns_identity_set.referent));
-        }
-        if (!result->identity_sets.referent->super_join->clone_identity) update_identity_set_clone_id(result->identity_sets.referent->super_join);
-        lIdentity = result->identity_sets.referent->super_join->clone_identity;
-    } else lIdentity = NULL_IDENTITY_SET;
+        result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent);
+        if (!result->identity_sets.referent->get_clone_identity()) result->identity_sets.referent->update_clone_id();
+        lIdentity = result->identity_sets.referent->get_clone_identity();
+    } else lIdentity = LITERAL_VALUE;
     if (preference_is_binary(result->type))
     {
         if (!result->rhs_funcs.referent)
         {
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, NULL, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, result->was_unbound_vars.referent);
             result->clone_identities.referent = lIdentity;
         } else {
             result->clone_identities.referent = lIdentity;
@@ -132,17 +120,17 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
 {
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
 
-    if (t->identity_set && t->identity_set->super_join->clone_identity)
+    if (t->identity_set && t->identity_set->get_clone_identity())
     {
-        dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity_set->super_join->clone_identity);
-        t->identity = t->identity_set->super_join->clone_identity;
-        t->identity_set = NULL;
+        dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity_set->get_clone_identity());
+        t->identity = t->identity_set->get_clone_identity();
+        t->identity_set = NULL_ID_SET;
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
-        t->identity = NULL_IDENTITY_SET;
-        t->identity_set = NULL;
+        t->identity = LITERAL_VALUE;
+        t->identity_set = NULL_ID_SET;
         return false;
     }
 
@@ -199,21 +187,21 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
 
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->super_join->literalized)
+        if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->literalized())
         {
             dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g from %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-            if (!pTest->eq_test->identity_set->super_join->clone_identity)
+            if (!pTest->eq_test->identity_set->get_clone_identity())
             {
-                update_identity_set_clone_id(pTest->eq_test->identity_set->super_join);
-                dprint(DT_LHS_VARIABLIZATION, "...with newly created cloned identity %u for identity set %u\n", pTest->eq_test->identity_set->super_join->clone_identity, pTest->eq_test->identity_set->super_join->identity);
+                pTest->eq_test->identity_set->update_clone_id();
+                dprint(DT_LHS_VARIABLIZATION, "...with newly created cloned identity %u for identity set %u\n", pTest->eq_test->identity_set->get_clone_identity(), pTest->eq_test->identity_set->super_join->idset_id);
             }
-            pTest->eq_test->identity = pTest->eq_test->identity_set->super_join->clone_identity;
-            pTest->eq_test->identity_set = NULL;
+            pTest->eq_test->identity = pTest->eq_test->identity_set->get_clone_identity();
+            pTest->eq_test->identity_set = NULL_ID_SET;
             dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g\n", pTest->eq_test, pTest->eq_test);
         } else {
             /* Literalized identity, so set identity in chunk to 0 */
-            pTest->eq_test->identity = NULL_IDENTITY_SET;
-            pTest->eq_test->identity_set = NULL;
+            pTest->eq_test->identity = LITERAL_VALUE;
+            pTest->eq_test->identity_set = NULL_ID_SET;
         }
     }
 }

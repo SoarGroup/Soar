@@ -20,7 +20,6 @@ typedef struct dl_cons_struct dl_cons;
 typedef struct exploration_parameter_struct exploration_parameter;
 typedef struct gds_struct goal_dependency_set;
 typedef struct hash_table_struct hash_table;
-typedef struct identity_set_struct identity_set;
 typedef struct instantiation_struct instantiation;
 typedef struct io_wme_struct io_wme;
 typedef struct memory_pool_struct memory_pool;
@@ -95,7 +94,8 @@ class instantiation_record;
 class production_record;
 class IdentitySet;
 typedef std::shared_ptr<IdentitySet> IdentitySetSharedPtr;
-
+typedef std::weak_ptr<IdentitySet> IdentitySetWeakPtr;
+#define NULL_ID_SET std::shared_ptr<IdentitySet>()
 
 class EpMem_Manager;
 class epmem_common_statement_container;

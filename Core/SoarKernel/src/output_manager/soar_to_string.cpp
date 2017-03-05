@@ -299,15 +299,17 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
         }
         if (m_print_identity_effective && rsym->identity) {
-            if (rsym->identity_set)
+            IdentitySetSharedPtr lIDSet = rsym->identity_set_wp.lock();
+
+            if (lIDSet)
             {
-                if (rsym->identity_set->super_join != rsym->identity_set)
+                if (lIDSet->super_join != lIDSet)
                 {
-                    sprint_sf(destString, " [v%us%uj%u]", rsym->identity, rsym->identity_set->identity, rsym->identity_set->super_join->identity);
+                    sprint_sf(destString, " [v%us%uj%u]", rsym->identity, lIDSet->get_sub_identity(), lIDSet->get_identity());
                 }
                 else
                 {
-                    sprint_sf(destString, " [v%us%u]", rsym->identity, rsym->identity_set->identity);
+                    sprint_sf(destString, " [v%us%u]", rsym->identity, lIDSet->get_sub_identity());
                 }
             }
             else
@@ -405,25 +407,20 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
-void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString, bool pOwnsIdentity)
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySetSharedPtr &pIDSet, std::string &destString)
 {
-//    if (!pID || !pIDSet) return;
     destString += "[v";
-//    if (pID)
-    {
-        destString += std::to_string(pID);
-    }
+    destString += std::to_string(pID);
     if (pIDSet)
     {
         destString += "s";
-        destString += std::to_string(pIDSet->identity);
-        if (pIDSet->super_join->identity != pIDSet->identity)
+        destString += std::to_string(pIDSet->idset_id);
+        if (pIDSet->super_join->idset_id != pIDSet->idset_id)
         {
             destString += "j";
-            destString += std::to_string(pIDSet->super_join->identity);
+            destString += std::to_string(pIDSet->super_join->idset_id);
         }
     }
-    if (pOwnsIdentity) destString += "*";
     destString += "]";
 }
 
@@ -441,15 +438,15 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     {
         std::string lID, lAttr, lValue, lReferent;
         if (pref->identities.id && pref->identity_sets.id)
-            identity_to_string(thisAgent, pref->identities.id, pref->identity_sets.id, lID, pref->owns_identity_set.id);
+            identity_to_string(thisAgent, pref->identities.id, pref->identity_sets.id, lID);
         else
             lID = pref->id->to_string(true);
         if (pref->identities.attr && pref->identity_sets.attr)
-            identity_to_string(thisAgent, pref->identities.attr, pref->identity_sets.attr, lAttr, pref->owns_identity_set.attr);
+            identity_to_string(thisAgent, pref->identities.attr, pref->identity_sets.attr, lAttr);
         else
             lAttr = pref->attr->to_string(true);
         if (pref->identities.value && pref->identity_sets.value)
-            identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue, pref->owns_identity_set.value);
+            identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue);
         else
             lValue = pref->value->to_string(true);
 
@@ -459,7 +456,7 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
         if (preference_is_binary(pref->type))
         {
             if (pref->identities.referent && pref->identity_sets.referent)
-                identity_to_string(thisAgent, pref->identities.referent, pref->identity_sets.referent, lReferent, pref->owns_identity_set.referent);
+                identity_to_string(thisAgent, pref->identities.referent, pref->identity_sets.referent, lReferent);
             else
                 sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }

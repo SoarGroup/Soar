@@ -20,7 +20,7 @@ typedef struct saved_test_struct
     struct saved_test_struct*   next;
     Symbol*                     var;
     uint64_t                    var_identity;
-    identity_set*              var_identity_set;
+    IdentitySetWeakPtr          var_identity_set_wp;
     test                        the_test;
 } saved_test;
 

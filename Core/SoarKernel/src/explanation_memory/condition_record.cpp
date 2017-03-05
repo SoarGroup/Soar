@@ -35,17 +35,13 @@ void simplify_identity_in_test(agent* thisAgent, test t)
         case CONJUNCTIVE_TEST:
             for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
                 simplify_identity_in_test(thisAgent, static_cast<test>(c->first));
-            t->identity = NULL_IDENTITY_SET;
-            t->identity_set = NULL;
-            assert(!t->owns_identity_set);
-//            t->owns_identity_set = false;
+            t->identity = LITERAL_VALUE;
+            t->identity_set = NULL_ID_SET;
             break;
         default:
-            if (t->identity_set) t->identity = t->identity_set->super_join->identity;
-            else t->identity = NULL_IDENTITY_SET;
-            t->identity_set = NULL;
-            assert(!t->owns_identity_set);
-//            t->owns_identity_set = false;
+            if (t->identity_set) t->identity = t->identity_set->super_join->idset_id;
+            else t->identity = LITERAL_VALUE;
+            t->identity_set = NULL_ID_SET;
             break;
     }
 }

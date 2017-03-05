@@ -17,6 +17,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
+#include "ebc.h"
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "mem.h"

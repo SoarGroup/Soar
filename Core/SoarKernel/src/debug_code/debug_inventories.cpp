@@ -9,6 +9,7 @@
 #include "agent.h"
 #include "dprint.h"
 #include "decide.h"
+#include "ebc.h"
 #include "instantiation.h"
 #include "misc.h"
 #include "preference.h"
@@ -397,22 +398,21 @@
     uint64_t ISI_id_counter = 0;
     bool     ISI_double_deallocation_seen = false;
 
-    void ISI_add(agent* thisAgent, identity_set* pIDSet)
+    void ISI_add(agent* thisAgent, uint64_t pIDSetID)
     {
         std::string lPrefString;
-        pIDSet->is_id = ++ISI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u", pIDSet->identity);
-        idset_deallocation_map[pIDSet->is_id].assign(lPrefString);
+        thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u", pIDSetID);
+        idset_deallocation_map[pIDSetID].assign(lPrefString);
     }
-    void ISI_remove(agent* thisAgent, identity_set* pIDSet)
+    void ISI_remove(agent* thisAgent, uint64_t pIDSetID)
     {
-        auto it = idset_deallocation_map.find(pIDSet->is_id);
+        auto it = idset_deallocation_map.find(pIDSetID);
         assert (it != idset_deallocation_map.end());
 
         std::string lPrefString = it->second;
         if (!lPrefString.empty())
         {
-            idset_deallocation_map[pIDSet->is_id].clear();
+            idset_deallocation_map[pIDSetID].clear();
         } else {
             thisAgent->outputManager->printa_sf(thisAgent, "Identity set %u was deallocated twice!\n", it->first);
             break_if_bool(true);
@@ -466,7 +466,7 @@
         ISI_id_counter = 0;
     }
 #else
-    void ISI_add(agent* thisAgent, identity_set* pIDSet) {}
-    void ISI_remove(agent* thisAgent, identity_set* pIDSet) {}
+    void ISI_add(agent* thisAgent, uint64_t pIDSetID) {}
+    void ISI_remove(agent* thisAgent, uint64_t pIDSetID) {}
     void ISI_print_and_cleanup(agent* thisAgent) {}
 #endif

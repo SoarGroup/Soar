@@ -107,11 +107,11 @@
 typedef std::unordered_map< uint64_t, attachment_point* >       attachment_points_map;
 typedef std::unordered_set< augmentation* >                     augmentation_set;
 typedef std::unordered_set< uint64_t >                          id_set;
-typedef std::unordered_set< identity_set* >                     identity_join_set;
-
+//typedef std::set< IdentitySetWeakPtr >                          identity_set_set;
+typedef std::set<IdentitySetWeakPtr, std::owner_less<IdentitySetWeakPtr> > identity_set_set;
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
-typedef std::unordered_map< uint64_t, identity_set*>            id_to_join_map;
+typedef std::unordered_map< uint64_t, IdentitySetSharedPtr>            id_to_join_map;
 
 typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
 typedef std::unordered_map< uint64_t, preference* >             id_to_pref_map;

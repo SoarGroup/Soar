@@ -53,6 +53,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 /* ----------------------------------------------------------------
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
+inline bool in_null_identity_set(test t) { if (t->identity_set) return t->identity_set->literalized(); return true; };
 
 test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
@@ -90,7 +91,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 {
                     if (t->eq_test->identity_set)
                     {
-                        new_ct->identity     = t->eq_test->identity_set->super_join->identity;
+                        new_ct->identity     = t->eq_test->identity_set->super_join->idset_id;
                         new_ct->identity_set = t->eq_test->identity_set->super_join;
                     } else {
                         new_ct->identity = t->eq_test->identity;
@@ -98,6 +99,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                     }
                 } else {
                     new_ct->identity = t->eq_test->identity;
+                    /* MToDo | Maybe we can get rid of this.  Do we really need to copy identity sets outside of chunking?*/
                     new_ct->identity_set = t->eq_test->identity_set;
                 }
             }
@@ -134,7 +136,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                new_ct->identity     = new_ct->identity_set->super_join->identity;
+                new_ct->identity     = new_ct->identity_set->super_join->idset_id;
                 new_ct->identity_set = new_ct->identity_set->super_join;
             }
             break;
@@ -184,7 +186,8 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
 
-    if (t->identity_set && t->owns_identity_set) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(t->identity_set);
+    t->identity_set = NULL;
+
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
 
@@ -950,9 +953,8 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     thisAgent->memoryManager->allocate_with_pool(MP_test, &new_ct);
     new_ct->type = test_type;
     new_ct->data.referent = sym;
-    new_ct->identity = new_ct->clone_identity = NULL_IDENTITY_SET;
-    new_ct->identity_set = NULL;
-    new_ct->owns_identity_set = false;
+    new_ct->identity = new_ct->clone_identity = LITERAL_VALUE;
+    new_ct->identity_set = NULL_ID_SET;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 

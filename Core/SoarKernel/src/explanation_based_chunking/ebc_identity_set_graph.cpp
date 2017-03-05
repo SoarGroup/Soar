@@ -14,161 +14,67 @@
 #include "rhs.h"
 #include "test.h"
 
-identity_set* Explanation_Based_Chunker::get_floating_identity_set()
+IdentitySetSharedPtr Explanation_Based_Chunker::get_floating_identity_set()
 {
-    increment_counter(variablization_identity_counter);
-    dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton: %u\n", variablization_identity_counter);
-    return make_identity_set(variablization_identity_counter);
+    dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton\n");
+    return make_identity_set(0);
 }
 
-identity_set* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
+IdentitySetSharedPtr Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
 {
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end()) return iter->second;
-    else return NULL;
+    else return NULL_ID_SET;
 }
 
-identity_set* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, identity_set* pIDSet, bool* pOwnsIdentitySet)
+IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, IdentitySetSharedPtr pIDSet)
 {
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
-        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.  Increased refcount of %u\n", pID, iter->second->identity);
-        (*pOwnsIdentitySet) = false;
+        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, iter->second->get_identity());
         return iter->second;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
-        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->identity);
-        (*pOwnsIdentitySet) = false;
+        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->get_identity());
         return pIDSet;
     } else {
-        identity_set* newJoinSet = make_identity_set(pID);
+        IdentitySetSharedPtr newJoinSet = make_identity_set(pID);
         (*identities_to_id_sets)[pID] = newJoinSet;
-        (*pOwnsIdentitySet) = true;
-        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->identity, pID);
+        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->get_identity(), pID);
         return newJoinSet;
     }
 }
-
-identity_set* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
+#include <memory>
+IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
-    identity_set* new_join_set;
-    thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &new_join_set);
-//    new_join_set->identity = pIdentity;
-    new_join_set->identity = get_new_identity_set_id();
-    new_join_set->dirty = false;
-    new_join_set->super_join = new_join_set;
-    new_join_set->identity_sets = NULL;
-    new_join_set->new_var = NULL;
-    new_join_set->clone_identity = NULL_IDENTITY_SET;
-    new_join_set->literalized = false;
-    new_join_set->operational_cond = NULL;
-    new_join_set->operational_field = NO_ELEMENT;
-    ISI_add(thisAgent, new_join_set);
+    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
+    ISI_add(thisAgent, new_id_set->get_identity());
+//    break_if_id_matches(new_id_set->identity, 33);
 
-//    break_if_id_matches(new_join_set->identity, 33);
-    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", new_join_set->identity, pIdentity);
-    return new_join_set;
+    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", new_id_set->idset_id, pIdentity);
+    return new_id_set;
 }
-
-void Explanation_Based_Chunker::deallocate_identity_set(identity_set* &pIDSet, IDSet_Deallocation_Type pDeallocType)
-{
-    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %u%s\n", pIDSet->identity, pIDSet->dirty ? " (dirty)." : " (not dirty)");
-    if (pIDSet->dirty)
-    {
-        if (pIDSet->super_join != pIDSet)
-        {
-            dprint(DT_DEALLOCATE_ID_SETS, "...removing identity set %u from super-join %u's identity_sets\n", pIDSet->identity, pIDSet->super_join->identity);
-            pIDSet->super_join->identity_sets->remove(pIDSet);
-        }
-        if (pIDSet->identity_sets)
-        {
-            identity_set* lPreviouslyJoinedIdentity;
-            for (auto it = pIDSet->identity_sets->begin(); it != pIDSet->identity_sets->end(); it++)
-            {
-                lPreviouslyJoinedIdentity = *it;
-                dprint(DT_DEALLOCATE_ID_SETS, "...resetting previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, pIDSet->identity);
-                lPreviouslyJoinedIdentity->super_join = lPreviouslyJoinedIdentity;
-            }
-        }
-        clean_up_identity_set_transient(pIDSet);
-        identity_sets_to_clean_up.erase(pIDSet);
-    }
-    ISI_remove(thisAgent, pIDSet);
-    thisAgent->memoryManager->free_with_pool(MP_identity_sets, pIDSet);
-    pIDSet = NULL;
-}
-
-void Explanation_Based_Chunker::clean_up_identity_set_transient(identity_set* pIDSet)
-{
-    dprint(DT_DEALLOCATE_ID_SETS, "...cleaning up transient data in %s identity set %u (%s, var = %y, # id sets = %d, clone id = %u)\n",
-        pIDSet->dirty ? "dirty" : "clean", pIDSet->identity, (pIDSet->super_join != pIDSet) ? "joined" : "not joined",
-        pIDSet->new_var, pIDSet->identity_sets ? pIDSet->identity_sets->size() : 0, pIDSet->clone_identity);
-    if (pIDSet->new_var) thisAgent->symbolManager->symbol_remove_ref(&pIDSet->new_var);
-    if (pIDSet->identity_sets) delete pIDSet->identity_sets;
-    pIDSet->dirty = false;
-    pIDSet->super_join = pIDSet;
-    pIDSet->identity_sets = NULL;
-    pIDSet->new_var = NULL;
-    pIDSet->clone_identity = NULL_IDENTITY_SET;
-    pIDSet->literalized = false;
-    pIDSet->operational_cond = NULL;
-    pIDSet->operational_field = NO_ELEMENT;
-}
-
-void Explanation_Based_Chunker::queue_identity_set_deallocation(identity_set* pID_Set)
-{
-    dprint(DT_DEALLOCATE_ID_SETS, "Added identity set %u to global identity set deletion queue...\n", pID_Set->identity);
-    identity_sets_to_delete.insert(pID_Set);
-};
-
-void Explanation_Based_Chunker::deallocate_queued_identity_sets(){
-    identity_set* lID_Set;
-    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating global identity set deletion queue...\n");
-
-    for (auto it = identity_sets_to_delete.begin(); it != identity_sets_to_delete.end(); it++)
-    {
-        lID_Set = (*it);
-        deallocate_identity_set(lID_Set, IDS_test_dealloc);
-    }
-    identity_sets_to_delete.clear();
-};
 
 void Explanation_Based_Chunker::clean_up_identity_sets()
 {
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up transient data in all %d identity sets in clean-up list\n", identity_sets_to_clean_up.size());
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
-        identity_set* lJoin_set = *it;
-        assert(lJoin_set->dirty);
-        if (lJoin_set->dirty) clean_up_identity_set_transient(lJoin_set);
+        IdentitySetWeakPtr lJoin_wset(*it);
+        IdentitySetSharedPtr lJoin_set = lJoin_wset.lock();
+        if (lJoin_set)
+        {
+            assert(lJoin_set->dirty);
+            if (lJoin_set->dirty) lJoin_set->clean_up_transient();
+        }
     }
     identity_sets_to_clean_up.clear();
 }
 
-void Explanation_Based_Chunker::store_variablization_in_identity_set(identity_set* pIdentitySet, Symbol* variable, Symbol* pMatched_sym)
-{
-    pIdentitySet->super_join->new_var = variable;
-    variable->var->instantiated_sym = pMatched_sym;
-
-    increment_counter(variablization_identity_counter);
-    pIdentitySet->super_join->clone_identity = variablization_identity_counter;
-
-    touch_identity_set(pIdentitySet);
-
-//        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
-}
-
-void Explanation_Based_Chunker::update_identity_set_clone_id(identity_set* pIdentitySet)
-{
-    increment_counter(variablization_identity_counter);
-    pIdentitySet->super_join->clone_identity = variablization_identity_counter;
-    touch_identity_set(pIdentitySet);
-}
-
-void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, identity_set* lToJoinSet)
+void Explanation_Based_Chunker::join_identity_sets(IdentitySetSharedPtr &lFromJoinSet, IdentitySetSharedPtr &lToJoinSet)
 {
     lFromJoinSet = lFromJoinSet->super_join;
     lToJoinSet = lToJoinSet->super_join;
@@ -177,18 +83,18 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     ebc_timers->variablization_rhs->stop();
     ebc_timers->identity_unification->start();
 
-    touch_identity_set(lFromJoinSet);
-    touch_identity_set(lToJoinSet);
+    lFromJoinSet->touch();
+    lToJoinSet->touch();
 
-    dprint(DT_UNIFY_IDENTITY_SETS, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
+    dprint(DT_UNIFY_IDENTITY_SETS, "Combining two join sets for %u and %u...\n", lFromJoinSet->super_join->idset_id, lToJoinSet->super_join->idset_id);
 
     /* Check size and swap if necessary to favor growing the bigger join set */
     uint64_t lFromSize = lFromJoinSet->identity_sets ? lFromJoinSet->identity_sets->size() : 0;
     uint64_t lToSize = lToJoinSet->identity_sets ? lToJoinSet->identity_sets->size() : 0;
     if (lFromSize > lToSize)
     {
-        dprint(DT_UNIFY_IDENTITY_SETS, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->identity, lToJoinSet->super_join->identity);
-        identity_set* tempJoin = lFromJoinSet;
+        dprint(DT_UNIFY_IDENTITY_SETS, "Swapping join sets so that %u is target and not %u\n", lFromJoinSet->super_join->idset_id, lToJoinSet->super_join->idset_id);
+        IdentitySetSharedPtr tempJoin = lFromJoinSet;
         lFromJoinSet = lToJoinSet;
         lToJoinSet = tempJoin;
     }
@@ -199,26 +105,26 @@ void Explanation_Based_Chunker::join_identity_sets(identity_set* lFromJoinSet, i
     }
 
     /* Iterate through identity sets in lFromJoinSet and set their super join set point to lToJoinSet */
-    identity_set* lPreviouslyJoinedIdentity;
+    IdentitySetSharedPtr lPreviouslyJoinedIdentity;
     if (lFromJoinSet->identity_sets)
     {
         for (auto it = lFromJoinSet->identity_sets->begin(); it != lFromJoinSet->identity_sets->end(); it++)
         {
             lPreviouslyJoinedIdentity = *it;
-            dprint(DT_UNIFY_IDENTITY_SETS, "Changing previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->identity, lFromJoinSet->super_join->identity);
+            dprint(DT_UNIFY_IDENTITY_SETS, "Changing previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->idset_id, lFromJoinSet->super_join->idset_id);
             lPreviouslyJoinedIdentity->super_join = lToJoinSet;
-            if (lPreviouslyJoinedIdentity->literalized) lToJoinSet->literalized = true;
+            if (lPreviouslyJoinedIdentity->literalized()) lToJoinSet->literalize();
         }
         lToJoinSet->identity_sets->splice(lToJoinSet->identity_sets->begin(), (*lFromJoinSet->identity_sets));
         delete lFromJoinSet->identity_sets;
         lFromJoinSet->identity_sets = NULL;
     }
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
-    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->identity, lFromJoinSet->super_join->identity, lFromJoinSet->identity, lToJoinSet->identity);
+    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->idset_id, lFromJoinSet->super_join->idset_id, lFromJoinSet->idset_id, lToJoinSet->idset_id);
     lToJoinSet->identity_sets->push_back(lFromJoinSet);
 
     /* Propagate literalization and constraint info */
-    if (lFromJoinSet->literalized) lToJoinSet->literalized = true;
+    if (lFromJoinSet->literalized()) lToJoinSet->literalize();
 
     /* Point super_join to joined identity set */
     lFromJoinSet->super_join = lToJoinSet;
@@ -246,14 +152,7 @@ void Explanation_Based_Chunker::update_identity_sets_in_test(test t, instantiati
             default:
                 if (t->identity)
                 {
-                    identity_set* updated_id_set = get_id_set_for_identity(t->identity);
-                    if (t->identity_set && t->owns_identity_set && (t->identity_set != updated_id_set))
-                    {
-                        deallocate_identity_set(t->identity_set, IDS_update_test);
-                        /* We no longer own our identity set.  A previous test in the rule or a singleton wme own it */
-                        t->owns_identity_set = false;
-                    }
-                    t->identity_set = updated_id_set;
+                    t->identity_set = get_id_set_for_identity(t->identity);
                 }
                 break;
         }
@@ -282,36 +181,24 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
 
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    identity_set* updated_id_set;
+    IdentitySetSharedPtr updated_id_set;
     bool lOwnedIdentitySet;
 
     if (lPref->identities.id)
     {
-        lOwnedIdentitySet = lPref->owns_identity_set.id;
-        identity_set* updated_id_set = get_or_add_id_set(lPref->identities.id, NULL, &(lPref->owns_identity_set.id));
-        if (lPref->identity_sets.id && lOwnedIdentitySet && (lPref->identity_sets.id != updated_id_set)) deallocate_identity_set(lPref->identity_sets.id, IDS_update_pref);
-        lPref->identity_sets.id = updated_id_set;
+        lPref->identity_sets.id = get_or_add_id_set(lPref->identities.id, NULL_ID_SET);;
     }
     if (lPref->identities.attr)
     {
-        lOwnedIdentitySet = lPref->owns_identity_set.attr;
-        identity_set* updated_id_set = get_or_add_id_set(lPref->identities.attr, NULL, &(lPref->owns_identity_set.attr));
-        if (lPref->identity_sets.attr && lOwnedIdentitySet && (lPref->identity_sets.attr != updated_id_set)) deallocate_identity_set(lPref->identity_sets.attr, IDS_update_pref);
-        lPref->identity_sets.attr = updated_id_set;
+        lPref->identity_sets.attr = get_or_add_id_set(lPref->identities.attr, NULL_ID_SET);
     }
     if (lPref->identities.value)
     {
-        lOwnedIdentitySet = lPref->owns_identity_set.value;
-        identity_set* updated_id_set = get_or_add_id_set(lPref->identities.value, NULL, &(lPref->owns_identity_set.value));
-        if (lPref->identity_sets.value && lOwnedIdentitySet && (lPref->identity_sets.value != updated_id_set)) deallocate_identity_set(lPref->identity_sets.value, IDS_update_pref);
-        lPref->identity_sets.value = updated_id_set;
+        lPref->identity_sets.value = get_or_add_id_set(lPref->identities.value, NULL_ID_SET);
     }
     if (lPref->identities.referent)
     {
-        lOwnedIdentitySet = lPref->owns_identity_set.referent;
-        identity_set* updated_id_set = get_or_add_id_set(lPref->identities.referent, NULL, &(lPref->owns_identity_set.referent));
-        if (lPref->identity_sets.referent && lOwnedIdentitySet && (lPref->identity_sets.referent != updated_id_set)) deallocate_identity_set(lPref->identity_sets.referent, IDS_update_pref);
-        lPref->identity_sets.referent = updated_id_set;
+        lPref->identity_sets.referent = get_or_add_id_set(lPref->identities.referent, NULL_ID_SET);
     }
 
     /* Note:  We don't deallocate the existing rhs_funcs before replacing them because they are created in

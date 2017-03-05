@@ -52,10 +52,10 @@ void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pIn
     if (test_has_referent(pTest)) {
         if (pTest->identity_set)
         {
-            if (pID_Set->find(pTest->identity_set->super_join->identity) == pID_Set->end())
+            if (pID_Set->find(pTest->identity_set->super_join->idset_id) == pID_Set->end())
             {
-                pID_Set->insert(pTest->identity_set->super_join->identity);
-                pID_Set_Map->insert({pTest->identity_set->super_join->identity, pTest->data.referent});
+                pID_Set->insert(pTest->identity_set->super_join->idset_id);
+                pID_Set_Map->insert({pTest->identity_set->super_join->idset_id, pTest->data.referent});
                 thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
                 //thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity_set, lNewIDSet->identity);
             }
@@ -104,8 +104,7 @@ void identity_record::print_identities_in_chunk()
     thisAgent->outputManager->printa(thisAgent, "\n");
 }
 
-void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType,
-                                           uint64_t pFromID,  uint64_t pToID)
+void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID,  uint64_t pToID)
 {
     identity_mapping_list* lInstMappingList;
 

@@ -11,7 +11,7 @@
 /* ------------------------------------------------------------------------
                       Explanation-Based Chunking
 ------------------------------------------------------------------------ */
-#define NULL_IDENTITY_SET 0
+#define LITERAL_VALUE 0
 
 #define PE_PRODS 0
 #define IE_PRODS 1

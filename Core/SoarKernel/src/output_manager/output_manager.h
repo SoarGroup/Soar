@@ -166,7 +166,7 @@ class Output_Manager
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
 
-        void identity_to_string(agent* thisAgent, uint64_t pID, identity_set* pIDSet, std::string &destString, bool pOwnsIdentity = false);
+        void identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySetSharedPtr &pIDSet, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
         void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);

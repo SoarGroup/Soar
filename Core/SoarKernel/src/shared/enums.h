@@ -312,7 +312,6 @@ MP_attachments,
 MP_sym_triple,
 MP_identity_mapping,
 MP_chunk_element,
-MP_identity_sets,
 MP_action_record,
 MP_condition_record,
 MP_instantiation_record,
@@ -358,7 +357,8 @@ enum WME_Field
     ID_ELEMENT = 0,
     ATTR_ELEMENT = 1,
     VALUE_ELEMENT = 2,
-    NO_ELEMENT = 3
+    REFERENT_ELEMENT = 3,
+    NO_ELEMENT = 4
 };
 
 enum Print_Header_Type

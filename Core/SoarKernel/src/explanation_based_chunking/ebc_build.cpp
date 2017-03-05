@@ -61,22 +61,50 @@ using namespace soar_TraceNames;
    Add_results_for_id() adds any preferences for the given identifier.
    Identifiers are marked with results_tc_number as they are added.
 ===================================================================== */
-void Explanation_Based_Chunker::add_results_if_needed(Symbol* sym, identity_set* linked_id)
+inline bool pref_has_identity_set_in_field(preference* pPref, WME_Field pField)
 {
-    dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y (parent identity %u)", sym, linked_id);
-    if ((sym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
-    {
-        if (((sym)->id->level >= m_results_match_goal_level) && ((sym)->tc_num != m_results_tc))
-        {
-            add_results_for_id(sym, linked_id);
-            return;
-        }
-        dprint(DT_EXTRA_RESULTS, "...wrong level or not result.\n");
-    }
-    dprint(DT_EXTRA_RESULTS, "...not identifier.\n");
+    if (pField == ID_ELEMENT) { if (pPref->identity_sets.id) return true; else return false; }
+    else if (pField == ATTR_ELEMENT) { if (pPref->identity_sets.attr) return true; else return false; }
+    else if (pField == VALUE_ELEMENT) { if (pPref->identity_sets.value) return true; else return false; }
+    else if (pField == REFERENT_ELEMENT) { if (pPref->identity_sets.referent) return true; else return false; }
+
+    return false;
 }
 
-void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_set* linked_id)
+inline bool pref_has_same_identity_sets_in_2_fields(preference* pPref1, WME_Field pField1, preference* pPref2, WME_Field pField2)
+{
+    if (pField1 == ID_ELEMENT)
+    {
+        if (pField2 == ID_ELEMENT) { if (pPref1->identity_sets.id == pPref2->identity_sets.id) return true; else return false; }
+        if (pField2 == ATTR_ELEMENT) { if (pPref1->identity_sets.id == pPref2->identity_sets.attr) return true; else return false; }
+        if (pField2 == VALUE_ELEMENT) { if (pPref1->identity_sets.id == pPref2->identity_sets.value) return true; else return false; }
+        if (pField2 == REFERENT_ELEMENT) { if (pPref1->identity_sets.id == pPref2->identity_sets.referent) return true; else return false; }
+    }
+    else if (pField1 == ATTR_ELEMENT)
+    {
+        if (pField2 == ID_ELEMENT) { if (pPref1->identity_sets.attr == pPref2->identity_sets.id) return true; else return false; }
+        if (pField2 == ATTR_ELEMENT) { if (pPref1->identity_sets.attr == pPref2->identity_sets.attr) return true; else return false; }
+        if (pField2 == VALUE_ELEMENT) { if (pPref1->identity_sets.attr == pPref2->identity_sets.value) return true; else return false; }
+        if (pField2 == REFERENT_ELEMENT) { if (pPref1->identity_sets.attr == pPref2->identity_sets.referent) return true; else return false; }
+    }
+    else if (pField1 == VALUE_ELEMENT)
+    {
+        if (pField2 == ID_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.id) return true; else return false; }
+        if (pField2 == ATTR_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.attr) return true; else return false; }
+        if (pField2 == VALUE_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.value) return true; else return false; }
+        if (pField2 == REFERENT_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.referent) return true; else return false; }
+    }
+    else if (pField1 == VALUE_ELEMENT)
+    {
+        if (pField2 == ID_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.id) return true; else return false; }
+        if (pField2 == ATTR_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.attr) return true; else return false; }
+        if (pField2 == VALUE_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.value) return true; else return false; }
+        if (pField2 == REFERENT_ELEMENT) { if (pPref1->identity_sets.value == pPref2->identity_sets.referent) return true; else return false; }
+    }
+    return false;
+}
+
+void Explanation_Based_Chunker::add_pref_to_results(preference* pref, preference* pLinkPref, WME_Field pField)
 {
     preference* p;
 
@@ -84,30 +112,12 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_s
     /* --- if an equivalent pref is already a result, don't add this one --- */
     for (p = m_results; p != NIL; p = p->next_result)
     {
-        if (p->id != pref->id)
-        {
-            continue;
-        }
-        if (p->attr != pref->attr)
-        {
-            continue;
-        }
-        if (p->value != pref->value)
-        {
-            continue;
-        }
-        if (p->type != pref->type)
-        {
-            continue;
-        }
-        if (preference_is_unary(pref->type))
-        {
-            return;
-        }
-        if (p->referent != pref->referent)
-        {
-            continue;
-        }
+        if (p->id != pref->id) continue;
+        if (p->attr != pref->attr) continue;
+        if (p->value != pref->value) continue;
+        if (p->type != pref->type) continue;
+        if (preference_is_unary(pref->type)) return;
+        if (p->referent != pref->referent) continue;
         return;
     }
 
@@ -136,64 +146,89 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, identity_s
     /* --- add this preference to the result list --- */
     pref->next_result = m_results;
     m_results = pref;
-    if (pref->identity_sets.id && linked_id)
+    if (pref->identity_sets.id && pref_has_identity_set_in_field(pLinkPref, pField))
     {
-        if (pref->identity_sets.id->super_join != linked_id->super_join)
+        if (pref_has_same_identity_sets_in_2_fields(pref, ID_ELEMENT, pLinkPref, pField))
         {
             ebc_timers->chunk_instantiation_creation->stop();
-            dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id, linked_id);
-            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->super_join, linked_id->super_join);
-            join_identity_sets(pref->identity_sets.id, linked_id);
+            if (pField == ID_ELEMENT)
+            {
+                join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.id);
+                dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.id->get_identity());
+    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+            }
+            if (pField == ATTR_ELEMENT)
+            {
+                join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.attr);
+                dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.attr->get_identity());
+    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+            }
+            if (pField == VALUE_ELEMENT)
+            {
+                join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.value);
+                dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.value->get_identity());
+    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+            }
             ebc_timers->chunk_instantiation_creation->start();
         }
     }
 
     /* --- follow transitive closure through value, referent links --- */
-    add_results_if_needed(pref->value, pref->identity_sets.value);
+    add_results_if_needed(pref->value, pref, VALUE_ELEMENT);
     if (preference_is_binary(pref->type))
     {
-        add_results_if_needed(pref->referent, pref->identity_sets.referent);
+        add_results_if_needed(pref->referent, pref, REFERENT_ELEMENT);
     }
 }
 
-void Explanation_Based_Chunker::add_results_for_id(Symbol* id, identity_set* linked_id)
+void Explanation_Based_Chunker::add_results_if_needed(Symbol* pSym, preference* pPref, WME_Field pField)
 {
     slot* s;
     preference* pref;
     wme* w;
 
-    id->tc_num = m_results_tc;
+    dprint(DT_EXTRA_RESULTS, "...looking for results that are children of %y", pSym);
+    if ((pSym)->symbol_type == IDENTIFIER_SYMBOL_TYPE)
+    {
+        if (((pSym)->id->level >= m_results_match_goal_level) && ((pSym)->tc_num != m_results_tc))
+        {
+            pSym->tc_num = m_results_tc;
 
-    /* --- scan through all preferences and wmes for all slots for this id --- */
-    dprint(DT_EXTRA_RESULTS, "...iterating through input wmes...\n");
-    for (w = id->id->input_wmes; w != NIL; w = w->next)
-    {
-        add_results_if_needed(w->value, w->preference ? w->preference->identity_sets.value : 0);
+            /* --- scan through all preferences and wmes for all slots for this id --- */
+            dprint(DT_EXTRA_RESULTS, "...iterating through input wmes...\n");
+            for (w = pSym->id->input_wmes; w != NIL; w = w->next)
+            {
+                add_results_if_needed(w->value, w->preference, w->preference ? VALUE_ELEMENT : NO_ELEMENT);
+            }
+            dprint(DT_EXTRA_RESULTS, "...iterating through slots...\n");
+            for (s = pSym->id->slots; s != NIL; s = s->next)
+            {
+                dprint(DT_EXTRA_RESULTS, "...iterating through prefs of slot...\n");
+                for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
+                {
+                    add_pref_to_results(pref, pPref, pField);
+                }
+                dprint(DT_EXTRA_RESULTS, "...iterating through wmes of slot...\n");
+                for (w = s->wmes; w != NIL; w = w->next)
+                {
+                    add_results_if_needed(w->value, w->preference, w->preference ? VALUE_ELEMENT : NO_ELEMENT);
+                }
+            } /* end of for slots loop */
+            dprint(DT_EXTRA_RESULTS, "...iterating through extra results looking for id...\n");
+            /* --- now scan through extra prefs and look for any with this id --- */
+            for (pref = m_extra_results; pref != NIL;
+                pref = pref->inst_next)
+            {
+                if (pref->id == pSym)
+                {
+                    add_pref_to_results(pref, pPref, pField);
+                }
+            }
+            return;
+        }
+        dprint(DT_EXTRA_RESULTS, "...wrong level or not result.\n");
     }
-    dprint(DT_EXTRA_RESULTS, "...iterating through slots...\n");
-    for (s = id->id->slots; s != NIL; s = s->next)
-    {
-        dprint(DT_EXTRA_RESULTS, "...iterating through prefs of slot...\n");
-        for (pref = s->all_preferences; pref != NIL; pref = pref->all_of_slot_next)
-        {
-            add_pref_to_results(pref, linked_id);
-        }
-        dprint(DT_EXTRA_RESULTS, "...iterating through wmes of slot...\n");
-        for (w = s->wmes; w != NIL; w = w->next)
-        {
-            add_results_if_needed(w->value, w->preference ? w->preference->identity_sets.value : 0);
-        }
-    } /* end of for slots loop */
-    dprint(DT_EXTRA_RESULTS, "...iterating through extra results looking for id...\n");
-    /* --- now scan through extra prefs and look for any with this id --- */
-    for (pref = m_extra_results; pref != NIL;
-            pref = pref->inst_next)
-    {
-        if (pref->id == id)
-        {
-            add_pref_to_results(pref, linked_id);
-        }
-    }
+    dprint(DT_EXTRA_RESULTS, "...not identifier.\n");
 }
 
 void Explanation_Based_Chunker::get_results_for_instantiation()
@@ -204,12 +239,14 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
     m_results_match_goal_level = m_inst->match_goal_level;
     m_results_tc = get_new_tc_number(thisAgent);
     m_extra_results = m_inst->preferences_generated;
+    IdentitySetSharedPtr lNULL;
+
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
         if ((pref->id->id->level < m_results_match_goal_level) &&
                 (pref->id->tc_num != m_results_tc))
         {
-            add_pref_to_results(pref, NULL);
+            add_pref_to_results(pref, NULL, NO_ELEMENT);
         } else {
             dprint(DT_EXTRA_RESULTS, "Did not add pref %p to results. %d >= %d\n", pref, static_cast<int64_t>(pref->id->id->level), static_cast<int64_t>(m_results_match_goal_level));
         }
@@ -400,27 +437,17 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         /* Find tests in conditions that we can attach transitive constraints to */
         if (ebc_settings[SETTING_EBC_LEARNING_ON])
         {
-            identity_set* lIdentitySet;
-            lIdentitySet = c_vrblz->data.tests.value_test->eq_test->identity_set ? c_vrblz->data.tests.value_test->eq_test->identity_set->super_join : NULL;
-            if (lIdentitySet && !lIdentitySet->operational_cond)
+            if (c_vrblz->data.tests.value_test->eq_test->identity_set && !c_vrblz->data.tests.value_test->eq_test->identity_set->get_operational_cond())
             {
-                lIdentitySet->operational_cond = c_vrblz;
-                lIdentitySet->operational_field = VALUE_ELEMENT;
-                touch_identity_set(lIdentitySet);
+                c_vrblz->data.tests.value_test->eq_test->identity_set->set_operational_cond(c_vrblz, VALUE_ELEMENT);
             }
-            lIdentitySet = c_vrblz->data.tests.attr_test->eq_test->identity_set ? c_vrblz->data.tests.attr_test->eq_test->identity_set->super_join : NULL;
-            if (lIdentitySet && !lIdentitySet->operational_cond)
+            if (c_vrblz->data.tests.attr_test->eq_test->identity_set && !c_vrblz->data.tests.attr_test->eq_test->identity_set->get_operational_cond())
             {
-                lIdentitySet->operational_cond = c_vrblz;
-                lIdentitySet->operational_field = ATTR_ELEMENT;
-                touch_identity_set(lIdentitySet);
+                c_vrblz->data.tests.attr_test->eq_test->identity_set->set_operational_cond(c_vrblz, ATTR_ELEMENT);
             }
-            lIdentitySet = c_vrblz->data.tests.id_test->eq_test->identity_set ? c_vrblz->data.tests.id_test->eq_test->identity_set->super_join : NULL;
-            if (lIdentitySet && !lIdentitySet->operational_cond)
+            if (c_vrblz->data.tests.id_test->eq_test->identity_set && !c_vrblz->data.tests.id_test->eq_test->identity_set->get_operational_cond())
             {
-                lIdentitySet->operational_cond = c_vrblz;
-                lIdentitySet->operational_field = ID_ELEMENT;
-                touch_identity_set(lIdentitySet);
+                c_vrblz->data.tests.id_test->eq_test->identity_set->set_operational_cond(c_vrblz, ID_ELEMENT);
             }
         }
 
@@ -579,14 +606,10 @@ void Explanation_Based_Chunker::make_clones_of_results()
 //        if (lResultPref->identity_sets.attr) lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
 //        if (lResultPref->identity_sets.value) lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
 //        if (lResultPref->identity_sets.referent) lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
-        lClonedPref->identity_sets.id = NULL;
-        lClonedPref->identity_sets.attr = NULL;
-        lClonedPref->identity_sets.value = NULL;
-        lClonedPref->identity_sets.referent = NULL;
-
-        assert(!lClonedPref->owns_identity_set.id);
-        assert(!lClonedPref->owns_identity_set.attr);
-        assert(!lClonedPref->owns_identity_set.value);
+        lClonedPref->identity_sets.id = NULL_ID_SET;
+        lClonedPref->identity_sets.attr = NULL_ID_SET;
+        lClonedPref->identity_sets.value = NULL_ID_SET;
+        lClonedPref->identity_sets.referent = NULL_ID_SET;
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
         if (lResultPref->cloned_rhs_funcs.id)

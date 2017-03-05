@@ -100,7 +100,7 @@ class Explanation_Memory
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, identity_set* pFromJoinSet, identity_set* pToJoinSet);
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 

@@ -7,11 +7,11 @@
 #include <unordered_set>
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >            constraint_list;
-    typedef std::list< identity_set*, soar_module::soar_memory_pool_allocator< identity_set* > >        identity_set_list;
+    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
+    typedef std::list< IdentitySetSharedPtrPtr, soar_module::soar_memory_pool_allocator< IdentitySetWeakPtr > >     identity_set_list;
 #else
-    typedef std::list< identity_set* >                                                                  identity_set_list;
-    typedef std::list< constraint* >                                                                    constraint_list;
+    typedef std::list< IdentitySetSharedPtr >                                                                       identity_set_list;
+    typedef std::list< constraint* >                                                                                constraint_list;
 #endif
 
 typedef struct symbol_triple_struct
@@ -42,44 +42,14 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
-typedef struct identity_set_struct
-{
-        /* Identity ID is static and never changes after instantiation creation.
-         * The remaining fields are transient based on the explanation trace being analyzed
-         * and are cleaned up after a learning episode. */
-
-        /* An ID used for printing and to make debugging easier. Not used by identity analysis logic. */
-        uint64_t                    identity;
-
-        /* Flag to avoid adding to identity set clean up list if it is already on it */
-        bool                        dirty;
-
-        /* Fields that link this identity_set node to others in the identity graph */
-        identity_set_struct*        super_join;
-        identity_set_list*          identity_sets;
-
-        /* Fields for variablization and chunk instantiation identity creation */
-        Symbol*                     new_var;
-        uint64_t                    clone_identity;
-        bool                        literalized;
-
-        /* Fields for transitive constraint attachment  */
-        condition*                  operational_cond;
-        WME_Field                   operational_field;
-
-        /* This is an ID used by DEBUG_IDSET_INVENTORY.  Not used otherwise. */
-        uint64_t                    is_id;
-} identity_set;
-
-
 typedef struct identity_set_quadruple_struct
 {
-        identity_set* id;
-        identity_set* attr;
-        identity_set* value;
-        identity_set* referent;
+        IdentitySetSharedPtr id;
+        IdentitySetSharedPtr attr;
+        IdentitySetSharedPtr value;
+        IdentitySetSharedPtr referent;
 
-        identity_set_quadruple_struct(identity_set* new_id = NULL, identity_set* new_attr = NULL, identity_set* new_value = NULL, identity_set* new_referent = NULL): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+//        identity_set_quadruple_struct(IdentitySetSharedPtr new_id, IdentitySetSharedPtr new_attr, IdentitySetSharedPtr new_value, IdentitySetSharedPtr new_referent): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_set_quadruple;
 
 typedef struct bool_quadruple_struct

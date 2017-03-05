@@ -28,7 +28,7 @@
 
 preference* make_preference(agent* thisAgent, PreferenceType type, 
                             Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                            const identity_quadruple o_ids, const bool_quadruple pWas_unbound_vars)
+                            const identity_quadruple &o_ids, const bool_quadruple &pWas_unbound_vars)
 {
     preference* p;
 
@@ -64,11 +64,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->level = 0;
 
     p->identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
-    p->identity_sets = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->identity_sets = { NULL_ID_SET, NULL_ID_SET, NULL_ID_SET, NULL_ID_SET };
     p->rhs_funcs = { NULL, NULL, NULL, NULL };
-    p->clone_identities = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->clone_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
     p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
-    p->owns_identity_set = { false, false, false, false };
     p->was_unbound_vars = { pWas_unbound_vars.id, pWas_unbound_vars.attr, pWas_unbound_vars.value, pWas_unbound_vars.referent };
 
     PDI_add(thisAgent, p);
@@ -78,7 +77,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
 }
 
 /* This function just copies the elements of a preferences we need for the EBC explanation mechanism */
-preference* shallow_copy_preference(agent* thisAgent, preference* pPref, bool transfer_id_sets_owners)
+preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 {
     preference* p;
 
@@ -109,7 +108,6 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref, bool tr
     p->parent_action = NULL;
 
     p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
-    p->owns_identity_set = { false, false, false, false };
     p->was_unbound_vars = { false, false, false, false };
 
     /* Now copy over stuff that we do want */
@@ -134,13 +132,6 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref, bool tr
 
     PDI_add(thisAgent, p, true);
     break_if_id_matches(pPref->p_id, 26);
-
-    /* Transfer ownership of any identity sets to the shallow copy.  Calls from the explainer won't transfer ownership. */
-    if (transfer_id_sets_owners)
-    {
-        p->owns_identity_set = {pPref->owns_identity_set.id, pPref->owns_identity_set.attr, pPref->owns_identity_set.value, pPref->owns_identity_set.referent};
-        pPref->owns_identity_set = { false, false, false, false };
-    }
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
@@ -185,36 +176,10 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
-    /* In the following, three cases can happen:
-     * 1: Deallocating a preference during instantiation deallocation (and possibly for the OSK preference lists)
-     * 2: Deallocating a preference because it has been removed from TM
-     * 3: Deallocating a shallow copied preference that had been removed from TM and is being cached in the instantiation
-     *    for possible explainer use.
-     */
-    if (pref->owns_identity_set.id && pref->identity_sets.id)
-    {
-        if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.id);
-        else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.id);
-        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.id);
-    }
-    if (pref->owns_identity_set.attr && pref->identity_sets.attr)
-    {
-        if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.attr);
-        else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.attr);
-        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.attr);
-    }
-    if (pref->owns_identity_set.value && pref->identity_sets.value)
-    {
-        if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.value);
-        else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.value);
-        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.value);
-    }
-    if (pref->owns_identity_set.referent && pref->identity_sets.referent)
-    {
-        if (dont_cache) thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.referent);
-        else if (pref->inst) add_identity_set_to_inst_delete_list(thisAgent, pref->inst, pref->identity_sets.referent);
-        else thisAgent->explanationBasedChunker->queue_identity_set_deallocation(pref->identity_sets.referent);
-    }
+    pref->identity_sets.id = NULL;
+    pref->identity_sets.attr = NULL;
+    pref->identity_sets.value = NULL;
+    pref->identity_sets.referent = NULL;
 
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);

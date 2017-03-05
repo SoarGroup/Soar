@@ -96,7 +96,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
 {
 
     instantiation* inst = pPref->inst;
-    identity_set_quadruple rhs_identity_sets = pPref->identity_sets;
     rhs_quadruple rhs_funcs = pPref->rhs_funcs;
 
     condition* c;
@@ -117,7 +116,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
-        unify_backtraced_conditions(trace_cond, rhs_identity_sets, rhs_funcs);
+        unify_backtraced_conditions(trace_cond, pPref->identity_sets, rhs_funcs);
         ebc_timers->dependency_analysis->start();
     }
 

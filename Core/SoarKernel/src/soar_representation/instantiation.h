@@ -56,8 +56,6 @@ typedef struct instantiation_struct
     EBCExplainStatus                explain_status;
     uint64_t                        explain_depth;
 
-    identity_set_list*              identity_sets_to_delete;    // identity sets created by now deallocated preferences
-
 } instantiation;
 
 void                init_instantiation_pool(agent* thisAgent);
@@ -81,8 +79,6 @@ inline void         possibly_deallocate_instantiation(agent* thisAgent, instanti
 
 instantiation*      make_architectural_instantiation_for_memory_system(agent* thisAgent, Symbol* state, wme_set* conditions, symbol_triple_list* actions, bool forSMem);
 preference*         make_architectural_instantiation_for_impasse_item(agent* thisAgent, Symbol* goal, preference* cand);
-
-void                add_identity_set_to_inst_delete_list(agent* thisAgent, instantiation* inst, identity_set* pID_Set);
 
 /* -------------------------------------------------------------------
                               Instantiations
