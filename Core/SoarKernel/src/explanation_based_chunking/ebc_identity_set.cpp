@@ -121,3 +121,5 @@ void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)
 }
 uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set) { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_identity(); }
 IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL; else return pID_Set->super_join;}
+uint64_t                get_joined_identity_clone_id(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_clone_identity();}
+

@@ -93,14 +93,17 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                     {
                         new_ct->identity     = t->eq_test->identity_set->get_identity();
                         new_ct->identity_set = t->eq_test->identity_set->super_join;
+                        new_ct->clone_identity = t->eq_test->identity_set->get_clone_identity();
                     } else {
                         new_ct->identity = t->eq_test->identity;
                         new_ct->identity_set = t->eq_test->identity_set;
+                        new_ct->clone_identity = t->eq_test->clone_identity;
                     }
                 } else {
                     new_ct->identity = t->eq_test->identity;
                     /* MToDo | Maybe we can get rid of this.  Do we really need to copy identity sets outside of chunking?*/
                     new_ct->identity_set = t->eq_test->identity_set;
+                    new_ct->clone_identity = t->eq_test->clone_identity;
                 }
             }
             else if (remove_state_impasse)
@@ -129,6 +132,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
             new_ct->identity = t->identity;
+            new_ct->clone_identity = t->clone_identity;
             new_ct->identity_set = t->identity_set;
             if (t->type == EQUALITY_TEST)
             {
@@ -136,8 +140,9 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                new_ct->identity     = get_joined_identity_id(new_ct->identity_set);
-                new_ct->identity_set = get_joined_identity_set(new_ct->identity_set);
+                new_ct->identity        = get_joined_identity_id(new_ct->identity_set);
+                new_ct->clone_identity  = get_joined_identity_clone_id(new_ct->identity_set);
+                new_ct->identity_set    = get_joined_identity_set(new_ct->identity_set);
             }
             break;
     }
