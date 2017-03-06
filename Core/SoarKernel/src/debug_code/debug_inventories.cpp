@@ -395,7 +395,6 @@
 #ifdef DEBUG_IDSET_INVENTORY
     id_to_string_map idset_deallocation_map;
 
-    uint64_t ISI_id_counter = 0;
     bool     ISI_double_deallocation_seen = false;
 
     void ISI_add(agent* thisAgent, uint64_t pIDSetID)
@@ -434,7 +433,7 @@
         }
         if (bugCount)
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ISI_id_counter);
+            thisAgent->outputManager->printa_sf(thisAgent, "%u/%d were not deallocated", bugCount, static_cast<int64_t>(idset_deallocation_map.size()));
             if (ISI_double_deallocation_seen)
                 thisAgent->outputManager->printa_sf(thisAgent, " and some identity sets were deallocated twice");
             if (bugCount <= 23)
@@ -442,8 +441,8 @@
             else
                 thisAgent->outputManager->printa_sf(thisAgent, "!\n");
         }
-        else if (ISI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u identity sets were deallocated properly.\n", ISI_id_counter);
+        else if (idset_deallocation_map.size())
+            thisAgent->outputManager->printa_sf(thisAgent, "All %d identity sets were deallocated properly.\n", static_cast<int64_t>(idset_deallocation_map.size()));
         else
             thisAgent->outputManager->printa_sf(thisAgent, "No identity sets were created.\n");
 
@@ -463,7 +462,6 @@
         }
         ISI_double_deallocation_seen = false;
         idset_deallocation_map.clear();
-        ISI_id_counter = 0;
     }
 #else
     void ISI_add(agent* thisAgent, uint64_t pIDSetID) {}

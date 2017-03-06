@@ -21,14 +21,13 @@ IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIden
     lID_Set->init(thisAgent);
 
     ISI_add(thisAgent, lID_Set->idset_id);
-
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id, pIdentity);
     return lID_Set;
 }
 
 void IdentitySet_remove_ref(agent* thisAgent, IdentitySetSharedPtr &pID_Set)
 {
-    dprint(DT_DEBUG, "++ identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
+    dprint(DT_DEBUG, "-- identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
     if (pID_Set->remove_ref())
     {
         dprint(DT_DEBUG, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
@@ -56,13 +55,16 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, 
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
     {
-        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, iter->second->get_identity());
-        return iter->second;
+        IdentitySetSharedPtr lID_Set = iter->second;
+        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, lID_Set->get_identity());
+        lID_Set->add_ref();
+        return lID_Set;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
         dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->get_identity());
+        pIDSet->add_ref();
         return pIDSet;
     } else {
         IdentitySetSharedPtr newIdentitySet = make_identity_set(pID);

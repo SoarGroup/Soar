@@ -375,8 +375,10 @@ void deallocate_wme(agent* thisAgent, wme* w)
         wma_remove_decay_element(thisAgent, w);
     }
 
-    w->local_singleton_superstate_identity_set = NULL;
-
+    if (w->local_singleton_superstate_identity_set)
+    {
+        IdentitySet_remove_ref(thisAgent, w->local_singleton_superstate_identity_set);
+    }
     thisAgent->symbolManager->symbol_remove_ref(&w->id);
     thisAgent->symbolManager->symbol_remove_ref(&w->attr);
     thisAgent->symbolManager->symbol_remove_ref(&w->value);

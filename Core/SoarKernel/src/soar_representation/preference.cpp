@@ -176,10 +176,10 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
-    pref->identity_sets.id = NULL;
-    pref->identity_sets.attr = NULL;
-    pref->identity_sets.value = NULL;
-    pref->identity_sets.referent = NULL;
+    if (pref->identity_sets.id) IdentitySet_remove_ref(thisAgent, pref->identity_sets.id);
+    if (pref->identity_sets.attr) IdentitySet_remove_ref(thisAgent, pref->identity_sets.attr);
+    if (pref->identity_sets.value) IdentitySet_remove_ref(thisAgent, pref->identity_sets.value);
+    if (pref->identity_sets.referent) IdentitySet_remove_ref(thisAgent, pref->identity_sets.referent);
 
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);

@@ -18,15 +18,13 @@ void IdentitySet::init(agent* myAgent)
     m_literalized = false;
     operational_cond = NULL;
     operational_field = NO_ELEMENT;
-    ISI_add(thisAgent, idset_id);
-
-//    break_if_id_matches(identity, 33);
-    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u.\n", idset_id);
+    refcount = 1;
 }
 
 void IdentitySet::clean_up()
 {
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up identity set %u%s for deallocation...\n", idset_id, dirty ? " (dirty)." : " (not dirty)");
+    break_if_id_matches(idset_id, 1);
     if (dirty)
     {
 //        IdentitySetSharedPtr sharedThis = shared_from_this();

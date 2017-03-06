@@ -191,7 +191,7 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
 
-    t->identity_set = NULL;
+    if (t->identity_set) IdentitySet_remove_ref(thisAgent, t->identity_set);
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
