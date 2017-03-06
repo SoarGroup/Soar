@@ -135,15 +135,19 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
         if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
         {
-            IdentitySetSharedPtr pCondIDSet = pCond->data.tests.value_test->eq_test->identity_set ? pCond->data.tests.value_test->eq_test->identity_set->super_join : NULL;
-            IdentitySetSharedPtr pLCondIDSet = last_cond->data.tests.value_test->eq_test->identity_set ? last_cond->data.tests.value_test->eq_test->identity_set->super_join : NULL;
-            if (pCondIDSet != pLCondIDSet)
+            ebc_timers->dependency_analysis->stop();
+            if (!pCond->data.tests.value_test->eq_test->identity_set)
             {
-                ebc_timers->dependency_analysis->stop();
+                last_cond->data.tests.value_test->eq_test->identity_set->literalize();
+            } else if (!last_cond->data.tests.value_test->eq_test->identity_set)
+            {
+                last_cond->data.tests.value_test->eq_test->identity_set->literalize();
+            } else
+            {
 //                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set->super_join, last_cond->data.tests.value_test->eq_test->identity_set->super_join);
                 join_identity_sets(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
-                ebc_timers->dependency_analysis->start();
             }
+            ebc_timers->dependency_analysis->start();
         }
     }
     /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
