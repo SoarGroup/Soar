@@ -8,6 +8,8 @@
 #define CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_IDENTITY_SET_H_
 
 #include "kernel.h"
+
+#include "dprint.h"
 #include "stl_typedefs.h"
 
 //class IdentitySet : public std::enable_shared_from_this<IdentitySet>
@@ -15,8 +17,14 @@ class IdentitySet
 {
     public:
 
-        IdentitySet(agent* my_agent);
-        ~IdentitySet();
+        IdentitySet() {};
+        ~IdentitySet() {};
+
+        void init(agent* my_agent);
+        void clean_up();
+
+        void        add_ref()               { ++refcount; dprint(DT_DEBUG, "++ identity set %u --> %u.\n", idset_id, refcount); }
+        bool        remove_ref()            { --refcount; return (refcount == 0);}
 
         bool        literalized()           { return super_join->m_literalized; }
         bool        joined()                { return (super_join != this); }
@@ -26,6 +34,7 @@ class IdentitySet
         Symbol*     get_var()               { return super_join->new_var; }
         condition*  get_operational_cond()  { return super_join->operational_cond; }
         WME_Field   get_operational_field() { return super_join->operational_field; }
+        uint64_t    get_refcount()          { return refcount; }
 
         void literalize()                               { super_join->m_literalized = true; super_join->touch(); }
         void set_clone_identity(uint64_t pID)           { super_join->clone_identity = pID; super_join->touch(); }
@@ -62,6 +71,7 @@ class IdentitySet
         condition*                  operational_cond;
         WME_Field                   operational_field;
 
+        uint64_t                    refcount;
 
 };
 

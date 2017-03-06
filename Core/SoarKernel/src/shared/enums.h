@@ -309,15 +309,16 @@ MP_epmem_interval,
 MP_constraints,
 MP_attachments,
 
-MP_sym_triple,
-MP_identity_mapping,
-MP_chunk_element,
 MP_action_record,
-MP_condition_record,
-MP_instantiation_record,
+MP_chunk_element,
 MP_chunk_record,
+MP_condition_record,
+MP_identity_mapping,
+MP_identity_sets,
+MP_instantiation_record,
 MP_production_record,
 MP_repair_path,
+MP_sym_triple,
 
 num_memory_pools
 };

@@ -14,6 +14,30 @@
 #include "rhs.h"
 #include "test.h"
 
+IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
+{
+    IdentitySetSharedPtr lID_Set;
+    thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &lID_Set);
+    lID_Set->init(thisAgent);
+
+    ISI_add(thisAgent, lID_Set->idset_id);
+
+    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id, pIdentity);
+    return lID_Set;
+}
+
+void IdentitySet_remove_ref(agent* thisAgent, IdentitySetSharedPtr &pID_Set)
+{
+    dprint(DT_DEBUG, "++ identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
+    if (pID_Set->remove_ref())
+    {
+        dprint(DT_DEBUG, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
+        pID_Set->clean_up();
+        thisAgent->memoryManager->free_with_pool(MP_identity_sets, pID_Set);
+        pID_Set = NULL;
+    }
+}
+
 IdentitySetSharedPtr Explanation_Based_Chunker::get_floating_identity_set()
 {
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton\n");
@@ -46,17 +70,6 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, 
         dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newIdentitySet->get_identity(), pID);
         return newIdentitySet;
     }
-}
-
-IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
-{
-//    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
-    IdentitySetSharedPtr new_id_set = new IdentitySet(thisAgent);
-    ISI_add(thisAgent, new_id_set->idset_id);
-    break_if_id_matches(new_id_set->idset_id, 361);
-
-    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", new_id_set->idset_id, pIdentity);
-    return new_id_set;
 }
 
 void Explanation_Based_Chunker::clean_up_identity_sets()

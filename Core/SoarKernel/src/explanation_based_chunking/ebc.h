@@ -28,6 +28,7 @@ tc_number get_new_tc_number(agent* thisAgent);
 uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set);
 IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set);
 uint64_t                get_joined_identity_clone_id(IdentitySetSharedPtr pID_Set);
+void                    IdentitySet_remove_ref(agent* thisAgent, IdentitySetSharedPtr &pID_Set);
 
 class Explanation_Based_Chunker
 {

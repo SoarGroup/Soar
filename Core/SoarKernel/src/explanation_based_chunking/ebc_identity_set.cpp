@@ -6,7 +6,7 @@
 #include "symbol_manager.h"
 #include "dprint.h"
 
-IdentitySet::IdentitySet(agent* myAgent)
+void IdentitySet::init(agent* myAgent)
 {
     thisAgent = myAgent;
     idset_id = thisAgent->explanationBasedChunker->get_new_identity_set_id();
@@ -24,9 +24,9 @@ IdentitySet::IdentitySet(agent* myAgent)
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u.\n", idset_id);
 }
 
-IdentitySet::~IdentitySet()
+void IdentitySet::clean_up()
 {
-    dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %u%s\n", idset_id, dirty ? " (dirty)." : " (not dirty)");
+    dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up identity set %u%s for deallocation...\n", idset_id, dirty ? " (dirty)." : " (not dirty)");
     if (dirty)
     {
 //        IdentitySetSharedPtr sharedThis = shared_from_this();
