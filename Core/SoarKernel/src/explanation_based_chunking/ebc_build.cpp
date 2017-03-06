@@ -606,10 +606,10 @@ void Explanation_Based_Chunker::make_clones_of_results()
 //        if (lResultPref->identity_sets.attr) lClonedPref->identity_sets.attr = lResultPref->identity_sets.attr;
 //        if (lResultPref->identity_sets.value) lClonedPref->identity_sets.value = lResultPref->identity_sets.value;
 //        if (lResultPref->identity_sets.referent) lClonedPref->identity_sets.referent = lResultPref->identity_sets.referent;
-        lClonedPref->identity_sets.id = NULL_ID_SET;
-        lClonedPref->identity_sets.attr = NULL_ID_SET;
-        lClonedPref->identity_sets.value = NULL_ID_SET;
-        lClonedPref->identity_sets.referent = NULL_ID_SET;
+        lClonedPref->identity_sets.id = NULL_IDENTITY_SET;
+        lClonedPref->identity_sets.attr = NULL_IDENTITY_SET;
+        lClonedPref->identity_sets.value = NULL_IDENTITY_SET;
+        lClonedPref->identity_sets.referent = NULL_IDENTITY_SET;
 
         /* Move cloned_rhs_funcs into rhs_funs of cloned pref */
         if (lResultPref->cloned_rhs_funcs.id)

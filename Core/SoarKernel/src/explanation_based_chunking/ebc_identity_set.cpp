@@ -29,19 +29,22 @@ IdentitySet::~IdentitySet()
     dprint(DT_DEALLOCATE_ID_SETS, "Deallocating identity set %u%s\n", idset_id, dirty ? " (dirty)." : " (not dirty)");
     if (dirty)
     {
-        IdentitySetSharedPtr sharedThis = shared_from_this();
-        if (super_join != sharedThis)
+//        IdentitySetSharedPtr sharedThis = shared_from_this();
+//        if (super_join != sharedThis)
+        if (super_join != this)
         {
             dprint(DT_DEALLOCATE_ID_SETS, "...removing identity set %u from super-join %u's identity_sets\n", idset_id, super_join->idset_id);
-            super_join->identity_sets->remove(sharedThis);
+//            super_join->identity_sets->remove(sharedThis);
+            super_join->identity_sets->remove(this);
         }
         if (identity_sets)
         {
 
             for (auto it = identity_sets->begin(); it != identity_sets->end(); it++)
             {
-                IdentitySetWeakPtr lPreviouslyJoinedWeakIdentity(*it);
-                IdentitySetSharedPtr lPreviouslyJoinedIdentity = lPreviouslyJoinedWeakIdentity.lock();
+//                IdentitySetWeakPtr lPreviouslyJoinedWeakIdentity(*it);
+//                IdentitySetSharedPtr lPreviouslyJoinedIdentity = lPreviouslyJoinedWeakIdentity.lock();
+                IdentitySetSharedPtr lPreviouslyJoinedIdentity = (*it);
                 dprint(DT_DEALLOCATE_ID_SETS, "...resetting previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->idset_id, idset_id);
                 lPreviouslyJoinedIdentity->super_join = lPreviouslyJoinedIdentity;
             }
@@ -56,8 +59,9 @@ void IdentitySet::touch()
     if (!dirty)
     {
         dirty = true;
-        IdentitySetWeakPtr lNewWP(shared_from_this());
-        thisAgent->explanationBasedChunker->identity_sets_to_clean_up.insert(lNewWP);
+//        IdentitySetWeakPtr lNewWP(shared_from_this());
+//        thisAgent->explanationBasedChunker->identity_sets_to_clean_up.insert(lNewWP);
+        thisAgent->explanationBasedChunker->identity_sets_to_clean_up.insert(this);
     }
 }
 

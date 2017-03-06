@@ -10,7 +10,8 @@
 #include "kernel.h"
 #include "stl_typedefs.h"
 
-class IdentitySet : public std::enable_shared_from_this<IdentitySet>
+//class IdentitySet : public std::enable_shared_from_this<IdentitySet>
+class IdentitySet
 {
     public:
 

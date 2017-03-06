@@ -954,7 +954,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     new_ct->type = test_type;
     new_ct->data.referent = sym;
     new_ct->identity = new_ct->clone_identity = LITERAL_VALUE;
-    new_ct->identity_set = NULL_ID_SET;
+    new_ct->identity_set = NULL_IDENTITY_SET;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 

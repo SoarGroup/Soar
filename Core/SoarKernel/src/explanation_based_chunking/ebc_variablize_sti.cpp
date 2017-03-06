@@ -112,13 +112,15 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         thisAgent->symbolManager->symbol_add_ref(var);
         rs->referent = var;
         rs->identity = lMatchedIdentity;
-        rs->identity_set_wp.reset();
+//        rs->identity_set_wp.reset();
+        rs->identity_set_wp = NULL;
         rs->was_unbound_var = was_unbound;
     }
     else
     {
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
         rs->identity = LITERAL_VALUE;
-        rs->identity_set_wp.reset();
+        rs->identity_set_wp = NULL;
+//        rs->identity_set_wp.reset();
     }
 }

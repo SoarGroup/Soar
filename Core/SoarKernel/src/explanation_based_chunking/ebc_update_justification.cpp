@@ -124,13 +124,13 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
     {
         dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity_set->get_clone_identity());
         t->identity = t->identity_set->get_clone_identity();
-        t->identity_set = NULL_ID_SET;
+        t->identity_set = NULL_IDENTITY_SET;
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
         t->identity = LITERAL_VALUE;
-        t->identity_set = NULL_ID_SET;
+        t->identity_set = NULL_IDENTITY_SET;
         return false;
     }
 
@@ -196,12 +196,12 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created cloned identity %u for identity set %u\n", pTest->eq_test->identity_set->get_clone_identity(), pTest->eq_test->identity_set->super_join->idset_id);
             }
             pTest->eq_test->identity = pTest->eq_test->identity_set->get_clone_identity();
-            pTest->eq_test->identity_set = NULL_ID_SET;
+            pTest->eq_test->identity_set = NULL_IDENTITY_SET;
             dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g\n", pTest->eq_test, pTest->eq_test);
         } else {
             /* Literalized identity, so set identity in chunk to 0 */
             pTest->eq_test->identity = LITERAL_VALUE;
-            pTest->eq_test->identity_set = NULL_ID_SET;
+            pTest->eq_test->identity_set = NULL_IDENTITY_SET;
         }
     }
 }

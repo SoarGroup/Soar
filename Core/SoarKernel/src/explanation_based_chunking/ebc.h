@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <cstdlib>
 
-//#define NULL_ID_SET NULL
+//#define NULL_IDENTITY_SET NULL
 
 tc_number get_new_tc_number(agent* thisAgent);
 
@@ -70,7 +70,7 @@ class Explanation_Based_Chunker
         void     force_add_identity(Symbol* pSym, uint64_t pID);
 
         /* Identity set mapping functions */
-//        IdentitySetSharedPtr NULL_ID_SET;
+//        IdentitySetSharedPtr NULL_IDENTITY_SET;
 
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
         void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);

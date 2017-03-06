@@ -100,6 +100,8 @@ rhs_value   allocate_rhs_value_for_symbol_test_no_refcount(agent* thisAgent, Sym
 rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, bool pWasUnbound = false);
 rhs_value   allocate_rhs_value_for_symbol_pref_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, preference* pIdentityPref, WME_Field pField, bool pWasUnbound = false);
 rhs_value   allocate_rhs_value_for_symbol_pref(agent* thisAgent, Symbol* sym, uint64_t pIdentity, preference* pIdentityPref, WME_Field pField, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol_ids_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol_ids(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound = false);
 
 rhs_value   create_RHS_value(agent* thisAgent, rhs_value rv, condition* cond, char first_letter, ExplainTraceType ebcTraceType = WM_Trace);
 action*     create_RHS_action_list(agent* thisAgent, action* actions, condition* cond, ExplainTraceType ebcTraceType = WM_Trace);

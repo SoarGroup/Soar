@@ -95,31 +95,39 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
-        IdentitySetSharedPtr lIDSet = r->identity_set_wp.lock();
+//        IdentitySetSharedPtr lIDSet = r->identity_set_wp.lock();
+        IdentitySetSharedPtr lIDSet = r->identity_set_wp;
         if (get_identity_set)
         {
-            rhs_value new_rv = allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
-            rhs_symbol new_r = rhs_value_to_rhs_symbol(new_rv);
+//            rhs_value new_rv = allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
+//            rhs_symbol new_r = rhs_value_to_rhs_symbol(new_rv);
             if (lIDSet)
             {
                 if (lIDSet->get_clone_identity())
                 {
-                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
+//                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
                 }
                 else
                 {
-                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
+//                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
                 }
             }
             else if (lID)
-                new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
-            return new_rv;
+                lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+//                new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+//            return new_rv;
         }
         if (lIDSet && get_cloned_identity)
         {
-            return allocate_rhs_value_for_symbol(thisAgent, r->referent, lIDSet->get_clone_identity(), r->was_unbound_var);
+//            return allocate_rhs_value_for_symbol(thisAgent, r->referent, lIDSet->get_clone_identity(), r->was_unbound_var);
+            lID = lIDSet->get_clone_identity();
+            lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
         }
-        assert(false);
+
+        return allocate_rhs_value_for_symbol_ids(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
+
     }
 }
 
@@ -620,6 +628,29 @@ rhs_value allocate_rhs_value_for_symbol_pref(agent* thisAgent, Symbol* sym, uint
     return allocate_rhs_value_for_symbol_pref_no_refcount(thisAgent, sym, pIdentity, pIdentityPref, pField, pWasUnbound);
 }
 
+rhs_value allocate_rhs_value_for_symbol_ids_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound)
+{
+    rhs_symbol new_rhs_symbol;
+
+    if (!sym) return reinterpret_cast<rhs_value>(NIL);
+    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
+    new_rhs_symbol->referent = sym;
+    new_rhs_symbol->identity = pIdentity;
+    if (pIDSet) new_rhs_symbol->identity_set_wp = pIDSet;
+    new_rhs_symbol->was_unbound_var = pWasUnbound;
+
+    return rhs_symbol_to_rhs_value(new_rhs_symbol);
+}
+
+rhs_value allocate_rhs_value_for_symbol_ids(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound)
+{
+    if (sym)
+    {
+        thisAgent->symbolManager->symbol_add_ref(sym);
+    }
+    return allocate_rhs_value_for_symbol_ids_no_refcount(thisAgent, sym, pIdentity, pIDSet, pWasUnbound);
+}
+
 bool rhs_value_is_literalizing_function(rhs_value rv)
 {
     cons* fl;
@@ -632,4 +663,5 @@ bool rhs_value_is_literalizing_function(rhs_value rv)
     }
     return false;
 }
+
 

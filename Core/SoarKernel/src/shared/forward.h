@@ -93,9 +93,12 @@ class identity_record;
 class instantiation_record;
 class production_record;
 class IdentitySet;
-typedef std::shared_ptr<IdentitySet> IdentitySetSharedPtr;
-typedef std::weak_ptr<IdentitySet> IdentitySetWeakPtr;
-#define NULL_ID_SET std::shared_ptr<IdentitySet>()
+//typedef std::shared_ptr<IdentitySet> IdentitySetSharedPtr;
+//typedef std::weak_ptr<IdentitySet> IdentitySetWeakPtr;
+//#define NULL_IDENTITY_SET std::shared_ptr<IdentitySet>()
+typedef IdentitySet* IdentitySetSharedPtr;
+typedef IdentitySet* IdentitySetWeakPtr;
+#define NULL_IDENTITY_SET 0
 
 class EpMem_Manager;
 class epmem_common_statement_container;

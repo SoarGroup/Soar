@@ -188,7 +188,8 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
             } else {
                 rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-                IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
+//                IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
+                IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
                 if (lIDSet && !rs->referent->is_sti())
                 {
 //                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, lIDSet, 0);

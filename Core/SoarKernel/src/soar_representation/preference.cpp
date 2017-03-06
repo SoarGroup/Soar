@@ -64,7 +64,7 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->level = 0;
 
     p->identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
-    p->identity_sets = { NULL_ID_SET, NULL_ID_SET, NULL_ID_SET, NULL_ID_SET };
+    p->identity_sets = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
     p->rhs_funcs = { NULL, NULL, NULL, NULL };
     p->clone_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
     p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };

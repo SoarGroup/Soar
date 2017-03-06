@@ -24,7 +24,7 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_id_set_for_identity(uint64_t
 {
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end()) return iter->second;
-    else return NULL_ID_SET;
+    else return NULL_IDENTITY_SET;
 }
 
 IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, IdentitySetSharedPtr pIDSet)
@@ -50,7 +50,8 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, 
 #include <memory>
 IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
-    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
+//    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
+    IdentitySetSharedPtr new_id_set = new IdentitySet(thisAgent);
     ISI_add(thisAgent, new_id_set->get_identity());
 //    break_if_id_matches(new_id_set->identity, 33);
 
@@ -60,11 +61,13 @@ IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIden
 
 void Explanation_Based_Chunker::clean_up_identity_sets()
 {
+    IdentitySetSharedPtr lJoin_set;
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up transient data in all %d identity sets in clean-up list\n", identity_sets_to_clean_up.size());
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
-        IdentitySetWeakPtr lJoin_wset(*it);
-        IdentitySetSharedPtr lJoin_set = lJoin_wset.lock();
+//        IdentitySetWeakPtr lJoin_wset(*it);
+//        IdentitySetSharedPtr lJoin_set = lJoin_wset.lock();
+        lJoin_set = (*it);
         if (lJoin_set)
         {
             assert(lJoin_set->dirty);
@@ -186,19 +189,19 @@ void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* 
 
     if (lPref->identities.id)
     {
-        lPref->identity_sets.id = get_or_add_id_set(lPref->identities.id, NULL_ID_SET);;
+        lPref->identity_sets.id = get_or_add_id_set(lPref->identities.id, NULL);
     }
     if (lPref->identities.attr)
     {
-        lPref->identity_sets.attr = get_or_add_id_set(lPref->identities.attr, NULL_ID_SET);
+        lPref->identity_sets.attr = get_or_add_id_set(lPref->identities.attr, NULL);
     }
     if (lPref->identities.value)
     {
-        lPref->identity_sets.value = get_or_add_id_set(lPref->identities.value, NULL_ID_SET);
+        lPref->identity_sets.value = get_or_add_id_set(lPref->identities.value, NULL);
     }
     if (lPref->identities.referent)
     {
-        lPref->identity_sets.referent = get_or_add_id_set(lPref->identities.referent, NULL_ID_SET);
+        lPref->identity_sets.referent = get_or_add_id_set(lPref->identities.referent, NULL);
     }
 
     /* Note:  We don't deallocate the existing rhs_funcs before replacing them because they are created in
