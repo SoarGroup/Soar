@@ -17,6 +17,7 @@
 #include <ebc_build.cpp>
 #include <ebc_constraints.cpp>
 #include <ebc_explanation_trace.cpp>
+#include <ebc_identity_set.cpp>
 #include <ebc_identity_set_graph.cpp>
 #include <ebc_merge.cpp>
 #include <ebc_osk.cpp>

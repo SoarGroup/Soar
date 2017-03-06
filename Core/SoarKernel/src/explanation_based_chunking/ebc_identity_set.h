@@ -66,7 +66,4 @@ class IdentitySet
 
 };
 
-uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set);
-IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set);
-
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_IDENTITY_SET_H_ */
