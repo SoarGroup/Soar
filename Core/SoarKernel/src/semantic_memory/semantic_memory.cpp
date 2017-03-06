@@ -300,13 +300,13 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                             orquery.push_back((*w_p)->value);
                             path = cmd_query;
                         }
-                        else if ((path == cmd_query) && (query != NIL))
+                        /*else if ((path == cmd_query) && (query != NIL))
                         {
                             //Since we have already received a query command and now we are receiving another, this must be an or-query.
                             //This means that we will issue several queries and return the winner among the multiple queries.
                             //The logic amounts to performing an or/union operation over the separate queries.
                             orquery.push_back((*w_p)->value);
-                        }
+                        }*/
                         else
                         {
                             path = cmd_bad;
