@@ -91,7 +91,7 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 {
                     if (t->eq_test->identity_set)
                     {
-                        new_ct->identity     = t->eq_test->identity_set->super_join->idset_id;
+                        new_ct->identity     = t->eq_test->identity_set->get_identity();
                         new_ct->identity_set = t->eq_test->identity_set->super_join;
                     } else {
                         new_ct->identity = t->eq_test->identity;
@@ -136,8 +136,8 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                new_ct->identity     = get_id_set_id(new_ct->identity_set);
-                new_ct->identity_set = get_id_set(new_ct->identity_set);
+                new_ct->identity     = get_joined_identity_id(new_ct->identity_set);
+                new_ct->identity_set = get_joined_identity_set(new_ct->identity_set);
             }
             break;
     }

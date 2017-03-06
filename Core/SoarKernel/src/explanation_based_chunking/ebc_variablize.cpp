@@ -140,7 +140,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 pTest->eq_test->data.referent = new_var;
                 thisAgent->symbolManager->symbol_add_ref(new_var);
                 pTest->eq_test->identity = pTest->eq_test->identity_set->get_clone_identity();
-                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %t %g\n", pTest->eq_test, pTest->eq_test);
+                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u/%u]\n", new_var, pTest->eq_test->identity, pTest->eq_test->clone_identity);
                 pTest->eq_test->identity_set = NULL_IDENTITY_SET;
             } else {
                 lOldSym = pTest->eq_test->data.referent;
@@ -169,7 +169,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
-                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u]\n", lNewVariable, pTest->eq_test->identity);
+                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->identity, pTest->eq_test->clone_identity);
                 pTest->eq_test->identity_set = NULL_IDENTITY_SET;
 
             }
