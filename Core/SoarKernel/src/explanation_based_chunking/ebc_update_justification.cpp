@@ -19,14 +19,15 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.id)
     {
-        result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id);
-        if (!result->identity_sets.id->get_clone_identity()) result->identity_sets.id->update_clone_id();
+        if (!result->identity_sets.id)
+            result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id);
+        result->identity_sets.id->update_clone_id();
         lIdentity = result->identity_sets.id->get_clone_identity();
     } else lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  lIdentity);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  lIdentity, NULL, result->was_unbound_vars.id);
         result->clone_identities.id = lIdentity;
     } else {
         result->clone_identities.id = lIdentity;
@@ -37,14 +38,15 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.attr)
     {
-        result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr);
-        if (!result->identity_sets.attr->get_clone_identity()) result->identity_sets.attr->update_clone_id();
+        if (!result->identity_sets.attr)
+            result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr);
+        result->identity_sets.attr->update_clone_id();
         lIdentity = result->identity_sets.attr->get_clone_identity();
     } else lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, NULL, result->was_unbound_vars.attr);
         result->clone_identities.attr = lIdentity;
     } else {
         result->clone_identities.attr = lIdentity;
@@ -55,13 +57,14 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.value)
     {
-        result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value);
-        if (!result->identity_sets.value->get_clone_identity()) result->identity_sets.value->update_clone_id();
+        if(!result->identity_sets.value)
+            result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value);
+        result->identity_sets.value->update_clone_id();
         lIdentity = result->identity_sets.value->get_clone_identity();
     } else lIdentity = LITERAL_VALUE;
     if (!result->rhs_funcs.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, NULL, result->was_unbound_vars.value);
         result->clone_identities.value = lIdentity;
     } else {
         result->clone_identities.value = lIdentity;
@@ -72,15 +75,16 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.referent)
     {
-        result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent);
-        if (!result->identity_sets.referent->get_clone_identity()) result->identity_sets.referent->update_clone_id();
+        if (!result->identity_sets.referent)
+            result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent);
+        result->identity_sets.referent->update_clone_id();
         lIdentity = result->identity_sets.referent->get_clone_identity();
     } else lIdentity = LITERAL_VALUE;
     if (preference_is_binary(result->type))
     {
         if (!result->rhs_funcs.referent)
         {
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, NULL, result->was_unbound_vars.referent);
             result->clone_identities.referent = lIdentity;
         } else {
             result->clone_identities.referent = lIdentity;

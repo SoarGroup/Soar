@@ -312,31 +312,19 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     if (!result->rhs_funcs.id)
     {
-        lIdentity = result->identities.id;
-        if (result->identity_sets.id)
-            a->id = allocate_rhs_value_for_symbol_pref(thisAgent, result->id, lIdentity, result, ID_ELEMENT, result->was_unbound_vars.id);
-        else
-            a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, lIdentity, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->identities.id, result->identity_sets.id, result->was_unbound_vars.id);
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
     }
     if (!result->rhs_funcs.attr)
     {
-        lIdentity = result->identities.attr;
-        if (result->identity_sets.attr)
-            a->attr = allocate_rhs_value_for_symbol_pref(thisAgent, result->attr, lIdentity, result, ATTR_ELEMENT, result->was_unbound_vars.attr);
-        else
-            a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->identities.attr, result->identity_sets.attr, result->was_unbound_vars.attr);
     } else {
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
     }
     if (!result->rhs_funcs.value)
     {
-        lIdentity = result->identities.value;
-        if (result->identity_sets.value)
-            a->value = allocate_rhs_value_for_symbol_pref(thisAgent, result->value, lIdentity, result, VALUE_ELEMENT, result->was_unbound_vars.value);
-        else
-            a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->identities.value, result->identity_sets.value, result->was_unbound_vars.value);
     } else {
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
     }
@@ -344,11 +332,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     {
         if (!result->rhs_funcs.referent)
         {
-            lIdentity = result->identities.referent;
-            if (result->identity_sets.referent)
-                a->referent = allocate_rhs_value_for_symbol_pref(thisAgent, result->referent, lIdentity, result, VALUE_ELEMENT, result->was_unbound_vars.referent);
-            else
-                a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, result->identities.referent, result->identity_sets.referent, result->was_unbound_vars.referent);
         } else {
             a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent);
         }
@@ -449,12 +433,11 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
     {
         lRSym = rhs_value_to_rhs_symbol(*it);
 //        IdentitySetSharedPtr lIDSet = lRSym->identity_set_wp.lock();
-        IdentitySetSharedPtr lIDSet = lRSym->identity_set_wp;
 
-        lIntRV = allocate_rhs_value_for_symbol_rs_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym, false);
+        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym->identity_set_wp, false);
         lRV = copy_rhs_value(thisAgent, (*it));
 
-        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y to LTI ID %u", lRSym->referent, lRSym->referent->var->instantiated_sym->id->LTI_ID);
+        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y (%u) to LTI ID %u", lRSym->referent, lRSym->identity_set_wp ? lRSym->identity_set_wp->get_identity() : 0, lRSym->referent->var->instantiated_sym->id->LTI_ID);
 
         funcall_list = NULL;
         push(thisAgent, lti_link_function, funcall_list);

@@ -86,7 +86,7 @@ void IdentitySet::store_variablization(Symbol* variable, Symbol* pMatched_sym)
 {
     variable->var->instantiated_sym = pMatched_sym;
 
-    if (super_join != NULL)
+    if (super_join != this)
     {
         super_join->new_var = variable;
         super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
@@ -102,7 +102,8 @@ void IdentitySet::store_variablization(Symbol* variable, Symbol* pMatched_sym)
 
 void IdentitySet::update_clone_id()
 {
-    clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
+    if (!super_join->clone_identity)
+        super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
 }
 
 void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)

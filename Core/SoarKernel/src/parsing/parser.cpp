@@ -1563,7 +1563,7 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
             (lexer->current_lexeme.type == IDENTIFIER_LEXEME))
     {
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false);
-        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0, false);
+        rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
         if (!lexer->get_lexeme()) return NULL;
         return rv;
     }

@@ -41,10 +41,10 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, 
         dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->get_identity());
         return pIDSet;
     } else {
-        IdentitySetSharedPtr newJoinSet = make_identity_set(pID);
-        (*identities_to_id_sets)[pID] = newJoinSet;
-        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newJoinSet->get_identity(), pID);
-        return newJoinSet;
+        IdentitySetSharedPtr newIdentitySet = make_identity_set(pID);
+        (*identities_to_id_sets)[pID] = newIdentitySet;
+        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newIdentitySet->get_identity(), pID);
+        return newIdentitySet;
     }
 }
 

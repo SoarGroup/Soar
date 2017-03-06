@@ -111,7 +111,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
                 else
                 {
 //                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
-                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
                 }
             }
             else if (lID)
@@ -126,7 +126,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
         }
 
-        return allocate_rhs_value_for_symbol_ids(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
 
     }
 }
@@ -405,7 +405,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                 rhs_value_to_reteloc_levels_up(rv));
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %us%u\n", t->data.referent, t->identity, t->identity_set ? t->identity_set->get_identity() : 0);
 
-        return allocate_rhs_value_for_symbol_test(thisAgent, t->data.referent, t->identity, t, false);
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity, t->identity_set);
     }
 
     if (rhs_value_is_unboundvar(rv))
@@ -430,7 +430,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, true);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, NULL, true);
         }
         else
         {
@@ -443,7 +443,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         }
 
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y [%u]\n", sym, lO_id);
-        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, true);
+        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, NULL, true);
     }
 
     if (rhs_value_is_funcall(rv))
@@ -472,9 +472,9 @@ rhs_value create_RHS_value(agent* thisAgent,
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, rs->identity);
         if (ebcTraceType == Explanation_Trace)
-            return allocate_rhs_value_for_symbol_rs(thisAgent, rs->referent, rs->identity, rs, rs->was_unbound_var);
+            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->identity, rs->identity_set_wp, rs->was_unbound_var);
         else
-            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, LITERAL_VALUE, rs->was_unbound_var);
+            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, LITERAL_VALUE, NULL, rs->was_unbound_var);
     }
 }
 
@@ -532,7 +532,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -540,115 +540,19 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
-    new_rhs_symbol->identity_set_wp = IdentitySetWeakPtr();
+    new_rhs_symbol->identity_set_wp = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol_test_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, test pIDSetTest, bool pWasUnbound)
-{
-    rhs_symbol new_rhs_symbol;
-
-    if (!sym) return reinterpret_cast<rhs_value>(NIL);
-    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
-    new_rhs_symbol->referent = sym;
-    new_rhs_symbol->identity = pIdentity;
-    new_rhs_symbol->identity_set_wp = pIDSetTest->identity_set;
-    new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    return rhs_symbol_to_rhs_value(new_rhs_symbol);
-}
-rhs_value allocate_rhs_value_for_symbol_rs_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, rhs_symbol pIDSetRHSSym, bool pWasUnbound)
-{
-    rhs_symbol new_rhs_symbol;
-
-    if (!sym) return reinterpret_cast<rhs_value>(NIL);
-    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
-    new_rhs_symbol->referent = sym;
-    new_rhs_symbol->identity = pIdentity;
-    new_rhs_symbol->identity_set_wp = pIDSetRHSSym->identity_set_wp;
-    new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    return rhs_symbol_to_rhs_value(new_rhs_symbol);
-}
-
-rhs_value allocate_rhs_value_for_symbol_pref_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, preference* pIdentityPref, WME_Field pField, bool pWasUnbound)
-{
-    rhs_symbol new_rhs_symbol;
-
-    if (!sym) return reinterpret_cast<rhs_value>(NIL);
-    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
-    new_rhs_symbol->referent = sym;
-    new_rhs_symbol->identity = pIdentity;
-    if (pField == ID_ELEMENT) { new_rhs_symbol->identity_set_wp = pIdentityPref->identity_sets.id; }
-    if (pField == ATTR_ELEMENT) { new_rhs_symbol->identity_set_wp = pIdentityPref->identity_sets.attr; }
-    if (pField == VALUE_ELEMENT) { new_rhs_symbol->identity_set_wp = pIdentityPref->identity_sets.value; }
-    if (pField == REFERENT_ELEMENT) { new_rhs_symbol->identity_set_wp = pIdentityPref->identity_sets.referent; }
-    new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    return rhs_symbol_to_rhs_value(new_rhs_symbol);
-}
-
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet, bool pWasUnbound)
 {
     if (sym)
     {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pIdentity, pWasUnbound);
-}
-
-rhs_value allocate_rhs_value_for_symbol_test(agent* thisAgent, Symbol* sym, uint64_t pIdentity, test pIDSetTest, bool pWasUnbound)
-{
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
-    return allocate_rhs_value_for_symbol_test_no_refcount(thisAgent, sym, pIdentity, pIDSetTest, pWasUnbound);
-
-}
-
-rhs_value allocate_rhs_value_for_symbol_rs(agent* thisAgent, Symbol* sym, uint64_t pIdentity, rhs_symbol pIDSetRHSSym, bool pWasUnbound)
-{
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
-    return allocate_rhs_value_for_symbol_rs_no_refcount(thisAgent, sym, pIdentity, pIDSetRHSSym, pWasUnbound);
-}
-
-
-rhs_value allocate_rhs_value_for_symbol_pref(agent* thisAgent, Symbol* sym, uint64_t pIdentity, preference* pIdentityPref, WME_Field pField, bool pWasUnbound)
-{
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
-    return allocate_rhs_value_for_symbol_pref_no_refcount(thisAgent, sym, pIdentity, pIdentityPref, pField, pWasUnbound);
-}
-
-rhs_value allocate_rhs_value_for_symbol_ids_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound)
-{
-    rhs_symbol new_rhs_symbol;
-
-    if (!sym) return reinterpret_cast<rhs_value>(NIL);
-    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
-    new_rhs_symbol->referent = sym;
-    new_rhs_symbol->identity = pIdentity;
-    if (pIDSet) new_rhs_symbol->identity_set_wp = pIDSet;
-    new_rhs_symbol->was_unbound_var = pWasUnbound;
-
-    return rhs_symbol_to_rhs_value(new_rhs_symbol);
-}
-
-rhs_value allocate_rhs_value_for_symbol_ids(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr &pIDSet, bool pWasUnbound)
-{
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
-    return allocate_rhs_value_for_symbol_ids_no_refcount(thisAgent, sym, pIdentity, pIDSet, pWasUnbound);
+    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pIdentity, pIDSet, pWasUnbound);
 }
 
 bool rhs_value_is_literalizing_function(rhs_value rv)
