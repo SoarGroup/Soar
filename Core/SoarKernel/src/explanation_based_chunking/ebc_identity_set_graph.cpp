@@ -52,8 +52,8 @@ IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIden
 {
 //    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
     IdentitySetSharedPtr new_id_set = new IdentitySet(thisAgent);
-    ISI_add(thisAgent, new_id_set->get_identity());
-//    break_if_id_matches(new_id_set->identity, 33);
+    ISI_add(thisAgent, new_id_set->idset_id);
+    break_if_id_matches(new_id_set->idset_id, 361);
 
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", new_id_set->idset_id, pIdentity);
     return new_id_set;

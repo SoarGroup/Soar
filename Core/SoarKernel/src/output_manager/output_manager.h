@@ -262,6 +262,13 @@ inline std::string concatJustified(const char* left_string, std::string right_st
     return_string += right_string;
     return return_string;
 }
+inline const char* field_to_string(WME_Field f)
+{
+    if (f == ID_ELEMENT) return "ID";
+    if (f == ATTR_ELEMENT) return "attribute";
+    if (f == VALUE_ELEMENT) return "value";
+    return "NO-ELEMENT";
+}
 
 /* ------------------------------------
  *    Format strings for Soar printing:

@@ -18,18 +18,18 @@ class IdentitySet
         IdentitySet(agent* my_agent);
         ~IdentitySet();
 
-        bool        literalized()           { if (super_join) return super_join->m_literalized; else return m_literalized; }
-        bool        joined()                { if (super_join) return true; else return false; }
-        uint64_t    get_identity()          { if (super_join) return super_join->idset_id; else return idset_id; }
+        bool        literalized()           { return super_join->m_literalized; }
+        bool        joined()                { return (super_join != this); }
+        uint64_t    get_identity()          { return super_join->idset_id; }
         uint64_t    get_sub_identity()      { return idset_id; }
-        uint64_t    get_clone_identity()    { if (super_join) return super_join->clone_identity; else return clone_identity; }
-        Symbol*     get_var()               { if (super_join) return super_join->new_var; else return new_var; }
-        condition*  get_operational_cond()  { if (super_join) return super_join->operational_cond; else return operational_cond; }
-        WME_Field   get_operational_field() { if (super_join) return super_join->operational_field; else return operational_field; }
+        uint64_t    get_clone_identity()    { return super_join->clone_identity; }
+        Symbol*     get_var()               { return super_join->new_var; }
+        condition*  get_operational_cond()  { return super_join->operational_cond; }
+        WME_Field   get_operational_field() { return super_join->operational_field; }
 
-        void literalize()                               { if (super_join) super_join->m_literalized = true; else { m_literalized = true; touch(); }}
-        void set_clone_identity(uint64_t pID)           { if (super_join) super_join->clone_identity = pID; else { clone_identity = pID; touch(); }}
-        void set_var(Symbol* pVar)                      { if (super_join) super_join->new_var = pVar; else { new_var = pVar; touch(); }}
+        void literalize()                               { super_join->m_literalized = true; super_join->touch(); }
+        void set_clone_identity(uint64_t pID)           { super_join->clone_identity = pID; super_join->touch(); }
+        void set_var(Symbol* pVar)                      { super_join->new_var = pVar; super_join->touch(); }
 
         void set_operational_cond(condition* pCond, WME_Field pField);
         void store_variablization(Symbol* variable, Symbol* pMatched_sym);
@@ -52,7 +52,6 @@ class IdentitySet
     private:
 
         agent*                      thisAgent;
-
 
         /* Fields for variablization and chunk instantiation identity creation */
         Symbol*                     new_var;

@@ -243,6 +243,11 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
             if ((cond->data.tests.value_test->type == CONJUNCTIVE_TEST) || pInNegativeCondition)
                 update_identities_in_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
             dprint(DT_LHS_VARIABLIZATION, "-->Updated condition: %l\n", cond);
+            #ifdef EBC_SANITY_CHECK_RULES
+            sanity_justification_test(cond->data.tests.id_test, pInNegativeCondition);
+            sanity_justification_test(cond->data.tests.attr_test, pInNegativeCondition);
+            sanity_justification_test(cond->data.tests.value_test, pInNegativeCondition);
+            #endif
         }
         else if (cond->type == NEGATIVE_CONDITION)
         {
@@ -251,6 +256,11 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
             update_identities_in_tests_by_lookup(cond->data.tests.attr_test, !pInNegativeCondition);
             update_identities_in_tests_by_lookup(cond->data.tests.value_test, !pInNegativeCondition);
             dprint(DT_LHS_VARIABLIZATION, "-->Updated negative condition: %l\n", cond);
+            #ifdef EBC_SANITY_CHECK_RULES
+            sanity_justification_test(cond->data.tests.id_test, pInNegativeCondition);
+            sanity_justification_test(cond->data.tests.attr_test, pInNegativeCondition);
+            sanity_justification_test(cond->data.tests.value_test, pInNegativeCondition);
+            #endif
         }
         else if (cond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
@@ -259,11 +269,6 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
             update_identities_in_condition_list(cond->data.ncc.top, true);
             dprint(DT_LHS_VARIABLIZATION, "-->Updated NCC: %l\n", cond);
         }
-        #ifdef EBC_SANITY_CHECK_RULES
-        sanity_justification_test(cond->data.tests.id_test, pInNegativeCondition);
-        sanity_justification_test(cond->data.tests.attr_test, pInNegativeCondition);
-        sanity_justification_test(cond->data.tests.value_test, pInNegativeCondition);
-        #endif
     }
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done updating LHS condition list.\n");
 }

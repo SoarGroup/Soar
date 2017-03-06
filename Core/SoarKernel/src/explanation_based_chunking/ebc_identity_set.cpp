@@ -58,6 +58,7 @@ void IdentitySet::touch()
 {
     if (!dirty)
     {
+        dprint(DT_DEALLOCATE_ID_SETS, "...marking identity set %u as dirty (superjoin = %u, %s)\n", idset_id, super_join->idset_id, super_join->dirty ? "dirty" : "clean");
         dirty = true;
 //        IdentitySetWeakPtr lNewWP(shared_from_this());
 //        thisAgent->explanationBasedChunker->identity_sets_to_clean_up.insert(lNewWP);
@@ -68,7 +69,7 @@ void IdentitySet::touch()
 void IdentitySet::clean_up_transient()
 {
     dprint(DT_DEALLOCATE_ID_SETS, "...cleaning up transient data in %s identity set %u (%s, var = %y, # id sets = %d, clone id = %u)\n",
-        dirty ? "dirty" : "clean", idset_id, (super_join != NULL) ? "joined" : "not joined",
+        dirty ? "dirty" : "clean", idset_id, (super_join != this) ? "joined" : "not joined",
         new_var, identity_sets ? identity_sets->size() : 0, clone_identity);
     if (new_var) thisAgent->symbolManager->symbol_remove_ref(&new_var);
     if (identity_sets) delete identity_sets;
@@ -86,38 +87,27 @@ void IdentitySet::store_variablization(Symbol* variable, Symbol* pMatched_sym)
 {
     variable->var->instantiated_sym = pMatched_sym;
 
-    if (super_join != this)
-    {
-        super_join->new_var = variable;
-        super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
-    } else
-    {
-        new_var = variable;
-        clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
-        touch();
-    }
-
+    super_join->new_var = variable;
+    super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
+    super_join->touch();
 //        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
 }
 
 void IdentitySet::update_clone_id()
 {
     if (!super_join->clone_identity)
+    {
         super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
+        super_join->touch();
+    }
 }
 
 void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)
 {
-    if (super_join)
-    {
         super_join->operational_cond = pCond;
         super_join->operational_field = pField;
-    } else
-    {
-        operational_cond = pCond; touch();
-        operational_field = pField;
-        touch();
-    }
+        super_join->touch();
+    dprint(DT_CONSTRAINTS, "Setting operational condition for identity set %u to %s element of %l\n", get_identity(), field_to_string(pField), pCond);
 }
 uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set) { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_identity(); }
 IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL; else return pID_Set->super_join;}

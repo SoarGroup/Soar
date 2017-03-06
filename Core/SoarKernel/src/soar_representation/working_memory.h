@@ -126,13 +126,6 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
     if ((w)->reference_count != 0) (w)->reference_count--;
     if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
 }
-inline const char* field_to_string(WME_Field f)
-{
-    if (f == ID_ELEMENT) return "ID";
-    if (f == ATTR_ELEMENT) return "attribute";
-    if (f == VALUE_ELEMENT) return "value";
-    return "NO-ELEMENT";
-}
 
 inline Symbol* get_wme_element(wme* w, WME_Field f)
 {

@@ -10,14 +10,14 @@
 #include <set>
 #include <unordered_set>
 #include <list>
-//#include <functional>
-//#include <cmath>
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
     typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
+    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
+    typedef std::list< IdentitySetSharedPtr, soar_module::soar_memory_pool_allocator< IdentitySetSharedPtr > >      identity_set_list;
     typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > >                  inst_list;
     typedef std::list< instantiation_record*, soar_module::soar_memory_pool_allocator< instantiation_record* > >    inst_record_list;
     typedef std::list< identity_mapping*, soar_module::soar_memory_pool_allocator< identity_mapping* > >            identity_mapping_list;
@@ -61,7 +61,9 @@
     typedef std::list< action_record* >                         action_record_list;
     typedef std::list< condition_record* >                      condition_record_list;
     typedef std::list< condition* >                             condition_list;
+    typedef std::list< constraint* >                            constraint_list;
     typedef std::list< deep_copy_wme* >                         deep_copy_wme_list;
+    typedef std::list< IdentitySetSharedPtr >                   identity_set_list;
     typedef std::list< identity_mapping* >                      identity_mapping_list;
     typedef std::list< instantiation* >                         inst_list;
     typedef std::list< instantiation_record* >                  inst_record_list;
@@ -112,12 +114,9 @@ typedef std::set< IdentitySetWeakPtr >                          identity_set_set
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, IdentitySetSharedPtr>     id_to_join_map;
-
 typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
 typedef std::unordered_map< uint64_t, preference* >             id_to_pref_map;
-
 typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
-
 typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
 typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
 typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;

@@ -2,17 +2,6 @@
 #define CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_
 
 #include "kernel.h"
-#include "mempool_allocator.h"
-
-#include <unordered_set>
-
-#ifdef USE_MEM_POOL_ALLOCATORS
-    typedef std::list< constraint*, soar_module::soar_memory_pool_allocator< constraint* > >                        constraint_list;
-    typedef std::list< IdentitySetSharedPtrPtr, soar_module::soar_memory_pool_allocator< IdentitySetWeakPtr > >     identity_set_list;
-#else
-    typedef std::list< IdentitySetSharedPtr >                                                                       identity_set_list;
-    typedef std::list< constraint* >                                                                                constraint_list;
-#endif
 
 typedef struct symbol_triple_struct
 {

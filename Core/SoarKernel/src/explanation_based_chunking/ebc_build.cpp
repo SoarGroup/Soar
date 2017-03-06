@@ -440,14 +440,29 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
             if (c_vrblz->data.tests.value_test->eq_test->identity_set && !c_vrblz->data.tests.value_test->eq_test->identity_set->get_operational_cond())
             {
                 c_vrblz->data.tests.value_test->eq_test->identity_set->set_operational_cond(c_vrblz, VALUE_ELEMENT);
+            } else {
+                if (c_vrblz->data.tests.value_test->eq_test->identity_set)
+                    dprint(DT_CONSTRAINTS, "Not setting value element of %l as operational cond because operational cond %l already exists.\n", c_vrblz, c_vrblz->data.tests.value_test->eq_test->identity_set->get_operational_cond());
+//                else
+//                    dprint(DT_CONSTRAINTS, "Not setting value element of %l as operational cond because no identity set exists.\n", c_vrblz);
             }
             if (c_vrblz->data.tests.attr_test->eq_test->identity_set && !c_vrblz->data.tests.attr_test->eq_test->identity_set->get_operational_cond())
             {
                 c_vrblz->data.tests.attr_test->eq_test->identity_set->set_operational_cond(c_vrblz, ATTR_ELEMENT);
+            } else {
+                if (c_vrblz->data.tests.attr_test->eq_test->identity_set)
+                    dprint(DT_CONSTRAINTS, "Not setting attr element of %l as operational cond because operational cond %l already exists.\n", c_vrblz, c_vrblz->data.tests.attr_test->eq_test->identity_set->get_operational_cond());
+//                else
+//                    dprint(DT_CONSTRAINTS, "Not setting attr element of %l as operational cond because no identity set exists.\n", c_vrblz);
             }
             if (c_vrblz->data.tests.id_test->eq_test->identity_set && !c_vrblz->data.tests.id_test->eq_test->identity_set->get_operational_cond())
             {
                 c_vrblz->data.tests.id_test->eq_test->identity_set->set_operational_cond(c_vrblz, ID_ELEMENT);
+            } else {
+                if (c_vrblz->data.tests.id_test->eq_test->identity_set)
+                    dprint(DT_CONSTRAINTS, "Not setting id element of %l as operational cond because operational cond %l already exists.\n", c_vrblz, c_vrblz->data.tests.id_test->eq_test->identity_set->get_operational_cond());
+//                else
+//                    dprint(DT_CONSTRAINTS, "Not setting id element of %l as operational cond because no identity set exists.\n", c_vrblz);
             }
         }
 

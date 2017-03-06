@@ -51,7 +51,7 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
 
 void Explanation_Based_Chunker::cache_constraints_in_cond(condition* c)
 {
-    dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
+//    dprint(DT_CONSTRAINTS, "Caching relational constraints in condition: %l\n", c);
     if (c->data.tests.id_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.id_test);
     if (c->data.tests.attr_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.attr_test);
     if (c->data.tests.value_test->type == CONJUNCTIVE_TEST) cache_constraints_in_test(c->data.tests.value_test);
@@ -122,14 +122,14 @@ void Explanation_Based_Chunker::add_additional_constraints()
         condition* lOperationalConstraintCond = lConstraint->constraint_test->identity_set ? lConstraint->constraint_test->identity_set->get_operational_cond() : NULL;
         dprint(DT_CONSTRAINTS, "Attempting to add constraint %t %g to %t %g: ", lConstraint->constraint_test, lConstraint->constraint_test, lConstraint->eq_test, lConstraint->eq_test);
 
-        if (lConstraint->eq_test->identity_set && !lConstraint->eq_test->identity_set->literalized() && lOperationalCond)
+        if (lOperationalCond && !lConstraint->eq_test->identity_set->literalized())
         {
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
             attach_relational_test(constraint_test, lOperationalCond, lConstraint->eq_test->identity_set->get_operational_field());
             dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lOperationalCond);
             thisAgent->explanationMemory->increment_stat_constraints_attached();
         }
-        else if (lConstraint->constraint_test->identity_set && !lConstraint->constraint_test->identity_set->literalized() && lOperationalConstraintCond)
+        else if (lOperationalConstraintCond && !lConstraint->constraint_test->identity_set->literalized())
         {
             eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
