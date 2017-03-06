@@ -136,8 +136,8 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             }
             if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                new_ct->identity     = new_ct->identity_set->super_join->idset_id;
-                new_ct->identity_set = new_ct->identity_set->super_join;
+                new_ct->identity     = get_id_set_id(new_ct->identity_set);
+                new_ct->identity_set = get_id_set(new_ct->identity_set);
             }
             break;
     }

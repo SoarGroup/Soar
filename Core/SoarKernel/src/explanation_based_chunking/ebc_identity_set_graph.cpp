@@ -47,7 +47,7 @@ IdentitySetSharedPtr Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, 
         return newJoinSet;
     }
 }
-#include <memory>
+
 IdentitySetSharedPtr Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 {
 //    IdentitySetSharedPtr new_id_set (std::make_shared<IdentitySet>(thisAgent));
@@ -77,10 +77,12 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     identity_sets_to_clean_up.clear();
 }
 
-void Explanation_Based_Chunker::join_identity_sets(IdentitySetSharedPtr &lFromJoinSet, IdentitySetSharedPtr &lToJoinSet)
+void Explanation_Based_Chunker::join_identity_sets(IdentitySetSharedPtr lFromJoinSet, IdentitySetSharedPtr lToJoinSet)
 {
     lFromJoinSet = lFromJoinSet->super_join;
     lToJoinSet = lToJoinSet->super_join;
+
+    if (lFromJoinSet == lToJoinSet) return;
 
     ebc_timers->variablization_rhs->start();
     ebc_timers->variablization_rhs->stop();
@@ -123,7 +125,7 @@ void Explanation_Based_Chunker::join_identity_sets(IdentitySetSharedPtr &lFromJo
         lFromJoinSet->identity_sets = NULL;
     }
     /* The identity set being joined is not on its child identity_sets list, so we add it to other identity set here*/
-    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->idset_id, lFromJoinSet->super_join->idset_id, lFromJoinSet->idset_id, lToJoinSet->idset_id);
+//    dprint(DT_UNIFY_IDENTITY_SETS, "Changing join set mapping of %u -> %u to %u -> %u\n", lFromJoinSet->idset_id, lFromJoinSet->super_join->idset_id, lFromJoinSet->idset_id, lToJoinSet->idset_id);
     lToJoinSet->identity_sets->push_back(lFromJoinSet);
 
     /* Propagate literalization and constraint info */

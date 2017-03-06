@@ -403,7 +403,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %us%u\n", t->data.referent, t->identity, t->identity_set->get_identity());
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %us%u\n", t->data.referent, t->identity, t->identity_set ? t->identity_set->get_identity() : 0);
 
         return allocate_rhs_value_for_symbol_test(thisAgent, t->data.referent, t->identity, t, false);
     }

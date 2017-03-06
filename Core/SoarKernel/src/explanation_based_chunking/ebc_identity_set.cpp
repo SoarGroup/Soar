@@ -11,7 +11,7 @@ IdentitySet::IdentitySet(agent* myAgent)
     thisAgent = myAgent;
     idset_id = thisAgent->explanationBasedChunker->get_new_identity_set_id();
     dirty = false;
-    super_join = NULL;
+    super_join = this;
     identity_sets = NULL;
     new_var = NULL;
     clone_identity = LITERAL_VALUE;
@@ -73,7 +73,7 @@ void IdentitySet::clean_up_transient()
     if (new_var) thisAgent->symbolManager->symbol_remove_ref(&new_var);
     if (identity_sets) delete identity_sets;
     dirty = false;
-    super_join = NULL;
+    super_join = this;
     identity_sets = NULL;
     new_var = NULL;
     clone_identity = LITERAL_VALUE;
@@ -118,3 +118,5 @@ void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)
         touch();
     }
 }
+uint64_t                get_id_set_id(IdentitySetSharedPtr pID_Set) { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->super_join->idset_id; }
+IdentitySetSharedPtr    get_id_set(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL; else return pID_Set->super_join;}

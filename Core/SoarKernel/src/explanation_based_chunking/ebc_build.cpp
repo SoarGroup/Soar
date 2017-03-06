@@ -148,7 +148,7 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, preference
     m_results = pref;
     if (pref->identity_sets.id && pref_has_identity_set_in_field(pLinkPref, pField))
     {
-        if (pref_has_same_identity_sets_in_2_fields(pref, ID_ELEMENT, pLinkPref, pField))
+        if (!pref_has_same_identity_sets_in_2_fields(pref, ID_ELEMENT, pLinkPref, pField))
         {
             ebc_timers->chunk_instantiation_creation->stop();
             if (pField == ID_ELEMENT)

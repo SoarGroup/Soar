@@ -263,7 +263,7 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void join_identity_sets(IdentitySetSharedPtr &lFromJoinSet, IdentitySetSharedPtr &lToJoinSet);
+        void join_identity_sets(IdentitySetSharedPtr lFromJoinSet, IdentitySetSharedPtr lToJoinSet);
         void unify_backtraced_conditions(condition* parent_cond, identity_set_quadruple &o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
