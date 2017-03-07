@@ -11,6 +11,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_repair.h"
 #include "explanation_memory.h"
 #include "output_manager.h"

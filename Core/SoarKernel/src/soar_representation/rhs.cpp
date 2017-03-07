@@ -16,6 +16,7 @@
 #include "agent.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"

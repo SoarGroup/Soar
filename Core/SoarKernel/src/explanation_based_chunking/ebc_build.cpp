@@ -14,6 +14,7 @@
  */
 
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_timers.h"
 
 #include "agent.h"

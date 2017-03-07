@@ -31,6 +31,7 @@
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_repair.h"
 #include "episodic_memory.h"
 #include "explanation_memory.h"

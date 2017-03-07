@@ -4,6 +4,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "explanation_memory.h"
 #include "instantiation.h"
 #include "output_manager.h"

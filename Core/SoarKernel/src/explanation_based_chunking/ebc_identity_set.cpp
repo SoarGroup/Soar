@@ -18,13 +18,12 @@ void IdentitySet::init(agent* myAgent)
     m_literalized = false;
     operational_cond = NULL;
     operational_field = NO_ELEMENT;
-    refcount = 1;
+    refcount = 0;
 }
 
 void IdentitySet::clean_up()
 {
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up identity set %u%s for deallocation...\n", idset_id, dirty ? " (dirty)." : " (not dirty)");
-    break_if_id_matches(idset_id, 1);
     if (dirty)
     {
         if (super_join != this)

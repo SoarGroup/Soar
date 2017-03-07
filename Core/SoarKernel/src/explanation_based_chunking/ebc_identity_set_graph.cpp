@@ -3,6 +3,7 @@
  * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_timers.h"
 
 #include "agent.h"
@@ -27,10 +28,9 @@ IdentitySet* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 
 void IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set)
 {
-//    dprint(DT_DEBUG, "-- identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
     if (pID_Set->remove_ref())
     {
-        dprint(DT_DEBUG, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
+        dprint(DT_DEALLOCATE_ID_SETS, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
         pID_Set->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_identity_sets, pID_Set);
         pID_Set = NULL;
@@ -39,10 +39,26 @@ void IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set)
 
 void set_pref_identity_set(agent* thisAgent, preference* pPref, WME_Field pField, IdentitySet* pID_Set)
 {
-    if ((pField == ID_ELEMENT) && pPref->identity_sets.id)                  IdentitySet_remove_ref(thisAgent, pPref->identity_sets.id);
-    else if ((pField == ATTR_ELEMENT) && pPref->identity_sets.attr)         IdentitySet_remove_ref(thisAgent, pPref->identity_sets.attr);
-    else if ((pField == VALUE_ELEMENT) && pPref->identity_sets.value)       IdentitySet_remove_ref(thisAgent, pPref->identity_sets.value);
-    else if ((pField == REFERENT_ELEMENT) && pPref->identity_sets.referent) IdentitySet_remove_ref(thisAgent, pPref->identity_sets.referent);
+    if ((pField == ID_ELEMENT) && pPref->identity_sets.id)
+    {
+        if (pPref->identity_sets.id == pID_Set) return;
+        IdentitySet_remove_ref(thisAgent, pPref->identity_sets.id);
+    }
+    else if ((pField == ATTR_ELEMENT) && pPref->identity_sets.attr)
+    {
+        if (pPref->identity_sets.attr == pID_Set) return;
+        IdentitySet_remove_ref(thisAgent, pPref->identity_sets.attr);
+    }
+    else if ((pField == VALUE_ELEMENT) && pPref->identity_sets.value)
+    {
+        if (pPref->identity_sets.value == pID_Set) return;
+        IdentitySet_remove_ref(thisAgent, pPref->identity_sets.value);
+    }
+    else if ((pField == REFERENT_ELEMENT) && pPref->identity_sets.referent)
+    {
+        if (pPref->identity_sets.referent == pID_Set) return;
+        IdentitySet_remove_ref(thisAgent, pPref->identity_sets.referent);
+    }
 
     if (pID_Set) pID_Set->add_ref();
 
@@ -54,6 +70,7 @@ void set_pref_identity_set(agent* thisAgent, preference* pPref, WME_Field pField
 
 void set_test_identity_set(agent* thisAgent, test pTest, IdentitySet* pID_Set)
 {
+    if (pTest->identity_set == pID_Set) return;
     if (pTest->identity_set) IdentitySet_remove_ref(thisAgent, pTest->identity_set);
     if (pID_Set) pID_Set->add_ref();
     pTest->identity_set = pID_Set;
@@ -68,7 +85,9 @@ void clear_test_identity_set(agent* thisAgent, test pTest)
 IdentitySet* Explanation_Based_Chunker::get_floating_identity_set()
 {
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton\n");
-    return make_identity_set(0);
+    IdentitySet* lID_Set = make_identity_set(0);
+    lID_Set->add_ref();
+    return lID_Set;
 }
 
 IdentitySet* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
@@ -85,14 +104,12 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     {
         IdentitySet* lID_Set = iter->second;
         dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, lID_Set->get_identity());
-        lID_Set->add_ref();
         return lID_Set;
     }
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
         dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->get_identity());
-        pIDSet->add_ref();
         return pIDSet;
     } else {
         IdentitySet* newIdentitySet = make_identity_set(pID);

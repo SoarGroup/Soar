@@ -12,6 +12,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "preference.h"
