@@ -49,7 +49,7 @@ class IdentitySet
         uint64_t                    idset_id;
 
         /* A pointer to the join super identity.  Used to point back to itself but that's bad with shared pointers */
-        IdentitySetSharedPtr        super_join;
+        IdentitySet*                super_join;
 
         /* Pointers to other identity_set nodes that map to this one */
         identity_set_list*          identity_sets;

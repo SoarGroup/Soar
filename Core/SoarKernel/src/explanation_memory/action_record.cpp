@@ -34,12 +34,12 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
 
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     uint64_t lID = r->identity;
-    IdentitySetSharedPtr lIDSet = r->identity_set_wp;
+    IdentitySet* lIDSet = r->identity_set;
 
     if (lIDSet) r->identity = lIDSet->get_identity();
     else r->identity = LITERAL_VALUE;
 
-    r->identity_set_wp = NULL;
+    r->identity_set = NULL;
 //    r->identity_set_wp.reset();
 }
 

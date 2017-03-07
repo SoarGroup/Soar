@@ -47,7 +47,7 @@ typedef struct test_struct
     test_struct*    eq_test;
     uint64_t        identity;
     uint64_t        clone_identity;
-    IdentitySetSharedPtr   identity_set;
+    IdentitySet*   identity_set;
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

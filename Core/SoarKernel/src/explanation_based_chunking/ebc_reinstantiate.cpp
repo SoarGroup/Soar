@@ -130,12 +130,12 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-        IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
+        IdentitySet* lIDSet = rs->identity_set;
         if (lIDSet)
         {
             rs->identity = lIDSet->get_clone_identity();
 //            rs->identity_set_wp.reset();
-            rs->identity_set_wp = NULL;
+            rs->identity_set = NULL;
         }
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->identity);

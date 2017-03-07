@@ -37,7 +37,7 @@ void IdentitySet::clean_up()
 
             for (auto it = identity_sets->begin(); it != identity_sets->end(); it++)
             {
-                IdentitySetSharedPtr lPreviouslyJoinedIdentity = (*it);
+                IdentitySet* lPreviouslyJoinedIdentity = (*it);
                 dprint(DT_DEALLOCATE_ID_SETS, "...resetting previous join set mapping of %u to %u\n", lPreviouslyJoinedIdentity->idset_id, idset_id);
                 lPreviouslyJoinedIdentity->super_join = lPreviouslyJoinedIdentity;
             }
@@ -100,7 +100,7 @@ void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)
         super_join->touch();
     dprint(DT_CONSTRAINTS, "Setting operational condition for identity set %u to %s element of %l\n", get_identity(), field_to_string(pField), pCond);
 }
-uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set) { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_identity(); }
-IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL; else return pID_Set->super_join;}
-uint64_t                get_joined_identity_clone_id(IdentitySetSharedPtr pID_Set)    { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_clone_identity();}
+uint64_t                get_joined_identity_id(IdentitySet* pID_Set) { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_identity(); }
+IdentitySet*    get_joined_identity_set(IdentitySet* pID_Set)    { if (!pID_Set) return NULL; else return pID_Set->super_join;}
+uint64_t                get_joined_identity_clone_id(IdentitySet* pID_Set)    { if (!pID_Set) return NULL_IDENTITY_SET; else return pID_Set->get_clone_identity();}
 

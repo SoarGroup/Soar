@@ -33,12 +33,12 @@ typedef struct identity_quadruple_struct
 
 typedef struct identity_set_quadruple_struct
 {
-        IdentitySetSharedPtr id;
-        IdentitySetSharedPtr attr;
-        IdentitySetSharedPtr value;
-        IdentitySetSharedPtr referent;
+        IdentitySet* id;
+        IdentitySet* attr;
+        IdentitySet* value;
+        IdentitySet* referent;
 
-//        identity_set_quadruple_struct(IdentitySetSharedPtr new_id, IdentitySetSharedPtr new_attr, IdentitySetSharedPtr new_value, IdentitySetSharedPtr new_referent): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+//        identity_set_quadruple_struct(IdentitySet* new_id, IdentitySet* new_attr, IdentitySet* new_value, IdentitySet* new_referent): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_set_quadruple;
 
 typedef struct bool_quadruple_struct

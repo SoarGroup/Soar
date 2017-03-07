@@ -34,7 +34,7 @@ typedef struct rhs_struct
 {
     Symbol*             referent;
     uint64_t            identity;
-    IdentitySetWeakPtr  identity_set_wp;
+    IdentitySet*  identity_set;
     bool                was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
 } rhs_info;
 typedef rhs_info* rhs_symbol;
@@ -91,8 +91,8 @@ typedef struct binding_structure
 /* -- RHS Methods-- */
 action*     make_action(agent* thisAgent);
 action*     copy_action(agent* thisAgent, action* pAction);
-rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
-rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
+rhs_value   allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet = NULL_IDENTITY_SET, bool pWasUnbound = false);
 rhs_value   create_RHS_value(agent* thisAgent, rhs_value rv, condition* cond, char first_letter, ExplainTraceType ebcTraceType = WM_Trace);
 action*     create_RHS_action_list(agent* thisAgent, action* actions, condition* cond, ExplainTraceType ebcTraceType = WM_Trace);
 void        deallocate_rhs_value(agent* thisAgent, rhs_value rv);

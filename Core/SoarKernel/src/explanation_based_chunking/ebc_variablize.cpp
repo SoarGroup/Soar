@@ -44,7 +44,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
-    IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
+    IdentitySet* lIDSet = rs->identity_set;
 
     dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y [%u].\n", rs->referent, lIDSet ? lIDSet->get_identity() : 0);
 
@@ -93,7 +93,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         rs->identity = lIDSet->get_identity();
         uint64_t returnID = lIDSet->get_clone_identity();
 //        rs->identity_set_wp.reset();
-        rs->identity_set_wp = NULL;
+        rs->identity_set = NULL;
 
         /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
         if (lMatchedSym_with_LTI_Link)
@@ -103,7 +103,7 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         }
         return returnID;
     }
-    rs->identity_set_wp = NULL;
+    rs->identity_set = NULL;
 //    rs->identity_set_wp.reset();
     rs->identity = LITERAL_VALUE;
     return LITERAL_VALUE;
@@ -434,10 +434,10 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
     {
         lRSym = rhs_value_to_rhs_symbol(*it);
 
-        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym->identity_set_wp, false);
+        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym->identity_set, false);
         lRV = copy_rhs_value(thisAgent, (*it));
 
-        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y (%u) to LTI ID %u", lRSym->referent, lRSym->identity_set_wp ? lRSym->identity_set_wp->get_identity() : 0, lRSym->referent->var->instantiated_sym->id->LTI_ID);
+        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y (%u) to LTI ID %u", lRSym->referent, lRSym->identity_set ? lRSym->identity_set->get_identity() : 0, lRSym->referent->var->instantiated_sym->id->LTI_ID);
 
         funcall_list = NULL;
         push(thisAgent, lti_link_function, funcall_list);

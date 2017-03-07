@@ -102,7 +102,7 @@ typedef struct wme_struct
     struct condition_struct*    chunker_bt_last_ground_cond;
     bool                        is_singleton;
     bool                        singleton_status_checked;
-    IdentitySetSharedPtr              local_singleton_superstate_identity_set;
+    IdentitySet*              local_singleton_superstate_identity_set;
 
     struct gds_struct*          gds;
     struct wme_struct*          gds_next, *gds_prev;   /* wmes in gds */

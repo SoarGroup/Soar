@@ -299,7 +299,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
         }
         if (m_print_identity_effective && rsym->identity) {
-            IdentitySetSharedPtr lIDSet = rsym->identity_set_wp;
+            IdentitySet* lIDSet = rsym->identity_set;
 
             if (lIDSet)
             {
@@ -407,7 +407,7 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
-void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySetSharedPtr &pIDSet, std::string &destString)
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString)
 {
     destString += "[v";
     destString += std::to_string(pID);

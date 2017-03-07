@@ -239,7 +239,7 @@ void Explanation_Based_Chunker::get_results_for_instantiation()
     m_results_match_goal_level = m_inst->match_goal_level;
     m_results_tc = get_new_tc_number(thisAgent);
     m_extra_results = m_inst->preferences_generated;
-    IdentitySetSharedPtr lNULL;
+    IdentitySet* lNULL;
 
     for (pref = m_inst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {

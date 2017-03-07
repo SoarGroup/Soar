@@ -95,7 +95,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
-        IdentitySetSharedPtr lIDSet = r->identity_set_wp;
+        IdentitySet* lIDSet = r->identity_set;
         if (get_identity_set)
         {
             if (lIDSet)
@@ -463,7 +463,7 @@ rhs_value create_RHS_value(agent* thisAgent,
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
         dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, rs->identity);
         if (ebcTraceType == Explanation_Trace)
-            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->identity, rs->identity_set_wp, rs->was_unbound_var);
+            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->identity, rs->identity_set, rs->was_unbound_var);
         else
             return allocate_rhs_value_for_symbol(thisAgent, rs->referent, LITERAL_VALUE, NULL, rs->was_unbound_var);
     }
@@ -523,7 +523,7 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
@@ -531,13 +531,13 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
-    new_rhs_symbol->identity_set_wp = pIDSet;
+    new_rhs_symbol->identity_set = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySetSharedPtr pIDSet, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet, bool pWasUnbound)
 {
     if (sym)
     {

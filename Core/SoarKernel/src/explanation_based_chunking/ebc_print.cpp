@@ -65,7 +65,7 @@ void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 //    uint64_t            lIDSet, lIDSetID;
-//    IdentitySetSharedPtr  lJoinSet, lJoinSuperSet;
+//    IdentitySet*  lJoinSet, lJoinSuperSet;
 //
 //    for (auto iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
 //    {
@@ -76,7 +76,7 @@ void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
 //        if (lJoinSuperSet) outputManager->printa_sf(thisAgent, " --> %u", lJoinSuperSet->identity);
 //        if (lJoinSet->identity_sets && (lJoinSet->identity_sets->size() > 0))
 //        {
-//            IdentitySetSharedPtr lPrintIDSet;
+//            IdentitySet* lPrintIDSet;
 //            for (auto iter2 = lJoinSet->identity_sets->begin(); iter2 != lJoinSet->identity_sets->end(); ++iter2)
 //            {
 //                lPrintIDSet = *iter2;

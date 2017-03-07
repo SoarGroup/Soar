@@ -391,11 +391,11 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     old_sts = saved;
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
-                    saved->var_identity = sym_identity;
+                    saved->identity = sym_identity;
                     if (sym_identity_set_test->identity_set)
-                        saved->var_identity_set_wp = sym_identity_set_test->identity_set;
+                        saved->identity_set = sym_identity_set_test->identity_set;
                     else
-                        saved->var_identity_set_wp = NULL;
+                        saved->identity_set = NULL;
 //                        saved->var_identity_set_wp.reset();
                     saved->the_test = subtest;
                     if (prev_c)
@@ -442,9 +442,9 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
-            saved->var_identity = LITERAL_VALUE;
+            saved->identity = LITERAL_VALUE;
 //            saved->var_identity_set_wp.reset();
-            saved->var_identity_set_wp = NULL;
+            saved->identity_set = NULL;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -582,8 +582,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
-                        st->the_test->identity = st->var_identity;
-                        st->the_test->identity_set = st->var_identity_set_wp;
+                        st->the_test->identity = st->identity;
+                        st->the_test->identity_set = st->identity_set;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;

@@ -21,16 +21,13 @@
 #include <unordered_map>
 #include <cstdlib>
 
-//#define NULL_IDENTITY_SET NULL
-
-tc_number get_new_tc_number(agent* thisAgent);
-
-uint64_t                get_joined_identity_id(IdentitySetSharedPtr pID_Set);
-IdentitySetSharedPtr    get_joined_identity_set(IdentitySetSharedPtr pID_Set);
-uint64_t                get_joined_identity_clone_id(IdentitySetSharedPtr pID_Set);
-void                    IdentitySet_remove_ref(agent* thisAgent, IdentitySetSharedPtr &pID_Set);
-void                    set_test_identity_set(agent* thisAgent, test pTest, IdentitySetSharedPtr pID_Set);
-void                    clear_test_identity_set(agent* thisAgent, test pTest);
+tc_number       get_new_tc_number(agent* thisAgent);
+uint64_t        get_joined_identity_id(IdentitySet* pID_Set);
+IdentitySet*    get_joined_identity_set(IdentitySet* pID_Set);
+uint64_t        get_joined_identity_clone_id(IdentitySet* pID_Set);
+void            IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set);
+void            set_test_identity_set(agent* thisAgent, test pTest, IdentitySet* pID_Set);
+void            clear_test_identity_set(agent* thisAgent, test pTest);
 
 class Explanation_Based_Chunker
 {
@@ -63,7 +60,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */
-        void add_explanation_to_condition(rete_node* node, condition* cond, node_varnames* nvn, ExplainTraceType additional_tests);
+        void        add_explanation_to_condition(rete_node* node, condition* cond, node_varnames* nvn, ExplainTraceType additional_tests);
         uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
@@ -77,7 +74,7 @@ class Explanation_Based_Chunker
         void     force_add_identity(Symbol* pSym, uint64_t pID);
 
         /* Identity set mapping functions */
-//        IdentitySetSharedPtr NULL_IDENTITY_SET;
+//        IdentitySet* NULL_IDENTITY_SET;
 
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
         void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);
@@ -91,11 +88,11 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        IdentitySetSharedPtr   make_identity_set(uint64_t pIDSet);
-        IdentitySetSharedPtr   get_id_set_for_identity(uint64_t pID);
-        IdentitySetSharedPtr   get_or_add_id_set(uint64_t pID, IdentitySetSharedPtr pIDSet);
-        IdentitySetSharedPtr   get_floating_identity_set();
-        void                   force_identity_to_id_set_mapping(uint64_t pID, IdentitySetSharedPtr &pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; };
+        IdentitySet*   make_identity_set(uint64_t pIDSet);
+        IdentitySet*   get_id_set_for_identity(uint64_t pID);
+        IdentitySet*   get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet);
+        IdentitySet*   get_floating_identity_set();
+        void           force_identity_to_id_set_mapping(uint64_t pID, IdentitySet* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; };
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -224,14 +221,14 @@ class Explanation_Based_Chunker
         symbol_set*         singletons;
 
         /* Data structures used to track and assign loose constraints */
-        constraint_list*           constraints;
+        constraint_list*    constraints;
 
         /* Table of previously seen conditions.  Used to determine whether to
          * merge or eliminate positive conditions on the LHS of a chunk. */
-        triple_merge_map*               cond_merge_map;
+        triple_merge_map*   cond_merge_map;
 
         /* List of STIs created in the sub-state that are linked to LTMs.  Used to add link-stm-to-ltm actions */
-        rhs_value_list*               local_linked_STIs;
+        rhs_value_list*     local_linked_STIs;
 
         /* Explanation/identity generation methods */
         void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
@@ -270,7 +267,7 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void join_identity_sets(IdentitySetSharedPtr lFromJoinSet, IdentitySetSharedPtr lToJoinSet);
+        void join_identity_sets(IdentitySet* lFromJoinSet, IdentitySet* lToJoinSet);
         void unify_backtraced_conditions(condition* parent_cond, identity_set_quadruple &o_ids_to_replace, const rhs_quadruple rhs_funcs);
         void add_singleton_unification_if_needed(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
