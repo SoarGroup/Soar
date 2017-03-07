@@ -41,7 +41,6 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
     else r->identity = LITERAL_VALUE;
 
     r->identity_set = NULL;
-//    r->identity_set_wp.reset();
 }
 
 void simplify_identity_in_action(agent* thisAgent, action* pAction)
@@ -59,22 +58,22 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
     if (pPref->identity_sets.id)
     {
         pPref->identities.id = pPref->identity_sets.id->super_join->idset_id;
-        pPref->identity_sets.id = NULL_IDENTITY_SET;
+        set_pref_identity_set(thisAgent, pPref, ID_ELEMENT, NULL_IDENTITY_SET);
     }
     if (pPref->identity_sets.attr)
     {
         pPref->identities.attr = pPref->identity_sets.attr->super_join->idset_id;
-        pPref->identity_sets.attr = NULL_IDENTITY_SET;
+        set_pref_identity_set(thisAgent, pPref, ATTR_ELEMENT, NULL_IDENTITY_SET);
     }
     if (pPref->identity_sets.value)
     {
         pPref->identities.value = pPref->identity_sets.value->super_join->idset_id;
-        pPref->identity_sets.value = NULL_IDENTITY_SET;
+        set_pref_identity_set(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
     }
     if (preference_is_binary(pPref->type) && pPref->identity_sets.referent)
     {
         pPref->identities.referent = pPref->identity_sets.referent->super_join->idset_id;
-        pPref->identity_sets.referent = NULL_IDENTITY_SET;
+        set_pref_identity_set(thisAgent, pPref, REFERENT_ELEMENT, NULL_IDENTITY_SET);
     }
 }
 

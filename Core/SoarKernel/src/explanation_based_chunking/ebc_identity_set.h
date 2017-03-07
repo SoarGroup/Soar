@@ -13,8 +13,8 @@
 #include "stl_typedefs.h"
 
 #ifndef SOAR_RELEASE_VERSION
-//    #define DEBUG_MAC_STACKTRACE
-//    void get_stacktrace(std::string& return_string);
+    #define DEBUG_MAC_STACKTRACE
+    void get_stacktrace(std::string& return_string);
 #endif
 
 class IdentitySet
@@ -27,24 +27,24 @@ class IdentitySet
         void init(agent* my_agent);
         void clean_up();
 
-        void        add_ref()               { ++refcount; }
-        bool        remove_ref()            { --refcount; return (refcount == 0);}
+//        void        add_ref()               { ++refcount; }
+//        bool        remove_ref()            { --refcount; return (refcount == 0);}
 
-//        void        add_ref()
-//        {
-//            ++refcount;
-//            std::string caller_string;
-//            get_stacktrace(caller_string);
-//            dprint_noprefix(DT_IDSET_REFCOUNTS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
-//        }
-//        bool        remove_ref()
-//        {
-//            --refcount;
-//            std::string caller_string;
-//            get_stacktrace(caller_string);
-//            dprint_noprefix(DT_IDSET_REFCOUNTS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
-//            return (refcount == 0);
-//        }
+        void        add_ref()
+        {
+            ++refcount;
+            std::string caller_string;
+            get_stacktrace(caller_string);
+            dprint_noprefix(DT_IDSET_REFCOUNTS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
+        }
+        bool        remove_ref()
+        {
+            --refcount;
+            std::string caller_string;
+            get_stacktrace(caller_string);
+            dprint_noprefix(DT_IDSET_REFCOUNTS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
+            return (refcount == 0);
+        }
 
         bool        literalized()           { return super_join->m_literalized; }
         bool        joined()                { return (super_join != this); }
