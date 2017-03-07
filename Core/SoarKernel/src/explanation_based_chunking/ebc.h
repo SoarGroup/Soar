@@ -8,7 +8,7 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
-#define EBC_SANITY_CHECK_RULES
+//#define EBC_SANITY_CHECK_RULES
 
 #include "kernel.h"
 

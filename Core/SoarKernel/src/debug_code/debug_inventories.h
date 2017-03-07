@@ -22,7 +22,7 @@
 //#define DEBUG_INSTANTIATION_INVENTORY
 //#define DEBUG_PREFERENCE_INVENTORY
 //#define DEBUG_WME_INVENTORY
-#define DEBUG_IDSET_INVENTORY
+//#define DEBUG_IDSET_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
