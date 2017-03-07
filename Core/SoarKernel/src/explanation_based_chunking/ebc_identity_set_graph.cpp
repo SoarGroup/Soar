@@ -37,6 +37,21 @@ void IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set)
     }
 }
 
+void set_pref_identity_set(agent* thisAgent, preference* pPref, WME_Field pField, IdentitySet* pID_Set)
+{
+    if ((pField == ID_ELEMENT) && pPref->identity_sets.id)                  IdentitySet_remove_ref(thisAgent, pPref->identity_sets.id);
+    else if ((pField == ATTR_ELEMENT) && pPref->identity_sets.attr)         IdentitySet_remove_ref(thisAgent, pPref->identity_sets.attr);
+    else if ((pField == VALUE_ELEMENT) && pPref->identity_sets.value)       IdentitySet_remove_ref(thisAgent, pPref->identity_sets.value);
+    else if ((pField == REFERENT_ELEMENT) && pPref->identity_sets.referent) IdentitySet_remove_ref(thisAgent, pPref->identity_sets.referent);
+
+    if (pID_Set) pID_Set->add_ref();
+
+    if (pField == ID_ELEMENT)               { pPref->identity_sets.id = pID_Set; }
+    else if (pField == ATTR_ELEMENT)        { pPref->identity_sets.attr = pID_Set; }
+    else if (pField == VALUE_ELEMENT)       { pPref->identity_sets.value = pID_Set; }
+    else if (pField == REFERENT_ELEMENT)    { pPref->identity_sets.referent = pID_Set; }
+}
+
 void set_test_identity_set(agent* thisAgent, test pTest, IdentitySet* pID_Set)
 {
     if (pTest->identity_set) IdentitySet_remove_ref(thisAgent, pTest->identity_set);
@@ -212,25 +227,11 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
 
 void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref)
 {
-    IdentitySet* updated_id_set;
-    bool lOwnedIdentitySet;
 
-    if (lPref->identities.id)
-    {
-        lPref->identity_sets.id = get_or_add_id_set(lPref->identities.id, NULL);
-    }
-    if (lPref->identities.attr)
-    {
-        lPref->identity_sets.attr = get_or_add_id_set(lPref->identities.attr, NULL);
-    }
-    if (lPref->identities.value)
-    {
-        lPref->identity_sets.value = get_or_add_id_set(lPref->identities.value, NULL);
-    }
-    if (lPref->identities.referent)
-    {
-        lPref->identity_sets.referent = get_or_add_id_set(lPref->identities.referent, NULL);
-    }
+    if (lPref->identities.id) set_pref_identity_set(thisAgent, lPref, ID_ELEMENT, get_or_add_id_set(lPref->identities.id, NULL));
+    if (lPref->identities.attr) set_pref_identity_set(thisAgent, lPref, ATTR_ELEMENT, get_or_add_id_set(lPref->identities.attr, NULL));
+    if (lPref->identities.value) set_pref_identity_set(thisAgent, lPref, VALUE_ELEMENT, get_or_add_id_set(lPref->identities.value, NULL));
+    if (lPref->identities.referent) set_pref_identity_set(thisAgent, lPref, REFERENT_ELEMENT, get_or_add_id_set(lPref->identities.referent, NULL));
 
     /* Note:  We don't deallocate the existing rhs_funcs before replacing them because they are created in
      *        execute_action which doesn't have ownership of these rhs functions and previously made copies

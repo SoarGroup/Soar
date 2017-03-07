@@ -27,6 +27,7 @@ IdentitySet*    get_joined_identity_set(IdentitySet* pID_Set);
 uint64_t        get_joined_identity_clone_id(IdentitySet* pID_Set);
 void            IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set);
 void            set_test_identity_set(agent* thisAgent, test pTest, IdentitySet* pID_Set);
+void            set_pref_identity_set(agent* thisAgent, preference* pPref, WME_Field pField, IdentitySet* pID_Set);
 void            clear_test_identity_set(agent* thisAgent, test pTest);
 
 class Explanation_Based_Chunker

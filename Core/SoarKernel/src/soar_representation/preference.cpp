@@ -128,7 +128,11 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
 
     p->identities = {pPref->identities.id, pPref->identities.attr, pPref->identities.value, pPref->identities.referent};
     p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
-    p->identity_sets = {pPref->identity_sets.id, pPref->identity_sets.attr, pPref->identity_sets.value, pPref->identity_sets.referent};
+
+    set_pref_identity_set(thisAgent, p, ID_ELEMENT, pPref->identity_sets.attr);
+    set_pref_identity_set(thisAgent, p, ATTR_ELEMENT, pPref->identity_sets.id);
+    set_pref_identity_set(thisAgent, p, VALUE_ELEMENT, pPref->identity_sets.value);
+    set_pref_identity_set(thisAgent, p, REFERENT_ELEMENT, pPref->identity_sets.referent);
 
     PDI_add(thisAgent, p, true);
     break_if_id_matches(pPref->p_id, 26);
