@@ -438,15 +438,15 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue, lReferent;
-        if (pref->identities.id && pref->identity_sets.id)
+        if (pref->identities.id || pref->identity_sets.id)
             identity_to_string(thisAgent, pref->identities.id, pref->identity_sets.id, lID);
         else
             lID = pref->id->to_string(true);
-        if (pref->identities.attr && pref->identity_sets.attr)
+        if (pref->identities.attr || pref->identity_sets.attr)
             identity_to_string(thisAgent, pref->identities.attr, pref->identity_sets.attr, lAttr);
         else
             lAttr = pref->attr->to_string(true);
-        if (pref->identities.value && pref->identity_sets.value)
+        if (pref->identities.value || pref->identity_sets.value)
             identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue);
         else
             lValue = pref->value->to_string(true);

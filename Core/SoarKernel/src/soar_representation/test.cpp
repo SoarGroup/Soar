@@ -97,14 +97,11 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                         new_ct->clone_identity = t->eq_test->identity_set->get_clone_identity();
                     } else {
                         new_ct->identity = t->eq_test->identity;
-//                        clear_test_identity_set(thisAgent, new_ct);
-                        /* MToDo | Probably don't need this one either? */
                         set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
                         new_ct->clone_identity = t->eq_test->clone_identity;
                     }
                 } else {
                     new_ct->identity = t->eq_test->identity;
-                    /* MToDo | Maybe we can get rid of this.  Do we really need to copy identity sets outside of chunking?*/
                     set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
                     new_ct->clone_identity = t->eq_test->clone_identity;
                 }
