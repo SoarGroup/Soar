@@ -81,6 +81,10 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         pPref->identities.referent = pPref->identity_sets.referent->super_join->idset_id;
         set_pref_identity_set(thisAgent, pPref, REFERENT_ELEMENT, NULL_IDENTITY_SET);
     }
+    if (pPref->rhs_funcs.id) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.id);
+    if (pPref->rhs_funcs.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.attr);
+    if (pPref->rhs_funcs.value) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.value);
+    if (pPref->rhs_funcs.referent) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.referent);
     dprint(DT_DEBUG, "--> %p\n", pPref);
 
 }

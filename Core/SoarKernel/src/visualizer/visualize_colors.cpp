@@ -237,12 +237,12 @@ std::string GraphViz_Visualizer::get_color_for_id(uint64_t pID)
     {
         uint64_t lIDColor = iter->second;
         assert(lIDColor < 95);
-        dprint(DT_DEBUG, "Returning color %s for %u.\n", m_X11_Colors[iter->second], pID);
+//        dprint(DT_DEBUG, "Returning color %s for %u.\n", m_X11_Colors[iter->second], pID);
         return m_X11_Colors[iter->second];
     } else {
         m_identity_colors[pID] = m_next_color;
         if (++m_next_color == 95) m_next_color = 0;
-        dprint(DT_DEBUG, "Returning new color %s for %u.\n", m_X11_Colors[m_next_color-1], pID);
+//        dprint(DT_DEBUG, "Returning new color %s for %u.\n", m_X11_Colors[m_next_color-1], pID);
         return m_X11_Colors[m_next_color-1];
     }
 }
