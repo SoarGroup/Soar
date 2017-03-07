@@ -12,9 +12,13 @@
 #include "dprint.h"
 #include "stl_typedefs.h"
 
+//#define DEBUG_TRACE_IDSET_REFCOUNTS
+
 #ifndef SOAR_RELEASE_VERSION
-    #define DEBUG_MAC_STACKTRACE
+#ifdef DEBUG_TRACE_IDSET_REFCOUNTS
+#define DEBUG_MAC_STACKTRACE
     void get_stacktrace(std::string& return_string);
+#endif
 #endif
 
 class IdentitySet
@@ -27,9 +31,10 @@ class IdentitySet
         void init(agent* my_agent);
         void clean_up();
 
-//        void        add_ref()               { ++refcount; }
-//        bool        remove_ref()            { --refcount; return (refcount == 0);}
-
+#ifndef DEBUG_TRACE_IDSET_REFCOUNTS
+        void        add_ref()               { ++refcount; }
+        bool        remove_ref()            { --refcount; return (refcount == 0);}
+#else
         void        add_ref()
         {
             ++refcount;
@@ -45,6 +50,7 @@ class IdentitySet
             dprint_noprefix(DT_IDSET_REFCOUNTS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
             return (refcount == 0);
         }
+#endif
 
         bool        literalized()           { return super_join->m_literalized; }
         bool        joined()                { return (super_join != this); }
