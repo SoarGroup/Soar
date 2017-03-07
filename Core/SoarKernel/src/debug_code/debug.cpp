@@ -160,7 +160,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_DEEP_COPY].prefix =                    strdup("DeepCopy| ");
     mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
     mode_info[DT_OSK].prefix =                          strdup("OSK     | ");
-    mode_info[DT_BACKTRACE1].prefix =                   strdup("BT_Pass1| ");
+    mode_info[DT_IDSET_REFCOUNTS].prefix =                   strdup("BT_Pass1| ");
     mode_info[DT_PROPAGATE_ID_SETS].prefix =            strdup("IDS Prop| ");
     mode_info[DT_DEALLOCATE_ID_SETS].prefix =           strdup("DelIDSet| ");
 

@@ -30,7 +30,7 @@ void IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set)
 {
     if (pID_Set->remove_ref())
     {
-        dprint(DT_DEALLOCATE_ID_SETS, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
+        dprint(DT_IDSET_REFCOUNTS, "Dellocating identity set %u\n", pID_Set->get_sub_identity());
         pID_Set->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_identity_sets, pID_Set);
         pID_Set = NULL;

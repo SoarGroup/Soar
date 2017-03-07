@@ -92,7 +92,7 @@ enum TraceMode
     DT_RHS_LTI_LINKING          = 56,
     DT_VALIDATE                 = 57,
     DT_OSK                      = 58,
-    DT_BACKTRACE1               = 59,
+    DT_IDSET_REFCOUNTS          = 59,
     DT_PROPAGATE_ID_SETS        = 60,
     DT_DEALLOCATE_ID_SETS       = 61,
     num_trace_modes

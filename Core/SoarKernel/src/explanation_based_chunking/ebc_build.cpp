@@ -1129,6 +1129,10 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         dprint(DT_DEALLOCATE_INST, "Rule addition failed.  Deallocating chunk instantiation.\n");
         m_chunk_inst->in_newly_created = false;
         ebc_timers->clean_up->start();
+        if (ebc_settings[SETTING_EBC_LEARNING_ON])
+        {
+            clean_up_identity_sets();
+        }
         excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
         remove_chunk_instantiation();

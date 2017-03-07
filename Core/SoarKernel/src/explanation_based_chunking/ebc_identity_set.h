@@ -35,14 +35,14 @@ class IdentitySet
 //            ++refcount;
 //            std::string caller_string;
 //            get_stacktrace(caller_string);
-//            dprint_noprefix(DT_DEALLOCATE_ID_SETS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
+//            dprint_noprefix(DT_IDSET_REFCOUNTS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
 //        }
 //        bool        remove_ref()
 //        {
 //            --refcount;
 //            std::string caller_string;
 //            get_stacktrace(caller_string);
-//            dprint_noprefix(DT_DEALLOCATE_ID_SETS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
+//            dprint_noprefix(DT_IDSET_REFCOUNTS, "-- %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
 //            return (refcount == 0);
 //        }
 
