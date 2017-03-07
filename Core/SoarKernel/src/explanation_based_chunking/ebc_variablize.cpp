@@ -44,7 +44,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
-//    IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
     IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
 
     dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y [%u].\n", rs->referent, lIDSet ? lIDSet->get_identity() : 0);
@@ -141,7 +140,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_add_ref(new_var);
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
                 dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u/%u]\n", new_var, pTest->eq_test->identity, pTest->eq_test->clone_identity);
-                pTest->eq_test->identity_set = NULL_IDENTITY_SET;
+                clear_test_identity_set(thisAgent, pTest->eq_test);
             } else {
                 lOldSym = pTest->eq_test->data.referent;
                 if (lOldSym->is_sti())
@@ -170,12 +169,13 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->identity, pTest->eq_test->clone_identity);
-                pTest->eq_test->identity_set = NULL_IDENTITY_SET;
+
+                clear_test_identity_set(thisAgent, pTest->eq_test);
 
             }
         } else {
             pTest->eq_test->clone_identity = LITERAL_VALUE;
-            pTest->eq_test->identity_set = NULL_IDENTITY_SET;
+            clear_test_identity_set(thisAgent, pTest->eq_test);
         }
     }
 }
@@ -193,14 +193,14 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         t->data.referent = new_var;
         thisAgent->symbolManager->symbol_add_ref(new_var);
         t->clone_identity = t->identity_set->get_clone_identity();
-        t->identity_set = NULL_IDENTITY_SET;
+        clear_test_identity_set(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
         t->identity = LITERAL_VALUE;
         t->clone_identity = LITERAL_VALUE;
-        t->identity_set = NULL_IDENTITY_SET;
+        clear_test_identity_set(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in relational test.  Will delete.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
@@ -433,7 +433,6 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
     for (auto it = local_linked_STIs->begin(); it != local_linked_STIs->end(); it++)
     {
         lRSym = rhs_value_to_rhs_symbol(*it);
-//        IdentitySetSharedPtr lIDSet = lRSym->identity_set_wp.lock();
 
         lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym->identity_set_wp, false);
         lRV = copy_rhs_value(thisAgent, (*it));

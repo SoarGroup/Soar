@@ -158,8 +158,8 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
         if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
         {
-            IdentitySetSharedPtr pCondIDSet = pCond->data.tests.value_test->eq_test->identity_set ? pCond->data.tests.value_test->eq_test->identity_set->super_join : NULL;
-            IdentitySetSharedPtr pLCondIDSet = last_cond->data.tests.value_test->eq_test->identity_set ? last_cond->data.tests.value_test->eq_test->identity_set->super_join : NULL;
+            IdentitySetSharedPtr pCondIDSet = get_joined_identity_set(pCond->data.tests.value_test->eq_test->identity_set);
+            IdentitySetSharedPtr pLCondIDSet = get_joined_identity_set(last_cond->data.tests.value_test->eq_test->identity_set);
             if (pCondIDSet != pLCondIDSet)
             {
                 ebc_timers->dependency_analysis->stop();
@@ -192,7 +192,6 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
             } else {
                 rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-//                IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
                 IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
                 if (lIDSet && !rs->referent->is_sti())
                 {

@@ -130,7 +130,6 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-//        IdentitySetSharedPtr lIDSet = rs->identity_set_wp.lock();
         IdentitySetSharedPtr lIDSet = rs->identity_set_wp;
         if (lIDSet)
         {

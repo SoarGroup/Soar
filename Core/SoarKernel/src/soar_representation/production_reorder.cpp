@@ -583,7 +583,6 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
                         st->the_test->identity = st->var_identity;
-//                        st->the_test->identity_set = st->var_identity_set_wp.lock();
                         st->the_test->identity_set = st->var_identity_set_wp;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);

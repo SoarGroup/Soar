@@ -92,17 +92,19 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                     if (t->eq_test->identity_set)
                     {
                         new_ct->identity     = t->eq_test->identity_set->get_identity();
-                        new_ct->identity_set = t->eq_test->identity_set->super_join;
+                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set->super_join);
                         new_ct->clone_identity = t->eq_test->identity_set->get_clone_identity();
                     } else {
                         new_ct->identity = t->eq_test->identity;
-                        new_ct->identity_set = t->eq_test->identity_set;
+//                        clear_test_identity_set(thisAgent, new_ct);
+                        /* MToDo | Probably don't need this one either? */
+                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
                         new_ct->clone_identity = t->eq_test->clone_identity;
                     }
                 } else {
                     new_ct->identity = t->eq_test->identity;
                     /* MToDo | Maybe we can get rid of this.  Do we really need to copy identity sets outside of chunking?*/
-                    new_ct->identity_set = t->eq_test->identity_set;
+                    set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
                     new_ct->clone_identity = t->eq_test->clone_identity;
                 }
             }
@@ -133,7 +135,6 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             new_ct = make_test(thisAgent, t->data.referent, t->type);
             new_ct->identity = t->identity;
             new_ct->clone_identity = t->clone_identity;
-            new_ct->identity_set = t->identity_set;
             if (t->type == EQUALITY_TEST)
             {
                 new_ct->eq_test = new_ct;
@@ -142,8 +143,11 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             {
                 new_ct->identity        = get_joined_identity_id(new_ct->identity_set);
                 new_ct->clone_identity  = get_joined_identity_clone_id(new_ct->identity_set);
-                new_ct->identity_set    = get_joined_identity_set(new_ct->identity_set);
+                set_test_identity_set(thisAgent, new_ct, get_joined_identity_set(new_ct->identity_set));
+            } else {
+                set_test_identity_set(thisAgent, new_ct, t->identity_set);
             }
+
             break;
     }
     return new_ct;

@@ -299,7 +299,6 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
         }
         if (m_print_identity_effective && rsym->identity) {
-//            IdentitySetSharedPtr lIDSet = rsym->identity_set_wp.lock();
             IdentitySetSharedPtr lIDSet = rsym->identity_set_wp;
 
             if (lIDSet)

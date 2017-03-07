@@ -95,39 +95,30 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
         uint64_t lID = r->identity;
-//        IdentitySetSharedPtr lIDSet = r->identity_set_wp.lock();
         IdentitySetSharedPtr lIDSet = r->identity_set_wp;
         if (get_identity_set)
         {
-//            rhs_value new_rv = allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
-//            rhs_symbol new_r = rhs_value_to_rhs_symbol(new_rv);
             if (lIDSet)
             {
                 if (lIDSet->get_clone_identity())
                 {
-//                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
                     lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
                 }
                 else
                 {
-//                    new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
                     lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
                 }
             }
             else if (lID)
                 lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
-//                new_r->identity_set_wp = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
-//            return new_rv;
         }
         if (lIDSet && get_cloned_identity)
         {
-//            return allocate_rhs_value_for_symbol(thisAgent, r->referent, lIDSet->get_clone_identity(), r->was_unbound_var);
             lID = lIDSet->get_clone_identity();
             lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
         }
 
         return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
-
     }
 }
 

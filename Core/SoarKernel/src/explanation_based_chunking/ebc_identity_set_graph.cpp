@@ -37,6 +37,19 @@ void IdentitySet_remove_ref(agent* thisAgent, IdentitySetSharedPtr &pID_Set)
     }
 }
 
+void set_test_identity_set(agent* thisAgent, test pTest, IdentitySetSharedPtr pID_Set)
+{
+    if (pTest->identity_set) IdentitySet_remove_ref(thisAgent, pTest->identity_set);
+    if (pID_Set) pID_Set->add_ref();
+    pTest->identity_set = pID_Set;
+}
+
+void clear_test_identity_set(agent* thisAgent, test pTest)
+{
+    if (pTest->identity_set) IdentitySet_remove_ref(thisAgent, pTest->identity_set);
+    pTest->identity_set = NULL;
+}
+
 IdentitySetSharedPtr Explanation_Based_Chunker::get_floating_identity_set()
 {
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton\n");
@@ -80,8 +93,6 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     dprint(DT_DEALLOCATE_ID_SETS, "Cleaning up transient data in all %d identity sets in clean-up list\n", identity_sets_to_clean_up.size());
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
-//        IdentitySetWeakPtr lJoin_wset(*it);
-//        IdentitySetSharedPtr lJoin_set = lJoin_wset.lock();
         lJoin_set = (*it);
         if (lJoin_set)
         {
@@ -172,7 +183,7 @@ void Explanation_Based_Chunker::update_identity_sets_in_test(test t, instantiati
             default:
                 if (t->identity)
                 {
-                    t->identity_set = get_id_set_for_identity(t->identity);
+                    set_test_identity_set(thisAgent, t, get_id_set_for_identity(t->identity));
                 }
                 break;
         }

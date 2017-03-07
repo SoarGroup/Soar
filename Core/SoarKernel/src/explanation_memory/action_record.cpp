@@ -34,7 +34,6 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
 
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     uint64_t lID = r->identity;
-//    IdentitySetSharedPtr lIDSet = r->identity_set_wp.lock();
     IdentitySetSharedPtr lIDSet = r->identity_set_wp;
 
     if (lIDSet) r->identity = lIDSet->get_identity();

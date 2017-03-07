@@ -800,19 +800,19 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                         {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition at match goal level %l\n", cond);
                             if (lTest_id->identity)
-                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id);
+                                set_test_identity_set(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id));
                             if (lTest_attr->identity)
-                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr);
+                                set_test_identity_set(thisAgent, lTest_attr, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr));
                             if (lTest_value->identity)
-                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value);
+                                set_test_identity_set(thisAgent, lTest_value, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value));
                         } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
                             dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition not at match goal level %l\n", cond);
                             if (lTest_id->identity)
-                                lTest_id->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL_IDENTITY_SET);
+                                set_test_identity_set(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL_IDENTITY_SET));
                             if (lTest_attr->identity)
-                                lTest_attr->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL_IDENTITY_SET);
+                                set_test_identity_set(thisAgent, lTest_attr, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL_IDENTITY_SET));
                             if (lTest_value->identity)
-                                lTest_value->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL_IDENTITY_SET);
+                                set_test_identity_set(thisAgent, lTest_value, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL_IDENTITY_SET));
                         }
                     }
                 }
@@ -823,7 +823,7 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 dprint(DT_PROPAGATE_ID_SETS, "Propagating local singleton identity set for condition %l\n", cond);
 
                 thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_superstate_identity_set);
-                cond->data.tests.value_test->eq_test->identity_set = cond->bt.wme_->local_singleton_superstate_identity_set;
+                set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
             }
             if (lDoIdentities)
             {
@@ -831,15 +831,15 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 /* Architectural WME or we couldn't find a pref at the current level.  Start a new identity set */
                 if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
                 {
-                    cond->data.tests.id_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL_IDENTITY_SET);
+                    set_test_identity_set(thisAgent, cond->data.tests.id_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL_IDENTITY_SET));
                 }
                 if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity)
                 {
-                    cond->data.tests.attr_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL_IDENTITY_SET);
+                    set_test_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL_IDENTITY_SET));
                 }
                 if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity)
                 {
-                    cond->data.tests.value_test->eq_test->identity_set = thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL_IDENTITY_SET);
+                    set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL_IDENTITY_SET));
                 }
             }
         }
