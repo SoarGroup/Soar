@@ -829,7 +829,7 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
         if (strName == DEBUG_TRACE_REFCOUNT_FOR)
         {
             std::string caller_string;
-            get_stacktrace("dea_sym", caller_string);
+            get_stacktrace(caller_string);
 //            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
             if (is_DT_mode_enabled(DT_ID_LEAKING))
             {
@@ -839,7 +839,7 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
     #else
         dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
 //        std::string caller_string;
-//        get_stacktrace("dea_sym", caller_string);
+//        get_stacktrace(caller_string);
 //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
     switch (sym->symbol_type)

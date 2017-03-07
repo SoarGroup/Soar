@@ -45,7 +45,7 @@
 
 #ifndef WIN32
 #ifndef DEBUG_MAC_STACKTRACE
-void get_stacktrace(const char* prefix, std::string& return_string) {}
+void get_stacktrace(std::string& return_string) {}
 #else // !DEBUG_MAC_STACKTRACE
 
 
@@ -1206,7 +1206,7 @@ namespace tthread
 
 }
 
-void get_stacktrace(const char* prefix, std::string& return_string)
+void get_stacktrace(std::string& return_string)
 {
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
@@ -1228,11 +1228,6 @@ void get_stacktrace(const char* prefix, std::string& return_string)
     size_t funcnamesize = 256;
     char* funcname = (char*)malloc(funcnamesize);
 
-    if (prefix)
-    {
-        return_string += prefix;
-        return_string +=  " | ";
-    }
     // iterate over the returned symbol lines. skip the first two
     for (int i = 2; i < addrlen; i++)
     {

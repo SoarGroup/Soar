@@ -27,7 +27,7 @@ IdentitySet* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
 
 void IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set)
 {
-    dprint(DT_DEBUG, "-- identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
+//    dprint(DT_DEBUG, "-- identity set %u --> %u.\n", pID_Set->get_sub_identity(), pID_Set->get_refcount());
     if (pID_Set->remove_ref())
     {
         dprint(DT_DEBUG, "Dellocating identity set %u\n", pID_Set->get_sub_identity());

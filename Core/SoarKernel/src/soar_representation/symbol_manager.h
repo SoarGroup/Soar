@@ -91,7 +91,7 @@ class EXPORT Symbol_Manager {
             if (strName == DEBUG_TRACE_REFCOUNT_FOR)
             {
                 std::string caller_string;
-                get_stacktrace("add_ref", caller_string);
+                get_stacktrace(caller_string);
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
@@ -119,7 +119,7 @@ class EXPORT Symbol_Manager {
             if (strName == DEBUG_TRACE_REFCOUNT_FOR)
             {
                 std::string caller_string;
-                get_stacktrace("remove_ref", caller_string);
+                get_stacktrace(caller_string);
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), (*x)->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
