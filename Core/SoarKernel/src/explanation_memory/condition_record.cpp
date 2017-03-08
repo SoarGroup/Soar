@@ -43,7 +43,7 @@ void simplify_identity_in_test(agent* thisAgent, test t)
             break;
         default:
             if (t->identity_set) t->identity = t->identity_set->super_join->idset_id;
-            else t->identity = LITERAL_VALUE;
+//            else t->identity = LITERAL_VALUE;
             clear_test_identity_set(thisAgent, t);
             break;
     }

@@ -61,25 +61,36 @@ void simplify_identity_in_action(agent* thisAgent, action* pAction)
 void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 {
     dprint(DT_DEBUG, "Simplifying preference %p\n", pPref);
+
     if (pPref->identity_sets.id)
     {
         pPref->identities.id = pPref->identity_sets.id->super_join->idset_id;
         set_pref_identity_set(thisAgent, pPref, ID_ELEMENT, NULL_IDENTITY_SET);
-    }
+    } else
+        if (pPref->clone_identities.id) pPref->identities.id = pPref->clone_identities.id;
+
     if (pPref->identity_sets.attr)
     {
         pPref->identities.attr = pPref->identity_sets.attr->super_join->idset_id;
         set_pref_identity_set(thisAgent, pPref, ATTR_ELEMENT, NULL_IDENTITY_SET);
-    }
+    } else
+        if (pPref->clone_identities.attr) pPref->identities.id = pPref->clone_identities.attr;
+
     if (pPref->identity_sets.value)
     {
         pPref->identities.value = pPref->identity_sets.value->super_join->idset_id;
         set_pref_identity_set(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
-    }
-    if (preference_is_binary(pPref->type) && pPref->identity_sets.referent)
+    } else
+        if (pPref->clone_identities.value) pPref->identities.id = pPref->clone_identities.value;
+
+    if (preference_is_binary(pPref->type))
     {
-        pPref->identities.referent = pPref->identity_sets.referent->super_join->idset_id;
-        set_pref_identity_set(thisAgent, pPref, REFERENT_ELEMENT, NULL_IDENTITY_SET);
+        if (pPref->identity_sets.referent)
+        {
+            pPref->identities.referent = pPref->identity_sets.referent->super_join->idset_id;
+            set_pref_identity_set(thisAgent, pPref, REFERENT_ELEMENT, NULL_IDENTITY_SET);
+        } else
+            if (pPref->clone_identities.referent) pPref->identities.id = pPref->clone_identities.referent;
     }
     if (pPref->rhs_funcs.id) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.id);
     if (pPref->rhs_funcs.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.attr);

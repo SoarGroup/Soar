@@ -639,6 +639,14 @@ void Explanation_Based_Chunker::make_clones_of_results()
             lResultPref->cloned_rhs_funcs.referent = NULL;
         }
 
+        /* We record the identity set ids for the explainer so they match up with identity sets on this level */
+        if (thisAgent->explanationMemory->isRecordingChunk())
+        {
+            if (lResultPref->identity_sets.id) lClonedPref->clone_identities.id = lResultPref->identity_sets.id->get_identity();
+            if (lResultPref->identity_sets.attr) lClonedPref->clone_identities.attr = lResultPref->identity_sets.attr->get_identity();
+            if (lResultPref->identity_sets.value) lClonedPref->clone_identities.value = lResultPref->identity_sets.value->get_identity();
+            if (lResultPref->identity_sets.referent) lClonedPref->clone_identities.referent = lResultPref->identity_sets.referent->get_identity();
+        }
         dprint(DT_CLONES, "Created clone for result preference %p (instantiation i%u %y)\n", lClonedPref, lClonedPref->inst->i_id, lClonedPref->inst->prod_name);
 
         /* --- put it onto the list for chunk_inst --- */
