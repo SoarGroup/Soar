@@ -164,15 +164,15 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
         if (pPref_func) {
             thisAgent->outputManager->set_print_test_format(false, true);
             thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true);
-            thisAgent->outputManager->printa_sf(thisAgent, " [%s]", tempString.c_str());
+            thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
         } else {
             if (!pID)
             {
                 thisAgent->outputManager->set_print_test_format(true, false);
                 thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
-                thisAgent->outputManager->printa_sf(thisAgent, " [%s]", tempString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
             } else {
-                thisAgent->outputManager->printa_sf(thisAgent, " [%u]", pID);
+                thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
             }
         }
     }

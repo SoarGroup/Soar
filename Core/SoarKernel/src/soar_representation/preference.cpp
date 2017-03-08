@@ -130,8 +130,8 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
 
     p->identity_sets = { NULL, NULL, NULL, NULL };
-    set_pref_identity_set(thisAgent, p, ID_ELEMENT, pPref->identity_sets.attr);
-    set_pref_identity_set(thisAgent, p, ATTR_ELEMENT, pPref->identity_sets.id);
+    set_pref_identity_set(thisAgent, p, ID_ELEMENT, pPref->identity_sets.id);
+    set_pref_identity_set(thisAgent, p, ATTR_ELEMENT, pPref->identity_sets.attr);
     set_pref_identity_set(thisAgent, p, VALUE_ELEMENT, pPref->identity_sets.value);
     set_pref_identity_set(thisAgent, p, REFERENT_ELEMENT, pPref->identity_sets.referent);
 
