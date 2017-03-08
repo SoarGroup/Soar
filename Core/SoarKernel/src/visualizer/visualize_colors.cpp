@@ -232,17 +232,27 @@ const char* m_X11_GrayColors[209] =
 
 std::string GraphViz_Visualizer::get_color_for_id(uint64_t pID)
 {
-    auto iter = m_identity_colors.find(pID);
-    if (iter != m_identity_colors.end())
+    std::string returnStr;
+
+    if (pID)
     {
-        uint64_t lIDColor = iter->second;
-        assert(lIDColor < 95);
-//        dprint(DT_DEBUG, "Returning color %s for %u.\n", m_X11_Colors[iter->second], pID);
-        return m_X11_Colors[iter->second];
-    } else {
-        m_identity_colors[pID] = m_next_color;
-        if (++m_next_color == 95) m_next_color = 0;
-//        dprint(DT_DEBUG, "Returning new color %s for %u.\n", m_X11_Colors[m_next_color-1], pID);
-        return m_X11_Colors[m_next_color-1];
+        returnStr = " BGCOLOR=\"";
+        auto iter = m_identity_colors.find(pID);
+        if (iter != m_identity_colors.end())
+        {
+            uint64_t lIDColor = iter->second;
+            assert(lIDColor < 95);
+            //dprint(DT_DEBUG, "Returning color %s for %u.\n", m_X11_Colors[iter->second], pID);
+            returnStr += m_X11_Colors[iter->second];
+        } else {
+            m_identity_colors[pID] = m_next_color;
+            if (++m_next_color == 95) m_next_color = 0;
+            //dprint(DT_DEBUG, "Returning new color %s for %u.\n", m_X11_Colors[m_next_color-1], pID);
+            returnStr += m_X11_Colors[m_next_color-1];
+        }
+        returnStr += "\" ";
     }
+    else returnStr = " ";
+
+    return returnStr;
 }

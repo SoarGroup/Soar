@@ -164,15 +164,15 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
         if (pPref_func) {
             thisAgent->outputManager->set_print_test_format(false, true);
             thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true);
-            thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+            thisAgent->outputManager->printa_sf(thisAgent, " [%s]", tempString.c_str());
         } else {
             if (!pID)
             {
                 thisAgent->outputManager->set_print_test_format(true, false);
                 thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
-                thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, " [%s]", tempString.c_str());
             } else {
-                thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
+                thisAgent->outputManager->printa_sf(thisAgent, " [%u]", pID);
             }
         }
     }
@@ -265,39 +265,31 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
     tempString.clear();
 }
 
-void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual, const rhs_value pRHS_func, uint64_t pID, uint64_t pNodeID, char pTypeChar, WME_Field pField)
+void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pRHS_func, uint64_t pID, uint64_t pNodeID, char pTypeChar, WME_Field pField)
 {
     std::string tempString;
     bool identity_printed = false;
     tempString = "";
 
-    std::string highlight_str;
-    if (pID)
-    {
-        highlight_str = " BGCOLOR=\"";
-        highlight_str += thisAgent->visualizationManager->get_color_for_id(pID);
-        highlight_str += "\" ";
-    } else highlight_str = " ";
-
+    std::string highlight_str = thisAgent->visualizationManager->get_color_for_id(pID);;
     thisAgent->visualizationManager->viz_table_element_start(pNodeID, pTypeChar, pField, false, highlight_str.c_str());
 
     thisAgent->outputManager->set_print_test_format(true, false);
     thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
     thisAgent->visualizationManager->graphviz_output += tempString;
-    if (pRHS_variablized_value)
+
+    if ((pRHS_variablized_value && rhs_value_is_symbol(pRHS_variablized_value)) || pRHS_func)
     {
-        if (rhs_value_is_symbol(pRHS_variablized_value)  || rhs_value_is_funcall(pRHS_variablized_value))
+        tempString = "";
+        thisAgent->outputManager->set_print_test_format(false, true);
+        thisAgent->outputManager->rhs_value_to_string(pRHS_func ? pRHS_func : pRHS_variablized_value, tempString, NULL, NULL, true);
+        thisAgent->outputManager->set_print_test_format(true, false);
+        if (!tempString.empty())
         {
-            tempString = "";
-            thisAgent->outputManager->set_print_test_format(false, true);
-            thisAgent->outputManager->rhs_value_to_string(pRHS_func ? pRHS_func : pRHS_variablized_value, tempString, NULL, NULL, true);
-            thisAgent->outputManager->set_print_test_format(true, false);
-            if (!tempString.empty())
-            {
-                thisAgent->visualizationManager->graphviz_output += tempString;
-//                thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " ddd[%u]", pID);
-                identity_printed = true;
-            }
+            thisAgent->visualizationManager->graphviz_output += " [";
+            thisAgent->visualizationManager->graphviz_output += tempString;
+            thisAgent->visualizationManager->graphviz_output += " ]";
+            identity_printed = true;
         }
     }
     if (!identity_printed && pID) {
@@ -407,9 +399,6 @@ void action_record::viz_action(action* pAction)
     if (pAction->type == FUNCALL_ACTION)
     {
         thisAgent->visualizationManager->viz_record_start();
-        thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', ID_ELEMENT);
-        thisAgent->visualizationManager->graphviz_output += "RHS function";
-        thisAgent->visualizationManager->viz_table_element_end();
         thisAgent->visualizationManager->viz_table_element_start(actionID, 'a', VALUE_ELEMENT);
         tempString = "";
         thisAgent->outputManager->rhs_value_to_string(pAction->value, tempString);
@@ -419,19 +408,20 @@ void action_record::viz_action(action* pAction)
     } else {
         thisAgent->visualizationManager->viz_record_start();
 
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), true, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, actionID, 'a', ID_ELEMENT);
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), true, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, actionID, 'a', ID_ELEMENT);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr);
 
         if (pAction->referent)
         {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), true, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, actionID, 'a', VALUE_ELEMENT);
         } else {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), true, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
         }
+
         thisAgent->visualizationManager->viz_record_end();
     }
     tempString.clear();

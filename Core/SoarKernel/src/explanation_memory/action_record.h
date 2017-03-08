@@ -32,7 +32,7 @@ class action_record
         void                    print_chunk_action(action* pAction, int lActionCount);
         void                    print_instantiation_action(action* pAction, int lActionCount);
 //        void                    print_action(action* pAction, int lActionCount);
-        void                    viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, bool printActual, const rhs_value pRHS_func = NULL, uint64_t pID = 0, uint64_t pNodeID = 0, char pTypeChar = ' ', WME_Field pField = NO_ELEMENT);
+        void                    viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pRHS_func = NULL, uint64_t pID = 0, uint64_t pNodeID = 0, char pTypeChar = ' ', WME_Field pField = NO_ELEMENT);
         void                    viz_action(action* pAction);
         void                    viz_preference();
         /* Action lists are common to chunk records and instantiation records, but don't have a class to themselves */

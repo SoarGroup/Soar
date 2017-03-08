@@ -199,14 +199,10 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     {
         if ((pTest->type == CONJUNCTIVE_TEST) && pTestIdentity->eq_test->identity)
         {
-            highlight_str = " BGCOLOR=\"";
             highlight_str += visualizer->get_color_for_id(pTestIdentity->eq_test->identity);
-            highlight_str += "\" ";
         } else  if (pTestIdentity && pTestIdentity->identity)
         {
-            highlight_str = " BGCOLOR=\"";
             highlight_str += visualizer->get_color_for_id(pTestIdentity->identity);
-            highlight_str += "\" ";
         } else highlight_str = " ";
     }
 
@@ -281,14 +277,12 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
     std::string highlight_str;
     if (pTest->eq_test && pTest->eq_test->identity)
     {
-        highlight_str = " BGCOLOR=\"";
         if (pTest->type == CONJUNCTIVE_TEST)
         {
             highlight_str += visualizer->get_color_for_id(pTest->eq_test->identity);
         } else {
             highlight_str += visualizer->get_color_for_id(pTest->identity);
         }
-        highlight_str += "\" ";
     } else highlight_str = " ";
 
 
