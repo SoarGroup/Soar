@@ -34,7 +34,7 @@ typedef struct rhs_struct
 {
     Symbol*             referent;
     uint64_t            identity;
-    IdentitySet*  identity_set;
+    IdentitySet*        identity_set;
     bool                was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
 } rhs_info;
 typedef rhs_info* rhs_symbol;

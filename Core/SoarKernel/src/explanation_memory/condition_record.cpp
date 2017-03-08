@@ -43,11 +43,9 @@ void simplify_identity_in_test(agent* thisAgent, test t)
             clear_test_identity_set(thisAgent, t);
             break;
         default:
-            dprint(DT_DEBUG, "Simplifying test %t %g", t, t);
             if (t->identity_set) t->identity = t->identity_set->super_join->idset_id;
 //            else t->identity = LITERAL_VALUE;
             clear_test_identity_set(thisAgent, t);
-            dprint_noprefix(DT_DEBUG, "--> %t [%g]\n", t, t);
             break;
     }
 }

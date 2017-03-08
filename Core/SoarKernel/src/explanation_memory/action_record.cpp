@@ -25,23 +25,20 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
 
     if (rhs_value_is_funcall(rv))
     {
-        dprint(DT_DEBUG, "Simplifying rhs value %r\n", rv);
         cons* fl = rhs_value_to_funcall_list(rv);
         for (cons* c = fl->rest; c != NIL; c = c->rest)
         {
             simplify_identity_in_rhs_value(thisAgent, static_cast<char*>(c->first));
         }
-        dprint(DT_DEBUG, "--> %r\n", rv);
         return;
     }
 
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-
     if (r->identity_set)
     {
-        uint64_t lID = r->identity_set->get_clone_identity();
-        if (!lID) lID = r->identity_set->get_identity();
-        else lID = r->identity;
+        uint64_t lID = r->identity_set->get_identity();
+        if (!lID) lID = r->identity_set->get_clone_identity();
+        if (!lID) lID = r->identity;
         r->identity = lID;
     } else r->identity = LITERAL_VALUE;
 
@@ -60,8 +57,6 @@ void simplify_identity_in_action(agent* thisAgent, action* pAction)
 
 void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 {
-    dprint(DT_DEBUG, "Simplifying preference %p\n", pPref);
-
     if (pPref->identity_sets.id)
     {
         pPref->identities.id = pPref->identity_sets.id->super_join->idset_id;
@@ -96,8 +91,6 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
     if (pPref->rhs_funcs.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     if (pPref->rhs_funcs.value) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.value);
     if (pPref->rhs_funcs.referent) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.referent);
-    dprint(DT_DEBUG, "--> %p\n", pPref);
-
 }
 
 void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
