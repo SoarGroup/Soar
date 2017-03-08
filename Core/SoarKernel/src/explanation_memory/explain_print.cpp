@@ -323,6 +323,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "- Impossible values eliminated                         %-%u\n", stats.eliminated_disjunction_values);
     outputManager->printa_sf(thisAgent, "\nConstraints collected                                  %- %u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                                   %-%u\n", stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "\nExtra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                    Problem-Solving Characteristics\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
@@ -337,7 +338,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "Chunks with extra conditions to fix partial operationality         %-%u\n", stats.chunks_repaired);
     outputManager->printa_sf(thisAgent, "Justifications with extra conditions to fix partial operationality %-%u\n", stats.justifications_repaired);
-    outputManager->printa_sf(thisAgent, "Extra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
 
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                  Potential Correctness Issues Detected\n");
