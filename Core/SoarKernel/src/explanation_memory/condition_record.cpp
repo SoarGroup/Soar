@@ -25,6 +25,7 @@ void simplify_identity_in_test(agent* thisAgent, test t)
 
     if (!t) return;
 
+
     switch (t->type)
     {
         case GOAL_ID_TEST:
@@ -42,9 +43,11 @@ void simplify_identity_in_test(agent* thisAgent, test t)
             clear_test_identity_set(thisAgent, t);
             break;
         default:
+            dprint(DT_DEBUG, "Simplifying test %t %g", t, t);
             if (t->identity_set) t->identity = t->identity_set->super_join->idset_id;
 //            else t->identity = LITERAL_VALUE;
             clear_test_identity_set(thisAgent, t);
+            dprint_noprefix(DT_DEBUG, "--> %t [%g]\n", t, t);
             break;
     }
 }
@@ -66,6 +69,7 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     simplify_identity_in_test(thisAgent, condition_tests.id);
     simplify_identity_in_test(thisAgent, condition_tests.attr);
     simplify_identity_in_test(thisAgent, condition_tests.value);
+    dprint(DT_EXPLAIN_CONDS, "   ...simplified condition: (%t ^%t %t) [(%g ^%g %g)]\n", condition_tests.id, condition_tests.attr, condition_tests.value, condition_tests.id, condition_tests.attr, condition_tests.value);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
     set_matched_wme_for_cond(pCond);

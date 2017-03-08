@@ -140,6 +140,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
                 pTest->eq_test->data.referent = new_var;
                 thisAgent->symbolManager->symbol_add_ref(new_var);
+                pTest->eq_test->identity = pTest->eq_test->identity_set->get_identity();
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
                 dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u/%u]\n", new_var, pTest->eq_test->identity, pTest->eq_test->clone_identity);
                 clear_test_identity_set(thisAgent, pTest->eq_test);
@@ -169,6 +170,8 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 pTest->eq_test->data.referent = lNewVariable;
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
+                pTest->eq_test->identity = pTest->eq_test->identity_set->get_identity();
+                break_if_id_matches(pTest->eq_test->identity,12);
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->identity, pTest->eq_test->clone_identity);
 
@@ -176,6 +179,7 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 
             }
         } else {
+            pTest->eq_test->identity = LITERAL_VALUE;
             pTest->eq_test->clone_identity = LITERAL_VALUE;
             clear_test_identity_set(thisAgent, pTest->eq_test);
         }
@@ -194,6 +198,7 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
         thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
         t->data.referent = new_var;
         thisAgent->symbolManager->symbol_add_ref(new_var);
+        t->identity = t->identity_set->get_identity();
         t->clone_identity = t->identity_set->get_clone_identity();
         clear_test_identity_set(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
