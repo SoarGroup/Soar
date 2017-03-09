@@ -50,10 +50,10 @@ public:
     TEST(NCC_from_Backtrace, -1);
     TEST(NCC_Simple_Literals, -1);
     TEST(NCC_with_Relational_Constraint, -1);
-    TEST(Simple_Constraint_Prop, -1);
+    TEST(Constraint_Prop_Simple, -1);
     TEST(Constraint_Prop_from_Base_Conds, -1);
     TEST(Constraint_Ungrounded, -1);
-    TEST(Simple_Literalization, -1);
+    TEST(Literalization_Simple, -1);
     TEST(Literalization_of_NC_and_NCC, -1);
     TEST(Literalization_with_BT_Constraints, -1);
     TEST(Literalization_with_BT_Constraints2, -1);
@@ -150,6 +150,7 @@ public:
     void Chunked_Justification_with_extras();
     void Conflated_Constants();
     void Constraint_Prop_from_Base_Conds();
+    void Constraint_Prop_Simple();
     void Deep_Copy_Identity_Expansion();
     void Demo_Arithmetic();
     void Demo_Blocks_World_Hierarchical_Look_Ahead();
@@ -172,6 +173,7 @@ public:
     void Justification_RC_not_Ungrounded_STIs();
     void Justifications_Get_New_Identities();
     void Link_STM_to_LTM();
+    void Literalization_Simple();
     void Literalization_of_NC_and_NCC();
     void Literalization_with_BT_Constraints();
     void Literalization_with_BT_Constraints2();
@@ -206,9 +208,7 @@ public:
     void RHS_Referent_Function();
     void RHS_Unbound_Multivalue();
     void RL_Variablization();
-    void Simple_Constraint_Prop();
     void Singleton_Element_Types();
-    void Simple_Literalization();
     void Singletons();
     void Singletons_Architectural();
     void SMem_Chunk_Direct();

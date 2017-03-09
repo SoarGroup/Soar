@@ -31,6 +31,7 @@ void ChunkingTests::Chunk_Superstate_Operator_Preference()            { check_ch
 void ChunkingTests::Chunked_Justification_with_extras()               { check_chunk("STI_with_referents", 8, 1); }
 void ChunkingTests::Conflated_Constants()                             { check_chunk("Conflated_Constants", 8, 1); }
 void ChunkingTests::Constraint_Prop_from_Base_Conds()                 { check_chunk("Constraint_Prop_from_Base_Conds", 8, 1); }
+void ChunkingTests::Constraint_Prop_Simple()                          { check_chunk("Constraint_Prop_Simple", 8, 1); }
 void ChunkingTests::Constraint_Ungrounded()                           { check_chunk("Constraint_Ungrounded", 8, 1); }
 void ChunkingTests::Deep_Copy_Identity_Expansion()                    { check_chunk("Deep_Copy_Identity_Expansion", 3, 4); }
 void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 41424, 1); }
@@ -55,6 +56,7 @@ void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_ch
 void ChunkingTests::Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs", 8, 1); }
 void ChunkingTests::Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities", 4, 1); }
 void ChunkingTests::Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM", 6, 0); }                         // Should be 2
+void ChunkingTests::Literalization_Simple()                           { check_chunk("Literalization_Simple", 8, 1); }
 void ChunkingTests::Literalization_of_NC_and_NCC()                    { check_chunk("Literalization_of_NC_and_NCC", 8, 1); }
 void ChunkingTests::Literalization_with_BT_Constraints()              { check_chunk("Literalization_with_BT_Constraints", 8, 1); }
 void ChunkingTests::Literalization_with_BT_Constraints2()             { check_chunk("Literalization_with_BT_Constraints2", 8, 2); }
@@ -93,8 +95,6 @@ void ChunkingTests::RHS_Math()                                        { check_ch
 void ChunkingTests::RHS_Referent_Function()                           { check_chunk("RHS_Referent_Function", 8, 1); }
 void ChunkingTests::RHS_Unbound_Multivalue()                          { check_chunk("RHS_Unbound_Multivalue", 8, 1); }
 void ChunkingTests::RL_Variablization()                               { check_chunk("RL_Variablization", 8, 5); }
-void ChunkingTests::Simple_Constraint_Prop()                          { check_chunk("Simple_Constraint_Prop", 8, 1); }
-void ChunkingTests::Simple_Literalization()                           { check_chunk("Simple_Literalization", 8, 1); }
 void ChunkingTests::Singletons()                                      { check_chunk("Singletons", 3, 2); }
 void ChunkingTests::Singletons_Architectural()                        { check_chunk("Singletons_Architectural", 3, 1); }
 void ChunkingTests::SMem_Chunk_Direct()                               { check_chunk("SMem_Chunk_Direct", 8, 1); }
