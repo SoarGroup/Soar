@@ -34,7 +34,7 @@ void ChunkingTests::Constraint_Prop_from_Base_Conds()                 { check_ch
 void ChunkingTests::Constraint_Prop_Simple()                          { check_chunk("Constraint_Prop_Simple", 8, 1); }
 void ChunkingTests::Constraint_Ungrounded()                           { check_chunk("Constraint_Ungrounded", 8, 1); }
 void ChunkingTests::Deep_Copy_Identity_Expansion()                    { check_chunk("Deep_Copy_Identity_Expansion", 3, 4); }
-void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 41424, 1); }
+void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 29); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 70, 4); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 23, 16); }
 void ChunkingTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 37, 35); }

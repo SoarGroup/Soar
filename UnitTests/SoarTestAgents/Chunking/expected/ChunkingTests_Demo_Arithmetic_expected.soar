@@ -1,14 +1,408 @@
-sp {answer*carry-borrow*apply*new-column*OpNoChange*t41-1
-    (state <s1> ^operator <o1>)
-    (<o1> ^name carry-borrow)
-    (<s1> ^arithmetic-problem <p1>)
+sp {answer*process-column*apply*carry*OpNoChange*t2809-1
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1> ^arithmetic <a1>)
+    (<o1> ^name process-column)
+    (<p1> ^current-column <c4>)
+    (<c4> ^next-column <c5> ^carry <c3> ^digit1 <c2>)
+    (<c5> ^column t ^carry unknown)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c3> ^digit1 <c2> ^sum <c1>)
+    -->
+    (<c5> ^carry 1 + ^carry unknown -)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t1012-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a3> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { < <c2> <c3> }
+          ^next-column <c13>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c6> ^one-fact <c9>)
+    (<c13> ^new-digit1 <c7> ^digit1 { < <c9> <c10> } ^next-column <c12>)
+    (<c12> ^new-digit1 <c4> ^digit1 { >= <c6> <c5> })
+    (<a1> ^add10-facts <a6> ^add10-facts <a5>)
+    (<a6> ^digit1 <c3> ^digit-10 { >= <c2> <c11> })
+    (<a5> ^digit1 <c10> ^digit-10 { >= <c9> <c8> })
+    (<a3> ^subtraction-facts <a7> ^subtraction-facts <a4>
+          ^subtraction-facts <a2>)
+    (<a7> ^digit2 <c2> ^digit1 <c11> ^result <c14>)
+    (<a4> ^digit2 <c9> ^digit1 <c8> ^result <c7>)
+    (<a2> ^digit2 <c6> ^digit1 <c5> ^result <c4>)
+    -->
+    (<c1> ^result <c14> +)
+}
+
+sp {answer*compute-result*apply*add-ten*OpNoChange*t1010-1
+    (state <s1> ^operator <o1> ^top-state <s2> ^digit2 <c13>
+          ^digit1 { < <c13> <c12> } ^current-column <c3> ^arithmetic <a4>
+          ^arithmetic <a2>)
+    (<o1> ^name compute-subtraction-borrow-result)
+    (<s2> ^one-fact <c7> ^one-fact <c4>)
+    (<c3> ^next-column <c1>)
+    (<c1> ^new-digit1 <c10> ^digit1 { < <c4> <c2> } ^next-column <c9>)
+    (<c9> ^new-digit1 <c5> ^digit1 { >= <c7> <c6> })
+    (<a4> ^add10-facts <a6> ^add10-facts <a3>)
+    (<a6> ^digit1 <c12> ^digit-10 <c11>)
+    (<a3> ^digit1 <c2> ^digit-10 { >= <c4> <c8> })
+    (<a2> ^subtraction-facts <a5> ^subtraction-facts <a1>)
+    (<a5> ^digit2 <c4> ^digit1 <c8> ^result <c10>)
+    (<a1> ^digit2 <c7> ^digit1 <c6> ^result <c5>)
+    -->
+    (<s1> ^digit1 <c12> - ^digit1 <c11> +)
+}
+
+sp {answerx2*compute-result*apply*borrow*OpNoChange*t1009-2
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a2> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { < <c2> <c3> }
+          ^next-column <c12>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c6> ^one-fact <c9>)
+    (<c12> ^digit1 { < <c9> <c10> } ^next-column <c11>)
+    (<c11> ^new-digit1 <c4> ^digit1 { >= <c6> <c5> })
+    (<a2> ^add10-facts <a5>)
+    (<a5> ^digit1 <c10> ^digit-10 { >= <c9> <c8> })
+    (<a1> ^subtraction-facts <a4> ^subtraction-facts <a3>)
+    (<a4> ^digit2 <c9> ^digit1 <c8> ^result <c7>)
+    (<a3> ^digit2 <c6> ^digit1 <c5> ^result <c4>)
+    -->
+    (<c12> ^new-digit1 <c7> +)
+}
+
+sp {answer*compute-result*apply*borrow*OpNoChange*t1009-1
+    (state <s1> ^operator <o1> ^top-state <s2> ^current-column <c3>
+          ^arithmetic <a3> ^arithmetic <a1>)
+    (<o1> ^name compute-subtraction-borrow-result)
+    (<s2> ^one-fact <c7> ^one-fact <c4>)
+    (<c3> ^next-column <c1>)
+    (<c1> ^digit1 { < <c4> <c2> } ^next-column <c9>)
+    (<c9> ^new-digit1 <c5> ^digit1 { >= <c7> <c6> })
+    (<a1> ^add10-facts <a4>)
+    (<a4> ^digit1 <c2> ^digit-10 { >= <c4> <c8> })
+    (<a3> ^subtraction-facts <a5> ^subtraction-facts <a2>)
+    (<a5> ^digit2 <c4> ^digit1 <c8> ^result <c10>)
+    (<a2> ^digit2 <c7> ^digit1 <c6> ^result <c5>)
+    -->
+    (<c1> ^new-digit1 <c10> +)
+}
+
+sp {answerx3*compute-result*apply*borrow*OpNoChange*t1007-2
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { < <c2> <c3> }
+          ^next-column <c8>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c6> ^one-fact <c10>)
+    (<c8> ^digit1 { < <c10> <c9> } ^next-column <c7>)
+    (<c7> ^digit1 { >= <c6> <c5> })
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c6> ^digit1 <c5> ^result <c4>)
+    -->
+    (<c7> ^new-digit1 <c4> +)
+}
+
+sp {answerx2*compute-result*apply*borrow*OpNoChange*t1007-1
+    (state <s1> ^operator <o1> ^top-state <s2> ^current-column <c3>
+          ^arithmetic <a1>)
+    (<o1> ^name compute-subtraction-borrow-result)
+    (<s2> ^one-fact <c7> ^one-fact <c4>)
+    (<c3> ^next-column <c1>)
+    (<c1> ^digit1 { < <c4> <c2> } ^next-column <c8>)
+    (<c8> ^digit1 { >= <c7> <c6> })
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c7> ^digit1 <c6> ^result <c5>)
+    -->
+    (<c8> ^new-digit1 <c5> +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t678-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a2>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> -^result <r*1> ^next-column <n1> ^carry <c5> ^digit2 <c2>
+          ^digit1 <c4>)
+    (<n1> ^carry 1)
+    (<o1> ^name process-column)
+    (<a2> ^facts <a3> ^facts <a1>)
+    (<a3> ^digit2 <c2> ^carry <c7> ^digit1 <c3> ^sum <c6>)
+    (<a1> ^carry 1 ^digit2 <c5> ^digit1 <c4> ^sum <c3>)
+    -->
+    (<c1> ^result <c6> +)
+}
+
+sp {answer*process-column*apply*write-digit1-carry1*OpNoChange*t675-1
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1> ^arithmetic <a1>)
+    (<o1> ^name get-digit1)
+    (<p1> ^current-column <c1>)
+    (<c1> ^carry <c3> ^digit1 <c2>)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c3> ^digit1 <c2> ^sum <c4>)
+    -->
+    (<s1> ^digit1 <c4> + ^carry 1 +)
+}
+
+sp {answerx3*carry*apply*new-column*OpNoChange*t674-2
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1> ^arithmetic <a1>)
+    (<o1> ^name process-column)
+    (<p1> ^current-column <c4>)
+    (<c4> ^next-column nil ^carry <c3> ^digit1 <c2>)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c3> ^digit1 <c2> ^sum <c1>)
+    -->
+    (<c4> ^next-column <n1> + ^next-column nil -)
+    (<n1> ^digit1 0 + ^digit2 0 + ^column t + ^carry 1 + ^next-column nil +)
+}
+
+sp {answerx2*carry*apply*new-column*OpNoChange*t674-1
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1> ^arithmetic <a1>)
+    (<o1> ^name get-digit1)
+    (<p1> ^current-column <c1>)
+    (<c1> ^next-column nil ^carry <c3> ^digit1 <c2>)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c3> ^digit1 <c2> ^sum <c4>)
+    -->
+    (<c1> ^next-column <n1> + ^next-column nil -)
+    (<n1> ^digit1 0 + ^digit2 0 + ^column t + ^carry 1 + ^next-column nil +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t340-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<o1> ^name process-column)
+    (<c1> ^new-digit1 <c4> ^digit2 { <= <c4> <c2> } ^digit1 <c3>)
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c2> ^digit1 <c4> ^result <c5>)
+    -->
+    (<c1> ^result <c5> +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t333-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a3> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c7>)
+    (<c1> ^new-digit1 <c4> ^digit2 { > <c4> <c2> } ^digit1 <c3>
+          ^next-column <c9>)
+    (<c9> ^new-digit1 <c5> ^digit1 { >= <c7> <c6> })
+    (<a1> ^add10-facts <a4>)
+    (<a4> ^digit1 <c4> ^digit-10 { >= <c2> <c8> })
+    (<a3> ^subtraction-facts <a5> ^subtraction-facts <a2>)
+    (<a5> ^digit2 <c2> ^digit1 <c8> ^result <c10>)
+    (<a2> ^digit2 <c7> ^digit1 <c6> ^result <c5>)
+    -->
+    (<c1> ^result <c10> +)
+}
+
+sp {answerx2*compute-result*apply*borrow*OpNoChange*t331-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c7>)
+    (<c1> ^new-digit1 <c4> ^digit2 { > <c4> <c2> } ^digit1 <c3>
+          ^next-column <c8>)
+    (<c8> ^digit1 { >= <c7> <c6> })
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c7> ^digit1 <c6> ^result <c5>)
+    -->
+    (<c8> ^new-digit1 <c5> +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t325-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a3> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { < <c2> <c3> }
+          ^next-column <c8>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c6>)
+    (<c8> ^new-digit1 <c4> ^digit1 { >= <c6> <c5> })
+    (<a1> ^add10-facts <a4>)
+    (<a4> ^digit1 <c3> ^digit-10 { >= <c2> <c7> })
+    (<a3> ^subtraction-facts <a5> ^subtraction-facts <a2>)
+    (<a5> ^digit2 <c2> ^digit1 <c7> ^result <c9>)
+    (<a2> ^digit2 <c6> ^digit1 <c5> ^result <c4>)
+    -->
+    (<c1> ^result <c9> +)
+}
+
+sp {answer*compute-result*apply*add-ten*OpNoChange*t323-1
+    (state <s1> ^operator <o1> ^top-state <s2> ^digit2 <c8>
+          ^digit1 { < <c8> <c7> } ^current-column <c3> ^arithmetic <a3>
+          ^arithmetic <a1>)
+    (<o1> ^name compute-subtraction-borrow-result)
+    (<s2> ^one-fact <c4>)
+    (<c3> ^next-column <c1>)
+    (<c1> ^new-digit1 <c5> ^digit1 { >= <c4> <c2> })
+    (<a3> ^add10-facts <a4>)
+    (<a4> ^digit1 <c7> ^digit-10 <c6>)
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c4> ^digit1 <c2> ^result <c5>)
+    -->
+    (<s1> ^digit1 <c7> - ^digit1 <c6> +)
+}
+
+sp {answerx2*compute-result*apply*borrow*OpNoChange*t322-2
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^top-state <s2>
+          ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { < <c2> <c3> }
+          ^next-column <c7>)
+    (<o1> ^name process-column)
+    (<s2> ^one-fact <c6>)
+    (<c7> ^digit1 { >= <c6> <c5> })
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c6> ^digit1 <c5> ^result <c4>)
+    -->
+    (<c7> ^new-digit1 <c4> +)
+}
+
+sp {answer*compute-result*apply*borrow*OpNoChange*t322-1
+    (state <s1> ^operator <o1> ^top-state <s2> ^current-column <c3>
+          ^arithmetic <a1>)
+    (<o1> ^name compute-subtraction-borrow-result)
+    (<s2> ^one-fact <c4>)
+    (<c3> ^next-column <c1>)
+    (<c1> ^digit1 { >= <c4> <c2> })
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c4> ^digit1 <c2> ^result <c5>)
+    -->
+    (<c1> ^new-digit1 <c5> +)
+}
+
+sp {answerx2*carry*apply*new-column*OpNoChange*t258-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a2>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> ^next-column nil ^carry <c5> ^digit2 <c2> ^digit1 <c4>)
+    (<o1> ^name process-column)
+    (<a2> ^facts <a3> ^facts <a1>)
+    (<a3> ^carry 1 ^digit2 <c2> ^digit1 <c3> ^sum <c6>)
+    (<a1> ^carry 0 ^digit2 <c5> ^digit1 <c4> ^sum <c3>)
+    -->
+    (<c1> ^next-column <n1> + ^next-column nil -)
+    (<n1> ^digit1 0 + ^digit2 0 + ^column t + ^carry 1 + ^next-column nil +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t133-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a2>)
+    (<p1> ^operation addition ^current-column <c2>)
+    (<c2> -^result <r*1> ^next-column <c1> ^carry <c6> ^digit2 <c3>
+          ^digit1 <c5>)
+    (<c1> ^carry 1)
+    (<o1> ^name process-column)
+    (<a2> ^facts <a3> ^facts <a1>)
+    (<a3> ^carry 1 ^digit2 <c3> ^digit1 <c4> ^sum <c7>)
+    (<a1> ^carry 0 ^digit2 <c6> ^digit1 <c5> ^sum <c4>)
+    -->
+    (<c2> ^result <c7> +)
+}
+
+sp {answer*process-column*apply*carry*OpNoChange*t132-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a2>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<o1> ^name process-column)
+    (<c1> ^next-column <c7> ^carry <c5> ^digit2 <c2> ^digit1 <c4>)
+    (<c7> ^column t ^carry unknown)
+    (<a2> ^facts <a3> ^facts <a1>)
+    (<a3> ^carry 1 ^digit2 <c2> ^digit1 <c3> ^sum <c6>)
+    (<a1> ^carry 0 ^digit2 <c5> ^digit1 <c4> ^sum <c3>)
+    -->
+    (<c7> ^carry 1 + ^carry unknown -)
+}
+
+sp {answer*process-column*apply*carry*OpNoChange*t125-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^next-column <c6> ^carry { << 0 unknown >> <c4> }
+          ^digit2 <c2> ^digit1 <c3>)
+    (<c6> ^column t ^carry unknown)
+    (<o1> ^name process-column)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c2> ^digit1 <c3> ^sum <c5>)
+    -->
+    (<c6> ^carry 1 + ^carry unknown -)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t63-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation subtraction ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^digit2 <c2> ^digit1 { >= <c2> <c3> })
+    (<o1> ^name process-column)
+    (<a1> ^subtraction-facts <a2>)
+    (<a2> ^digit2 <c2> ^digit1 <c3> ^result <c4>)
+    -->
+    (<c1> ^result <c4> +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t43-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a2>)
+    (<p1> ^operation addition ^current-column <n1>)
+    (<o1> ^name process-column)
+    (<n1> ^carry <c4> ^digit2 <c1> ^digit1 <c3>)
+    (<a2> ^facts <a3> ^facts <a1>)
+    (<a3> ^digit2 <c1> ^carry { << 0 unknown >> <c6> } ^digit1 <c2> ^sum <c5>)
+    (<a1> ^carry 0 ^digit2 <c4> ^digit1 <c3> ^sum <c2>)
+    -->
+    (<n1> ^result <c5> +)
+}
+
+sp {answer*process-column*apply*write-digit1*carry0*OpNoChange*t40-1
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1> ^arithmetic <a1>)
+    (<o1> ^name get-digit1)
+    (<p1> ^current-column <n1>)
+    (<n1> ^carry <c2> ^digit1 <c1>)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 0 ^digit2 <c2> ^digit1 <c1> ^sum <c3>)
+    -->
+    (<s1> ^digit1 <c3> +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t33-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> -^result <r*1> ^next-column <n1>
+          ^carry { << 0 unknown >> <c4> } ^digit2 <c2> ^digit1 <c3>)
+    (<n1> ^carry 1)
+    (<o1> ^name process-column)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c2> ^digit1 <c3> ^sum <c5>)
+    -->
+    (<c1> ^result <c5> +)
+}
+
+sp {answerx2*carry*apply*new-column*OpNoChange*t32-2
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^next-column nil ^carry { << 0 unknown >> <c4> }
+          ^digit2 <c2> ^digit1 <c3>)
+    (<o1> ^name process-column)
+    (<a1> ^facts <a2>)
+    (<a2> ^carry 1 ^digit2 <c2> ^digit1 <c3> ^sum <c5>)
+    -->
+    (<c1> ^next-column <n1> + ^next-column nil -)
+    (<n1> ^digit1 0 + ^digit2 0 + ^column t + ^carry 1 + ^next-column nil +)
+}
+
+sp {answer*carry*apply*new-column*OpNoChange*t32-1
+    (state <s1> ^operator <o1> ^arithmetic-problem <p1>)
+    (<o1> ^name carry)
     (<p1> ^current-column <c1>)
     (<c1> ^next-column nil)
     -->
-    (<c1> ^next-column <n1> +)
-    (<c1> ^next-column nil -)
-    (<n1> ^digit1 0 +)
-    (<n1> ^digit2 0 +)
-    (<n1> ^column t +)
-    (<n1> ^next-column nil +)
+    (<c1> ^next-column <n1> + ^next-column nil -)
+    (<n1> ^digit1 0 + ^digit2 0 + ^column t + ^carry 1 + ^next-column nil +)
+}
+
+sp {answer*process-column*apply*write-result*OpNoChange*t21-1
+    (state <s1> ^arithmetic-problem <p1> ^operator <o1> ^arithmetic <a1>)
+    (<p1> ^operation addition ^current-column <c1>)
+    (<c1> -^new-digit1 <n*1> ^carry { << 0 unknown >> <c4> } ^digit2 <c2>
+          ^digit1 <c3>)
+    (<o1> ^name process-column)
+    (<a1> ^facts <a2>)
+    (<a2> ^digit2 <c2> ^digit1 <c3> ^carry { << 0 unknown >> <c6> } ^sum <c5>)
+    -->
+    (<c1> ^result <c5> +)
 }

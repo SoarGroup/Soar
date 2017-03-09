@@ -171,7 +171,6 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
                 pTest->eq_test->identity = pTest->eq_test->identity_set->get_identity();
-                break_if_id_matches(pTest->eq_test->identity,12);
                 pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
                 dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->identity, pTest->eq_test->clone_identity);
 

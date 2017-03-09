@@ -600,7 +600,6 @@ void Explanation_Based_Chunker::add_goal_or_impasse_tests()
 void Explanation_Based_Chunker::make_clones_of_results()
 {
     preference* lClonedPref, *lResultPref;
-    break_if_id_matches(m_inst->i_id, 19);
     m_chunk_inst->preferences_generated = NIL;
     for (lResultPref = m_results; lResultPref != NIL; lResultPref = lResultPref->next_result)
     {
