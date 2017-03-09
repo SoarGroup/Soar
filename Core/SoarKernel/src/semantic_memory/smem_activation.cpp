@@ -527,11 +527,11 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     std::list<std::pair<uint64_t, double>>* current_lti_list = new std::list<std::pair<uint64_t, double>>();
     //We initialize this with the given lti and a total initial activation weight of 1. Changing of the total weight from this source
     //can be done at time of application with a scalar.
-    current_lti_list->push_back(std::make_pair(lti_id, 1.0));
+    current_lti_list->emplace_back(lti_id, 1.0);
     double initial_activation = 1.0;
-    lti_traversal_queue.push(std::make_pair(initial_activation,current_lti_list));
+    lti_traversal_queue.emplace(initial_activation,current_lti_list);
     //The prioritized traversal has now been initialized with a single path consisting of only the source of activation.
-    //There is a limit to the size of the storeed info.
+    //There is a limit to the size of the stored info.
     double decay_prob = settings->spreading_continue_probability->get_value();
     //The decay_prob is a measure of how much decay we get during traversal along the edges.
     double baseline_prob = settings->spreading_baseline->get_value();
@@ -548,7 +548,6 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator;
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator_begin;
     std::list<std::pair<uint64_t, double>>::iterator new_list_iterator_end;
-    std::set<std::pair<uint64_t, double>> visited;
     bool good_lti = true;
     depth = 0;
     //uint64_t fan_out;
@@ -570,19 +569,29 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
         old_list_iterator_end = current_lti_list->end();//Where we left off in that path.
         //Why the above two? we're going to make a deep copy later.
         initial_activation = decay_prob*(lti_traversal_queue.top().first);//We always decay with depth.
+        lti_traversal_queue.pop();//Get rid of the old list.
         for (lti_iterator = lti_begin; lti_iterator != lti_end && count < limit && initial_activation > baseline_prob; ++lti_iterator)
         {
+            std::set<std::pair<uint64_t, double>> visited;
             //First, we make a new copy of the list for the next step of the traversal.
             std::list<std::pair<uint64_t,double>>* new_list = new std::list<std::pair<uint64_t,double>>();
             for (old_list_iterator = old_list_iterator_begin; old_list_iterator != old_list_iterator_end; ++old_list_iterator)
             {//looping over the contents of the old list and copying.
-                new_list->push_back((*old_list_iterator));
+                new_list->emplace_back(old_list_iterator->first,old_list_iterator->second);
                 if (settings->spreading_loop_avoidance->get_value() == on)
                 {
-                    visited.insert((*old_list_iterator));//We we have loop avoidance on, we need to keep track of the old path elements.
+                    visited.insert(std::make_pair(old_list_iterator->first,old_list_iterator->second));//We we have loop avoidance on, we need to keep track of the old path elements.
                 }
             }
             good_lti = true;
+            if (new_list->empty())
+            {
+                good_lti = false;
+            }
+            if (lti_iterator->first == 0 || lti_iterator->second < baseline_prob)
+            {
+                good_lti = false;
+            }
             if (settings->spreading_loop_avoidance->get_value() == on)
             {
                 good_lti = (visited.find(*lti_iterator) == visited.end());
@@ -591,10 +600,11 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             if (!good_lti)
             {
                 delete new_list;//We don't need the copy.
+                new_list = NULL;
                 continue;//We don't need to do processing because we're skipping this already visited child.
             }
             //Add the new good lti to the list
-            new_list->push_back((*lti_iterator));
+            new_list->emplace_back(lti_iterator->first,lti_iterator->second);
             if (spread_map.find(lti_iterator->first) == spread_map.end())
             {//If we haven't already given some spread to this recipient from this source, we have to start with an initial contribution
                 spread_map[lti_iterator->first] = initial_activation*lti_iterator->second;
@@ -622,16 +632,17 @@ void SMem_Manager::trajectory_construction(uint64_t lti_id, std::map<uint64_t, s
             ever_added = true;
             ++count;
             //If we still have room for more, we add the new path to the p-queue for additional traversal.
-            if (new_list->size() < depth_limit + 1 && count < limit && initial_activation > baseline_prob)
+            if (new_list->size() < depth_limit + 1 && count < limit &&  decay_prob*initial_activation*lti_iterator->second > baseline_prob)
             {//if we aren't at the depth limit, the total traversal size limit, and the activation is big enough
-                lti_traversal_queue.push(std::make_pair(initial_activation*lti_iterator->second,new_list));
+                lti_traversal_queue.emplace(initial_activation*lti_iterator->second,new_list);
             }
             else
             {
                 delete new_list;//No need to keep the copy+1more otherwise.
+                new_list = NULL;
             }
         }
-        lti_traversal_queue.pop();//Get rid of the old list.
+        //lti_traversal_queue.pop();//Get rid of the old list.
         delete current_lti_list;//no longer need it.
     }
     //Once we've generated the full spread map of accumulated spread for recipients from this source, we record it.
