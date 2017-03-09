@@ -7,7 +7,8 @@ sp {init
    (state <s> ^superstate nil)
 -->
    (<s> ^word object
-        ^word2 not-object2)
+        ^foo bar
+        )
 
 }
 
@@ -21,10 +22,10 @@ sp {propose*stop
 sp {propose
     (state <s> ^superstate <ss>)
     (<ss> ^superstate nil
-          ^word <w>)
+          ^word <w> ^foo <f>)
 -->
     (<s> ^operator <o> + =)
-    (<o> ^word <w>)
+    (<o> ^word <w> ^foo <f>)
 }
 
 sp {apply*literalization
@@ -32,14 +33,15 @@ sp {apply*literalization
                ^operator <o>)
     (<o> ^word object)
     -->
-    (<s> ^sub-result 1 +)
+    (<s> ^sub-result bar +)
 }
 
 sp {make-chunk
     (state <s> ^superstate <ss>
                ^operator <o>
                ^sub-result <r>)
-    (<o> ^word <object>)
+    (<ss> ^word <w1> ^foo <f1>)    
+    (<o> ^word <object> ^foo <r>)
     -->
-    (<ss> ^result <object> +)
+    (<ss> ^result <object> + ^result2 <r>)
 }
