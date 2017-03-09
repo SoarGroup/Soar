@@ -36,11 +36,11 @@ void ChunkingTests::Deep_Copy_Identity_Expansion()                    { check_ch
 void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 41424, 1); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 70, 4); }
 void ChunkingTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 23, 16); }
-void ChunkingTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 37, 14); }
-void ChunkingTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 37, 6); }
+void ChunkingTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 37, 35); }
+void ChunkingTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 37, 9); }
 void ChunkingTests::Demo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1); }
 void ChunkingTests::Demo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 6); }
-void ChunkingTests::Demo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 138, 42); }
+void ChunkingTests::Demo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 138, 50); }
 void ChunkingTests::Demo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 6); }
 void ChunkingTests::Demo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 23, 10); }
 void ChunkingTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 423, 3); }
@@ -77,8 +77,8 @@ void ChunkingTests::Opaque_State_Barrier()                            { check_ch
 void ChunkingTests::Operator_Selection_Knowledge_Ghost_Operator()     { check_chunk("Operator_Selection_Knowledge_Ghost_Operator", 4, 1); }
 void ChunkingTests::Operator_Selection_Knowledge_Mega_Test()          { check_chunk("Operator_Selection_Knowledge", 75, 14); }      // Should be 18.  2 could be because of uncertainty of numeric preferences.  Other 2 could be re-ordering issue.
 void ChunkingTests::Operator_Selection_Knowledge_In_Proposal()        { check_chunk("Operator_Selection_Knowledge_In_Proposal", 7, 2); }
-void ChunkingTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 4); }
-void ChunkingTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 5); }
+void ChunkingTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 23); }
+void ChunkingTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19); }
 void ChunkingTests::Promoted_STI()                                    { check_chunk("Promoted_STI", 8, 1); }
 void ChunkingTests::Reorderer_Bad_Conjunction()                       { check_chunk("Reorderer_Bad_Conjunction", 8, 1); }
 void ChunkingTests::Repair_NOR_Temporal_Constraint()                  { check_chunk("Repair_NOR_Temporal_Constraint", 8, 3); }
