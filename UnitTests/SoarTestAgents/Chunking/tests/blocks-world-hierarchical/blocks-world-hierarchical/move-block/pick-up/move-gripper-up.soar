@@ -1,0 +1,43 @@
+sp {pick-up*propose*move-gripper-up
+   (state <s> ^name pick-up
+              ^top-state.gripper <g>
+              ^desired.moving-block <mblock>)
+   (<g> ^position down
+        ^holding <mblock>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-gripper-up)
+}
+
+sp {pick-up*propose*move-gripper-up2
+   (state <s> ^name pick-up
+              ^desired.moving-block <mblock>
+              ^top-state.gripper <g>)
+   (<g> ^position down
+        ^holding nothing
+        ^above <> <mblock>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-gripper-up)
+}
+
+sp {put-down*propose*move-gripper-up
+   (state <s> ^name put-down
+              ^desired.destination <dblock>
+              ^top-state.gripper <g>)
+   (<g> ^above <> <dblock>
+        ^position down)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-gripper-up)
+}
+
+##################
+## For external operator implementation
+#
+sp {apply*up-gripper*pass*top-state
+   (state <s> ^operator.name move-gripper-up
+              ^top-state.io.output-link.gripper <gripper>)
+-->
+   (<gripper> ^command up)
+}

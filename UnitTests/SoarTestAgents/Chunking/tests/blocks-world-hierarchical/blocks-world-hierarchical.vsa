@@ -1,0 +1,26 @@
+VERSION 4
+\blocks-world-hierarchical\blocks-world-hierarchical.dm
+0	ROOT blocks-world-hierarchical blocks-world-hierarchical 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR clear clear.soar 5
+5	3	FOPERATOR detect-success detect-success.soar 6
+6	3	FOPERATOR in-place in-place.soar 7
+7	3	FOPERATOR monitor monitor.soar 8
+8	3	FOPERATOR moveable moveable.soar 9
+9	0	FOPERATOR _readme _readme.soar 10
+10	0	FOPERATOR external-operator-implementations external-operator-implementations.soar 11
+11	0	FOPERATOR search-control search-control.soar 12
+12	0	OPERATOR initialize-blocks-world initialize-blocks-world.soar 13
+13	0	HLOPERATOR move-block move-block.soar move-block 19 14
+14	13	FOPERATOR elaborations elaborations.soar 15
+15	13	HLOPERATOR pick-up pick-up.soar pick-up 30 16
+16	15	FOPERATOR elaborations elaborations.soar 17
+17	15	OPERATOR close-gripper close-gripper.soar 18
+18	15	OPERATOR move-gripper-above move-gripper-above.soar 19
+19	15	OPERATOR move-gripper-down move-gripper-down.soar 20
+20	15	OPERATOR move-gripper-up move-gripper-up.soar 21
+21	15	OPERATOR open-gripper open-gripper.soar 22
+22	13	OPERATOR put-down put-down.soar 23
+END

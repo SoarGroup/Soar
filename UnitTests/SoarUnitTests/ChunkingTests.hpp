@@ -123,6 +123,7 @@ public:
     TEST(Demo_Blocks_World_Look_Ahead, -1);
     TEST(Demo_Blocks_World_Operator_Subgoaling, -1);
     TEST(Demo_Eight_Puzzle, -1);
+//    TEST(Demo_Graph_Search, -1);
     TEST(Demo_MaC_Planning, -1);
     TEST(Demo_RL_Unit, -1);
     TEST(Demo_ToH_Recursive, -1);
@@ -159,6 +160,7 @@ public:
     void Demo_Blocks_World_Look_Ahead();
     void Demo_Blocks_World_Operator_Subgoaling();
     void Demo_Eight_Puzzle();
+    void Demo_Graph_Search();
     void Demo_MaC_Planning();
     void Demo_RL_Unit();
     void Demo_ToH_Recursive();

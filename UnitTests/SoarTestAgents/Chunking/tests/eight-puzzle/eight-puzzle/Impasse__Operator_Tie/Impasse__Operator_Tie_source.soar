@@ -1,0 +1,4 @@
+source evaluate-operator.soar
+pushd evaluate-operator
+source evaluate-operator_source.soar
+popd

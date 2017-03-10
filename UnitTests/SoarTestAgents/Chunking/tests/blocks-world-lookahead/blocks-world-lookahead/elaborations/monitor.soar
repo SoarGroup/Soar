@@ -1,0 +1,11 @@
+sp {blocks-world*monitor*operator-application*move-block
+   (state <s> ^operator <o>)
+   (<o> ^name move-block
+        ^moving-block.name <mob-name>
+        ^destination.name <dob-name>)
+-->
+   (write (crlf)
+          |  APPLYING | <o>
+          |: move-block(| <mob-name>
+          |,| <dob-name>
+          |)|)}

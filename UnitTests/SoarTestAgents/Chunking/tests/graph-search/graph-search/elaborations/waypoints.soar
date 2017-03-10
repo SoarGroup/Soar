@@ -1,0 +1,12 @@
+sp {graph-search*elaborate*waypoint-location
+   (state <s> ^name graph-search
+              ^waypoints.waypoint <wp>
+              ^mission.current <current>)
+   (<current> ^id <id>)
+   (<wp> ^id <id>
+         ^x <x>
+         ^y <y>)
+-->
+   (<current> ^x <x>
+             ^y <y>)
+}

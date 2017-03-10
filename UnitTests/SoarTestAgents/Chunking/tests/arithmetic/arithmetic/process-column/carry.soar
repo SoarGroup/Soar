@@ -1,0 +1,41 @@
+sp {process-column*propose*carry
+ #  :interrupt
+   (state <s> ^name << process-column get-digit1 >>
+              ^carry 1
+              ^current-column.next-column <nc>)
+   (<nc> ^carry unknown)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name carry)
+}
+
+sp {process-column*propose*carry*nil
+  # :interrupt
+   (state <s> ^name << process-column get-digit1 >>
+              ^carry 1
+              ^current-column.next-column nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name carry)
+}
+sp {process-column*apply*carry
+   (state <s> ^operator.name carry
+              ^carry 1
+              ^current-column.next-column <nc>)
+   (<nc> ^column t
+         ^carry unknown)
+-->
+   (<nc> ^carry 1
+         ^carry unknown -)
+}
+
+sp {process-column*compare*carry
+   (state <s> ^name process-column
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name carry)
+   (<op2> ^name write-result)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+

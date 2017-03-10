@@ -1,0 +1,22 @@
+### Blocks world that uses the selection problem space (from the default folder) to do 
+### do operator subgoaling with means-ends analysis
+### In this approach, operators are proposed if they reduce the difference between the current state
+###  and the desired state, even if they cannot be applied in the current state.
+### If they can be applied, then forward progress occurs.
+### If they cannot be applied, an operator subgoal arises and in the subgoal, the agent
+###  tries to select operators that moves the agent to a state where the selected operator can apply.
+
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+
+multi-attributes ontop 3
+multi-attributes clear 3
+multi-attributes objects 4
+
+# Operator subgoaling does not work correctly if learning is on.
+chunk always
+chunk add-osk on
+
+

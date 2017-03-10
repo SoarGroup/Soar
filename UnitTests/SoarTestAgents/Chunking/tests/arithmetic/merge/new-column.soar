@@ -1,0 +1,19 @@
+
+sp {carry*propose*new-column
+   (state <s> ^name carry
+              ^current-column.next-column nil)
+-->
+   (<s> ^operator.name new-column)}
+
+sp {carry*apply*new-column
+   (state <s> ^operator.name new-column
+              ^current-column <cc>)
+-->
+   (<cc> ^next-column <nc>
+                      nil -)
+   (<nc> ^digit1 0
+         ^digit2 0
+         ^column t
+         ^carry 1
+         ^next-column nil)
+}

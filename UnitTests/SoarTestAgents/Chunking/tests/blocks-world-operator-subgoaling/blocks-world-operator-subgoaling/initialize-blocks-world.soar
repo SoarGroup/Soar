@@ -1,0 +1,31 @@
+sp {blocks-world*propose*initialize-blocks-world
+    (state <s> ^superstate nil 
+              -^name)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-blocks-world)
+}
+
+sp {blocks-world*apply*initialize-blocks-world
+   (state <s> ^operator.name initialize-blocks-world)
+-->
+   (<s> ^name blocks-world 
+        ^ontop <ontop1> ^ontop <ontop2> ^ontop <ontop3> 
+        ^object <blockA> ^object <blockB>
+        ^object <blockC> ^object <table> 
+        ^desired <ds>)
+   (<ontop1> ^top-block <blockA> ^bottom-block <blockC>)
+   (<ontop2> ^top-block <blockB> ^bottom-block <table>)
+   (<ontop3> ^top-block <blockC> ^bottom-block <table>)
+   (<blockA> ^name A ^type block)
+   (<blockB> ^name B ^type block)
+   (<blockC> ^name C ^type block)
+   (<table> ^name table ^type table)
+   (write (crlf) |Simple Blocks World - just move blocks.|)
+   (write (crlf) |Initial state has A on C, B on table, and C on the table.|)
+   (<ds> ^ontop <dontop1> ^ontop <dontop2> ^ontop <dontop3>)
+   (<dontop1> ^top-block <blockA> ^bottom-block <blockB>)
+   (<dontop2> ^top-block <blockB> ^bottom-block <blockC>)
+   (<dontop3> ^top-block <blockC> ^bottom-block <table>)
+   (write (crlf) |The goal is to get A on B on C on the table.|)
+}

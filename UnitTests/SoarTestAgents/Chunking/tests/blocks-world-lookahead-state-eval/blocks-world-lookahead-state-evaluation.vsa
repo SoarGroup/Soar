@@ -1,0 +1,20 @@
+VERSION 4
+\blocks-world-lookahead-state-evaluation\blocks-world-lookahead-state-evaluation.dm
+0	ROOT blocks-world-lookahead-state-evaluation blocks-world-lookahead-state-evaluation 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR clear clear.soar 5
+5	3	FOPERATOR in-place in-place.soar 6
+6	3	FOPERATOR monitor monitor.soar 7
+7	3	FOPERATOR moveable moveable.soar 8
+8	3	FOPERATOR problem-space problem-space.soar 9
+9	3	FOPERATOR reward reward.soar 10
+10	0	FOPERATOR _readme _readme.soar 11
+11	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 29 12
+12	11	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 34 13
+13	12	FOPERATOR elaborations elaborations.soar 14
+14	12	OPERATOR evaluate-state evaluate-state.soar 15
+15	0	OPERATOR initialize-blocks-world initialize-blocks-world.soar 16
+16	0	OPERATOR move-block move-block.soar 17
+END

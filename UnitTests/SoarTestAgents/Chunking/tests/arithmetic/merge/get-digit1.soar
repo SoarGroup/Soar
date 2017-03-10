@@ -1,0 +1,50 @@
+sp {process-column*propose*get-digit1
+   (state <s> ^name process-column
+             -^digit1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-digit1)
+}
+
+sp {process-column*apply*get-digit1
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation addition
+              ^current-column <cc>)
+   (<cc> ^digit1 <a>
+        -^new-digit1
+         ^carry << 0 unknown >>)
+-->
+   (<s> ^digit1 <a>)
+}
+
+## If there has been a borrow
+sp {process-column*apply*get-digit1-new 
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation addition
+              ^current-column <cc>)
+   (<cc> ^digit1 
+         ^new-digit1 <a>
+         ^carry << 0 unknown >>)
+-->
+   (<s> ^digit1 <a>)
+}
+
+sp {process-column*apply*get-digit1*subtraction
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation subtraction
+              ^current-column <cc>)
+   (<cc> ^digit1 <a>
+        -^new-digit1)
+-->
+   (<s> ^digit1 <a>)
+}
+
+sp {process-column*apply*get-digit1*subtraction*new
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation subtraction
+              ^current-column <cc>)
+   (<cc> ^digit1
+         ^new-digit1 <a>)
+-->
+   (<s> ^digit1 <a>)
+}

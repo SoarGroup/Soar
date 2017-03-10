@@ -1,0 +1,3 @@
+source elaborations.soar
+source create-preferences.soar
+source evaluate-operator.soar
