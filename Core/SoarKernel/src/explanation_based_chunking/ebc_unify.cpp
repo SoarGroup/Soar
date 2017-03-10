@@ -245,81 +245,94 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
     }
 }
 
-void Explanation_Based_Chunker::unify_backtraced_conditions(condition* parent_cond,
-                                                         const identity_quadruple o_ids_to_replace,
+void Explanation_Based_Chunker::unify_backtraced_conditions(condition* lhs_cond,
+                                                         const identity_quadruple rhs_id_sets,
                                                          const rhs_quadruple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
-    lId = parent_cond->data.tests.id_test->eq_test;
-    lAttr = parent_cond->data.tests.attr_test->eq_test;
-    lValue = parent_cond->data.tests.value_test->eq_test;
+    lId = lhs_cond->data.tests.id_test->eq_test;
+    lAttr = lhs_cond->data.tests.attr_test->eq_test;
+    lValue = lhs_cond->data.tests.value_test->eq_test;
 
     assert(ebc_settings[SETTING_EBC_LEARNING_ON]);
 
-    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", parent_cond, o_ids_to_replace.id, o_ids_to_replace.attr, o_ids_to_replace.value, o_ids_to_replace.referent);
+    dprint(DT_ADD_IDENTITY_SET_MAPPING, "Unifying backtraced condition.  Parent cond = %l, identities to replace = (%u ^%u %u)  [referent %u]\n", lhs_cond, rhs_id_sets.id, rhs_id_sets.attr, rhs_id_sets.value, rhs_id_sets.referent);
 
-    if (o_ids_to_replace.id)
+    if (rhs_id_sets.id)
     {
         if (lId->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", o_ids_to_replace.id, lId->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for identifier element: %u -> %u\n", rhs_id_sets.id, lId->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", o_ids_to_replace.id, lId);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for identifier element: %u -> %t\n", rhs_id_sets.id, lId);
         }
-        add_identity_unification(o_ids_to_replace.id, lId->identity);
-    }
-    else if (rhs_value_is_literalizing_function(rhs_funcs.id))
-    {
-        literalize_RHS_function_args(rhs_funcs.id, parent_cond->inst->i_id);
-        add_identity_unification(lId->identity, NULL_IDENTITY_SET);
+        add_identity_unification(rhs_id_sets.id, lId->identity);
     }
     else
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lId->data.referent->is_sti() ? "is identifier " : "", !o_ids_to_replace.id ? "RHS pref is literal " : "");
+        if (rhs_funcs.id && rhs_value_is_literalizing_function(rhs_funcs.id))
+        {
+            literalize_RHS_function_args(rhs_funcs.id, lhs_cond->inst->i_id);
+            add_identity_unification(lId->identity, NULL_IDENTITY_SET);
+        }
+        else if (lId->identity)
+        {
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a condition testing a literal.  Will literalize identifier element %u in test %t\n", lId->identity, lId);
+            add_identity_unification(lId->identity, NULL_IDENTITY_SET);
+        }
+
     }
-    if (o_ids_to_replace.attr)
+    if (rhs_id_sets.attr)
     {
         if (lAttr->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for attribute element: %u -> %u\n", o_ids_to_replace.attr, lAttr->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity for attribute element: %u -> %u\n", rhs_id_sets.attr, lAttr->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for attribute element: %u -> %t\n", o_ids_to_replace.attr, lAttr);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for attribute element: %u -> %t\n", rhs_id_sets.attr, lAttr);
         }
-        add_identity_unification(o_ids_to_replace.attr, lAttr->identity);
-    }
-    else if (rhs_value_is_literalizing_function(rhs_funcs.attr))
-    {
-        literalize_RHS_function_args(rhs_funcs.attr, parent_cond->inst->i_id);
-        add_identity_unification(lAttr->identity, NULL_IDENTITY_SET);
+        add_identity_unification(rhs_id_sets.attr, lAttr->identity);
     }
     else
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lAttr->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.attr ? "RHS pref is literal " : "");
+        if (rhs_value_is_literalizing_function(rhs_funcs.attr))
+        {
+            literalize_RHS_function_args(rhs_funcs.attr, lhs_cond->inst->i_id);
+            add_identity_unification(lAttr->identity, NULL_IDENTITY_SET);
+        }
+        else if (lAttr->identity)
+        {
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a condition testing a literal.  Will literalize attribute element %u in test %t\n", lAttr->identity, lAttr);
+            add_identity_unification(lAttr->identity, NULL_IDENTITY_SET);
+        }
     }
-    if (o_ids_to_replace.value)
+    if (rhs_id_sets.value)
     {
         if (lValue->identity)
         {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %u -> %u\n", o_ids_to_replace.value, lValue->identity);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a shared identity to replace for value element: %u -> %u\n", rhs_id_sets.value, lValue->identity);
         } else {
-            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %u -> %t\n", o_ids_to_replace.value, lValue);
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found an identity to literalize for value element: %u -> %t\n", rhs_id_sets.value, lValue);
         }
-        add_identity_unification(o_ids_to_replace.value, lValue->identity);
-    }
-    else if (rhs_value_is_literalizing_function(rhs_funcs.value))
-    {
-        literalize_RHS_function_args(rhs_funcs.value, parent_cond->inst->i_id);
-        add_identity_unification(lValue->identity, NULL_IDENTITY_SET);
+        add_identity_unification(rhs_id_sets.value, lValue->identity);
     }
     else
     {
-        dprint(DT_ADD_IDENTITY_SET_MAPPING, "Did not unify because %s%s\n", lValue->data.referent->is_sti() ? "is STI " : "", !o_ids_to_replace.value ? "RHS pref is literal " : "");
+        if (rhs_value_is_literalizing_function(rhs_funcs.value))
+        {
+            literalize_RHS_function_args(rhs_funcs.value, lhs_cond->inst->i_id);
+            add_identity_unification(lValue->identity, NULL_IDENTITY_SET);
+        }
+        else if (lValue->identity)
+        {
+            dprint(DT_ADD_IDENTITY_SET_MAPPING, "Found a condition testing a literal.  Will literalize value element %u in test %t\n", lValue->identity, lValue);
+            add_identity_unification(lValue->identity, NULL_IDENTITY_SET);
+        }
     }
-    assert(!o_ids_to_replace.referent);
+    assert(!rhs_id_sets.referent);
     if (rhs_value_is_literalizing_function(rhs_funcs.referent))
     {
         dprint(DT_ADD_IDENTITY_SET_MAPPING, "Literalizing referent in RHS function %r\n", rhs_funcs.referent);
-        literalize_RHS_function_args(rhs_funcs.referent, parent_cond->inst->i_id);
+        literalize_RHS_function_args(rhs_funcs.referent, lhs_cond->inst->i_id);
     }
 }
 
@@ -367,9 +380,20 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
             ebc_timers->dependency_analysis->stop();
-            thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
-            add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             ebc_timers->dependency_analysis->start();
+            if (!pCond->data.tests.value_test->eq_test->identity)
+            {
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                add_identity_unification(last_cond->data.tests.value_test->eq_test->identity, NULL_IDENTITY_SET);
+            } else if (!last_cond->data.tests.value_test->eq_test->identity)
+            {
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, NULL_IDENTITY_SET);
+            } else
+            {
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                add_identity_unification(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+            }
         }
     }
     /* The code that sets isa_operator checks if an id is a goal, so don't need to check here */
