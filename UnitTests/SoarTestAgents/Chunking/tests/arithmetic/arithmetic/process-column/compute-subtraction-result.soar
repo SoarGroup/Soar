@@ -1,0 +1,39 @@
+## Carry needed
+
+sp {process-column*propose*compute-subtraction-borrow-result
+   (state <s> ^name process-column
+              ^arithmetic-problem.operation subtraction
+              ^digit1 <a1>
+              ^digit2 { > <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-borrow-result)
+}
+
+
+## No carry needed
+sp {process-column*propose*compute-subtraction-result
+   (state <s> ^name process-column
+              ^arithmetic-problem.operation subtraction
+              ^digit1 <a1>
+              ^digit2 { <= <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-no-borrow-result)
+}
+
+sp {process-column*apply*compute-subtraction-no-carru-result*subtraction
+   (state <s> ^operator.name compute-subtraction-no-borrow-result
+              ^arithmetic.subtraction-facts <af>
+              ^digit1 <a1>
+              ^digit2 <a2>)
+   (<af> ^digit1 <a1>
+         ^digit2 <a2>
+         ^result <result>)
+-->
+   (<s> ^result <result>
+        ^carry 0)
+}
+

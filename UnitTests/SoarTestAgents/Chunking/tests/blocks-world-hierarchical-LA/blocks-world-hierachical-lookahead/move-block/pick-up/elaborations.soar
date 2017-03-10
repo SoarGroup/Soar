@@ -1,0 +1,36 @@
+sp {pick-up*put-down*elaborate*substate*gripper-operators
+   (state <s> ^name << pick-up put-down >>)
+-->
+   (<s> ^state-type gripper-operators)
+}
+sp {pick-up*elaborate*desired
+   (state <s> ^name pick-up
+              ^superstate <ss>)
+   (<ss>  ^operator <so>)
+   (<so> ^name pick-up
+         ^moving-block <block>)
+-->
+   (<s> ^desired <d>)
+   (<d> ^moving-block <block>)
+}
+sp {put-down*elaborate*desired
+   (state <s> ^name put-down
+              ^superstate <ss>)
+   (<ss>  ^operator <so>)
+   (<so> ^name put-down
+         ^moving-block <block>
+         ^destination <dest>)
+-->
+   (<s> ^desired <d>)
+   (<d> ^moving-block <block>
+        ^destination <dest>)
+}
+
+sp {gripper-operators*elaborate*problem-space
+   (state <s> ^state-type gripper-operators)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name gripper
+        ^default-state-copy yes
+        ^dont-copy top-state clear inplace-object moveable
+        ^one-level-attributes object)}

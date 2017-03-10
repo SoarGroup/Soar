@@ -1,0 +1,49 @@
+sp {move-block*propose*pick-up
+   (state <s> ^name move-block
+              ^top-state <ts>)
+   (<ts> ^gripper.holding nothing
+         ^clear <block>)
+   (<block> ^type block)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name pick-up
+         ^moving-block <block>)
+}
+
+sp {move-block*propose*pick-up*only-correct
+   (state <s> ^name move-block
+              ^operator <op> +
+              ^top-state <ts>
+              ^desired.moving-block <block>)
+   (<ts> ^gripper.holding nothing
+        )# ^clear <block>)
+   (<block> ^type block)   
+   (<op> ^name pick-up
+         ^moving-block <block>)
+-->
+   (<s> ^operator <op> >)
+}
+
+#
+#sp {move-block*propose*pick-up*only-correct
+#   (state <s> ^name move-block
+#              ^top-state <ts>
+#              ^desired.moving-block <block>)
+#   (<ts> ^gripper.holding nothing
+#        )# ^clear <block>)
+#   (<block> ^type block)
+#-->
+#   (<s> ^operator <op> +)
+#   (<op> ^name pick-up
+#         ^moving-block <block>)
+#}
+
+sp {move-block*monitor*pickup
+   (state <s> ^name move-block
+              ^operator <o>)
+   (<o> ^name pick-up
+        ^moving-block.name <name>)
+-->
+   (write (crlf) |Pickup block | <name>)}
+
+

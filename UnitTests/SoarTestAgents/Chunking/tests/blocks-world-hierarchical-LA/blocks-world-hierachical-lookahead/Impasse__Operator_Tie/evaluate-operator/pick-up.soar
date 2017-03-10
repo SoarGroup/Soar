@@ -1,0 +1,25 @@
+sp {apply*pick-up*set-holding*evaluate
+   (state <s> ^operator <op>
+              ^name evaluate-operator
+              ^top-state.gripper <g>)
+   (<op> ^name pick-up
+         ^moving-block <block>)
+   (<g> ^holding nothing)
+-->
+   (<g> ^holding nothing -
+                 <block>)
+}
+sp {apply*pick-up*remove-bottome-block*evaluate
+   (state <s> ^operator <op>
+              ^name evaluate-operator
+              ^top-state <ts>)
+   (<ts> ^gripper <g>
+         ^ontop <ontop>)
+   (<ontop> ^top-block <block>
+            ^bottom-block <bblock>)
+   (<op> ^name pick-up
+         ^moving-block <block>)
+   (<g> ^holding nothing)
+-->
+   (<ontop> ^bottom-block <bblock> -)
+}

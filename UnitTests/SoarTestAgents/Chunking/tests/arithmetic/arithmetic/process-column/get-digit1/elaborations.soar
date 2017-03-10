@@ -1,0 +1,12 @@
+sp {get-digit1*elaborate*state
+#   :interrupt
+   (state <s> ^name get-digit1
+              ^current-column <c>)
+   (<c> ^digit1 <a>
+        ^carry <cb>) 
+-->
+   (<s> ^digit1 <a>
+        ^digit2 <cb>)
+}
+
+

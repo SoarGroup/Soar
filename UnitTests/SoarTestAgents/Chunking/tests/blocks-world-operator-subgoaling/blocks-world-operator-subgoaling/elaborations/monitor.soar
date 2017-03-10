@@ -1,0 +1,10 @@
+sp {blocks-world*monitor*prefer*ontop
+   (state <s> ^name blocks-world ^desired <d*1> ^operator <o> +)
+   (<o> ^destination <db> ^moving-block <mb>)
+   (<db> ^name <db-name>)
+   (<mb> ^name <mb-name>)
+   (<d*1> ^ontop <ot>)
+   (<ot> ^top-block <mb> ^bottom-block <db>)
+-->
+   (write (crlf) |    Propose move | <mb-name> | to | <db-name>)
+}

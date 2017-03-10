@@ -1,0 +1,10 @@
+## Need a structure that is true during a block getting moved
+##  clear does not do the trick.
+
+sp {elaborate*block*movable
+   (state <s> ^name blocks-world
+              ^object <block>
+             -^ontop.bottom-block <block>)
+-->
+   (<s> ^moveable <block>)
+}

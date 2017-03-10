@@ -1,0 +1,13 @@
+## failure
+sp {evaluate-operator*failure
+   :default
+   (state <s> ^impasse no-change
+              ^quiescence t
+              ^attribute state
+              ^superstate <ss>)
+   (<ss> ^name evaluate-operator
+         ^desired <d>)
+-->
+ ##(write (crlf) |Failure - state no-change|)
+   (<ss> ^exhaustion-failure <d>)
+}

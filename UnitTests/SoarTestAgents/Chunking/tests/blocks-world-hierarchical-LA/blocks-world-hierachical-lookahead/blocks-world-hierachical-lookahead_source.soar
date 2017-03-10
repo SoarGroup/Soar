@@ -1,0 +1,18 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _readme.soar
+source external-operator-implementations.soar
+source Impasse__Operator_Tie.soar
+pushd Impasse__Operator_Tie
+source Impasse__Operator_Tie_source.soar
+popd
+source initialize-blocks-world.soar
+source move-block.soar
+pushd move-block
+source move-block_source.soar
+popd

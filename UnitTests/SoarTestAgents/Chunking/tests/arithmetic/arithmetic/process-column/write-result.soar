@@ -1,0 +1,35 @@
+
+## Won't chunk correctly because carry is a local negation!
+
+sp {process-column*propose*write-result
+   (state <s> ^name process-column
+              ^result <a>
+              ^carry << 0 unknown >>
+             -^current-column.result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name write-result)
+}
+
+# This is required so that chunking works correctly 
+sp {process-column*propose*write-result2
+   (state <s> ^name process-column
+              ^result <a>
+              ^carry 1
+              ^current-column <cc>)
+   (<cc> ^next-column.carry 1
+        -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name write-result)
+}
+
+sp {process-column*apply*write-result
+   (state <s> ^operator.name write-result
+              ^result <a>
+              ^current-column <cc>)
+-->
+   (<cc> ^result <a>)
+}
+
+

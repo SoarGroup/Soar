@@ -1,0 +1,23 @@
+sp {move-block*propose*put-down
+   (state <s> ^name move-block
+              ^desired.destination <block>
+              ^top-state <ss>)
+   (<ss> ^gripper.holding { <> nothing <> <block> <mblock>}
+         ^clear <block>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name put-down
+        ^destination <block>
+        ^moving-block <mblock>)
+}
+
+############# Monitor
+sp {move-block*monitor*putdown
+   (state <s> ^name move-block
+              ^top-state.gripper.holding.name <mname>
+              ^operator <o>)
+   (<o> ^name put-down
+        ^destination.name <dname>)
+-->
+   (write (crlf) |Put | <mname> | on | <dname>)}
+

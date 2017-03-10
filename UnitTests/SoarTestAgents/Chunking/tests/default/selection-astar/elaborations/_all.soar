@@ -1,0 +1,8 @@
+sp {elaborate*state*top-state
+   :default
+   (state <s> ^superstate.top-state <ts>
+             -^name evaluate-operator)
+-->
+   (<s> ^top-state <ts>)
+}
+

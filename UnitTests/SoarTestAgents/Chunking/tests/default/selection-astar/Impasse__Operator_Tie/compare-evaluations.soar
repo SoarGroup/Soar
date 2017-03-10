@@ -1,0 +1,46 @@
+sp {selection*propose*compute-evaluations
+   (state <s> ^name selection
+              ^evaluation <e1> { <e2> <> <e1> })
+   (<e1> ^superoperator <so1>
+         ^final-cost <fc>)
+   (<e2> ^superoperator <so2>
+         ^final-cost > <fc>)
+  -{(<s> ^compared <com>)
+    (<com> ^op1 <so1>
+           ^op2 <so2>)}
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-evaluations
+         ^op1 <so1>
+         ^op2 <so2>)
+}
+
+sp {selection*propose*compute-evaluations2
+   (state <s> ^name selection
+              ^evaluation <e1> { <e2> <> <e1> })
+   (<e1> ^superoperator <so1>
+         ^final-cost <fc>)
+   (<e2> ^superoperator <so2>
+         ^total-estimated-cost > <fc>)
+  -{(<s> ^compared <com>)
+    (<com> ^op1 <so1>
+           ^op2 <so2>)}
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-evaluations
+         ^op1 <so1>
+         ^op2 <so2>)
+}
+sp {apply*compute-evaluations
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name compute-evaluations
+         ^op1 <so1>
+         ^op2 <so2>)
+-->
+   (<ss> ^operator <so1> > <so2>)
+   (<s> ^compared <com>)
+   (<com> ^op1 <so1>
+          ^op2 <so2>)
+}
+

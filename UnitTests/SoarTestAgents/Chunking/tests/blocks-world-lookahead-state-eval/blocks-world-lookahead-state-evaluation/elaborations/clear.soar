@@ -1,0 +1,18 @@
+# If an blcok does not have another block ontop of it, it is clear.
+
+sp {P1*elaborate*block*clear
+   (state <s> ^object <block>
+             -^ontop.bottom-block <block>)
+-->
+   (<s> ^clear <block>)
+}
+
+# Table is always clear
+
+sp {P2*elaborate*table*clear
+   (state <s> ^object <object>)
+   (<object> ^type table)
+-->
+   (<s> ^clear <object>)
+}
+

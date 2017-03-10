@@ -1,0 +1,52 @@
+# this rule will cause a warning during loading in Soar; that warning can be ignored
+#set warnings off
+output warnings off
+sp {mac*evaluate*state*failure*duplicate
+   (state <s2>  ^superstate.superstate <s1>
+                ^right-bank <rb2>
+                ^left-bank <lb2>
+                ^boat <bank>
+                ^tried-tied-operator
+                ^desired <d>)
+   (<rb2> ^missionaries <rbm> ^cannibals <rbc>)
+   (<lb2> ^missionaries <lbm> ^cannibals <lbc>)
+   (<s1> ^right-bank <rb>
+         ^left-bank <lb>
+         ^boat <bank>)
+   (<rb> ^missionaries <rbm> ^cannibals <rbc>)
+   (<lb> ^missionaries <lbm> ^cannibals <lbc>)
+    -->
+   (write (crlf) |Duplicate State Detected.|)
+   (<s2> ^failure <d>)}
+
+sp {mac*evaluate*state*failure*duplicate2
+   (state <s2>  ^superstate.superstate.superstate.superstate <s1>
+                ^right-bank <rb2>
+                ^left-bank <lb2>
+                ^boat <bank>
+                ^tried-tied-operator
+                ^desired <d>)
+   (<rb2> ^missionaries <rbm> ^cannibals <rbc>)
+   (<lb2> ^missionaries <lbm> ^cannibals <lbc>)
+   (<s1> ^right-bank <rb>
+         ^left-bank <lb>
+         ^boat <bank>)
+   (<rb> ^missionaries <rbm> ^cannibals <rbc>)
+   (<lb> ^missionaries <lbm> ^cannibals <lbc>)
+   -->
+   (write (crlf) |Duplicate State Detected – 2 deep.|)
+   (<s2> ^failure <d>)}
+
+#set warnings on
+output warnings on
+
+sp {mac*evaluate*state*failure*state-no-change
+    (state <s> ^desired <d>
+               ^problem-space.name missionaries-and-cannibals)
+    (state <ss> ^superstate <s>
+                ^attribute state
+                ^quiescence t
+                ^impasse no-change)
+-->
+  (write (crlf) |######## STATE NO-CHANGE Failure! #########|)
+    (<s> ^failure <d>)}

@@ -1,0 +1,7 @@
+source clear.soar
+source detect-success.soar
+source in-place.soar
+source monitor.soar
+source moveable.soar
+source problem-space.soar
+source selection.soar

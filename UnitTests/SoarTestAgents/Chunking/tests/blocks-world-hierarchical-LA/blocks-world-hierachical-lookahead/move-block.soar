@@ -1,0 +1,109 @@
+###
+### MOVE-BLOCK
+###
+
+# Propose moving a clear block ontop a clear object
+ 
+sp {P5*propose*move-block
+   (state <s> ^name blocks-world)
+   (<s> ^moveable <blockA>
+        ^clear { <> <blockA> <object> })
+   (<blockA> ^type block)
+  -{(<s> ^ontop <ontop>)      # needed to avoid moving a block onto the table that is already there
+    (<ontop> ^top-block <blockA>
+             ^bottom-block <object>)}
+  -{(<s> ^gripper.holding <> <blockA> <> nothing)}
+#  -{(<s> ^ontop <ontop2>)      # needed to avoid moving a block onto position just picked up from in substats
+#    (<ontop2> ^last-bottom <object>)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move-block
+        ^moving-block <blockA>
+        ^destination <object>)}
+
+############################
+sp {P7*evaluate*move-block*better*move-to-goal
+   (state <s> ^name blocks-world
+              ^inplace-object <block2>
+              ^desired <d>
+              ^operator <op1> +
+              ^operator { <> <op1> <op2> } +)
+   (<d> ^ontop <ontop>)
+   (<ontop>  ^top-block <block1>
+             ^bottom-block <block2>)
+   (<op1> ^name move-block
+          ^moving-block <block1>
+          ^destination <block2>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+#
+sp {P6*evaluate*move-block*best*move-block-to-table
+   (state <s> ^name blocks-world
+             -^inplace-object <block1>
+              ^object <table>
+              ^ontop <ontop>
+              ^desired <d>
+              ^operator <op1> +)
+   (<table> ^name table)
+   (<ontop> ^top-block <block1>
+            ^bottom-block { <> <table> <block2> })
+   (<op1> ^name move-block
+          ^moving-block <block1>
+          ^destination <table>)
+-->
+   (<s> ^operator <op1> >)
+}
+#
+sp {blocks-world*reject*move-block*twice
+   (state <s> ^name evaluate-operator
+              ^operator <o> +
+              ^last-moved-block <mb>)
+   (<o> ^moving-block <mb>)
+-->
+   (<s> ^operator <o> -)}
+
+
+
+############ In look ahead
+
+sp {blocks-world*apply*operator*move-block*change-ontop*evaluation*add
+   (state <s> ^operator <o>
+              ^name evaluate-operator
+              ^ontop <ontop>)
+   (<ontop> ^top-block <mblock>)
+   (<o> ^moving-block <mblock>
+        ^destination <tblock>)
+-->
+   (<ontop> ^bottom-block <tblock>)}
+
+sp {blocks-world*apply*operator*move-block*change-ontop*evaluation*remove
+   (state <s> ^operator <o>
+              ^name evaluate-operator
+              ^ontop <ontop>)
+   (<ontop> ^top-block <mblock>
+            ^bottom-block { <> <tblock> <object> })
+   (<o> ^moving-block <mblock>
+        ^destination <tblock>)
+-->
+   (<ontop> ^bottom-block <object> -)}
+
+sp {blocks-world*apply*operator*remember*moved-block*evaluation
+   (state <s1> ^operator <o1>
+              ^name evaluate-operator
+              -^last-moved-block <mb>)
+   (<o1> ^name move-block
+         ^moving-block <mb>
+         ^destination <tblock>)
+-->
+   (<s1> ^last-moved-block <mb>)
+}
+
+sp {blocks-world*apply*operator*forget*moved-block*evaluation
+   (state <s> ^operator <o>
+              ^name evaluate-operator
+              ^last-moved-block <mb>)
+   (<o> ^name move-block
+        ^moving-block <> <mb>)
+-->
+   (<s> ^last-moved-block <mb> -)}

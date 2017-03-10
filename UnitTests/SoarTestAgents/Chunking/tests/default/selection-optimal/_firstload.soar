@@ -1,0 +1,5 @@
+## Must initialize depth in task initial state to 0
+## Delays selection until all options are evaluated
+##  improves likelihood of getting best selection 
+##   don't jump at partial-success but wait for complete success
+## Finds shallowest solution
