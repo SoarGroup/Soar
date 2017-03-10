@@ -83,11 +83,11 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
     //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : recent-3);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
     double inhibition_odds = 0;
-    /*if (recent_time != 0)
+    if (recent_time != 0 && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
     {
         inhibition_odds = pow(1+pow(recent_time/10.0,-1.0),-1.0);
         return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
-    }*/
+    }
     return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));//doing log prob instead of log odds.
 }
 
@@ -310,7 +310,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation)==0)
     {//When we have nothing to go on, we pretend the base-level of the memory is equivalent to having been accessed once at the time the agent was created.
         double decay = settings->base_decay->get_value();
-        new_base = pow(static_cast<double>(smem_max_cycle),static_cast<double>(-decay));
+        new_base = pow(static_cast<double>(smem_max_cycle+1000),static_cast<double>(-decay));
         new_base = log(new_base/(1.0+new_base));
     }
     else
@@ -329,6 +329,9 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
         SQL->act_lti_fake_set->bind_double(3, new_base + modified_spread);
         SQL->act_lti_fake_set->bind_int(4,pLTI_ID);
         SQL->act_lti_fake_set->execute(soar_module::op_reinit);
+        SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+        SQL->act_set->bind_int(2, pLTI_ID);
+        SQL->act_set->execute(soar_module::op_reinit);
     }
     else
     {
@@ -341,6 +344,12 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && !already_in_spread_table)
     {
         SQL->act_set->bind_double(1, new_base+modified_spread);
+        SQL->act_set->bind_int(2, pLTI_ID);
+        SQL->act_set->execute(soar_module::op_reinit);
+    }
+    else if (num_edges < static_cast<uint64_t>(settings->thresh->get_value()) && already_in_spread_table)
+    {
+        SQL->act_set->bind_double(1, SMEM_ACT_LOW);
         SQL->act_set->bind_int(2, pLTI_ID);
         SQL->act_set->execute(soar_module::op_reinit);
     }
@@ -944,6 +953,10 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                         SQL->act_lti_set->bind_int(4, *recipient_it);
                         SQL->act_lti_set->execute(soar_module::op_reinit);
                         spreaded_to->erase(*recipient_it);
+                        SQL->act_set->bind_double(1, prev_base);
+                        SQL->act_set->bind_int(2, *recipient_it);
+                        SQL->act_set->execute(soar_module::op_reinit);
+
                         //SQL->act_lti_fake_get->reinitialize();
                     }
                 }
@@ -1184,7 +1197,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = settings->base_decay->get_value();
-                    new_base = pow(static_cast<double>(smem_max_cycle),static_cast<double>(-decay));
+                    new_base = pow(static_cast<double>(smem_max_cycle+1000),static_cast<double>(-decay));
                     new_base = log(new_base/(1+new_base));
                 }
                 else
@@ -1223,6 +1236,12 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                     SQL->act_lti_fake_insert->bind_double(3, spread);
                     SQL->act_lti_fake_insert->bind_double(4, modified_spread+ new_base);
                     SQL->act_lti_fake_insert->execute(soar_module::op_reinit);
+
+                    //In order to prevent the activation from the augmentations table from coming into play after this has been given spread, we set the augmentations bla to be smemactlow
+                    SQL->act_set->bind_double(1, SMEM_ACT_LOW);
+                    SQL->act_set->bind_int(2, *candidate);
+                    SQL->act_set->execute(soar_module::op_reinit);
+
                     ////////////////////////////////////////////////////////////////////////////
                     timers->spreading_7_2_8->stop();
                     ////////////////////////////////////////////////////////////////////////////

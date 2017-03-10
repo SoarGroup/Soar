@@ -794,7 +794,14 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
         ////////////////////////////////////////////////////////////////////////////
     }
 
-    return (*(all_king_ids.rbegin())).second;
+    if (!all_king_ids.empty())
+    {
+        return (*(all_king_ids.rbegin())).second;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 
