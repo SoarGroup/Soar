@@ -13353,12 +13353,6 @@ sp {apply*wait-for-response*stop*max-sentence
     (<ts> ^max-sentence-number <csn>)
     (<ts> ^current-sentence-number { > <csn> <c*1> })
     -->
-    (write (cmd |ctf stats.txt stats|))
-    (write (cmd |ctf statsm.txt statsm|))
-    (write (cmd |ctf statesexp.txt fc game-search*elaborate*other-levels*simulated|))
-    (write (cmd |ctf solution.txt print (* ^dcount *) -d 2|))
-    (write (cmd |ctf chunks.txt pfc|))
-    (write (cmd |ctf s1.txt print s1 -d 3|))
     (halt)
 }
 
@@ -32986,8 +32980,6 @@ sp {apply*clean-up-after-learning*capture-data
     -->
     (<ts> ^dialog-context <dc> -)
     (<s> ^old-context <dc> +)
-    (write (cmd |ctf -a pertaskstats.txt stats|))
-    (write (cmd |ctf -a smemuse.txt smem --stats mem-usage|))
 }
 
 sp {finished-game-teaching*propose*clean-up-after-learning*no
@@ -33095,7 +33087,7 @@ sp {finished-game-teaching*apply*setup-search*printtime
     (<s*2> ^operator <o*1>)
     (<o*1> ^response yes)
     -->
-    (write (cmd |ctf endlearntime.txt stats|))
+    (write |finished|)
 }
 
 sp {finished-game-teaching*propose*setup-search*game-replay

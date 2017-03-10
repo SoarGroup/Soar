@@ -1,11 +1,10 @@
 srand 23
 
 learn --only
-smem --set learning on
+smem -e
 smem --set initial-variable-id 999000
-epmem --off
 
-decide indifferent-selection -x
+indifferent-selection -x
 
 max-chunks 1000
 max-elaborations 500
