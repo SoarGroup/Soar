@@ -1,15 +1,7 @@
 sp {answer*chunk*make*snc*t2-1
-    (state <s1> ^superstate nil)
-    (<s1> ^constant2 { > 23 <> 23 <c2> })
-    (<s1> ^constant { < 33 <c1> })
-    (<s1> ^sti2 <t2>)
-    (<s1> ^sti { <> <t2> <t1> })
+    (state <s1> ^constant2 33 ^superstate nil ^constant { < 33 <c1> }
+          ^sti2 <t2> ^sti { <> <t2> <t1> })
     -->
-    (<s1> ^result1u <u1> +)
-    (<s1> ^result2 <t1> +)
-    (<s1> ^result3 <t2> +)
-    (<s1> ^result4u 23 +)
-    (<s1> ^result5u 23 +)
-    (<s1> ^result6 <c1> +)
-    (<s1> ^result7 <c2> +)
+    (<s1> ^result1u <u1> + ^result2 <t1> + ^result3 <t2> + ^result4u 23 +
+           ^result5u 23 + ^result6 <c1> + ^result7 33 +)
 }

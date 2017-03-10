@@ -346,6 +346,7 @@ void FullTests_Parent::loadProductions(std::string productions)
 {
 	agent->LoadProductions(productions.c_str(), true) ;
 	no_agent_assertTrue_msg("loadProductions", agent->GetLastCommandLineResult());
+    SoarHelper::check_learning_override(agent);
 }
 
 void FullTests_Parent::testInit()
