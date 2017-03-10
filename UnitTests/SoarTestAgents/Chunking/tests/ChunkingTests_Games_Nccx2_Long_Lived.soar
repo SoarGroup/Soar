@@ -83630,4 +83630,7 @@ smem --add {
 (@4017000 ^type visual ^handle gender ^item-type property)
 (@6010000 ^specifier indefinite ^structure-type CN ^converts-to DP ^assigners @999969 @999970 @999971)
 }
-
+watch 0
+output agent-writes off
+exp all on
+time run 6000
