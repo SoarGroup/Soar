@@ -68,7 +68,10 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->rhs_funcs = { NULL, NULL, NULL, NULL };
     p->clone_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
     p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
-    p->was_unbound_vars = { pWas_unbound_vars.id, pWas_unbound_vars.attr, pWas_unbound_vars.value, pWas_unbound_vars.referent };
+    p->was_unbound_vars.id = pWas_unbound_vars.id;
+    p->was_unbound_vars.attr = pWas_unbound_vars.attr;
+    p->was_unbound_vars.value = pWas_unbound_vars.value;
+    p->was_unbound_vars.referent = pWas_unbound_vars.referent;
 
     PDI_add(thisAgent, p);
     dprint(DT_PREFS, "Created preference %p\n", p);
