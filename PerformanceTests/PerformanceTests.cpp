@@ -213,12 +213,11 @@ int main(int argc, char* argv[])
         srccmd += DEFAULT_AGENT;
         srccmd += ".soar";
         commands.push_back(srccmd.c_str());
-        commands.push_back("watch 0");
-        commands.push_back("srand 233391");
-        commands.push_back("explain all off");
         commands.push_back("output console off");
         commands.push_back("output callbacks off");
         commands.push_back("output agent-writes off");
+        commands.push_back("watch 0");
+        commands.push_back("srand 233391");
 
         Run_PerformanceTest(numTrials, numDCs, &l_testStats, commands);
         l_testStats.PrintResults();
