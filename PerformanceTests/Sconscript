@@ -1,0 +1,6 @@
+#!/usr/bin/python
+
+Import('env')
+t = env.Install('$OUT_DIR', env.Program('PerformanceTests', Glob('*.cpp')))
+
+env.Alias('performance_tests', t)
