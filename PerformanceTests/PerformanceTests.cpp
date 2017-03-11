@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
 
         commands.push_back("pushd SoarPerformanceTests");
         string srccmd = "source ";
-        srccmd += DEFAULT_AGENT;
+        srccmd += agentname;
         srccmd += ".soar";
         commands.push_back(srccmd.c_str());
         commands.push_back("output console off");
