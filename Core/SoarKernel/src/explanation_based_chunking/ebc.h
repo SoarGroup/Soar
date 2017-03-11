@@ -174,7 +174,6 @@ class Explanation_Based_Chunker
         chunk_cond_set      negated_set;
         tc_number           grounds_tc;
         tc_number           backtrace_number;
-        uint64_t            m_current_bt_inst_id;
 
         /* Flags for potential issues encountered during dependency analysis */
         bool                m_correctness_issue_possible;

@@ -100,8 +100,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
 
     condition* c;
     cons* grounds_to_print, *locals_to_print, *negateds_to_print;
-    uint64_t last_bt_inst_id = m_current_bt_inst_id;
-    m_current_bt_inst_id = inst->i_id;
 
     dprint(DT_BACKTRACE, "Backtracing %y :i%u (matched level %d):\n", inst->prod_name, inst->i_id, static_cast<int64_t>(m_goal_level));
 
@@ -120,10 +118,13 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         ebc_timers->dependency_analysis->start();
     }
 
-    ++bt_depth;
-    if (inst->explain_depth > bt_depth)
+    if (thisAgent->explanationMemory->isRecordingChunk())
     {
-        inst->explain_depth = bt_depth;
+        ++bt_depth;
+        if (inst->explain_depth > bt_depth)
+        {
+            inst->explain_depth = bt_depth;
+        }
     }
     /* --- if the instantiation has already been BT'd, don't repeat it --- */
     if (inst->backtrace_number == backtrace_number)
@@ -136,7 +137,6 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         }
         thisAgent->explanationMemory->increment_stat_seen_instantations_backtraced();
         dprint(DT_BACKTRACE, "... already backtraced through.\n");
-        m_current_bt_inst_id = last_bt_inst_id;
         return;
     }
 
@@ -200,24 +200,23 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         print_consed_list_of_condition_wmes(thisAgent, grounds, 0);
         xml_end_tag(thisAgent, kTagGrounds);
         thisAgent->outputManager->printa(thisAgent,  "\n");
+
         thisAgent->outputManager->printa(thisAgent, "  -->Locals:\n");
         xml_begin_tag(thisAgent, kTagLocals);
         print_consed_list_of_condition_wmes(thisAgent, locals, 0);
         xml_end_tag(thisAgent, kTagLocals);
         thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+
         thisAgent->outputManager->printa(thisAgent, "  -->Negated:\n");
         xml_begin_tag(thisAgent, kTagNegated);
         print_consed_list_of_conditions(thisAgent, negateds_to_print, 0);
         xml_end_tag(thisAgent, kTagNegated);
         thisAgent->outputManager->printa_sf(thisAgent,  "\n");
+        free_list(thisAgent, negateds_to_print);
 
         xml_end_tag(thisAgent, kTagBacktrace);
     }
 
-    /* Moved these free's down to here, to ensure they are cleared even if we're not printing these lists     */
-    free_list(thisAgent, negateds_to_print);
-
-    m_current_bt_inst_id = last_bt_inst_id;
 }
 
 /* ---------------------------------------------------------------
