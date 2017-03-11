@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-Import('env')
-t = env.Install('$OUT_DIR', env.Program('PerformanceTests', Glob('*.cpp')))
+Import('env', 'InstallDir')
 
-env.Alias('performance_tests', t)
+t = env.Install('$OUT_DIR', env.Program('PerformanceTests', Glob('*.cpp')))
+PerformanceTests = InstallDir(env, '$OUT_DIR/SoarPerformanceTests/', 'TestAgents')
+
+env.Alias('performance_tests', t + PerformanceTests)

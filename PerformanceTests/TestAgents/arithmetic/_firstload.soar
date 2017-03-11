@@ -1,0 +1,12 @@
+sp {arithmetic*elaborate*count-mod-1000
+   (state <s> ^name arithmetic
+              ^count <count>)
+-->
+   (<s> ^count-mod-1000 (mod <count> 200000))}
+
+#sp {arithmetic*elaborate*stats
+#   (state <s> ^name arithmetic
+#              ^count-mod-1000 0)
+#-->
+   #(write (cmd stats))
+   #}

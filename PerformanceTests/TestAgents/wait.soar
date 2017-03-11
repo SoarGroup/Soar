@@ -1,0 +1,10 @@
+watch 0
+
+sp {top-state*propose*wait
+   (state <s> ^superstate nil
+             -^operator.name wait)
+-->
+   (<s> ^operator <o>)
+   (<o> ^name wait)}
+   
+#    run 2333333
