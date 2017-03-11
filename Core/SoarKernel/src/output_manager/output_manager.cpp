@@ -104,18 +104,13 @@ void Output_Manager::print_output_modes(trace_mode_info mode_info_to_print[num_t
     }
 }
 
-void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
-{
-    m_Kernel = pKernel;
-    m_Soar_Instance = pSoarInstance;
-}
-
 Output_Manager::Output_Manager()
 {
     m_defaultAgent = NIL;
     m_params = new OM_Parameters(NULL, settings);
     m_pre_string = strdup("          ");
     m_post_string = NULL;
+    m_cleaned_up = false;
 
     reset_column_indents();
 
@@ -136,6 +131,15 @@ Output_Manager::Output_Manager()
 
 Output_Manager::~Output_Manager()
 {
+    if (!m_cleaned_up)
+    {
+        clean_up_for_kernel_deletion();
+        //assert(false);
+    }
+}
+
+void Output_Manager::clean_up_for_kernel_deletion()
+{
     free(NULL_SYM_STR);
     if (m_pre_string) free(m_pre_string);
     if (m_post_string) free(m_post_string);
@@ -146,8 +150,9 @@ Output_Manager::~Output_Manager()
     }
 
     delete m_params;
-}
 
+    m_cleaned_up = true;
+}
 
 int Output_Manager::get_printer_output_column(agent* pSoarAgent)
 {

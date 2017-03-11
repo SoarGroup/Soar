@@ -51,6 +51,25 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     cached_production = new production_record_set();
 }
 
+Explanation_Memory::~Explanation_Memory()
+{
+    dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
+
+    current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
+    clear_explanations();
+
+    delete chunks;
+    delete chunks_by_ID;
+    delete all_conditions;
+    delete all_actions;
+    delete instantiations;
+    delete production_id_map;
+    delete cached_production;
+    delete settings;
+    dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
+}
+
 void Explanation_Memory::initialize_counters()
 {
     chunk_id_count = 1;
@@ -147,23 +166,6 @@ void Explanation_Memory::clear_explanations()
     production_id_map->clear();
 
     dprint(DT_EXPLAIN, "Explanation logger done clearing explanation records...\n");
-}
-
-Explanation_Memory::~Explanation_Memory()
-{
-    dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
-
-    current_recording_chunk = NULL;
-    current_discussed_chunk = NULL;
-    clear_explanations();
-
-    delete chunks;
-    delete chunks_by_ID;
-    delete all_conditions;
-    delete all_actions;
-    delete instantiations;
-    delete production_id_map;
-    dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
 }
 
 void Explanation_Memory::re_init()

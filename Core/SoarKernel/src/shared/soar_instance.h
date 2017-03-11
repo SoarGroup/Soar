@@ -32,12 +32,12 @@ class EXPORT Soar_Instance
         ~Soar_Instance();
 
         void            init_Soar_Instance(sml::Kernel* pKernel);
+        void            clean_up_for_kernel_deletion();
 
         void            Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction);
         std::string     Tcl_Message_Library(const char* pMessage);
         bool            is_Tcl_on() { return m_tcl_enabled; };
         std::string     Message_Library(std::string &pMessage);
-        void            Clean_Up_Libraries();
 
         void            Register_Soar_AgentSML(char* pAgentName, sml::AgentSML* pSoarAgentSML);
         void            Delete_Agent(char* pAgentName);
@@ -66,6 +66,7 @@ class EXPORT Soar_Instance
         Memory_Manager*         m_Memory_Manager;
         bool                    m_launched_by_unit_test;
         bool                    m_tcl_enabled;
+        bool                    m_cleaned_up;
 
         std::unordered_map< std::string, sml::AgentSML*>* m_agent_table;
         std::unordered_map< std::string, Soar_Loaded_Library* >* m_loadedLibraries;

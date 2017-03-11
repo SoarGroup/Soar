@@ -249,10 +249,12 @@ Kernel::~Kernel(void)
 
     delete m_pEventMap ;
 
-    if (m_SoarInstance)
-    {
-        m_SoarInstance->Clean_Up_Libraries();
-    }
+//    Soar_Instance::Get_Soar_Instance().clean_up_for_kernel_deletion();
+//    Output_Manager::Get_OM().clean_up_for_kernel_deletion();
+//    Memory_Manager::Get_MPM().clean_up_for_kernel_deletion();
+//
+//    Soar_Instance* l_SoarInstance = &(Soar_Instance::Get_Soar_Instance());
+//    delete l_SoarInstance;
 }
 
 /*************************************************************

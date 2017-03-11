@@ -29,6 +29,8 @@ Soar_Instance::Soar_Instance()
     m_tcl_enabled = false;
     m_loadedLibraries = new std::unordered_map<std::string, Soar_Loaded_Library* >();
     m_agent_table = new std::unordered_map< std::string, sml::AgentSML* >();
+
+    m_cleaned_up = false;
 }
 
 void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
@@ -37,12 +39,21 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
 
     /* -- Sets up the Output Manager -- */
     m_Output_Manager = &Output_Manager::Get_OM();
-    m_Output_Manager->init_Output_Manager(pKernel, this);
     m_Memory_Manager = &Memory_Manager::Get_MPM();
     m_Memory_Manager->init_MemPool_Manager(pKernel, this);
 }
 
 Soar_Instance::~Soar_Instance()
+{
+    if (!m_cleaned_up)
+    {
+        clean_up_for_kernel_deletion();
+        //assert(false);
+    }
+
+}
+
+void Soar_Instance::clean_up_for_kernel_deletion()
 {
     dprint(DT_SOAR_INSTANCE, "= Destroying Soar instance =\n");
     m_Kernel = NULL;
@@ -62,6 +73,7 @@ Soar_Instance::~Soar_Instance()
     }
     m_loadedLibraries->clear();
     delete m_loadedLibraries;
+    m_cleaned_up = true;
     dprint(DT_SOAR_INSTANCE, "= Soar instance destroyed =\n");
 }
 
@@ -89,11 +101,6 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
         dprint(DT_SOAR_INSTANCE, "CLI Extension %s registered.\n", lLibName.c_str());
 
     }
-}
-
-void Soar_Instance::Clean_Up_Libraries()
-{
-
 }
 
 std::string Soar_Instance::Tcl_Message_Library(const char* pMessage)

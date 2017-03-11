@@ -68,6 +68,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
 {
+    delete settings;
 }
 
 void GraphViz_Visualizer::visualize_wm(Symbol* pSym, int pDepth)

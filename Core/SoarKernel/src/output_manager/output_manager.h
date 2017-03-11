@@ -66,12 +66,13 @@ class Output_Manager
         friend class action_record;
 
     public:
-        static Output_Manager& Get_OM()
+        static  Output_Manager& Get_OM()
         {
             static Output_Manager instance;
             return instance;
         }
         virtual ~Output_Manager();
+        void    clean_up_for_kernel_deletion();
 
     private:
 
@@ -81,10 +82,9 @@ class Output_Manager
         Output_Manager(Output_Manager const&) {};
         void operator=(Output_Manager const&) {};
 
-        Soar_Instance*                            m_Soar_Instance;
-        sml::Kernel*                              m_Kernel;
-        agent*                                    m_defaultAgent;
-        OM_Parameters*                            m_params;
+        agent*          m_defaultAgent;
+        OM_Parameters*  m_params;
+        bool            m_cleaned_up;
 
         /* -- Global toggles for database, standard out -- */
         bool stdout_mode;
@@ -125,7 +125,6 @@ class Output_Manager
 
         uint64_t settings[num_output_sysparams];
 
-        void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
         void copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes]);

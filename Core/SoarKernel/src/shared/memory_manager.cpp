@@ -43,9 +43,6 @@
 void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
 {
 
-    m_Kernel = pKernel;
-    m_Soar_Instance = pSoarInstance;
-
     dprint(DT_SOAR_INSTANCE, "init_MemPool_Manager called.\n");
 
     for (int i = 0; i < NUM_MEM_USAGE_CODES; i++)
@@ -55,6 +52,8 @@ void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* p
 
     // dynamic memory pools (should come before consumers of dynamic pools)
     dyn_memory_pools = new std::unordered_map< size_t, memory_pool* >();
+
+    m_cleaned_up = false;
     dprint(DT_SOAR_INSTANCE, "MemPool_Manager initialized.\n");
 }
 
@@ -66,6 +65,15 @@ Memory_Manager::Memory_Manager()
 }
 
 Memory_Manager::~Memory_Manager()
+{
+    if (!m_cleaned_up)
+    {
+        clean_up_for_kernel_deletion();
+        //assert(false);
+    }
+}
+
+void Memory_Manager::clean_up_for_kernel_deletion()
 {
     dprint(DT_SOAR_INSTANCE, "~MemPoolManager called.\n");
     /* Releasing memory pools */
@@ -85,6 +93,8 @@ Memory_Manager::~Memory_Manager()
         delete it->second;
     }
     delete dyn_memory_pools;
+
+    m_cleaned_up = true;
 }
 
 void Memory_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name)

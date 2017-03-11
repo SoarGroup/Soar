@@ -989,6 +989,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trace"));
 
     remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));
