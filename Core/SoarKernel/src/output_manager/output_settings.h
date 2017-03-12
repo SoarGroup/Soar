@@ -18,6 +18,7 @@ class OM_Parameters: public soar_module::param_container
     public:
 
         OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]);
+        ~OM_Parameters();
 
         soar_module::integer_param* print_depth;
         soar_module::boolean_param* agent_writes;
