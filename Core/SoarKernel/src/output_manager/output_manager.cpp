@@ -110,7 +110,6 @@ Output_Manager::Output_Manager()
     m_params = new OM_Parameters(NULL, settings);
     m_pre_string = strdup("          ");
     m_post_string = NULL;
-    m_cleaned_up = false;
 
     reset_column_indents();
 
@@ -126,19 +125,9 @@ Output_Manager::Output_Manager()
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
      *    place to put it.  Leaving here for now. -- */
     NULL_SYM_STR = strdup("NULL");
-
 }
 
 Output_Manager::~Output_Manager()
-{
-    if (!m_cleaned_up)
-    {
-        clean_up_for_kernel_deletion();
-        //assert(false);
-    }
-}
-
-void Output_Manager::clean_up_for_kernel_deletion()
 {
     free(NULL_SYM_STR);
     if (m_pre_string) free(m_pre_string);
@@ -150,8 +139,6 @@ void Output_Manager::clean_up_for_kernel_deletion()
     }
 
     delete m_params;
-
-    m_cleaned_up = true;
 }
 
 int Output_Manager::get_printer_output_column(agent* pSoarAgent)

@@ -613,13 +613,13 @@ void FullTests_Parent::testAgent()
 	selfRemovingCallback = agent->RegisterForRunEvent(sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyRunSelfRemovingHandler, &selfRemovingCallback) ;
 	
 	// Register for a String event
-	bool stringEventHandlerReceived(false);
-	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_LOAD_LIBRARY, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
-	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("load-library TestExternalLibraryLib", NULL));
-	no_agent_assertTrue_msg("echo hello world", agent->GetLastCommandLineResult());
-	no_agent_assertTrue(stringEventHandlerReceived);
-	stringEventHandlerReceived = false;
-	no_agent_assertTrue(m_pKernel->UnregisterForStringEvent(stringCall));
+//	bool stringEventHandlerReceived(false);
+//	int stringCall = m_pKernel->RegisterForStringEvent(sml::smlEVENT_LOAD_LIBRARY, Handlers::MyStringEventHandler, &stringEventHandlerReceived) ;
+//	no_agent_assertTrue(m_pKernel->ExecuteCommandLine("load-library TestExternalLibraryLib", NULL));
+//	no_agent_assertTrue_msg("echo hello world", agent->GetLastCommandLineResult());
+//	no_agent_assertTrue(stringEventHandlerReceived);
+//	stringEventHandlerReceived = false;
+//	no_agent_assertTrue(m_pKernel->UnregisterForStringEvent(stringCall));
 	
 	// Register another handler for the same event, to make sure we can do that.
 	// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)

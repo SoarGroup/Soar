@@ -40,8 +40,11 @@
    number, must be prime */
 #define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
 
-void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
+Memory_Manager::Memory_Manager()
 {
+//    std::cout << "MemPool Manager constructor called.\n";
+
+    memory_for_usage_overhead = memory_for_usage + STATS_OVERHEAD_MEM_USAGE;
 
     dprint(DT_SOAR_INSTANCE, "init_MemPool_Manager called.\n");
 
@@ -50,30 +53,10 @@ void Memory_Manager::init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* p
         memory_for_usage[i] = 0;
     }
 
-    // dynamic memory pools (should come before consumers of dynamic pools)
-    dyn_memory_pools = new std::unordered_map< size_t, memory_pool* >();
-
-    m_cleaned_up = false;
     dprint(DT_SOAR_INSTANCE, "MemPool_Manager initialized.\n");
 }
 
-Memory_Manager::Memory_Manager()
-{
-//    std::cout << "MemPool Manager constructor called.\n";
-
-    memory_for_usage_overhead = memory_for_usage + STATS_OVERHEAD_MEM_USAGE;
-}
-
 Memory_Manager::~Memory_Manager()
-{
-    if (!m_cleaned_up)
-    {
-        clean_up_for_kernel_deletion();
-        //assert(false);
-    }
-}
-
-void Memory_Manager::clean_up_for_kernel_deletion()
 {
     dprint(DT_SOAR_INSTANCE, "~MemPoolManager called.\n");
     /* Releasing memory pools */
@@ -88,13 +71,11 @@ void Memory_Manager::clean_up_for_kernel_deletion()
     }
 
     // dynamic memory pools (cleared in the last step)
-    for (std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools->begin(); it != dyn_memory_pools->end(); it++)
+    for (std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools.begin(); it != dyn_memory_pools.end(); it++)
     {
         delete it->second;
     }
-    delete dyn_memory_pools;
-
-    m_cleaned_up = true;
+    dyn_memory_pools.clear();
 }
 
 void Memory_Manager::init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name)
@@ -149,13 +130,13 @@ memory_pool* Memory_Manager::get_memory_pool(size_t size)
 {
     memory_pool* return_val = NULL;
 
-    std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools->find(size);
-    if (it == dyn_memory_pools->end())
+    std::unordered_map< size_t, memory_pool* >::iterator it = dyn_memory_pools.find(size);
+    if (it == dyn_memory_pools.end())
     {
         memory_pool* newbie = new memory_pool;
 
         init_memory_pool_by_ptr(newbie, size, "dynamic");
-        dyn_memory_pools->insert(std::make_pair(size, newbie));
+        dyn_memory_pools.insert(std::make_pair(size, newbie));
 
         return_val = newbie;
     }

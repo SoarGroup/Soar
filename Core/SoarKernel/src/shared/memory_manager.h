@@ -126,9 +126,6 @@ class Memory_Manager
         }
         virtual ~Memory_Manager();
 
-        void init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
-        void clean_up_for_kernel_deletion();
-
         void init_memory_pool(MemoryPoolType mempool_index, size_t item_size, const char* name);
         void init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name);
         void free_memory_pool(MemoryPoolType mempool_index);
@@ -144,7 +141,7 @@ class Memory_Manager
         void print_memory_statistics();
         void debug_print_memory_stats(agent* thisAgent);
 
-        std::unordered_map< size_t, memory_pool* >*   dyn_memory_pools;
+        std::unordered_map< size_t, memory_pool* >   dyn_memory_pools;
 
     private:
 
@@ -153,8 +150,6 @@ class Memory_Manager
         /* The following two functions are declared but not implemented to avoid copies of singletons */
         Memory_Manager(Memory_Manager const&) {};
         void operator=(Memory_Manager const&) {};
-
-        bool                m_cleaned_up;
 
         memory_pool         memory_pools[num_memory_pools];
         size_t              memory_for_usage[NUM_MEM_USAGE_CODES];

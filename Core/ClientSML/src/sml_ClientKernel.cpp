@@ -248,13 +248,6 @@ Kernel::~Kernel(void)
     delete m_SocketLibrary ;
 
     delete m_pEventMap ;
-
-//    Soar_Instance::Get_Soar_Instance().clean_up_for_kernel_deletion();
-//    Output_Manager::Get_OM().clean_up_for_kernel_deletion();
-//    Memory_Manager::Get_MPM().clean_up_for_kernel_deletion();
-//
-//    Soar_Instance* l_SoarInstance = &(Soar_Instance::Get_Soar_Instance());
-//    delete l_SoarInstance;
 }
 
 /*************************************************************
@@ -722,7 +715,7 @@ Kernel* Kernel::CreateKernelInNewThread(int portToListenOn)
     return CreateEmbeddedConnection(false, false, portToListenOn) ;
 }
 
-inline Soar_Instance* instantiate_singletons()
+ Soar_Instance*  Kernel::CreateSoarManagers()
 {
     /* -- This creates the singletons for Soar_Instance and the Output_Manager.
      *
@@ -760,7 +753,7 @@ Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int 
     ErrorCode errorCode = 0 ;
 
     /* -- Create Soar_Instance and Output_Manager singletons -- */
-    Soar_Instance* lSoarInstance = instantiate_singletons();
+    Soar_Instance* lSoarInstance = CreateSoarManagers();
     Connection* pConnection = Connection::CreateEmbeddedConnection(clientThread, optimized, portToListenOn, &errorCode) ;
 
     // Even if pConnection is NULL, we still build a kernel object, so we have
@@ -803,7 +796,7 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
     ErrorCode errorCode = 0 ;
 
     /* -- Create Soar_Instance and Output_Manager singletons -- */
-    Soar_Instance* lSoarInstance = instantiate_singletons();
+    Soar_Instance* lSoarInstance = CreateSoarManagers();
 
     // Initialize the socket library before attempting to create a connection
     sock::SocketLib* pLib = new sock::SocketLib() ;

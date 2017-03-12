@@ -66,13 +66,12 @@ class Output_Manager
         friend class action_record;
 
     public:
-        static  Output_Manager& Get_OM()
+        static Output_Manager& Get_OM()
         {
             static Output_Manager instance;
             return instance;
         }
         virtual ~Output_Manager();
-        void    clean_up_for_kernel_deletion();
 
     private:
 
@@ -84,7 +83,6 @@ class Output_Manager
 
         agent*          m_defaultAgent;
         OM_Parameters*  m_params;
-        bool            m_cleaned_up;
 
         /* -- Global toggles for database, standard out -- */
         bool stdout_mode;

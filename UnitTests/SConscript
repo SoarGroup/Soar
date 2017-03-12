@@ -34,10 +34,6 @@ t = env.Install('$OUT_DIR', put_obj)
 
 # t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
 
-lib = env.SharedLibrary('TestExternalLibraryLib', 'ExampleExternalLibrary/lib.cpp')[0]   # for MSVC, only need the .dll, not .lib or .exp
-prog = env.Program('TestExternalLibrary', 'ExampleExternalLibrary/TestExternalLibrary.cpp')
-t2 = env.Install('$OUT_DIR', [prog, lib])
-
 if 'MSVSProject' in env['BUILDERS']:
 	proj = env.MSVSProject(
 		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
@@ -51,4 +47,4 @@ if 'MSVSProject' in env['BUILDERS']:
 
 SoarUnitTests_tests = InstallDir(env, '$OUT_DIR/SoarUnitTests/', 'SoarTestAgents')
 
-env.Alias('tests', t + t2 + SoarUnitTests_tests)
+env.Alias('tests', t + SoarUnitTests_tests)
