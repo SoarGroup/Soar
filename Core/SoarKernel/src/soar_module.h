@@ -964,7 +964,6 @@ namespace soar_module
 		pointer allocate( size_type n, const void* = 0 )
 		{
 			size_type test = n;
-			test; // prevents release-mode warning, since assert is compiled out
 			assert( test == 1 );
 			
 			if ( !mem_pool )
@@ -981,7 +980,6 @@ namespace soar_module
 		void deallocate( void* p, size_type n )
 		{
 			size_type test = n;
-			test; // prevents release-mode warning, since assert is compiled out
 			assert( test == 1 );
 
 			// not sure if this is correct...

@@ -1147,7 +1147,7 @@ void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo)
 
 
 	/* REW: begin 09.15.96 */
-	if ((thisAgent->soar_verbose_flag == TRUE)) {
+	if (thisAgent->soar_verbose_flag == TRUE) {
 		printf("\n   in assert_new_preferences:");
 		xml_generate_verbose(thisAgent, "in assert_new_preferences:");
 	}
