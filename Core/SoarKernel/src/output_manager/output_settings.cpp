@@ -48,21 +48,6 @@ OM_Parameters::OM_Parameters(agent* new_agent, uint64_t pOutput_sysparams[]): so
 
 }
 
-OM_Parameters::~OM_Parameters()
-{
-    delete print_depth;
-    delete echo_commands;
-    delete warnings;
-    delete agent_writes;
-    delete agent_traces;
-    delete enabled;
-    delete stdout_enabled;
-    delete callback_enabled;
-    delete ctf;
-    delete clog;
-    delete help_cmd;
-    delete qhelp_cmd;
-}
 void OM_Parameters::update_params_for_settings(agent* thisAgent)
 {
     warnings->set_value(thisAgent->outputManager->settings[OM_WARNINGS] ? on : off);

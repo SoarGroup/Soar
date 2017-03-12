@@ -204,7 +204,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLACK\"\xF2 \xF3\FONT COLOR=\"WHITE\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%s\xF3/FONT\xF2\xF3/TD\xF2\xF3/TR\xF2\n", node_id, pName.c_str());
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLACK\"\xF2 \xF3\x0FONT COLOR=\"WHITE\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%s\xF3/FONT\xF2\xF3/TD\xF2\xF3/TR\xF2\n", node_id, pName.c_str());
             break;
 
         case viz_chunk_record:
@@ -215,7 +215,7 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLUE\"\xF2 \xF3\FONT COLOR=\"YELLOW\"\xF2%s (i %u)\xF3/FONT\xF2\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str(), node_id);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLUE\"\xF2 \xF3\x0FONT COLOR=\"YELLOW\"\xF2%s (i %u)\xF3/FONT\xF2\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str(), node_id);
             break;
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
