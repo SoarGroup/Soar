@@ -147,7 +147,20 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                 dest[dest_size - 1] = 0; /* ensure null termination */
                 return dest;
             }
-
+//            if (!dest)
+//            {
+//                dest_size = output_string_size; /* from agent.h */;
+//                dest = Output_Manager::Get_OM().get_printed_output_string();
+//            }
+//            if (id->is_lti())
+//            {
+//                SNPRINTF(dest, dest_size, "%c%llu (@%llu)", id->name_letter, static_cast<long long unsigned>(id->name_number), static_cast<long long unsigned>(id->LTI_ID));
+//            } else
+//            {
+//                SNPRINTF(dest, dest_size, "%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
+//            }
+//            dest[dest_size - 1] = 0; /* ensure null termination */
+//            return dest;
         case INT_CONSTANT_SYMBOL_TYPE:
             if (ic->cached_print_str)
              {
@@ -209,8 +222,12 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
             wasModified = make_string_rereadable(lStr);
             if (wasModified)
             {
+                if (sc->cached_print_str)
+                {
+                    free_memory_block_for_string(sc->thisAgent, sc->cached_print_str);
+                }
                 sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, lStr.c_str());
-            } else {
+            } else if (!sc->cached_print_str) {
                 sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, sc->name);
             }
 
@@ -222,7 +239,25 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                 dest[dest_size - 1] = 0; /* ensure null termination */
                 return dest;
             }
-
+//            soar::Lexer::determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
+//                    &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
+//
+//            has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name) - 1] == '>';
+//
+//            if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
+//                    (!is_rereadable) || has_angle_bracket)
+//            {
+//                /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
+//                 *        - Shouldn't it also check whether dest char * was passed in and get a printed
+//                 *          output string instead?  */
+//                return string_to_escaped_string(sc->name, '|', dest);
+//            }
+//            if (!dest)
+//            {
+//                return sc->name;
+//            }
+//            strcpy(dest, sc->name);
+//            return dest;
         default:
         {
             char msg[BUFFER_MSG_SIZE];
