@@ -83,7 +83,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
     //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : recent-3);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
     double inhibition_odds = 0;
-    if (recent_time != 0 && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
+    if (recent_time != 0)// && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
     {
         inhibition_odds = pow(1+pow(recent_time/10.0,-1.0),-1.0);
         return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
@@ -310,7 +310,7 @@ double SMem_Manager::lti_activate(uint64_t pLTI_ID, bool add_access, uint64_t nu
     if (static_cast<double>(new_activation)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(new_activation)==0)
     {//When we have nothing to go on, we pretend the base-level of the memory is equivalent to having been accessed once at the time the agent was created.
         double decay = settings->base_decay->get_value();
-        new_base = pow(static_cast<double>(smem_max_cycle+1000),static_cast<double>(-decay));
+        new_base = pow(static_cast<double>(smem_max_cycle+500),static_cast<double>(-decay));
         new_base = log(new_base/(1.0+new_base));
     }
     else
@@ -1197,7 +1197,7 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 if (static_cast<double>(prev_base)==static_cast<double>(SMEM_ACT_LOW) || static_cast<double>(prev_base) == 0)
                 {//used for base-level - thisAgent->smem_max_cycle - We assume that the memory was accessed at least "age of the agent" ago if there is no record.
                     double decay = settings->base_decay->get_value();
-                    new_base = pow(static_cast<double>(smem_max_cycle+1000),static_cast<double>(-decay));
+                    new_base = pow(static_cast<double>(smem_max_cycle+500),static_cast<double>(-decay));
                     new_base = log(new_base/(1+new_base));
                 }
                 else
