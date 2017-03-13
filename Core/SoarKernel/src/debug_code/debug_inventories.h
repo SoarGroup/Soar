@@ -30,7 +30,7 @@
  * happen in the middle of the ones for instantiation allocation.  Very crude and
  * sometimes wrong, but helpful. */
 void debug_refcount_change_start(agent* thisAgent, bool twoPart);
-void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart);
+void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart);
 void debug_refcount_reset();
 
 void IDI_add(agent* thisAgent, instantiation* pInst);

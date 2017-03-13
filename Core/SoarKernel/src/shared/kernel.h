@@ -55,7 +55,7 @@
 /* -------- Compiler directives for potentially expensive statistics ---------------*/
 //#define NO_TIMING_STUFF             /* Eliminates all timing statistics. */
 #ifndef NO_TIMING_STUFF               /* Tracks additional statistics on how much time is spent in various parts of the system. */
-    //#define DETAILED_TIMING_STATS
+//    #define DETAILED_TIMING_STATS
 #endif
 
 /*  rete stat tracking (may be broken right now though bug might be superficial) */

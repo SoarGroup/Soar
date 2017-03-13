@@ -39,7 +39,7 @@
             (*last_count) = sym->reference_count;
         };
     }
-    void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart)
+    void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart)
     {
         int lSymNum;
         std::string numString;
@@ -52,7 +52,7 @@
             int64_t* last_count = twoPart ? &(debug_last_refcount2) : &(debug_last_refcount);
             if (new_count != (*last_count))
             {
-                dprint_noprefix(DT_ID_LEAKING, "%s Reference count of %s changed (%d -> %d) by %d\n", callerString, DEBUG_TRACE_REFCOUNT_FOR,
+                dprint_noprefix(DT_ID_LEAKING, "%s Reference count of %s %s changed (%d -> %d) by %d\n", callerName, callerString, DEBUG_TRACE_REFCOUNT_FOR,
                     (*last_count), new_count, (new_count - (*last_count)));
             }
             (*last_count) = 0;
@@ -67,7 +67,7 @@
 
 #else
     void debug_refcount_change_start(agent* thisAgent, bool twoPart) {}
-    void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart) {}
+    void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart) {}
     void debug_refcount_reset() {}
 #endif
 

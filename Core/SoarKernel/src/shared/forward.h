@@ -159,7 +159,7 @@ extern bool break_if_symbol_matches_string(Symbol* sym, const char* match);
 extern bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 extern bool break_if_bool(bool shouldBreak);
 extern bool break_if_test_symbol_matches_string(test t, const char* match);
-extern void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart);
-extern void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart);
+extern void debug_refcount_change_start(agent* thisAgent, bool twoPart);
+extern void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart);
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

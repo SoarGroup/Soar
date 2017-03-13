@@ -807,10 +807,12 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     condition*          l_inst_top = NULL;
     condition*          l_inst_bottom = NULL;
     uint64_t            l_clean_up_id;
+    soar_timer*          lLocalTimerPtr = NULL;
 
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
+    lLocalTimerPtr = &local_timer;
+    local_timer.set_enabled(&(thisAgent->timers_enabled));
     #endif
 
     /* --- If we're over MAX_CHUNKS, abort chunk --- */
@@ -924,7 +926,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
-        clean_up(l_clean_up_id, false);
+        clean_up(l_clean_up_id, false, lLocalTimerPtr);
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
@@ -1032,7 +1034,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
                 ebc_timers->clean_up->start();
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
-                clean_up(l_clean_up_id, false);
+                clean_up(l_clean_up_id, false, lLocalTimerPtr);
                 thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
                 return;
             } else {
@@ -1092,7 +1094,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
      * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
      *       though, we don't have the final rule name set up until now, so we call it here. */
     IDI_add(thisAgent, m_chunk_inst);
-    debug_refcount_change_end(thisAgent, (std::string(m_chunk_inst->prod_name->sc->name) + std::string(" learning rule ")).c_str(), false);
+    debug_refcount_change_end(thisAgent, m_chunk_inst->prod_name->sc->name, " learning rule ", false);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Chunk adding to RETE: \n%4", m_lhs, m_rhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Chunk instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
@@ -1113,7 +1115,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         /* Clean up.  (Now that m_chunk_inst s on the list of insts to be asserted, we
          *             set it to to null because so that clean_up() won't delete it.) */
         m_chunk_inst = NULL;
-        clean_up(l_clean_up_id);
+        clean_up(l_clean_up_id, true, lLocalTimerPtr);
 
         if ((*new_inst_list)->match_goal_level > TOP_GOAL_LEVEL)
         {
@@ -1136,11 +1138,11 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         excise_production(thisAgent, m_chunk_inst->prod, false, true);
         m_chunk_inst->prod = NULL;
         remove_chunk_instantiation();
-        clean_up(l_clean_up_id);
+        clean_up(l_clean_up_id, true, lLocalTimerPtr);
     }
 }
 
-void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_inst_inventory)
+void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_inst_inventory, soar_timer* pTimer)
 {
     ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->clean_up->start();
@@ -1193,9 +1195,10 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     #endif
     ebc_timers->clean_up->stop();
     ebc_timers->ebc_total->stop();
+
     #if !defined(NO_TIMING_STUFF) && defined(DETAILED_TIMING_STATS)
-    local_timer.stop();
-    thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);
+    pTimer->stop();
+    thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(*pTimer);
     #endif
 
 }

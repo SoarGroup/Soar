@@ -301,7 +301,7 @@ void reset_timers(agent* thisAgent)
     thisAgent->timers_cpu.reset();
     thisAgent->timers_kernel.reset();
     thisAgent->timers_phase.reset();
-#ifdef DETAILED_TIMER_STATS
+#ifdef DETAILED_TIMING_STATS
     thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
     thisAgent->timers_gds.reset();
 #endif
@@ -315,7 +315,7 @@ void reset_timers(agent* thisAgent)
     {
         thisAgent->timers_decision_cycle_phase[i].reset();
         thisAgent->timers_monitors_cpu_time[i].reset();
-#ifdef DETAILED_TIMER_STATS
+#ifdef DETAILED_TIMING_STATS
         thisAgent->timers_ownership_cpu_time[i].reset();
         thisAgent->timers_chunking_cpu_time[i].reset();
         thisAgent->timers_match_cpu_time[i].reset();

@@ -1237,7 +1237,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         /* Copy any operator selection knowledge preferences for conditions of this instantiation */
         thisAgent->explanationBasedChunker->copy_OSK(inst);
 
-        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
 
         /* build chunks/justifications if necessary */
         thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
@@ -1245,7 +1245,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
     else
     {
-        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
     }
 
     if (!thisAgent->system_halted) soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
@@ -1275,7 +1275,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     condition_list cond_stack;
     inst_list l_instantiation_list;
     instantiation* lInst;
-    std::string lDebugRefcountString = std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation: ");
 
     l_instantiation_list.push_back(inst);
     inst_list::iterator next_iter = l_instantiation_list.begin();
@@ -1371,7 +1370,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             {
                                 dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) removing from temporary memory %p (%u) at level %d...\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
                                 remove_preference_from_tm(thisAgent, lPref);
-                        //        return;
                             }
                             if (lPref->on_goal_list)
                             {
@@ -1395,7 +1393,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 }
             }
         }
-        debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("wme and clones")).c_str(), false);
+        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "instantiation deallocation: wme and clones", false);
     }
 
     /* --------------------------------------------------
@@ -1410,7 +1408,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", temp->bt.trace, temp->bt.trace->p_id, static_cast<int64_t>(temp->bt.trace->level));
         deallocate_preference_contents(thisAgent, temp->bt.trace, true);
     }
-    debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("cumulative bt pref cleanup")).c_str(), false);
+    debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "instantiation deallocation: cumulative bt pref cleanup", false);
 
     // free instantiations in the reverse order
 
@@ -1474,7 +1472,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("final cleanup")).c_str(), false);
+        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "final cleanup", false);
         IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
@@ -1535,7 +1533,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
-    debug_refcount_change_end(thisAgent, "Instantiation retraction", true);
+    debug_refcount_change_end(thisAgent, "Instantiation ", "retraction", true);
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
     {

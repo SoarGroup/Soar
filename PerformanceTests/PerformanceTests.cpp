@@ -10,7 +10,7 @@
 #include "sml_Connection.h"
 
 #define QUIET_MODE
-//#define BRIEF_MODE
+#define BRIEF_MODE
 #define DEFAULT_TRIALS 3
 #define DEFAULT_DCS -1
 #define DEFAULT_AGENT "count-test-5000";

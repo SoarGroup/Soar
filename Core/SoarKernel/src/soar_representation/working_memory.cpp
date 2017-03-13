@@ -252,7 +252,7 @@ void do_buffered_wm_changes(agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
     soar_timer local_timer;
-    local_timer.set_enabled(&(thisAgent->trace_settings[ TIMERS_ENABLED ]));
+    local_timer.set_enabled(&(thisAgent->timers_enabled));
 #endif
 #endif
 
