@@ -53,6 +53,7 @@ class smem_param_container: public soar_module::param_container
         soar_module::decimal_param* spreading_baseline;
         soar_module::decimal_param* spreading_continue_probability;
         soar_module::boolean_param* spreading_loop_avoidance;
+        soar_module::boolean_param* base_inhibition;
 
         void print_settings(agent* thisAgent);
         void print_summary(agent* thisAgent);

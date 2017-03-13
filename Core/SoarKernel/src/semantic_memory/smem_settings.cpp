@@ -132,6 +132,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // spreading loop avoidance - whether or not loopy propagation is avoided
     spreading_loop_avoidance = new soar_module::boolean_param("spreading-loop-avoidance", off, new soar_module::f_predicate<boolean>());
     add(spreading_loop_avoidance);
+
+    // inhibition for use with base-level activation. defaults to off.
+    base_inhibition = new soar_module::boolean_param("base-inhibition", off, new soar_module::f_predicate<boolean>());
+    add(base_inhibition);
 }
 
 //

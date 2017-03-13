@@ -83,7 +83,7 @@ double SMem_Manager::lti_calc_base(uint64_t pLTI_ID, int64_t time_now, uint64_t 
     //return ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW));
     //return (!recent ? ((sum > 0) ? (log(sum/(1+sum))) : (SMEM_ACT_LOW)) : recent-3);//doing log prob instead of log odds.//hack attempt at short-term inhibitory effects
     double inhibition_odds = 0;
-    if (recent_time != 0)// && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
+    if (recent_time != 0 && settings->base_inhibition->get_value() == on )// && smem_in_wmem->find(pLTI_ID) != smem_in_wmem->end())
     {
         inhibition_odds = pow(1+pow(recent_time/10.0,-1.0),-1.0);
         return ((sum > 0) ? (log(sum/(1+sum)) + log(inhibition_odds/(1+inhibition_odds))) : (SMEM_ACT_LOW));
