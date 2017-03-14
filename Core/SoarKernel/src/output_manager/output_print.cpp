@@ -263,9 +263,12 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
     test t, ct;
     char ch = 0;
     char* ch2 = 0;
-	int next_column, indent_amount, next_position, i=0;
-	size_t m;
+    int next_column, indent_amount, next_position, i=0;
+    size_t m;
     std::string sf = format;
+
+    /* MToDo | Possible efficiency improvement */
+    destString.reserve(sf.size());
 
     va_list args;
     va_copy(args, pargs);
