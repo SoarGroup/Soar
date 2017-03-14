@@ -94,6 +94,39 @@ bool make_string_rereadable(std::string &pStr)
     return false;
 }
 
+void Symbol::update_cached_lti_print_str(bool force_creation)
+{
+    std::string lStr;
+
+    if (id->cached_lti_str || force_creation)
+    {
+        if (id->cached_lti_str) free_memory_block_for_string(id->thisAgent, id->cached_lti_str);
+        if (id->is_lti())
+        {
+            if (!id->cached_print_str)
+            {
+                lStr.push_back(id->name_letter);
+                lStr.append(std::to_string(id->name_number));
+                id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
+            } else {
+                lStr += id->cached_print_str;
+            }
+            lStr += " (@";
+            lStr.append(std::to_string(id->LTI_ID));
+            lStr += ')';
+            id->cached_lti_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
+        } else {
+            if (!id->cached_print_str)
+            {
+                lStr.push_back(id->name_letter);
+                lStr.append(std::to_string(id->name_number));
+                id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
+            }
+            id->cached_lti_str = NULL;
+        }
+    }
+}
+
 char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t dest_size)
 {
 
@@ -115,7 +148,7 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
             return dest;
 
         case IDENTIFIER_SYMBOL_TYPE:
-            if (id->cached_print_str && !id->is_lti())
+            if (id->cached_print_str && (!showLTILink || !id->is_lti()))
              {
                 if (!dest)
                  {
@@ -126,41 +159,34 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                      return dest;
                  }
              }
-            lStr.push_back(id->name_letter);
-            lStr.append(std::to_string(id->name_number));
             if (showLTILink && id->is_lti())
             {
-                lStr += " (@";
-                lStr.append(std::to_string(id->LTI_ID));
-                lStr += ')';
-                if (id->cached_print_str)
+                if (!id->cached_lti_str) update_cached_lti_print_str(true);
+                if (!dest)
                 {
-                    free_memory_block_for_string(id->thisAgent, id->cached_print_str);
+                    return id->cached_lti_str;
+                } else {
+                    strcpy(dest, id->cached_lti_str);
+                    dest[dest_size - 1] = 0; /* ensure null termination */
+                    return dest;
                 }
             }
-            id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
-            if (!dest)
+            else
             {
-                return id->cached_print_str;
-            } else {
-                strcpy(dest, id->cached_print_str);
-                dest[dest_size - 1] = 0; /* ensure null termination */
-                return dest;
+                assert(!id->cached_print_str);
+                lStr.push_back(id->name_letter);
+                lStr.append(std::to_string(id->name_number));
+                id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
+                if (!dest)
+                {
+                    return id->cached_print_str;
+                } else {
+                    strcpy(dest, id->cached_print_str);
+                    dest[dest_size - 1] = 0; /* ensure null termination */
+                    return dest;
+                }
             }
-//            if (!dest)
-//            {
-//                dest_size = output_string_size; /* from agent.h */;
-//                dest = Output_Manager::Get_OM().get_printed_output_string();
-//            }
-//            if (id->is_lti())
-//            {
-//                SNPRINTF(dest, dest_size, "%c%llu (@%llu)", id->name_letter, static_cast<long long unsigned>(id->name_number), static_cast<long long unsigned>(id->LTI_ID));
-//            } else
-//            {
-//                SNPRINTF(dest, dest_size, "%c%llu", id->name_letter, static_cast<long long unsigned>(id->name_number));
-//            }
-//            dest[dest_size - 1] = 0; /* ensure null termination */
-//            return dest;
+
         case INT_CONSTANT_SYMBOL_TYPE:
             if (ic->cached_print_str)
              {
@@ -217,47 +243,27 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
                 strcpy(dest, sc->name);
                 return dest;
             }
-
-            lStr = sc->name;
-            wasModified = make_string_rereadable(lStr);
-            if (wasModified)
+            if (!sc->cached_rereadable_print_str)
             {
-                if (sc->cached_print_str)
+                lStr = sc->name;
+                wasModified = make_string_rereadable(lStr);
+                if (wasModified)
                 {
-                    free_memory_block_for_string(sc->thisAgent, sc->cached_print_str);
+                    sc->cached_rereadable_print_str =  make_memory_block_for_string(sc->thisAgent, lStr.c_str());
+                } else {
+                    sc->cached_rereadable_print_str = sc->name;
                 }
-                sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, lStr.c_str());
-            } else if (!sc->cached_print_str) {
-                sc->cached_print_str =  make_memory_block_for_string(sc->thisAgent, sc->name);
             }
-
             if (!dest)
             {
-                return sc->cached_print_str;
+                return sc->cached_rereadable_print_str;
             } else {
-                strcpy(dest, sc->cached_print_str);
+                strcpy(dest, sc->cached_rereadable_print_str);
                 dest[dest_size - 1] = 0; /* ensure null termination */
                 return dest;
             }
-//            soar::Lexer::determine_possible_symbol_types_for_string(sc->name, strlen(sc->name),
-//                    &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
-//
-//            has_angle_bracket = sc->name[0] == '<' || sc->name[strlen(sc->name) - 1] == '>';
-//
-//            if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-//                    (!is_rereadable) || has_angle_bracket)
-//            {
-//                /* BUGBUG - if in context where id's could occur, should check possible_id flag here also
-//                 *        - Shouldn't it also check whether dest char * was passed in and get a printed
-//                 *          output string instead?  */
-//                return string_to_escaped_string(sc->name, '|', dest);
-//            }
-//            if (!dest)
-//            {
-//                return sc->name;
-//            }
-//            strcpy(dest, sc->name);
-//            return dest;
+            break;
+
         default:
         {
             char msg[BUFFER_MSG_SIZE];

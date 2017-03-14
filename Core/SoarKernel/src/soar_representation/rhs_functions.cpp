@@ -469,6 +469,7 @@ set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
     if (thisAgent->SMem->lti_exists(ltiIDSym->ic->value))
     {
         sym->id->LTI_ID = ltiIDSym->ic->value;
+        sym->update_cached_lti_print_str();
     }
     else
     {

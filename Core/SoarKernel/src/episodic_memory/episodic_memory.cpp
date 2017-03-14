@@ -3193,6 +3193,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
                 if (thisAgent->SMem->lti_exists(val_num))
                 {
                     id_p->second.first->id->LTI_ID = val_num;
+                    id_p->second.first->update_cached_lti_print_str();
                     id_p->second.first->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
                 }
             } else {

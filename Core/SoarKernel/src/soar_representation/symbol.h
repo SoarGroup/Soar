@@ -145,6 +145,7 @@ typedef struct EXPORT symbol_struct
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0);
+    void        update_cached_lti_print_str(bool force_creation = false);
 
     struct symbol_struct*   get_parent_state();
 } Symbol;
@@ -169,7 +170,7 @@ struct strSymbol   : public Symbol
     char* name;
     struct production_struct* production;
     agent* thisAgent;
-    char* cached_print_str;
+    char* cached_rereadable_print_str;
 
     struct {
         bool possible;                      /* Used by EBC to quickly determine if a WMEs attribute makes it eligible to be a singleton */
@@ -199,6 +200,7 @@ struct idSymbol    : public Symbol
 
     agent* thisAgent;
     char* cached_print_str;
+    char* cached_lti_str;
 
     bool isa_goal;
     bool isa_impasse;

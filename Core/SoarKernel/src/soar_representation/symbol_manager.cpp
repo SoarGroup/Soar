@@ -408,6 +408,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->tc_num = 0;
     sym->thisAgent = thisAgent;
     sym->cached_print_str = NULL;
+    sym->cached_lti_str = NULL;
     sym->name_letter = name_letter;
 
     if (name_number == NIL)
@@ -491,7 +492,7 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
         sym->smem_valid = 0;
         sym->name = make_memory_block_for_string(thisAgent, name);
         sym->thisAgent = thisAgent;
-        sym->cached_print_str = NULL;
+        sym->cached_rereadable_print_str = NULL;
         sym->production = NULL;
         sym->fc = NULL;
         sym->ic = NULL;
@@ -851,11 +852,13 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
             break;
         case IDENTIFIER_SYMBOL_TYPE:
             if (sym->id->cached_print_str) free_memory_block_for_string(thisAgent, sym->id->cached_print_str);
+            if (sym->id->cached_lti_str) free_memory_block_for_string(thisAgent, sym->id->cached_lti_str);
             remove_from_hash_table(thisAgent, identifier_hash_table, sym);
             thisAgent->memoryManager->free_with_pool(MP_identifier, sym);
             break;
         case STR_CONSTANT_SYMBOL_TYPE:
-            if (sym->sc->cached_print_str) free_memory_block_for_string(thisAgent, sym->sc->cached_print_str);
+            if (sym->sc->cached_rereadable_print_str && (sym->sc->cached_rereadable_print_str != sym->sc->name))
+                free_memory_block_for_string(thisAgent, sym->sc->cached_rereadable_print_str);
             remove_from_hash_table(thisAgent, str_constant_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->sc->name);
             thisAgent->memoryManager->free_with_pool(MP_str_constant, sym);
