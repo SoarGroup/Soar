@@ -1079,7 +1079,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     #endif
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
 
-    debug_refcount_change_start(thisAgent, true);
+//    debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
@@ -1237,7 +1237,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         /* Copy any operator selection knowledge preferences for conditions of this instantiation */
         thisAgent->explanationBasedChunker->copy_OSK(inst);
 
-        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
+//        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
 
         /* build chunks/justifications if necessary */
         thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
@@ -1245,7 +1245,7 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     }
     else
     {
-        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
+//        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
     }
 
     if (!thisAgent->system_halted) soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
@@ -1275,6 +1275,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     condition_list cond_stack;
     inst_list l_instantiation_list;
     instantiation* lInst;
+    char* lProdName;
 
     l_instantiation_list.push_back(inst);
     inst_list::iterator next_iter = l_instantiation_list.begin();
@@ -1285,7 +1286,8 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 (prefs) for %u (%y)\n", lInst->i_id, lInst->prod_name);
         //dprint(DT_DEALLOCATE_INST,  "Deallocating instantiation for match of %y (%u) in %y (%d) : \n%5", lInst->prod_name, lInst->i_id, lInst->match_goal, static_cast<long long>(lInst->match_goal_level), lInst->top_of_instantiated_conditions, lInst->preferences_generated);
-        debug_refcount_change_start(thisAgent, false);
+//        debug_refcount_change_start(thisAgent, false);
+        lProdName = lInst->prod_name ? lInst->prod_name->sc->name : NULL;
 
         for (condition* cond = lInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
@@ -1393,13 +1395,13 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                 }
             }
         }
-        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "instantiation deallocation: wme and clones", false);
+//        debug_refcount_change_end(thisAgent, lProdName, "instantiation deallocation: wme and clones", false);
     }
 
     /* --------------------------------------------------
      * deallocate_preference() part 2 (cleans up bt pref)
      * -------------------------------------------------- */
-    debug_refcount_change_start(thisAgent, false);
+//    debug_refcount_change_start(thisAgent, false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
@@ -1408,7 +1410,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", temp->bt.trace, temp->bt.trace->p_id, static_cast<int64_t>(temp->bt.trace->level));
         deallocate_preference_contents(thisAgent, temp->bt.trace, true);
     }
-    debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "instantiation deallocation: cumulative bt pref cleanup", false);
+//    debug_refcount_change_end(thisAgent, "All conds", "instantiation deallocation: cumulative bt pref cleanup", false);
 
     // free instantiations in the reverse order
 
@@ -1416,8 +1418,9 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     for (inst_list::reverse_iterator riter = l_instantiation_list.rbegin(); riter != l_instantiation_list.rend(); ++riter)
     {
         instantiation* lDelInst = *riter;
+        lProdName = lDelInst->prod_name ? lDelInst->prod_name->sc->name : NULL;
 
-        debug_refcount_change_start(thisAgent, false);
+//        debug_refcount_change_start(thisAgent, false);
         dprint(DT_MILESTONES, "Deallocating instantiation for %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
         dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating instantiation: %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
 
@@ -1472,7 +1475,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, "final cleanup", false);
+//        debug_refcount_change_end(thisAgent, lProdName, "final cleanup", false);
         IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
@@ -1505,7 +1508,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
-    debug_refcount_change_start(thisAgent, true);
+//    debug_refcount_change_start(thisAgent, true);
     while (pref != NIL)
     {
         next = pref->inst_next;
@@ -1533,7 +1536,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
-    debug_refcount_change_end(thisAgent, "Instantiation ", "retraction", true);
+//    debug_refcount_change_end(thisAgent, "Instantiation ", "retraction", true);
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
     {
