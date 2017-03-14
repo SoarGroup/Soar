@@ -15,6 +15,14 @@ proc appendOutputBuffer {newOutput} {
   append output_buffer $newOutput
 }
 
+proc hasProcedure { procName } {
+	if { [info commands $procName] == "" } {
+		return "false"
+	} else {
+		return "true"
+	}
+}
+
 ##
 # Defines tcl procedures for soar commands.
 #
@@ -22,9 +30,18 @@ proc appendOutputBuffer {newOutput} {
 #
 
 # Define proc for executing Soar commands through SML
+# Will throw an error if the ExecuteCommandLine command failed
 proc executeCommandLine { command } {
-  global _agent
-  return [$_agent ExecuteCommandLine $command false true]
+  global _agent _kernel
+
+  set result [$_agent ExecuteCommandLine $command false true]
+  set ok [$_agent GetLastCommandLineResult]
+  if { $ok == 0 } {
+	  error $result
+  }
+
+  return $result
+  #return [$_agent ExecuteCommandLine $command false true]
 }
 
 ##
@@ -85,18 +102,17 @@ proc defineSoarCommands { commands } {
 #######
 
 proc sp { args } {
-    global output_buffer
+    global output_buffer last_file verbose
+
     set argstr [buildExecuteCommandArgumentString "sp" $args]
-    set r [executeCommandLine $argstr]
-    if { $r == "#*" } {
+	set result [executeCommandLine $argstr]
+	if { $verbose == "true" && $result == "#*" } {
         set rule [lindex $argstr 1]
-        set rulename  [string range $rule 0 [string first " " $rule]]
-        appendOutputBuffer "\nREPLACING RULE $rulename\n"
-    } elseif {$r != "*"} {
-        appendOutputBuffer "\n$r\n"
-    } else {
-        appendOutputBuffer $r
-    }
+        set rulename  [string range $rule 0 [string first "\n" $rule]]
+        appendOutputBuffer "\nReplacing production $rulename"
+	} else {
+        appendOutputBuffer $result
+	}
     return ""
 }
 
@@ -264,20 +280,27 @@ proc reconfigureOutput {} {
 # is to perform the proper directory change when sourcing the file which is not
 # done by sml::Agent::LoadProductions.
 rename source builtInSource
-proc source {arg} {
-  set dir [file dir $arg]
-  set file [file tail $arg]
-  global _agentName
+proc source {fname args} {
+  global _agentName last_file verbose
+  set dir [file dir $fname]
+  set file [file tail $fname]
+  set last_file $file
+
+  if { $args != "" && [string first "-v" $args] != -1 } {
+	  set verbose "true"
+  }
   
   pushd $dir
-  
+
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
-    puts "ERROR sourcing File $file"
-    puts $errorMessage
     popd
-    error $errorMessage
+	if { [string first "Error in file" $errorMessage] == 0} {
+		error "$errorMessage"
+	} else {
+		error "Error in file [pwd]/$file: \n$errorMessage"
+	}
   }
   
   popd
@@ -285,5 +308,8 @@ proc source {arg} {
 }
 
 proc initializeSlave {} {
+  global verbose
+  set verbose "false"
+
   reconfigureOutput
 }
