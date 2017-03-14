@@ -49,6 +49,7 @@ typedef test_info* test;
 typedef uint64_t tc_number;
 typedef unsigned short rete_node_level;
 
+class soar_timer;
 class Soar_Instance;
 class Memory_Manager;
 class Symbol_Manager;

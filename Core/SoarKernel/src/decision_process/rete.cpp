@@ -656,7 +656,7 @@ void print_null_activation_stats()
 
    Note that there are fancy ways to compute/update sharing factors,
    not requiring extra scanning-up-the-net all the time as rule 1 does.
-   I went with the ablve way to keep the code small and simple.
+   I went with the above way to keep the code small and simple.
 ---------------------------------------------------------------------- */
 
 #ifdef SHARING_FACTORS
