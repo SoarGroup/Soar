@@ -1,0 +1,24 @@
+sp {count-test9*propose*substate-count
+   (state <s> ^name count-test9
+              ^superstate <ss>
+              ^superstate.count > 0)
+   (<ss> ^current-test <ct>
+        -^current-test { <otherct> <> <ct> })
+   (<ct> ^test-number 9)
+  -{(<ss> ^current-test.test-number <> 9)}
+   (<s> ^test-structure.test-structure.test-comment <tn>
+        ^test-structure <ts>
+       -^test-structure { <> <ts> <x> })
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test9)
+}
+
+sp {count-test9*count-operator-substate*apply*count
+   (state <s> ^operator.name count-test9
+              ^superstate <ss>)
+   (<ss> ^count <count>)
+-->
+   (<ss> ^count <count> -
+                (- <count> 1))
+}

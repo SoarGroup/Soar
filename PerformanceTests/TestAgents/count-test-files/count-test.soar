@@ -1,0 +1,7 @@
+pushd ../..
+source common.soar
+popd
+
+pushd count-test
+source count-test_source.soar
+popd

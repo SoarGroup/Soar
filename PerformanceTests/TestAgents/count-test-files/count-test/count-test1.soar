@@ -1,0 +1,19 @@
+## Test 1 - straight count at top-level
+
+sp {count-test*propose*count-test1
+   (state <s> ^name count-test
+              ^current-test.test-number 1
+              ^count > 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test1)
+}
+
+sp {count-test*apply*count-test1
+   (state <s> ^operator.name count-test1
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+

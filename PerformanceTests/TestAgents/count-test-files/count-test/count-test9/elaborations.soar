@@ -1,0 +1,11 @@
+sp {count-test9*elaborate*substate
+   (state <s> ^name count-test9
+              ^superstate.current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-comment <tc>)
+-->
+   (<s> ^test-structure <ts>
+        ^test-number <tn>)
+   (<ts> ^test-comment <tc>
+         ^test-structure <ts>)
+}

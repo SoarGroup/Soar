@@ -1,0 +1,8 @@
+# This file enables EpMem use in the Factorization test
+
+#epmem --set learning off
+#smem --set learning off
+
+learn --on
+
+source SingleFileFactorizationStressTest.soar

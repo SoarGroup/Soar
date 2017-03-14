@@ -1,0 +1,8 @@
+sp {Impasse__State_No-Change*propose*propose-super-operator-test8
+   (state <s> ^impasse tie
+              ^superstate <ss>)
+   (<ss> ^current-test.test-number 8
+         ^operator <o> +)
+-->
+   (<ss> ^operator <o> =)
+}

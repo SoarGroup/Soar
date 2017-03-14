@@ -1,0 +1,17 @@
+sp {Impasse__State_No-Change*propose*propose-super-operator-test5
+   (state <s> ^impasse no-change 
+              ^attribute state
+              ^superstate.current-test.test-number 5)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name propose-super-operator-test5)
+}
+
+sp {Impasse__State_No-Change*apply*propose-super-operator-test5
+   (state <s> ^operator.name propose-super-operator-test5
+              ^superstate <ss>)
+   (<ss> ^count > 0)
+-->
+   (<ss> ^operator.name count-test5)
+}
+

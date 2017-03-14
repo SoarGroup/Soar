@@ -1,0 +1,34 @@
+sp {count-test*propose*set-up-current-test
+   (state <s> ^name count-test
+              ^current-test <ct>)
+   (<ct> -^test-complete true
+         -^test-initialized true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name set-up-current-test)
+}
+
+sp {count-test*apply*set-up-current-test*monitor
+   (state <s> ^name count-test
+              ^operator.name set-up-current-test
+              ^current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-comment <tc>
+         ^test-count <test-count>)
+-->
+   (write (crlf) |Test #| <tn> | | <tc>)
+   (write (crlf) |Running for | <test-count> | counts.|)
+   
+}
+
+sp {count-test*apply*set-up-current-test*add-counts
+   (state <s> ^name count-test
+              ^operator.name set-up-current-test
+              ^current-test <ct>)
+   (<ct> ^test-count <test-count>)
+-->
+   (<ct> ^test-initialized true)
+   (<s> ^count <test-count>)   
+}
+
+
