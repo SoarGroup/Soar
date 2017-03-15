@@ -1,4 +1,5 @@
 watch 0
+learn -d
 
 sp {top-state*propose*wait
    (state <s> ^superstate nil

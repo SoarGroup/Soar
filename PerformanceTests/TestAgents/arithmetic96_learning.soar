@@ -15,7 +15,7 @@ chunk singleton any digit1 any
 chunk singleton any digit2 any 
 chunk singleton any carry any
 
-srand 1 # For consistency for testing
+#srand 1 # For consistency for testing
 chunk always
 chunk add-osk on
 

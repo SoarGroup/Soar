@@ -1,5 +1,9 @@
-chunk always
-srand 3
+# Settings
+
+learn -e
+
+# Procedural Memory
+
 sp {evaluate-operator*elaborate*state*remove*untried-tied-operator
     :default
     (state <s> ^untried-tied-operator <o> ^look-ahead-operator <o>
@@ -191,23 +195,23 @@ sp {evaluate-operator*elaborate*state*eval*desired
 
 sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
     :default
-    (state <s> ^default-state-copy yes ^problem-space <p> ^duplicates <d>
-          ^duplicate-of <d*1>)
-    (<p> -^dont-copy-anything <d*2> ^all-attributes-at-level two
+    (state <s> ^default-state-copy yes ^problem-space <p> ^duplicates <d*1>
+          ^duplicate-of <d*2>)
+    (<p> -^dont-copy-anything <d*3> ^all-attributes-at-level two
           -^one-level-attributes <att> -^dont-copy <att>)
-    (<d> ^<new-id> { <> tried-tied-operator <att> } ^<id> <new-id>)
-    (<d*1> ^<att> <id>)
+    (<d*2> ^{ <> tried-tied-operator <att> } <id>)
+    (<d*1> ^<id> <new-id>)
     -->
     (<s> ^<att> <new-id> +)
 }
 
 sp {evaluate-operator*elaborate*state*add-duplicate-to-state
     :default
-    (state <s> ^default-state-copy yes ^duplicates <d> ^duplicate-of <d*1>
+    (state <s> ^default-state-copy yes ^duplicates <d*1> ^duplicate-of <d*2>
           ^problem-space <p*1>)
     (<p*1> ^two-level-attributes <att>)
-    (<d> ^<new-id> <att> ^<id> <new-id>)
-    (<d*1> ^<att> <id>)
+    (<d*2> ^<att> <id>)
+    (<d*1> ^<id> <new-id>)
     -->
     (<s> ^<att> <new-id> +)
 }
@@ -215,7 +219,7 @@ sp {evaluate-operator*elaborate*state*add-duplicate-to-state
 sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
     :default
     (state <s> ^default-state-copy yes ^duplicates <d>)
-    (<d> ^<id> { <=> <d> <new-id> } ^<sub-val> <new-val>)
+    (<d> ^<id> <new-id> ^<sub-val> <new-val>)
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
     -->
     (<new-id> ^<sub-att> <new-val> +)
@@ -225,7 +229,7 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
     :default
     (state <s> ^default-state-copy yes ^duplicates <d> ^problem-space <p*1>)
     (<p*1> ^no-local-negations <nln>)
-    (<d> ^<id> { <=> <d> <new-id> })
+    (<d> ^<id> <new-id>)
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
     -->
     (<new-id> ^<sub-att> <sub-val> +)
@@ -236,7 +240,7 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate
     (state <s> ^default-state-copy yes ^duplicates <d>)
    -{ (<s> ^problem-space <p*1>)
       (<p*1> ^no-local-negations <nln>)}
-    (<d> ^<id> { <=> <d> <new-id> } -^<sub-val> <s*1>)
+    (<d> ^<id> <new-id> -^<sub-val> <s*1>)
     (<id> ^{ <> tried-tied-operator <sub-att> } <sub-val>)
    -{ (<s> ^problem-space <p*2>)
       (<p*2> ^dont-copy <sub-att>)}
@@ -253,7 +257,7 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
     (<ss>
           ^{ <> duplicate-of <> tried-tied-operator <> problem-space <> impasse <> attribute <> choices <> quiescence <> operator <> superstate <att> } <id>)
     -->
-    (<d> ^<id> <new-id> + ^<new-id> <att> +)
+    (<d> ^<id> <new-id> +)
 }
 
 sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
@@ -263,7 +267,7 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
     (<p*1> ^two-level-attributes <att>)
     (<d*1> ^<att> <id>)
     -->
-    (<d> ^<id> <new-id> + ^<new-id> <att> +)
+    (<d> ^<id> <new-id> +)
 }
 
 sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
@@ -753,190 +757,178 @@ sp {top-goal*halt*success
     (halt)
 }
 
-sp {water-jug*apply*pour*empty-source
-    (state <s> ^name water-jug ^operator <o>)
-    (<o> ^name pour ^into <j> ^jug <i>)
-    (<j> ^empty <jempty> ^contents <jcon> ^volume <jvol>)
-    (<i> ^contents { > <jempty> <icon> } ^volume <ivol>)
+sp {apply*move-boat*1-missionary-1-cannibal
+    (state <s> ^operator <o> ^o-bank <o-bank> ^boat <bank> ^<o-bank> <ob>
+          ^<bank> <b>)
+    (<o> ^cannibals 1 ^missionaries 1 ^name move-boat)
+    (<ob> ^cannibals <o-c-num> ^missionaries <o-m-num>)
+    (<b> ^cannibals <c-num> ^missionaries <m-num>)
     -->
-    (<i> ^contents (- <icon> <jempty>) + ^contents <icon> -)
-    (<j> ^contents <jvol> + ^contents <jcon> -)
+    (<b> ^missionaries <m-num> - ^missionaries (- <m-num> 1) +
+           ^cannibals <c-num> - ^cannibals (- <c-num> 1) +)
+    (<ob> ^missionaries <o-m-num> - ^missionaries (+ <o-m-num> 1) +
+           ^cannibals <o-c-num> - ^cannibals (+ <o-c-num> 1) +)
+    (<s> ^boat <bank> - ^boat <o-bank> + ^o-bank <o-bank> - ^o-bank <bank> +)
 }
 
-sp {water-jug*apply*pour*not-empty-source
-    (state <s> ^name water-jug ^operator <o>)
-    (<o> ^name pour ^into <j> ^jug <i>)
-    (<j> ^empty <jempty> ^contents <jcon> ^volume <jvol>)
-    (<i> ^contents { <= <jempty> <icon> } ^volume <ivol>)
+sp {apply*move-boat*not-1missionary-1-cannibal
+    (state <s> ^operator <o> ^o-bank <o-bank> ^boat <bank> ^<o-bank> <ob>
+          ^<bank> <b>)
+    (<o> ^name move-boat ^{ << missionaries cannibals >> <o-type> } 0
+          ^{ << missionaries cannibals >> <type> } { <> 0 <num> })
+    (<ob> ^<type> <o-bank-num>)
+    (<b> ^<type> <bank-num>)
     -->
-    (<i> ^contents 0 + ^contents <icon> -)
-    (<j> ^contents (+ <jcon> <icon>) + ^contents <jcon> -)
+    (<b> ^<type> <bank-num> - ^<type> (- <bank-num> <num>) +)
+    (<ob> ^<type> <o-bank-num> - ^<type> (+ <o-bank-num> <num>) +)
+    (<s> ^boat <bank> - ^boat <o-bank> + ^o-bank <o-bank> - ^o-bank <bank> +)
 }
 
-sp {water-jug*propose*pour
-    (state <s> ^name water-jug ^jug <j> ^jug { <> <j> <i> })
-    (<j> ^empty { > 0 <e*1> })
-    (<i> ^contents { > 0 <c*1> })
+sp {mac*propose*operator*move-boat11
+    (state <s> ^name mac ^boat <bank> ^<bank> <b>)
+    (<b> ^cannibals { > 0 <c*1> } ^missionaries { > 0 <m*1> })
     -->
     (<s> ^operator <o> +)
-    (<o> ^name pour + ^jug <i> + ^into <j> +)
+    (<o> ^name move-boat + ^missionaries 1 + ^cannibals 1 +)
 }
 
-sp {water-jug*apply*initialize-water-jug-look-ahead
-    (state <s> ^operator <o*1>)
-    (<o*1> ^name initialize-water-jug-look-ahead)
+sp {mac*propose*operator*move-boat2c
+    "Moves two cannibals."
+    (state <s> ^name mac ^boat <bank> ^<bank> <b*1>)
+    (<b*1> ^cannibals { > 1 <c*1> })
     -->
-    (<s> ^name water-jug + ^jug <i> + ^jug <j> + ^desired <d*1> +)
-    (<d*1> ^jug <k> +)
-    (<i> ^volume 3 + ^contents 0 +)
-    (<j> ^volume 5 + ^contents 0 +)
-    (<k> ^volume 3 + ^contents 1 +)
+    (<s> ^operator <o> +)
+    (<o> ^name move-boat + ^cannibals 2 + ^missionaries 0 +)
 }
 
-sp {water-jug*propose*initialize-water-jug-look-ahead
+sp {mac*propose*operator*move-boat2m
+    "Moves two missionaries."
+    (state <s> ^name mac ^boat <bank> ^<bank> <b*1>)
+    (<b*1> ^missionaries { > 1 <m*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-boat + ^missionaries 2 + ^cannibals 0 +)
+}
+
+sp {mac*propose*operator*move-boat1c
+    "Moves a single cannibal."
+    (state <s> ^name mac ^boat <bank> ^<bank> <b*1>)
+    (<b*1> ^cannibals { > 0 <c*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-boat + ^cannibals 1 + ^missionaries 0 +)
+}
+
+sp {mac*propose*operator*move-boat1m
+    "Moves a single missionary."
+    (state <s> ^name mac ^boat <bank> ^<bank> <b*1>)
+    (<b*1> ^missionaries { > 0 <m*1> })
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name move-boat + ^missionaries 1 + ^cannibals 0 +)
+}
+
+sp {mac*apply*initialize
+    (state <s> ^operator <o*1>)
+    (<o*1> ^name initialize-mac-planning)
+    -->
+    (<s> ^name mac + ^left-bank <l> + ^right-bank <r> + ^desired <d> +
+           ^boat left-bank + ^o-bank right-bank +)
+    (<l> ^missionaries 3 + ^cannibals 3 + ^other-bank <r> +)
+    (<r> ^missionaries 0 + ^cannibals 0 + ^other-bank <l> +)
+    (<d> ^right-bank <dl> + ^boat right-bank +)
+    (<dl> ^missionaries 3 + ^cannibals 3 +)
+}
+
+sp {mac*propose*initialize
     (state <s> ^superstate nil -^name <n*1>)
     -->
-    (<s> ^operator <o> +)
-    (<o> ^name initialize-water-jug-look-ahead +)
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name initialize-mac-planning +)
 }
 
-sp {water-jug*monitor*tied-operator*pour
-    (state <s> ^impasse tie ^attribute operator ^item <item>)
-    (<item> ^name pour ^into <j> ^jug <i>)
-    (<j> ^contents <jcon> ^volume <jvol>)
-    (<i> ^contents <icon> ^volume <ivol>)
+sp {mac*evaluate*state*failure*state-no-change
+    (state <ss> ^quiescence t ^impasse no-change ^attribute state
+          ^superstate <s>)
+    (<s> ^problem-space <p*1> ^desired <d>)
+    (<p*1> ^name missionaries-and-cannibals)
     -->
-    (write (crlf) |  | <item> |: pour(| <ivol> |:| <icon> |,| <jvol> |:| <jcon> |)|)
+    (write (crlf) |######## STATE NO-CHANGE Failure! #########|)
+    (<s> ^failure <d> +)
 }
 
-sp {water-jug*monitor*tied-operator*fill
-    (state <s> ^impasse tie ^attribute operator ^item <item>)
-    (<item> ^name fill ^jug <j*1>)
-    (<j*1> ^volume <volume>)
+sp {mac*evaluate*state*failure*duplicate
+    (<s2> ^boat <bank> ^left-bank <lb2> ^right-bank <rb2>
+          ^tried-tied-operator <t*1>)
+    (state <s3> -^superstate <s2>)
+    (state { <> <s2> <s1> } ^boat <bank> ^left-bank <lb> ^right-bank <rb>
+          ^desired <d>)
+    (<lb2> ^cannibals <lbc> ^missionaries <lbm>)
+    (<lb> ^cannibals <lbc> ^missionaries <lbm>)
+    (<rb2> ^cannibals <rbc> ^missionaries <rbm>)
+    (<rb> ^cannibals <rbc> ^missionaries <rbm>)
     -->
-    (write (crlf) |  | <item> |: fill(| <volume> |)|)
+    (write (crlf) |Duplicate State Detected.|)
+    (<s2> ^failure <d> +)
 }
 
-sp {water-jug*monitor*tied-operator*empty
-    (state <s> ^impasse tie ^attribute operator ^item <item>)
-    (<item> ^name empty ^jug <j*1>)
-    (<j*1> ^volume <volume>)
+sp {monitor*move-mac-boat*evaluation
+    (state <s> ^operator <o>)
+    (<o> ^name evaluate-operator ^operator <to>)
+    (<to> ^name move-boat ^{ << cannibals missionaries >> <type> } <number>)
     -->
-    (write (crlf) |  | <item> |: empty(| <volume> |)|)
+    (write (crlf) | Evaluate move | <number> | | <type>)
 }
 
-sp {Impasse__Operator_Tie*elaborate*superstate-set2
-    (state <s> ^superstate <s*1>)
-    (<s*1> ^superstate-set <ss>)
-    -->
-    (<s> ^superstate-set <ss> +)
-}
-
-sp {Impasse__Operator_Tie*elaborate*superstate-set
-    (state <s> ^superstate <ss>)
-    -->
-    (<s> ^superstate-set <ss> +)
-}
-
-sp {water-jug*apply*fill
-    (state <s> ^name water-jug ^operator <o> ^jug <j>)
-    (<o> ^name fill ^jug <j>)
-    (<j> ^contents <contents> ^volume <volume>)
-    -->
-    (<j> ^contents <volume> + ^contents <contents> -)
-}
-
-sp {water-jug*propose*fill
-    (state <s> ^name water-jug ^jug <j>)
-    (<j> ^empty { > 0 <e*1> })
-    -->
-    (<s> ^operator <o> +)
-    (<o> ^name fill + ^jug <j> +)
-}
-
-sp {water-jug*apply*empty
-    (state <s> ^name water-jug ^operator <o> ^jug <j>)
-    (<o> ^name empty ^jug <j>)
-    (<j> ^contents <contents> ^volume <volume>)
-    -->
-    (<j> ^contents 0 + ^contents <contents> -)
-}
-
-sp {water-jug*propose*empty
-    (state <s> ^name water-jug ^jug <j>)
-    (<j> ^contents { > 0 <c*1> })
-    -->
-    (<s> ^operator <o> +)
-    (<o> ^name empty + ^jug <j> +)
-}
-
-sp {water-jug*elaborate*problem-space
-    (state <s> ^name water-jug)
+sp {mac*elaborate*problem-space
+    (state <s> ^name mac)
     -->
     (<s> ^problem-space <p> +)
-    (<p> ^name water-jug + ^default-state-copy yes +
-           ^two-level-attributes jug + ^dont-copy empty +)
+    (<p> ^name missionaries-and-cannibals + ^default-state-copy yes +
+           ^one-level-attributes boat + ^one-level-attributes o-bank +
+           ^two-level-attributes right-bank +
+           ^two-level-attributes left-bank +)
 }
 
-sp {water-jug*monitor*operator-application*pour
-    (state <s> ^name water-jug ^operator <o>)
-    (<o> ^name pour ^into <j> ^jug <i>)
-    (<j> ^contents <jcon> ^volume <jvol>)
-    (<i> ^contents <icon> ^volume <ivol>)
+sp {monitor*state*right
+    (state <s> ^boat right-bank ^name mac ^left-bank <l> ^right-bank <r>)
+    (<r> ^cannibals <cr> ^missionaries <mr>)
+    (<l> ^cannibals <cl> ^missionaries <ml>)
     -->
-    (write (crlf) |  POUR(| <ivol> |:| <icon> |,| <jvol> |:| <jcon> |)|)
+    (write (crlf) | M: | <ml> |, C: | <cl> |   ~~~ B | | M: | <mr> |, C: | <cr> |  |)
 }
 
-sp {water-jug*monitor*operator-application*fill
-    (state <s> ^name water-jug ^operator <o>)
-    (<o> ^name fill ^jug <j*1>)
-    (<j*1> ^volume <volume>)
+sp {monitor*state*left
+    (state <s> ^boat left-bank ^name mac ^left-bank <l> ^right-bank <r>)
+    (<r> ^cannibals <cr> ^missionaries <mr>)
+    (<l> ^cannibals <cl> ^missionaries <ml>)
     -->
-    (write (crlf) |  FILL(| <volume> |)|)
+    (write (crlf) | M: | <ml> |, C: | <cl> | B ~~~   | | M: | <mr> |, C: | <cr> |  |)
 }
 
-sp {water-jug*monitor*operator-application*empty
-    (state <s> ^name water-jug ^operator <o>)
-    (<o> ^name empty ^jug <j*1>)
-    (<j*1> ^volume <volume>)
+sp {monitor*move-boat
+    (state <s> ^operator <o>)
+    (<o> ^name move-boat ^{ << cannibals missionaries >> <type> } <number>)
     -->
-    (write (crlf) |  EMPTY(| <volume> |)|)
+    (write (crlf) | Move | <number> | | <type>)
 }
 
-sp {water-jug*monitor*state
-    (state <s> ^name water-jug ^jug <i> ^jug <j>)
-    (<i> ^volume 3 ^contents <icon>)
-    (<j> ^volume 5 ^contents <jcon>)
+sp {mac*evaluate*state*failure*more*cannibals
+    (state <s> ^desired <d> ^{ << right-bank left-bank >> <a*1> } <bank>)
+    (<bank> ^cannibals <c*1> ^missionaries { > 0 < <c*1> <n> })
     -->
-    (write (crlf) | 5:| <jcon> | 3:| <icon>)
+    (write (crlf) |Failure!|)
+    (<s> ^failure <d> +)
 }
 
-sp {water-jug*evaluate*state*success
-    (state <s> ^name water-jug ^desired <d> ^jug <j>)
-    (<d> ^jug <dj>)
-    (<dj> ^contents <c> ^volume <v>)
-    (<j> ^contents <c> ^volume <v>)
+sp {mac*detect*state*success
+    (state <s> ^desired <d> ^<bank> <ls>)
+    (<d> ^{ << right-bank left-bank >> <bank> } <dls>)
+    (<dls> ^cannibals <c> ^missionaries <m>)
+    (<ls> ^cannibals <c> ^missionaries <m>)
     -->
     (<s> ^success <d> +)
-}
-
-sp {water-jug*elaborate*empty
-    (state <s> ^name water-jug ^jug <j>)
-    (<j> ^contents <c> ^volume <v>)
-    -->
-    (<j> ^empty (- <v> <c>) +)
-}
-
-sp {water-jug*evaluate*state*failure*duplicate
-    (state <s2> ^name water-jug ^quiescence t ^tried-tied-operator <t*1>
-          ^jug <i2> ^jug <i1> ^superstate-set <s1>)
-    (<i2> ^volume 3 ^contents <c2>)
-    (<i1> ^volume 5 ^contents <c1>)
-    (<s1> ^name water-jug ^desired <d> ^jug <j2> ^jug <j1>)
-    (<j2> ^contents <c2> ^volume 3)
-    (<j1> ^contents <c1> ^volume 5)
-    -->
-    (<s2> ^failure <d> +)
+    (write (crlf) |Success!|)
 }
 
 sp {selection*elaborate*evaluate-operator*evaluation
@@ -950,3 +942,4 @@ sp {selection*elaborate*evaluate-operator*evaluation
 
 
 
+# Semantic memory is not enabled.  Did not save.

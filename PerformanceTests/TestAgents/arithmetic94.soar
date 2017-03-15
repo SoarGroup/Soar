@@ -3,12 +3,7 @@
 # latest version 1/27/2017
 # Soar version 9.6.0
 
-multi-attributes subtraction-facts 100
-multi-attributes facts 50
-multi-attributes add10-facts 10
-multi-attributes arithmetic 3
-
-learn -e
+learn -d
 
 sp {arithmetic*propose*initialize-arithmetic
    (state <s> ^superstate nil
