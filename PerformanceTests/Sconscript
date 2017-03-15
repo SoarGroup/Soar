@@ -5,6 +5,5 @@ Import('env', 'InstallDir')
 t = env.Install('$OUT_DIR', env.Program('PerformanceTests', Glob('*.cpp')))
 PerformanceTests = InstallDir(env, '$OUT_DIR/SoarPerformanceTests/', 'TestAgents')
 perfscript_install = env.Install(env['OUT_DIR'], 'do_performance_test.sh')
-perfscript_install94 = env.Install(env['OUT_DIR'], 'do_performance_test_94.sh')
 
-env.Alias('performance_tests', t + PerformanceTests + perfscript_install + perfscript_install94)
+env.Alias('performance_tests', t + PerformanceTests + perfscript_install)

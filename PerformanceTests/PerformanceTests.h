@@ -81,21 +81,22 @@ class StatsTracker
             std::ostringstream summary_string;
 
             //std::cout << std::endl << "Test Results:" << std::endl;
-            std::cout << std::endl;
-            std::cout << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
-            std::cout << std::setw(12) << " ";
-            //std::cout << " ";
-            std::cout << std::resetiosflags(std::ios::left) << std::setiosflags(std::ios::right);
-            std::cout << std::setw(10) << "Avg";
-#ifndef BRIEF_MODE
-            std::cout << std::setw(10) << "Low";
-            std::cout << std::setw(10) << "High";
-            std::cout << std::setw(10) << "Spread" << std::endl;
-#else
-            std::cout << std::endl;
-#endif
+//            std::cout << std::endl;
+//            std::cout << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
+//            std::cout << std::setw(12) << " ";
+//            //std::cout << " ";
+//            std::cout << std::resetiosflags(std::ios::left) << std::setiosflags(std::ios::right);
+//            std::cout << std::setw(10) << "Avg";
+//#ifndef BRIEF_MODE
+//            std::cout << std::setw(10) << "Low";
+//            std::cout << std::setw(10) << "High";
+//            std::cout << std::setw(10) << "Spread" << std::endl;
+//#else
+//            std::cout << std::endl;
+//#endif
             //PrintResultsHelper(std::cout, "OS Real", 12, GetAverage(realtimes), GetLow(realtimes), GetHigh(realtimes));
-            PrintResultsHelper(std::cout, "Soar Kernel", 12, GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes));
+            PrintResultsHelper(std::cout, testName, 40, GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes), true);
+            std::cout << "---------------------------------------------------------------------------------\n";
             //PrintResultsHelper(std::cout, "Soar Total", 12, GetAverage(totaltimes), GetLow(totaltimes), GetHigh(totaltimes));
 
             time_t t = time(0);
@@ -113,20 +114,24 @@ class StatsTracker
             return;
         }
 
-        void PrintResultsHelper(std::ostream &outStream, std::string label, int label_width, double avg, double low, double high)
+        void PrintResultsHelper(std::ostream &outStream, std::string label, int label_width, double avg, double low, double high, bool useColors = false)
         {
-            outStream.precision(3);
+            outStream.precision(4);
+            if (useColors) outStream << "\e[1;34m";
             outStream << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
             outStream << std::setw(label_width) << label;
+            if (useColors) outStream << "\e[0;37m";
             outStream << ":";
+            if (useColors) outStream << "\e[0;93m";
             outStream << std::resetiosflags(std::ios::left);
             outStream << std::setiosflags(std::ios::right);
-            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(3) << avg;
+            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << avg;
 #ifndef BRIEF_MODE
-            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(3) << low;
-            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(3) << high;
+            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << low;
+            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << high;
 #endif
-            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(3) << (high - low);
+            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << (high - low);
+            if (useColors) outStream << "\e[0;37m";
             outStream << std::endl;
         }
 };

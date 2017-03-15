@@ -21,7 +21,7 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
         Agent* agent = kernel->CreateAgent("Soar1");
         string runCmd = "time run ";
         if (numDecisions > 0) runCmd += to_string(numDecisions);
-        cout << (i+1) << ": ";
+        cout << (i+1) << " ";
         cout.flush();
 
         #ifndef QUIET_MODE
@@ -61,7 +61,7 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
         kernel->Shutdown();
         delete kernel;
 
-        cout << "✅\n";
+        cout << "✅  ";
         cout.flush();
     }
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        cout << "Usage: " << argv[0] << " [default | <agent name>] [<numtrials>] [<num_decisions>]" << endl;
+        cout << "Usage: " << argv[0] << " [default | <agent name>] [<numtrials>] [<num_decisions>] [<num_init_and_rerun>]" << endl;
         return 1;
     }
     if (!strcmp(agentname, "default"))
@@ -115,9 +115,10 @@ int main(int argc, char* argv[])
     }
     if (!numDCs) numDCs = DEFAULT_DCS;
 
-    cout << "Soar Performance Tests " << endl << endl;
-
-    cout << "Measuring performance of " << agentname << " agent " << numTrials << " times (" << numInits << " extra init-soar/runs per trial): \n";
+    cout << "\e[1;31m" << agentname << "\e[0;37m" << ": ";
+    if (numTrials > 1) cout << numTrials << " trials"; else cout << "single run";
+    if (numDCs) cout << ", " << numDCs << " DCs"; else cout << ", run forever";
+    if (numInits) cout << ", " << numInits << " extra init-soar/runs\n"; else cout << endl;
     cout.flush();
 
     {
