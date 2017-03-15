@@ -39,10 +39,11 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
                 }
                 cout << ".";
                 cout.flush();
-            }
-            for (int j = 0; j < commands.size(); ++j)
-            {
-                agent->ExecuteCommandLine(commands[j].c_str());
+            } else {
+                for (int j = 0; j < commands.size(); ++j)
+                {
+                    agent->ExecuteCommandLine(commands[j].c_str());
+                }
             }
             {
                 ClientAnalyzedXML response;
@@ -133,9 +134,9 @@ int main(int argc, char* argv[])
         commands.push_back("output console off");
         commands.push_back("output callbacks off");
         commands.push_back("output agent-writes off");
+        commands.push_back("output enable off");
         commands.push_back("watch 0");
         commands.push_back("srand 3");
-        commands.push_back("pwd");
 
         init_commands.push_back("init-soar");
         init_commands.push_back("excise -c");

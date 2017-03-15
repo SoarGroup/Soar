@@ -102,9 +102,10 @@ class StatsTracker
             time_t t = time(0);
             struct tm * now = localtime( & t );
             std::ostringstream now_string;
-            now_string << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' <<  now->tm_mday << " " << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << "   ";
+            now_string << (now->tm_year + 1900) << '-' << (now->tm_mon + 1) << '-' <<  now->tm_mday << " " << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
             summary_string << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
             summary_string << std::setw(20) << now_string.str();
+            summary_string << std::resetiosflags(std::ios::left);
             PrintResultsHelper(summary_string, testName, 40, GetAverage(kerneltimes), GetLow(kerneltimes), GetHigh(kerneltimes));
 
             std::ofstream resultFile("/Users/mazzin/Soar/SoarSandbox/PerformanceTestResults.txt", std::ofstream::out | std::ofstream::app);
