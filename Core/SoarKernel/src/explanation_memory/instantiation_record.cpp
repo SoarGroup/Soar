@@ -48,11 +48,13 @@ void instantiation_record::init(agent* myAgent, instantiation* pInst)
     {
         new_action_record = thisAgent->explanationMemory->add_result(pref);
         actions->push_front(new_action_record);
+        //actions->push_back(new_action_record);
     }
     for (preference* pref = pInst->preferences_cached; pref != NIL; pref = pref->inst_next)
     {
         new_action_record = thisAgent->explanationMemory->add_result(pref);
         actions->push_front(new_action_record);
+        //actions->push_back(new_action_record);
     }
 
 }

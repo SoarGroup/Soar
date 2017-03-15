@@ -4,6 +4,8 @@
 
 #include "agent.h"
 #include "condition.h"
+#include "dprint.h"
+#include "explanation_memory.h"
 #include "instantiation.h"
 #include "output_manager.h"
 #include "preference.h"
@@ -13,16 +15,13 @@
 #include "symbol_manager.h"
 #include "test.h"
 #include "working_memory.h"
-#include "dprint.h"
-
-#include "explanation_memory.h"
-
 
 void delete_ungrounded_symbol_list(agent* thisAgent, matched_symbol_list** unconnected_syms)
 {
     matched_symbol_list* lSyms = *unconnected_syms;
     chunk_element* lSym;
-
+   
+    //for(matched_symbol_list::iterator it = lSyms->begin(), end = lSyms->end(); it != end; ++it)
     for (auto it = lSyms->begin(); it != lSyms->end(); it++)
     {
         lSym = (*it);

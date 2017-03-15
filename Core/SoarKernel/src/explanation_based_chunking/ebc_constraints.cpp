@@ -19,7 +19,7 @@
 
 void Explanation_Based_Chunker::clear_cached_constraints()
 {
-    for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
+    for (constraint_list::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
         /* We intentionally used the tests in the conditions backtraced through instead of copying
          * them, so we don't need to deallocate the tests in the constraint. We just delete the
@@ -116,7 +116,7 @@ void Explanation_Based_Chunker::add_additional_constraints()
 
     dprint_header(DT_CONSTRAINTS, PrintBefore, "Adding %u transitive constraints from non-operational conditions...\n", static_cast<uint64_t>(constraints->size()));
 
-    for (std::list< constraint* >::iterator iter = constraints->begin(); iter != constraints->end();)
+    for (constraint_list::iterator iter = constraints->begin(); iter != constraints->end();)
     {
         lConstraint = *iter;
         condition* lOperationalCond = lConstraint->eq_test->identity_set ? lConstraint->eq_test->identity_set->get_operational_cond() : NULL;

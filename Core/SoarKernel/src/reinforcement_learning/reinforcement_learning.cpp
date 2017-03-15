@@ -310,6 +310,8 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
     }
 
     rules->remove(prod);
+    //production_list::iterator newEnd = std::remove(rules->begin(), rules->end(), prod);
+    //rules->erase(newEnd, rules->end());
 }
 
 void rl_clear_refs(Symbol* goal)

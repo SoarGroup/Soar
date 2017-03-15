@@ -1388,7 +1388,7 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             {
                                 next_iter = l_instantiation_list.insert(next_iter, lPref->inst);
                             }
-
+                            dprint(DT_DEBUG, "Pushing %l on cond vector.\n", cond);
                             cond_stack.push_back(cond);
                         }
                     }
@@ -1402,13 +1402,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
      * deallocate_preference() part 2 (cleans up bt pref)
      * -------------------------------------------------- */
 //    debug_refcount_change_start(thisAgent, false);
-    while (!cond_stack.empty())
+    condition* cond_temp;
+    for  (condition_list::iterator cond_it = cond_stack.begin(), end = cond_stack.end(); cond_it != end; ++cond_it)
     {
-        condition* temp = cond_stack.back();
-        cond_stack.pop_back();
+        cond_temp = *cond_it;
+//        cond_stack.pop_back();
+        dprint(DT_DEBUG, "Deallocating preference %l from cond vector.\n", cond_temp);
 
-        dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", temp->bt.trace, temp->bt.trace->p_id, static_cast<int64_t>(temp->bt.trace->level));
-        deallocate_preference_contents(thisAgent, temp->bt.trace, true);
+        dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", cond_temp->bt.trace, cond_temp->bt.trace->p_id, static_cast<int64_t>(cond_temp->bt.trace->level));
+//        deallocate_preference_contents(thisAgent, cond_temp->bt.trace, true);
     }
 //    debug_refcount_change_end(thisAgent, "All conds", "instantiation deallocation: cumulative bt pref cleanup", false);
 

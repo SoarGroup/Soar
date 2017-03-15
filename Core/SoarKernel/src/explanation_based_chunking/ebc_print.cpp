@@ -176,7 +176,7 @@ void Explanation_Based_Chunker::print_constraints(TraceMode mode)
     {
         outputManager->printa_sf(thisAgent, "NO CONSTRAINTS RECORDED\n");
     }
-    for (std::list< constraint* >::iterator it = constraints->begin(); it != constraints->end(); ++it)
+    for (constraint_list::iterator it = constraints->begin(); it != constraints->end(); ++it)
     {
         outputManager->printa_sf(thisAgent, "%t[%g]:   %t[%g]\n", (*it)->eq_test, (*it)->eq_test, (*it)->constraint_test, (*it)->constraint_test);
     }
