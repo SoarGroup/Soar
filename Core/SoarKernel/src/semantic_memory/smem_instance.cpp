@@ -252,6 +252,18 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
             assert(sti->id->LTI_ID && sti->id->level && (sti->id->level <= result_header->id->level));
         }
     }
+    else
+    {
+        if (sti == NIL)
+        {
+            sti = thisAgent->symbolManager->make_new_identifier('L', NO_WME_LEVEL, NIL);
+            sti->id->level = NO_WME_LEVEL;
+            sti->id->promotion_level = NO_WME_LEVEL;
+            sti->id->LTI_ID = pLTI_ID;
+            sti->id->smem_valid = smem_validation;
+            sti_created_here = true;
+        }
+    }
     // activate lti
     if (activate_lti)
     {
@@ -273,7 +285,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     }
 
     /* Not sure if this is still needed with this new implementation of smem*/
-    if (sti_created_here)
+    if (sti_created_here && install_type == wm_install)
     {
         // if the identifier was created above we need to
         // remove a single ref count AFTER the wme
@@ -330,6 +342,10 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
+            if (install_type == fake_install && sti_created_here)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&sti);
+            }
             thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
             thisAgent->symbolManager->symbol_remove_ref(&value_sym);
         }

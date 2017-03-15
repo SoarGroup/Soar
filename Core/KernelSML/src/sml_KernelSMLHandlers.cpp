@@ -1130,7 +1130,16 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
                     pFilteredOutput = "" ;
                 }
 
-                bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+                bool res;
+                if (filteredError) 
+                {
+                    pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
+                    res = this->ReturnResult(pConnection, pResponse, "") ;
+                }
+                else
+                {
+                    res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+                }
 
                 // Can only clean this up after we're finished using it or pFilteredLine will become invalid
                 delete pFilteredXML ;
