@@ -6,6 +6,8 @@ import os, sys, platform
 Import('env', 'InstallDir')
 
 settings_install = env.Install(env['OUT_DIR'], 'settings.soar')
+performance_install = env.Install(env['OUT_DIR'], 'do_performance_test.sh')
+performance_install94 = env.Install(env['OUT_DIR'], 'do_performance_test_94.sh')
 vs_install = env.InstallAs(env['OUT_DIR'] + '/VisualSoar.jar', 'VisualSoar.jartmp')
 if os.name == 'nt':
     jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.bat')
@@ -17,4 +19,4 @@ else:
     jd_install = env.Install(env['OUT_DIR'], 'SoarJavaDebugger.sh')
     vsc_install = env.Install(env['OUT_DIR'], 'VisualSoar.sh')
 
-env.Alias('scripts', settings_install + jd_install + vs_install + vsc_install)
+env.Alias('scripts', settings_install + jd_install + vs_install + vsc_install + performance_install + performance_install94)

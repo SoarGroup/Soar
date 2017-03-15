@@ -32,7 +32,7 @@ sp {arithmetic*apply*initialize-arithmetic
    (state <s> ^operator.name initialize-arithmetic)
 -->
    (<s> ^name arithmetic
-        ^count 10000)}
+        ^count 1000)}
 
 sp {arithmetic*elaborate*state*top-number*one-column
    (state <s> ^name arithmetic

@@ -1,6 +1,8 @@
 # Settings
 
-max-elaborations 100
+soar max-elaborations 100
+soar max-goal-depth 100
+output agent-writes off
 watch 0
 
 # Procedural Memory
@@ -1297,6 +1299,7 @@ sp {eight*operator*move-tile*inverse*reject
     -->
     (<s> ^operator <o> -)
 }
+
 
 sp {eight*detect*state*success
     (state <s> ^problem-space <p*1>)

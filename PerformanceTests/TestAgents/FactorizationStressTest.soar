@@ -1,9 +1,3 @@
-pushd ..
-source common.soar
-popd
-
-learn -e
-
 sp {complete
    (state <s> ^name Factorization
               ^factorization-object <fo>)

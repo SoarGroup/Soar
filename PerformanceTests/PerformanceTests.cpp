@@ -21,7 +21,7 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
         Agent* agent = kernel->CreateAgent("Soar1");
         string runCmd = "time run ";
         if (numDecisions > 0) runCmd += to_string(numDecisions);
-        cout << i << ": ";
+        cout << (i+1) << ": ";
         cout.flush();
 
         #ifndef QUIET_MODE
@@ -36,9 +36,9 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
                 for (int j = 0; j < init_commands.size(); ++j)
                 {
                     agent->ExecuteCommandLine(init_commands[j].c_str());
-                    cout << '.';
-                    cout.flush();
                 }
+                cout << ".";
+                cout.flush();
             }
             for (int j = 0; j < commands.size(); ++j)
             {
@@ -113,10 +113,11 @@ int main(int argc, char* argv[])
     {
         agentname = DEFAULT_AGENT;
     }
+    if (!numDCs) numDCs = DEFAULT_DCS;
 
     cout << "Soar Performance Tests " << endl << endl;
 
-    cout << "Measuring performance of " << agentname << " agent " << numTrials << " times (" << numInits << " trials per run): \n";
+    cout << "Measuring performance of " << agentname << " agent " << numTrials << " times (" << numInits << " extra init-soar/runs per trial): \n";
     cout.flush();
 
     {
@@ -133,16 +134,16 @@ int main(int argc, char* argv[])
         commands.push_back("output agent-writes off");
         commands.push_back("watch 0");
         commands.push_back("srand 3");
+        commands.push_back("pwd");
 
         init_commands.push_back("init-soar");
         init_commands.push_back("excise -c");
         init_commands.push_back("srand 3");
 
         Run_PerformanceTest(numTrials, numDCs, &l_testStats, commands, numInits, init_commands);
-        l_testStats.PrintResults();
-    }
 
-//    cout << endl << "Usage: " << argv[0] << " [default | <agent path>] [<numtrials>]  [<num_decisions>]" << endl << endl;
+        l_testStats.PrintResults(agentname);
+    }
 
     return 0;
 }
