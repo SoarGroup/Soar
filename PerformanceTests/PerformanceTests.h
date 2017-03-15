@@ -131,7 +131,7 @@ class StatsTracker
             outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << low;
             outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << high;
 #endif
-            outStream << std::setw(10) << std::setiosflags(std::ios::fixed) << std::setprecision(4) << (high - low);
+            outStream << std::setw(9) << std::setiosflags(std::ios::fixed) << std::setprecision(1) << (high ? ((high - low)/high)*100 : 0) << "%";
             if (useColors) outStream << "\e[0;37m";
             outStream << std::endl;
         }

@@ -57,7 +57,7 @@ if [ $lTestSuite == "full" ] ; then
 elif [ $lTestSuite == "fast" ] ; then
   if [ $lVersion == "9.6" ] ; then
     nice -n -10 ./PerformanceTests mac-planning96 2 300 0
-    nice -n -10 ./PerformanceTests mac-planning96_learning 1 165 32
+    nice -n -10 ./PerformanceTests mac-planning96_learning 2 165 32
     nice -n -10 ./PerformanceTests water-jug-lookahead96 2 1000
     nice -n -10 ./PerformanceTests water-jug-lookahead96_learning 1 102 50
     nice -n -10 ./PerformanceTests arithmetic96 2

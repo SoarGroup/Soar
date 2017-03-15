@@ -54,15 +54,12 @@ void Run_PerformanceTest(int numTrials, int numDecisions, StatsTracker* pSt, con
                 agent->ExecuteCommandLineXML("stats", &response);
                 pSt->kerneltimes.push_back(response.GetArgFloat(sml_Names::kParamStatsKernelCPUTime, 0.0));
                 pSt->totaltimes.push_back(response.GetArgFloat(sml_Names::kParamStatsTotalCPUTime, 0.0));
-                //agent->ExecuteCommandLine("stats");
-//                cout << response.GetArgFloat(sml_Names::kParamStatsKernelCPUTime, 0.0) << " ";
-//                cout.flush();
             }
         }
         kernel->Shutdown();
         delete kernel;
 
-        cout << "✅  ";
+        if (!numInits) cout << "✅  "; else cout << "✅\n";
         cout.flush();
     }
 
@@ -118,8 +115,8 @@ int main(int argc, char* argv[])
 
     cout << "\e[1;31m" << agentname << "\e[0;37m" << ": ";
     if (numTrials > 1) cout << numTrials << " trials"; else cout << "single run";
-    if (numDCs) cout << ", " << numDCs << " DCs"; else cout << ", run forever";
-    if (numInits) cout << ", " << numInits << " extra init-soar/runs\n"; else cout << endl;
+    if (numDCs > 0) cout << ", " << numDCs << " DCs"; else cout << ", run forever";
+    if (numInits > 0) cout << ", " << numInits << " extra init-soar/runs\n"; else cout << endl;
     cout.flush();
 
     {
