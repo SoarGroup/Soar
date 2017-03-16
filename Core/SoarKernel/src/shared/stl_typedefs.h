@@ -33,13 +33,15 @@
 
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
-    typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
-    typedef std::set< production_record*, std::less< production_record* >,
-                      soar_module::soar_memory_pool_allocator< production_record* > >                               production_record_set;
+    typedef std::set< IdentitySet*, std::less< IdentitySet* >,
+                      soar_module::soar_memory_pool_allocator< IdentitySet* > >                                     identity_set_set;
     typedef std::set< instantiation*, std::less< instantiation* >,
                       soar_module::soar_memory_pool_allocator< instantiation* > >                                   inst_set;
     typedef std::set< instantiation_record*, std::less< instantiation_record* >,
                       soar_module::soar_memory_pool_allocator< instantiation_record* > >                            inst_record_set;
+    typedef std::set< production_record*, std::less< production_record* >,
+                      soar_module::soar_memory_pool_allocator< production_record* > >                               production_record_set;
+    typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > >           symbol_set;
     typedef std::set< wma_decay_element*, std::less< wma_decay_element* >,
                       soar_module::soar_memory_pool_allocator< wma_decay_element* > >                               wma_decay_set;
     typedef std::set< wma_d_cycle, std::less< wma_d_cycle >,
@@ -77,6 +79,7 @@
     typedef std::list< Symbol* >                                symbol_list;
     typedef std::list< wme* >                                   wme_list;
 
+    typedef std::set< IdentitySet* >                            identity_set_set;
     typedef std::set< instantiation* >                          inst_set;
     typedef std::set< production_record* >                      production_record_set;
     typedef std::set< instantiation_record* >                   inst_record_set;
@@ -110,7 +113,6 @@
 typedef std::unordered_map< uint64_t, attachment_point* >       attachment_points_map;
 typedef std::unordered_set< augmentation* >                     augmentation_set;
 typedef std::unordered_set< uint64_t >                          id_set;
-typedef std::set< IdentitySet* >                                identity_set_set;
 typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
 typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
 typedef std::unordered_map< uint64_t, IdentitySet*>             id_to_join_map;
@@ -128,12 +130,12 @@ typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map
 // - Could create allocator versions of a lot of these
 // - Many of these could be replaced by more general versions above.  Same with epmem
 
-typedef std::set<ltm_object*>                   ltm_set;
-typedef std::list<ltm_value*>                   ltm_slot;
-typedef std::map<Symbol*, ltm_slot*>            ltm_slot_map;
-typedef std::list<smem_weighted_cue_element*>   smem_weighted_cue_list;
-typedef std::pair< double, uint64_t >           smem_activated_lti;
-typedef std::map<std::string, ltm_object*>      str_to_ltm_map;
-typedef std::map<Symbol*, ltm_object*>          sym_to_ltm_map;
+typedef std::unordered_set<ltm_object*>                 ltm_set;
+typedef std::vector<ltm_value*>                         ltm_slot;
+typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
+typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
+typedef std::pair< double, uint64_t >                   smem_activated_lti;
+typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
+typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
 
 #endif /* STL_TYPEDEFS_H_ */
