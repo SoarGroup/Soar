@@ -11,7 +11,7 @@
 
 action* Explanation_Based_Chunker::convert_result_into_action(preference* result)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
+//    std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lIdentity = 0;
 
     action* a = make_action(thisAgent);
@@ -31,10 +31,10 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  lIdentity, NULL, result->was_unbound_vars.id);
         result->clone_identities.id = lIdentity;
     } else {
+        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id, false, true);
         result->clone_identities.id = lIdentity;
-        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id);
-        result->cloned_rhs_funcs.id = a->id;
-        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, false, true);
+        result->cloned_rhs_funcs.id = copy_rhs_value(thisAgent, a->id);
+//        deallocate_rhs_value(thisAgent, result->rhs_funcs.id);
     }
 
     if (result->identities.attr)
@@ -50,10 +50,10 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, lIdentity, NULL, result->was_unbound_vars.attr);
         result->clone_identities.attr = lIdentity;
     } else {
-        result->clone_identities.attr = lIdentity;
-        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr);
-        result->cloned_rhs_funcs.attr = a->attr;
         a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, false, true);
+        result->clone_identities.attr = lIdentity;
+        result->cloned_rhs_funcs.attr = copy_rhs_value(thisAgent, a->attr);
+//        deallocate_rhs_value(thisAgent, result->rhs_funcs.attr);
     }
 
     if (result->identities.value)
@@ -68,10 +68,11 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, NULL, result->was_unbound_vars.value);
         result->clone_identities.value = lIdentity;
     } else {
-        result->clone_identities.value = lIdentity;
-        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value);
-        result->cloned_rhs_funcs.value = a->value;
         a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value, false, true);
+        result->clone_identities.value = lIdentity;
+        result->cloned_rhs_funcs.value = copy_rhs_value(thisAgent, a->value);
+//        deallocate_rhs_value(thisAgent, result->rhs_funcs.value);
+//        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, false, true);
     }
 
     if (result->identities.referent)
@@ -88,10 +89,10 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
             a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, lIdentity, NULL, result->was_unbound_vars.referent);
             result->clone_identities.referent = lIdentity;
         } else {
-            result->clone_identities.referent = lIdentity;
-            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent);
-            result->cloned_rhs_funcs.referent = a->referent;
             a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, false, true);
+            result->clone_identities.referent = lIdentity;
+            result->cloned_rhs_funcs.referent = copy_rhs_value(thisAgent, a->referent);
+//            deallocate_rhs_value(thisAgent, result->rhs_funcs.referent);
         }
     }
 
