@@ -30,6 +30,9 @@ void IdentitySet::clean_up()
         {
             dprint(DT_DEALLOCATE_ID_SETS, "...removing identity set %u from super-join %u's identity_sets\n", idset_id, super_join->idset_id);
             super_join->identity_sets->remove(this);
+            /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
+            //identity_set_list::iterator newEnd = std::remove(super_join->identity_sets->begin(), super_join->identity_sets->end(), this);
+            //super_join->identity_sets->erase(newEnd, super_join->identity_sets->end());
         }
         if (identity_sets)
         {

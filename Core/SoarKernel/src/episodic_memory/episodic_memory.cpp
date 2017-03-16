@@ -1288,7 +1288,7 @@ epmem_wme_list* epmem_get_augs_of_id(Symbol* id, tc_number tc)
     return return_val;
 }
 
-inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes)
+inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, preference_list* epmem_wmes)
 {
     if (my_list.empty())
     {

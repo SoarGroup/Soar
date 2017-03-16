@@ -383,13 +383,6 @@ typedef struct epmem_rit_state_struct
 // Soar Integration Types
 //////////////////////////////////////////////////////////
 
-// list used primarily like a stack
-#ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > epmem_wme_stack;
-#else
-typedef std::list< preference* > epmem_wme_stack;
-#endif
-
 // data associated with each state
 typedef struct epmem_data_struct
 {
@@ -406,7 +399,7 @@ typedef struct epmem_data_struct
     wme* result_wme;
     wme* epmem_time_wme;
 
-    epmem_wme_stack* epmem_wmes;                            // preferences generated in last epmem
+    preference_list* epmem_wmes;                            // preferences generated in last epmem
 } epmem_data;
 
 // lookup tables to facilitate shared identifiers

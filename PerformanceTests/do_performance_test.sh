@@ -1,4 +1,4 @@
-lVersion="none"
+lVersion="9.6"
 lTestSuite="full"
 lUnitTests=off
 

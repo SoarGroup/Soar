@@ -42,6 +42,8 @@ void Repair_Path::init(Symbol* new_root, wme_list* new_path, wme* new_wme)
     if (new_path) {
         (*wme_path) = (*new_path);
         if (new_wme) wme_path->push_front(new_wme);
+        /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
+        //if (new_wme) wme_path->push_back(new_wme);
     }
 }
 

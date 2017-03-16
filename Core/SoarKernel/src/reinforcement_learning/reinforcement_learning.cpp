@@ -310,6 +310,7 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
     }
 
     rules->remove(prod);
+    /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
     //production_list::iterator newEnd = std::remove(rules->begin(), rules->end(), prod);
     //rules->erase(newEnd, rules->end());
 }

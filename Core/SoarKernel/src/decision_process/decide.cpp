@@ -2627,7 +2627,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->memoryManager->free_with_pool(MP_rl_rule, goal->id->rl_info->prev_op_rl_rules);
     thisAgent->memoryManager->free_with_pool(MP_rl_info, goal->id->rl_info);
 
-    goal->id->epmem_info->epmem_wmes->~epmem_wme_stack();
+    goal->id->epmem_info->epmem_wmes->~preference_list();
     thisAgent->memoryManager->free_with_pool(MP_epmem_wmes, goal->id->epmem_info->epmem_wmes);
     thisAgent->memoryManager->free_with_pool(MP_epmem_info, goal->id->epmem_info);
 
@@ -2724,11 +2724,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->rl_info->gap_age = 0;
     id->id->rl_info->hrl_age = 0;
     thisAgent->memoryManager->allocate_with_pool(MP_rl_et, &(id->id->rl_info->eligibility_traces));
-#ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map(std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >());
-#else
     id->id->rl_info->eligibility_traces = new(id->id->rl_info->eligibility_traces) rl_et_map();
-#endif
     thisAgent->memoryManager->allocate_with_pool(MP_rl_rule, &(id->id->rl_info->prev_op_rl_rules));
     id->id->rl_info->prev_op_rl_rules = new(id->id->rl_info->prev_op_rl_rules) production_list();
 
@@ -2737,22 +2733,14 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
     id->id->epmem_info->last_cmd_count = 0;
     id->id->epmem_info->last_memory = EPMEM_MEMID_NONE;
     thisAgent->memoryManager->allocate_with_pool(MP_epmem_wmes, &(id->id->epmem_info->epmem_wmes));
-#ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
-#else
-    id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) epmem_wme_stack();
-#endif
+    id->id->epmem_info->epmem_wmes = new(id->id->epmem_info->epmem_wmes) preference_list();
 
     id->id->smem_info->last_cmd_time[0] = 0;
     id->id->smem_info->last_cmd_time[1] = 0;
     id->id->smem_info->last_cmd_count[0] = 0;
     id->id->smem_info->last_cmd_count[1] = 0;
     thisAgent->memoryManager->allocate_with_pool(MP_smem_wmes, &(id->id->smem_info->smem_wmes));
-#ifdef USE_MEM_POOL_ALLOCATORS
-    id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) preference_list(soar_module::soar_memory_pool_allocator< preference* >(thisAgent));
-#else
     id->id->smem_info->smem_wmes = new(id->id->smem_info->smem_wmes) preference_list();
-#endif
 
     /* --- invoke callback routine --- */
     soar_invoke_callbacks(thisAgent,

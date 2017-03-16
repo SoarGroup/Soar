@@ -183,6 +183,12 @@ void Explanation_Based_Chunker::join_identity_sets(IdentitySet* lFromJoinSet, Id
             if (lPreviouslyJoinedIdentity->literalized()) lToJoinSet->literalize();
         }
         lToJoinSet->identity_sets->splice(lToJoinSet->identity_sets->begin(), (*lFromJoinSet->identity_sets));
+        /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
+        //lToJoinSet->identity_sets->insert(
+        //    lToJoinSet->identity_sets->end(),
+        //    std::make_move_iterator(lFromJoinSet->identity_sets->begin()),
+        //    std::make_move_iterator(lFromJoinSet->identity_sets->end())
+        //  );
         delete lFromJoinSet->identity_sets;
         lFromJoinSet->identity_sets = NULL;
     }
