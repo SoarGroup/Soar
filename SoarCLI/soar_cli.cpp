@@ -73,9 +73,12 @@ int main(int argc, char** argv)
             return 1;
         }
 
+        std::string currentCommand;
         for (; i < argc; ++i)
         {
-            cmds.push_back(argv[i]);
+            currentCommand += argv[i];
+            currentCommand += ' ';
+            //        cmds.push_back(argv[i]);
             interactive = false;
         }
 
@@ -90,10 +93,11 @@ int main(int argc, char** argv)
             cmd.source((*j).c_str());
         }
 
-        for (j = cmds.begin(); j != cmds.end(); ++j)
-        {
-            cmd.process_line((*j));
-        }
+        cmd.process_line(currentCommand);
+//        for (j = cmds.begin(); j != cmds.end(); ++j)
+//        {
+//            cmd.process_line((*j));
+//        }
 
         if (interactive)
         {
