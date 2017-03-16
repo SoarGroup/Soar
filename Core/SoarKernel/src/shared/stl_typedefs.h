@@ -14,6 +14,46 @@
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
+    /* The following were unordered STL containers, but in certain cases it seems allocation costs more than we gain.  Still
+     * not sure whether to switch or whether we should just switch some.  Might try new allocator that can be used with STL
+     * containers that request variable memory allocations like unordered_set, vector and unordered_map  */
+
+    typedef std::set< augmentation*, std::less< augmentation* >, soar_module::soar_memory_pool_allocator< augmentation* > >     augmentation_set;
+    typedef std::set< uint64_t, std::less< uint64_t >, soar_module::soar_memory_pool_allocator< uint64_t > >                    id_set;
+    typedef std::set< ltm_object*, std::less< ltm_object* >, soar_module::soar_memory_pool_allocator< ltm_object* > >           ltm_set;
+
+    typedef std::list< ltm_value*, soar_module::soar_memory_pool_allocator< ltm_value* > >                                      ltm_slot;
+    typedef std::list< smem_weighted_cue_element*, soar_module::soar_memory_pool_allocator< smem_weighted_cue_element* > >      smem_weighted_cue_list;
+
+    typedef std::map< uint64_t, uint64_t, std::less< uint64_t >,
+                          soar_module::soar_memory_pool_allocator< std::pair< uint64_t, uint64_t > > >                id_to_id_map;
+    typedef std::map< uint64_t, Symbol*, std::less< uint64_t >,
+                          soar_module::soar_memory_pool_allocator< std::pair< uint64_t, Symbol* > > >                 id_to_sym_map;
+    typedef std::map< uint64_t, IdentitySet*, std::less< uint64_t >,
+                          soar_module::soar_memory_pool_allocator< std::pair< uint64_t, IdentitySet* > >>             id_to_join_map;
+    typedef std::map< uint64_t, std::string, std::less< uint64_t >,
+                          soar_module::soar_memory_pool_allocator< std::pair< uint64_t, std::string > > >             id_to_string_map;
+    typedef std::map< uint64_t, identity_mapping_list*, std::less< uint64_t >,
+                          soar_module::soar_memory_pool_allocator< std::pair< uint64_t, identity_mapping_list* > > >  inst_identities_map;
+    typedef std::map< Symbol*, augmentation_set*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, augmentation_set* > > >        sym_to_aug_map;
+    typedef std::map< Symbol*, condition*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, condition* > > >               sym_to_cond_map;
+    typedef std::map< Symbol*, uint64_t, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > >                 sym_to_id_map;
+    typedef std::map< Symbol*, chunk_element*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, chunk_element* > > >           sym_to_sym_id_map;
+    typedef std::map< Symbol*, sym_to_cond_map, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, sym_to_cond_map > > >          sym_to_sym_to_cond_map;
+    typedef std::map< Symbol*, sym_to_sym_to_cond_map, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, sym_to_sym_to_cond_map > > >   triple_merge_map;
+    typedef std::map< Symbol*, ltm_slot*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, Symbol* > > >                  ltm_slot_map;
+    typedef std::map< std::string, ltm_object*, std::less< std::string >,
+                          soar_module::soar_memory_pool_allocator< std::pair< std::string, ltm_object* > > >          str_to_ltm_map;
+    typedef std::map< Symbol*, ltm_object*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, ltm_object* > > >              sym_to_ltm_map;
+
     typedef std::list< action_record*, soar_module::soar_memory_pool_allocator< action_record* > >                  action_record_list;
     typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > >                          condition_list;
     typedef std::list< condition_record*, soar_module::soar_memory_pool_allocator< condition_record* > >            condition_record_list;
@@ -30,7 +70,6 @@
     typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >                                symbol_list;
     typedef std::list< symbol_triple*, soar_module::soar_memory_pool_allocator< symbol_triple* > >                  symbol_triple_list;
     typedef std::list< deep_copy_wme*, soar_module::soar_memory_pool_allocator< deep_copy_wme* > >                  deep_copy_wme_list;
-
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
     typedef std::set< IdentitySet*, std::less< IdentitySet* >,
@@ -98,44 +137,33 @@
 
 #endif
 
-/* We need a more flexible custom memory pool allocator for unordered STL data structures.  They
- * can request multiple objects at once, which prevents our normal custom allocator to be used. It
- * looks like there may be some subtle issues that our allocator might have problems with, so we
- * may want to use some of the more full-featured memory pool custom allocators that are publicly
- * available.
- *
- * It's also not clear whether allocations that requests variable memory size would benefit from
- * using memory pools.  It looks like it requests only one object the majority of the time, so
- * it may still be of some benefit.
- *
- * For now, we just use standard heap allocation for unordered STL structures */
+/* Original unordered STL structures */
 
-typedef std::unordered_map< uint64_t, attachment_point* >       attachment_points_map;
-typedef std::unordered_set< augmentation* >                     augmentation_set;
-typedef std::unordered_set< uint64_t >                          id_set;
-typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
-typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
-typedef std::unordered_map< uint64_t, IdentitySet*>             id_to_join_map;
-typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
-typedef std::unordered_map< uint64_t, preference* >             id_to_pref_map;
-typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
-typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
-typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
-typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
-typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
-typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
-typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
+//typedef std::unordered_set< augmentation* >                     augmentation_set;
+//typedef std::unordered_set< uint64_t >                          id_set;
+//typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
+//typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
+//typedef std::unordered_map< uint64_t, IdentitySet*>             id_to_join_map;
+//typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
+//typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
+//typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
+//typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
+//typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
+//typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
+//typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
+//typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
+//
+///*------ SMem stl typedefs ------*/
+//// - Could create allocator versions of a lot of these
+//// - Many of these could be replaced by more general versions above.  Same with epmem
+//
+//typedef std::unordered_set<ltm_object*>                 ltm_set;
+//typedef std::vector<ltm_value*>                         ltm_slot;
+//typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
+//typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
+//typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
+//typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
 
-/*------ SMem stl typedefs ------*/
-// - Could create allocator versions of a lot of these
-// - Many of these could be replaced by more general versions above.  Same with epmem
-
-typedef std::unordered_set<ltm_object*>                 ltm_set;
-typedef std::vector<ltm_value*>                         ltm_slot;
-typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
-typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
 typedef std::pair< double, uint64_t >                   smem_activated_lti;
-typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
-typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
 
 #endif /* STL_TYPEDEFS_H_ */

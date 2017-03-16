@@ -100,12 +100,4 @@ typedef struct constraint_struct
     constraint_struct(test new_eq, test new_constraint) : eq_test(new_eq), constraint_test(new_constraint) {}
 } constraint;
 
-typedef struct attachment_struct
-{
-        condition* cond;
-        WME_Field field;
-        attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
-
-} attachment_point;
-
 #endif /* CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_ */

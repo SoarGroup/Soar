@@ -307,8 +307,6 @@ MP_epmem_pedge,
 MP_epmem_uedge,
 MP_epmem_interval,
 MP_constraints,
-MP_attachments,
-
 MP_action_record,
 MP_chunk_element,
 MP_chunk_record,
