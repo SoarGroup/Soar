@@ -27,6 +27,8 @@
 #define RHS_H
 
 #include "kernel.h"
+
+#include "debug_inventories.h"
 #include "mem.h"
 
 typedef char* rhs_value;
@@ -36,6 +38,11 @@ typedef struct rhs_struct
     uint64_t            identity;
     IdentitySet*        identity_set;
     bool                was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
+
+    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
+    uint64_t            r_id;
+    #endif
+
 } rhs_info;
 typedef rhs_info* rhs_symbol;
 

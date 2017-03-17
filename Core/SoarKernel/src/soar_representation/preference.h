@@ -114,6 +114,7 @@ typedef struct preference_struct
     bool                            o_supported;        /* is the preference o-supported? */
     bool                            in_tm;              /* is this currently in TM? */
     bool                            on_goal_list;       /* is this pref on the list for its match goal */
+    goal_stack_level                level;
     uint64_t                        reference_count;
     Symbol*                         id;
     Symbol*                         attr;
@@ -146,7 +147,6 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
-    goal_stack_level                level;
     uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 

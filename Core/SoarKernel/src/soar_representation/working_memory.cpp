@@ -113,7 +113,6 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->output_link = NIL;
     w->tc = 0;
     w->chunker_bt_last_ground_cond = NULL;
-    w->deep_copied_wme = NULL;
     w->is_singleton = false;
     w->singleton_status_checked = false;
     w->local_singleton_superstate_identity_set = NULL_IDENTITY_SET;

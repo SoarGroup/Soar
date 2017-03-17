@@ -3505,13 +3505,10 @@ void do_preference_phase(agent* thisAgent)
     } // end inner elaboration loop
 
     // Deallocate preferences delayed during inner elaboration loop.
-    for (preference_list::iterator iter = bufdeallo.begin();
-            iter != bufdeallo.end(); ++iter)
+    for (preference_list::iterator iter = bufdeallo.begin(); iter != bufdeallo.end(); ++iter)
     {
         dprint(DT_DEALLOCATE_PREF, "Removing ref for bufdeallo queued o-rejected preference %p (%u) at level %d\n", (*iter), (*iter)->p_id, static_cast<int64_t>((*iter)->level));
-        {
-                preference_remove_ref(thisAgent, *iter);
-        }
+        preference_remove_ref(thisAgent, *iter);
     }
 
     // Restore previous active level
