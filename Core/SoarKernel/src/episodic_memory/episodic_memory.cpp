@@ -2072,7 +2072,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
             // cache_size
             {
                 std::string cache_sql("PRAGMA cache_size = ");
-                char* str = thisAgent->EpMem->epmem_params->cache_size->get_string();
+                char* str = thisAgent->EpMem->epmem_params->cache_size->get_cstring();
                 cache_sql.append(str);
                 free(str);
                 str = NULL;

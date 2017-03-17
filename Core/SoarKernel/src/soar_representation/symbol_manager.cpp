@@ -988,8 +988,6 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             {
                 /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
                  * detect refcount leaks in unit tests and print out a message accordingly */
-                /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
-                 *        memory corruption, but usually prints out and is good for debugging. */
                 #ifndef SOAR_RELEASE_VERSION
                     if (identifier_hash_table->count < 23)
                         do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
@@ -999,9 +997,14 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
                     std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
                 #endif
             }
-            else if (thisAgent->outputManager->settings[OM_WARNINGS])
+            else
+            #ifdef SOAR_RELEASE_VERSION
+            if (thisAgent->outputManager->settings[OM_WARNINGS])
+            #endif
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+                /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
+                 *        memory corruption, but usually prints out and is good for debugging. */
                 do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
             }
             free_hash_table(thisAgent, identifier_hash_table);

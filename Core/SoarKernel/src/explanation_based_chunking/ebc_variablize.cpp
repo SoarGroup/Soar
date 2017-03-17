@@ -20,7 +20,7 @@
 #include "print.h"
 #include "rhs.h"
 
-uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, tc_number lti_link_tc)
+uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc_number lti_link_tc)
 {
     char prefix[2];
     Symbol* var;
@@ -33,12 +33,12 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_symbol(rhs_value &pRhs_val, t
         rhs_value lRhsValue, *lc;
 
         dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall %r\n", pRhs_val);
-        dprint_identity_to_id_set_map(DT_RHS_FUN_VARIABLIZATION);
+        //dprint_identity_to_id_set_map(DT_RHS_FUN_VARIABLIZATION);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             lRhsValue = static_cast<rhs_value>(c->first);
             dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall argument %r\n", lRhsValue);
-            variablize_rhs_symbol(lRhsValue);
+            variablize_rhs_value(lRhsValue);
             dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
         }
         /* Overall function does not have an identity */
@@ -310,7 +310,6 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
 
 action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
-    std::unordered_map< uint64_t, uint64_t >::iterator iter;
     uint64_t lIdentity = 0;
 
     action* a = make_action(thisAgent);
@@ -347,7 +346,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
 
-    lIdentity = variablize_rhs_symbol(a->id, lti_link_tc);
+    lIdentity = variablize_rhs_value(a->id, lti_link_tc);
     if (!result->rhs_funcs.id)
     {
         result->clone_identities.id = lIdentity;
@@ -357,7 +356,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, false, true);
     }
 
-    lIdentity = variablize_rhs_symbol(a->attr, lti_link_tc);
+    lIdentity = variablize_rhs_value(a->attr, lti_link_tc);
     if (!result->rhs_funcs.attr)
     {
         result->clone_identities.attr = lIdentity;
@@ -367,7 +366,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, false, true);
     }
 
-    lIdentity = variablize_rhs_symbol(a->value, lti_link_tc);
+    lIdentity = variablize_rhs_value(a->value, lti_link_tc);
     if (!result->rhs_funcs.value)
     {
         result->clone_identities.value = lIdentity;
@@ -379,7 +378,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 
     if (preference_is_binary(result->type))
     {
-        lIdentity = variablize_rhs_symbol(a->referent, lti_link_tc);
+        lIdentity = variablize_rhs_value(a->referent, lti_link_tc);
         if (!result->rhs_funcs.value)
         {
             result->clone_identities.referent = lIdentity;
@@ -398,8 +397,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
-    dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
-    dprint_variablization_table(DT_RHS_VARIABLIZATION);
+    //dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
+    //dprint_variablization_table(DT_RHS_VARIABLIZATION);
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
 
