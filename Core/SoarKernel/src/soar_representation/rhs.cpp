@@ -57,6 +57,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
+        RSI_remove(thisAgent, r);
         if (r->referent) thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
@@ -534,6 +535,8 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     new_rhs_symbol->identity = pIdentity;
     new_rhs_symbol->identity_set = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
+
+    RSI_add(thisAgent, new_rhs_symbol);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }

@@ -13,6 +13,7 @@
 #include "instantiation.h"
 #include "misc.h"
 #include "preference.h"
+#include "rhs.h"
 #include "soar_instance.h"
 #include "symbol_manager.h"
 #include "output_manager.h"
@@ -20,6 +21,15 @@
 
 #include <assert.h>
 #include <string>
+
+void clean_up_debug_inventories(agent* thisAgent)
+{
+    IDI_print_and_cleanup(thisAgent);
+    PDI_print_and_cleanup(thisAgent);
+    WDI_print_and_cleanup(thisAgent);
+    GDI_print_and_cleanup(thisAgent);
+    ISI_print_and_cleanup(thisAgent);
+}
 
 #ifdef DEBUG_TRACE_REFCOUNT_FOR
 
@@ -467,4 +477,85 @@
     void ISI_add(agent* thisAgent, uint64_t pIDSetID) {}
     void ISI_remove(agent* thisAgent, uint64_t pIDSetID) {}
     void ISI_print_and_cleanup(agent* thisAgent) {}
+#endif
+
+#ifdef DEBUG_RHS_SYMBOL_INVENTORY
+    id_to_string_map rhs_deallocation_map;
+
+    uint64_t RSI_id_counter = 0;
+    bool    RSI_double_deallocation_seen = false;
+
+    void RSI_add(agent* thisAgent, rhs_symbol pRHS)
+    {
+        std::string lWMEString;
+        pRHS->r_id = ++RSI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %r", pRHS->r_id, pRHS);
+        rhs_deallocation_map[pRHS->r_id] = lWMEString;
+    }
+    void RSI_remove(agent* thisAgent, rhs_symbol pRHS)
+    {
+        auto it = rhs_deallocation_map.find(pRHS->r_id);
+        assert (it != rhs_deallocation_map.end());
+
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            rhs_deallocation_map[pRHS->r_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "RHS symbol %u was deallocated twice!\n", it->first);
+            break_if_bool(true);
+            RSI_double_deallocation_seen = true;
+        }
+    }
+
+    void RSI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lWMEString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "RHS Symbol inventory:     ");
+        for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
+        {
+            lWMEString = it->second;
+            if (!lWMEString.empty())
+            {
+                bugCount++;
+            }
+        }
+        if (bugCount)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RSI_id_counter);
+            if (RSI_double_deallocation_seen)
+                thisAgent->outputManager->printa_sf(thisAgent, " and some RHS symbols were deallocated twice");
+            if (bugCount <= 23)
+                thisAgent->outputManager->printa_sf(thisAgent, ":");
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
+        }
+        else if (RSI_id_counter)
+            thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS symbols were deallocated properly.\n", RSI_id_counter);
+        else
+            thisAgent->outputManager->printa_sf(thisAgent, "No RHS symbols were created.\n");
+
+        if (bugCount && (bugCount <= 23))
+        {
+            for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
+            {
+                lWMEString = it->second;
+                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+            }
+            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+        }
+        if (((bugCount > 0) || RSI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+        {
+            std::cout << "RHS symbols inventory failure.  Leaked RHS symbols detected.\n";
+            assert(false);
+        }
+        RSI_double_deallocation_seen = false;
+        rhs_deallocation_map.clear();
+        RSI_id_counter = 0;
+    }
+#else
+    void RSI_add(agent* thisAgent, rhs_symbol pRHS) {}
+    void RSI_remove(agent* thisAgent, rhs_symbol pRHS) {}
+    void RSI_print_and_cleanup(agent* thisAgent) {}
 #endif

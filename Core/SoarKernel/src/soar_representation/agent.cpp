@@ -356,14 +356,11 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
 
-    IDI_print_and_cleanup(delete_agent);
-    PDI_print_and_cleanup(delete_agent);
-    WDI_print_and_cleanup(delete_agent);
-    GDI_print_and_cleanup(delete_agent);
-    ISI_print_and_cleanup(delete_agent);
+    /* Print deallocation inventory results (compiled out in release build) */
+    clean_up_debug_inventories(delete_agent);
+    RSI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
-    //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
 
     delete_agent->memoryManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
     delete_agent->memoryManager->free_with_pool(MP_token, delete_agent->dummy_top_token);
@@ -453,11 +450,7 @@ void reinitialize_agent(agent* thisAgent)
     thisAgent->explanationMemory->re_init();
 
     /* Print deallocation inventory results (compiled out in release build) */
-    IDI_print_and_cleanup(thisAgent);
-    PDI_print_and_cleanup(thisAgent);
-    WDI_print_and_cleanup(thisAgent);
-    GDI_print_and_cleanup(thisAgent);
-    ISI_print_and_cleanup(thisAgent);
+    clean_up_debug_inventories(thisAgent);
 
     /* Reset Soar identifier hash table and counters for WMEs, SMem and Soar IDs.
      * Note:  reset_hash_table() is where refcount leaks in identifiers are detected. */

@@ -54,4 +54,10 @@ void ISI_add(agent* thisAgent, uint64_t pIDSetID);
 void ISI_remove(agent* thisAgent, uint64_t pIDSetID);
 void ISI_print_and_cleanup(agent* thisAgent);
 
+void RSI_add(agent* thisAgent, rhs_symbol pRHS);
+void RSI_remove(agent* thisAgent, rhs_symbol pRHS);
+void RSI_print_and_cleanup(agent* thisAgent);
+
+void clean_up_debug_inventories(agent* thisAgent);
+
 #endif /* CORE_SOARKERNEL_SRC_DEBUG_CODE_DEBUG_INVENTORIES_H_ */
