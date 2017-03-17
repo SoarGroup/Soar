@@ -86,13 +86,14 @@ void IdentitySet::store_variablization(Symbol* variable, Symbol* pMatched_sym)
 //        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
 }
 
-void IdentitySet::update_clone_id()
+uint64_t IdentitySet::update_clone_id()
 {
     if (!super_join->clone_identity)
     {
         super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
         super_join->touch();
     }
+    return super_join->clone_identity;
 }
 
 void IdentitySet::set_operational_cond(condition* pCond, WME_Field pField)

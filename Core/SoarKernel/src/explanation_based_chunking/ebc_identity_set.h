@@ -66,11 +66,11 @@ class IdentitySet
         void set_clone_identity(uint64_t pID)           { super_join->clone_identity = pID; super_join->touch(); }
         void set_var(Symbol* pVar)                      { super_join->new_var = pVar; super_join->touch(); }
 
-        void set_operational_cond(condition* pCond, WME_Field pField);
-        void store_variablization(Symbol* variable, Symbol* pMatched_sym);
-        void update_clone_id();
-        void touch();
-        void clean_up_transient();
+        void        set_operational_cond(condition* pCond, WME_Field pField);
+        void        store_variablization(Symbol* variable, Symbol* pMatched_sym);
+        uint64_t    update_clone_id();
+        void        touch();
+        void        clean_up_transient();
 
         /* An ID used for printing and to make debugging easier. Not used by identity analysis logic. */
         uint64_t                    idset_id;
