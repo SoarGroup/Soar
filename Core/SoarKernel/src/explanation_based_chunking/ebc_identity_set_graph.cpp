@@ -263,7 +263,7 @@ void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* 
     /* Note:  We don't deallocate the existing rhs_funcs before replacing them because they are created in
      *        execute_action which doesn't have ownership of these rhs functions and previously made copies
      *        for the preference that it's creating. We now just moved it here so that it can be done after
-     *        identity sets have been fully unified. */
+     *        identity sets have been determined. */
     if (lPref->rhs_funcs.id) lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
     if (lPref->rhs_funcs.attr) lPref->rhs_funcs.attr = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
     if (lPref->rhs_funcs.value) lPref->rhs_funcs.value = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);

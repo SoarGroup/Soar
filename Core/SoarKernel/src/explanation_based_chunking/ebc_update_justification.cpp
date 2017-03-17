@@ -23,7 +23,8 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
             result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id);
         result->identity_sets.id->update_clone_id();
         lIdentity = result->identity_sets.id->get_clone_identity();
-    } else lIdentity = LITERAL_VALUE;
+    } else
+        lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.id)
     {
@@ -31,6 +32,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         result->clone_identities.id = lIdentity;
     } else {
         a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
+        update_identities_in_rhs_value(a->id);
         result->clone_identities.id = lIdentity;
         result->cloned_rhs_funcs.id = a->id;
         a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, false, true);
@@ -42,7 +44,8 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
             result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr);
         result->identity_sets.attr->update_clone_id();
         lIdentity = result->identity_sets.attr->get_clone_identity();
-    } else lIdentity = LITERAL_VALUE;
+    } else
+        lIdentity = LITERAL_VALUE;
 
     if (!result->rhs_funcs.attr)
     {
@@ -61,7 +64,8 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
             result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value);
         result->identity_sets.value->update_clone_id();
         lIdentity = result->identity_sets.value->get_clone_identity();
-    } else lIdentity = LITERAL_VALUE;
+    } else
+        lIdentity = LITERAL_VALUE;
     if (!result->rhs_funcs.value)
     {
         a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, lIdentity, NULL, result->was_unbound_vars.value);

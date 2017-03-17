@@ -85,6 +85,9 @@ typedef struct action_struct
     rhs_value               value;   /* for FUNCALL_ACTION's, this holds the funcall */
     rhs_value               referent;
     SupportType             support;
+    #ifdef DEBUG_RHS_SYMBOL_INVENTORY
+    uint64_t                a_id;
+    #endif
     struct action_struct*   next;
 } action;
 

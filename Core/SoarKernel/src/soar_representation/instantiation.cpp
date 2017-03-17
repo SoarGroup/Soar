@@ -521,7 +521,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
     }
     newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), was_unbound_vars);
 
-    /* We don't copy these rhs functions because updated_preference_identities needs to copy them to update identity set information later */
+    /* We don't copy these rhs functions because update_preference_identities needs to copy them to update identity set information later */
     newPref->rhs_funcs.id = f_id;
     newPref->rhs_funcs.attr = f_attr;
     newPref->rhs_funcs.value = f_value;

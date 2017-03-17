@@ -995,7 +995,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         ebc_timers->variablization_lhs->stop();
 
         ebc_timers->variablization_rhs->start();
-        break_if_id_matches(m_chunk_inst->i_id, 41359);
         m_rhs = convert_results_into_actions();
         ebc_timers->variablization_rhs->stop();
     }

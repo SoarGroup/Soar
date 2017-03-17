@@ -20,10 +20,11 @@
 
 //#define DEBUG_GDS_INVENTORY
 //#define DEBUG_INSTANTIATION_INVENTORY
-//#define DEBUG_PREFERENCE_INVENTORY
+#define DEBUG_PREFERENCE_INVENTORY
 //#define DEBUG_WME_INVENTORY
 //#define DEBUG_IDSET_INVENTORY
 #define DEBUG_RHS_SYMBOL_INVENTORY
+#define DEBUG_ACTION_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
@@ -57,6 +58,10 @@ void ISI_print_and_cleanup(agent* thisAgent);
 void RSI_add(agent* thisAgent, rhs_symbol pRHS);
 void RSI_remove(agent* thisAgent, rhs_symbol pRHS);
 void RSI_print_and_cleanup(agent* thisAgent);
+
+void ADI_add(agent* thisAgent, action* pAction);
+void ADI_remove(agent* thisAgent, action* pAction);
+void ADI_print_and_cleanup(agent* thisAgent);
 
 void clean_up_debug_inventories(agent* thisAgent);
 

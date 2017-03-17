@@ -491,6 +491,7 @@ void clean_up_debug_inventories(agent* thisAgent)
         pRHS->r_id = ++RSI_id_counter;
         thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %r", pRHS->r_id, pRHS);
         rhs_deallocation_map[pRHS->r_id] = lWMEString;
+//        break_if_id_matches(pRHS->r_id, 3);
     }
     void RSI_remove(agent* thisAgent, rhs_symbol pRHS)
     {
@@ -558,4 +559,86 @@ void clean_up_debug_inventories(agent* thisAgent)
     void RSI_add(agent* thisAgent, rhs_symbol pRHS) {}
     void RSI_remove(agent* thisAgent, rhs_symbol pRHS) {}
     void RSI_print_and_cleanup(agent* thisAgent) {}
+#endif
+
+#ifdef DEBUG_ACTION_INVENTORY
+    id_to_string_map action_deallocation_map;
+
+    uint64_t ADI_id_counter = 0;
+    bool    ADI_double_deallocation_seen = false;
+
+    void ADI_add(agent* thisAgent, action* pAction)
+    {
+        std::string lWMEString;
+        pAction->a_id = ++ADI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %a", pAction->a_id, pAction);
+        action_deallocation_map[pAction->a_id] = lWMEString;
+//        break_if_id_matches(pAction->a_id, 3);
+    }
+    void ADI_remove(agent* thisAgent, action* pAction)
+    {
+        auto it = action_deallocation_map.find(pAction->a_id);
+        assert (it != action_deallocation_map.end());
+
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            action_deallocation_map[pAction->a_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "Action %u was deallocated twice!\n", it->first);
+            break_if_bool(true);
+            ADI_double_deallocation_seen = true;
+        }
+    }
+
+    void ADI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lWMEString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "Action inventory:         ");
+        for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
+        {
+            lWMEString = it->second;
+            if (!lWMEString.empty())
+            {
+                bugCount++;
+            }
+        }
+        if (bugCount)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ADI_id_counter);
+            if (ADI_double_deallocation_seen)
+                thisAgent->outputManager->printa_sf(thisAgent, " and some actions were deallocated twice");
+            if (bugCount <= 23)
+                thisAgent->outputManager->printa_sf(thisAgent, ":");
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
+        }
+        else if (ADI_id_counter)
+            thisAgent->outputManager->printa_sf(thisAgent, "All %u actions were deallocated properly.\n", ADI_id_counter);
+        else
+            thisAgent->outputManager->printa_sf(thisAgent, "No actions were created.\n");
+
+        if (bugCount && (bugCount <= 23))
+        {
+            for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
+            {
+                lWMEString = it->second;
+                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+            }
+            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+        }
+        if (((bugCount > 0) || ADI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+        {
+            std::cout << "Action inventory failure.  Leaked actions detected.\n";
+            assert(false);
+        }
+        ADI_double_deallocation_seen = false;
+        action_deallocation_map.clear();
+        ADI_id_counter = 0;
+    }
+#else
+    void ADI_add(agent* thisAgent, action* pAction) {}
+    void ADI_remove(agent* thisAgent, action* pAction) {}
+    void ADI_print_and_cleanup(agent* thisAgent) {}
 #endif

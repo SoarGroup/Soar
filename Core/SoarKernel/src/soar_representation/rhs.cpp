@@ -136,6 +136,9 @@ void deallocate_action_list(agent* thisAgent, action* actions)
     {
         a = actions;
         actions = actions->next;
+
+        ADI_remove(thisAgent, a);
+
         if (a->type == FUNCALL_ACTION)
         {
             deallocate_rhs_value(thisAgent, a->value);
@@ -335,6 +338,9 @@ action* make_action(agent* thisAgent)
     new_action->attr = NIL;
     new_action->value = NIL;
     new_action->referent = NIL;
+
+    ADI_add(thisAgent, new_action);
+
     return new_action;
 }
 
@@ -543,11 +549,23 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
 
 rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet, bool pWasUnbound)
 {
-    if (sym)
+    rhs_symbol new_rhs_symbol;
+
+    if (!sym)
     {
+        return reinterpret_cast<rhs_value>(NIL);
+    } else {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pIdentity, pIDSet, pWasUnbound);
+    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
+    new_rhs_symbol->referent = sym;
+    new_rhs_symbol->identity = pIdentity;
+    new_rhs_symbol->identity_set = pIDSet;
+    new_rhs_symbol->was_unbound_var = pWasUnbound;
+
+    RSI_add(thisAgent, new_rhs_symbol);
+
+    return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
 bool rhs_value_is_literalizing_function(rhs_value rv)
