@@ -80,6 +80,8 @@
                           soar_module::soar_memory_pool_allocator< std::pair< uint64_t, std::string > > >             id_to_string_map;
     typedef std::map< uint64_t, identity_mapping_list*, std::less< uint64_t >,
                           soar_module::soar_memory_pool_allocator< std::pair< uint64_t, identity_mapping_list* > > >  inst_identities_map;
+    typedef std::map< rhs_value, std::string, std::less< rhs_value >,
+                          soar_module::soar_memory_pool_allocator< std::pair< rhs_value, std::string > > >            rhs_val_to_string_map;
     typedef std::map< Symbol*, augmentation_set*, std::less< Symbol* >,
                           soar_module::soar_memory_pool_allocator< std::pair< Symbol*, augmentation_set* > > >        sym_to_aug_map;
     typedef std::map< Symbol*, condition*, std::less< Symbol* >,
@@ -134,35 +136,36 @@
 
     typedef std::set< rl_symbol_map >                           rl_symbol_map_set;
 
+    /* Original unordered STL structures */
 
+    typedef std::unordered_set< augmentation* >                     augmentation_set;
+    typedef std::unordered_set< uint64_t >                          id_set;
+    typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
+    typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
+    typedef std::unordered_map< uint64_t, IdentitySet*>             id_to_join_map;
+    typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
+    typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
+    typedef std::unordered_map< rhs_value, std::string >            rhs_val_to_string_map;
+    typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
+    typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
+    typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
+    typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
+    typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
+    typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
+
+    /*------ SMem stl typedefs ------*/
+    // - Could create allocator versions of a lot of these
+    // - Many of these could be replaced by more general versions above.  Same with epmem
+
+    typedef std::unordered_set<ltm_object*>                 ltm_set;
+    typedef std::vector<ltm_value*>                         ltm_slot;
+    typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
+    typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
+    typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
+    typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
 #endif
 
-/* Original unordered STL structures */
 
-//typedef std::unordered_set< augmentation* >                     augmentation_set;
-//typedef std::unordered_set< uint64_t >                          id_set;
-//typedef std::unordered_map< uint64_t, uint64_t >                id_to_id_map;
-//typedef std::unordered_map< uint64_t, Symbol* >                 id_to_sym_map;
-//typedef std::unordered_map< uint64_t, IdentitySet*>             id_to_join_map;
-//typedef std::unordered_map< uint64_t, std::string >             id_to_string_map;
-//typedef std::unordered_map< uint64_t, identity_mapping_list* >  inst_identities_map;
-//typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
-//typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
-//typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
-//typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
-//typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
-//typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
-//
-///*------ SMem stl typedefs ------*/
-//// - Could create allocator versions of a lot of these
-//// - Many of these could be replaced by more general versions above.  Same with epmem
-//
-//typedef std::unordered_set<ltm_object*>                 ltm_set;
-//typedef std::vector<ltm_value*>                         ltm_slot;
-//typedef std::unordered_map<Symbol*, ltm_slot*>          ltm_slot_map;
-//typedef std::vector<smem_weighted_cue_element*>         smem_weighted_cue_list;
-//typedef std::unordered_map<std::string, ltm_object*>    str_to_ltm_map;
-//typedef std::unordered_map<Symbol*, ltm_object*>        sym_to_ltm_map;
 
 typedef std::pair< double, uint64_t >                   smem_activated_lti;
 

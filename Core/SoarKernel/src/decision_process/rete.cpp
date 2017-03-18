@@ -3,6 +3,7 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
+#include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
@@ -7300,6 +7301,7 @@ rhs_value reteload_rhs_value(agent* thisAgent, FILE* f)
                 push(thisAgent, temp, funcall_list);
             }
             funcall_list = destructively_reverse_list(funcall_list);
+            RFI_add(thisAgent, funcall_list_to_rhs_value(funcall_list));
             rv = funcall_list_to_rhs_value(funcall_list);
             break;
         case 2:

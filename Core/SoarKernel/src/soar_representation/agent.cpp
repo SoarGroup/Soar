@@ -356,10 +356,14 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
 
-    /* Print deallocation inventory results (compiled out in release build) */
+    /* Print deallocation inventory results (compiled out in release build)
+     * - Note: The last three are included here but not during init-soar because
+     *         productions can contain actions, rhs symbols and rhs functions
+     *         which aren't deallocated until exit.*/
     clean_up_debug_inventories(delete_agent);
     ADI_print_and_cleanup(delete_agent);
     RSI_print_and_cleanup(delete_agent);
+    RFI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
 

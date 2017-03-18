@@ -1005,7 +1005,9 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
                 thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
                 /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
                  *        memory corruption, but usually prints out and is good for debugging. */
+                #ifndef SOAR_RELEASE_VERSION
                 do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+                #endif
             }
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);

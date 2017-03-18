@@ -1499,6 +1499,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 
     /* --- build list of rhs_function and arguments --- */
     allocate_cons(thisAgent, &fl);
+    RFI_add(thisAgent, funcall_list_to_rhs_value(fl));
+
     fl->first = rf;
     prev_c = fl;
     /* consume function name, advance to argument list */

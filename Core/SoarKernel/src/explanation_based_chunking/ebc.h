@@ -74,13 +74,10 @@ class Explanation_Based_Chunker
         void     add_identity_to_test(test pTest);
         void     force_add_identity(Symbol* pSym, uint64_t pID);
 
-        /* Identity set mapping functions */
-//        IdentitySet* NULL_IDENTITY_SET;
-
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
         void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);
         void update_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
-        void update_identity_sets_in_preferences(preference* lPref);
+        void update_identity_sets_in_preferences(preference* lPref, bool is_chunk_inst = false);
 
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);

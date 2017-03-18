@@ -24,6 +24,7 @@
 //#define DEBUG_WME_INVENTORY
 //#define DEBUG_IDSET_INVENTORY
 //#define DEBUG_RHS_SYMBOL_INVENTORY
+//#define DEBUG_RHS_FUNCTION_INVENTORY
 //#define DEBUG_ACTION_INVENTORY
 
 /* These are used to record the change in a refcount across the two calls.  The
@@ -58,6 +59,10 @@ void ISI_print_and_cleanup(agent* thisAgent);
 void RSI_add(agent* thisAgent, rhs_symbol pRHS);
 void RSI_remove(agent* thisAgent, rhs_symbol pRHS);
 void RSI_print_and_cleanup(agent* thisAgent);
+
+void RFI_add(agent* thisAgent, rhs_value pRHS);
+void RFI_remove(agent* thisAgent, rhs_value pRHS);
+void RFI_print_and_cleanup(agent* thisAgent);
 
 void ADI_add(agent* thisAgent, action* pAction);
 void ADI_remove(agent* thisAgent, action* pAction);

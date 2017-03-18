@@ -886,7 +886,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_inst->i_id, m_inst->prod_name);
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
-//    debug_refcount_change_start(thisAgent, false);
+    //debug_refcount_change_start(thisAgent, false);
 
     /* Set allow_bottom_up_chunks to false for all higher goals to prevent chunking */
     {
@@ -1088,13 +1088,13 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
 
     find_match_goal(thisAgent, m_chunk_inst);
     make_clones_of_results();
-    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst, true);
+    finalize_instantiation(thisAgent, m_chunk_inst, true, m_inst, true, true);
 
     /* Add this function to inventory deallocation inventory if that is enabled.
      * Note: All instantiations except chunks call IDI_add in init_instantiation. For chunks,
      *       though, we don't have the final rule name set up until now, so we call it here. */
     IDI_add(thisAgent, m_chunk_inst);
-//    debug_refcount_change_end(thisAgent, m_chunk_inst->prod_name->sc->name, " learning rule ", false);
+    //debug_refcount_change_end(thisAgent, m_chunk_inst->prod_name->sc->name, " learning rule ", false);
 
     dprint(DT_VARIABLIZATION_MANAGER, "Chunk adding to RETE: \n%4", m_lhs, m_rhs);
     dprint(DT_VARIABLIZATION_MANAGER, "Chunk instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);

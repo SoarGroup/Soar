@@ -571,7 +571,7 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lWMEString;
         pAction->a_id = ++ADI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %a", pAction->a_id, pAction);
+        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "a%u", pAction->a_id);
         action_deallocation_map[pAction->a_id] = lWMEString;
 //        break_if_id_matches(pAction->a_id, 3);
     }
@@ -641,4 +641,85 @@ void clean_up_debug_inventories(agent* thisAgent)
     void ADI_add(agent* thisAgent, action* pAction) {}
     void ADI_remove(agent* thisAgent, action* pAction) {}
     void ADI_print_and_cleanup(agent* thisAgent) {}
+#endif
+
+#ifdef DEBUG_RHS_FUNCTION_INVENTORY
+    rhs_val_to_string_map rhs_func_deallocation_map;
+
+    uint64_t RFI_id_counter = 0;
+    bool    RFI_double_deallocation_seen = false;
+
+    void RFI_add(agent* thisAgent, rhs_value pRHS)
+    {
+        std::string lWMEString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: &%u", (++RFI_id_counter), (uint64_t) pRHS);
+        rhs_func_deallocation_map[pRHS] = lWMEString;
+        break_if_id_matches(RFI_id_counter, 890);
+    }
+    void RFI_remove(agent* thisAgent, rhs_value pRHS)
+    {
+        auto it = rhs_func_deallocation_map.find(pRHS);
+        assert (it != rhs_func_deallocation_map.end());
+
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            rhs_func_deallocation_map[pRHS].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "RHS function was deallocated twice!: %s\n", lPrefString.c_str());
+            break_if_bool(true);
+            RFI_double_deallocation_seen = true;
+        }
+    }
+
+    void RFI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lWMEString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "RHS Function inventory:   ");
+        for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
+        {
+            lWMEString = it->second;
+            if (!lWMEString.empty())
+            {
+                bugCount++;
+            }
+        }
+        if (bugCount)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RFI_id_counter);
+            if (RFI_double_deallocation_seen)
+                thisAgent->outputManager->printa_sf(thisAgent, " and some RHS functions were deallocated twice");
+            if (bugCount <= 50)
+                thisAgent->outputManager->printa_sf(thisAgent, ":");
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
+        }
+        else if (RFI_id_counter)
+            thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS functions were deallocated properly.\n", RFI_id_counter);
+        else
+            thisAgent->outputManager->printa_sf(thisAgent, "No RHS functions were created.\n");
+
+        if (bugCount && (bugCount <= 50))
+        {
+            for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
+            {
+                lWMEString = it->second;
+                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+            }
+            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+        }
+        if (((bugCount > 0) || RFI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+        {
+            std::cout << "RHS functions inventory failure.  Leaked RHS functions detected.\n";
+            //assert(false);
+        }
+        RFI_double_deallocation_seen = false;
+        rhs_func_deallocation_map.clear();
+        RFI_id_counter = 0;
+    }
+#else
+    void RFI_add(agent* thisAgent, rhs_value pRHS) {}
+    void RFI_remove(agent* thisAgent, rhs_value pRHS) {}
+    void RFI_print_and_cleanup(agent* thisAgent) {}
 #endif

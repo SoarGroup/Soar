@@ -47,7 +47,8 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 
     if (rhs_value_is_funcall(rv))
     {
-       fl = rhs_value_to_funcall_list(rv);
+        RFI_remove(thisAgent, rv);
+        fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             deallocate_rhs_value(thisAgent, static_cast<char*>(c->first));
@@ -91,6 +92,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
+        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
@@ -463,6 +465,7 @@ rhs_value create_RHS_value(agent* thisAgent,
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
+        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
