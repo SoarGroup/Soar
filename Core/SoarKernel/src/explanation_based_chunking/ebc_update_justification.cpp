@@ -249,46 +249,34 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
     dprint_header(DT_LHS_VARIABLIZATION, PrintAfter, "Done updating LHS condition list.\n");
 }
 
-uint64_t Explanation_Based_Chunker::update_identities_in_rhs_value(rhs_value &pRhs_val)
+void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value pRhs_val)
 {
-    uint64_t lCloneIdentity;
+    assert(pRhs_val && !rhs_value_is_reteloc(pRhs_val) && !rhs_value_is_unboundvar(pRhs_val));
 
     if (rhs_value_is_funcall(pRhs_val))
     {
-        cons* fl = rhs_value_to_funcall_list(pRhs_val);
-        cons* c;
-        rhs_value lRhsValue, *lc;
-
-        dprint(DT_RHS_FUN_VARIABLIZATION, "Updating RHS funcall %r\n", pRhs_val);
-        //dprint_identity_to_id_set_map(DT_RHS_FUN_VARIABLIZATION);
-        for (c = fl->rest; c != NIL; c = c->rest)
+        for (cons* c = rhs_value_to_funcall_list(pRhs_val)->rest; c != NIL; c = c->rest)
         {
-            lRhsValue = static_cast<rhs_value>(c->first);
-            dprint(DT_RHS_FUN_VARIABLIZATION, "Updating RHS funcall argument %r\n", lRhsValue);
-            update_identities_in_rhs_value(lRhsValue);
-            dprint(DT_RHS_FUN_VARIABLIZATION, "... RHS funcall argument is now   %r\n", static_cast<char*>(c->first));
+            update_identities_in_rhs_value(static_cast<rhs_value>(c->first));
         }
-        return LITERAL_VALUE;
     }
-
-    rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
-    IdentitySet* lIDSet = rs->identity_set;
-
-    dprint(DT_RHS_VARIABLIZATION, "Updating %y [%u].\n", rs->referent, lIDSet ? lIDSet->get_identity() : 0);
-
-    if (rs->identity_set && !rs->identity_set->literalized())
+    else
     {
-        lCloneIdentity = rs->identity_set->get_clone_identity();
-        if (!lCloneIdentity) lCloneIdentity = rs->identity_set->update_clone_id();
+        rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
+        uint64_t lID;
 
-        rs->identity = rs->identity_set->get_identity();
-        rs->identity_set = NULL;
-        dprint(DT_LHS_VARIABLIZATION, "...to produce %r [%u].  Returning clone identity %u.\n", rs->referent, rs->identity, lCloneIdentity);
-        return lCloneIdentity;
+        dprint(DT_RHS_VARIABLIZATION, "Updating %y [v%u/s%u].\n", rs->referent, rs->identity, rs->identity_set ? rs->identity_set->get_identity() : 0);
+
+        if (rs->identity_set)
+        {
+            lID = rs->identity_set->get_clone_identity();
+            if (!lID)
+                lID = rs->identity_set->get_identity();
+        }
+        else lID = rs->identity;
+
+        if (lID) rs->identity_set = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+
+        dprint(DT_RHS_VARIABLIZATION, "...RHS value is now %y [v%u/s%u].\n", rs->referent, rs->identity, rs->identity_set ? rs->identity_set->get_identity() : 0);
     }
-
-    dprint(DT_LHS_VARIABLIZATION, "...to produce %r [0]\n", rs->referent);
-    rs->identity = LITERAL_VALUE;
-    rs->identity_set = NULL_IDENTITY_SET;
-    return LITERAL_VALUE;
 }

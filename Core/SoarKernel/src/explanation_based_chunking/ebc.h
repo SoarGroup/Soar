@@ -301,7 +301,7 @@ class Explanation_Based_Chunker
         void        update_identities_in_tests_by_lookup(test t, bool pSkipTopLevelEqualities);
         bool        update_identities_in_test_by_lookup(test t, bool pSkipTopLevelEqualities);
         void        update_identities_in_condition_list(condition* top_cond, bool pInNegativeCondition = false);
-        uint64_t    update_identities_in_rhs_value(rhs_value &pRhs_val);
+        void        update_identities_in_rhs_value(const rhs_value pRhs_val);
         action*     convert_results_into_actions();
         action*     convert_result_into_action(preference* result);
 

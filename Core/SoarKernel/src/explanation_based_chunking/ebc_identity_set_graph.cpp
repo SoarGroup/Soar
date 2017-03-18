@@ -262,31 +262,10 @@ void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* 
 
     if (is_chunk_inst)
     {
-        rhs_value lOldRV;
-        if (lPref->rhs_funcs.id)
-        {
-            lOldRV = lPref->rhs_funcs.id;
-            lPref->rhs_funcs.id = copy_rhs_value(thisAgent, lPref->rhs_funcs.id, true);
-            deallocate_rhs_value(thisAgent, lOldRV);
-        }
-        if (lPref->rhs_funcs.attr)
-        {
-            lOldRV = lPref->rhs_funcs.attr;
-            lPref->rhs_funcs.attr = copy_rhs_value(thisAgent, lPref->rhs_funcs.attr, true);
-            deallocate_rhs_value(thisAgent, lOldRV);
-        }
-        if (lPref->rhs_funcs.value)
-        {
-            lOldRV = lPref->rhs_funcs.value;
-            lPref->rhs_funcs.value = copy_rhs_value(thisAgent, lPref->rhs_funcs.value, true);
-            deallocate_rhs_value(thisAgent, lOldRV);
-        }
-        if (lPref->rhs_funcs.referent)
-        {
-            lOldRV = lPref->rhs_funcs.referent;
-            lPref->rhs_funcs.referent = copy_rhs_value(thisAgent, lPref->rhs_funcs.referent, true);
-            deallocate_rhs_value(thisAgent, lOldRV);
-        }
+        if (lPref->rhs_funcs.id)        update_identities_in_rhs_value(lPref->rhs_funcs.id);
+        if (lPref->rhs_funcs.attr)      update_identities_in_rhs_value(lPref->rhs_funcs.attr);
+        if (lPref->rhs_funcs.value)     update_identities_in_rhs_value(lPref->rhs_funcs.value);
+        if (lPref->rhs_funcs.referent)  update_identities_in_rhs_value(lPref->rhs_funcs.referent);
     } else {
         /* For instantiations we don't deallocate the existing rhs_funcs before replacing them because
          * are created in execute_action() which doesn't have ownership of these rhs functions and
