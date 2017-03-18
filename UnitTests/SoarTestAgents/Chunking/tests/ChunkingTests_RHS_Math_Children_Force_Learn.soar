@@ -1,0 +1,76 @@
+# Tests:
+# - 
+
+srand 23
+chunk only
+
+sp {init
+   (state <s> ^superstate nil)
+-->
+   (<s> ^wme hustle
+        ^foo bar
+        ^value 3)
+}
+
+sp {propose
+   (state <s2> ^superstate.superstate.superstate nil)
+-->
+   (<s2> ^operator <o> + =)
+   (<o> ^name make-chunk)}
+
+sp {elab*learn
+   (state <s2> ^superstate <ts>)
+   (<ts> ^superstate nil)
+-->
+   (force-learn <s2>)
+
+}
+        
+sp {elab*ts
+   (state <s2> ^superstate.superstate <ts>)
+   (<ts> ^superstate nil)
+-->
+   (<s2> ^top-state <ts>)
+   (<s2> ^sub-struct <sub>)
+   (<sub> ^foo1 bar1 ^foo2 bar2 ^sub-struct2 <sub2>)
+   (<sub2> ^foo3 bar3)
+}
+
+sp {elab
+    (state <s3> ^top-state <ts>)
+    (<ts> ^value { > 1 <num> }
+          ^foo <bar-copy>)
+-->
+    (<s3> ^foo <bar-copy>
+          ^child <child>
+          ^math (+ 20 <num>))
+}
+
+sp {add-child-with-rhs-function
+    (state <s> ^child <child>
+               ^top-state.value <val>
+               ^math <val2>
+               ^sub-struct <sub>)
+-->
+    (<child> ^child-math (+ <val> <val2>)
+             ^child-sub (deep-copy <sub>))
+}
+
+sp {apply
+   (state <s4> ^operator <o2>
+              ^foo <bar>
+              ^math <number>
+              ^child <child>
+              ^top-state <ts>)
+   (<ts> ^wme {<> <bar> <value> }
+          ^value <new-num>)
+   (<o2> ^name make-chunk)
+-->
+   (<ts> ^result <value> ^new-math (* <number> <new-num>) ^math (* <number> 2) ^copied-math <number> ^bar <bar> ^child <child>)}
+
+sp {apply*test-done
+   (state <s3> ^result <r>)
+-->
+   (write (crlf) |Chunk created. Result found | <r> |.  Stopping.| (crlf))
+   (interrupt)
+}

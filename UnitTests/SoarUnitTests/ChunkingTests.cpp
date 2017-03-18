@@ -52,8 +52,6 @@ void ChunkingTests::Disjunction_Merge()                               { check_ch
 void ChunkingTests::Duplicates()                                      { check_chunk("Duplicates", 5, 2); }
 void ChunkingTests::Faux_Operator()                                   { check_chunk("Faux_Operator", 8, 3); }
 void ChunkingTests::Faux_Smem_Operator_RHS()                          { check_chunk("Faux_Smem_Operator_RHS", 8, 0); }                  // Should be 1
-void ChunkingTests::GamesAgent_Sanity1()                              { check_chunk("GamesAgent_Sanity1", 4539, 9); }
-void ChunkingTests::Games_Nccx2_Long_Lived()                          { check_chunk("Games_Nccx2_Long_Lived", 2333, 4); }
 void ChunkingTests::Justification_RC_not_Ungrounded_STIs()            { check_chunk("Justification_RC_not_Ungrounded_STIs", 8, 1); }
 void ChunkingTests::Justifications_Get_New_Identities()               { check_chunk("Justifications_Get_New_Identities", 4, 1); }
 void ChunkingTests::Link_STM_to_LTM()                                 { check_chunk("Link_STM_to_LTM", 6, 0); }                         // Should be 2
@@ -93,6 +91,7 @@ void ChunkingTests::Rhs_Func_Literalization()                         { check_ch
 void ChunkingTests::RHS_Math_Abs()                                    { check_chunk("RHS_Math_Abs", 8, 2); }
 void ChunkingTests::RHS_Math_Mixed()                                  { check_chunk("RHS_Math_Mixed", 8, 4); }
 void ChunkingTests::RHS_Math()                                        { check_chunk("RHS_Math", 8, 1); }
+void ChunkingTests::RHS_Math_Children_Force_Learn()                   { check_chunk("RHS_Math_Children_Force_Learn", 4, 1); }
 void ChunkingTests::RHS_Referent_Function()                           { check_chunk("RHS_Referent_Function", 8, 1); }
 void ChunkingTests::RHS_Unbound_Multivalue()                          { check_chunk("RHS_Unbound_Multivalue", 8, 1); }
 void ChunkingTests::RL_Variablization()                               { check_chunk("RL_Variablization", 8, 5); }
@@ -104,6 +103,7 @@ void ChunkingTests::SMem_Chunked_Query2()                             { check_ch
 void ChunkingTests::STI_Variablization_Same_Type()                    { check_chunk("STI_Variablization_Same_Type", 8, 1); }
 void ChunkingTests::STI_Variablization()                              { check_chunk("STI_Variablization", 8, 1); }
 void ChunkingTests::STI_with_referents()                              { check_chunk("STI_with_referents", 8, 1); }
+void ChunkingTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, true); } /* Probably re-ordering problems.  The rules learned are huge */
 void ChunkingTests::Superstate_Identity_Opaque()                      { check_chunk("Superstate_Identity_Opaque", 8, 1); }
 void ChunkingTests::Ungrounded_in_BT_Constraint()                     { check_chunk("Ungrounded_in_BT_Constraint", 8, 2); }
 void ChunkingTests::Ungrounded_Mixed()                                { check_chunk("Ungrounded_Mixed", 8, 1); }
@@ -200,6 +200,13 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
     {
         SoarHelper::close_log(agent);
         save_chunks(pTestName);
+        tearDown(false);
+        setUp();
+        SoarHelper::continue_log(agent, pTestName);
+        source_saved_chunks(pTestName);
+    } else {
+        SoarHelper::close_log(agent);
+        save_chunks_internal(pTestName);
         tearDown(false);
         setUp();
         SoarHelper::continue_log(agent, pTestName);

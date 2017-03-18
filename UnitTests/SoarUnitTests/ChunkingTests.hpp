@@ -76,9 +76,10 @@ public:
     TEST(Operator_Selection_Knowledge_In_Proposal, -1);
 
     TEST(Rhs_Func_Literalization, -1);
+    TEST(RHS_Math, -1);
     TEST(RHS_Math_Abs, -1);
     TEST(RHS_Math_Mixed, -1);
-    TEST(RHS_Math, -1);
+    TEST(RHS_Math_Children_Force_Learn, -1);
     TEST(RHS_Referent_Function, -1);
     TEST(RHS_Unbound_Multivalue, -1);
 
@@ -132,8 +133,7 @@ public:
     TEST(Demo_Water_Jug_Tie, -1);
     TEST(PRIMS_Sanity1, -1);
     TEST(PRIMS_Sanity2, -1);
-    TEST(GamesAgent_Sanity1, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
+    TEST(Teach_Soar_90_Games, -1);
 
     void All_Test_Types();
     void BUNCPS_0();
@@ -150,6 +150,7 @@ public:
     void Chunk_Superstate_Operator_Preference();
     void Chunked_Justification_with_extras();
     void Conflated_Constants();
+    void Constraint_Ungrounded();
     void Constraint_Prop_from_Base_Conds();
     void Constraint_Prop_Simple();
     void Deep_Copy_Identity_Expansion();
@@ -181,6 +182,8 @@ public:
     void Literalization_with_BT_Constraints2();
     void Literalization_with_Constraints();
     void Maintain_Instantiation_Specific_Identity();
+    void Max_Chunks();
+    void Max_Dupes();
     void NC_Disjunction();
     void NC_Simple_No_Exist();
     void NC_with_RC_and_Local_Variable();
@@ -190,6 +193,7 @@ public:
     void NCC_from_Backtrace();
     void NCC_Simple_Literals();
     void NCC_with_Relational_Constraint();
+    void No_Grounds();
     void No_Topstate_Match();
     void Opaque_State_Barrier();
     void Operator_Selection_Knowledge_Ghost_Operator();
@@ -204,9 +208,11 @@ public:
     void Result_On_Operator();
     void Rete_Bug_Deep_vs_Deep();
     void Rete_Bug_Deep_vs_Top();
+    void Rhs_Func_Literalization();
     void RHS_Math_Abs();
     void RHS_Math_Mixed();
     void RHS_Math();
+    void RHS_Math_Children_Force_Learn();
     void RHS_Referent_Function();
     void RHS_Unbound_Multivalue();
     void RL_Variablization();
@@ -220,6 +226,7 @@ public:
     void STI_Variablization();
     void STI_with_referents();
     void Superstate_Identity_Opaque();
+    void Teach_Soar_90_Games();
     void Ungrounded_in_BT_Constraint();
     void Ungrounded_Mixed();
     void Ungrounded_Relational_Constraint();
@@ -228,12 +235,6 @@ public:
     void Unify_Ambiguous_Output();
     void Unify_Children_Results();
     void Unify_through_Two_Traces_Four_Deep();
-    void Constraint_Ungrounded();
-    void Games_Nccx2_Long_Lived();
-    void Max_Chunks();
-    void Max_Dupes();
-    void No_Grounds();
-    void Rhs_Func_Literalization();
 
 private:
     void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);
