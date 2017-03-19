@@ -14,7 +14,6 @@
 
 #include "agent.h"
 #include "callback.h"
-#include "debug.h"
 #include "dprint.h"
 #include "output_settings.h"
 #include "print.h"

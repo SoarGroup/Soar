@@ -8,12 +8,9 @@
 #include "soar_instance.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "dprint.h"
 #include "memory_manager.h"
 #include "output_manager.h"
-//#include "preference.h"
-#include "print.h"
 #include "sml_Client.h"
 #include "sml_AgentSML.h"
 

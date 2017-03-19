@@ -16,8 +16,6 @@
 
 #include "kernel.h"
 
-#include <string>
-
 #ifndef SOAR_RELEASE_VERSION
     /* This can be used to turn off dprints except for a decision cycle range */
 //    #define DEBUG_ONLY_AFTER_DC 929

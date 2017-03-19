@@ -26,7 +26,6 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug.h"
 #include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"

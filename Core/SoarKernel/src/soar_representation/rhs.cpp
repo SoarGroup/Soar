@@ -44,9 +44,9 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
     dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
-
     if (rhs_value_is_funcall(rv))
     {
+
         RFI_remove(thisAgent, rv);
         fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)

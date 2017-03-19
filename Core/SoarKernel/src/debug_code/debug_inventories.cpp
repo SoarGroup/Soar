@@ -491,10 +491,13 @@ void clean_up_debug_inventories(agent* thisAgent)
         pRHS->r_id = ++RSI_id_counter;
         thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %r", pRHS->r_id, pRHS);
         rhs_deallocation_map[pRHS->r_id] = lWMEString;
+//        std::cout << "Allocating rhs symbol " << pRHS->referent->to_string() << " " << pRHS->r_id << std::endl;
+
 //        break_if_id_matches(pRHS->r_id, 3);
     }
     void RSI_remove(agent* thisAgent, rhs_symbol pRHS)
     {
+//        std::cout << "Deallocating rhs symbol " << pRHS->referent->to_string() << " " << pRHS->r_id << std::endl;
         auto it = rhs_deallocation_map.find(pRHS->r_id);
         assert (it != rhs_deallocation_map.end());
 
