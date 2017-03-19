@@ -16,6 +16,7 @@
 #include "rhs.h"
 #include "soar_instance.h"
 #include "symbol_manager.h"
+#include "test.h"
 #include "output_manager.h"
 #include "working_memory.h"
 
@@ -31,7 +32,7 @@ void clean_up_debug_inventories(agent* thisAgent)
     ISI_print_and_cleanup(thisAgent);
 }
 
-#ifdef DEBUG_TRACE_REFCOUNT_FOR
+#if defined(DEBUG_TRACE_REFCOUNT_FOR) && defined(DEBUG_REFCOUNT_CHANGE_REGIONS)
 
     static int64_t debug_last_refcount = 0;
     static int64_t debug_last_refcount2 = 0;

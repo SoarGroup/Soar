@@ -26,7 +26,8 @@
 //#define DEBUG_RHS_SYMBOL_INVENTORY
 //#define DEBUG_RHS_FUNCTION_INVENTORY
 //#define DEBUG_ACTION_INVENTORY
-#define DEBUG_TEST_INVENTORY
+//#define DEBUG_TEST_INVENTORY
+//#define DEBUG_REFCOUNT_CHANGE_REGIONS
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking

@@ -396,7 +396,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                         saved->identity_set = sym_identity_set_test->identity_set;
                     else
                         saved->identity_set = NULL;
-//                        saved->var_identity_set_wp.reset();
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -443,7 +442,6 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             old_sts = saved;
             saved->var = var;
             saved->identity = LITERAL_VALUE;
-//            saved->var_identity_set_wp.reset();
             saved->identity_set = NULL;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
@@ -682,29 +680,28 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     if (tests_to_restore)
     {
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        saved_test* next_st;
+
+        while (tests_to_restore)
         {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
-            // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
-            // print(thisAgent,  "      :\n");
-            // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
-            // print_saved_test_list(thisAgent, tests_to_restore);
-            // TODO: XML tagged output -- how to create this string?
-            // KJC TODO:  need a tagged output version of print_saved_test_list
+            next_st = tests_to_restore->next;
 
-            // XML generation
-            growable_string gs = make_blank_growable_string(thisAgent);
-            add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
-            add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-            //TODO: fill in XML print_saved_test_list. Possibile methods include:
-            //   1) write a version which adds to a growable string
-            //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
-            //      i.e. "<warning><string value="beginning of message"></string><test att="val"></test><string value="rest of message"></string></warning>
-            xml_generate_warning(thisAgent, text_of_growable_string(gs));
+            if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test %t whose referent %y is unbound in production %s\n", tests_to_restore->the_test, tests_to_restore->var, thisAgent->name_of_production_being_reordered);
+                // XML generation
+                growable_string gs = make_blank_growable_string(thisAgent);
+                add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
+                add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+                xml_generate_warning(thisAgent, text_of_growable_string(gs));
 
-            free_growable_string(thisAgent, gs);
+                free_growable_string(thisAgent, gs);
+            }
+            thisAgent->symbolManager->symbol_remove_ref(&tests_to_restore->var);
+            deallocate_test(thisAgent, tests_to_restore->the_test);
+            thisAgent->memoryManager->free_with_pool(MP_saved_test, tests_to_restore);
+            tests_to_restore = next_st;
         }
-        /* ought to deallocate the saved tests, but who cares */
     }
     unmark_variables_and_free_list(thisAgent, new_vars);
 }
