@@ -18,6 +18,7 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
+#include "debug_inventories.h"
 
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
@@ -47,7 +48,11 @@ typedef struct test_struct
     test_struct*    eq_test;
     uint64_t        identity;
     uint64_t        clone_identity;
-    IdentitySet*   identity_set;
+    IdentitySet*    identity_set;
+    #ifdef DEBUG_TEST_INVENTORY
+    uint64_t            t_id;
+    #endif
+
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is

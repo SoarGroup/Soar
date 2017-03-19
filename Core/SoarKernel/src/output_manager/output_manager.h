@@ -109,7 +109,6 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
@@ -163,6 +162,7 @@ class Output_Manager
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
 
+        void test_to_string(test t, std::string &destString, bool show_equality = false);
         void identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
         void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);

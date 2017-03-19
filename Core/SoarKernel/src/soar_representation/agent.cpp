@@ -363,6 +363,7 @@ void destroy_soar_agent(agent* delete_agent)
     ADI_print_and_cleanup(delete_agent);
     RSI_print_and_cleanup(delete_agent);
     RFI_print_and_cleanup(delete_agent);
+    TDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
 

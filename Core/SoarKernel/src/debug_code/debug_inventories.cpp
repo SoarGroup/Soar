@@ -329,10 +329,10 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void WDI_add(agent* thisAgent, wme* pWME)
     {
-        std::string lWMEString;
+        std::string lAddString;
         pWME->w_id = ++WDI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %w", pWME->w_id, pWME);
-        wme_deallocation_map[pWME->w_id] = lWMEString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: %w", pWME->w_id, pWME);
+        wme_deallocation_map[pWME->w_id] = lAddString;
     }
     void WDI_remove(agent* thisAgent, wme* pWME)
     {
@@ -352,13 +352,13 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void WDI_print_and_cleanup(agent* thisAgent)
     {
-        std::string lWMEString;
+        std::string lAddString;
         uint64_t bugCount = 0;
         thisAgent->outputManager->printa_sf(thisAgent, "WME inventory:            ");
         for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
         {
-            lWMEString = it->second;
-            if (!lWMEString.empty())
+            lAddString = it->second;
+            if (!lAddString.empty())
             {
                 bugCount++;
             }
@@ -382,8 +382,8 @@ void clean_up_debug_inventories(agent* thisAgent)
         {
             for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
             {
-                lWMEString = it->second;
-                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+                lAddString = it->second;
+                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
             }
             thisAgent->outputManager->printa_sf(thisAgent, "\n");
         }
@@ -487,10 +487,10 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void RSI_add(agent* thisAgent, rhs_symbol pRHS)
     {
-        std::string lWMEString;
+        std::string lAddString;
         pRHS->r_id = ++RSI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: %r", pRHS->r_id, pRHS);
-        rhs_deallocation_map[pRHS->r_id] = lWMEString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: %r", pRHS->r_id, pRHS);
+        rhs_deallocation_map[pRHS->r_id] = lAddString;
 //        std::cout << "Allocating rhs symbol " << pRHS->referent->to_string() << " " << pRHS->r_id << std::endl;
 
 //        break_if_id_matches(pRHS->r_id, 3);
@@ -514,13 +514,13 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void RSI_print_and_cleanup(agent* thisAgent)
     {
-        std::string lWMEString;
+        std::string lAddString;
         uint64_t bugCount = 0;
         thisAgent->outputManager->printa_sf(thisAgent, "RHS Symbol inventory:     ");
         for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
         {
-            lWMEString = it->second;
-            if (!lWMEString.empty())
+            lAddString = it->second;
+            if (!lAddString.empty())
             {
                 bugCount++;
             }
@@ -544,8 +544,8 @@ void clean_up_debug_inventories(agent* thisAgent)
         {
             for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
             {
-                lWMEString = it->second;
-                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+                lAddString = it->second;
+                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
             }
             thisAgent->outputManager->printa_sf(thisAgent, "\n");
         }
@@ -572,10 +572,10 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void ADI_add(agent* thisAgent, action* pAction)
     {
-        std::string lWMEString;
+        std::string lAddString;
         pAction->a_id = ++ADI_id_counter;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "a%u", pAction->a_id);
-        action_deallocation_map[pAction->a_id] = lWMEString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "a%u", pAction->a_id);
+        action_deallocation_map[pAction->a_id] = lAddString;
 //        break_if_id_matches(pAction->a_id, 3);
     }
     void ADI_remove(agent* thisAgent, action* pAction)
@@ -596,13 +596,13 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void ADI_print_and_cleanup(agent* thisAgent)
     {
-        std::string lWMEString;
+        std::string lAddString;
         uint64_t bugCount = 0;
         thisAgent->outputManager->printa_sf(thisAgent, "Action inventory:         ");
         for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
         {
-            lWMEString = it->second;
-            if (!lWMEString.empty())
+            lAddString = it->second;
+            if (!lAddString.empty())
             {
                 bugCount++;
             }
@@ -626,8 +626,8 @@ void clean_up_debug_inventories(agent* thisAgent)
         {
             for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
             {
-                lWMEString = it->second;
-                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+                lAddString = it->second;
+                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
             }
             thisAgent->outputManager->printa_sf(thisAgent, "\n");
         }
@@ -654,9 +654,9 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void RFI_add(agent* thisAgent, rhs_value pRHS)
     {
-        std::string lWMEString;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lWMEString, "%u: &%u", (++RFI_id_counter), (uint64_t) pRHS);
-        rhs_func_deallocation_map[pRHS] = lWMEString;
+        std::string lAddString;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: &%u", (++RFI_id_counter), (uint64_t) pRHS);
+        rhs_func_deallocation_map[pRHS] = lAddString;
         break_if_id_matches(RFI_id_counter, 890);
     }
     void RFI_remove(agent* thisAgent, rhs_value pRHS)
@@ -677,13 +677,13 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void RFI_print_and_cleanup(agent* thisAgent)
     {
-        std::string lWMEString;
+        std::string lAddString;
         uint64_t bugCount = 0;
         thisAgent->outputManager->printa_sf(thisAgent, "RHS Function inventory:   ");
         for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
         {
-            lWMEString = it->second;
-            if (!lWMEString.empty())
+            lAddString = it->second;
+            if (!lAddString.empty())
             {
                 bugCount++;
             }
@@ -707,8 +707,8 @@ void clean_up_debug_inventories(agent* thisAgent)
         {
             for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
             {
-                lWMEString = it->second;
-                if (!lWMEString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lWMEString.c_str());
+                lAddString = it->second;
+                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
             }
             thisAgent->outputManager->printa_sf(thisAgent, "\n");
         }
@@ -725,4 +725,94 @@ void clean_up_debug_inventories(agent* thisAgent)
     void RFI_add(agent* thisAgent, rhs_value pRHS) {}
     void RFI_remove(agent* thisAgent, rhs_value pRHS) {}
     void RFI_print_and_cleanup(agent* thisAgent) {}
+#endif
+
+#ifdef DEBUG_TEST_INVENTORY
+    id_to_string_map test_deallocation_map;
+
+    uint64_t TDI_id_counter = 0;
+    bool    TDI_double_deallocation_seen = false;
+
+    void TDI_add(agent* thisAgent, test pTest)
+    {
+        std::string lAddString;
+        pTest->t_id = ++TDI_id_counter;
+        thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: %t", pTest->t_id, pTest);
+        test_deallocation_map[pTest->t_id] = lAddString;
+//        std::string lTestString;
+//        thisAgent->outputManager->test_to_string(pTest, lTestString, true);
+//        std::cout << "Allocating test " << pTest->t_id << ": " << lTestString << "\n";
+
+        break_if_id_matches(pTest->t_id, 2526);
+    }
+    void TDI_remove(agent* thisAgent, test pTest)
+    {
+//        std::string lTestString;
+//        thisAgent->outputManager->test_to_string(pTest, lTestString, true);
+//        std::cout << "DEALLOCATE test " << pTest->t_id <<  ": " << lTestString<< "\n";
+
+        auto it = test_deallocation_map.find(pTest->t_id);
+        assert (it != test_deallocation_map.end());
+
+        std::string lPrefString = it->second;
+        if (!lPrefString.empty())
+        {
+            test_deallocation_map[pTest->t_id].clear();
+        } else {
+            thisAgent->outputManager->printa_sf(thisAgent, "test %u was deallocated twice!\n", it->first);
+            break_if_bool(true);
+            TDI_double_deallocation_seen = true;
+        }
+    }
+
+    void TDI_print_and_cleanup(agent* thisAgent)
+    {
+        std::string lAddString;
+        uint64_t bugCount = 0;
+        thisAgent->outputManager->printa_sf(thisAgent, "Test inventory:           ");
+        for (auto it = test_deallocation_map.begin(); it != test_deallocation_map.end(); ++it)
+        {
+            lAddString = it->second;
+            if (!lAddString.empty())
+            {
+                bugCount++;
+            }
+        }
+        if (bugCount)
+        {
+            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, TDI_id_counter);
+            if (TDI_double_deallocation_seen)
+                thisAgent->outputManager->printa_sf(thisAgent, " and some tests were deallocated twice");
+            if (bugCount <= 23)
+                thisAgent->outputManager->printa_sf(thisAgent, ":");
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
+        }
+        else if (TDI_id_counter)
+            thisAgent->outputManager->printa_sf(thisAgent, "All %u tests were deallocated properly.\n", TDI_id_counter);
+        else
+            thisAgent->outputManager->printa_sf(thisAgent, "No tests were created.\n");
+
+        if (bugCount && (bugCount <= 23))
+        {
+            for (auto it = test_deallocation_map.begin(); it != test_deallocation_map.end(); ++it)
+            {
+                lAddString = it->second;
+                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+            }
+            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+        }
+        if (((bugCount > 0) || TDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+        {
+            std::cout << "Test inventory failure! " << bugCount << "/" << TDI_id_counter << " were not deallocated.\n";
+            //assert(false);
+        }
+        TDI_double_deallocation_seen = false;
+        test_deallocation_map.clear();
+        TDI_id_counter = 0;
+    }
+#else
+    void TDI_add(agent* thisAgent, test pTest) {}
+    void TDI_remove(agent* thisAgent, test pTest) {}
+    void TDI_print_and_cleanup(agent* thisAgent) {}
 #endif
