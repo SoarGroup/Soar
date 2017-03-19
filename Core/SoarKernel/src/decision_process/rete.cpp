@@ -3696,7 +3696,9 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
         if (find_var_location(sym, static_cast<rete_node_level>(bottom_depth + 1), &var_loc))
         {
             /* --- Yes, replace it with reteloc --- */
+            RSI_remove(thisAgent, rhs_value_to_rhs_symbol(*rv));
             thisAgent->symbolManager->symbol_remove_ref(&sym);
+            thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
             *rv = reteloc_to_rhs_value(var_loc.field_num, var_loc.levels_up - 1);
         }
         else
@@ -3714,8 +3716,10 @@ void fixup_rhs_value_variable_references(agent* thisAgent, rhs_value* rv,
             {
                 index = reinterpret_cast<uint64_t>(sym->var->current_binding_value);
             }
-            *rv = unboundvar_to_rhs_value(index);
+            RSI_remove(thisAgent, rhs_value_to_rhs_symbol(*rv));
             thisAgent->symbolManager->symbol_remove_ref(&sym);
+            thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, *rv);
+            *rv = unboundvar_to_rhs_value(index);
         }
         return;
     }
