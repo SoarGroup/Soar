@@ -4329,7 +4329,7 @@ void rete_node_to_conditions(agent* thisAgent,
                     add_gensymmed_equality_test(thisAgent, &(cond->data.tests.attr_test), 'a');
                 }
                 if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
-                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), 'v');
+                    add_gensymmed_equality_test(thisAgent, &(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
             }
         }
     }

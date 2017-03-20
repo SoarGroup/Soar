@@ -80,9 +80,9 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test);
         add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test);
     }
-    if (!am->id && (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.id_test), 'i');
+    if (!am->id && (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.id_test), 's');
     if (!am->attr && (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.attr_test), 'a');
-    if (!am->value && (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.value_test), 'v');
+    if (!am->value && (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
 
 
     /* --- on hashed nodes, add equality test for the hash function --- */
