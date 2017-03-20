@@ -449,7 +449,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         char* la = va_arg(args, char *);
                         if (la)
                         {
-                            this->rhs_value_to_string(la, destString, NULL );
+                            this->rhs_value_to_string(la, destString);
 
                         } else {
                             destString += '#';

@@ -849,8 +849,11 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
 
     for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
-        if (lDoIdentities) thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p, is_chunk_inst);
-
+        if (lDoIdentities)
+        {
+            dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for rhs preference %p\n", p);
+            thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p, is_chunk_inst);
+        }
         if (addToGoal)
         {
             insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);

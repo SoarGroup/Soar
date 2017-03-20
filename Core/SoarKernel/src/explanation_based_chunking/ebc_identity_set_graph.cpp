@@ -103,7 +103,7 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     if (iter != (*identities_to_id_sets).end())
     {
         IdentitySet* lID_Set = iter->second;
-        dprint(DT_PROPAGATE_ID_SETS, "Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, lID_Set->get_identity());
+        dprint(DT_PROPAGATE_ID_SETS, "--> Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, lID_Set->get_identity());
         return lID_Set;
     }
 
@@ -111,14 +111,14 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;
-        dprint(DT_PROPAGATE_ID_SETS, "Propagating identity set for variable identity %u with parent identity set %u\n", pID, pIDSet->get_identity());
+        dprint(DT_PROPAGATE_ID_SETS, "--> Copying identity set for variable identity %u with propagated parent identity set %u\n", pID, pIDSet->get_identity());
         return pIDSet;
     } else
     #endif
     {
         IdentitySet* newIdentitySet = make_identity_set(pID);
         (*identities_to_id_sets)[pID] = newIdentitySet;
-        dprint(DT_PROPAGATE_ID_SETS, "No parent identity set.  Creating new identity join set %u for %u\n", newIdentitySet->get_identity(), pID);
+        dprint(DT_PROPAGATE_ID_SETS, "--> No parent identity set.  Creating new identity join set %u for %u\n", newIdentitySet->get_identity(), pID);
         return newIdentitySet;
     }
 }
