@@ -56,6 +56,8 @@ void Explanation_Based_Chunker::add_var_test_bound_identity_to_id_test(condition
     cond->data.tests.id_test->identity = t->identity;
 }
 
+inline bool has_eq_test_with_no_identity(test pTest) { return (pTest && pTest->eq_test && !pTest->eq_test->identity); }
+
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
                                         node_varnames* nvn,
@@ -74,17 +76,15 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
 
     dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition called for %s.\n%l\n",  thisAgent->newly_created_instantiations->prod_name->sc->name, cond);
 
+    /* If rule has varnames stored (chunks won't), use those to determine identity */
     if (nvn)
     {
         add_varname_identity_to_test(thisAgent, nvn->data.fields.id_varnames, cond->data.tests.id_test);
         add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test);
         add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test);
     }
-    if (!am->id && (!cond->data.tests.id_test->eq_test || !cond->data.tests.id_test->eq_test->data.referent->is_variable()) add_new_chunk_variable(&(cond->data.tests.id_test), 's');
-    if (!am->attr && !cond->data.tests.attr_test->eq_test->data.referent->is_variable()) add_new_chunk_variable(&(cond->data.tests.attr_test), 'a');
-    if (!am->value && !cond->data.tests.value_test->eq_test->data.referent->is_variable()) add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
 
-    /* --- on hashed nodes, add equality test for the hash function --- */
+    /* For hashed nodes, copy identity from relative condition position --- */
     if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
     {
         add_var_test_bound_identity_to_id_test(cond, node->left_hash_loc_field_num, node->left_hash_loc_levels_up);
@@ -92,6 +92,23 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
     else if (node->node_type == POSITIVE_BNODE)
     {
         add_var_test_bound_identity_to_id_test(cond, node->parent->left_hash_loc_field_num, node->parent->left_hash_loc_levels_up);
+    }
+
+    /* Check for non-constants that still don't have an identity */
+    if (!am->id && has_eq_test_with_no_identity(cond->data.tests.id_test) && !cond->data.tests.id_test->eq_test->data.referent->is_variable())
+    {
+        cond->data.tests.id_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.id_test->eq_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.id_test->eq_test->identity, cond->data.tests.id_test->eq_test->data.referent);
+    }
+    if (!am->attr && has_eq_test_with_no_identity(cond->data.tests.attr_test) && !cond->data.tests.attr_test->eq_test->data.referent->is_variable())
+    {
+        cond->data.tests.attr_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.attr_test->eq_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.attr_test->eq_test->identity, cond->data.tests.attr_test->eq_test->data.referent);
+    }
+    if (!am->value && has_eq_test_with_no_identity(cond->data.tests.value_test) && !cond->data.tests.value_test->eq_test->data.referent->is_variable())
+    {
+        cond->data.tests.value_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.value_test->eq_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.value_test->eq_test->identity, cond->data.tests.value_test->eq_test->data.referent);
     }
 
     /* -- Now process any additional relational test -- */
@@ -129,6 +146,26 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         }
     }
 
+    /* Make sure there's an equality test in each of the three fields */
+    if (! nvn)
+    {
+        if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
+        {
+            assert(!am->id);
+            add_new_chunk_variable(&(cond->data.tests.id_test), 's');
+        }
+        if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
+        {
+            assert(!am->id);
+            add_new_chunk_variable(&(cond->data.tests.attr_test), 'a');
+        }
+        if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
+        {
+            assert(!am->value);
+            add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
+        }
+    }
+
     dprint(DT_ADD_EXPLANATION_TRACE, "Final condition after add_explanation_to_condition: %l\n", cond);
 }
 
@@ -142,6 +179,7 @@ void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar)
         add_test(thisAgent, pTest, make_test(thisAgent, thisAgent->symbolManager->generate_new_variable(prefix), EQUALITY_TEST));
     }
     (*pTest)->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym((*pTest)->eq_test->data.referent);
+//    (*pTest)->eq_test->identity = NULL_IDENTITY_SET;
     dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for newly generated chunk var %y\n", (*pTest)->eq_test->identity, (*pTest)->eq_test->data.referent);
 }
 
