@@ -49,6 +49,10 @@ char first_letter_from_symbol(Symbol* sym)
             return sym->id->name_letter;
         case STR_CONSTANT_SYMBOL_TYPE:
             return *(sym->sc->name);
+        case INT_CONSTANT_SYMBOL_TYPE:
+            return 'i';
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+            return 'f';
         default:
             return '*';
     }
@@ -83,9 +87,9 @@ bool make_string_rereadable(std::string &pStr)
     soar::Lexer::determine_possible_symbol_types_for_string(pCStr, pLength,
             &possible_id, &possible_var, &possible_sc, &possible_ic, &possible_fc, &is_rereadable);
 
-    has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
+//    has_angle_bracket = pCStr[0] == '<' || pCStr[pLength - 1] == '>';
 
-    if ((!possible_sc)   || possible_var || possible_ic || possible_fc || (!is_rereadable))
+    if ((!possible_sc)   || possible_var || possible_ic || possible_fc || possible_id || (!is_rereadable))
     {
         /* BUGBUG - if in context where id's could occur, should check possible_id flag here also */
         pStr = string_to_escaped_string(pCStr, '|');

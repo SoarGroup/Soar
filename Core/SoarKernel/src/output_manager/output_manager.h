@@ -165,7 +165,7 @@ class Output_Manager
         void test_to_string(test t, std::string &destString, bool show_equality = false);
         void identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
-        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, bool rereadable = true, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
         /* Methods to make printing prettier */

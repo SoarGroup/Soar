@@ -328,9 +328,10 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         case IDENTIFIER_LEXEME:
         {
 //            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
-            std::string lStr;
-            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
-            newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
+            char buf[30];
+            SNPRINTF(buf, sizeof(buf) - 1, "%c%llu", lexeme->id_letter, lexeme->id_number);
+             buf[sizeof(buf) - 1] = '\0';
+            newSymbol = thisAgent->symbolManager->make_str_constant(buf);
 
             return newSymbol;
         }
@@ -1994,7 +1995,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     }
 
     /* JC Added, we will need the attribute as a string, so we get it here */
-    thisAgent->outputManager->rhs_value_to_string(attr, attr_str);
+    thisAgent->outputManager->rhs_value_to_string(attr, attr_str, false);
 
     all_actions = NIL;
 
@@ -2042,7 +2043,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         }
 
         /* JC Added. We need to get the new attribute's name */
-        thisAgent->outputManager->rhs_value_to_string(attr, attr_str);
+        thisAgent->outputManager->rhs_value_to_string(attr, attr_str, false);
     }
     /* end of while (lexer->current_lexeme.type == PERIOD_LEXEME */
     /* end KJC 10/15/98 */

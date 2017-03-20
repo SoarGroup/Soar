@@ -268,7 +268,7 @@ void Output_Manager::rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_
     }
 }
 
-void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
+void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, bool rereadable, struct token_struct* tok, wme* w, bool pEmptyStringForNullIdentity)
 {
     rhs_symbol rsym = NIL;
     Symbol* sym = NIL;
@@ -294,7 +294,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         {
             if (rsym->referent)
             {
-                destString += rsym->referent->to_string(true);
+                destString += rsym->referent->to_string(rereadable);
             } else {
                 destString += '#';
             }
@@ -329,7 +329,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 rhs_value_to_reteloc_field_num(rv), tok, w);
             if (sym)
             {
-                destString += sym->to_string(true);
+                destString += sym->to_string(rereadable);
             } else {
                 destString += "[RETE-loc]";
             }
@@ -358,7 +358,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
             else
             {
-                destString.append(rf->name->to_string(true));
+                destString.append(rf->name->to_string(rereadable));
             }
         } else {
             destString += "UNKNOWN_FUNCTION";
@@ -366,7 +366,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             destString += ' ';
-            rhs_value_to_string(static_cast<char*>(c->first), destString, tok, w, pEmptyStringForNullIdentity);
+            rhs_value_to_string(static_cast<char*>(c->first), destString, rereadable, tok, w, pEmptyStringForNullIdentity);
         }
         destString += ')';
     }

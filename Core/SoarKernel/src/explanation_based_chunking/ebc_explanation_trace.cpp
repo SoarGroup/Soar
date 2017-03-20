@@ -80,6 +80,10 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         add_varname_identity_to_test(thisAgent, nvn->data.fields.attr_varnames, cond->data.tests.attr_test);
         add_varname_identity_to_test(thisAgent, nvn->data.fields.value_varnames, cond->data.tests.value_test);
     }
+    if (!am->id && (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.id_test), 'i');
+    if (!am->attr && (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.attr_test), 'a');
+    if (!am->value && (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)) add_new_chunk_variable(&(cond->data.tests.value_test), 'v');
+
 
     /* --- on hashed nodes, add equality test for the hash function --- */
     if ((node->node_type == MP_BNODE) || (node->node_type == NEGATIVE_BNODE))
@@ -125,7 +129,21 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
             else add_constraint_to_explanation(&(cond->data.tests.value_test), chunk_test, has_referent);
         }
     }
+
     dprint(DT_ADD_EXPLANATION_TRACE, "Final condition after add_explanation_to_condition: %l\n", cond);
+}
+
+void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar)
+{
+    if (!(*pTest) || !(*pTest)->eq_test)
+    {
+        char prefix[2];
+        prefix[0] = pChar;
+        prefix[1] = 0;
+        add_test(thisAgent, pTest, make_test(thisAgent, thisAgent->symbolManager->generate_new_variable(prefix), EQUALITY_TEST));
+    }
+    (*pTest)->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym((*pTest)->eq_test->data.referent);
+    dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for newly generated chunk var %y\n", (*pTest)->eq_test->identity, (*pTest)->eq_test->data.referent);
 }
 
 /* -- This function adds a constraint test from the rete's other tests lists.  This function
@@ -153,19 +171,9 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                     {
                         /* This is the special case */
                         destination->identity = new_test->identity;
-                        deallocate_test(thisAgent, new_test);
-                        return;
                     }
-                    else
-                    {
-                        /* Identical referents and possibly identical originals.  Ignore. */
-
-                        /* Seems like this should be deallocated if it's not added, but for a long
-                         * time this was not here, and it didn't seem to leak.  Maybe it's not executed. */
-                        assert(false);
-                        deallocate_test(thisAgent, new_test);
-                        return;
-                    }
+                    deallocate_test(thisAgent, new_test);
+                    return;
                 } // else different referents and should be added as new test
             }
             else if (destination->type == CONJUNCTIVE_TEST)
@@ -178,9 +186,9 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                         {
                             /* This is the special case */
                             destination->eq_test->identity = new_test->identity;
-                            deallocate_test(thisAgent, new_test);
                             return;
                         }
+                        deallocate_test(thisAgent, new_test);
                     }
                 }
             }

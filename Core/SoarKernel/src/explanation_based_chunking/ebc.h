@@ -231,6 +231,7 @@ class Explanation_Based_Chunker
         void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond);
+        void            add_new_chunk_variable(test* pTest, char pChar);
 
         /* Chunk building methods */
         Symbol*         generate_name_for_new_rule();

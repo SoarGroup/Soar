@@ -137,7 +137,7 @@ void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_
             {
                 tempString = "";
                 thisAgent->outputManager->set_print_test_format(false, true);
-                thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, NULL, NULL, true);
+                thisAgent->outputManager->rhs_value_to_string(pRHS_variablized_value, tempString, true, NULL, NULL, true);
                 if (!tempString.empty())
                 {
                     thisAgent->outputManager->printa_sf(thisAgent, "%s", tempString.c_str());
@@ -167,7 +167,7 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
     } else {
         if (pPref_func) {
             thisAgent->outputManager->set_print_test_format(false, true);
-            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, NULL, NULL, true);
+            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, true, NULL, NULL, true);
             thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
         } else {
             if (!pID)
@@ -191,7 +191,7 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
     if (pAction->type == FUNCALL_ACTION)
     {
         tempString = "";
-        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
+        outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
@@ -230,7 +230,7 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
     if (pAction->type == FUNCALL_ACTION)
     {
         tempString = "";
-        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
+        outputManager->rhs_value_to_string(pAction->value, tempString, true, NULL, NULL, true);
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
@@ -277,7 +277,7 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
     {
         tempString = "";
         thisAgent->outputManager->set_print_test_format(false, true);
-        thisAgent->outputManager->rhs_value_to_string(pRHS_func ? pRHS_func : pRHS_variablized_value, tempString, NULL, NULL, true);
+        thisAgent->outputManager->rhs_value_to_string(pRHS_func ? pRHS_func : pRHS_variablized_value, tempString, true, NULL, NULL, true);
         thisAgent->outputManager->set_print_test_format(true, false);
         if (!tempString.empty())
         {
