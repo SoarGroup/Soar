@@ -845,9 +845,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         return;
     }
 
-    dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule for firing of %y (i%u)\n", inst->prod_name, inst->i_id);
-    dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule for match of %y (i%u):\n%5\n...which produced results...\n%6", inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated, NULL, m_results);
-
     if (m_inst->prod && (thisAgent->d_cycle_count == m_inst->prod->last_duplicate_dc) && (m_inst->prod->duplicate_chunks_this_cycle >= max_dupes))
     {
         if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
@@ -883,7 +880,8 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         }
     #endif
 
-    dprint(DT_MILESTONES, "Assigning instantiation ID %u to possible chunk forming from match of %y.\n", m_chunk_inst->i_id, m_inst->prod_name);
+    dprint_header(DT_MILESTONES, PrintBoth, "EBC learning new rule with id %u for match of %y (i%u)\n", m_chunk_inst->i_id, m_inst->prod_name, inst->i_id);
+    dprint(DT_VARIABLIZATION_MANAGER, "EBC learning new rule with id %u for match of %y (i%u):\n%5\n...which produced results...\n%6\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id, inst->top_of_instantiated_conditions, inst->preferences_generated, NULL, m_results);
     thisAgent->explanationMemory->add_chunk_record(m_inst);
     thisAgent->explanationMemory->increment_stat_chunks_attempted();
     //debug_refcount_change_start(thisAgent, false);

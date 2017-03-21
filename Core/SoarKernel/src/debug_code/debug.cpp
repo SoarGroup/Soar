@@ -188,7 +188,7 @@ void debug_trace_off()
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
-        thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
+        thisAgent->outputManager->printa(thisAgent, "\nDebug trace messages disabled.\n");
     }
 }
 
@@ -202,7 +202,7 @@ void debug_trace_on()
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(true);
-        thisAgent->outputManager->printa(thisAgent, "Debug trace settings restored.\n");
+        thisAgent->outputManager->printa(thisAgent, "\nDebug trace settings restored.\n");
     }
 }
 
