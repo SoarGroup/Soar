@@ -54,9 +54,10 @@ void Explanation_Based_Chunker::add_var_test_bound_identity_to_id_test(condition
 {
     test t = var_test_bound_in_reconstructed_conds(thisAgent, cond, field_num, levels_up);
     cond->data.tests.id_test->identity = t->identity;
+    dprint(DT_ADD_EXPLANATION_TRACE, "add_var_test_bound_identity_to_id_test adding identity %u to id test of cond %l\n", t->identity, cond);
 }
 
-inline bool has_eq_test_with_no_identity(test pTest) { return (pTest && pTest->eq_test && !pTest->eq_test->identity); }
+inline bool has_eq_test_with_no_identity(test pTest) { return (pTest && !pTest->identity); }
 
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
@@ -95,20 +96,20 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
     }
 
     /* Check for non-constants that still don't have an identity */
-    if (!am->id && has_eq_test_with_no_identity(cond->data.tests.id_test) && !cond->data.tests.id_test->eq_test->data.referent->is_variable())
+    if (!am->id && has_eq_test_with_no_identity(cond->data.tests.id_test) && !cond->data.tests.id_test->data.referent->is_variable())
     {
-        cond->data.tests.id_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.id_test->eq_test->data.referent);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.id_test->eq_test->identity, cond->data.tests.id_test->eq_test->data.referent);
+        cond->data.tests.id_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.id_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for non-variable with alpha memory %t\n", cond->data.tests.id_test->identity, cond->data.tests.id_test);
     }
-    if (!am->attr && has_eq_test_with_no_identity(cond->data.tests.attr_test) && !cond->data.tests.attr_test->eq_test->data.referent->is_variable())
+    if (!am->attr && has_eq_test_with_no_identity(cond->data.tests.attr_test) && !cond->data.tests.attr_test->data.referent->is_variable())
     {
-        cond->data.tests.attr_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.attr_test->eq_test->data.referent);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.attr_test->eq_test->identity, cond->data.tests.attr_test->eq_test->data.referent);
+        cond->data.tests.attr_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.attr_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for non-variable with alpha memory %t\n", cond->data.tests.attr_test->identity, cond->data.tests.attr_test);
     }
-    if (!am->value && has_eq_test_with_no_identity(cond->data.tests.value_test) && !cond->data.tests.value_test->eq_test->data.referent->is_variable())
+    if (!am->value && has_eq_test_with_no_identity(cond->data.tests.value_test) && !cond->data.tests.value_test->data.referent->is_variable())
     {
-        cond->data.tests.value_test->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.value_test->eq_test->data.referent);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for newly generated chunk var %y\n", cond->data.tests.value_test->eq_test->identity, cond->data.tests.value_test->eq_test->data.referent);
+        cond->data.tests.value_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(cond->data.tests.value_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_explanation_to_condition adding identity %u for non-variable with alpha memory %t\n", cond->data.tests.value_test->identity, cond->data.tests.value_test);
     }
 
     /* -- Now process any additional relational test -- */
@@ -183,13 +184,13 @@ void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar)
     dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for newly generated chunk var %y\n", (*pTest)->eq_test->identity, (*pTest)->eq_test->data.referent);
 }
 
-/* -- This function adds a constraint test from the rete's other tests lists.  This function
- *    is odd because, although in most cases the rete only uses the other-tests list for
- *    tests that place additional constraints on the value, sometimes, for as of yet not
- *    understood reason, it can also store an equality test that contains the original rule
- *    symbol, which is normally stored in the varlist for the node.  This seems to happen for
- *    certain conditions that are linked more than one or two levels away from the state.  We
- *    need that symbol to assign an identity, so we look for that case here.
+/* -- Add a constraint test to a condition test from rete node's other_tests list
+ *
+ *    Note:  This function is odd because, the other-tests list not only provides
+ *    relational constraints on the value of a test, it also provides a constraint
+ *    that one variable is identical to another.  If the rule is a chunk, it won't
+ *    have varnames to generate the identities, so this constraint provides it instead.
+ *
  * -- */
 
 void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent)
@@ -204,7 +205,8 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
             {
                 if (destination->data.referent == new_test->data.referent)
                 {
-                    if (!destination->identity && new_test->identity)
+                    dprint(DT_ADD_EXPLANATION_TRACE, "add_constraint_to_explanation found equality test %t[%u] for %t\n", new_test, new_test->identity, destination);
+                    if (destination->identity != new_test->identity)
                     {
                         /* This is the special case */
                         destination->identity = new_test->identity;
@@ -219,7 +221,8 @@ void Explanation_Based_Chunker::add_constraint_to_explanation(test* dest_test_ad
                 {
                     if (destination->eq_test->data.referent == new_test->data.referent)
                     {
-                        if (!destination->eq_test->identity && new_test->identity)
+                        dprint(DT_ADD_EXPLANATION_TRACE, "add_constraint_to_explanation found equality test %t[%u] for %t\n", new_test, new_test->identity, destination->eq_test);
+                        if (destination->eq_test->identity != new_test->identity)
                         {
                             /* This is the special case */
                             destination->eq_test->identity = new_test->identity;
