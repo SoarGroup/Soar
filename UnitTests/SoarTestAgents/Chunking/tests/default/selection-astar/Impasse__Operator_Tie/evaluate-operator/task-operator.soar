@@ -4,21 +4,21 @@ sp {evaluate-apply*task-operator2
  #interrupt
    :default
    (state <s> ^name evaluate-operator
-              ^copy-structure.superstate-evaluation <e>
+              ^superstate.operator.evaluation <e>
               ^operator <op>
               ^top-state <ts>)
    (<e> ^path-cost <pc>
         ^current-location <cloc>)
    (<ts> ^current-location <cloc>)
    (<op> ^next-waypoint <nloc>)
-   (<cloc> ^x <cx> ^y <cy>) # ^id <cid>
-   (<nloc> ^x <nx> ^y <ny>) #^id <nid> 
+   (<cloc> ^id <cid> ^x <cx> ^y <cy>)
+   (<nloc> ^id <nid> ^x <nx> ^y <ny>)
 -->
- ##(write (crlf) |##############################|)
- ##(write (crlf) |Current waypoint: | <cid> | | <cx> | | <cy>)
- ##(write (crlf) |Next waypoint:    | <nid> | | <nx> | | <ny>)
- ##(write (crlf) |Range:         | (compute-range <cx> <cy> <nx> <ny>))
- ##(write (crlf) |Path cost: | (compute-range <cx> <cy> <nx> <ny>))
+ (write (crlf) |##############################|)
+ (write (crlf) |Current waypoint: | <cid> | | <cx> | | <cy>)
+ (write (crlf) |Next waypoint:    | <nid> | | <nx> | | <ny>)
+ (write (crlf) |Range:         | (compute-range <cx> <cy> <nx> <ny>))
+ (write (crlf) |Path cost: | (compute-range <cx> <cy> <nx> <ny>))
    (<e> ^path-cost (+ <pc> (compute-range <cx> <cy> <nx> <ny>))
                    <pc> -
         ^current-location <cloc> - <nloc>)
@@ -28,17 +28,17 @@ sp {evaluate-apply*task-operator3
    :default
    #interrupt
    (state <s> ^name evaluate-operator
-              ^quiescence t
-              ^copy-structure.superstate-evaluation <e>
-              ^operator <op>)
+              ^superstate.operator.evaluation <e>
+              ^operator <op>
+              ^top-state <ts>)
    (<e> ^path-cost { <> 0 <pc> }
         ^estimated-cost <ec>
         ^current-location <> <nloc>
         ^updated-estimate true)
    (<op> ^next-waypoint <nloc>)
 -->
- ##(write (crlf) |.....................|)
- ##(write (crlf) |Remove: | <e> |: | <ec>)
+   (write (crlf) |.....................|)
+   (write (crlf) |Remove: | <e> |: | <ec>)
    (<e> ^estimated-cost <ec> -
         ^updated-estimate true -)
 }

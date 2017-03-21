@@ -4,7 +4,7 @@ sp {evaluate-operator*propose*look-ahead
    (state <s> ^look-ahead-operator <o>
               ^untried-tied-operator <o>)
    -->
-   (<s> ^operator <o> + !)}
+   (<s> ^operator <o> !)}   # makes learning with add-osk on more general - # might cause problems in some cases.
 
 sp {evaluate-operator*propose*look-ahead*reject-all-others
    :default

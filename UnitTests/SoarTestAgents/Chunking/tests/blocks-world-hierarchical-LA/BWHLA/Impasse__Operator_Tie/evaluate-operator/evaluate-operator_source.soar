@@ -1,8 +1,0 @@
-source elaborations.soar
-source evaluation.soar
-source Impasse__State_No-Change.soar
-pushd Impasse__State_No-Change
-source Impasse__State_No-Change_source.soar
-popd
-source pick-up.soar
-source put-down.soar

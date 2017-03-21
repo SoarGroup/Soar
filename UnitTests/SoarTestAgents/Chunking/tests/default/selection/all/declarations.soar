@@ -1,0 +1,17 @@
+chunk singleton any top-state any
+chunk singleton any superstate any   # the architectural one doesn't apply to operators 
+chunk singleton any numeric-value any
+chunk singleton any symbolic-value any
+chunk singleton any expected-value any
+chunk singleton any superoperator any
+chunk singleton any found-value any
+chunk singleton any operator-selection any
+chunk singleton operator evaluation any
+chunk singleton any duplicate-of any
+chunk singleton any superproblemspace any
+chunk singleton any look-ahead-operator any
+chunk singleton any untried-tied-operator any
+chunk singleton any tried-tied-operator any
+chunk singleton any name identifier
+
+multi-attributes evaluation 5

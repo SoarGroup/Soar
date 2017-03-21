@@ -1,4 +1,4 @@
-59
+63
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -58,7 +58,11 @@ SOAR_ID 55
 SOAR_ID 56
 SOAR_ID 57
 SOAR_ID 58
-76
+ENUMERATION 59 1 remove-stale-path-cost
+SOAR_ID 60
+ENUMERATION 61 1 remove-stale-estimated-cost
+SOAR_ID 62
+80
 0 current-location 27
 0 desired 35
 0 io 1
@@ -79,6 +83,8 @@ SOAR_ID 58
 6 operator 34
 6 operator 49
 6 operator 53
+6 operator 60
+6 operator 62
 6 quiescence 41
 6 superstate 0
 6 top-state 0
@@ -135,3 +141,5 @@ SOAR_ID 58
 53 op2 55
 56 op1 57
 56 op2 58
+60 name 59
+62 name 61

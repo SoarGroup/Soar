@@ -4,6 +4,9 @@
 ##
 ###############################################################################
 
+chunk singleton any top-state any
+
+
 ## Elaborate every substate with io pointer.
 
 sp {default*elaborate*state*io

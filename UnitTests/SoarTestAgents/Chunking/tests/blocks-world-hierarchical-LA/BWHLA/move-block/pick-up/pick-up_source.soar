@@ -1,6 +1,0 @@
-source elaborations.soar
-source close-gripper.soar
-source move-gripper-above.soar
-source move-gripper-down.soar
-source move-gripper-up.soar
-source open-gripper.soar

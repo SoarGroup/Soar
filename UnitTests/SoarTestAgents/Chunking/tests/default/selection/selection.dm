@@ -1,4 +1,4 @@
-100
+86
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -85,21 +85,7 @@ SOAR_ID 82
 FLOAT_RANGE 83 -Infinity Infinity
 FLOAT_RANGE 84 -Infinity Infinity
 ENUMERATION 85 1 novalue
-SOAR_ID 86
-SOAR_ID 87
-SOAR_ID 88
-ENUMERATION 89 2 one two
-SOAR_ID 90
-SOAR_ID 91
-STRING 92
-ENUMERATION 93 2 no yes
-ENUMERATION 94 2 one two
-STRING 95
-STRING 96
-STRING 97
-ENUMERATION 98 1 true
-SOAR_ID 99
-142
+128
 0 attribute 61
 0 choices 62
 0 desired 21
@@ -125,7 +111,6 @@ SOAR_ID 99
 1 output-link 3
 4 name 8
 9 choices 26
-9 copy-structure 86
 9 evaluation 12
 9 found-value 15
 9 impasse 25
@@ -229,16 +214,3 @@ SOAR_ID 99
 70 superstate 29
 70 top-state 0
 70 type 71
-86 all-attributes-at-level 89
-86 default-state-copy 93
-86 duplicate-of 91
-86 duplicate-state 90
-86 duplicates 99
-86 superstate-desired 88
-86 superstate-name 92
-86 superstate-problem-space 87
-87 all-attributes-at-level 94
-87 dont-copy 97
-87 dont-copy-anything 98
-87 one-level-attributes 95
-87 two-level-attributes 96

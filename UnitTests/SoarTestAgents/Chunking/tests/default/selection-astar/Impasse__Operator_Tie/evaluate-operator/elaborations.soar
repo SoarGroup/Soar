@@ -8,20 +8,21 @@ sp {evaluate-operator*elaborate*return*visited
    :o-support
    (state <s> ^name evaluate-operator
               ^tried-tied-operator  # Wait until operator applied
-             # ^superstate.operator.evaluation <e>  #JEL?
+              ^superstate.operator.evaluation <e>
               ^top-state.current-location <wp>)
- #  (<wp> ^id <id>)
+   (<wp> ^id <id>)
 -->
- #  (write (crlf) | Add visited during evaluation to state | <s> |: | <id> )
+   (write (crlf) | Add visited during evaluation to state | <s> |: | <id> )
    (<s> ^visited <wp>)
 }
 
 sp {evaluate-operator*elaborate*return*current-location
    :default
+ #  :o-support
    (state <s> ^name evaluate-operator
               ^tried-tied-operator  # Wait until operator applied
-              ^superstate-evaluation <e>  #JEL?
-           ) #  ^top-state.current-location <wp>)
+              ^superstate.operator.evaluation <e>
+              ^top-state.current-location <wp>)
    (<e> -^current-location)
 -->
    (<e> ^current-location <wp>)
@@ -64,12 +65,12 @@ sp {evaluate-operator*elaborate*return*current-location
 sp {evaluate-operator*select
    (state <s> ^name evaluate-operator
               ^quiescence t
-              ^superstate-evaluation.visited <v>
+              ^superstate.operator.evaluation.visited <v>
               ^operator <op1> +)
    (<op1> ^next-waypoint <v>)
- #  (<v> ^id <vid>)
+   (<v> ^id <vid>)
 -->
-#   (write (crlf) |Reject moving to visited waypoint on evaluation: | <s> |: | <vid>)
+ #  (write (crlf) |Reject moving to visited waypoint on evaluation: | <s> |: | <vid>)
    (<s> ^operator <op1> -)
 }
 sp {evaluate-operator*select*local
@@ -78,7 +79,7 @@ sp {evaluate-operator*select*local
               ^visited <v>
               ^operator <op1> +)
    (<op1> ^next-waypoint <v>)
- #  (<v> ^id <vid>)
+   (<v> ^id <vid>)
 -->
  #  (write (crlf) |Reject moving to visited waypoint on state: | <s> |: | <vid>)
    (<s> ^operator <op1> -)

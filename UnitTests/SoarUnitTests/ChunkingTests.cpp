@@ -34,20 +34,6 @@ void ChunkingTests::Constraint_Prop_from_Base_Conds()                 { check_ch
 void ChunkingTests::Constraint_Prop_Simple()                          { check_chunk("Constraint_Prop_Simple", 8, 1); }
 void ChunkingTests::Constraint_Ungrounded()                           { check_chunk("Constraint_Ungrounded", 8, 1); }
 void ChunkingTests::Deep_Copy_Identity_Expansion()                    { check_chunk("Deep_Copy_Identity_Expansion", 3, 4); }
-void ChunkingTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 29); }
-void ChunkingTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 1); }
-void ChunkingTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 20); }
-void ChunkingTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 60, 34); }
-void ChunkingTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 65, 11); }
-void ChunkingTests::Demo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1); }
-void ChunkingTests::Demo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 7); }
-void ChunkingTests::Demo_Graph_Search()                               { check_chunk("Demo_Graph_Search", 20, 7); }
-void ChunkingTests::Demo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 122, 34); }
-void ChunkingTests::Demo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 6); }
-void ChunkingTests::Demo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 23, 10); }
-void ChunkingTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 99, 3); }
-void ChunkingTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 102, 16); }
-void ChunkingTests::Demo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 21, 5); }
 void ChunkingTests::Disjunction_Merge()                               { check_chunk("Disjunction_Merge", 5, 1); }
 void ChunkingTests::Duplicates()                                      { check_chunk("Duplicates", 5, 2); }
 void ChunkingTests::Faux_Operator()                                   { check_chunk("Faux_Operator", 8, 3); }
@@ -78,8 +64,6 @@ void ChunkingTests::Opaque_State_Barrier()                            { check_ch
 void ChunkingTests::Operator_Selection_Knowledge_Ghost_Operator()     { check_chunk("Operator_Selection_Knowledge_Ghost_Operator", 4, 1); }
 void ChunkingTests::Operator_Selection_Knowledge_Mega_Test()          { check_chunk("Operator_Selection_Knowledge", 75, 14); }      // Should be 18.  2 could be because of uncertainty of numeric preferences.  Other 2 could be re-ordering issue.
 void ChunkingTests::Operator_Selection_Knowledge_In_Proposal()        { check_chunk("Operator_Selection_Knowledge_In_Proposal", 7, 2); }
-void ChunkingTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 23); }
-void ChunkingTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19); }
 void ChunkingTests::Promoted_STI()                                    { check_chunk("Promoted_STI", 8, 1); }
 void ChunkingTests::Reorderer_Bad_Conjunction()                       { check_chunk("Reorderer_Bad_Conjunction", 8, 1); }
 void ChunkingTests::Repair_NOR_Temporal_Constraint()                  { check_chunk("Repair_NOR_Temporal_Constraint", 8, 3); }
@@ -103,7 +87,6 @@ void ChunkingTests::SMem_Chunked_Query2()                             { check_ch
 void ChunkingTests::STI_Variablization_Same_Type()                    { check_chunk("STI_Variablization_Same_Type", 8, 1); }
 void ChunkingTests::STI_Variablization()                              { check_chunk("STI_Variablization", 8, 1); }
 void ChunkingTests::STI_with_referents()                              { check_chunk("STI_with_referents", 8, 1); }
-void ChunkingTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, true); } /* Probably re-ordering problems.  The rules learned are huge */
 void ChunkingTests::Superstate_Identity_Opaque()                      { check_chunk("Superstate_Identity_Opaque", 8, 1); }
 void ChunkingTests::Ungrounded_in_BT_Constraint()                     { check_chunk("Ungrounded_in_BT_Constraint", 8, 2); }
 void ChunkingTests::Ungrounded_Mixed()                                { check_chunk("Ungrounded_Mixed", 8, 1); }

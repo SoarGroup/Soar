@@ -1,8 +1,5 @@
-###
-###      Elaborations for the selection space: 
-###
-###      Used for all ^choice multiple impasses (tie and conflict)
 
+### Use selection for all choice multiple, impasses
 
 sp {selection*elaborate*name*selection
    :default
@@ -21,6 +18,13 @@ sp {selection*elaborate*evaluation*value
 -->
    (<e> ^value true)}
 
+sp {selection*elaborate*evaluation*desired
+   :default
+   (state <s> ^superstate.desired <d>
+              ^evaluation <e>)
+-->
+   (<e> ^desired <d>)}
+
 ###
 ###     7.3.3   Computing evaluations
 ###
@@ -33,10 +37,9 @@ sp {selection*elaborate*evaluation*value
 sp {selection*evaluation*expected-values
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^expected-value <v>
          ^desired <d>)
@@ -53,10 +56,9 @@ sp {selection*evaluation*expected-values
 sp {selection*compare*equal-evaluation-indifferent
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>  { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^numeric-value <v>
          ^desired <d>)
@@ -75,11 +77,11 @@ sp {selection*compare*equal-evaluation-indifferent
 sp {selection*compare*higher-evaluation-better
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>
               ^evaluation { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^problem-space <p2>
+         ^desired <d>)
    (<e1> ^superoperator <o1>
          ^numeric-value <v>
          ^desired <d>)
@@ -93,11 +95,11 @@ sp {selection*compare*higher-evaluation-better
 sp {selection*compare*prefer-lower-evaluation
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>
               ^evaluation { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^problem-space <p2>
+         ^desired <d>)
    (<e1> ^superoperator <o1>
          ^numeric-value <v>
          ^desired <d>)
@@ -117,10 +119,9 @@ sp {selection*compare*prefer-lower-evaluation
 sp {selection*compare*same-symbolic-evaluations-are-indifferent
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>  { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^symbolic-value <v>
          ^desired <d>)
@@ -133,11 +134,10 @@ sp {selection*compare*same-symbolic-evaluations-are-indifferent
 sp {selection*compare*same-symbolic-evaluations-are-indifferent*exhaustion-failure
    :default
    (state <s> ^name selection
-              ^quiescence t               # Don't create a chunk from this because of exhaustion
-              ^copy-structure <cs>
+              ^quiescence t
+              ^superstate <ss>
               ^evaluation <e1>  { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^symbolic-value exhaustion-failure
          ^desired <d>)
@@ -150,10 +150,9 @@ sp {selection*compare*same-symbolic-evaluations-are-indifferent*exhaustion-failu
 sp {selection*compare*success-evaluation-better-than-partial-success
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1> { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^symbolic-value success
          ^desired <d>)
@@ -166,10 +165,9 @@ sp {selection*compare*success-evaluation-better-than-partial-success
 sp {selection*compare*partial-failure-evaluation-better-than-failure
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>  { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <x>
          ^symbolic-value partial-failure
          ^desired <d>)
@@ -182,12 +180,11 @@ sp {selection*compare*partial-failure-evaluation-better-than-failure
 sp {selection*select*required-success-evaluation-becomes-required-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <eb>)
    (<e1> ^symbolic-value required-success
-         ^desired <d>
+         ^desired <eb>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> !)}
@@ -195,12 +192,11 @@ sp {selection*select*required-success-evaluation-becomes-required-preference
 sp {selection*select*success-evaluation-becomes-best-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <eb>)
    (<e1> ^symbolic-value << partial-success success >>
-         ^desired <d>
+         ^desired <eb>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> >)}
@@ -208,12 +204,11 @@ sp {selection*select*success-evaluation-becomes-best-preference
 sp {selection*select*failure-evaluation-becomes-reject-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <e>)
    (<e1> ^symbolic-value << lose failure >>
-         ^desired <d>
+         ^desired <e>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> -)}
@@ -222,13 +217,12 @@ sp {selection*select*failure-evaluation-becomes-reject-preference
 sp {selection*select*exhaustion-failure-evaluation-becomes-reject-preference
    :default
    (state <s> ^name selection
-              ^quiescence t               # Don't create a chunk from this because of exhaustio
-              ^copy-structure <cs>
+              ^quiescence t
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <e>)
    (<e1> ^symbolic-value exhaustion-failure
-         ^desired <d>
+         ^desired <e>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> -)}
@@ -236,12 +230,11 @@ sp {selection*select*exhaustion-failure-evaluation-becomes-reject-preference
 sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <e>)
    (<e1> ^symbolic-value prohibit-failure
-         ^desired <d>
+         ^desired <e>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> ~)}
@@ -249,12 +242,11 @@ sp {selection*select*prohibit-failure-evaluation-becomes-prohibit-preference
 sp {selection*select*indifferent-evaluation-becomes-indifferent-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <eb>)
    (<e1> ^symbolic-value indifferent
-         ^desired <d>
+         ^desired <eb>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> =)}
@@ -262,12 +254,11 @@ sp {selection*select*indifferent-evaluation-becomes-indifferent-preference
 sp {selection*select*partial-failure-evaluation-becomes-worst-preference
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>)
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <e>)
    (<e1> ^symbolic-value partial-failure
-         ^desired <d>
+         ^desired <e>
          ^superoperator <o1>)
 -->
    (<ss> ^operator <o1> <)}
@@ -282,9 +273,9 @@ sp {selection*select*partial-failure-evaluation-becomes-worst-preference
 sp {selection*elaborate*state*all-objects-evaluated
    :default
    (state <s> ^name selection)
-- {(<s> ^operator <o> +)
-   (<o> ^name evaluate-operator
-        ^evaluation.value true)}
+  - {(<s> ^operator <o> +)
+     (<o> ^name evaluate-operator
+          ^evaluation.value true)}
 -->
    (<s> ^not-all-operators-evaluated true)}
 
@@ -303,11 +294,10 @@ sp {selection*elaborate*state*found-value-true
 sp {selection*compare*novalue-evaluation-always-worse
    :default
    (state <s> ^name selection
-              ^copy-structure <cs>
+              ^superstate <ss>
               ^evaluation <e1>
               ^evaluation { <> <e1> <e2> })
-   (<cs> ^superstate-desired <d>
-         ^superstate <ss>)
+   (<ss> ^desired <d>)
    (<e1> ^superoperator <o1>
          ^numeric-value novalue
          ^desired <d>)
@@ -317,319 +307,19 @@ sp {selection*compare*novalue-evaluation-always-worse
 -->
    (<ss> ^operator <o2> > <o1>)}
 
-################################################################
-## Copying Data
-## This creates a structure for all data related to copying structures
-##  from the superstate
-
-sp {selection*elaborate*copy-structure
-   :default
-   (state <s> ^name selection
-              ^superstate <ss>)
-   (<ss> ^problem-space <ps>)
-   (<ps> ^name <name>)
--->
-   (<s> ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space <ps>
-         ^superstate-problem-space-name <name>
-         ^superstate <ss>
-         ^duplicate-state <ns>)}
-
-sp {selection*elaborate*copy-structure*no-problem-space
-   :default
-   (state <s> ^name selection
-              ^superstate <ss>)
-   (<ss> -^problem-space)
--->
-   (<s> ^copy-structure <cs>)
-   (<cs> ^all-attributes-at-level one
-         ^superstate <ss>
-         ^duplicate-state <ns>)}
-
-
-## install a copy of the state, when ^default-state-copying and there
-## is an operator tie.
-
-sp {selection*elaborate*state*duplicate-of
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate <ss>)
--->
-   (<cs> ^duplicate-of <ss>)}
-
-sp {selection*elaborate*state*desired
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^superstate.desired <d>)
--->
-   (<cs> ^superstate-desired <d>)}
-
-sp {selection*elaborate*state*name
-   :default
-   (state <s> ^superstate <ss> 
-              ^copy-structure <cs>)
-   (<ss> ^name <name>)
--->
-   (<cs> ^superstate-name <name>)}
-
-sp {selection*elaborate*default-for-default-state-copy-is-yes
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space <p>)
-  -(<p> ^default-state-copy no)
--->
-   (<cs> ^default-state-copy yes)}
-
-sp {selection*elaborate*default-state-copy-from-problem-space
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space.default-state-copy <yes-or-no>)
--->
-   (<cs> ^default-state-copy <yes-or-no>)}
-
-### Default is that all-attributes-at-level are copied
-
-sp {selection*elaborate*state*default-copy-is-all-attributes-at-level-one
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space <p>)
-   (<p> -^all-attributes-at-level two
-        -^one-level-attributes
-        -^two-level-attributes
-        -^dont-copy
-        -^dont-copy-anything)
--->
-   (<cs> ^all-attributes-at-level one)}
-
-### We want ^all-attributes-at-level one to be on the goal, but if someone
-### puts it on the space along with the other copying flags, we should allow
-### that.  So, copy it from the space to the goal.
-
-sp {selection*elaborate*state*copy-all-attributes-at-level-one-from-problem-space
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space.all-attributes-at-level one
-         ^default-state-copy yes)
--->
-   (<cs> ^all-attributes-at-level one)}
-
-### Set up identifier mapping table for state duplication.
-
-sp {selection*elaborate*state*create-duplicates-table
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^default-state-copy yes)
--->
-   (<cs> ^duplicates <d>)}
-
-### Copy one-level-attributes.
-
-sp {selection*elaborate*state*add-one-level-attributes
-   :default
-   (state <s> ^name selection 
-              ^copy-structure <cs>)
-   (<cs> ^duplicate-of.<att> <val>
-         ^superstate-problem-space.one-level-attributes <att>
-         ^default-state-copy yes
-         ^duplicate-state <ds>)
--->
-   (<ds> ^<att> <val>)}
-
-## Copy all attributes, when ^all-attributes-at-level one.
-
-sp {selection*elaborate*state*add-all-attributes-at-level-one
-   :default
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space <p>
-         ^default-state-copy yes
-         ^all-attributes-at-level one
-         ^duplicate-of <ss>
-         ^duplicate-state <ds>)
-   (<p> -^dont-copy-anything
-        -^dont-copy <att>)
-   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
-            <> impasse <> attribute <> choices <> quiescence
-            <> operator <> superstate <> type <> name <> look-ahead-operator
-            <> epmem <> reward-link <> smem <> io <> svs
-            <att> } <val>)
--->
-   (<ds> ^<att> <val>)}
-
-### If we copied a one-level-attribute, and it later turned
-### out that its value happened to be something that was pointed to by a
-### two-level-attribute, change its value to be the copied object.
-
-sp {selection*elaborate*state*change-one-level-attribute-to-duplicate
-   :default
-   :o-support
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^duplicate-state <ds>
-         ^superstate-problem-space.one-level-attributes <att>
-         ^duplicates <dup>
-         ^default-state-copy yes
-         ^duplicate-of.<att> <id>)
-   (<dup> ^dup-id <did>)
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value <new-id>)
--->
-   (<ds> ^<att> <id> -
-          ^<att> <new-id>)}
-
-### Fixes, when all-attributes-at-level one.
-
-sp {selection*elaborate*state*change-all-attributes-at-level-one-to-duplicate
-   :default
-   :o-support
-   (state <s> ^name selection
-              ^copy-structure <cs>)
-   (<cs> ^duplicate-state <ds>
-        -^superstate-problem-space.dont-copy <att>
-         ^default-state-copy yes
-         ^all-attributes-at-level one
-         ^duplicates <dup>
-         ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
-   (<dup> ^dup-id <did>)
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value <new-id>)
--->
-   (<ds> ^<att> <id> -
-          ^<att> <new-id>)}
-
-### Create new ids for two-level-attributes.
-###  Used in selection and evaluate-operator
-
-sp {selection*elaborate*state*duplicate-id-for-attribute
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space.two-level-attributes <att>
-         ^duplicates <dup>
-         ^default-state-copy yes
-         ^duplicate-of.<att> <id>)
--->   
-   (<dup> ^dup-id <did>)  #JEL 12/1/2016
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value <new-id>)}   
-
-### Create new ids for all attributes, when ^all-attributes-at-level two.
-
-sp {selection*elaborate*state*duplicate-id-for-all-attributes
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^superstate-problem-space <p>
-         ^duplicates <dup>
-         ^default-state-copy yes
-         ^duplicate-of <ss>)
-   (<p> -^dont-copy-anything
-        -^dont-copy <att>
-         ^all-attributes-at-level two
-        -^one-level-attributes <att>)
-   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
-            <> impasse <> attribute <> choices <> quiescence
-            <> operator <> superstate
-            <att> } <id>)
--->
-   (<dup> ^dup-id <did>)  #JEL 12/1/2016
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value <new-id>)}   
-
-### Create a copy of the old object on the new link.  First copy
-### augmentations that don't point to objects that have been
-### duplicated.
-
-      # <> <att> might be bogus in general because it 
-      # eliminates recursive structures but without it will get multiple    
-      # copies as in ^top-state 
-
-output warnings off
-sp {selection-evaluate-operator*elaborate*add-attribute-to-duplicate
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^duplicates.dup-id <did>
-        -^superstate-problem-space.no-local-negations <nln>
-        -^superstate-problem-space.dont-copy <sub-att>
-         ^default-state-copy yes)
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value { <=> <d> <new-id> })
-  -(<d> ^dup-id.original-value ^<sub-val>)
-   (<id> ^ { <> tried-tied-operator <sub-att> <> <att> } <sub-val>)
--->
-   (<new-id> ^<sub-att> <sub-val>)}
-
-sp {selection-evaluate-operator*elaborate*add-attribute-to-duplicate*nln
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^duplicates.dup-id <did>
-         ^superstate-problem-space.no-local-negations <nln>
-         ^default-state-copy yes)
-   (<did> ^original-value <id>
-          ^attribute <att>
-          ^new-value { <=> <d> <new-id> })
-   (<id> ^ { <> tried-tied-operator <sub-att> <> <att> } <sub-val>)  
--->
-   (<new-id> ^<sub-att> <sub-val>)}
-
-output warnings on
-
-### Next copy augmentations that point to duplicated objects:                       
-output warnings off
-sp {selection-evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^duplicates.dup-id <did1> <did2>
-         ^default-state-copy yes)
-   (<did1> ^original-value <id>
-           ^new-value { <=> <d> <new-id> })
-   (<did2> ^original-value <sub-val>
-           ^new-value <new-val>)
-   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
--->
-   (<new-id> ^<sub-att> <new-val>)}                    
-output warnings on
-
-### Added ^two-level-attributes <att>.  Previously, it
-### would copy any attribute that happened to point to the same value as
-### one of the two-level-attributes.
-sp {selection-evaluate-operator*elaborate*state*add-duplicate-to-state
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^duplicate-state <ds>
-         ^superstate-problem-space.two-level-attributes <att>
-         ^duplicates.dup-id <did>
-         ^default-state-copy yes
-         ^duplicate-of.<att> <id>)
-   (<did> ^original-value <id> 
-          ^new-value <new-id>
-          ^attribute <att>)
--->
-   (<ds> ^<att> <new-id>)}
-
-### moves the new links to the state when ^all-atts two.
-sp {selection*elaborate*state*add-duplicates-for-all-attributes
-   :default
-   (state <s> ^copy-structure <cs>)
-   (<cs> ^duplicate-state <ds>
-         ^superstate-problem-space <p>
-         ^duplicates.dup-id <did>
-         ^default-state-copy yes
-         ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
-   (<p> ^all-attributes-at-level two
-     - ^dont-copy-anything
-     - ^dont-copy <att>
-     - ^one-level-attributes <att>)
-   (<did> ^original-value <id> 
-          ^new-value <new-id>
-          ^attribute <att>)
--->
-   (<ds> ^<att> <new-id>)}
+### Print the evaluation of any operator that has a name (which doesn't
+### get states).
+#
+#sp {monitor*operator*evaluation
+#   :default
+#   (state <s> ^top-state <ts>
+#              ^operator <o>)
+#   (<o> ^name evaluate-operator
+#        ^superoperator <obj>
+#        ^evaluation. << numeric-value symbolic-value >> <n>)
+#   (<obj> ^name <name>)
+#   (<ts> ^superstate nil
+#        -^verbose false)
+#-->
+##   (write (crlf) |  Evaluation of | <obj> | (|
+#   <name> |) is | <n>)}

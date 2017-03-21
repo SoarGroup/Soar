@@ -15,4 +15,6 @@ VERSION 4
 12	10	HLIOPERATOR Impasse__State_No-Change Impasse__State_No-Change.soar Impasse__State_No-Change 43 13
 13	12	FOPERATOR elaborations elaborations.soar 14
 14	10	OPERATOR task-operator task-operator.soar 15
+15	5	OPERATOR remove-stale-estimated-cost remove-stale-estimated-cost.soar 16
+16	5	OPERATOR remove-stale-path-cost remove-stale-path-cost.soar 17
 END

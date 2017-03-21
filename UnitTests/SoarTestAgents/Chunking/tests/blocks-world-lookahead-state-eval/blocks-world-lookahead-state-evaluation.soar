@@ -1,3 +1,0 @@
-pushd BWLASE
-source blocks-world-lookahead-state-evaluation_source.soar
-popd

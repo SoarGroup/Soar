@@ -1,3 +1,0 @@
-pushd blocks-world-lookahead-state-eval
-source blocks-world-lookahead-state-evaluation.soar
-popd

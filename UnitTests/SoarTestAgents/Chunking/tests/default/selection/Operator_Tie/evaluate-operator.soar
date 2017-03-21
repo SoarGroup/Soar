@@ -42,7 +42,7 @@ sp {selection*apply*state*evaluation
    (<e> ^superoperator <ob>)}
 
 sp {selection*elaborate*evaluate-operator*evaluation
-   :default
+  # :default
    :o-support
    (state <s> ^name selection
               ^operator <o>
@@ -53,28 +53,20 @@ sp {selection*elaborate*evaluate-operator*evaluation
 -->
    (<o> ^evaluation <e>)}
 
-sp {selection*elaborate*evaluation*desired
-   :default
-   (state <s> ^copy-structure.superstate-desired <d>
-              ^evaluation <e>)
--->
-   (<e> ^desired <d>)}
-
 sp {selection*elaborate*evaluate-operator*superproblem-space
    :default
    (state <s> ^name selection
               ^operator <o>
-              ^copy-structure.superstate-problem-space-name <p2>)
+              ^superstate.problem-space <p2>)
    (<o> ^name evaluate-operator)
 -->
-   (<o> ^superstate-problem-space-name <p2>)}
+   (<o> ^superproblem-space <p2>)}
 
 sp {selection*elaborate*evaluate-operator*superstate
    :default
    (state <s> ^name selection
               ^operator <o>
-              ^copy-structure.superstate <ss>)
+              ^superstate <ss>)
    (<o> ^name evaluate-operator)
 -->
    (<o> ^superstate <ss>)}
-

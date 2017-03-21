@@ -1,3 +1,0 @@
-pushd BWHLA
-source blocks-world-hierachical-lookahead_source.soar
-popd

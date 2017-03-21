@@ -23,6 +23,7 @@
 #include "AliasTest.hpp"
 #include "BasicTests.hpp"
 #include "ChunkingTests.hpp"
+#include "ChunkingDemoTests.hpp"
 #include "ElementXMLTest.hpp"
 #include "EpMemFunctionalTests.hpp"
 #include "FullTests.hpp"
@@ -164,7 +165,8 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(AgentTest);
 	TEST_DECLARATION(AliasTest);
 	TEST_DECLARATION(BasicTests);
-	TEST_DECLARATION(ChunkingTests);
+	TEST_DECLARATION(ChunkingDemoTests);
+    TEST_DECLARATION(ChunkingTests);
 	TEST_DECLARATION(EpMemFunctionalTests);
 	TEST_DECLARATION(ElementXMLTest);
 	TEST_DECLARATION(FullTests);

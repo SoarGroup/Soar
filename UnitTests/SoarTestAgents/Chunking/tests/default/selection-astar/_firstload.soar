@@ -32,4 +32,43 @@
 ##
 ## Modify 3/1/2011: Add compare evaluations to selection space to avoid some race conditions with computing final-cost and total-estimated-cost
 
-chunk add-osk
+chunk singleton any visited any
+chunk singleton any path-cost any
+chunk singleton any current-location any
+chunk singleton any estimated-cost any
+chunk singleton any updated-estimate any
+chunk singleton any total-estimated-cost any
+chunk singleton any best-total-estimate any
+chunk singleton any final-cost any
+chunk singleton any compared any
+chunk singleton any op1 any
+chunk singleton any op2 any
+
+multi-attributes evaluation 5
+
+chunk only
+srand 1
+
+#sp {apply*compute-best-total-estimate*pass-back-super
+#  # :interrupt
+#   :default
+#   (state <s> ^operator <op>
+#            # ^superstate.superstate.operator.evaluation <se>
+#              ^superstate.copy-structure.superstate-evaluation <se>
+#              ^evaluation <e>)
+#   (<op> ^name compute-best-total-estimate)
+#   (<e> ^total-estimated-cost <tes>        
+#        ^estimated-cost-count <ecc>
+#        ^superoperator <so>)
+#  -(<s> ^evaluation.total-estimated-cost < <tes>)
+#   (<se> ^estimated-cost {< <tes> <sec> }
+#         ^estimated-cost-count <ecc>)
+#-->
+# ##(write (crlf) |!!!Updated superestimated cost. Replace | <sec> | with | <tes>)
+#   (<se> ^estimated-cost <sec> -
+#                         <tes>
+#         ^estimated-cost-count <ecc> -
+#                               (+ 1 <ecc>)
+#         ^updated-estimate true)
+#}
+

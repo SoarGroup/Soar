@@ -1,3 +1,0 @@
-pushd blocks-world-lookahead
-source blocks-world-lookahead_source.soar
-popd
