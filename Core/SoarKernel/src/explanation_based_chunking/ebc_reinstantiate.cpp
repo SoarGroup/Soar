@@ -17,7 +17,8 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest, bool pIsInstanti
             reinstantiate_test(static_cast<test>(c->first), pIsInstantiationCond);
         }
     }
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
+    //else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->data.referent->var->instantiated_sym)
     {
         Symbol* oldSym = pTest->data.referent;
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
