@@ -29,6 +29,7 @@ void ChunkingDemoTests::Demo_ToH_Recursive()                              { chec
 void ChunkingDemoTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 99, 3); }
 void ChunkingDemoTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 102, 16); }
 void ChunkingDemoTests::Demo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 21, 5); }
+void ChunkingDemoTests::Elio_Agent()                                      { check_chunk("Elio_Agent", 795, 135); }
 void ChunkingDemoTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 23); }
 void ChunkingDemoTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19); }
 void ChunkingDemoTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, true); } /* Probably re-ordering problems.  The rules learned are huge */

@@ -1,0 +1,1925 @@
+sp {answer*apply*props*symbol*success*OpNoChange*t6565-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 index2-min-mineral ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 index2-min-mineral)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t6417-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 subtract ^1 index2-min-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index2-min-mineral)
+    (<r1> ^slot1 subtract)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t6372-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P30175 ^passed <c2>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P30175 ^action _P18 ^action _P30)
+    (<b1> ^action <l4> ^action <l3>)
+    (<l4> ^lti-name _P30)
+    (<l3> ^lti-name _P18)
+    -->
+    (<e1> ^evaluated __P30175 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t6299-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P18 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P18 + ^sym2 _P30 + ^newname __P30175 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t6236-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 mineral ^1 index2-min-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index2-min-mineral)
+    (<r1> ^slot1 mineral)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t6087-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 nil ^1 index2-min-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index2-min-mineral)
+    (<r1> ^slot1 nil)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5927-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 index1-div-marine ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 index1-div-marine)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5779-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 div ^1 index1-div-marine)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index1-div-marine)
+    (<r1> ^slot1 div)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5630-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 index1 ^1 index1-div-marine)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index1-div-marine)
+    (<r1> ^slot1 index1)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5585-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P57159 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P57159 ^action _P57 ^action _P55)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P55 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P57 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P57159 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t5584-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P57)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r1> ^Q <q2> ^Q <q1>)
+    (<r1> ^slot4 <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P57)) + ^sub2 _U85 +
+           ^sub1 _U84 + ^attr1 slot4 + ^attr2 slot4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P57 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 394)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t5569-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P55)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r1> ^Q <q2> ^Q <q1>)
+    (<r1> ^slot4 <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P55)) + ^sub2 _U79 +
+           ^sub1 _U78 + ^attr1 slot2 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P55 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 386)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5542-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P56155 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P56155 ^action _P56 ^action _P54)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P54 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P56 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P56155 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t5541-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P56)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r2> ^RT <r1> ^Q <q1>)
+    (<r2> ^slot4 <w2>)
+    (<r1> ^slot4 <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P56)) + ^sub2 _U82 +
+           ^sub1 _U81 + ^attr1 slot3 + ^attr2 slot3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P56 + ^id2 <w2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 390)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t5526-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P54)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r2> ^RT <r1> ^Q <q1>)
+    (<r2> ^slot4 <w2>)
+    (<r1> ^slot4 <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P54)) + ^sub2 _U76 +
+           ^sub1 _U75 + ^attr1 slot1 + ^attr2 slot1 + ^prop-type add +
+           ^prop-type action + ^lti-name _P54 + ^id2 <w2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 382)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t5472-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P56 ^action _P54)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P54 + ^sym2 _P56 + ^newname __P56155 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t5444-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P57 ^action _P55)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P55 + ^sym2 _P57 + ^newname __P57159 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5369-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 mineral ^1 index1-div-marine)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index1-div-marine)
+    (<r1> ^slot1 mineral)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5220-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 nil ^1 index1-div-marine)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask index1-div-marine)
+    (<r1> ^slot1 nil)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t5060-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 mean-toxin ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 mean-toxin)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4912-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 div ^1 mean-toxin)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask mean-toxin)
+    (<r1> ^slot1 div)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4867-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P40143 ^passed <c2>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P40143 ^action _P40 ^action _P30)
+    (<b1> ^action <l4> ^action <l3>)
+    (<l4> ^lti-name _P40)
+    (<l3> ^lti-name _P30)
+    -->
+    (<e1> ^evaluated __P40143 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t4807-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P40 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P30 + ^sym2 _P40 + ^newname __P40143 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4735-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 add ^1 mean-toxin)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask mean-toxin)
+    (<r1> ^slot1 add)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4585-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2813 ^passed <c2>)
+    (<l2> ^3 toxinmin ^1 mean-toxin)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2813 ^condition _P28
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel toxinmin)
+    (<g1> ^Gtask mean-toxin)
+    -->
+    (<e1> ^evaluated __P2813 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4446-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P259 ^passed <c2>)
+    (<l2> ^2 toxinmax ^1 mean-toxin)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P259 ^condition _P25
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel toxinmax)
+    (<g1> ^Gtask mean-toxin)
+    -->
+    (<e1> ^evaluated __P259 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4332-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P227 ^passed <c2>)
+    (<l2> ^1 mean-toxin)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P227 ^condition _P22
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> -^Vlabel <val>)
+    (<g1> ^Gtask mean-toxin)
+    -->
+    (<e1> ^evaluated __P227 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4284-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P17134 ^passed <c2>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P17134 ^action _P17 ^action _P14)
+    (<b1> ^action <l4> ^action <l3>)
+    (<l4> ^lti-name _P14)
+    (<l3> ^lti-name _P17)
+    -->
+    (<e1> ^evaluated __P17134 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t4105-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P17 ^action _P14)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P14 + ^sym2 _P17 + ^newname __P17134 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t4017-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 part-plus-mineral ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 part-plus-mineral)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3972-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P39114 ^passed <c2>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P39114 ^action _P15 ^action _P39)
+    (<b1> ^action <l4> ^action <l3>)
+    (<l4> ^lti-name _P39)
+    (<l3> ^lti-name _P15)
+    -->
+    (<e1> ^evaluated __P39114 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3959-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P52113 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P52113 ^action _P52 ^action _P50)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P50 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P52 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P52113 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3958-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P50)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P50)) + ^id2 <l1> +
+           ^sub1 _U69 + ^attr1 slot1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P50 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 445)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3950-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P52)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P52)) + ^id2 <l1> +
+           ^sub1 _U72 + ^attr1 slot4 + ^attr2 3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P52 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 450)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3842-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P52 ^action _P50)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P50 + ^sym2 _P52 + ^newname __P52113 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3832-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P15 ^action _P39)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P15 + ^sym2 _P39 + ^newname __P39114 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3798-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o2>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P5104 ^passed <c2>)
+    (<l2> ^1 elio-part-plus-mineral-finish)
+    (<o2> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P5104 ^condition _P49
+          ^condition |_P5|)
+    (<s1> ^NW <n1> ^operator <o1>)
+    (<n1> -^slot1 <val>)
+    (<o1> ^name elio-part-plus-mineral-finish)
+    -->
+    (<e1> ^evaluated __P5104 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3761-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P49 ^condition |_P5|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 _P49 + ^sym2 |_P5| + ^newname __P5104 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3713-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 add ^1 part-plus-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask part-plus-mineral)
+    (<r1> ^slot1 add)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3668-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P47100 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P47100 ^action _P47 ^action _P18)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P47 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P18)
+    -->
+    (<e1> ^evaluated __P47100 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3667-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P47)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r2> ^RT <r1> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P47)) + ^sub2 _U65 +
+           ^sub1 _U64 + ^attr1 slot2 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P47 + ^id2 <r2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 460)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3641-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P48103 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P48103 ^action _P48 ^action _P30)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P48 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P30)
+    -->
+    (<e1> ^evaluated __P48103 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3640-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P48)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^Q <q2> ^Q <q1> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P48)) + ^sub2 _U67 +
+           ^sub1 _U66 + ^attr1 slot3 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P48 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 463)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3544-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P47 ^action _P18)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P18 + ^sym2 _P47 + ^newname __P47100 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3522-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P48 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P30 + ^sym2 _P48 + ^newname __P48103 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3488-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o2>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P593 ^passed <c2>)
+    (<l2> ^1 elio-part-plus-mineral-add)
+    (<o2> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P593 ^condition _P46
+          ^condition |_P5|)
+    (<s1> ^Q <q1> ^operator <o1>)
+    (<q1> -^slot1 <val>)
+    (<o1> ^name elio-part-plus-mineral-add)
+    -->
+    (<e1> ^evaluated __P593 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3451-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P46 ^condition |_P5|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 _P46 + ^sym2 |_P5| + ^newname __P593 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3403-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 particulate ^1 part-plus-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask part-plus-mineral)
+    (<r1> ^slot1 particulate)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3358-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P4489 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P4489 ^action _P44 ^action _P43)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P44 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P43 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P4489 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3357-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P44)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g1> ^Q <q2> ^Q <q1>)
+    (<g1> ^Gtop <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P44)) + ^sub2 _U58 +
+           ^sub1 _U57 + ^attr1 slot3 + ^attr2 slot3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P44 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 480)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3342-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P43)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g1> ^Q <q2> ^Q <q1>)
+    (<g1> ^Gtop <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P43)) + ^sub2 _U55 +
+           ^sub1 _U54 + ^attr1 slot2 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P43 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 476)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3315-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P4592 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P4592 ^action _P45 ^action _P42)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P42 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P45 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P4592 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3314-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P42)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g2> ^G <g1> ^Q <q1>)
+    (<g2> ^Gtop <w2>)
+    (<g1> ^Gtop <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P42)) + ^sub2 _U52 +
+           ^sub1 _U51 + ^attr1 slot1 + ^attr2 slot1 + ^prop-type add +
+           ^prop-type action + ^lti-name _P42 + ^id2 <w2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 472)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3299-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P45)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g2> ^G <g1> ^Q <q1>)
+    (<g2> ^Gtop <w2>)
+    (<g1> ^Gtop <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P45)) + ^sub2 _U61 +
+           ^sub1 _U60 + ^attr1 slot4 + ^attr2 slot4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P45 + ^id2 <w2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 484)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3239-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P44 ^action _P43)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P43 + ^sym2 _P44 + ^newname __P4489 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3217-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P45 ^action _P42)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P42 + ^sym2 _P45 + ^newname __P4592 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3142-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 nil ^1 part-plus-mineral)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask part-plus-mineral)
+    (<r1> ^slot1 nil)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3097-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1885 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1885 ^action _P18 ^action _P11)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P18 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P11)
+    -->
+    (<e1> ^evaluated __P1885 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t3096-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P18)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P18)) + ^id2 <l1> +
+           ^sub1 _U19 + ^attr1 clear-rt + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P18 + ^id1 <g1> +)
+    (link-stm-to-ltm <l3> 661)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t3076-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1286 ^passed <c2>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1286 ^action _P12 ^action _P10)
+    (<b1> ^action <l4> ^action <l3>)
+    (<l4> ^lti-name _P12)
+    (<l3> ^lti-name _P10)
+    -->
+    (<e1> ^evaluated __P1286 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t3005-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P18 ^action _P11)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P11 + ^sym2 _P18 + ^newname __P1885 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t2995-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P12 ^action _P10)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P10 + ^sym2 _P12 + ^newname __P1286 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2932-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 greater-algae ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 greater-algae)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2784-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 greater-of ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask greater-algae)
+    (<r1> ^slot1 greater-of)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2613-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2813 ^passed <c2>)
+    (<l2> ^3 solid ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2813 ^condition _P28
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel solid)
+    (<g1> ^Gtask greater-algae)
+    -->
+    (<e1> ^evaluated __P2813 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2540-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c2> })
+    (<e1> -^evaluated ___P357175 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name ___P357175 ^action _P40
+          ^action __P3571)
+    (<b1> ^action <l2> ^action <l5> ^action <l4>)
+    (<l2> ^lti-name _P40 ^status success ^literalize <c1>)
+    (<l5> ^lti-name _P35 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P30)
+    -->
+    (<e1> ^evaluated ___P357175 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answerx2*apply*props*symbol*add*OpNoChange*t2539-2
+    (state <s1> ^props-instructions <l1> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<l1> ^prop-type composite ^action __P3571)
+    (<o1> ^symbol <l1> ^name instruction)
+    (<s2> ^V <v2> ^V <v1> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P35)) + ^sub2 _U41 +
+           ^sub1 _U40 + ^attr1 slot2 + ^attr2 Vvalue + ^prop-type add +
+           ^prop-type action + ^lti-name _P35 + ^id2 <v2> + ^id1 <q1> +)
+}
+
+sp {answerx2*apply*props*symbol*add*OpNoChange*t2539-1
+    (state <s1> ^props-instructions <l1> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<l1> ^prop-type composite ^action __P3571)
+    (<o1> ^symbol <l1> ^name instruction)
+    (<s2> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P30)) + ^id2 <l2> +
+           ^sub1 _U33 + ^attr1 slot1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P30 + ^id1 <q1> +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t2538-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P40)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P40)) + ^id2 <l1> +
+           ^sub1 _U49 + ^attr1 slot3 + ^attr2 3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P40 + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 520)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t2510-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P40 ^action __P3571)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P40 + ^sym2 __P3571 + ^newname ___P357175 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2444-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 nil ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask greater-algae)
+    (<r1> ^slot1 nil)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2259-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated ___P281372 ^passed <c3>)
+    (<l2> ^2 nil ^3 algae ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name ___P281372 ^condition _P41
+          ^condition __P2813)
+    (<s1> ^V <v1> ^G <g1> ^RT <r1>)
+    (<v1> ^Vlabel algae)
+    (<g1> ^Gtask greater-algae)
+    (<r1> ^slot4 { <> nil <c2> })
+    -->
+    (<e1> ^evaluated ___P281372 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t2229-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P41 ^condition __P2813)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 _P41 + ^sym2 __P2813 + ^newname ___P281372 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2202-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P3571 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P3571 ^action _P35 ^action _P30)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P35 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P30)
+    -->
+    (<e1> ^evaluated __P3571 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t2201-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P35)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^V <v2> ^V <v1> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P35)) + ^sub2 _U41 +
+           ^sub1 _U40 + ^attr1 slot2 + ^attr2 Vvalue + ^prop-type add +
+           ^prop-type action + ^lti-name _P35 + ^id2 <v2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 548)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t2146-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P35 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P30 + ^sym2 _P35 + ^newname __P3571 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t2083-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2813 ^passed <c2>)
+    (<l2> ^3 algae ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2813 ^condition _P28
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel algae)
+    (<g1> ^Gtask greater-algae)
+    -->
+    (<e1> ^evaluated __P2813 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1939-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P227 ^passed <c2>)
+    (<l2> ^1 greater-algae)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P227 ^condition _P22
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> -^Vlabel <val>)
+    (<g1> ^Gtask greater-algae)
+    -->
+    (<e1> ^evaluated __P227 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1894-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1467 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1467 ^action _P14 ^action _P12)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P12 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P14 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P1467 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1893-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P14)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P14)) + ^id2 <l1> +
+           ^sub1 _U15 + ^attr1 slot2 + ^attr2 4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P14 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 653)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1885-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P12)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P12)) + ^id2 <l1> +
+           ^sub1 _U13 + ^attr1 slot1 + ^attr2 3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P12 + ^id1 <w1> +)
+    (link-stm-to-ltm <l3> 649)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1865-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1757 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1757 ^action _P17 ^action _P11)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P11 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P17 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P1757 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1864-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P11)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^AC <a1> ^WM <w2> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P11)) + ^sub2 _U12 +
+           ^sub1 _U11 + ^attr1 ACout2 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P11 + ^id2 <w2> + ^id1 <a1> +)
+    (link-stm-to-ltm <l3> 646)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1850-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P17)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P17)) + ^id2 <l1> +
+           ^sub1 _U18 + ^attr1 Gtask + ^attr2 5 + ^prop-type add +
+           ^prop-type action + ^lti-name _P17 + ^id1 <g1> +)
+    (link-stm-to-ltm <l3> 659)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1830-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1565 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1565 ^action _P15 ^action _P10)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P15 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P10)
+    -->
+    (<e1> ^evaluated __P1565 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1829-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P15)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P15)) + ^id2 <s2> +
+           ^sub1 _U16 + ^attr1 slot3 + ^attr2 WM + ^prop-type add +
+           ^prop-type action + ^lti-name _P15 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 655)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1809-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P1669 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P1669 ^action _P16 ^action _P13)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P13 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P16 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P1669 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1808-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P16)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P16)) + ^id2 <l1> +
+           ^sub1 _U17 + ^attr1 slot4 + ^attr2 4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P16 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 657)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1800-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P13)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^NW <n1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P13)) + ^id2 <l1> +
+           ^sub1 _U14 + ^attr1 slot1 + ^attr2 4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P13 + ^id1 <n1> +)
+    (link-stm-to-ltm <l3> 651)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1595-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P17 ^action _P11)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P11 + ^sym2 _P17 + ^newname __P1757 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1543-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P15 ^action _P10)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P10 + ^sym2 _P15 + ^newname __P1565 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1527-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P14 ^action _P12)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P12 + ^sym2 _P14 + ^newname __P1467 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1511-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P16 ^action _P13)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P13 + ^sym2 _P16 + ^newname __P1669 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1406-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P933 ^passed <c2>)
+    (<l2> ^2 solid-lime-diff ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P933 ^condition |_P9|
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^WM <w1>)
+    (<g1> ^Gtask procedure-a)
+    (<w1> ^slot1 solid-lime-diff)
+    -->
+    (<e1> ^evaluated __P933 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1369-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition |_P9| ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 |_P9| + ^newname __P933 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1345-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P3932 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P3932 ^action _P39 ^action _P37)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P39 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P37 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P3932 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1344-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P37)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P37)) + ^id2 <l1> +
+           ^sub1 _U44 + ^attr1 slot1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P37 + ^id1 <w1> +)
+    (link-stm-to-ltm <l3> 534)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1336-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P39)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g3> ^G <g2> ^G <g1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P39)) + ^sub2 _U48 +
+           ^sub1 _U47 + ^attr1 Gtask + ^attr2 Gparent + ^prop-type add +
+           ^prop-type action + ^lti-name _P39 + ^id2 <g3> + ^id1 <g2> +)
+    (link-stm-to-ltm <l3> 539)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1263-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P39 ^action _P37)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P37 + ^sym2 _P39 + ^newname __P3932 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1191-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2729 ^passed <c2>)
+    (<l2> ^2 mult ^1 solid-lime-diff)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2729 ^condition _P27
+          ^condition |_P2|)
+    (<s1> ^G <g1> ^RT <r1>)
+    (<g1> ^Gtask solid-lime-diff)
+    (<r1> ^slot1 mult)
+    -->
+    (<e1> ^evaluated __P2729 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1154-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P27 ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 _P27 + ^newname __P2729 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t1137-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P3628 ^passed <c3>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P3628 ^action _P36 ^action _P30)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P36 ^status success ^literalize <c2>)
+    (<l4> ^lti-name _P30)
+    -->
+    (<e1> ^evaluated __P3628 + ^passed <c3> - ^passed (+ 1 <c3>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t1136-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P36)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^RT <r2> ^RT <r1> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P36)) + ^sub2 _U43 +
+           ^sub1 _U42 + ^attr1 slot3 + ^attr2 slot4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P36 + ^id2 <r2> + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 551)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t1063-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P36 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P30 + ^sym2 _P36 + ^newname __P3628 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t991-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2813 ^passed <c2>)
+    (<l2> ^3 solid ^1 solid-lime-diff)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2813 ^condition _P28
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel solid)
+    (<g1> ^Gtask solid-lime-diff)
+    -->
+    (<e1> ^evaluated __P2813 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t912-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P3423 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P3423 ^action _P34 ^action _P31)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P31 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P34 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P3423 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t911-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P31)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^Q <q2> ^Q <q1> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P31)) + ^sub2 _U35 +
+           ^sub1 _U34 + ^attr1 slot2 + ^attr2 slot2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P31 + ^id1 <q2> + ^id2 <w1> +)
+    (link-stm-to-ltm <l3> 562)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t897-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P34)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^AC <a1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P34)) + ^id2 <l1> +
+           ^sub1 _U39 + ^attr1 ACout2 + ^attr2 4 + ^prop-type add +
+           ^prop-type action + ^lti-name _P34 + ^id1 <a1> +)
+    (link-stm-to-ltm <l3> 570)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t877-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P3221 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P3221 ^action _P32 ^action _P30)
+    (<b1> ^action <l2> ^action <l4>)
+    (<l2> ^lti-name _P32 ^status success ^literalize <c3>)
+    (<l4> ^lti-name _P30 ^status success ^literalize <c2>)
+    -->
+    (<e1> ^evaluated __P3221 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t876-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P32)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^V <v1> ^Q <q2> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P32)) + ^sub2 _U37 +
+           ^sub1 _U36 + ^attr1 slot3 + ^attr2 Vvalue + ^prop-type add +
+           ^prop-type action + ^lti-name _P32 + ^id1 <q2> + ^id2 <v1> +)
+    (link-stm-to-ltm <l3> 565)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t862-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P30)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^Q <q1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P30)) + ^id2 <l1> +
+           ^sub1 _U33 + ^attr1 slot1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P30 + ^id1 <q1> +)
+    (link-stm-to-ltm <l3> 560)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t766-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P32 ^action _P30)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P30 + ^sym2 _P32 + ^newname __P3221 +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t750-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P34 ^action _P31)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P31 + ^sym2 _P34 + ^newname __P3423 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t671-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P2813 ^passed <c2>)
+    (<l2> ^3 lime2 ^1 solid-lime-diff)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P2813 ^condition _P28
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel lime2)
+    (<g1> ^Gtask solid-lime-diff)
+    -->
+    (<e1> ^evaluated __P2813 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t601-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P28 ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 _P28 + ^newname __P2813 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t575-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c2> })
+    (<e1> -^evaluated ___P24810 ^passed <c5>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name ___P24810 ^action _P26 ^action __P248)
+    (<b1> ^action <l2> ^action <l5> ^action <l4>)
+    (<l2> ^lti-name _P26 ^status success ^literalize <c1>)
+    (<l5> ^lti-name _P24 ^status success ^literalize <c4>)
+    (<l4> ^lti-name _P10 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated ___P24810 + ^passed <c5> - ^passed (+ 1 <c5>) +)
+    (<l1> ^status success +)
+}
+
+sp {answerx2*apply*props*symbol*add*OpNoChange*t574-2
+    (state <s1> ^props-instructions <l1> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<l1> ^prop-type composite ^action __P248)
+    (<o1> ^symbol <l1> ^name instruction)
+    (<s2> ^AC <a1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P24)) + ^id2 <l2> +
+           ^sub1 _U26 + ^attr1 ACout2 + ^attr2 3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P24 + ^id1 <a1> +)
+}
+
+sp {answerx2*apply*props*symbol*add*OpNoChange*t574-1
+    (state <s1> ^props-instructions <l1> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l2>
+          ^name { << props-eval instruction >> <c1> })
+    (<l1> ^prop-type composite ^action __P248)
+    (<o1> ^symbol <l1> ^name instruction)
+    (<s2> ^AC <a1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P10)) + ^id2 <l2> +
+           ^sub1 _U10 + ^attr1 ACout1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P10 + ^id1 <a1> +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t573-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P26)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^V <v1> ^WM <w2> ^WM <w1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P26)) + ^sub2 _U29 +
+           ^sub1 _U28 + ^attr1 slot2 + ^attr2 Vvalue + ^prop-type add +
+           ^prop-type action + ^lti-name _P26 + ^id1 <w2> + ^id2 <v1> +)
+    (link-stm-to-ltm <l3> 584)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t539-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P26 ^action __P248)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P26 + ^sym2 __P248 + ^newname ___P24810 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t466-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P259 ^passed <c2>)
+    (<l2> ^2 lime4 ^1 solid-lime-diff)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P259 ^condition _P25
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> ^Vlabel lime4)
+    (<g1> ^Gtask solid-lime-diff)
+    -->
+    (<e1> ^evaluated __P259 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t429-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P25 ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 _P25 + ^newname __P259 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t405-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P248 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P248 ^action _P24 ^action _P10)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name _P24 ^status success ^literalize <c2>)
+    (<l2> ^lti-name _P10 ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P248 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t404-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P10)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^AC <a1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P10)) + ^id2 <l1> +
+           ^sub1 _U10 + ^attr1 ACout1 + ^attr2 2 + ^prop-type add +
+           ^prop-type action + ^lti-name _P10 + ^id1 <a1> +)
+    (link-stm-to-ltm <l3> 644)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t396-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action _P24)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^AC <a1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int _P24)) + ^id2 <l1> +
+           ^sub1 _U26 + ^attr1 ACout2 + ^attr2 3 + ^prop-type add +
+           ^prop-type action + ^lti-name _P24 + ^id1 <a1> +)
+    (link-stm-to-ltm <l3> 595)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t368-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action _P24 ^action _P10)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 _P10 + ^sym2 _P24 + ^newname __P248 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t298-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P227 ^passed <c2>)
+    (<l2> ^1 solid-lime-diff)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P227 ^condition _P22
+          ^condition |_P2|)
+    (<s1> ^V <v1> ^G <g1>)
+    (<v1> -^Vlabel <val>)
+    (<g1> ^Gtask solid-lime-diff)
+    -->
+    (<e1> ^evaluated __P227 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t261-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition _P22 ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 _P22 + ^newname __P227 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t237-1
+    (state <s1> ^evals <e1> ^operator <o1> ^props-instructions <l1>
+          ^props-buffer <b1> ^rootstate <s2> ^const <l3>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P76 ^passed <c4>)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P76 ^action |_P7| ^action |_P6|)
+    (<b1> ^action <l4> ^action <l2>)
+    (<l4> ^lti-name |_P7| ^status success ^literalize <c2>)
+    (<l2> ^lti-name |_P6| ^status success ^literalize <c3>)
+    -->
+    (<e1> ^evaluated __P76 + ^passed <c4> - ^passed (+ 1 <c4>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t236-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action |_P6|)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int |_P6|)) + ^id2 <s2> +
+           ^sub1 |_U5| + ^attr1 Gtop + ^attr2 WM + ^prop-type add +
+           ^prop-type action + ^lti-name |_P6| + ^id1 <g1> +)
+    (link-stm-to-ltm <l3> 673)
+}
+
+sp {answer*apply*props*symbol*add*OpNoChange*t228-1
+    (state <s1> ^props-instructions <l2> ^operator <o1> ^props-buffer <b1>
+          ^rootstate <s2> ^const <l1>
+          ^name { << props-eval instruction >> <c1> })
+    (<l2> ^prop-type composite ^action |_P7|)
+    (<o1> ^symbol <l2> ^name instruction)
+    (<s2> ^G <g3> ^G <g2> ^G <g1>)
+    -->
+    (<b1> ^action <l3> +)
+    (<l3> ^status success + ^literalize (+ 1 (int |_P7|)) + ^sub2 |_U7| +
+           ^sub1 |_U6| + ^attr1 Gparent + ^attr2 Gtask + ^prop-type add +
+           ^prop-type action + ^lti-name |_P7| + ^id1 <g3> + ^id2 <g2> +)
+    (link-stm-to-ltm <l3> 675)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t161-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^action |_P7| ^action |_P6|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr action + ^sym1 |_P6| + ^sym2 |_P7| + ^newname __P76 +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t89-1
+    (state <s2> ^evals <e1> ^const <l2> ^operator <o1>
+          ^props-instructions <l1> ^rootstate <s1>
+          ^name { << props-eval instruction >> <c1> })
+    (<e1> -^evaluated __P33 ^passed <c2>)
+    (<l2> ^2 nil ^1 procedure-a)
+    (<o1> ^name instruction ^symbol <l1>)
+    (<l1> ^prop-type composite ^lti-name __P33 ^condition |_P3|
+          ^condition |_P2|)
+    (<s1> ^G <g2> ^G <g1>)
+    (<g2> ^Gtop nil)
+    (<g1> ^Gtask procedure-a)
+    -->
+    (<e1> ^evaluated __P33 + ^passed <c2> - ^passed (+ 1 <c2>) +)
+    (<l1> ^status success +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t26-1
+    (state <s1> ^props-instructions <l3> ^operator <o1> ^smem <l2>)
+    (<l3> ^condition |_P3| ^condition |_P2|)
+    (<o1> ^name props-combine-search ^lti <l1> ^lti-name <c1>)
+    (<l2> ^command <c2>)
+    -->
+    (<s1> ^props-to-combine <c3> +)
+    (<c3> ^attr condition + ^sym1 |_P2| + ^sym2 |_P3| + ^newname __P33 +)
+}
+
+sp {answer*apply*props*success*action*add*replace*OpNoChange*t9421-1*b
+    (state <s1> ^operator <o1> ^G <g1> ^RT <r1> ^WM <w1>)
+    (<o1> ^name elio-index1-div-marine-finish)
+    (<r1> ^slot4 <c1>)
+    (<w1> ^slot2 { <> <c1> <old> })
+    -->
+    (<w1> ^slot2 <old> - ^slot2 <c1> +)
+}

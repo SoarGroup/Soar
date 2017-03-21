@@ -36,6 +36,7 @@ class ChunkingDemoTests : public FunctionalTestHarness
         TEST(Demo_Water_Jug_Hierarchy, -1);
         TEST(Demo_Water_Jug_Look_Ahead, -1);
         TEST(Demo_Water_Jug_Tie, -1);
+//        TEST(Elio_Agent, -1);
         TEST(PRIMS_Sanity1, -1);
         TEST(PRIMS_Sanity2, -1);
         TEST(Teach_Soar_90_Games, -1);
@@ -55,6 +56,7 @@ class ChunkingDemoTests : public FunctionalTestHarness
         void Demo_Water_Jug_Hierarchy();
         void Demo_Water_Jug_Look_Ahead();
         void Demo_Water_Jug_Tie();
+        void Elio_Agent();
         void PRIMS_Sanity1();
         void PRIMS_Sanity2();
         void Teach_Soar_90_Games();
