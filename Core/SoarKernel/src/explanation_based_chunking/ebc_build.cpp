@@ -929,7 +929,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
     dprint(DT_VARIABLIZATION_MANAGER, "Starting conditions from dependency analysis: \n%1", m_lhs);
-    dprint_identity_to_id_set_map(DT_VARIABLIZATION_MANAGER);
 
     /* Determine if we create a justification or chunk */
     m_rule_type = m_learning_on_for_instantiation ? ebc_chunk : ebc_justification;

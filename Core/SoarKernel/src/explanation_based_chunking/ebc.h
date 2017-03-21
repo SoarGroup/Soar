@@ -61,7 +61,7 @@ class Explanation_Based_Chunker
 
         /* Methods used during instantiation creation to generate identities used by the
          * explanation trace. */
-        void        add_explanation_to_condition(rete_node* node, condition* cond, node_varnames* nvn, ExplainTraceType additional_tests);
+        void        add_explanation_to_condition(rete_node* node, condition* cond, node_varnames* nvn, ExplainTraceType additional_tests, bool inNegativeNodes);
         uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
@@ -231,7 +231,7 @@ class Explanation_Based_Chunker
         void            add_var_test_bound_identity_to_id_test(condition* cond, byte field_num, rete_node_level levels_up);
         void            add_constraint_to_explanation(test* dest_test_address, test new_test, bool has_referent = true);
         void            add_explanation_to_RL_condition(rete_node* node, condition* cond);
-        void            add_new_chunk_variable(test* pTest, char pChar);
+        void            add_new_chunk_variable(test* pTest, char pChar, bool inNegativeNodes);
 
         /* Chunk building methods */
         Symbol*         generate_name_for_new_rule();

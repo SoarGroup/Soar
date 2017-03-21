@@ -4208,7 +4208,8 @@ void rete_node_to_conditions(agent* thisAgent,
                              condition* conds_for_cutoff_and_up,
                              condition** dest_top_cond,
                              condition** dest_bottom_cond,
-                             ExplainTraceType ebcTraceType)
+                             ExplainTraceType ebcTraceType,
+                             bool inNegativeNodes)
 {
     condition* cond;
     alpha_mem* am;
@@ -4221,7 +4222,7 @@ void rete_node_to_conditions(agent* thisAgent,
     }
     else
     {
-        rete_node_to_conditions(thisAgent, real_parent_node(node), nvn ? nvn->parent : NIL, cutoff, tok ? tok->parent : NIL, tok ? tok->w : NIL, conds_for_cutoff_and_up, dest_top_cond, &(cond->prev), ebcTraceType);
+        rete_node_to_conditions(thisAgent, real_parent_node(node), nvn ? nvn->parent : NIL, cutoff, tok ? tok->parent : NIL, tok ? tok->w : NIL, conds_for_cutoff_and_up, dest_top_cond, &(cond->prev), ebcTraceType, inNegativeNodes);
         cond->prev->next = cond;
     }
     cond->next = NIL;
@@ -4230,22 +4231,23 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
-//        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
-        rete_node_to_conditions(thisAgent, node->b.cn.partner->parent, nvn ? nvn->data.bottom_of_subconditions : NIL, node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom), ebcTraceType);
+        /* MToDo | Comment these back out */
+        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
+        rete_node_to_conditions(thisAgent, node->b.cn.partner->parent, nvn ? nvn->data.bottom_of_subconditions : NIL, node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom), ebcTraceType, true);
         cond->data.ncc.top->prev = NIL;
     }
     else
     {
-//        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
+        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-//            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
+            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-//            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
+            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
@@ -4260,7 +4262,7 @@ void rete_node_to_conditions(agent* thisAgent,
             cond->bt.wme_ = w;
             if (ebcTraceType != WM_Trace)
             {
-                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType);
+                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType, inNegativeNodes);
             }
 //            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
@@ -4306,7 +4308,7 @@ void rete_node_to_conditions(agent* thisAgent,
 
             if (ebcTraceType != WM_Trace)
             {
-                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType);
+                thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType, true);
             }
             else
             {
@@ -4371,7 +4373,7 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
     assert(tok || !w);
 
     thisAgent->symbolManager->reset_variable_generator(NIL, NIL);  /* we'll be gensymming new vars */
-    rete_node_to_conditions(thisAgent, p_node->parent, p_node->b.p.parents_nvn, thisAgent->dummy_top_node, tok, w, NIL, dest_top_cond, dest_bottom_cond, ebcTraceType);
+    rete_node_to_conditions(thisAgent, p_node->parent, p_node->b.p.parents_nvn, thisAgent->dummy_top_node, tok, w, NIL, dest_top_cond, dest_bottom_cond, ebcTraceType, false);
 
 
     if (dest_rhs)

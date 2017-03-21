@@ -22,8 +22,8 @@
 //    #define DEBUG_ONLY_BEFORE_DC 931
 
     /* This can be used to turn off dprints except for a particular chunk */
-//    #define DEBUG_ONLY_CHUNK_ID 51
-//    #define DEBUG_ONLY_CHUNK_ID_LAST 23613
+    #define DEBUG_ONLY_CHUNK_ID 162
+    #define DEBUG_ONLY_CHUNK_ID_LAST 163
 #endif
 
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);

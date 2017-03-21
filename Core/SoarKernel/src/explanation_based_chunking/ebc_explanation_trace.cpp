@@ -62,7 +62,8 @@ inline bool has_eq_test_with_no_identity(test pTest) { return (pTest && !pTest->
 void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
                                         condition* cond,
                                         node_varnames* nvn,
-                                        ExplainTraceType ebcTraceType)
+                                        ExplainTraceType ebcTraceType,
+                                        bool inNegativeNodes)
 {
     if (ebcTraceType == WM_Trace_w_Inequalities)
     {
@@ -153,24 +154,24 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
         if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
         {
             assert(!am->id);
-            add_new_chunk_variable(&(cond->data.tests.id_test), 's');
+            add_new_chunk_variable(&(cond->data.tests.id_test), 's', inNegativeNodes);
         }
         if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
         {
             assert(!am->id);
-            add_new_chunk_variable(&(cond->data.tests.attr_test), 'a');
+            add_new_chunk_variable(&(cond->data.tests.attr_test), 'a', inNegativeNodes);
         }
         if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
         {
             assert(!am->value);
-            add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test));
+            add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test), inNegativeNodes);
         }
     }
 
     dprint(DT_ADD_EXPLANATION_TRACE, "Final condition after add_explanation_to_condition: %l\n", cond);
 }
 
-void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar)
+void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar, bool inNegativeNodes)
 {
     if (!(*pTest) || !(*pTest)->eq_test)
     {
@@ -179,9 +180,16 @@ void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar)
         prefix[1] = 0;
         add_test(thisAgent, pTest, make_test(thisAgent, thisAgent->symbolManager->generate_new_variable(prefix), EQUALITY_TEST));
     }
-    (*pTest)->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym((*pTest)->eq_test->data.referent);
-//    (*pTest)->eq_test->identity = NULL_IDENTITY_SET;
-    dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for newly generated chunk var %y\n", (*pTest)->eq_test->identity, (*pTest)->eq_test->data.referent);
+    if (!inNegativeNodes)
+    {
+        (*pTest)->eq_test->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym((*pTest)->eq_test->data.referent);
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for newly generated chunk var %y\n", (*pTest)->eq_test->identity, (*pTest)->eq_test->data.referent);
+    }
+    else
+    {
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test added var %y without identity (%u) for NC or NCC \n", (*pTest)->eq_test->data.referent), (*pTest)->eq_test->identity;
+        (*pTest)->eq_test->identity = NULL_IDENTITY_SET;
+    }
 }
 
 /* -- Add a constraint test to a condition test from rete node's other_tests list
