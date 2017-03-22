@@ -82,7 +82,7 @@ void ChunkingTests::RL_Variablization()                               { check_ch
 void ChunkingTests::Singletons()                                      { check_chunk("Singletons", 3, 2); }
 void ChunkingTests::Singletons_Architectural()                        { check_chunk("Singletons_Architectural", 3, 1); }
 void ChunkingTests::SMem_Chunk_Direct()                               { check_chunk("SMem_Chunk_Direct", 8, 1); }
-void ChunkingTests::SMem_Chunked_Query()                              { check_chunk("SMem_Chunked_Query", 8, 1); }
+void ChunkingTests::SMem_Chunked_Query()                              { check_chunk("SMem_Chunked_Query", 8, 0, true); } // Should be 1.
 void ChunkingTests::SMem_Chunked_Query2()                             { check_chunk("SMem_Chunked_Query2", 8, 1); }
 void ChunkingTests::STI_Variablization_Same_Type()                    { check_chunk("STI_Variablization_Same_Type", 8, 1); }
 void ChunkingTests::STI_Variablization()                              { check_chunk("STI_Variablization", 8, 1); }

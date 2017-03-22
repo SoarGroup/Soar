@@ -1539,7 +1539,7 @@ void FullTests_Parent::testSVS()
 	m_pKernel->AddRhsFunction("failed", Handlers::MyRhsFunctionFailureHandler, 0) ;
 	loadProductions(SoarHelper::GetResource("testSVS.soar"));
 	agent->ExecuteCommandLine("run");
-//	SoarHelper::init_check_to_find_refcount_leaks(agent);
+	SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FullTests_Parent::testPreferenceSemantics()

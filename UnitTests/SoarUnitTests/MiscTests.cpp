@@ -165,18 +165,8 @@ void MiscTests::test_stats()
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsProductionFiringCount, -1), 0);
-    /* Lack of SVS link decreases WME cound */
-    #ifndef NO_SVS
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountAddition, -1), 17);
-    #else
     assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountAddition, -1), 13);
-    #endif
-	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountRemoval, -1), 0);
-	#ifndef NO_SVS
-    assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCount, -1), 17);
-    #else
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCount, -1), 13);
-    #endif
 	assertEquals(stats.GetArgFloat(sml::sml_Names::kParamStatsWmeCountAverage, -1), 0);
 	assertEquals(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountMax, -1), 0);
 	assertEquals(stats.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, -1), 0);

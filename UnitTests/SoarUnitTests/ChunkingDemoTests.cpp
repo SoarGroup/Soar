@@ -15,24 +15,24 @@
 /* Note that some test don't get as many successful learned chunks as expected because Soar is not
  * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */
 
-void ChunkingDemoTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 29); }
-void ChunkingDemoTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 1); }
-void ChunkingDemoTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 20); }
-void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 60, 34); }
-void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 65, 11); }
-void ChunkingDemoTests::Demo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1); }
-void ChunkingDemoTests::Demo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 7); }
-void ChunkingDemoTests::Demo_Graph_Search()                               { check_chunk("Demo_Graph_Search", 20, 7); }
-void ChunkingDemoTests::Demo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 122, 34); }
-void ChunkingDemoTests::Demo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 6); }
-void ChunkingDemoTests::Demo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 23, 10); }
-void ChunkingDemoTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 99, 3); }
-void ChunkingDemoTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 102, 16); }
-void ChunkingDemoTests::Demo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 21, 5); }
-void ChunkingDemoTests::Elio_Agent()                                      { check_chunk("Elio_Agent", 795, 135); }
-void ChunkingDemoTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 23); }
-void ChunkingDemoTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19); }
-void ChunkingDemoTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, true); } /* Probably re-ordering problems.  The rules learned are huge */
+void ChunkingDemoTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 32, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 1, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 20, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 61, 24, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 64, 8, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Operator_Subgoaling()           { check_chunk("Demo_Blocks_World_Operator_Subgoaling", 6, 1, false); }
+void ChunkingDemoTests::Demo_Eight_Puzzle()                               { check_chunk("Demo_Eight_Puzzle", 20, 7, false); }
+void ChunkingDemoTests::Demo_Graph_Search()                               { check_chunk("Demo_Graph_Search", 20, 7, false); }
+void ChunkingDemoTests::Demo_MaC_Planning()                               { check_chunk("Demo_MaC_Planning", 122, 34, false); }
+void ChunkingDemoTests::Demo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 15, false); }
+void ChunkingDemoTests::Demo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 30, 56, false); }
+void ChunkingDemoTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 99, 3, false); }
+void ChunkingDemoTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 795, 29, false); }
+void ChunkingDemoTests::Demo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 21, 5, false); }
+void ChunkingDemoTests::Elio_Agent()                                      { check_chunk("Elio_Agent", 795, 135, false); }
+void ChunkingDemoTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 24, false); }
+void ChunkingDemoTests::PRIMS_Sanity2()                                   { check_chunk("PRIMS_Sanity2", 728, 19, false); }
+void ChunkingDemoTests::Teach_Soar_90_Games()                             { check_chunk("Teach_Soar_90_Games", 10000, 16, false); } /* Probably re-ordering problems.  The rules learned are huge */
 
 void ChunkingDemoTests::setUp()
 {
@@ -105,7 +105,6 @@ void ChunkingDemoTests::check_chunk(const char* pTestName, int64_t decisions, in
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    SoarHelper::init_check_to_find_refcount_leaks(agent);
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
 
@@ -120,6 +119,7 @@ void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chu
     {
         SoarHelper::close_log(agent);
         save_chunks(pTestName);
+        SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();
         SoarHelper::continue_log(agent, pTestName);
@@ -127,6 +127,7 @@ void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chu
     } else {
         SoarHelper::close_log(agent);
         save_chunks_internal(pTestName);
+        SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();
         SoarHelper::continue_log(agent, pTestName);
