@@ -29,6 +29,7 @@ Symbol_Manager::Symbol_Manager(agent* pAgent)
     current_variable_gensym_number     = 0;
     init_symbol_tables();
     create_predefined_symbols();
+    create_common_variables_and_numbers();
 }
 
 Symbol_Manager::~Symbol_Manager()
@@ -704,6 +705,72 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_math_query_min = make_str_constant("min");
 }
 
+void Symbol_Manager::create_variables_for_range(const char lChar, int lStart, int lEnd)
+{
+    int lNum;
+    char msg[256];
+    /* ensure null termination */
+    msg[0] = 0;
+    msg[255] = 0;
+    for (lNum = lStart; lNum <= lEnd; ++lNum)
+    {
+        SNPRINTF(msg, 256, "<%c%d>", lChar, lNum);
+        make_variable(msg);
+    }
+}
+
+void Symbol_Manager::release_variables_for_range(const char lChar, int lStart, int lEnd)
+{
+    Symbol* lVar;
+    char msg[256];
+
+    msg[0] = 0;
+    msg[255] = 0;
+    for (int lNum = lStart; lNum <= lEnd; ++lNum)
+    {
+        SNPRINTF(msg, 256, "<%c%d>", lChar, lNum);
+        lVar = thisAgent->symbolManager->find_variable(msg);
+        symbol_remove_ref(&lVar);
+    }
+}
+
+void Symbol_Manager::create_common_variables_and_numbers()
+{
+    for (char lChar = 'a'; lChar != ('z' + 1); lChar++)
+    {
+        create_variables_for_range(lChar, 1, 12);
+    }
+    /* L, S and C get allocated and deallocated a lot in certain agents because
+     * they are default letters in certain gensym situations, so let's make sure
+     * more of them stay allocated. */
+    create_variables_for_range('l', 13, 45);
+    create_variables_for_range('c', 13, 23);
+    create_variables_for_range('s', 13, 33);
+
+    for (int lInt = 0; lInt <= 100; ++lInt)
+    {
+        make_int_constant(lInt);
+    }
+}
+
+void Symbol_Manager::release_common_variables_and_numbers()
+{
+    for (char lChar = 'a'; lChar != ('z' + 1); lChar++)
+    {
+        release_variables_for_range(lChar, 1, 12);
+    }
+    release_variables_for_range('l', 13, 45);
+    release_variables_for_range('c', 13, 23);
+    release_variables_for_range('s', 13, 30);
+
+    Symbol* lVar;
+    for (int lNum = 0; lNum <= 100; ++lNum)
+    {
+        lVar = thisAgent->symbolManager->find_int_constant(lNum);
+        symbol_remove_ref(&lVar);
+    }
+}
+
 void Symbol_Manager::release_predefined_symbols()
 {
     symbol_remove_ref(&(soarSymbols.crlf_symbol));
@@ -831,7 +898,7 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
         {
             std::string caller_string;
             get_stacktrace(caller_string);
-//            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+            //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
             if (is_DT_mode_enabled(DT_ID_LEAKING))
             {
                 std::cout << "DA | " << strName.c_str() << " |" << sym->reference_count << " | " << caller_string.c_str() << "\n";
@@ -839,9 +906,22 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
         }
     #else
         dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
-//        std::string caller_string;
-//        get_stacktrace(caller_string);
-//        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+
+        /* If you need to print out deallocations after agent is deleted */
+        //if (is_DT_mode_enabled(DT_DEALLOCATE_SYMBOL))
+        //{
+        //    char msg[256];
+        //    /* ensure null termination */
+        //    msg[0] = 0;
+        //    msg[255] = 0;
+        //    SNPRINTF(msg, 256, "DEALLOCATE symbol %s\n", sym->to_string());
+        //    thisAgent->outputManager->print(msg);
+        //}
+
+        /* If you need to print out the stack trace when a deallocations happens */
+        //std::string caller_string;
+        //get_stacktrace(caller_string);
+        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
     switch (sym->symbol_type)
     {

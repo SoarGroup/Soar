@@ -366,6 +366,7 @@ void destroy_soar_agent(agent* delete_agent)
     TDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
+    delete_agent->symbolManager->release_common_variables_and_numbers();
 
     delete_agent->memoryManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
     delete_agent->memoryManager->free_with_pool(MP_token, delete_agent->dummy_top_token);

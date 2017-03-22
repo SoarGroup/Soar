@@ -31,7 +31,11 @@ class EXPORT Symbol_Manager {
         void retesave(FILE* f);
 
         void create_predefined_symbols();
+        void create_common_variables_and_numbers();
+        void create_variables_for_range(const char lChar, int lStart, int lEnd);
         void release_predefined_symbols();
+        void release_variables_for_range(const char lChar, int lStart, int lEnd);
+        void release_common_variables_and_numbers();
         void print_internal_symbols();
 
         Symbol* make_variable(const char* name);

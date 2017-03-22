@@ -7,8 +7,7 @@ multi-attributes operator 5
 multi-attributes next 3
 multi-attributes evaluation 10
 
-#pushd "../../default" 
-pushd ../../../../default-1-24-17/ 
+pushd "../../default" 
 source selection.soar
 source selection-astar.soar
 popd
