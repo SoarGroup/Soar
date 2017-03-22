@@ -2636,7 +2636,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     thisAgent->memoryManager->free_with_pool(MP_smem_info, goal->id->smem_info);
 
 #ifndef NO_SVS
-    thisAgent->svs->state_deletion_callback(goal);
+    if (thisAgent->svs->is_enabled()) thisAgent->svs->state_deletion_callback(goal);
 #endif
     /* REW: BUG
      * Tentative assertions can exist for removed goals.  However, it looks
@@ -2748,7 +2748,7 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
                           static_cast<soar_call_data>(id));
 
 #ifndef NO_SVS
-    thisAgent->svs->state_creation_callback(id);
+    if (thisAgent->svs->is_enabled()) thisAgent->svs->state_creation_callback(id);
 #endif
 }
 

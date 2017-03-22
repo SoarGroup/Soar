@@ -187,7 +187,7 @@ void Explanation_Based_Chunker::add_new_chunk_variable(test* pTest, char pChar, 
     }
     else
     {
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test added var %y without identity (%u) for NC or NCC \n", (*pTest)->eq_test->data.referent), (*pTest)->eq_test->identity;
+        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test added var %y without identity (%u) for NC or NCC \n", (*pTest)->eq_test->data.referent, (*pTest)->eq_test->identity);
         (*pTest)->eq_test->identity = NULL_IDENTITY_SET;
     }
 }

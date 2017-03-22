@@ -463,9 +463,7 @@ void do_one_top_level_phase(agent* thisAgent)
             /* always true for Soar 8 */
             if (thisAgent->e_cycles_this_d_cycle == 0)
             {
-                soar_invoke_callbacks(thisAgent,
-                                      BEFORE_DECISION_CYCLE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(INPUT_PHASE));
+                soar_invoke_callbacks(thisAgent, BEFORE_DECISION_CYCLE_CALLBACK, reinterpret_cast<soar_call_data>(INPUT_PHASE));
             }  /* end if e_cycles_this_d_cycle == 0 */
 
             if (thisAgent->input_cycle_flag == true)   /* Soar 7 flag, but always true for Soar8 */
@@ -474,19 +472,15 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_INPUT_PHASE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
-#ifndef NO_SVS
-                if (thisAgent->svs->is_enabled())
-                {
-                    thisAgent->svs->input_callback();
-                }
-#endif
+                #ifndef NO_SVS
+                if (thisAgent->svs->is_enabled()) thisAgent->svs->input_callback();
+                #endif
+
                 do_input_cycle(thisAgent);
 
                 thisAgent->run_phase_count++ ;
                 thisAgent->run_elaboration_count++ ;  // All phases count as a run elaboration
-                soar_invoke_callbacks(thisAgent,
-                                      AFTER_INPUT_PHASE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(INPUT_PHASE));
+                soar_invoke_callbacks(thisAgent, AFTER_INPUT_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
                 if (thisAgent->input_period)
                 {
@@ -499,10 +493,10 @@ void do_one_top_level_phase(agent* thisAgent)
                 print_phase(thisAgent, "\n--- END Input Phase --- \n", 1);
             }
 
-#ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
+            #ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
             thisAgent->timers_phase.stop();
             thisAgent->timers_decision_cycle_phase[INPUT_PHASE].update(thisAgent->timers_phase);
-#endif
+            #endif
 
             thisAgent->current_phase = PROPOSE_PHASE;
 
@@ -810,17 +804,15 @@ void do_one_top_level_phase(agent* thisAgent)
                     print_phase(thisAgent, "\n--- END Application Phase ---\n", 1);
                 }
                 thisAgent->run_phase_count++ ;
-                soar_invoke_callbacks(thisAgent,
-                                      AFTER_APPLY_PHASE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(APPLY_PHASE));
+                soar_invoke_callbacks(thisAgent, AFTER_APPLY_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(APPLY_PHASE));
 
                 thisAgent->current_phase = OUTPUT_PHASE;
             }
 
-#ifndef NO_TIMING_STUFF
+            #ifndef NO_TIMING_STUFF
             thisAgent->timers_phase.stop();
             thisAgent->timers_decision_cycle_phase[APPLY_PHASE].update(thisAgent->timers_phase);
-#endif
+            #endif
 
             break;  /* END of Soar8 APPLY PHASE */
 
@@ -832,21 +824,15 @@ void do_one_top_level_phase(agent* thisAgent)
                 print_phase(thisAgent, "\n--- Output Phase ---\n", 0);
             }
 
-#ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
+            #ifndef NO_TIMING_STUFF
             thisAgent->timers_phase.start();
-#endif
+            #endif
 
-            soar_invoke_callbacks(thisAgent,
-                                  BEFORE_OUTPUT_PHASE_CALLBACK,
-                                  reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
+            soar_invoke_callbacks(thisAgent, BEFORE_OUTPUT_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
 
-#ifndef NO_SVS
-            if (thisAgent->svs->is_enabled())
-            {
-                thisAgent->svs->output_callback();
-            }
-#endif
-            /** KJC June 05:  moved output function timers into do_output_cycle ***/
+            #ifndef NO_SVS
+            if (thisAgent->svs->is_enabled()) thisAgent->svs->output_callback();
+            #endif
 
             do_output_cycle(thisAgent);
 

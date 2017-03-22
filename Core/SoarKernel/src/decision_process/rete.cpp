@@ -4273,7 +4273,6 @@ void rete_node_to_conditions(agent* thisAgent,
              *    out those conditions (since they don't require bindings and use original variables
              *    just like when printing a production). */
 
-
             am = node->b.posneg.alpha_mem_;
             if (am->id)
             {

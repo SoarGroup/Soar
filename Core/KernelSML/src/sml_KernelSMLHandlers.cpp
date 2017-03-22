@@ -1219,7 +1219,10 @@ bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Co
     }
     std::string res;
 #ifndef NO_SVS
-    res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    if (pAgentSML->GetSoarAgent()->svs->is_enabled())
+    {
+        res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    }
 #endif
     return this->ReturnResult(pConnection, pResponse, res.c_str());
 }
