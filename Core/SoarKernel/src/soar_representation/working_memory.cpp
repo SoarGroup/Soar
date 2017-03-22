@@ -115,7 +115,8 @@ wme* make_wme(agent* thisAgent, Symbol* id, Symbol* attr, Symbol* value, bool ac
     w->chunker_bt_last_ground_cond = NULL;
     w->is_singleton = false;
     w->singleton_status_checked = false;
-    w->local_singleton_superstate_identity_set = NULL_IDENTITY_SET;
+    w->local_singleton_id_identity_set = NULL_IDENTITY_SET;
+    w->local_singleton_value_identity_set = NULL_IDENTITY_SET;
     w->next = NIL;
     w->prev = NIL;
     w->rete_next = NIL;
@@ -374,9 +375,10 @@ void deallocate_wme(agent* thisAgent, wme* w)
         wma_remove_decay_element(thisAgent, w);
     }
 
-    if (w->local_singleton_superstate_identity_set)
+    if (w->local_singleton_value_identity_set)
     {
-        IdentitySet_remove_ref(thisAgent, w->local_singleton_superstate_identity_set);
+        IdentitySet_remove_ref(thisAgent, w->local_singleton_id_identity_set);
+        IdentitySet_remove_ref(thisAgent, w->local_singleton_value_identity_set);
     }
     thisAgent->symbolManager->symbol_remove_ref(&w->id);
     thisAgent->symbolManager->symbol_remove_ref(&w->attr);

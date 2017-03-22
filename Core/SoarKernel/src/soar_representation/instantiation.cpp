@@ -30,6 +30,7 @@
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_timers.h"
 #include "episodic_memory.h"
 #include "instantiation.h"
@@ -817,12 +818,14 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
                 }
             }
             /* Check for local singletons */
-            if (cond->bt.wme_->local_singleton_superstate_identity_set && lDoIdentities && cond->data.tests.value_test->eq_test->identity)
+            if (cond->bt.wme_->local_singleton_value_identity_set && lDoIdentities && (cond->bt.wme_->id == inst->match_goal))
             {
-                dprint(DT_PROPAGATE_ID_SETS, "Propagating local singleton identity set for condition %l\n", cond);
-
-                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_superstate_identity_set);
-                set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_superstate_identity_set);
+                dprint(DT_PROPAGATE_ID_SETS, "Propagating local singleton identity sets %u and %u for condition %l\n", cond->bt.wme_->local_singleton_id_identity_set->get_identity(), cond->bt.wme_->local_singleton_value_identity_set->get_identity(), cond);
+                assert(cond->data.tests.value_test->eq_test->identity && cond->data.tests.id_test->eq_test->identity);
+                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.id_test->eq_test->identity, cond->bt.wme_->local_singleton_id_identity_set);
+                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_value_identity_set);
+                set_test_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
+                set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_value_identity_set);
             }
             if (lDoIdentities)
             {

@@ -1934,7 +1934,8 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             if (level > TOP_GOAL_LEVEL)
             {
                 dprint(DT_DEALLOCATE_ID_SETS, "Creating floating identity join set for singleton: %w\n", lSSWME);
-                lSSWME->local_singleton_superstate_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
+                lSSWME->local_singleton_id_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
+                lSSWME->local_singleton_value_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
             }
         }
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
