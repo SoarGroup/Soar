@@ -153,17 +153,14 @@ void Explanation_Based_Chunker::add_explanation_to_condition(rete_node* node,
     {
         if (!cond->data.tests.id_test || !cond->data.tests.id_test->eq_test)
         {
-            assert(!am->id);
             add_new_chunk_variable(&(cond->data.tests.id_test), 's', inNegativeNodes);
         }
         if (!cond->data.tests.attr_test || !cond->data.tests.attr_test->eq_test)
         {
-            assert(!am->id);
             add_new_chunk_variable(&(cond->data.tests.attr_test), 'a', inNegativeNodes);
         }
         if (!cond->data.tests.value_test || !cond->data.tests.value_test->eq_test)
         {
-            assert(!am->value);
             add_new_chunk_variable(&(cond->data.tests.value_test), first_letter_from_test(cond->data.tests.attr_test), inNegativeNodes);
         }
     }

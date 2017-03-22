@@ -75,7 +75,6 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
         first_letter = 'v';
     }
     i = tolower(first_letter) - static_cast<int>('a');
-    assert(i >= 0 && i < 26);
 
     /* --- create variable with "#" in its name:  this couldn't possibly be a
        variable in the user's code, since the lexer doesn't handle "#" --- */
@@ -2104,10 +2103,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     if (!lexer->get_lexeme()) return NULL;
 
-    /* Should exit gracefully if rule has an identifier in it.  We'll just do an assert for now. 
-     * - If this can't happen, we probably don't need the second clause in the next if */
-    assert(lexer->current_lexeme.type != IDENTIFIER_LEXEME);
-
     if ((lexer->current_lexeme.type != VARIABLE_LEXEME) && (lexer->current_lexeme.type != IDENTIFIER_LEXEME))
     {
         /* --- the action is a function call --- */
@@ -2122,7 +2117,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         return all_actions;
     }
     /* --- the action is a regular make action --- */
-    assert(lexer->current_lexeme.type == VARIABLE_LEXEME);
 
     var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
 

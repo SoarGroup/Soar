@@ -251,8 +251,6 @@ void Explanation_Based_Chunker::update_identities_in_condition_list(condition* t
 
 void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value pRhs_val)
 {
-    assert(pRhs_val && !rhs_value_is_reteloc(pRhs_val) && !rhs_value_is_unboundvar(pRhs_val));
-
     if (rhs_value_is_funcall(pRhs_val))
     {
         for (cons* c = rhs_value_to_funcall_list(pRhs_val)->rest; c != NIL; c = c->rest)

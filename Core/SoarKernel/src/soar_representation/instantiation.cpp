@@ -84,7 +84,6 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
 {
     preference* clone;
 
-    assert(p && (p->inst->match_goal_level != level));
     for (clone = p->next_clone; clone != NIL; clone = clone->next_clone)
         if (clone->inst->match_goal_level == level)
         {
@@ -821,7 +820,6 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
             if (cond->bt.wme_->local_singleton_value_identity_set && lDoIdentities && (cond->bt.wme_->id == inst->match_goal))
             {
                 dprint(DT_PROPAGATE_ID_SETS, "Propagating local singleton identity sets %u and %u for condition %l\n", cond->bt.wme_->local_singleton_id_identity_set->get_identity(), cond->bt.wme_->local_singleton_value_identity_set->get_identity(), cond);
-                assert(cond->data.tests.value_test->eq_test->identity && cond->data.tests.id_test->eq_test->identity);
                 thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.id_test->eq_test->identity, cond->bt.wme_->local_singleton_id_identity_set);
                 thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_value_identity_set);
                 set_test_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
@@ -1079,9 +1077,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     int64_t index;
     Symbol** cell;
 
-    #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
-    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
-    #endif
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
 
     //debug_refcount_change_start(thisAgent, true);

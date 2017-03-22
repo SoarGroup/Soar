@@ -113,7 +113,6 @@ wme_list* Repair_Manager::find_path_to_goal_for_symbol(Symbol* pNonOperationalSy
     lCurrentPath->clean_up();
     thisAgent->memoryManager->free_with_pool(MP_repair_path, lCurrentPath);
 
-    //assert(final_path);
     return final_path;
 }
 

@@ -1041,8 +1041,6 @@ bool postpone_assertion(agent* thisAgent, production** prod, struct token_struct
     // save the assertion on the postponed list
     insert_at_head_of_dll(thisAgent->postponed_assertions, msc, next, prev);
 
-//    assert(msc->tok && *tok);
-
     return true;
 }
 
@@ -1596,8 +1594,6 @@ inline void _epmem_process_ids(agent* thisAgent)
     {
         id = thisAgent->EpMem->epmem_id_removes->front();
         thisAgent->EpMem->epmem_id_removes->pop_front();
-
-        assert(id->is_sti());
 
         if ((id->id->epmem_id != EPMEM_NODEID_BAD) && (id->id->epmem_valid == thisAgent->EpMem->epmem_validation))
         {
@@ -2579,7 +2575,6 @@ void bind_variables_in_test(agent* thisAgent,
 {
     Symbol* referent;
 
-    assert(t && t->eq_test);
     referent = t->eq_test->data.referent;
     if (!referent->is_variable()) return;
     if (!dense && var_is_bound(referent)) return;
@@ -2787,8 +2782,6 @@ void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t)
 varnames* add_unbound_varnames_in_test(agent* thisAgent, test t,
                                        varnames* starting_vn)
 {
-    assert(t && t->eq_test);
-
     Symbol* referent = t->eq_test->data.referent;
     if (referent->is_variable() && !var_is_bound(referent))
     {
@@ -6015,7 +6008,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->level = NO_WME_LEVEL;
     msc->goal = NIL;
     
-    //assert(tok);
     /*  (this is a RCHONG comment, but might also apply to Operand2...?)
 
     what we have to do now is to, essentially, determine the kind of

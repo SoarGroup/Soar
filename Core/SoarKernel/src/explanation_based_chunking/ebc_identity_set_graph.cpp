@@ -130,11 +130,7 @@ void Explanation_Based_Chunker::clean_up_identity_sets()
     for (auto it = identity_sets_to_clean_up.begin(); it != identity_sets_to_clean_up.end(); it++)
     {
         lJoin_set = (*it);
-        if (lJoin_set)
-        {
-            assert(lJoin_set->dirty);
-            if (lJoin_set->dirty) lJoin_set->clean_up_transient();
-        }
+        if (lJoin_set) lJoin_set->clean_up_transient();
     }
     identity_sets_to_clean_up.clear();
 }

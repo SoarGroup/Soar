@@ -211,7 +211,6 @@ void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
     /* We don't print the preference out directly with %p because identity set pointer may not be valid */
     dprint(DT_DEALLOCATE_PREF, "Deallocating preference p%u (^%y ^%y ^%y) at level %d\n", pref->p_id, pref->id, pref->attr, pref->value, static_cast<int64_t>(pref->level));
-    assert(pref->reference_count == 0);
 
     /*  Remove from temporary memory and match goal if necessary */
     if (pref->in_tm) remove_preference_from_tm(thisAgent, pref);

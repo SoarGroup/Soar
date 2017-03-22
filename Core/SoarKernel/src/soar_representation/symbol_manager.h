@@ -115,7 +115,6 @@ class EXPORT Symbol_Manager {
 //            {
 //                std::cout << "REMOVE-REF " << (*x)->to_string() << "->" <<  ((*x)->reference_count - 1) << "\n";
 //            }
-        //    assert((x)->reference_count > 0);
             (*x)->reference_count--;
 
         #ifdef DEBUG_TRACE_REFCOUNT_FOR

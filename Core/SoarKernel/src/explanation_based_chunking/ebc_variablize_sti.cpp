@@ -21,7 +21,6 @@ void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_id
 {
     char prefix[2];
     Symbol* lNewVar = NULL, *lMatchedSym = pTest->data.referent;
-    assert(lMatchedSym->is_sti());
     uint64_t lMatchedIdentity = LITERAL_VALUE;
 
     /* Copy in any identities for the unconnected identifier that was used in the unconnected conditions */

@@ -841,10 +841,6 @@ void do_one_top_level_phase(agent* thisAgent)
                 thisAgent->SMem->go(false);
             }
 
-            ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
-            ///////////////////////////////////////////////////////////////////
-
             // update histories only first, allows:
             // - epmem retrieval cues to be biased by activation
             // - epmem encoding to capture wmes that may be forgotten shortly
@@ -873,10 +869,6 @@ void do_one_top_level_phase(agent* thisAgent)
                 wma_go(thisAgent, wma_histories);
                 wma_go(thisAgent, wma_forgetting);
             }
-
-            ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
-            ///////////////////////////////////////////////////////////////////
 
             // RL apoptosis
             {
@@ -1442,25 +1434,9 @@ void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
 
 extern char* getenv();
 
-/*
-  RDF: 20020706 Added this for the gSKI project. This makes it so that
-                created agents have a top state and the appropriate io
-                header symbols and wme's even before the first decision
-                cycle. This helps keep the gSKI interface a little saner.
-*/
-
 void init_agent_memory(agent* thisAgent)
 {
-
-    /* The following code was taken from the do_one_top_level_phase function
-       near the top of this file */
-    // If there is already a top goal this function should probably not be called
-    assert(thisAgent->top_goal == 0 &&
-           "There should be no top goal when init_agent_memory is called!");
-    if (thisAgent->top_goal)
-    {
-        return;
-    }
+    if (thisAgent->top_goal) return;
 
     thisAgent->io_header = get_new_io_identifier(thisAgent, 'I');
     thisAgent->io_header_input = get_new_io_identifier(thisAgent, 'I');

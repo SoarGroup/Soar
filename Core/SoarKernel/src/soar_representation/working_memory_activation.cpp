@@ -353,7 +353,6 @@ inline double wma_sum_history(agent* thisAgent, wma_history* history, wma_d_cycl
         p = wma_history_prev(p);
 
         cycle_diff = (current_cycle - history->access_history[ p ].d_cycle);
-        assert(cycle_diff > 0);
 
         return_val += (history->access_history[ p ].num_references * wma_pow(thisAgent, cycle_diff));
 

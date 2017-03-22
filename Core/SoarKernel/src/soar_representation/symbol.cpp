@@ -177,7 +177,6 @@ char* Symbol::to_string(bool rereadable, bool showLTILink, char* dest, size_t de
             }
             else
             {
-                assert(!id->cached_print_str);
                 lStr.push_back(id->name_letter);
                 lStr.append(std::to_string(id->name_number));
                 id->cached_print_str =  make_memory_block_for_string(id->thisAgent, lStr.c_str());
