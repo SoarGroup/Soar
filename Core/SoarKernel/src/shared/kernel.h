@@ -13,7 +13,7 @@
 #include "forward.h"
 #include "macros.h"
 
-#define SOAR_RELEASE_VERSION
+//#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -44,10 +44,6 @@
  * - This option was turned on in Soar 6 to 8.6 and turned off in 9.0 to 9.5.1b
  */
 //#define DO_TOP_LEVEL_COND_REF_CTS
-
-/* Whether to store variable names used in newly learned chunks in the RETE.
- * Since they are all gensymme'd, we can re-gensym them as needed. */
-//#define DISCARD_CHUNK_VARNAMES
 
 /* Print a warning whenever we are ignoring a situation when there's no instance to
  * retract for a justification.  We can't find documentation on what the original bug

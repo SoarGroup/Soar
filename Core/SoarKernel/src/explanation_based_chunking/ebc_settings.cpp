@@ -39,6 +39,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = false;
     pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] = true;
     pEBC_settings[SETTING_EBC_TIMERS] = false;
+    pEBC_settings[SETTING_EBC_REGENERATE_VARS] = true;
 
     /* This setting doesn't have a parameter to toggle.  Just keeping so we can toggle for experimenting */
     pEBC_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS] = false;
@@ -140,6 +141,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(mechanism_user_singletons);
     mechanism_unify_all = new soar_module::boolean_param("unify-all", setting_on(SETTING_EBC_UNIFY_ALL), new soar_module::f_predicate<boolean>());
     add(mechanism_unify_all);
+
+    mechanism_regenerate_chunk_var_names = new soar_module::boolean_param("regenerate-vars", setting_on(SETTING_EBC_REGENERATE_VARS), new soar_module::f_predicate<boolean>());
+    add(mechanism_regenerate_chunk_var_names);
 
     allow_missing_negative_reasoning = new soar_module::boolean_param("allow-local-negations", setting_on(SETTING_EBC_ALLOW_LOCAL_NEGATIONS), new soar_module::f_predicate<boolean>());
     add(allow_missing_negative_reasoning);
@@ -267,6 +271,10 @@ void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boo
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_UNIFY_ALL] = pChangedParam->get_value();
     }
+    else if (pChangedParam == mechanism_regenerate_chunk_var_names)
+    {
+        thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REGENERATE_VARS] = pChangedParam->get_value();
+    }
     else if (pChangedParam == allow_missing_negative_reasoning)
     {
         thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS] = pChangedParam->get_value();
@@ -362,6 +370,7 @@ void ebc_param_container::update_params(bool pEBC_settings[])
     mechanism_merge->set_value(pEBC_settings[SETTING_EBC_MERGE] ? on : off);
     mechanism_user_singletons->set_value(pEBC_settings[SETTING_EBC_USER_SINGLETONS] ? on : off);
     mechanism_unify_all->set_value(pEBC_settings[SETTING_EBC_UNIFY_ALL] ? on : off);
+    mechanism_regenerate_chunk_var_names->set_value(pEBC_settings[SETTING_EBC_REGENERATE_VARS] ? on : off);
     mechanism_reorder_justifications->set_value(pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] ? on : off);
     mechanism_add_ltm_links->set_value(pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] ? on : off);
 
@@ -483,6 +492,7 @@ void Explanation_Based_Chunker::print_chunking_settings()
 //    outputManager->printa_sf(thisAgent, "allow-conflated-reasoning*     %-%s%-%s\n", capitalizeOnOff(ebc_params->allow_conflated_reasoning->get_value()), "Allow rules to form from problem-solving with multiple reasoning paths");
     outputManager->printa_sf(thisAgent, "* disabled\n"
                                         "------------- Experimental Settings ---------------\n");
+    outputManager->printa_sf(thisAgent, "regenerate-vars       %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_regenerate_chunk_var_names->get_value()), "Don't store chunk variables in RETE");
     outputManager->printa_sf(thisAgent, "unify-all             %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_unify_all->get_value()), "Warning:  Can lead to incorrect behavior");
     outputManager->printa_sf(thisAgent, "repair-justifications %-%s%-%s\n", capitalizeOnOff(ebc_params->mechanism_reorder_justifications->get_value()), "Re-order justifications (for efficiency experimentation)");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------\n");

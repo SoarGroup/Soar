@@ -45,6 +45,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::boolean_param* mechanism_merge;
         soar_module::boolean_param* mechanism_user_singletons;
         soar_module::boolean_param* mechanism_unify_all;
+        soar_module::boolean_param* mechanism_regenerate_chunk_var_names;
 
         soar_module::boolean_param* allow_missing_negative_reasoning;
         soar_module::boolean_param* allow_missing_OSK;
