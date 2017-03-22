@@ -45,6 +45,10 @@
  */
 //#define DO_TOP_LEVEL_COND_REF_CTS
 
+/* Whether to store variable names used in newly learned chunks in the RETE.
+ * Since they are all gensymme'd, we can re-gensym them as needed. */
+//#define DISCARD_CHUNK_VARNAMES
+
 /* Print a warning whenever we are ignoring a situation when there's no instance to
  * retract for a justification.  We can't find documentation on what the original bug
  * was.  We have seen the warning pop up in agents still.  */

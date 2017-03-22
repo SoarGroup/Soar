@@ -3982,12 +3982,14 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
      * across conditions and actions. */
 
     /* --- if not a chunk, store variable name information --- */
-    //if ((p->type==CHUNK_PRODUCTION_TYPE) && DISCARD_CHUNK_VARNAMES) {
-    if (p->type == CHUNK_PRODUCTION_TYPE) {
+    #ifdef DISCARD_CHUNK_VARNAMES
+    if (p->type==CHUNK_PRODUCTION_TYPE) {
         p->p_node->b.p.parents_nvn = NIL;
         p->rhs_unbound_variables = NIL;
         thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
-    } else {
+    } else
+    #endif
+    {
         /* --- Store variable name information --- */
         p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
         p->rhs_unbound_variables = destructively_reverse_list(rhs_unbound_vars_for_new_prod);
