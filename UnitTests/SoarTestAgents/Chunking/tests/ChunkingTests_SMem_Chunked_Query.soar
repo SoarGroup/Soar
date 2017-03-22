@@ -2,6 +2,8 @@
 # - 
 
 chunk always
+chunk add-ltm-links off
+
 smem --set learning on
 srand 7
 

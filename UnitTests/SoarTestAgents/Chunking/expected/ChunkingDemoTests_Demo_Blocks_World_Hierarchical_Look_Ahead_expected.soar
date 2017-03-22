@@ -1,59 +1,42 @@
-sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t34-1
-    (state <s1> ^name move-block ^operator <o1> + ^problem-space <p1>
-          ^desired <d1> ^top-state <t2>)
-    (<o1> ^name put-down ^destination <t1>)
+sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t37-1
+    (state <s1> ^name move-block ^problem-space <p1> ^desired <d1>
+          ^top-state <t1> ^operator <o6> +)
     (<p1> ^name pick-up-put-down)
-    (<d1> ^destination <t1> ^moving-block { <> nothing <b1> })
-    (<t2> ^gripper <n3> ^ontop <n1> ^object <t3> ^object <b4> ^object <b3>
-          ^object <b2> ^gripper <n2>)
-    (<n3> ^holding <b1>)
-    (<n1> -^bottom-block <bblock1> ^top-block <b1>)
-    (<t3> ^name table)
-    (<b4> ^name C)
-    (<b3> ^name B)
-    (<b2> ^name A)
+    (<d1> ^destination <d2> ^moving-block { <m1> <> nothing })
+    (<t1> ^gripper <g1> ^object <o1> ^object <o2> ^object <o3> ^object <o4>
+          ^ontop <o5>)
+    (<g1> ^holding <m1>)
+    (<o1> ^name A)
+    (<o2> ^name B)
+    (<o3> ^name C)
+    (<o4> ^name table)
+    (<o5> -^bottom-block <b1> ^top-block <m1>)
+    (<o6> ^destination <d2> ^name put-down)
     -->
-    (<s1> ^operator <o1> >)
+    (<s1> ^operator <o6> >)
 }
 
-sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t15-1
-    (state <s1> ^name move-block ^operator <o1> + ^problem-space <p1>
-          ^top-state <t1> ^desired <d1>)
-    (<o1> ^name pick-up ^moving-block { <> nothing <b5> })
-    (<p1> ^name pick-up-put-down)
-    (<t1> ^gripper <n1> ^object <t2> ^object <b4> ^object <b3> ^object <b2>
-          ^gripper <n2>)
-    (<n1> ^holding nothing)
-    (<t2> ^name table)
-    (<b4> ^name C)
-    (<b3> ^name B)
-    (<b2> ^name A)
-    (<d1> ^moving-block { <> <b5> <b1> })
-    -->
-    (<s1> ^operator <o1> -)
-}
-
-sp {answer*P2b*elaborate*table*clear*Tie*t8-5
+sp {answer*P2b*elaborate*table*clear*Tie*t14-5
     (state <s1> ^top-state <t1>)
-   -{ (<s1> ^operator <o*1>)
-      (<o*1> ^name evaluate-operator)}
-    (<t1> ^flag move-block-lookahead ^object <t2>)
-    (<t2> ^type table)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^flag move-block-lookahead ^object <o2>)
+    (<o2> ^type table)
     -->
-    (<t1> ^clear <t2> +)
+    (<t1> ^clear <o2> +)
 }
 
-sp {answer*P1b*elaborate*block*clear*Tie*t8-1
+sp {answer*P1b*elaborate*block*clear*Tie*t14-1
     (state <s1> ^top-state <t1>)
-   -{ (<s1> ^operator <o*1>)
-      (<o*1> ^name evaluate-operator)}
-    (<t1> ^flag move-block-lookahead ^object <b1>)
-   -{ (<t1> ^gripper <g*1>)
-      (<g*1> ^holding <b1>)}
-   -{ (<t1> ^ontop <o*1>)
-      (<o*1> ^bottom-block <b1>)}
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^flag move-block-lookahead ^object <o2>)
+   -{ (<t1> ^ontop <o3>)
+      (<o3> ^bottom-block <o2>)}
+   -{ (<t1> ^gripper <g1>)
+      (<g1> ^holding <o2>)}
     -->
-    (<t1> ^clear <b1> +)
+    (<t1> ^clear <o2> +)
 }
 
 

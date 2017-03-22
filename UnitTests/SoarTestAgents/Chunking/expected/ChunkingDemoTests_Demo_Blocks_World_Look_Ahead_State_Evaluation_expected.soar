@@ -1,814 +1,947 @@
-sp {answer*selection*evaluation*expected-values*Tie*t58-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b3>)
-    (<b3> ^name C)
-    (<d3> ^bottom-block <b3> ^top-block <b2>)
-    (<b2> ^name B)
-    (<d2> ^bottom-block <b2> ^top-block <b1>)
-    (<b1> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block <t1>)
-    (<c2> ^top-block <b2> ^bottom-block <b3>)
-    (<c1> ^top-block <b1> ^bottom-block { <> <b2> <t2> })
-    (<o1> ^destination <b2> ^moving-block <b1>)
+sp {answer*selection*evaluation*expected-values*Tie*t59-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <t1> })
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^destination <t3> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 1.000000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t56-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b3>)
-    (<b3> ^name C)
-    (<d3> ^bottom-block <b3> ^top-block <b2>)
-    (<b2> ^name B)
-    (<d2> ^bottom-block <b2> ^top-block <b1>)
-    (<b1> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block <t1>)
-    (<c2> ^top-block <b2> ^bottom-block <b3>)
-    (<c1> ^top-block <b1> ^bottom-block { <> <t2> <t2> })
-    (<o1> ^destination <b2> ^moving-block <b1>)
+sp {answer*selection*evaluation*expected-values*Tie*t54-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <t1> <> <o1> })
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^destination <t3> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 1.000000)
+    (<s1> ^operator <o7> = 0.300000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t52-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> })
+    (<t3> ^name B ^name <n1>)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <t3> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o7> = 0.300000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t51-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c2> ^ontop <c1> ^ontop <c3> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<d3> ^bottom-block <b1> ^top-block <b2>)
-    (<b2> ^name B)
-    (<c2> ^top-block <b2> ^bottom-block { <> <b1> <t2> })
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b4>)
-    (<b3> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b4> <t3> })
-    (<o1> ^destination <b1> ^moving-block <b2>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6> ^ontop <o7>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^top-block <t3> ^bottom-block <t2>)
+    (<o8> ^destination <t1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 0.753000)
+    (<s1> ^operator <o8> = 0.600000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t45-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c2> ^ontop <c1> ^ontop <c3> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<d3> ^bottom-block <b1> ^top-block <b2>)
-    (<b2> ^name B)
-    (<c2> ^top-block <b2> ^bottom-block { <> <t2> <t2> })
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b4>)
-    (<b3> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b4> <t3> })
-    (<o1> ^destination <b1> ^moving-block <b2>)
+sp {answer*selection*evaluation*expected-values*Tie*t47-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o5>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <> <b2> <b2> })
+    (<o6> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name A)
+    (<b3> ^name <n1>)
+    (<o7> ^moving-block <t2> ^destination <d2>)
     -->
-    (<s1> ^operator <o1> = 0.600000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t41-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b5>)
-    (<b3> ^name B)
-    (<c3> ^top-block <b3> ^bottom-block <t3>)
-    (<c2> ^top-block <b2> ^bottom-block <t2>)
-    (<b2> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^moving-block <b3> ^destination { <> <t3> <> <b5> <b4> })
+sp {answer*selection*evaluation*expected-values*Tie*t43-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> })
+    (<t3> ^name A ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o6> = 0.081000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t35-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b5>)
-    (<b3> ^name B)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b2> ^bottom-block <t2>)
-    (<b2> ^name A)
-    (<o1> ^moving-block <b2> ^destination { <> <t2> <b4> })
-    (<b4> ^name <c4>)
+sp {answer*selection*evaluation*expected-values*Tie*t42-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o5> ^ontop <o6> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o4> ^ontop <o7>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<o6> ^top-block <t3> ^bottom-block <b2>)
+    (<t3> ^name A)
+    (<o7> ^top-block <t3> ^bottom-block { <> <b3> <b3> })
+    (<o8> ^destination <t1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o8> = 0.600000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t28-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block { <> <t4> <b4> })
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b2> ^destination { <> <t3> <b5> })
-    (<b5> ^name <c4>)
+sp {answer*selection*evaluation*expected-values*Tie*t38-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C ^name <n1>)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name B)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <t2> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o7> = 0.300000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t37-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B ^name <n2>)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name A)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^destination <t2> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t36-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o6>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<t2> ^name A)
+    (<o5> ^top-block <t3> ^bottom-block <b2>)
+    (<t3> ^name B)
+    (<o6> ^top-block <t3> ^bottom-block { <> <b3> <b3> })
+    (<o7> ^moving-block <t2> ^destination <d2>)
+    (<d2> ^name <n1>)
+    -->
+    (<s1> ^operator <o7> = 0.300000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t30-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B ^name <n2>)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C ^name <n3>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t26-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name B)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> <> <t1> })
+    (<t3> ^name A ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t2>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t25-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t3>)
+    (<o7> ^destination <o1> ^moving-block <t3>)
+    -->
+    (<s1> ^operator <o7> = 0.210000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t24-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block { <> <t4> <t4> })
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b2> ^destination { <> <t3> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name A)
+    (<o3> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name B)
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name C)
+    (<b3> ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t18-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block { <> <t1> <b2> })
-    (<d2> ^top-block <b4> ^bottom-block <b5>)
-    (<b4> ^name B)
-    (<c3> ^top-block <b4> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b3> ^bottom-block <t2>)
-    (<b3> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^destination <t1> ^moving-block <b1>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name A)
+    (<o3> ^bottom-block <t1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name B)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <o1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 0.446700)
+    (<s1> ^operator <o7> = 0.372000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t17-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block { <> <t4> <b4> })
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c6>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<o1> ^moving-block <b1> ^destination { <> <t2> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name B)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name A ^name <n2>)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C ^name <n3>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t16-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name B ^name <n2>)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <t1> })
+    (<t2> ^name A)
+    (<o4> ^bottom-block <t2> ^top-block <t3>)
+    (<t3> ^name C)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t1> ^moving-block <t3>)
+    -->
+    (<s1> ^operator <o6> = 0.081000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t14-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c5>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b3> ^destination { <> <t4> <> <b4> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name C)
+    (<d1> ^ontop <o3>)
+    (<o3> ^top-block <t1> ^bottom-block { <> <b2> <b2> })
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
+    (<b3> ^name <n1>)
+    (<o5> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n2>)
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.081000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t10-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block { <> <b2> <b2> })
-    (<d2> ^top-block <b4> ^bottom-block <b5>)
-    (<b4> ^name B)
-    (<c3> ^top-block <b4> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b3> ^bottom-block <t2>)
-    (<b3> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^destination <t1> ^moving-block <b1>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o6>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<o4> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name A)
+    (<b2> ^name <n1>)
+    (<o5> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name B)
+    (<o6> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o7> ^destination <o1> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t6-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block { <> <t4> <t4> })
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c6>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<o1> ^moving-block <b1> ^destination { <> <t2> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name B)
+    (<o3> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name A)
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name C)
+    (<b3> ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t58-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b3>)
-    (<b3> ^name C)
-    (<d3> ^bottom-block <b3> ^top-block <b2>)
-    (<b2> ^name B)
-    (<d2> ^bottom-block <b2> ^top-block <b1>)
-    (<b1> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block <t1>)
-    (<c2> ^top-block <b2> ^bottom-block <b3>)
-    (<c1> ^top-block <b1> ^bottom-block { <> <b2> <t2> })
-    (<o1> ^destination <b2> ^moving-block <b1>)
+sp {answer*selection*evaluation*expected-values*Tie*t59-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <t1> })
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^destination <t3> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 1.000000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t56-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b3>)
-    (<b3> ^name C)
-    (<d3> ^bottom-block <b3> ^top-block <b2>)
-    (<b2> ^name B)
-    (<d2> ^bottom-block <b2> ^top-block <b1>)
-    (<b1> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block <t1>)
-    (<c2> ^top-block <b2> ^bottom-block <b3>)
-    (<c1> ^top-block <b1> ^bottom-block { <> <t2> <t2> })
-    (<o1> ^destination <b2> ^moving-block <b1>)
+sp {answer*selection*evaluation*expected-values*Tie*t54-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <t1> <> <o1> })
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^destination <t3> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 1.000000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t56-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d5> ^duplicates <d4> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t1> ^ontop <n4> ^ontop <n3> ^ontop <n2>)
-    (<t1> ^name table)
-    (<d2> ^ontop <d1> ^ontop <d3> ^ontop <d6>)
-    (<d1> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<d3> ^bottom-block <b1> ^top-block <b2>)
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value <b2>)}
-    (<b2> ^name B)
-    (<d6> ^bottom-block <b2> ^top-block <b3>)
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b3>)}
-    (<b3> ^name A)
-    (<n4> ^top-block <b3> ^bottom-block { <> <b2> <t2> })
-    (<n3> ^top-block <b2> ^bottom-block <b1>)
-    (<n2> ^top-block <b1> ^bottom-block <t1>)
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^destination <b2> ^moving-block <b3>)
+sp {answer*selection*evaluation*expected-values*Tie*t52-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> })
+    (<t3> ^name B ^name <n1>)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <t3> ^moving-block <t1>)
     -->
-    (<e1> ^expected-value 1.000000 +)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t51-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c2> ^ontop <c1> ^ontop <c3> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<d3> ^bottom-block <b1> ^top-block <b2>)
-    (<b2> ^name B)
-    (<c2> ^top-block <b2> ^bottom-block { <> <b1> <t2> })
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b4>)
-    (<b3> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b4> <t3> })
-    (<o1> ^destination <b1> ^moving-block <b2>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name A)
+    (<d1> ^ontop <o5> ^ontop <o6> ^ontop <o7>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t1>)
+    (<o7> ^top-block <t3> ^bottom-block <t2>)
+    (<o8> ^destination <t1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 0.753000)
+    (<s1> ^operator <o8> = 0.600000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t45-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c2> ^ontop <c1> ^ontop <c3> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d4> ^ontop <d3> ^ontop <d2>)
-    (<d4> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<d3> ^bottom-block <b1> ^top-block <b2>)
-    (<b2> ^name B)
-    (<c2> ^top-block <b2> ^bottom-block { <> <t2> <t2> })
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b4>)
-    (<b3> ^name A)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b4> <t3> })
-    (<o1> ^destination <b1> ^moving-block <b2>)
+sp {answer*selection*evaluation*expected-values*Tie*t47-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o6> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o5>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <> <b2> <b2> })
+    (<o6> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name A)
+    (<b3> ^name <n1>)
+    (<o7> ^moving-block <t2> ^destination <d2>)
     -->
-    (<s1> ^operator <o1> = 0.600000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t45-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d4> ^duplicates <d3> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t3> ^ontop <n4> ^ontop <n3> ^ontop <n2>)
-    (<t3> ^name table)
-    (<d2> ^ontop <d6> ^ontop <d5> ^ontop <d1>)
-    (<d6> ^bottom-block <t3> ^top-block <b4>)
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b4>)}
-    (<b4> ^name C)
-    (<n4> ^top-block <b4> ^bottom-block <t3>)
-    (<d5> ^bottom-block <b4> ^top-block <b3>)
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value <b3>)}
-    (<b3> ^name B)
-    (<n3> ^top-block <b3> ^bottom-block { <> <b4> <t2> })
-    (<d1> ^top-block <b1> ^bottom-block <b2>)
-    (<b1> ^name A)
-    (<n2> ^top-block <b1> ^bottom-block { <> <b2> <t1> })
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^destination <b4> ^moving-block <b3>)
+sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t47-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^moving-block <m1> ^destination <d1>)
+    (<m1> ^name B)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^bottom-block <o2> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o4> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o5> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name A)
+    (<b2> ^name <n1>)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6> ^ontop <o7>)
+    (<o6> ^top-block <t1> ^bottom-block <o2>)
+    (<o7> ^top-block <m1> ^bottom-block { <b3> <> <d1> })
+    -->
+    (<e1> ^expected-value 0.300000 +)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t43-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> })
+    (<t3> ^name A ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o6> = 0.081000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t42-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o5> ^ontop <o6> ^operator <o8> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o4> ^ontop <o7>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name B)
+    (<o5> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<o6> ^top-block <t3> ^bottom-block <b2>)
+    (<t3> ^name A)
+    (<o7> ^top-block <t3> ^bottom-block { <> <b3> <b3> })
+    (<o8> ^destination <t1> ^moving-block <t2>)
+    -->
+    (<s1> ^operator <o8> = 0.600000)
+}
+
+sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t42-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^destination <d1> ^moving-block <m1>)
+    (<d1> ^name C)
+    (<m1> ^name B)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^top-block <d1> ^bottom-block <o2>)
+    (<o4> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o5> ^top-block <t1> ^bottom-block <b2>)
+    (<t1> ^name A)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6> ^ontop <o7> ^ontop <o8>)
+    (<o6> ^top-block <d1> ^bottom-block <o2>)
+    (<o7> ^top-block <m1> ^bottom-block <d1>)
+    (<o8> ^top-block <t1> ^bottom-block { <b3> <> <b2> })
     -->
     (<e1> ^expected-value 0.600000 +)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t41-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b5>)
-    (<b3> ^name B)
-    (<c3> ^top-block <b3> ^bottom-block <t3>)
-    (<c2> ^top-block <b2> ^bottom-block <t2>)
-    (<b2> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^moving-block <b3> ^destination { <> <t3> <> <b5> <b4> })
+sp {answer*selection*evaluation*expected-values*Tie*t38-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C ^name <n1>)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name B)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <t2> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
-sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t41-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d2> ^duplicates <d1> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d4>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n3> ^ontop <n4> ^ontop <n2>)
-    (<t2> ^name table)
-    (<d4> ^ontop <d5> ^ontop <d3>)
-    (<d5> ^bottom-block <t2> ^top-block <b4>)
-    (<b4> ^name C)
-    (<n3> ^top-block <b4> ^bottom-block <t2>)
-    (<n4> ^top-block <b5> ^bottom-block <t3>)
-    (<b5> ^name A)
-    (<t3> ^name <c3>)
-    (<d3> ^top-block <b1> ^bottom-block <b3>)
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value <b1>)}
-    (<b1> ^name B)
-    (<n2> ^top-block <b1> ^bottom-block <t1>)
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^moving-block <b1> ^destination { <> <t1> <> <b3> <b2> })
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value <b2>)}
+sp {answer*selection*evaluation*expected-values*Tie*t37-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B ^name <n2>)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name A)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t1> ^bottom-block <o1>)
+    (<o6> ^destination <t2> ^moving-block <t1>)
+    -->
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t36-2
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<d1> ^ontop <o3> ^ontop <o6>)
+    (<o3> ^top-block <t1> ^bottom-block <o1>)
+    (<o4> ^top-block <t2> ^bottom-block { <> <b1> <b1> })
+    (<t2> ^name A)
+    (<o5> ^top-block <t3> ^bottom-block <b2>)
+    (<t3> ^name B)
+    (<o6> ^top-block <t3> ^bottom-block { <> <b3> <b3> })
+    (<o7> ^moving-block <t2> ^destination <d2>)
+    (<d2> ^name <n1>)
+    -->
+    (<s1> ^operator <o7> = 0.300000)
+}
+
+sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t36-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^moving-block <m1> ^destination <d1>)
+    (<m1> ^name A)
+    (<d1> ^name <n1>)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o4> ^bottom-block <o2> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o5> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name B)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6> ^ontop <o7>)
+    (<o6> ^top-block <t1> ^bottom-block <o2>)
+    (<o7> ^top-block <t2> ^bottom-block { <b3> <> <b2> })
     -->
     (<e1> ^expected-value 0.300000 +)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t35-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block <t1>)
-    (<d2> ^top-block <b3> ^bottom-block <b5>)
-    (<b3> ^name B)
-    (<c3> ^top-block <b3> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b2> ^bottom-block <t2>)
-    (<b2> ^name A)
-    (<o1> ^moving-block <b2> ^destination { <> <t2> <b4> })
-    (<b4> ^name <c4>)
+sp {answer*selection*evaluation*expected-values*Tie*t30-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B ^name <n2>)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C ^name <n3>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
-sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t35-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d5> ^duplicates <d4> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n3> ^ontop <n4> ^ontop <n2>)
-    (<t2> ^name table)
-    (<d2> ^ontop <d3> ^ontop <d1>)
-    (<d3> ^bottom-block <t2> ^top-block <b3>)
-    (<b3> ^name C)
-    (<n3> ^top-block <b3> ^bottom-block <t2>)
-    (<n4> ^top-block <b4> ^bottom-block <t3>)
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b4>)}
-    (<b4> ^name A)
-    (<d1> ^top-block <b1> ^bottom-block <b2>)
-    (<b1> ^name B)
-    (<n2> ^top-block <b1> ^bottom-block { <> <b2> <t1> })
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^moving-block <b4> ^destination { <> <t3> <b5> })
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value <b5>)}
-    (<b5> ^name <c3>)
+sp {answer*selection*evaluation*expected-values*Tie*t26-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name B)
+    (<o3> ^bottom-block <t1> ^top-block <t2>)
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block { <t3> <> <o1> <> <t1> })
+    (<t3> ^name A ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t2>)
     -->
-    (<e1> ^expected-value 0.300000 +)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
-sp {answer*selection*evaluation*expected-values*Tie*t28-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block { <> <t4> <b4> })
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b2> ^destination { <> <t3> <b5> })
-    (<b5> ^name <c4>)
+sp {answer*selection*evaluation*expected-values*Tie*t25-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name A)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name B)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^top-block <t2> ^bottom-block <t3>)
+    (<o7> ^destination <o1> ^moving-block <t3>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o7> = 0.210000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t24-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block { <> <t4> <t4> })
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b2> ^destination { <> <t3> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name A)
+    (<o3> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name B)
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name C)
+    (<b3> ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t24-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d4> ^duplicates <d3> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n4> ^ontop <n3> ^ontop <n2>)
-    (<t2> ^name table)
-    (<n4> ^top-block <b5> ^bottom-block <t4>)
-    (<b5> ^name B)
-    (<t4> ^name <c3>)
-    (<n3> ^top-block <b3> ^bottom-block <t3>)
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value <b3>)}
-    (<b3> ^name A)
-    (<n2> ^top-block <b1> ^bottom-block <b2>)
-    (<b1> ^name C)
-    (<b2> ^name <c5>)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b1> ^bottom-block { <> <b2> <t1> })
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^moving-block <b3> ^destination { <> <t3> <b4> })
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b4>)}
-    (<b4> ^name <c4>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^moving-block <m1> ^destination <d1>)
+    (<m1> ^name A)
+    (<d1> ^name <n1>)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o4> ^top-block <t1> ^bottom-block <b2>)
+    (<t1> ^name B)
+    (<b2> ^name <n2>)
+    (<o5> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name C)
+    (<b3> ^name <n3>)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6>)
+    (<o6> ^top-block <t2> ^bottom-block { <b4> <> <b3> })
     -->
     (<e1> ^expected-value 0.000000 +)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t18-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block { <> <t1> <b2> })
-    (<d2> ^top-block <b4> ^bottom-block <b5>)
-    (<b4> ^name B)
-    (<c3> ^top-block <b4> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b3> ^bottom-block <t2>)
-    (<b3> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^destination <t1> ^moving-block <b1>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o7> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name A)
+    (<o3> ^bottom-block <t1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name C)
+    (<o4> ^bottom-block <o1> ^top-block <t3>)
+    (<t3> ^name B)
+    (<d1> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <t2> ^bottom-block <o1>)
+    (<o6> ^top-block <t3> ^bottom-block <t2>)
+    (<o7> ^destination <o1> ^moving-block <t2>)
     -->
-    (<s1> ^operator <o1> = 0.446700)
+    (<s1> ^operator <o7> = 0.372000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t17-1
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block { <> <t4> <b4> })
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c6>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<o1> ^moving-block <b1> ^destination { <> <t2> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name B)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <o1> })
+    (<t2> ^name A ^name <n2>)
+    (<o4> ^bottom-block <t2> ^top-block { <t3> <> <o1> })
+    (<t3> ^name C ^name <n3>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t3> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
+}
+
+sp {answer*selection*evaluation*expected-values*Tie*t16-1
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table ^name <n1>)
+    (<p1> ^name move-blocks)
+    (<o2> ^bottom-block <o1> ^top-block { <t1> <> <o1> })
+    (<t1> ^name B ^name <n2>)
+    (<o3> ^bottom-block <o1> ^top-block { <t2> <> <t1> })
+    (<t2> ^name A)
+    (<o4> ^bottom-block <t2> ^top-block <t3>)
+    (<t3> ^name C)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block <o1>)
+    (<o6> ^destination <t1> ^moving-block <t3>)
+    -->
+    (<s1> ^operator <o6> = 0.081000)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t14-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block <t4>)
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c5>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<t2> ^name <c6>)
-    (<o1> ^moving-block <b3> ^destination { <> <t4> <> <b4> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o4> ^ontop <o5> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name C)
+    (<d1> ^ontop <o3>)
+    (<o3> ^top-block <t1> ^bottom-block { <> <b2> <b2> })
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
+    (<b3> ^name <n1>)
+    (<o5> ^top-block <t3> ^bottom-block <b4>)
+    (<t3> ^name A)
+    (<b4> ^name <n2>)
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.081000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t14-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d4> ^duplicates <d3> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n4> ^ontop <n3> ^ontop <n2>)
-    (<t2> ^name table)
-    (<n4> ^top-block <b5> ^bottom-block <t4>)
-    (<b5> ^name B)
-    (<t4> ^name <c3>)
-    (<n3> ^top-block <b4> ^bottom-block <t3>)
-    (<b4> ^name A)
-    (<t3> ^name <c4>)
-    (<n2> ^top-block <b1> ^bottom-block <b2>)
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value <b1>)}
-    (<b1> ^name C)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b1> ^bottom-block <t1>)
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^moving-block <b1> ^destination { <> <t1> <> <b2> <b3> })
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b3>)}
-    (<b3> ^name <c5>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^moving-block <m1> ^destination <d1>)
+    (<m1> ^name C)
+    (<d1> ^name <n1>)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o4> ^top-block <t1> ^bottom-block <b2>)
+    (<t1> ^name B)
+    (<b2> ^name <n2>)
+    (<o5> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name A)
+    (<b3> ^name <n3>)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6>)
+    (<o6> ^top-block <m1> ^bottom-block { <b4> <> <d1> })
     -->
     (<e1> ^expected-value 0.000000 +)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t10-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c1> ^ontop <c3> ^ontop <c2> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d3> ^ontop <d2>)
-    (<d3> ^bottom-block <t1> ^top-block <b1>)
-    (<b1> ^name C)
-    (<c1> ^top-block <b1> ^bottom-block { <> <b2> <b2> })
-    (<d2> ^top-block <b4> ^bottom-block <b5>)
-    (<b4> ^name B)
-    (<c3> ^top-block <b4> ^bottom-block { <> <b5> <t3> })
-    (<c2> ^top-block <b3> ^bottom-block <t2>)
-    (<b3> ^name A)
-    (<t2> ^name <c4>)
-    (<o1> ^destination <t1> ^moving-block <b1>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o3> ^ontop <o4> ^ontop <o5> ^operator <o7> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<d1> ^ontop <o2> ^ontop <o6>)
+    (<o2> ^bottom-block <o1> ^top-block <t1>)
+    (<t1> ^name C)
+    (<o3> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<o4> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name A)
+    (<b2> ^name <n1>)
+    (<o5> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name B)
+    (<o6> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o7> ^destination <o1> ^moving-block <t1>)
     -->
-    (<s1> ^operator <o1> = 0.300000)
+    (<s1> ^operator <o7> = 0.300000)
 }
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t10-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d4> ^duplicates <d3> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n3> ^ontop <n4> ^ontop <n2>)
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <t2>)}
-    (<t2> ^name table)
-    (<d2> ^ontop <d5> ^ontop <d1>)
-    (<d5> ^bottom-block <t2> ^top-block <b4>)
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value <b4>)}
-    (<b4> ^name C)
-    (<n3> ^top-block <b4> ^bottom-block { <> <t2> <b3> })
-    (<n4> ^top-block <b5> ^bottom-block <t3>)
-    (<b5> ^name A)
-    (<t3> ^name <c3>)
-    (<d1> ^top-block <b1> ^bottom-block <b2>)
-    (<b1> ^name B)
-    (<n2> ^top-block <b1> ^bottom-block { <> <b2> <t1> })
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^destination <t2> ^moving-block <b4>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^destination <d1> ^moving-block <m1>)
+    (<d1> ^name table)
+    (<m1> ^name C)
+    (<s5> ^object <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4>)
+    (<o2> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o3> ^top-block <t1> ^bottom-block <b2>)
+    (<t1> ^name A)
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name B)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o5> ^ontop <o6>)
+    (<o5> ^top-block <m1> ^bottom-block <d1>)
+    (<o6> ^top-block <t2> ^bottom-block { <b4> <> <b3> })
     -->
     (<e1> ^expected-value 0.300000 +)
 }
 
 sp {answer*selection*evaluation*expected-values*Tie*t6-2
-    (state <s1> ^name blocks-world ^object <t1> ^problem-space <p1>
-          ^desired <d1> ^ontop <c3> ^ontop <c2> ^ontop <c1> ^operator <o1> +)
-    (<t1> ^name table)
-    (<p1> -^default-state-copy no ^two-level-attributes ontop
-          ^one-level-attributes object ^name move-blocks)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b3> ^bottom-block { <> <t4> <t4> })
-    (<b3> ^name C)
-    (<c3> ^top-block <b3> ^bottom-block <b4>)
-    (<b4> ^name <c5>)
-    (<c2> ^top-block <b2> ^bottom-block <t3>)
-    (<b2> ^name A)
-    (<t3> ^name <c6>)
-    (<c1> ^top-block <b1> ^bottom-block <t2>)
-    (<b1> ^name B)
-    (<o1> ^moving-block <b1> ^destination { <> <t2> <b5> })
-    (<b5> ^name <c4>)
+    (state <s1> ^name blocks-world ^object <o1> ^problem-space <p1>
+          ^desired <d1> ^ontop <o2> ^ontop <o3> ^ontop <o4> ^operator <o6> +)
+    (<o1> ^name table)
+    (<p1> ^name move-blocks)
+    (<o2> ^top-block <t1> ^bottom-block { <> <b1> <b1> })
+    (<t1> ^name B)
+    (<o3> ^top-block <t2> ^bottom-block <b2>)
+    (<t2> ^name A)
+    (<b2> ^name <n1>)
+    (<o4> ^top-block <t3> ^bottom-block <b3>)
+    (<t3> ^name C)
+    (<b3> ^name <n2>)
+    (<d1> ^ontop <o5>)
+    (<o5> ^top-block <t3> ^bottom-block { <> <b4> <b4> })
+    (<o6> ^moving-block <t1> ^destination <d2>)
+    (<d2> ^name <n3>)
     -->
-    (<s1> ^operator <o1> = 0.000000)
+    (<s1> ^operator <o6> = 0.000000)
 }
 
 sp {answer*evaluate-operator*elaborate*expected-evaluation*from-subgoal*OpNoChange*t6-1
-    (state <s1> ^copy-structure <c1> ^evaluation <e1> ^operator <o1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name blocks-world ^superstate-problem-space <p1>
-          ^duplicates <d4> ^duplicates <d3> ^duplicate-state <n1>
-          ^superstate-problem-space-name <c2> ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-    (<p1> ^two-level-attributes ontop ^one-level-attributes object)
-    (<n1> ^object <t2> ^ontop <n4> ^ontop <n3> ^ontop <n2>)
-    (<t2> ^name table)
-    (<n4> ^top-block <b4> ^bottom-block <t4>)
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value <b4>)}
-    (<b4> ^name B)
-    (<n3> ^top-block <b3> ^bottom-block <t3>)
-    (<b3> ^name A)
-    (<t3> ^name <c4>)
-    (<n2> ^top-block <b1> ^bottom-block <b2>)
-    (<b1> ^name C)
-    (<b2> ^name <c5>)
-    (<d1> ^ontop <d2>)
-    (<d2> ^top-block <b1> ^bottom-block { <> <b2> <t1> })
-    (<o1> ^superstate-problem-space-name move-blocks ^evaluation <e1>
-          ^name evaluate-operator ^superoperator <o2>)
-    (<o2> ^moving-block <b4> ^destination { <> <t4> <b5> })
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value <b5>)}
-    (<b5> ^name <c3>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superstate <s3> ^superoperator <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name move-blocks)
+    (<s3> ^name blocks-world)
+    (<s4> ^moving-block <m1> ^destination <d1>)
+    (<m1> ^name B)
+    (<d1> ^name <n1>)
+    (<s5> ^object <o2> ^ontop <o3> ^ontop <o4> ^ontop <o5>)
+    (<o2> ^name table)
+    (<o3> ^top-block <m1> ^bottom-block { <b1> <> <d1> })
+    (<o4> ^top-block <t1> ^bottom-block <b2>)
+    (<t1> ^name A)
+    (<b2> ^name <n2>)
+    (<o5> ^top-block <t2> ^bottom-block <b3>)
+    (<t2> ^name C)
+    (<b3> ^name <n3>)
+    (<e1> ^desired <d2>)
+    (<d2> ^ontop <o6>)
+    (<o6> ^top-block <t2> ^bottom-block { <b4> <> <b3> })
     -->
     (<e1> ^expected-value 0.000000 +)
 }

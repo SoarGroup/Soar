@@ -4,740 +4,522 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t110-
     (<r1> ^missionaries 0 ^cannibals 0)
     (<l1> ^missionaries 3 ^cannibals 3)
     (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t110-1
-    (state <s1> ^copy-structure <c1> ^operator <o2> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d5> ^duplicates <d4>
-          ^duplicates <d3> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank right-bank ^boat left-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^missionaries 0 ^cannibals 0)
-    (<n2> ^missionaries 3 ^cannibals 3)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d2> ^right-bank <d1>)
-    (<d1> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^cannibals 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 0)
+    (<l1> ^missionaries 3 ^cannibals 3)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t100-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 0 ^cannibals 2)
-    (<n2> ^missionaries 3 ^cannibals 1)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 0 ^cannibals 2)
+    (<l1> ^missionaries 3 ^cannibals 1)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t100-1
-    (state <s1> ^copy-structure <c1> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d5> ^duplicates <d4>
-          ^duplicates <d3> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank left-bank ^boat right-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^missionaries 0 ^cannibals 2)
-    (<n2> ^missionaries 3 ^cannibals 1)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<s2> ^boat right-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^missionaries 0 ^cannibals 2)
-    (<n4> ^missionaries 3 ^cannibals 1)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d2> ^right-bank <d1>)
-    (<d1> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
+    (<s2> ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 2)
+    (<l1> ^missionaries 3 ^cannibals 1)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t92-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 0 ^cannibals 3)
-    (<n2> ^missionaries 3 ^cannibals 0)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 0 ^cannibals 3)
+    (<l1> ^missionaries 3 ^cannibals 0)
     (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t92-1
-    (state <s1> ^copy-structure <c1> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d3> ^duplicates <d2>
-          ^duplicates <d1> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d5>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank left-bank ^boat right-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^missionaries 0 ^cannibals 3)
-    (<n2> ^missionaries 3 ^cannibals 0)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<s2> ^boat right-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^missionaries 0 ^cannibals 3)
-    (<n4> ^missionaries 3 ^cannibals 0)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d5> ^right-bank <d4>)
-    (<d4> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
+    (<s2> ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 3)
+    (<l1> ^missionaries 3 ^cannibals 0)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t86-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 0 ^cannibals 1)
-    (<n2> ^missionaries 3 ^cannibals 2)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 0 ^cannibals 1)
+    (<l1> ^missionaries 3 ^cannibals 2)
     (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t86-1
-    (state <s1> ^copy-structure <c1> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d5> ^duplicates <d4>
-          ^duplicates <d3> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank right-bank ^boat left-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^missionaries 0 ^cannibals 1)
-    (<n2> ^missionaries 3 ^cannibals 2)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<s2> ^boat left-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^missionaries 0 ^cannibals 1)
-    (<n4> ^missionaries 3 ^cannibals 2)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d2> ^right-bank <d1>)
-    (<d1> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
+    (<s2> ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 1)
+    (<l1> ^missionaries 3 ^cannibals 2)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t79-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 0 ^cannibals 2)
-    (<n2> ^missionaries 3 ^cannibals 1)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 0 ^cannibals 2)
+    (<l1> ^missionaries 3 ^cannibals 1)
     (<o1> ^missionaries 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t79-1
-    (state <s1> ^copy-structure <c1> ^operator <o2> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d5> ^duplicates <d4>
-          ^duplicates <d3> ^duplicate-state <n2>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d2>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n2> ^o-bank right-bank ^boat left-bank ^right-bank <n1> ^left-bank <n3>)
-    (<n1> ^missionaries 0 ^cannibals 2)
-    (<n3> ^missionaries 3 ^cannibals 1)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^missionaries 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d2> ^right-bank <d1>)
-    (<d1> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^missionaries 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 2)
+    (<l1> ^missionaries 3 ^cannibals 1)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t73-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 2 ^cannibals 2)
-    (<n2> ^missionaries 1 ^cannibals 1)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 2 ^cannibals 2)
+    (<l1> ^missionaries 1 ^cannibals 1)
     (<o1> ^missionaries 1 ^cannibals 1 ^name move-boat)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t73-1
-    (state <s1> ^copy-structure <c1> ^operator <o1> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d5> ^duplicates <d4>
-          ^duplicate-state <n1> ^superstate-problem-space <p1>
-          ^duplicates <d3> ^superstate-problem-space-name <c2>
-          ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d5> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-    (<n1> ^o-bank left-bank ^boat right-bank ^right-bank <n2> ^left-bank <n3>)
-    (<n2> ^missionaries 2 ^cannibals 2)
-    (<n3> ^missionaries 1 ^cannibals 1)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o1> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o2> ^evaluation <e1>)
-    (<o2> ^missionaries 1 ^cannibals 1 ^name move-boat)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^missionaries 1 ^cannibals 1 ^name move-boat)
+    (<s4> ^name mac)
+    (<s5> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 2 ^cannibals 2)
+    (<l1> ^missionaries 1 ^cannibals 1)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t68-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^missionaries 1 ^cannibals 1)
-    (<n2> ^missionaries 2 ^cannibals 2)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^missionaries 1 ^cannibals 1)
+    (<l1> ^missionaries 2 ^cannibals 2)
     (<o1> ^missionaries 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries 3 ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t68-1
-    (state <s1> ^copy-structure <c1> ^operator <o2> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicates <d2> ^duplicate-state <n1>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n1> ^o-bank right-bank ^boat left-bank ^right-bank <n3> ^left-bank <n2>)
-    (<n3> ^missionaries 1 ^cannibals 1)
-    (<n2> ^missionaries 2 ^cannibals 2)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^missionaries 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c2> } 0)
-    (<d1> ^right-bank <d5>)
-    (<d5> ^missionaries 3 ^cannibals 3)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^missionaries 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 1 ^cannibals 1)
+    (<l1> ^missionaries 2 ^cannibals 2)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries 3 ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t64-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^cannibals 1 ^missionaries <c1>)
-    (<n2> ^cannibals 2 ^missionaries <c2>)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^cannibals 1 ^missionaries <m1>)
+    (<l1> ^cannibals 2 ^missionaries <m2>)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries <c1> ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m1> ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t64-1
-    (state <s1> ^copy-structure <c3> ^operator <o2> ^evaluation <e1>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicates <d2> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d1>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank left-bank ^boat right-bank ^right-bank <n2> ^left-bank <n1>)
-    (<n2> ^cannibals 1 ^missionaries <c2>)
-    (<n1> ^cannibals 2 ^missionaries <c1>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<d1> ^right-bank <d5>)
-    (<d5> ^missionaries <c2> ^cannibals 3)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 1 ^missionaries <m1>)
+    (<l1> ^cannibals 2 ^missionaries <m2>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m1> ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t63-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^cannibals 1 ^missionaries <c1>)
-    (<n2> ^cannibals 2 ^missionaries <c2>)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^cannibals 1 ^missionaries <m2>)
+    (<l1> ^cannibals 2 ^missionaries <m1>)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries <c1> ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m2> ^cannibals 3)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t63-1
-    (state <s1> ^copy-structure <c3> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d3> ^duplicates <d2>
-          ^duplicates <d1> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d5>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank right-bank ^boat left-bank ^right-bank <n2> ^left-bank <n1>)
-    (<n2> ^cannibals 1 ^missionaries <c2>)
-    (<n1> ^cannibals 2 ^missionaries <c1>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<s2> ^boat left-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^cannibals 1 ^missionaries <c2>)
-    (<n4> ^cannibals 2 ^missionaries <c1>)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<d5> ^right-bank <d4>)
-    (<d4> ^missionaries <c2> ^cannibals 3)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
+    (<s2> ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 1 ^missionaries <m2>)
+    (<l1> ^cannibals 2 ^missionaries <m1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m2> ^cannibals 3)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t57-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<n1> ^cannibals 2 ^missionaries <c1>)
-    (<n2> ^cannibals 1 ^missionaries <c2>)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
+    (<r1> ^cannibals 2 ^missionaries <m1>)
+    (<l1> ^cannibals 1 ^missionaries <m2>)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<d1> ^right-bank <d2>)
-    (<d2> ^missionaries <c1> ^cannibals 3)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m1> ^cannibals 3)
     -->
     (<s1> ^operator <o1> >)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t57-1
-    (state <s1> ^copy-structure <c3> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicates <d2> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d1>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank left-bank ^boat right-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^cannibals 2 ^missionaries <c1>)
-    (<n2> ^cannibals 1 ^missionaries <c2>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<s2> ^boat right-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^cannibals 2 ^missionaries <c1>)
-    (<n4> ^cannibals 1 ^missionaries <c2>)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<d1> ^right-bank <d5>)
-    (<d5> ^missionaries <c1> ^cannibals 3)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
+    (<s2> ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 2 ^missionaries <m1>)
+    (<l1> ^cannibals 1 ^missionaries <m2>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
+    (<d1> ^right-bank <r2>)
+    (<r2> ^missionaries <m1> ^cannibals 3)
     -->
     (<e1> ^symbolic-value success +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t56-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>
-          ^superstate <s3>)
-    (<n1> ^cannibals 1 ^missionaries <c2>)
-    (<n2> ^cannibals 2 ^missionaries <c1>)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>
+          ^superstate <s2>)
+    (<r1> ^cannibals 1 ^missionaries <m2>)
+    (<l1> ^cannibals 2 ^missionaries <m1>)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<s3> ^superstate <s2>)
-    (<s2> ^boat right-bank ^right-bank <n4> ^left-bank <n3>)
-    (<n4> ^missionaries <c2> ^cannibals 2)
-    (<n3> ^missionaries <c1> ^cannibals 1)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<s2> ^superstate <s3>)
+    (<s3> ^boat right-bank ^right-bank <r2> ^left-bank <l2>)
+    (<r2> ^missionaries <m2> ^cannibals 2)
+    (<l2> ^missionaries <m1> ^cannibals 1)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t56-1
-    (state <s1> ^copy-structure <c3> ^operator <o2> ^evaluation <e1>
-          ^superstate <s4>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d3> ^duplicates <d2>
-          ^duplicates <d1> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d4>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank right-bank ^boat left-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^cannibals 1 ^missionaries <c1>)
-    (<n2> ^cannibals 2 ^missionaries <c2>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<s4> ^superstate <s3>)
-    (<s3> ^superstate <s2>)
-    (<s2> ^boat right-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^missionaries <c1> ^cannibals 2)
-    (<n4> ^missionaries <c2> ^cannibals 1)
+    (state <s1> ^operator <o1> ^superstate <s6> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 1 ^missionaries <m2>)
+    (<l1> ^cannibals 2 ^missionaries <m1>)
+    (<s6> ^superstate <s7>)
+    (<s7> ^superstate <s8>)
+    (<s8> ^boat right-bank ^right-bank <r2> ^left-bank <l2>)
+    (<r2> ^missionaries <m2> ^cannibals 2)
+    (<l2> ^missionaries <m1> ^cannibals 1)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t40-4
-    (state <s1> ^name mac ^operator <o1> + ^problem-space <p1> ^o-bank <c2>
-          ^boat { << right-bank left-bank >> <c1> } ^<c1> <n1> ^desired <d1>
-          ^<c2> <n2>)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^left-bank <l1>
+          ^operator <o1> + ^problem-space <p1> ^right-bank <r1> ^desired <d1>)
+    (<l1> ^missionaries 2 ^cannibals { <c1> > 1 })
     (<o1> ^missionaries 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c5> } 0)
-    (<p1> -^default-state-copy no ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals
-          ^two-level-attributes <c2> ^two-level-attributes <c1>)
-    (<n1> ^missionaries 2 ^cannibals { > 1 <c3> })
-    (<n2> ^missionaries <c4>)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<r1> ^missionaries <m1>)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*Tie*t40-3
-    (state <s1> ^name mac ^operator <o2> + ^operator <o1> +
-          ^problem-space <p1> ^o-bank { << right-bank left-bank >> <c2> }
-          ^boat { << right-bank left-bank >> <c3> } ^<c2> <n1> ^<c3> <n2>
-          ^desired <d1>)
-    (<o2> ^missionaries 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c6> } 0)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals
-          ^two-level-attributes <c2> ^two-level-attributes <c3>)
-    (<n1> ^cannibals 1 ^missionaries { > 0 < 2 <c5> })
-    (<n2> ^missionaries 2 ^cannibals { > 1 <c4> })
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^operator <o2> +
+          ^problem-space <p1> ^desired <d1>)
+    (<r1> ^cannibals 1 ^missionaries { <m1> < 2 > 0 })
+    (<l1> ^missionaries 2 ^cannibals { <c1> > 1 })
+    (<o1> ^missionaries 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<o2> ^cannibals 1 ^name move-boat
+          ^{ <a2> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
     -->
-    (<s1> ^operator <o2> = <o1>)
+    (<s1> ^operator <o1> = <o2>)
 }
 
 sp {answer*selection*compare*same-symbolic-evaluations-are-indifferent*Tie*t40-2
-    (state <s1> ^name mac ^operator <o2> + ^operator <o1> +
-          ^problem-space <p1> ^o-bank { << right-bank left-bank >> <c2> }
-          ^boat { << right-bank left-bank >> <c3> } ^<c3> <n1> ^<c2> <n2>
-          ^desired <d1>)
-    (<o2> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c6> } 0)
-    (<o1> ^missionaries 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c1> } 0)
-    (<p1> -^default-state-copy no ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals
-          ^two-level-attributes <c2> ^two-level-attributes <c3>)
-    (<n1> ^missionaries 2 ^cannibals { > 1 <c5> })
-    (<n2> ^cannibals 1 ^missionaries { > 0 < 2 <c4> })
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^operator <o2> +
+          ^problem-space <p1> ^desired <d1>)
+    (<r1> ^cannibals 1 ^missionaries { <m1> > 0 < 2 })
+    (<l1> ^missionaries 2 ^cannibals { <c1> > 1 })
+    (<o1> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<o2> ^missionaries 1 ^name move-boat
+          ^{ <a2> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
     -->
-    (<s1> ^operator <o2> = <o1>)
+    (<s1> ^operator <o1> = <o2>)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t40-1
-    (state <s1> ^copy-structure <c1> ^operator <o2> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicates <d2> ^superstate-problem-space <p1>
-          ^duplicate-state <n1> ^superstate-problem-space-name <c6>
-          ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<p1> ^one-level-attributes o-bank ^one-level-attributes boat
-          ^two-level-attributes { << right-bank left-bank >> <c3> }
-          ^two-level-attributes <c2>)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^missionaries 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<n1> ^boat <c3> ^o-bank <c2> ^<c3> <n3> ^<c2> <n2>)
-    (<n3> ^missionaries 2 ^cannibals { > 1 <c7> })
-    (<n2> ^missionaries <c5>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^missionaries 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^left-bank <l1> ^right-bank <r1>)
+    (<l1> ^missionaries 2 ^cannibals { <c1> > 1 })
+    (<r1> ^missionaries <m1>)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t37-2
-    (state <s1> ^name mac ^operator <o1> + ^problem-space <p1>
-          ^o-bank { << right-bank left-bank >> <c2> } ^boat <c1> ^<c2> <n1>
-          ^desired <d1> ^<c1> <n2>)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^operator <o1> + ^problem-space <p1> ^left-bank <l1> ^desired <d1>)
+    (<r1> ^cannibals 1 ^missionaries { <m1> < 2 > 0 })
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c5> } 0)
-    (<p1> -^default-state-copy no ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals
-          ^two-level-attributes <c2> ^two-level-attributes <c1>)
-    (<n1> ^cannibals 1 ^missionaries { > 0 < 2 <c3> })
-    (<n2> ^cannibals <c4>)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<l1> ^cannibals <c1>)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t37-1
-    (state <s1> ^copy-structure <c1> ^operator <o2> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicates <d2> ^superstate-problem-space <p1>
-          ^duplicate-state <n2> ^superstate-problem-space-name <c6>
-          ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<p1> ^one-level-attributes o-bank ^one-level-attributes boat
-          ^two-level-attributes <c4> ^two-level-attributes <c3>)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c5> } 0)
-    (<n2> ^boat <c4> ^o-bank { << right-bank left-bank >> <c3> } ^<c3> <n1>
-          ^<c4> <n3>)
-    (<n1> ^cannibals 1 ^missionaries { < 2 > 0 <c2> })
-    (<n3> ^cannibals <c7>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 1 ^missionaries { <m1> < 2 > 0 })
+    (<l1> ^cannibals <c1>)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t24-2
-    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <n1>
-          ^left-bank <n2> ^operator <o1> + ^problem-space <p1> ^desired <d1>
-          ^superstate <s3>)
-    (<n1> ^cannibals 3 ^missionaries <c2>)
-    (<n2> ^cannibals 0 ^missionaries <c1>)
+    (state <s1> ^o-bank left-bank ^boat right-bank ^name mac ^right-bank <r1>
+          ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>
+          ^superstate <s2>)
+    (<r1> ^cannibals 3 ^missionaries <m2>)
+    (<l1> ^cannibals 0 ^missionaries <m1>)
     (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<s3> ^superstate <s2>)
-    (<s2> ^boat left-bank ^right-bank <n4> ^left-bank <n3>)
-    (<n4> ^missionaries <c2> ^cannibals 1)
-    (<n3> ^missionaries <c1> ^cannibals 2)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
+    (<s2> ^superstate <s3>)
+    (<s3> ^boat left-bank ^right-bank <r2> ^left-bank <l2>)
+    (<r2> ^missionaries <m2> ^cannibals 1)
+    (<l2> ^missionaries <m1> ^cannibals 2)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t24-1
-    (state <s1> ^copy-structure <c3> ^operator <o2> ^evaluation <e1>
-          ^superstate <s4>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d3> ^duplicates <d2>
-          ^duplicates <d1> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d4>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 2)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank left-bank ^boat right-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^cannibals 3 ^missionaries <c1>)
-    (<n2> ^cannibals 0 ^missionaries <c2>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 2 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
-    (<s4> ^superstate <s3>)
-    (<s3> ^superstate <s2>)
-    (<s2> ^boat left-bank ^right-bank <n5> ^left-bank <n4>)
-    (<n5> ^missionaries <c1> ^cannibals 1)
-    (<n4> ^missionaries <c2> ^cannibals 2)
+    (state <s1> ^operator <o1> ^superstate <s6> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^cannibals 2 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s4> ^name mac)
+    (<s5> ^o-bank left-bank ^boat right-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^cannibals 3 ^missionaries <m2>)
+    (<l1> ^cannibals 0 ^missionaries <m1>)
+    (<s6> ^superstate <s7>)
+    (<s7> ^superstate <s8>)
+    (<s8> ^boat left-bank ^right-bank <r2> ^left-bank <l2>)
+    (<r2> ^missionaries <m2> ^cannibals 1)
+    (<l2> ^missionaries <m1> ^cannibals 2)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
 
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t17-2
-    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <n1>
-          ^operator <o1> + ^problem-space <p1> ^left-bank <n2> ^desired <d1>)
-    (<n1> ^missionaries 0 ^cannibals 1)
+    (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
+          ^operator <o1> + ^problem-space <p1> ^left-bank <l1> ^desired <d1>)
+    (<r1> ^missionaries 0 ^cannibals 1)
     (<o1> ^missionaries 1 ^cannibals 1 ^name move-boat)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
-    (<n2> ^missionaries <c1> ^cannibals <c2>)
+    (<p1> ^name missionaries-and-cannibals)
+    (<l1> ^missionaries <m1> ^cannibals <c1>)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t17-1
-    (state <s1> ^copy-structure <c1> ^operator <o1> ^evaluation <e1>)
-    (<c1> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d4> ^duplicates <d3>
-          ^duplicate-state <n1> ^superstate-problem-space <p1>
-          ^duplicates <d2> ^superstate-problem-space-name <c3>
-          ^superstate-desired <d1>)
-   -{ (<c1> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d4> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-    (<n1> ^o-bank right-bank ^boat left-bank ^right-bank <n2> ^left-bank <n3>)
-    (<n2> ^missionaries 0 ^cannibals 1)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
-    (<o1> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o2> ^evaluation <e1>)
-    (<o2> ^missionaries 1 ^cannibals 1 ^name move-boat)
-    (<n3> ^missionaries <c2> ^cannibals <c4>)
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name missionaries-and-cannibals)
+    (<s3> ^missionaries 1 ^cannibals 1 ^name move-boat)
+    (<s4> ^name mac)
+    (<s5> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<r1> ^missionaries 0 ^cannibals 1)
+    (<l1> ^missionaries <m1> ^cannibals <c1>)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
@@ -745,45 +527,29 @@ sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChan
 sp {answer*selection*select*failure-evaluation-becomes-reject-preference*Tie*t6-2
     (state <s1> ^o-bank right-bank ^boat left-bank ^name mac ^right-bank <r1>
           ^left-bank <l1> ^operator <o1> + ^problem-space <p1> ^desired <d1>)
-    (<r1> ^cannibals 0 ^missionaries <c1>)
-    (<l1> ^cannibals 3 ^missionaries <c2>)
+    (<r1> ^cannibals 0 ^missionaries <m2>)
+    (<l1> ^cannibals 3 ^missionaries <m1>)
     (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c3> } 0)
-    (<p1> -^default-state-copy no ^two-level-attributes right-bank
-          ^two-level-attributes left-bank ^one-level-attributes o-bank
-          ^one-level-attributes boat ^name missionaries-and-cannibals)
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<p1> ^name missionaries-and-cannibals)
     -->
     (<s1> ^operator <o1> -)
 }
 
 sp {answer*evaluate-operator*elaborate*symbolic-evaluation*from-subgoal*OpNoChange*t6-1
-    (state <s1> ^copy-structure <c3> ^superstate <s2> ^operator <o2>
-          ^evaluation <e1>)
-    (<c3> -^default-desired-copy yes ^default-state-copy yes
-          ^superstate-name mac ^duplicates <d3> ^duplicates <d2>
-          ^duplicates <d1> ^duplicate-state <n3>
-          ^superstate-problem-space <p1> ^superstate-problem-space-name <c5>
-          ^superstate-desired <d4>)
-   -{ (<c3> ^superstate-problem-space <s*1>)
-      (<s*1> ^no-local-negations <nln>)}
-   -{ (<d3> ^dup-id <d*1>)
-      (<d*1> ^original-value 1)}
-   -{ (<d2> ^dup-id <d*1>)
-      (<d*1> ^original-value 0)}
-   -{ (<d1> ^dup-id <d*1>)
-      (<d*1> ^original-value move-boat)}
-    (<n3> ^o-bank right-bank ^boat left-bank ^right-bank <n1> ^left-bank <n2>)
-    (<n1> ^cannibals 0 ^missionaries <c1>)
-    (<n2> ^cannibals 3 ^missionaries <c2>)
-    (<p1> ^two-level-attributes right-bank ^two-level-attributes left-bank
-          ^one-level-attributes o-bank ^one-level-attributes boat)
+    (state <s1> ^superstate <s2> ^operator <o1> ^evaluation <e1>)
     (<s2> ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
-    (<r1> ^cannibals 0 ^missionaries <c1>)
-    (<l1> ^cannibals 3 ^missionaries <c2>)
-    (<o2> ^superstate-problem-space-name missionaries-and-cannibals
-          ^name evaluate-operator ^superoperator <o1> ^evaluation <e1>)
-    (<o1> ^cannibals 1 ^name move-boat
-          ^{ << missionaries cannibals >> <> duplicate-of <c4> } 0)
+    (<r1> ^cannibals 0 ^missionaries <m2>)
+    (<l1> ^cannibals 3 ^missionaries <m1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s3> ^superoperator <s4> ^superstate <s5>
+          ^superstate <s6> ^evaluation <e1>)
+    (<s3> ^name missionaries-and-cannibals)
+    (<s4> ^cannibals 1 ^name move-boat
+          ^{ <a1> << missionaries cannibals >> <> duplicate-of } 0)
+    (<s5> ^name mac)
+    (<s6> ^o-bank right-bank ^boat left-bank ^right-bank <r1> ^left-bank <l1>)
+    (<e1> ^desired <d1>)
     -->
     (<e1> ^symbolic-value failure +)
 }
