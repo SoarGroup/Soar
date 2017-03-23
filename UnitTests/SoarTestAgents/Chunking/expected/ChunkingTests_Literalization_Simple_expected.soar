@@ -1,0 +1,5 @@
+sp {answer*chunk*make-chunk2*snc*t2-1
+    (state <s1> ^foo bar ^word object ^superstate nil ^foo <c2> ^word <c1>)
+    -->
+    (<s1> ^result object + ^result2 bar +)
+}
