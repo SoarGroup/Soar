@@ -296,10 +296,10 @@ proc source {fname args} {
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
     popd
-	if { [string first "Error in file" $errorMessage] == 0} {
+	if { [string first "\nError in file" $errorMessage] == 0} {
 		error "$errorMessage"
 	} else {
-		error "Error in file [pwd]/$file: \n$errorMessage"
+		error "\nError in file [pwd]/$file: \n$errorMessage"
 	}
   }
   
