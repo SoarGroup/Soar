@@ -430,6 +430,7 @@ production* make_production(agent*          thisAgent,
     thisAgent->memoryManager->allocate_with_pool(MP_production, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
+    p->naming_depth = 0;
 
     if (name->sc->production)
     {

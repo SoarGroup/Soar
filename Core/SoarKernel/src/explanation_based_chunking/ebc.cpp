@@ -175,164 +175,86 @@ bool Explanation_Based_Chunker::set_learning_for_instantiation(instantiation* in
 
 Symbol* Explanation_Based_Chunker::generate_name_for_new_rule()
 {
-    Symbol* generated_name;
-    Symbol* goal;
-    byte impasse_type;
-    preference* p;
-    goal_stack_level lowest_result_level;
-    std::string lImpasseName;
-    std::stringstream lName;
-    std::string rule_prefix;
-    uint64_t rule_number, rule_naming_counter;
-    chunkNameFormats chunkNameFormat = ebc_params->naming_style->get_value();
+    uint64_t        rule_number;
+    uint64_t*       rule_naming_counter;
+    char*           rule_prefix;
+    std::string     new_rule_name;
 
+    /* Step 1: Get prefix and rule count */
     if (m_rule_type == ebc_chunk)
     {
         rule_prefix = chunk_name_prefix;
         rule_number = chunks_this_d_cycle;
-        if (chunkNameFormat == numberedFormat)
-        {
-            increment_counter(chunk_naming_counter);
-            rule_naming_counter = chunk_naming_counter;
-        }
+        rule_naming_counter = &chunk_naming_counter;
     } else {
         rule_prefix = justification_name_prefix;
         rule_number = justifications_this_d_cycle;
-        if (chunkNameFormat == numberedFormat)
-        {
-            increment_counter(justification_naming_counter);
-            rule_naming_counter = justification_naming_counter;
-        }
+        rule_naming_counter = &justification_naming_counter;
     }
 
-    lowest_result_level = thisAgent->top_goal->id->level;
-    for (p = m_inst->preferences_generated; p != NIL; p = p->inst_next)
-        if (p->id->id->level > lowest_result_level)
-        {
-            lowest_result_level = p->id->id->level;
-        }
-
-    goal = find_goal_at_goal_stack_level(thisAgent, lowest_result_level);
-
-    switch (chunkNameFormat)
+    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || (ebc_params->naming_style->get_value() == numberedFormat))
     {
-        case numberedFormat:
-        {
-            return (thisAgent->symbolManager->generate_new_str_constant(rule_prefix.c_str(), &(rule_naming_counter)));
-        }
-        case ruleFormat:
-        {
-            std::string real_prod_name;
-
-            lImpasseName.erase();
-            lName << rule_prefix;
-
-            if (goal)
-            {
-                impasse_type = type_of_existing_impasse(thisAgent, goal);
-                switch (impasse_type)
-                {
-                    case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-                        lImpasseName = "Failure";
-                        break;
-                    case CONFLICT_IMPASSE_TYPE:
-                        lImpasseName = "Conflict";
-                        break;
-                    case TIE_IMPASSE_TYPE:
-                        lImpasseName = "Tie";
-                        break;
-                    case NO_CHANGE_IMPASSE_TYPE:
-                    {
-                        Symbol* sym;
-                        sym = find_impasse_wme_value(goal->id->lower_goal, thisAgent->symbolManager->soarSymbols.attribute_symbol);
-                        if (sym)
-                        {
-                            if (sym == thisAgent->symbolManager->soarSymbols.operator_symbol)
-                            {
-                                lImpasseName = "OpNoChange";
-                            }
-                            else if (sym == thisAgent->symbolManager->soarSymbols.state_symbol)
-                            {
-                                lImpasseName = "StateNoChange";
-                            }
-                        }
-                    }
-                    break;
-                    default:
-                        break;
-                }
-            }
-
-            if (m_inst->prod)
-            {
-                std::string:: size_type pos1, pos2, pos3;
-                std::string numberString;
-                std::string sourceString = m_inst->prod_name->sc->name;
-                std::string targetString = m_inst->prod->original_rule_name;
-                int pNum(0);
-
-                pos1 = sourceString.find(rule_prefix);
-                pos2 = sourceString.find(targetString);
-                if ((pos1 ==  0)  && (pos2 !=  std::string::npos) && (pos2 > pos1))
-                {
-                    if ((pos2 - rule_prefix.length()) >= 3)
-                    {
-                        numberString = sourceString.substr((rule_prefix.length() + 1), (pos2 - rule_prefix.length()-2));
-                        try
-                        {
-                            pNum = std::stoi(numberString);
-                        }
-                        catch(std::invalid_argument&) //or catch(...) to catch all exceptions
-                        {
-                            std::cout << "Exception caught!" << std::endl;
-                        }
-                        lName << 'x' << (pNum + 1);
-                    } else {
-                        lName << "x2";
-                    }
-                }
-                lName << "*" << m_inst->prod->original_rule_name;
-            }
-            if (!lImpasseName.empty())
-            {
-                lName << "*" << lImpasseName;
-            }
-
-            if (thisAgent->init_count)
-            {
-                lName << "*t" << (thisAgent->init_count + 1) << "-" << thisAgent->d_cycle_count << "-" << rule_number;
-            } else {
-                lName << "*t" << thisAgent->d_cycle_count << "-" << rule_number;
-            }
-        }
+        increment_counter((*rule_naming_counter));
+        return thisAgent->symbolManager->generate_new_str_constant(rule_prefix, rule_naming_counter);
     }
-    lImpasseName.erase();
-    if (lName.str().empty()) { return NULL; }
 
-    if (thisAgent->symbolManager->find_str_constant(lName.str().c_str()))
+    new_rule_name += rule_prefix;
+
+    /* Step 2: Add learning depth to indicate learned rule based on another learned rule */
+    if (m_inst->prod)
     {
-        uint64_t collision_count = 1;
-        std::stringstream newLName;
-        std::string lFeedback;
-
-        do
+        m_chunk_inst->prod_naming_depth = m_inst->prod_naming_depth + 1;
+        if (m_inst->prod_naming_depth)
         {
-            newLName.str("");
-            newLName << lName.str() << "-" << collision_count++;
+            new_rule_name += 'x';
+            new_rule_name += std::to_string(m_chunk_inst->prod_naming_depth);
         }
-        while (thisAgent->symbolManager->find_str_constant(newLName.str().c_str()));
-
-        thisAgent->outputManager->sprinta_sf(thisAgent, lFeedback, "Warning: generated %s name %s already exists.  Used %s instead.\n", rule_prefix.c_str(), lName.str().c_str(), newLName.str().c_str());
-        thisAgent->outputManager->printa(thisAgent, lFeedback.c_str());
-        xml_generate_warning(thisAgent, lFeedback.c_str());
-
-        lName.str(newLName.str());
-        newLName.str("");
+        new_rule_name += '*';
+        new_rule_name +=  m_inst->prod->original_rule_name;
     }
 
-    generated_name = thisAgent->symbolManager->make_str_constant(lName.str().c_str());
-    return generated_name;
+    /* Step 3: Add impasse type */
+    switch (m_inst->match_goal->id->higher_goal->id->impasse_type)
+    {
+        case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+            new_rule_name += "*Failure";
+            break;
+        case CONFLICT_IMPASSE_TYPE:
+            new_rule_name += "*Conflict";
+            break;
+        case TIE_IMPASSE_TYPE:
+            new_rule_name += "*Tie";
+            break;
+        case ONC_IMPASSE_TYPE:
+            new_rule_name += "*OpNoChange";
+            break;
+        case SNC_IMPASSE_TYPE:
+            new_rule_name += "*StateNoChange";
+            break;
+        default:
+            break;
+    }
+
+    /* Step 4:  Add time */
+    new_rule_name += "*t";
+    if (thisAgent->init_count)
+    {
+        new_rule_name += std::to_string(thisAgent->init_count + 1);
+        new_rule_name += '-';
+    }
+    new_rule_name += std::to_string(thisAgent->d_cycle_count);
+    new_rule_name += '-';
+    new_rule_name += std::to_string(rule_number);
+
+    if (thisAgent->symbolManager->find_str_constant(new_rule_name.c_str()))
+    {
+        uint64_t dummy_counter = 2;
+        return thisAgent->symbolManager->generate_new_str_constant(new_rule_name.c_str(), &dummy_counter);
+    }
+    else
+        return thisAgent->symbolManager->make_str_constant_no_find(new_rule_name.c_str());
 }
+
 void Explanation_Based_Chunker::set_up_rule_name()
 {
     /* Generate a new symbol for the name of the new chunk or justification */

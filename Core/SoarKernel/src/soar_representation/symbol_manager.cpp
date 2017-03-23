@@ -434,6 +434,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->link_count = 0;
     sym->unknown_level = NIL;
     sym->could_be_a_link_from_below = false;
+    sym->impasse_type = NONE_IMPASSE_TYPE;
     sym->impasse_wmes = NULL;
     sym->higher_goal = NULL;
     sym->gds = NULL;
@@ -471,6 +472,38 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     return sym;
 }
 
+/* Used when we just called find because we require a unique string.
+ * Avoids calling find
+ */
+Symbol* Symbol_Manager::make_str_constant_no_find(char const* name)
+{
+    strSymbol* sym;
+
+    thisAgent->memoryManager->allocate_with_pool(MP_str_constant, &sym);
+    sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
+    sym->reference_count = 0;
+    sym->hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->tc_num = 0;
+    sym->singleton.possible = false;
+    sym->epmem_hash = 0;
+    sym->epmem_valid = 0;
+    sym->smem_hash = 0;
+    sym->smem_valid = 0;
+    sym->name = make_memory_block_for_string(thisAgent, name);
+    sym->thisAgent = thisAgent;
+    sym->cached_rereadable_print_str = NULL;
+    sym->production = NULL;
+    sym->fc = NULL;
+    sym->ic = NULL;
+    sym->id = NULL;
+    sym->var = NULL;
+    sym->sc = sym;
+    symbol_add_ref(sym);
+    add_to_hash_table(thisAgent, str_constant_hash_table, sym);
+
+    return sym;
+}
+
 Symbol* Symbol_Manager::make_str_constant(char const* name)
 {
     strSymbol* sym;
@@ -478,32 +511,9 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
     if (sym)
     {
         symbol_add_ref(sym);
+        return sym;
     }
-    else
-    {
-        thisAgent->memoryManager->allocate_with_pool(MP_str_constant, &sym);
-        sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
-        sym->reference_count = 0;
-        sym->hash_id = get_next_symbol_hash_id(thisAgent);
-        sym->tc_num = 0;
-        sym->singleton.possible = false;
-        sym->epmem_hash = 0;
-        sym->epmem_valid = 0;
-        sym->smem_hash = 0;
-        sym->smem_valid = 0;
-        sym->name = make_memory_block_for_string(thisAgent, name);
-        sym->thisAgent = thisAgent;
-        sym->cached_rereadable_print_str = NULL;
-        sym->production = NULL;
-        sym->fc = NULL;
-        sym->ic = NULL;
-        sym->id = NULL;
-        sym->var = NULL;
-        sym->sc = sym;
-        symbol_add_ref(sym);
-        add_to_hash_table(thisAgent, str_constant_hash_table, sym);
-    }
-    return sym;
+    return make_str_constant_no_find(name);
 }
 
 Symbol* Symbol_Manager::make_int_constant(int64_t value)
@@ -1132,7 +1142,7 @@ Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* 
             break;
         }
     }
-    New = make_str_constant(name);
+    New = make_str_constant_no_find(name);
     return New;
 }
 

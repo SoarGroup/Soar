@@ -25,6 +25,7 @@ typedef struct production_struct
     struct instantiation_struct*    instantiations;             /* dll of inst's in MS */
     struct production_struct        *next, *prev;
 
+    uint64_t                        naming_depth;
     bool                            explain_its_chunks;
     bool                            save_for_justification_explanation;
     byte                            interrupt;

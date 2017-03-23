@@ -2669,7 +2669,7 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
    the top and bottom goal.
 ------------------------------------------------------------------ */
 
-void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_type)
+void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_type, bool isONC = false)
 {
     Symbol* id;
 
@@ -2684,20 +2684,28 @@ void create_new_context(agent* thisAgent, Symbol* attr_of_impasse, byte impasse_
         thisAgent->bottom_goal = id;
         add_impasse_wme(thisAgent, id, thisAgent->symbolManager->soarSymbols.quiescence_symbol,
                         thisAgent->symbolManager->soarSymbols.t_symbol, NIL);
-        if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) &&
-                (thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level))
+        if (NO_CHANGE_IMPASSE_TYPE == impasse_type)
         {
-            // appear to be SNC'ing deep in goalstack, so interrupt and warn user
-            // KJC note: we actually halt, because there is no interrupt function in SoarKernel
-            // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
-            // then the interrupt is generated and system_halted is set to false so the user can recover.
-            thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %u on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
-            thisAgent->outputManager->printa_sf(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
-            xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
-            xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
-            thisAgent->stop_soar = true;
-            thisAgent->system_halted = true;
-            thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
+            id->id->impasse_type = isONC ? ONC_IMPASSE_TYPE : SNC_IMPASSE_TYPE;
+
+            if (thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id->level)
+            {
+                // appear to be SNC'ing deep in goalstack, so interrupt and warn user
+                // KJC note: we actually halt, because there is no interrupt function in SoarKernel
+                // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
+                // then the interrupt is generated and system_halted is set to false so the user can recover.
+                thisAgent->outputManager->printa_sf(thisAgent, "\nGoal stack depth exceeded %u on a no-change impasse.\n", thisAgent->Decider->settings[DECIDER_MAX_GOAL_DEPTH]);
+                thisAgent->outputManager->printa_sf(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+                xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
+                xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+                thisAgent->stop_soar = true;
+                thisAgent->system_halted = true;
+                thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
+            }
+        }
+        else
+        {
+            id->id->impasse_type = impasse_type;
         }
     }
     else
@@ -3021,7 +3029,7 @@ bool decide_context_slot(agent* thisAgent, Symbol* goal, slot* s, bool predict =
 
     if (!thisAgent->Decider->settings[DECIDER_WAIT_SNC]|| !(impasse_type == NO_CHANGE_IMPASSE_TYPE) || !(attribute_of_impasse == thisAgent->symbolManager->soarSymbols.state_symbol))
     {
-        create_new_context(thisAgent, attribute_of_impasse, impasse_type);
+        create_new_context(thisAgent, attribute_of_impasse, impasse_type, true);
         update_impasse_items(thisAgent, goal->id->lower_goal, candidates);
     }
 

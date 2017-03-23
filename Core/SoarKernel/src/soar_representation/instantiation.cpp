@@ -1045,12 +1045,20 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
 
-    inst->prod_name = prod ? prod->name : backup_name ? backup_name : NULL;
+    if (prod)
+    {
+        inst->prod_name = prod->name;
+        inst->prod_naming_depth = prod->naming_depth;
+    } else {
+        inst->prod_name = backup_name;
+        inst->prod_naming_depth = 0;
+    }
+
     if (inst->prod_name)
     {
         thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-        IDI_add(thisAgent, inst);
     }
+    IDI_add(thisAgent, inst);
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)

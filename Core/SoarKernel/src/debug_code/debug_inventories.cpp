@@ -169,7 +169,7 @@ void clean_up_debug_inventories(agent* thisAgent)
     void IDI_add(agent* thisAgent, instantiation* pInst)
     {
         std::string lInstString;
-        thisAgent->outputManager->sprinta_sf(thisAgent, lInstString, "(%y) in %y (%d)", pInst->prod_name, pInst->match_goal, static_cast<int64_t>(pInst->match_goal_level));
+        thisAgent->outputManager->sprinta_sf(thisAgent, lInstString, "i %u in %y (%d)", pInst->i_id, pInst->match_goal, static_cast<int64_t>(pInst->match_goal_level));
         IDI_deallocation_map[pInst->i_id] = lInstString;
     }
     void IDI_remove(agent* thisAgent, uint64_t pID)

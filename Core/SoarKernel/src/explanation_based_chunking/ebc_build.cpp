@@ -1062,6 +1062,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
 
     /* Create the production that will be added to the RETE */
     m_prod = make_production(thisAgent, m_prod_type, m_prod_name, m_inst->prod ? m_inst->prod->original_rule_name : m_inst->prod_name->sc->name, &m_lhs, &m_rhs, false, NULL);
+    m_prod->naming_depth = m_chunk_inst->prod_naming_depth;
 
     if (m_inst->prod && m_inst->prod->explain_its_chunks)
     {

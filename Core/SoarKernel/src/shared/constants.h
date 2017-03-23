@@ -27,6 +27,8 @@
 #define CONFLICT_IMPASSE_TYPE 2
 #define TIE_IMPASSE_TYPE 3
 #define NO_CHANGE_IMPASSE_TYPE 4
+#define ONC_IMPASSE_TYPE 5
+#define SNC_IMPASSE_TYPE 6
 
 /* ---------------------------------------
     Match Set print parameters

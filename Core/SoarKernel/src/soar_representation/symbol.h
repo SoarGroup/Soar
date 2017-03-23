@@ -204,6 +204,7 @@ struct idSymbol    : public Symbol
 
     bool isa_goal;
     bool isa_impasse;
+    byte impasse_type;
 
     bool did_PE;
 
