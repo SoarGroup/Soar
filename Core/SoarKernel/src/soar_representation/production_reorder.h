@@ -17,10 +17,11 @@
 
 typedef struct saved_test_struct
 {
-    struct saved_test_struct* next;
-    Symbol* var;
-    uint64_t var_identity;
-    test the_test;
+    struct saved_test_struct*   next;
+    Symbol*                     var;
+    uint64_t                    identity;
+    IdentitySet*                identity_set;
+    test                        the_test;
 } saved_test;
 
 extern bool reorder_action_list(agent* thisAgent, action** action_list, tc_number lhs_tc, matched_symbol_list* ungrounded_syms, bool add_ungrounded = false);

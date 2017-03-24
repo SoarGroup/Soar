@@ -1,0 +1,21 @@
+sp {move-block*elaborate*desired
+   (state <s> ^name move-block
+              ^superstate <ss>)
+   (<ss>  ^operator <so>)
+   (<so> ^name move-block
+         ^moving-block <block>
+         ^destination <dest>)
+-->
+   (<s> ^desired <d>)
+   (<d> ^moving-block <block>
+        ^destination <dest>)
+}
+
+sp {move-block*elaborate*problem-space
+   (state <s> ^name move-block)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name pick-up-put-down
+        ^dont-copy top-state clear inplace-object moveable
+        ^default-state-copy yes
+        ^one-level-attributes object)}

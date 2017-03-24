@@ -29,6 +29,7 @@ Symbol_Manager::Symbol_Manager(agent* pAgent)
     current_variable_gensym_number     = 0;
     init_symbol_tables();
     create_predefined_symbols();
+    create_common_variables_and_numbers();
 }
 
 Symbol_Manager::~Symbol_Manager()
@@ -408,6 +409,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->tc_num = 0;
     sym->thisAgent = thisAgent;
     sym->cached_print_str = NULL;
+    sym->cached_lti_str = NULL;
     sym->name_letter = name_letter;
 
     if (name_number == NIL)
@@ -432,6 +434,7 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     sym->link_count = 0;
     sym->unknown_level = NIL;
     sym->could_be_a_link_from_below = false;
+    sym->impasse_type = NONE_IMPASSE_TYPE;
     sym->impasse_wmes = NULL;
     sym->higher_goal = NULL;
     sym->gds = NULL;
@@ -469,6 +472,38 @@ Symbol* Symbol_Manager::make_new_identifier(char name_letter, goal_stack_level l
     return sym;
 }
 
+/* Used when we just called find because we require a unique string.
+ * Avoids calling find
+ */
+Symbol* Symbol_Manager::make_str_constant_no_find(char const* name)
+{
+    strSymbol* sym;
+
+    thisAgent->memoryManager->allocate_with_pool(MP_str_constant, &sym);
+    sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
+    sym->reference_count = 0;
+    sym->hash_id = get_next_symbol_hash_id(thisAgent);
+    sym->tc_num = 0;
+    sym->singleton.possible = false;
+    sym->epmem_hash = 0;
+    sym->epmem_valid = 0;
+    sym->smem_hash = 0;
+    sym->smem_valid = 0;
+    sym->name = make_memory_block_for_string(thisAgent, name);
+    sym->thisAgent = thisAgent;
+    sym->cached_rereadable_print_str = NULL;
+    sym->production = NULL;
+    sym->fc = NULL;
+    sym->ic = NULL;
+    sym->id = NULL;
+    sym->var = NULL;
+    sym->sc = sym;
+    symbol_add_ref(sym);
+    add_to_hash_table(thisAgent, str_constant_hash_table, sym);
+
+    return sym;
+}
+
 Symbol* Symbol_Manager::make_str_constant(char const* name)
 {
     strSymbol* sym;
@@ -476,32 +511,9 @@ Symbol* Symbol_Manager::make_str_constant(char const* name)
     if (sym)
     {
         symbol_add_ref(sym);
+        return sym;
     }
-    else
-    {
-        thisAgent->memoryManager->allocate_with_pool(MP_str_constant, &sym);
-        sym->symbol_type = STR_CONSTANT_SYMBOL_TYPE;
-        sym->reference_count = 0;
-        sym->hash_id = get_next_symbol_hash_id(thisAgent);
-        sym->tc_num = 0;
-        sym->singleton.possible = false;
-        sym->epmem_hash = 0;
-        sym->epmem_valid = 0;
-        sym->smem_hash = 0;
-        sym->smem_valid = 0;
-        sym->name = make_memory_block_for_string(thisAgent, name);
-        sym->thisAgent = thisAgent;
-        sym->cached_print_str = NULL;
-        sym->production = NULL;
-        sym->fc = NULL;
-        sym->ic = NULL;
-        sym->id = NULL;
-        sym->var = NULL;
-        sym->sc = sym;
-        symbol_add_ref(sym);
-        add_to_hash_table(thisAgent, str_constant_hash_table, sym);
-    }
-    return sym;
+    return make_str_constant_no_find(name);
 }
 
 Symbol* Symbol_Manager::make_int_constant(int64_t value)
@@ -703,6 +715,72 @@ void Symbol_Manager::create_predefined_symbols()
     soarSymbols.smem_sym_math_query_min = make_str_constant("min");
 }
 
+void Symbol_Manager::create_variables_for_range(const char lChar, int lStart, int lEnd)
+{
+    int lNum;
+    char msg[256];
+    /* ensure null termination */
+    msg[0] = 0;
+    msg[255] = 0;
+    for (lNum = lStart; lNum <= lEnd; ++lNum)
+    {
+        SNPRINTF(msg, 256, "<%c%d>", lChar, lNum);
+        make_variable(msg);
+    }
+}
+
+void Symbol_Manager::release_variables_for_range(const char lChar, int lStart, int lEnd)
+{
+    Symbol* lVar;
+    char msg[256];
+
+    msg[0] = 0;
+    msg[255] = 0;
+    for (int lNum = lStart; lNum <= lEnd; ++lNum)
+    {
+        SNPRINTF(msg, 256, "<%c%d>", lChar, lNum);
+        lVar = thisAgent->symbolManager->find_variable(msg);
+        symbol_remove_ref(&lVar);
+    }
+}
+
+void Symbol_Manager::create_common_variables_and_numbers()
+{
+    for (char lChar = 'a'; lChar != ('z' + 1); lChar++)
+    {
+        create_variables_for_range(lChar, 1, 12);
+    }
+    /* L, S and C get allocated and deallocated a lot in certain agents because
+     * they are default letters in certain gensym situations, so let's make sure
+     * more of them stay allocated. */
+    create_variables_for_range('l', 13, 45);
+    create_variables_for_range('c', 13, 23);
+    create_variables_for_range('s', 13, 33);
+
+    for (int lInt = 0; lInt <= 100; ++lInt)
+    {
+        make_int_constant(lInt);
+    }
+}
+
+void Symbol_Manager::release_common_variables_and_numbers()
+{
+    for (char lChar = 'a'; lChar != ('z' + 1); lChar++)
+    {
+        release_variables_for_range(lChar, 1, 12);
+    }
+    release_variables_for_range('l', 13, 45);
+    release_variables_for_range('c', 13, 23);
+    release_variables_for_range('s', 13, 30);
+
+    Symbol* lVar;
+    for (int lNum = 0; lNum <= 100; ++lNum)
+    {
+        lVar = thisAgent->symbolManager->find_int_constant(lNum);
+        symbol_remove_ref(&lVar);
+    }
+}
+
 void Symbol_Manager::release_predefined_symbols()
 {
     symbol_remove_ref(&(soarSymbols.crlf_symbol));
@@ -828,8 +906,9 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
         std::string strName(sym->to_string());
         if (strName == DEBUG_TRACE_REFCOUNT_FOR)
         {
-            std::string caller_string = get_stacktrace("dea_sym");
-//            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+            std::string caller_string;
+            get_stacktrace(caller_string);
+            //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
             if (is_DT_mode_enabled(DT_ID_LEAKING))
             {
                 std::cout << "DA | " << strName.c_str() << " |" << sym->reference_count << " | " << caller_string.c_str() << "\n";
@@ -837,8 +916,22 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
         }
     #else
         dprint(DT_DEALLOCATE_SYMBOL, "DEALLOCATE symbol %y\n", sym);
-//        std::string caller_string = get_stacktrace("dea_sym");
-//            dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
+
+        /* If you need to print out deallocations after agent is deleted */
+        //if (is_DT_mode_enabled(DT_DEALLOCATE_SYMBOL))
+        //{
+        //    char msg[256];
+        //    /* ensure null termination */
+        //    msg[0] = 0;
+        //    msg[255] = 0;
+        //    SNPRINTF(msg, 256, "DEALLOCATE symbol %s\n", sym->to_string());
+        //    thisAgent->outputManager->print(msg);
+        //}
+
+        /* If you need to print out the stack trace when a deallocations happens */
+        //std::string caller_string;
+        //get_stacktrace(caller_string);
+        //dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), sym->reference_count, caller_string.c_str());
     #endif
     switch (sym->symbol_type)
     {
@@ -849,11 +942,13 @@ void Symbol_Manager::deallocate_symbol(Symbol*& sym)
             break;
         case IDENTIFIER_SYMBOL_TYPE:
             if (sym->id->cached_print_str) free_memory_block_for_string(thisAgent, sym->id->cached_print_str);
+            if (sym->id->cached_lti_str) free_memory_block_for_string(thisAgent, sym->id->cached_lti_str);
             remove_from_hash_table(thisAgent, identifier_hash_table, sym);
             thisAgent->memoryManager->free_with_pool(MP_identifier, sym);
             break;
         case STR_CONSTANT_SYMBOL_TYPE:
-            if (sym->sc->cached_print_str) free_memory_block_for_string(thisAgent, sym->sc->cached_print_str);
+            if (sym->sc->cached_rereadable_print_str && (sym->sc->cached_rereadable_print_str != sym->sc->name))
+                free_memory_block_for_string(thisAgent, sym->sc->cached_rereadable_print_str);
             remove_from_hash_table(thisAgent, str_constant_hash_table, sym);
             free_memory_block_for_string(thisAgent, sym->sc->name);
             thisAgent->memoryManager->free_with_pool(MP_str_constant, sym);
@@ -983,8 +1078,6 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
             {
                 /* If you #define CONFIGURE_SOAR_FOR_UNIT_TESTS and INIT_AFTER_RUN unit_tests.h, the following
                  * detect refcount leaks in unit tests and print out a message accordingly */
-                /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
-                 *        memory corruption, but usually prints out and is good for debugging. */
                 #ifndef SOAR_RELEASE_VERSION
                     if (identifier_hash_table->count < 23)
                         do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
@@ -994,10 +1087,17 @@ void Symbol_Manager::reset_hash_table(MemoryPoolType lHashTable)
                     std::cout << "Refcount leak of " << identifier_hash_table->count << " identifiers detected. ";
                 #endif
             }
-            else if (thisAgent->outputManager->settings[OM_WARNINGS])
+            else
+            #ifdef SOAR_RELEASE_VERSION
+            if (thisAgent->outputManager->settings[OM_WARNINGS])
+            #endif
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "%d identifiers still exist.  Forcing deletion.\n", identifier_hash_table->count);
+                /* Note:  The do_for_all_items_in_hash_table printing could cause a crash if there's
+                 *        memory corruption, but usually prints out and is good for debugging. */
+                #ifndef SOAR_RELEASE_VERSION
                 do_for_all_items_in_hash_table(thisAgent, identifier_hash_table, print_sym, 0);
+                #endif
             }
             free_hash_table(thisAgent, identifier_hash_table);
             thisAgent->memoryManager->free_memory_pool(MP_identifier);
@@ -1042,7 +1142,7 @@ Symbol* Symbol_Manager::generate_new_str_constant(const char* prefix, uint64_t* 
             break;
         }
     }
-    New = make_str_constant(name);
+    New = make_str_constant_no_find(name);
     return New;
 }
 

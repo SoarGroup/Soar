@@ -1,0 +1,35 @@
+sp {count-test*propose*test-complete
+   (state <s> ^name count-test
+              ^count 0
+             -^current-test.test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name test-complete)
+}
+
+
+sp {count-test*apply*test-complete*clear-count
+   (state <s> ^operator.name test-complete
+              ^count <c>)
+-->
+   (<s> ^count <c> -)
+}
+
+
+sp {count-test*apply*test-complete
+   (state <s> ^operator.name test-complete
+              ^current-test <ct>)
+-->
+   (<ct> ^test-complete true)
+}
+##
+#init-soar
+#watch 0
+#run
+#init-soar
+#learn --on
+#run
+#init-soar
+#run
+#stats
+

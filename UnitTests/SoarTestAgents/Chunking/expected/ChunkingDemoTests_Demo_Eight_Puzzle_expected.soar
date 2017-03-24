@@ -1,0 +1,144 @@
+sp {answer*selection*compare*equal-evaluation-indifferent*Tie*t15-2
+    (state <s1> ^name eight-puzzle ^desired <d1> ^problem-space <p1>
+          ^blank-cell <b1> ^operator <o1> + ^operator <o2> + ^binding <b4>
+          ^binding <b5> ^binding <b6> ^binding <b9> ^binding <b10>
+          ^binding <b11>)
+    (<d1> -^equal not-indifferent ^binding <b2> ^binding { <b3> <> <b2> }
+          ^binding <b7> ^binding { <b8> <> <b7> })
+    (<p1> ^name eight-puzzle)
+    (<o1> ^blank-cell <b1> ^name move-tile ^tile-cell <t1>)
+    (<o2> ^blank-cell <b1> ^name move-tile ^tile-cell <t2>)
+    (<b2> ^cell <t1> ^tile <t3>)
+    (<b3> ^cell <b1> ^tile <t4>)
+    (<b4> ^tile <t4> ^cell <b1>)
+    (<b5> ^cell <t1> ^tile { <t5> <> <t3> <> <t4> })
+    (<b6> ^tile <t3>)
+    (<b7> ^tile <t5> ^cell <t2>)
+    (<b8> ^tile <t4> ^cell <b1>)
+    (<b9> ^tile <t4> ^cell <b1>)
+    (<b10> ^cell <t2> ^tile { <t6> <> <t5> <> <t4> })
+    (<b11> ^tile <t5>)
+    -->
+    (<s1> ^operator <o1> = <o2>)
+}
+
+sp {answer*selection*compare*equal-evaluation-indifferent*Tie*t15-1
+    (state <s1> ^name eight-puzzle ^desired <d1> ^problem-space <p1>
+          ^blank-cell <b1> ^operator <o1> + ^operator <o2> + ^binding <b4>
+          ^binding <b5> ^binding <b6> ^binding <b9> ^binding <b10>
+          ^binding <b11>)
+    (<d1> -^equal not-indifferent ^binding <b2> ^binding { <b3> <> <b2> }
+          ^binding <b7> ^binding { <b8> <> <b7> })
+    (<p1> ^name eight-puzzle)
+    (<o1> ^blank-cell <b1> ^name move-tile ^tile-cell <t1>)
+    (<o2> ^blank-cell <b1> ^name move-tile ^tile-cell <t2>)
+    (<b2> ^cell <t1> ^tile <t3>)
+    (<b3> ^cell <b1> ^tile { <t4> <> <t3> })
+    (<b4> ^tile <t4> ^cell <b1>)
+    (<b5> ^cell <t1> ^tile { <t5> <> <t3> <> <t4> })
+    (<b6> ^tile <t3>)
+    (<b7> ^cell <t2> ^tile { <t6> <> <t3> })
+    (<b8> ^tile <t4> ^cell <b1>)
+    (<b9> ^tile <t4> ^cell <b1>)
+    (<b10> ^tile <t3> ^cell <t2>)
+    (<b11> ^tile <t6>)
+    -->
+    (<s1> ^operator <o1> = <o2>)
+}
+
+sp {answer*selection*compare*higher-evaluation-better*Tie*t14-2
+    (state <s1> ^name eight-puzzle ^desired <d1> ^problem-space <p1>
+          ^blank-cell <b1> ^operator <o1> + ^operator <o2> + ^binding <b4>
+          ^binding <b5> ^binding <b6> ^binding <b8> ^binding <b9>)
+    (<d1> ^better higher ^binding <b2> ^binding { <b3> <> <b2> } ^binding <b7>)
+    (<p1> ^name eight-puzzle)
+    (<o1> ^blank-cell <b1> ^name move-tile ^tile-cell <t1>)
+    (<o2> ^blank-cell <b1> ^name move-tile ^tile-cell <t2>)
+    (<b2> ^cell <t1> ^tile <t3>)
+    (<b3> ^cell <b1> ^tile <t4>)
+    (<b4> ^tile <t4> ^cell <b1>)
+    (<b5> ^cell <t1> ^tile { <t5> <> <t3> <> <t4> })
+    (<b6> ^tile <t3>)
+    (<b7> ^cell <t2> ^tile <t6>)
+    (<b8> ^tile <t4> ^cell <b1>)
+    (<b9> ^tile <t6> ^cell <t2>)
+    -->
+    (<s1> ^operator <o2> < <o1>)
+}
+
+sp {answer*evaluate-operator*elaborate*numeric-evaluation*from-subgoal*OpNoChange*t14-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name eight-puzzle)
+    (<s3> ^name move-tile ^tile-cell <t1> ^blank-cell <b1>)
+    (<s4> ^name eight-puzzle)
+    (<s5> ^blank-cell <b1> ^binding <b4> ^binding <b5> ^binding <b6>)
+    (<e1> ^desired <d1>)
+    (<d1> ^binding <b2> ^binding { <b3> <> <b2> })
+    (<b2> ^cell <t1> ^tile <t2>)
+    (<b3> ^cell <b1> ^tile <t3>)
+    (<b4> ^tile <t3> ^cell <b1>)
+    (<b5> ^cell <t1> ^tile { <t4> <> <t2> <> <t3> })
+    (<b6> ^tile <t2>)
+    -->
+    (<e1> ^numeric-value 0 +)
+}
+
+sp {answer*selection*compare*higher-evaluation-better*Tie*t8-2
+    (state <s1> ^name eight-puzzle ^desired <d1> ^problem-space <p1>
+          ^blank-cell <b1> ^operator <o1> + ^operator <o2> + ^binding <b3>
+          ^binding <b4> ^binding <b6> ^binding <b7>)
+    (<d1> ^better higher ^binding <b2> ^binding <b5>)
+    (<p1> ^name eight-puzzle)
+    (<o1> ^blank-cell <b1> ^name move-tile ^tile-cell <t1>)
+    (<o2> ^blank-cell <b1> ^name move-tile ^tile-cell <t2>)
+    (<b2> ^cell <b1> ^tile <t3>)
+    (<b3> ^cell <b1> ^tile <t4>)
+    (<b4> ^tile <t3> ^cell <t1>)
+    (<b5> ^cell <t2> ^tile <t5>)
+    (<b6> ^tile <t4> ^cell <b1>)
+    (<b7> ^tile <t5> ^cell <t2>)
+    -->
+    (<s1> ^operator <o2> < <o1>)
+}
+
+sp {answer*evaluate-operator*elaborate*numeric-evaluation*from-subgoal*OpNoChange*t8-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name eight-puzzle)
+    (<s3> ^name move-tile ^tile-cell <t1> ^blank-cell <b1>)
+    (<s4> ^name eight-puzzle)
+    (<s5> ^blank-cell <b1> ^binding <b3> ^binding <b4>)
+    (<e1> ^desired <d1>)
+    (<d1> ^binding <b2>)
+    (<b2> ^cell <b1> ^tile <t2>)
+    (<b3> ^cell <b1> ^tile <t3>)
+    (<b4> ^tile <t2> ^cell <t1>)
+    -->
+    (<e1> ^numeric-value 1 +)
+}
+
+sp {answer*evaluate-operator*elaborate*numeric-evaluation*from-subgoal*OpNoChange*t5-1
+    (state <s1> ^operator <o1> ^evaluation <e1>)
+    (<o1> -^default-desired-copy yes ^name evaluate-operator
+          ^superproblem-space <s2> ^superoperator <s3> ^superstate <s4>
+          ^superstate <s5> ^evaluation <e1>)
+    (<s2> ^name eight-puzzle)
+    (<s3> ^name move-tile ^tile-cell <t1> ^blank-cell <b1>)
+    (<s4> ^name eight-puzzle)
+    (<s5> ^blank-cell <b1> ^binding <b3> ^binding <b4>)
+    (<e1> ^desired <d1>)
+    (<d1> ^binding <b2>)
+    (<b2> ^cell <t1> ^tile <t2>)
+    (<b3> ^cell <b1> ^tile <t3>)
+    (<b4> ^tile <t2> ^cell <t1>)
+    -->
+    (<e1> ^numeric-value -1 +)
+}
+
+
+

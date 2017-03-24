@@ -240,6 +240,7 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
     {
         add_test_to_tc(thisAgent, c->data.tests.id_test, tc, id_list, var_list);
         add_test_to_tc(thisAgent, c->data.tests.value_test, tc, id_list, var_list);
+
     }
 }
 
@@ -429,6 +430,7 @@ production* make_production(agent*          thisAgent,
     thisAgent->memoryManager->allocate_with_pool(MP_production, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
+    p->naming_depth = 0;
 
     if (name->sc->production)
     {
@@ -493,7 +495,6 @@ void deallocate_production(agent* thisAgent, production* prod)
         for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
         {
             dprint(DT_DEALLOCATE_PROD, "Clearing production pointer from instantiation %u (%y).\n", lInst->i_id, lInst->prod_name);
-            assert(lInst->prod == prod);
             lInst->prod = NULL;
         }
     }

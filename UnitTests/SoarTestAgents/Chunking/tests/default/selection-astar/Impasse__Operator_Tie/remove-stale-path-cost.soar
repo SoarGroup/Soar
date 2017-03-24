@@ -1,0 +1,27 @@
+sp {selection*propose*remove-stale-path-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^path-cost <pc1> { <pc2> > <pc1> })
+  -(<e> ^path-cost < <pc1>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name remove-stale-path-cost
+         ^evaluation <e>)
+}
+
+sp {selection*apply*remove-stale-path-cost
+   :default
+ #interrupt
+   (state <s> ^name selection
+              ^evaluation <e>
+              ^operator <op>)
+   (<e> ^path-cost <pc1> { <pc2> > <pc1> })
+  -(<e> ^path-cost < <pc1>)
+   (<op> ^name remove-stale-path-cost
+         ^evaluation <e>)
+-->
+  # (interrupt)
+   (write (crlf) |Remove Stale Path Cost:  | <e>  |: | <pc2> | original: | <pc1>)
+   (<e> ^path-cost <pc2> -)
+}

@@ -10,25 +10,6 @@
    constants, floating-point constants, identifiers, and variables.
    We use five resizable hash tables, one for each kind of symbol.
 
-   Reference counting for symbols:  I can't remember all the places I add
-     reference counts to symbols.  Here's a bunch I can remember though.
-     If you're not sure whether to add/remove a reference for something,
-     it's better to play it safe and do the add/remove.
-
-     +1 for each occurrence in a rete test or alpha mem constant test
-     +1 for each occurrence in a condition test anywhere
-     +1 for each occurrence in a Not
-     +1 for each occurrence in a saved_test
-     +1 for each occurrence in a WME
-     +1 for each occurrence in a preference
-     +1 for each occurrence as {id or attr} of a slot
-     +1 for goal/impasse identifiers
-     +1 if it's the name of a production
-     +1 if it's a predefined symbol (e.g., "goal" or "operator")
-     +1 for each enqueued add-link or remove-link to/from it
-     +1 for each occurrence in a global var. (e.g., chunk-free-problem-spaces)
-
-  We deallocate a symbol when its reference count goes to 0.
 ======================================================================= */
 
 
@@ -50,11 +31,11 @@
   *       in the symbol and symbol_manager code.*/
 
 #ifndef SOAR_RELEASE_VERSION
-    //#define DEBUG_TRACE_REFCOUNT_FOR "S1"
+    //#define DEBUG_TRACE_REFCOUNT_FOR "D1"
     //#define DEBUG_MAC_STACKTRACE
 
     #ifdef DEBUG_MAC_STACKTRACE
-    std::string get_stacktrace(const char* prefix = NULL);
+    void get_stacktrace(std::string& return_string);
     #endif
 #endif
 
@@ -145,6 +126,7 @@ typedef struct EXPORT symbol_struct
     bool        get_id_name(std::string& n);
     void        mark_if_unmarked(agent* thisAgent, tc_number tc, cons** sym_list);
     char*       to_string(bool rereadable = false, bool showLTILink = false, char* dest = NIL, size_t dest_size = 0);
+    void        update_cached_lti_print_str(bool force_creation = false);
 
     struct symbol_struct*   get_parent_state();
 } Symbol;
@@ -169,7 +151,7 @@ struct strSymbol   : public Symbol
     char* name;
     struct production_struct* production;
     agent* thisAgent;
-    char* cached_print_str;
+    char* cached_rereadable_print_str;
 
     struct {
         bool possible;                      /* Used by EBC to quickly determine if a WMEs attribute makes it eligible to be a singleton */
@@ -199,9 +181,11 @@ struct idSymbol    : public Symbol
 
     agent* thisAgent;
     char* cached_print_str;
+    char* cached_lti_str;
 
     bool isa_goal;
     bool isa_impasse;
+    byte impasse_type;
 
     bool did_PE;
 

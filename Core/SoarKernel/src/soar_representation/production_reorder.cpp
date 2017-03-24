@@ -172,7 +172,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             if (add_ungrounded && lAction->id && rhs_value_is_symbol(lAction->id) && !rhs_value_to_was_unbound_var(lAction->id))
             {
                 lSym = rhs_value_to_symbol(lAction->id);
-                assert(ungrounded_syms && lSym);
                 Symbol* lVarSym, *lInstSym;
                 uint64_t lNewID;
 
@@ -181,7 +180,6 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 {
                     lInstSym = lSym;
                 } else {
-                    assert(lSym->is_variable() && lSym->var->instantiated_sym);
                     lInstSym = lSym->var->instantiated_sym;
                 }
                 lNewID = rhs_value_to_o_id(lAction->id);
@@ -321,7 +319,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
     saved_test* saved;
     Symbol* var, *sym;
     cons* c, *prev_c, *next_c;
-    uint64_t sym_identity = NULL_IDENTITY_SET;
+    uint64_t sym_identity = LITERAL_VALUE;
+    test sym_identity_set_test;
 
     dprint(DT_REORDERER, "Simplifying test %t", (*t));
 
@@ -355,6 +354,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
             sym = ct->eq_test->data.referent;
             sym_identity = ct->eq_test->identity;
+            sym_identity_set_test = ct->eq_test;
             dprint(DT_REORDERER, "...Setting equality symbol %y as index.\n", sym);
             /* --- if no equality test was found, generate a dummy variable for it --- */
             if (!sym)
@@ -391,7 +391,11 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     old_sts = saved;
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
-                    saved->var_identity = sym_identity;
+                    saved->identity = sym_identity;
+                    if (sym_identity_set_test->identity_set)
+                        saved->identity_set = sym_identity_set_test->identity_set;
+                    else
+                        saved->identity_set = NULL;
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -437,7 +441,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
-            saved->var_identity = NULL_IDENTITY_SET;
+            saved->identity = LITERAL_VALUE;
+            saved->identity_set = NULL;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -575,7 +580,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
-                        st->the_test->identity = st->var_identity;
+                        st->the_test->identity = st->identity;
+                        st->the_test->identity_set = st->identity_set;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;
@@ -674,29 +680,28 @@ void restore_and_deallocate_saved_tests(agent* thisAgent,
 
     if (tests_to_restore)
     {
-        if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+        saved_test* next_st;
+
+        while (tests_to_restore)
         {
-            thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test(s) whose referent is unbound in production %s\n", thisAgent->name_of_production_being_reordered);
-            // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
-            // print(thisAgent,  "      :\n");
-            // dprint_saved_test_list(DT_DEBUG, tests_to_restore);
-            // print_saved_test_list(thisAgent, tests_to_restore);
-            // TODO: XML tagged output -- how to create this string?
-            // KJC TODO:  need a tagged output version of print_saved_test_list
+            next_st = tests_to_restore->next;
 
-            // XML generation
-            growable_string gs = make_blank_growable_string(thisAgent);
-            add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
-            add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
-            //TODO: fill in XML print_saved_test_list. Possibile methods include:
-            //   1) write a version which adds to a growable string
-            //   2) write a version which generates XML tags/attributes, so we get "typed" output for this warning
-            //      i.e. "<warning><string value="beginning of message"></string><test att="val"></test><string value="rest of message"></string></warning>
-            xml_generate_warning(thisAgent, text_of_growable_string(gs));
+            if (thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM])
+            {
+                thisAgent->outputManager->printa_sf(thisAgent,  "\nWarning:  Ignoring test %t whose referent %y is unbound in production %s\n", tests_to_restore->the_test, tests_to_restore->var, thisAgent->name_of_production_being_reordered);
+                // XML generation
+                growable_string gs = make_blank_growable_string(thisAgent);
+                add_to_growable_string(thisAgent, &gs, "Warning:  Ignoring test(s) whose referent is unbound in production  ");
+                add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
+                xml_generate_warning(thisAgent, text_of_growable_string(gs));
 
-            free_growable_string(thisAgent, gs);
+                free_growable_string(thisAgent, gs);
+            }
+            thisAgent->symbolManager->symbol_remove_ref(&tests_to_restore->var);
+            deallocate_test(thisAgent, tests_to_restore->the_test);
+            thisAgent->memoryManager->free_with_pool(MP_saved_test, tests_to_restore);
+            tests_to_restore = next_st;
         }
-        /* ought to deallocate the saved tests, but who cares */
     }
     unmark_variables_and_free_list(thisAgent, new_vars);
 }
@@ -880,7 +885,6 @@ cons* collect_root_variables(agent* thisAgent,
             /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
-            assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.value_test->eq_test->identity;
             dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
@@ -899,7 +903,6 @@ cons* collect_root_variables(agent* thisAgent,
             if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
 
             lSym = cond->data.tests.id_test->eq_test->data.referent;
-            assert (lSym && lMatchedSym);
             lIdentity = cond->data.tests.id_test->eq_test->identity;
             dprint(DT_VALIDATE, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
             add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
@@ -993,7 +996,6 @@ cons* collect_root_variables(agent* thisAgent,
 
 bool test_covered_by_bound_vars(test t, tc_number tc, cons* extra_vars)
 {
-    assert(t && t->eq_test);
     Symbol* referent = t->eq_test->data.referent;
     if (referent->is_constant_or_marked_variable(tc))   return true;
     if (extra_vars)                                     return member_of_list(referent, extra_vars);

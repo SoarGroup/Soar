@@ -1,0 +1,10 @@
+### Detect Goal Achievement
+###
+
+sp {P11*halt*all-blocks-in-desired-position
+   (state <s> ^inplace-object.name A
+              ^inplace-object.name B
+              ^inplace-object.name C)
+-->
+   (write (crlf) |Goal Achieved.|)
+   (halt)}

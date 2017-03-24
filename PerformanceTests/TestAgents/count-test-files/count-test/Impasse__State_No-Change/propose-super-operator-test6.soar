@@ -1,0 +1,9 @@
+sp {Impasse__State_No-Change*propose*propose-super-operator-test6
+   (state <s> ^impasse no-change
+              ^attribute state
+              ^superstate <ss>)
+   (<ss> ^current-test.test-number 6
+         ^count > 0)
+-->
+   (<ss> ^operator.name count-test6)
+}

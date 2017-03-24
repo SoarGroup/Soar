@@ -11,7 +11,8 @@
 /* ------------------------------------------------------------------------
                       Explanation-Based Chunking
 ------------------------------------------------------------------------ */
-#define NULL_IDENTITY_SET 0
+#define LITERAL_VALUE 0
+#define NULL_IDENTITY_SET NULL
 
 #define PE_PRODS 0
 #define IE_PRODS 1
@@ -26,6 +27,8 @@
 #define CONFLICT_IMPASSE_TYPE 2
 #define TIE_IMPASSE_TYPE 3
 #define NO_CHANGE_IMPASSE_TYPE 4
+#define ONC_IMPASSE_TYPE 5
+#define SNC_IMPASSE_TYPE 6
 
 /* ---------------------------------------
     Match Set print parameters

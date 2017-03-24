@@ -1,0 +1,44 @@
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+multi-attributes waypoint 10
+multi-attributes operator 5
+multi-attributes next 3
+multi-attributes evaluation 10
+
+pushd "../../default" 
+source selection.soar
+source selection-astar.soar
+popd
+wma -s activation off 
+epmem -s learning off
+
+### Only learn selection rules from tie impasses
+###  Other chunks do not work right now.
+
+sp {Impasse__Operator_Tie*elaborate*learn*on
+   (state <s> ^impasse tie)
+-->
+   (force-learn <s>)
+}
+chunk singleton any waypoints any
+chunk singleton any id any
+chunk singleton any name any
+chunk singleton any x any
+chunk singleton any y any
+chunk singleton any mission any
+chunk singleton any current any
+chunk singleton any next-location any
+chunk singleton any next any
+chunk singleton any id any
+chunk singleton any waypoints any
+chunk singleton any desired any
+chunk singleton any location any
+chunk singleton any problem-space any
+
+
+srand 3 # For consistency for testing - srand 1 will lead to infinite loop
+        # not a problem with chunking but with the implementation of search
+chunk always
+chunk add-osk on

@@ -340,8 +340,6 @@ namespace sml
             
             int GetListenerPort();
             
-            Soar_Instance* m_SoarInstance;
-            
             /*************************************************************
             * @brief Creates a connection to a receiver that is in a different
             *        process.  The process can be on the same machine or a different machine.

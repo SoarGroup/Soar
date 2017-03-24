@@ -1,0 +1,224 @@
+sp {answer*apply*props*fail*search*prohibit*StateNoChange*t366-1
+    (state <s1> ^rootstate <r1>)
+   -{ (<r1> ^operator <o1>)
+      (<o1> ^name remove-cheese)}
+    (<r1> ^name ets ^cheese <c1>)
+    -->
+    (<s1> ^props-blink true +)
+}
+
+sp {answerx2*apply*props*result*affirm*success*lhs*StateNoChange*t364-3
+    (state <s1> ^rootstate <r1> ^evalstate <e1>)
+    (<r1> ^name ets ^cheese <c1>)
+    -->
+    (<e1> ^props-blink true + ^props-flag reset-prohibits +)
+}
+
+sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t364-2
+    (state <s1> ^name props-eval ^evalstate <e1> ^props-instructions <p1>
+          ^props-can-evaluate <p2> ^rootstate <r1> ^const <c2>
+          ^name { <n1> << props-eval instruction >> })
+   -{ (<s1> ^impasse no-change ^attribute operator ^superstate <e1>)}
+    (<p1> ^prop-type instruction-lhs ^lti-name <p2>
+          ^{ <a1> << condition action >> } _P102
+          ^{ <a2> << condition action >> } <a3>
+          -^{ <a4> << condition action >> } { <a5> <> <a3> })
+    (<r1> ^cheese <c1> ^name <i1>)
+    (<c2> ^1 <i1>)
+    -->
+    (<p1> ^props-result success +)
+    (<e1> ^props-blink true + ^props-flag reset-prohibits +)
+}
+
+sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t364-1
+    (state <s1> ^name props-eval ^props-instructions <p1>
+          ^props-can-evaluate <p2> ^rootstate <r1> ^const <c2>
+          ^name { <n1> << props-eval instruction >> })
+   -{ (<s1> ^impasse no-change ^attribute operator ^superstate <s1>)}
+    (<p1> ^prop-type instruction-lhs ^lti-name <p2>
+          ^{ <a1> << condition action >> } _P102
+          ^{ <a2> << condition action >> } <a3>
+          -^{ <a4> << condition action >> } { <a5> <> <a3> })
+    (<r1> ^cheese <c1> ^name <i1>)
+    (<c2> ^1 <i1>)
+    -->
+    (<p1> ^props-result success +)
+    (<s1> ^props-blink true + ^props-flag reset-prohibits +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t363-1
+    (state <s1> ^operator <o1> ^props-instructions <s2> ^evals <e1>
+          ^rootstate <r1> ^const <c2>
+          ^name { <n1> << props-eval instruction >> })
+    (<o1> ^name instruction ^symbol <s2>)
+    (<s2> ^lti-name <l1> ^{ <a1> << condition action >> } _P10
+          ^{ <a2> << condition action >> } |_P1|
+          ^{ <a3> << condition action >> } <a4>
+          ^{ <a5> << condition action >> } <a6>)
+    (<e1> -^evaluated <l1> ^passed <p1>)
+    (<r1> ^cheese <c1> ^name <i1>)
+    (<c2> ^1 <i1>)
+    -->
+    (<e1> ^evaluated <l1> + ^passed <p1> - ^passed (+ 1 <p1>) +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t340-1
+    (state <s1> ^props-instructions <p1> ^operator <o1> ^smem <s2>)
+    (<p1> ^condition _P10 ^condition |_P1|)
+    (<o1> ^name props-combine-search ^lti-name <l1>)
+    (<s2> ^command <c1>)
+    -->
+    (<s1> ^props-to-combine <p2> +)
+    (<p2> ^attr condition + ^sym1 |_P1| + ^sym2 _P10 + ^newname _P102 +)
+}
+
+sp {answer*apply*props*success*end*StateNoChange*t300-5
+    (state <s1> ^rootstate <r1>)
+    (<r1> ^name ets ^operator <o1>)
+    (<o1> ^name add-cheddar)
+    -->
+    (<r1> ^props-blink true +)
+}
+
+sp {answer*apply*props*success*action*add*new*OpNoChange*t300-3
+    (state <s1> ^rootstate <r1>)
+    (<r1> ^name ets ^operator <o1>)
+    (<o1> ^name add-cheddar)
+    -->
+    (<r1> ^cheese cheddar +)
+}
+
+sp {answer*apply*props*success*action*add*new*OpNoChange*t300-1
+    (state <s1> ^rootstate <r1>)
+    (<r1> ^name ets ^operator <o1>)
+    (<o1> ^name add-cheddar)
+    -->
+    (<r1> ^hasmade cheddar +)
+}
+
+sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t271-1
+    (state <s1> ^name props-eval ^props-instructions <p1>
+          ^props-can-evaluate <p2> ^rootstate <r1> ^const <c1>
+          ^name { <n1> << props-eval instruction >> })
+   -{ (<s1> ^impasse no-change ^attribute operator ^superstate <s1>)}
+    (<p1> ^prop-type instruction-lhs ^lti-name <p2>
+          ^{ <a1> << condition action >> } _P71
+          ^{ <a2> << condition action >> } <a3>
+          -^{ <a4> << condition action >> } { <a5> <> <a3> })
+    (<c1> ^1 <i1> ^2 <i2>)
+    (<r1> ^name <i1> ^operator <o1>)
+    (<o1> ^name <i2>)
+    -->
+    (<p1> ^props-result success +)
+    (<s1> ^props-blink true + ^props-flag reset-prohibits +)
+}
+
+sp {answer*apply*props*symbol*success*OpNoChange*t270-1
+    (state <s1> ^operator <o1> ^props-instructions <s2> ^evals <e1>
+          ^rootstate <r1> ^const <c1>
+          ^name { <n1> << props-eval instruction >> })
+    (<o1> ^name instruction ^symbol <s2>)
+    (<s2> ^lti-name <l1> ^{ <a1> << condition action >> } |_P7|
+          ^{ <a2> << condition action >> } |_P1|
+          ^{ <a3> << condition action >> } <a4>
+          ^{ <a5> << condition action >> } <a6>)
+    (<e1> -^evaluated <l1> ^passed <p1>)
+    (<c1> ^1 <i1> ^2 <i2>)
+    (<r1> ^name <i1> ^operator <o2>)
+    (<o2> ^name <i2>)
+    -->
+    (<e1> ^evaluated <l1> + ^passed <p1> - ^passed (+ 1 <p1>) +)
+}
+
+sp {answer*apply*props*success*action*indifferent*t215-3
+    (state <s1> ^rootstate <r1>)
+    (<r1> -^cheese <c1> ^name ets)
+    -->
+    (<r1> ^operator <o1> + ^operator <o1> =
+           ^props-active-rule propose*add*cheese +)
+    (<o1> ^name add-brie +)
+}
+
+sp {answer*apply*props*success*action*indifferent*t215-1
+    (state <s1> ^rootstate <r1>)
+    (<r1> -^cheese <c1> ^name ets)
+    -->
+    (<r1> ^operator <o1> + ^operator <o1> =
+           ^props-active-rule propose*add*cheese +)
+    (<o1> ^name add-cheddar +)
+}
+
+sp {answer*apply*props*result*affirm*success*lhs*StateNoChange*t149-1
+    (state <s1> ^name props-eval ^rootstate <r1> ^props-instructions <p1>
+          ^props-can-evaluate <p2> ^const <c2>
+          ^name { <n1> << props-eval instruction >> })
+   -{ (<s1> ^impasse no-change ^attribute operator ^superstate <s1>)}
+    (<r1> -^cheese <c1> ^name <i1>)
+    (<p1> ^prop-type instruction-lhs ^lti-name <p2>
+          ^{ <a1> << condition action >> } |_P2|
+          ^{ <a2> << condition action >> } |_P1|
+          ^{ <a3> << condition action >> } <a4>
+          ^{ <a5> << condition action >> } <a6>)
+    (<c2> ^1 <i1>)
+    -->
+    (<p1> ^props-result success +)
+    (<s1> ^props-blink true + ^props-flag reset-prohibits +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t107-2
+    (state <s1> ^props-can-evaluate <p1> ^props-instructions <p2>
+          ^rootstate <r1> ^const <c1>
+          ^name { <n1> << props-eval instruction >> })
+    (<p2> ^lti-name <p1> ^{ <a1> << condition action >> } _P71)
+    (<c1> ^2 <i1>)
+   -{ (<r1> ^operator <o1>)
+      (<o1> ^name <i1>)}
+    -->
+    (<p2> ^status fail +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*OpNoChange*t107-1
+    (state <s1> ^operator <o1> ^props-instructions <s2> ^rootstate <r1>
+          ^const <c1> ^name { <n1> << props-eval instruction >> })
+    (<o1> ^name instruction ^symbol <s2>)
+    (<c1> ^2 <i1>)
+   -{ (<r1> ^operator <o2>)
+      (<o2> ^name <i1>)}
+    (<s2> ^{ <a1> << condition action >> } |_P7|)
+    -->
+    (<s2> ^status fail +)
+}
+
+sp {answer*apply*props*combine*search*merge*pair*OpNoChange*t82-1
+    (state <s1> ^props-instructions <p1> ^operator <o1> ^smem <s2>)
+    (<p1> ^condition |_P7| ^condition |_P1|)
+    (<o1> ^name props-combine-search ^lti-name <l1>)
+    (<s2> ^command <c1>)
+    -->
+    (<s1> ^props-to-combine <p2> +)
+    (<p2> ^attr condition + ^sym1 |_P1| + ^sym2 |_P7| + ^newname _P71 +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t58-1
+    (state <s1> ^rootstate <r1> ^props-can-evaluate <p1>
+          ^props-instructions <p2>)
+    (<r1> -^cheese <c1>)
+    (<p2> ^lti-name <p1> ^{ <a1> << condition action >> } _P10)
+    -->
+    (<p2> ^status fail +)
+}
+
+sp {answer*set*props*symbol*status*response*propagate*fail*StateNoChange*t30-1
+    (state <s1> ^props-can-evaluate <p1> ^props-instructions <p2>
+          ^rootstate <r1> ^const <c1>
+          ^name { <n1> << props-eval instruction >> })
+    (<p2> ^lti-name <p1> ^{ <a1> << condition action >> } |_P7|)
+    (<c1> ^2 <i1>)
+   -{ (<r1> ^operator <o1>)
+      (<o1> ^name <i1>)}
+    -->
+    (<p2> ^status fail +)
+}
+
+
+

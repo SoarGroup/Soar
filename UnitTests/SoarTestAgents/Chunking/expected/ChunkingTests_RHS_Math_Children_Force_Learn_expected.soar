@@ -1,0 +1,10 @@
+sp {answer*apply*snc*t3-1
+    (state <s1> ^value 3 ^superstate nil ^foo <c4> ^wme { <> <c4> <c1> }
+          ^value <c3> ^value <c2>)
+    -->
+    (<s1> ^result <c1> + ^new-math (* 23 <c2>) + ^math (* 23 2) +
+           ^copied-math 23 + ^bar <c4> + ^child <c5> +)
+    (<c5> ^child-sub <d1> + ^child-math (+ <c3> 23) +)
+    (<d1> ^sub-struct2 <i1> + ^foo2 bar2 + ^foo1 bar1 +)
+    (<i1> ^foo3 bar3 +)
+}

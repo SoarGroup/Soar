@@ -301,7 +301,7 @@ void reset_timers(agent* thisAgent)
     thisAgent->timers_cpu.reset();
     thisAgent->timers_kernel.reset();
     thisAgent->timers_phase.reset();
-#ifdef DETAILED_TIMER_STATS
+#ifdef DETAILED_TIMING_STATS
     thisAgent->timers_gds.set_enabled(&(thisAgent->timers_enabled));
     thisAgent->timers_gds.reset();
 #endif
@@ -315,7 +315,7 @@ void reset_timers(agent* thisAgent)
     {
         thisAgent->timers_decision_cycle_phase[i].reset();
         thisAgent->timers_monitors_cpu_time[i].reset();
-#ifdef DETAILED_TIMER_STATS
+#ifdef DETAILED_TIMING_STATS
         thisAgent->timers_ownership_cpu_time[i].reset();
         thisAgent->timers_chunking_cpu_time[i].reset();
         thisAgent->timers_match_cpu_time[i].reset();
@@ -463,9 +463,7 @@ void do_one_top_level_phase(agent* thisAgent)
             /* always true for Soar 8 */
             if (thisAgent->e_cycles_this_d_cycle == 0)
             {
-                soar_invoke_callbacks(thisAgent,
-                                      BEFORE_DECISION_CYCLE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(INPUT_PHASE));
+                soar_invoke_callbacks(thisAgent, BEFORE_DECISION_CYCLE_CALLBACK, reinterpret_cast<soar_call_data>(INPUT_PHASE));
             }  /* end if e_cycles_this_d_cycle == 0 */
 
             if (thisAgent->input_cycle_flag == true)   /* Soar 7 flag, but always true for Soar8 */
@@ -474,19 +472,15 @@ void do_one_top_level_phase(agent* thisAgent)
                                       BEFORE_INPUT_PHASE_CALLBACK,
                                       reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
-#ifndef NO_SVS
-                if (thisAgent->svs->is_enabled())
-                {
-                    thisAgent->svs->input_callback();
-                }
-#endif
+                #ifndef NO_SVS
+                if (thisAgent->svs->is_enabled()) thisAgent->svs->input_callback();
+                #endif
+
                 do_input_cycle(thisAgent);
 
                 thisAgent->run_phase_count++ ;
                 thisAgent->run_elaboration_count++ ;  // All phases count as a run elaboration
-                soar_invoke_callbacks(thisAgent,
-                                      AFTER_INPUT_PHASE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(INPUT_PHASE));
+                soar_invoke_callbacks(thisAgent, AFTER_INPUT_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
                 if (thisAgent->input_period)
                 {
@@ -499,10 +493,10 @@ void do_one_top_level_phase(agent* thisAgent)
                 print_phase(thisAgent, "\n--- END Input Phase --- \n", 1);
             }
 
-#ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
+            #ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
             thisAgent->timers_phase.stop();
             thisAgent->timers_decision_cycle_phase[INPUT_PHASE].update(thisAgent->timers_phase);
-#endif
+            #endif
 
             thisAgent->current_phase = PROPOSE_PHASE;
 
@@ -810,17 +804,15 @@ void do_one_top_level_phase(agent* thisAgent)
                     print_phase(thisAgent, "\n--- END Application Phase ---\n", 1);
                 }
                 thisAgent->run_phase_count++ ;
-                soar_invoke_callbacks(thisAgent,
-                                      AFTER_APPLY_PHASE_CALLBACK,
-                                      reinterpret_cast<soar_call_data>(APPLY_PHASE));
+                soar_invoke_callbacks(thisAgent, AFTER_APPLY_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(APPLY_PHASE));
 
                 thisAgent->current_phase = OUTPUT_PHASE;
             }
 
-#ifndef NO_TIMING_STUFF
+            #ifndef NO_TIMING_STUFF
             thisAgent->timers_phase.stop();
             thisAgent->timers_decision_cycle_phase[APPLY_PHASE].update(thisAgent->timers_phase);
-#endif
+            #endif
 
             break;  /* END of Soar8 APPLY PHASE */
 
@@ -832,21 +824,15 @@ void do_one_top_level_phase(agent* thisAgent)
                 print_phase(thisAgent, "\n--- Output Phase ---\n", 0);
             }
 
-#ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
+            #ifndef NO_TIMING_STUFF
             thisAgent->timers_phase.start();
-#endif
+            #endif
 
-            soar_invoke_callbacks(thisAgent,
-                                  BEFORE_OUTPUT_PHASE_CALLBACK,
-                                  reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
+            soar_invoke_callbacks(thisAgent, BEFORE_OUTPUT_PHASE_CALLBACK, reinterpret_cast<soar_call_data>(OUTPUT_PHASE));
 
-#ifndef NO_SVS
-            if (thisAgent->svs->is_enabled())
-            {
-                thisAgent->svs->output_callback();
-            }
-#endif
-            /** KJC June 05:  moved output function timers into do_output_cycle ***/
+            #ifndef NO_SVS
+            if (thisAgent->svs->is_enabled()) thisAgent->svs->output_callback();
+            #endif
 
             do_output_cycle(thisAgent);
 
@@ -854,10 +840,6 @@ void do_one_top_level_phase(agent* thisAgent)
             {
                 thisAgent->SMem->go(false);
             }
-
-            ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
-            ///////////////////////////////////////////////////////////////////
 
             // update histories only first, allows:
             // - epmem retrieval cues to be biased by activation
@@ -887,10 +869,6 @@ void do_one_top_level_phase(agent* thisAgent)
                 wma_go(thisAgent, wma_histories);
                 wma_go(thisAgent, wma_forgetting);
             }
-
-            ///////////////////////////////////////////////////////////////////
-            assert(thisAgent->WM->wma_d_cycle_count == thisAgent->d_cycle_count);
-            ///////////////////////////////////////////////////////////////////
 
             // RL apoptosis
             {
@@ -1456,25 +1434,9 @@ void run_for_n_selections_of_slot_at_level(agent* thisAgent, int64_t n,
 
 extern char* getenv();
 
-/*
-  RDF: 20020706 Added this for the gSKI project. This makes it so that
-                created agents have a top state and the appropriate io
-                header symbols and wme's even before the first decision
-                cycle. This helps keep the gSKI interface a little saner.
-*/
-
 void init_agent_memory(agent* thisAgent)
 {
-
-    /* The following code was taken from the do_one_top_level_phase function
-       near the top of this file */
-    // If there is already a top goal this function should probably not be called
-    assert(thisAgent->top_goal == 0 &&
-           "There should be no top goal when init_agent_memory is called!");
-    if (thisAgent->top_goal)
-    {
-        return;
-    }
+    if (thisAgent->top_goal) return;
 
     thisAgent->io_header = get_new_io_identifier(thisAgent, 'I');
     thisAgent->io_header_input = get_new_io_identifier(thisAgent, 'I');

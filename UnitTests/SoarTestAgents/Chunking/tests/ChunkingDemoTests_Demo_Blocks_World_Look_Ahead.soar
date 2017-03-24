@@ -1,0 +1,3 @@
+pushd BW-LA
+source BW-LA.soar
+popd

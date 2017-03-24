@@ -114,6 +114,7 @@ typedef struct preference_struct
     bool                            o_supported;        /* is the preference o-supported? */
     bool                            in_tm;              /* is this currently in TM? */
     bool                            on_goal_list;       /* is this pref on the list for its match goal */
+    goal_stack_level                level;
     uint64_t                        reference_count;
     Symbol*                         id;
     Symbol*                         attr;
@@ -122,6 +123,7 @@ typedef struct preference_struct
 
     identity_quadruple              identities;         /* identities for a preferences in relation to instantiation that created*/
     identity_quadruple              clone_identities;   /* identities for a result preference in relation to chunk formed*/
+    identity_set_quadruple          identity_sets;      /* identity join sets for all four elements */
     bool_quadruple                  was_unbound_vars;
     rhs_quadruple                   rhs_funcs;          /* identities of syms in rhs functions*/
     rhs_quadruple                   cloned_rhs_funcs;   /* identities of syms in clone prefs rhs functions*/
@@ -145,13 +147,12 @@ typedef struct preference_struct
 
     wme_set*                        wma_o_set;
 
-    goal_stack_level                level;
     uint64_t                        p_id;                                   /* This is an ID used by DEBUG_PREFERENCE_INVENTORY */
 } preference;
 
-preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                                   const identity_quadruple o_ids = identity_quadruple(0, 0, 0, 0), bool pUnify_identities = false,
-                                   const bool_quadruple pWas_unbound_vars = bool_quadruple(false, false, false, false));
+preference* make_preference(agent* thisAgent, PreferenceType type, Symbol* id, Symbol* attr, Symbol* value, Symbol* referent = NULL,
+                                   const identity_quadruple &o_ids = identity_quadruple(0, 0, 0, 0),
+                                   const bool_quadruple &pWas_unbound_vars = bool_quadruple(false, false, false, false));
 preference* shallow_copy_preference(agent* thisAgent, preference* pPref);
 void cache_preference_if_necessary(agent* thisAgent, preference* pref);
 bool possibly_deallocate_preference_and_clones(agent* thisAgent, preference* pref, bool dont_cache = false);

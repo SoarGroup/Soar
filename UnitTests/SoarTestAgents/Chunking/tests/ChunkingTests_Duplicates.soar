@@ -24,10 +24,9 @@ sp {init*state
         ^b 6 7)
 }
 
-sp {turn-learning-on
+sp {learn-state
 (state <s> ^superstate.superstate nil)
 -->
-    (force-learn <s>)
     (<s> ^name learn-state)
 }
 
@@ -47,4 +46,9 @@ sp {chunk*resolve-conditions*elaborate*addition
     (<o1> ^1 (+ <x1> <x2>))
 }
 
-#exp -w chunk*resolve-conditions*elaborate*addition
+sp {too-deep
+(state <s> ^superstate.superstate.superstate.superstate nil)
+-->
+(interrupt)
+}
+

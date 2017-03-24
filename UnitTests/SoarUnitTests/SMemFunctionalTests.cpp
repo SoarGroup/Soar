@@ -325,23 +325,20 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
 	agent->RunSelf(1223);
 	result = agent->ExecuteCommandLine("p s1 -i -d 1");
 
-	expected =  std::string("(10143: S1 ^counter 50)\n") +
+	expected =  std::string("(9639: S1 ^counter 50)\n") +
                 std::string("(4: S1 ^epmem E1)\n") +
-                std::string("(15: S1 ^io I1)\n") +
-                std::string("(21: S1 ^name Factorization)\n") +
-                std::string("(10325: S1 ^operator O1385)\n") +
-                std::string("(10324: S1 ^operator O1385 +)\n") +
+                std::string("(11: S1 ^io I1)\n") +
+                std::string("(17: S1 ^name Factorization)\n") +
+                std::string("(9809: S1 ^operator O1385)\n") +
+                std::string("(9808: S1 ^operator O1385 +)\n") +
                 std::string("(3: S1 ^reward-link R1)\n") +
                 std::string("(8: S1 ^smem L1)\n") +
                 std::string("(2: S1 ^superstate nil)\n") +
-                std::string("(11: S1 ^svs V1)\n") +
                 std::string("(1: S1 ^type state)\n") +
-                std::string("(24: S1 ^using-smem true)\n");
+                std::string("(20: S1 ^using-smem true)\n");
 
-#ifndef NO_SVS
 #ifndef _WIN32
     assertTrue_msg("Didn't stop where expected!", result == expected);
-#endif
 #endif
 
     agent->ExecuteCommandLine("smem --backup backup.sqlite");
@@ -353,16 +350,13 @@ void SMemFunctionalTests::testDbBackupAndLoadTests()
     agent->ExecuteCommandLine("soar init");
 	result = agent->ExecuteCommandLine("p s1 -i -d 1");
     expected =  std::string("(4: S1 ^epmem E1)\n") +
-                std::string("(15: S1 ^io I1)\n") +
+                std::string("(11: S1 ^io I1)\n") +
                 std::string("(3: S1 ^reward-link R1)\n") +
                 std::string("(8: S1 ^smem L1)\n") +
                 std::string("(2: S1 ^superstate nil)\n") +
-                std::string("(11: S1 ^svs V1)\n") +
                 std::string("(1: S1 ^type state)\n");
-#ifndef NO_SVS
 #ifndef _WIN32
 	assertTrue_msg("soar init didn't reinit WM!", result == expected);
-#endif
 #endif
 
 	agent->ExecuteCommandLine("smem --set database file");

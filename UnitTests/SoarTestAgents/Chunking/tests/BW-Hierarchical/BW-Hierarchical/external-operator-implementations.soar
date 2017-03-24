@@ -1,0 +1,142 @@
+#############################################
+## Close Gripper
+
+sp {apply*close-gripper*above-table*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>)
+   (<grip> ^command close)
+   (<g> ^open yes
+        ^position down
+        ^above.type table)
+-->
+   (write (crlf) |X Close gripper above the table|)
+   (<grip> ^command close -)
+   (<g> ^open yes -
+              no)
+}
+
+sp {apply*close-gripper*up*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>)
+   (<grip> ^command close)
+   (<g> ^open yes
+        ^position up)
+-->
+   (write (crlf) |X Close gripper while up.|)
+   (<grip> ^command close -)
+   (<g> ^open yes -
+              no)
+}
+sp {apply*close-gripper*above-block*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>
+              ^ontop <ontop>)
+   (<grip> ^command close)
+   (<ontop> ^top-block <block>
+            ^bottom-block <obj>)
+   (<g> ^open yes
+        ^position down
+        ^above <block>)
+   (<block> ^name <name>)
+   (<obj> ^name <oname>)
+-->
+   (write (crlf) |X Close gripper on | <name> |. Thereby picking it up.|)
+   (write (crlf) |X   Now above | <oname> |.|)
+   (<grip> ^command close -)
+   (<g> ^holding nothing -
+                 <block>
+        ^open yes -
+              no
+        ^above <block> -
+               <obj>)
+   (<ontop> ^bottom-block <obj> -)
+}
+
+#############################################
+## Open Gripper
+sp {apply*open-gripper*holding*nothing*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>)
+   (<grip> ^command open)
+   (<g> ^open no
+        ^holding nothing)
+-->
+   (write (crlf) |X Open gripper - but holding nothing.|)
+   (<g> ^open no -
+              yes)
+   (<grip> ^command open -)
+}
+
+sp {apply*open-gripper*holding*something*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>
+              ^ontop <ontop>)
+   (<grip> ^command open)
+   (<ontop> ^top-block <block>)
+   (<g> ^open no
+        ^holding <block>
+        ^above <obj>)
+   (<block> ^name <block-name>)
+   (<obj> ^name <obj-name>)
+-->
+   (write (crlf) |X Open gripper - place | <block-name> | on | <obj-name> )
+   (<g> ^open no -
+              yes
+        ^holding <block> -
+                 nothing
+        ^above <obj> -
+               <block>)
+   (<ontop> ^bottom-block <obj>)
+   (<grip> ^command open -)
+}
+
+#############################################
+## Move Gripper Down
+sp {apply*move-gripper-down*external
+   :o-support
+   (state <s>  ^io.output-link.gripper <grip>
+               ^gripper <g>)
+   (<g> ^position up)
+   (<grip> ^command down)
+-->
+   (<g> ^position up -
+                  down)
+   (write (crlf) |X Move gripper down.|)
+   (<grip> ^command down -)
+}
+#############################################
+## Move Gripper Up
+sp {apply*move-gripper-up*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>)
+   (<g> ^position down)
+   (<grip> ^command up)
+-->
+   (<g> ^position down -
+                  up)
+   (write (crlf) |X Move gripper up.|)
+   (<grip> ^command up -)
+}
+
+###################################################
+sp {apply*move-gripper-above*external
+   :o-support
+   (state <s> ^io.output-link.gripper <grip>
+              ^gripper <g>)
+   (<g> ^above { <> <des> <objx> })
+   (<grip> ^command move-gripper-above
+           ^destination <des>)
+   (<des> ^name <name>)
+-->
+   (write (crlf) |X Move gripper above | <name>)
+   (<g> ^above <objx> -
+               <des>)
+   (<grip> ^command move-gripper-above -
+           ^destination <des> -)
+}

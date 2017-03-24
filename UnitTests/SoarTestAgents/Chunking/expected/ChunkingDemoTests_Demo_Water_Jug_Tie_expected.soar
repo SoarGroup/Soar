@@ -1,0 +1,36 @@
+sp {answer*apply*create-preferences*equal*Tie*t18-2
+    (state <s1> ^last-operator pour ^operator <o1> +)
+    (<o1> ^name { <n1> << fill empty >> })
+    -->
+    (<s1> ^operator <o1> =)
+}
+
+sp {answer*apply*create-preferences*worst*Tie*t18-1
+    (state <s1> ^last-operator pour ^operator <o1> +)
+    (<o1> ^name pour)
+    -->
+    (<s1> ^operator <o1> < ^operator <o1> =)
+}
+
+sp {answer*apply*create-preferences*best*Tie*t11-3
+    (state <s1> ^operator <o1> + ^last-operator { <l1> << empty fill >> })
+    (<o1> ^name pour)
+    -->
+    (<s1> ^operator <o1> > ^operator <o1> =)
+}
+
+sp {answer*apply*create-preferences*worst*Tie*t11-1
+    (state <s1> ^last-operator { <l1> << empty fill >> } ^operator <o1> +)
+    (<o1> ^name { <n1> << fill empty >> })
+    -->
+    (<s1> ^operator <o1> < ^operator <o1> =)
+}
+
+sp {answer*apply*create-preferences*equal*Tie*t5-1
+    (state <s1> ^last-operator none ^operator <o1> +)
+    -->
+    (<s1> ^operator <o1> =)
+}
+
+
+

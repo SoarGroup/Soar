@@ -23,6 +23,7 @@
 #include "AliasTest.hpp"
 #include "BasicTests.hpp"
 #include "ChunkingTests.hpp"
+#include "ChunkingDemoTests.hpp"
 #include "ElementXMLTest.hpp"
 #include "EpMemFunctionalTests.hpp"
 #include "FullTests.hpp"
@@ -66,8 +67,8 @@ std::string OS = "Unknown OS";
 
 void usage(std::string arg0)
 {
-    std::cout << "OVERVIEW: " << arg0 << ": Soar Unit Testing Framwork " << std::endl << std::endl;
-    std::cout << "Usage: " << arg0 << " : [options]" << std::endl << std::endl;
+    std::cout << "Soar Unit Tests" << std::endl << std::endl;
+    std::cout << "Usage: " << arg0 << " [options]" << std::endl << std::endl;
     std::cout << "OPTIONS:" << std::endl;
     std::cout << "\t" << "-c --category"                    << "\t\t\t\t" << "Run only these categories." << std::endl;
     std::cout << "\t" << "-t --test"                        << "\t\t\t\t" << "Run only these tests." << std::endl;
@@ -164,7 +165,8 @@ int main(int argc, char** argv)
 	TEST_DECLARATION(AgentTest);
 	TEST_DECLARATION(AliasTest);
 	TEST_DECLARATION(BasicTests);
-	TEST_DECLARATION(ChunkingTests);
+	TEST_DECLARATION(ChunkingDemoTests);
+    TEST_DECLARATION(ChunkingTests);
 	TEST_DECLARATION(EpMemFunctionalTests);
 	TEST_DECLARATION(ElementXMLTest);
 	TEST_DECLARATION(FullTests);

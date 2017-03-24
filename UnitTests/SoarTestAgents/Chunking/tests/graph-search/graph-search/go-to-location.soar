@@ -1,0 +1,21 @@
+sp {graph-search*propose*go-to-location
+   #:interrupt
+   (state <s> ^name graph-search
+              ^mission.current <next>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name go-to-location
+         ^next-location <next>)
+}
+
+sp {apply*go-to-location
+   (state <s> ^operator <op>
+              ^current-location.id <id>
+              ^mission <mission>)
+   (<mission> ^current <current>)
+   (<current> ^next <next> ^id <id>)
+   (<op> ^name go-to-location)
+-->
+   (<mission> ^current <current> -
+                       <next>)
+}

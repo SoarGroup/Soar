@@ -1,0 +1,16 @@
+source elaborations.soar
+source carry.soar
+pushd carry
+source carry_source.soar
+popd
+source compute-addition-result.soar
+source compute-subtraction-result.soar
+pushd compute-subtraction-result
+source compute-subtraction-result_source.soar
+popd
+source get-digit1.soar
+pushd get-digit1
+source get-digit1_source.soar
+popd
+source get-digit2.soar
+source write-result.soar

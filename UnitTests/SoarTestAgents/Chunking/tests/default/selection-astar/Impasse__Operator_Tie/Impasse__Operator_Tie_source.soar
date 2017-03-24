@@ -1,0 +1,10 @@
+source elaborations.soar
+source selection.soar
+source compare-evaluations.soar
+source compute-best-total-estimate.soar
+source evaluate-operator.soar
+pushd evaluate-operator
+source evaluate-operator_source.soar
+popd
+source remove-stale-estimated-cost.soar
+source remove-stale-path-cost.soar

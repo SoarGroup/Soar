@@ -340,8 +340,6 @@ namespace sml
 
             int GetListenerPort();
 
-            Soar_Instance* m_SoarInstance;
-
             /*************************************************************
             * @brief Creates a connection to a receiver that is in a different
             *        process.  The process can be on the same machine or a different machine.
@@ -989,6 +987,8 @@ namespace sml
             void        SendSVSInput(const char* agentName, const std::string& txt);
             std::string GetSVSOutput(const char* agentName);
             std::string SVSQuery(const char* agentName, const std::string& q);
+
+            static Soar_Instance* CreateSoarManagers();
     };
 
 }//closes namespace

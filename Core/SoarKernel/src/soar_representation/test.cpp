@@ -11,6 +11,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_repair.h"
 #include "explanation_memory.h"
 #include "output_manager.h"
@@ -22,8 +23,6 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "working_memory.h"
-
-#include <assert.h>
 
 /* =================================================================
 
@@ -55,16 +54,13 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 /* ----------------------------------------------------------------
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
+inline bool in_null_identity_set(test t) { if (t->identity_set) return t->identity_set->literalized(); return true; };
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
+test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
-//    Symbol* referent;
     test new_ct;
 
-    if (!t)
-    {
-        return NULL;
-    }
+    if (!t) return NULL;
 
     switch (t->type)
     {
@@ -89,22 +85,35 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
             new_ct->data.disjunction_list = thisAgent->symbolManager->copy_symbol_list_adding_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationBasedChunker->in_null_identity_set(t->eq_test))
+            if (pStripLiteralConjuncts && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && in_null_identity_set(t->eq_test))
             {
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
-                new_ct->identity = t->eq_test->identity;
-                if (pUnify_variablization_identity)
+                if (pUseUnifiedIdentitySet)
                 {
-                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
+                    if (t->eq_test->identity_set)
+                    {
+                        new_ct->identity     = t->eq_test->identity_set->get_identity();
+                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set->super_join);
+                        new_ct->clone_identity = t->eq_test->identity_set->get_clone_identity();
+                    } else {
+                        new_ct->identity = t->eq_test->identity;
+                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
+                        new_ct->clone_identity = t->eq_test->clone_identity;
+                    }
+                } else {
+                    new_ct->identity = t->eq_test->identity;
+                    set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
+                    new_ct->clone_identity = t->eq_test->clone_identity;
                 }
-            } else if (remove_state_impasse)
+            }
+            else if (remove_state_impasse)
             {
                 new_ct = NULL;
                 test temp;
                 cons* c;
                  for (c = t->data.conjunct_list; c != NIL; c = c->rest)
                  {
-                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUnify_variablization_identity, pStripLiteralConjuncts,
+                     temp = copy_test(thisAgent, static_cast<test>(c->first), pUseUnifiedIdentitySet, pStripLiteralConjuncts,
                                       remove_state_impasse, removed_goal, removed_impasse);
                      if (temp)
                      {
@@ -117,31 +126,26 @@ test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity, bo
                  }
             } else {
                 new_ct = make_test(thisAgent, NIL, t->type);
-                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUnify_variablization_identity, pStripLiteralConjuncts);
+                new_ct->data.conjunct_list = copy_test_list(thisAgent, t->data.conjunct_list, &(new_ct->eq_test), pUseUnifiedIdentitySet, pStripLiteralConjuncts);
             }
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
             new_ct->identity = t->identity;
+            new_ct->clone_identity = t->clone_identity;
             if (t->type == EQUALITY_TEST)
             {
                 new_ct->eq_test = new_ct;
             }
-            if (pUnify_variablization_identity && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
             {
-                /* Mark this test as seen.  The tests in the constraint lists are copies of
-                 * the pointers in grounds, so we use this tc_num later to later check if
-                 * an entry in the constraint propagation list is a duplicate of a test
-                 * already in a condition, which most should be. */
-                if (t->type != EQUALITY_TEST)
-                {
-                    t->tc_num = thisAgent->explanationBasedChunker->get_constraint_found_tc_num();
-                }
-                if (new_ct->identity)
-                {
-                    thisAgent->explanationBasedChunker->unify_identity(new_ct);
-                }
+                new_ct->identity        = get_joined_identity_id(new_ct->identity_set);
+                new_ct->clone_identity  = get_joined_identity_clone_id(new_ct->identity_set);
+                set_test_identity_set(thisAgent, new_ct, get_joined_identity_set(new_ct->identity_set));
+            } else {
+                set_test_identity_set(thisAgent, new_ct, t->identity_set);
             }
+
             break;
     }
     return new_ct;
@@ -155,7 +159,7 @@ void deallocate_test(agent* thisAgent, test t)
 {
     cons* c, *next_c;
 
-    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t\n", t);
+//    dprint(DT_DEALLOCATE_TEST, "DEALLOCATE test %t [%u]\n", t, t->identity);
     if (!t)
     {
         return;
@@ -167,12 +171,14 @@ void deallocate_test(agent* thisAgent, test t)
         case IMPASSE_ID_TEST:
         case SMEM_LINK_UNARY_TEST:
         case SMEM_LINK_UNARY_NOT_TEST:
+            TDI_remove(thisAgent, t);
             break;
         case DISJUNCTION_TEST:
+            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->deallocate_symbol_list_removing_references(t->data.disjunction_list);
             break;
         case CONJUNCTIVE_TEST:
-            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE conjunctive test\n");
+            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction %t\n", t);
             c = t->data.conjunct_list;
             while (c)
             {
@@ -183,15 +189,17 @@ void deallocate_test(agent* thisAgent, test t)
                 free_cons(thisAgent, c);
                 c = next_c;
             }
+            dprint(DT_DEALLOCATE_TEST, "DEALLOCATE tests in conjunction complete.  Next deallocation should be conjunction.\n");
+            t->data.conjunct_list = NULL;
+            TDI_remove(thisAgent, t);
             break;
-        default: /* relational tests other than equality */
+        default: /* tests with a referent */
+            TDI_remove(thisAgent, t);
             thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
             break;
     }
-    /* -- The eq_test is a cache to prevent repeated searches on conjunctive tests
-     *    which was all over the kernel.  We did not copy the test or increment the
-     *    refcount, so we don't need to deallocate the test here. -- */
-    t->eq_test = NULL;
+
+    if (t->identity_set) IdentitySet_remove_ref(thisAgent, t->identity_set);
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
@@ -255,12 +263,11 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
 {
-    test destination = 0;//, original = 0;
-    cons* c;//, *c_orig;
+    test destination = 0;
+    cons* c;
 
     destination = *dest_test_address;
 
-//    dprint(DT_DEBUG, "Merging disjunctive test %t into %t", new_test, destination);
     if (destination->type != CONJUNCTIVE_TEST)
     {
         if (destination->type == DISJUNCTION_TEST)
@@ -278,14 +285,11 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
         *dest_test_address = destination;
     }
 
-//    assert(destination->eq_test);
-
     for (c = destination->data.conjunct_list; c != NIL; c = c->rest)
     {
         if (static_cast<test>(c->first)->type == DISJUNCTION_TEST)
         {
             merge_disjunction_tests(thisAgent, static_cast<test>(c->first), new_test);
-//            dprint(DT_DEBUG, "Found another disjunction.  Merged test is now %t", destination);
             return true;
         }
     }
@@ -295,7 +299,6 @@ bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test
     c->rest = destination->data.conjunct_list;
     destination->data.conjunct_list = c;
 
-//    dprint(DT_DEBUG, "No disjunction found.  Merged test is now %t", destination);
     return true;
 }
 
@@ -323,7 +326,6 @@ bool add_test(agent* thisAgent, test* dest_test_address, test new_test, bool mer
     }
 
     destination = *dest_test_address;
-    assert(!((destination->type == EQUALITY_TEST) && (new_test->type == EQUALITY_TEST)));
 
     /* Since this function is called frequently but merges infrequently, we call a special
      * version of this function instead */
@@ -541,7 +543,6 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             return false;
         }
         case CONJUNCTIVE_TEST:
-            assert(false);
             return false;
         default:  /* relational tests */
         {
@@ -551,7 +552,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             }
             if (considerIdentity)
             {
-                return (t1->identity == t2->identity);
+                return (t1->identity_set->super_join == t2->identity_set->super_join);
             }
             return true;
         }
@@ -963,23 +964,14 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     test new_ct;
 
     thisAgent->memoryManager->allocate_with_pool(MP_test, &new_ct);
-
     new_ct->type = test_type;
     new_ct->data.referent = sym;
-    new_ct->identity = NULL_IDENTITY_SET;
-    new_ct->tc_num = 0;
-    if (test_type == EQUALITY_TEST)
-    {
-        new_ct->eq_test = new_ct;
-    } else {
-        new_ct->eq_test = NULL;
-    }
+    new_ct->identity = new_ct->clone_identity = LITERAL_VALUE;
+    new_ct->identity_set = NULL_IDENTITY_SET;
+    new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
+    if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 
-    if (sym)
-    {
-        thisAgent->symbolManager->symbol_add_ref(sym);
-    }
-
+    TDI_add(thisAgent, new_ct);
     return new_ct;
 }
 
@@ -1010,10 +1002,7 @@ cons* delete_test_from_conjunct(agent* thisAgent, test* t, cons* pDeleteItem)
     {
         // Iterate from head of list to find the previous item and fix its link
         prev = (*t)->data.conjunct_list;
-        while (prev->rest != pDeleteItem)
-        {
-            prev = prev->rest;
-        }
+        while (prev->rest != pDeleteItem) prev = prev->rest;
         prev->rest = pDeleteItem->rest;
     }
 

@@ -26,11 +26,11 @@
 #include "agent.h"
 #include "callback.h"
 #include "condition.h"
-#include "debug.h"
 #include "debug_inventories.h"
 #include "decide.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_timers.h"
 #include "episodic_memory.h"
 #include "instantiation.h"
@@ -84,7 +84,6 @@ preference* find_clone_for_level(preference* p, goal_stack_level level)
 {
     preference* clone;
 
-    assert(p && (p->inst->match_goal_level != level));
     for (clone = p->next_clone; clone != NIL; clone = clone->next_clone)
         if (clone->inst->match_goal_level == level)
         {
@@ -248,7 +247,6 @@ uint64_t get_rhs_function_first_arg_identity(agent* thisAgent, rhs_value rv)
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
     firstArg =  static_cast<char*>(fl->rest->first);
-    assert(rhs_value_is_symbol(firstArg));
     uint64_t returnVal = rhs_value_to_o_id(static_cast<char*>(firstArg));
     thisAgent->explanationBasedChunker->deep_copy_sym_expanded = rhs_value_to_symbol(static_cast<char*>(firstArg));
     return returnVal;
@@ -270,10 +268,7 @@ Symbol* instantiate_rhs_value(agent* thisAgent, rhs_value rv,
     wasUnboundVar = false;
     if (rhs_value_is_symbol(rv))
     {
-
         result = rhs_value_to_symbol(rv);
-
-        assert(!result->is_sti() || (result->id->level != NO_WME_LEVEL));
         thisAgent->symbolManager->symbol_add_ref(result);
         return result;
     }
@@ -523,31 +518,21 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
             }
         }
     }
-    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), false, was_unbound_vars);
-    newPref->rhs_funcs.id = copy_rhs_value(thisAgent, f_id);
-    newPref->rhs_funcs.attr = copy_rhs_value(thisAgent, f_attr);
-    newPref->rhs_funcs.value = copy_rhs_value(thisAgent, f_value);
-    newPref->rhs_funcs.referent = copy_rhs_value(thisAgent, f_referent);
+    newPref = make_preference(thisAgent, a->preference_type, lId, lAttr, lValue, lReferent, identity_quadruple(oid_id, oid_attr, oid_value, oid_referent), was_unbound_vars);
+
+    /* We don't copy these rhs functions because update_preference_identities needs to copy them to update identity set information later */
+    newPref->rhs_funcs.id = f_id;
+    newPref->rhs_funcs.attr = f_attr;
+    newPref->rhs_funcs.value = f_value;
+    newPref->rhs_funcs.referent = f_referent;
     newPref->parent_action = a;
     return newPref;
 
 abort_execute_action: /* control comes here when some error occurred */
-    if (lId)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lId);
-    }
-    if (lAttr)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lAttr);
-    }
-    if (lValue)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lValue);
-    }
-    if (lReferent)
-    {
-        thisAgent->symbolManager->symbol_remove_ref(&lReferent);
-    }
+    if (lId) thisAgent->symbolManager->symbol_remove_ref(&lId);
+    if (lAttr) thisAgent->symbolManager->symbol_remove_ref(&lAttr);
+    if (lValue) thisAgent->symbolManager->symbol_remove_ref(&lValue);
+    if (lReferent)  thisAgent->symbolManager->symbol_remove_ref(&lReferent);
     return NIL;
 }
 
@@ -624,8 +609,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
         {
             for (act = non_variabilized_inst->prod->action_list; act != NIL ; act = act->next)
             {
-                if ((act->type == MAKE_ACTION)  &&
-                        (rhs_value_is_symbol(act->attr)) &&
+                if ((act->type == MAKE_ACTION)  && (rhs_value_is_symbol(act->attr)) &&
                         (rhs_value_to_rhs_symbol(act->attr)->referent == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
                         (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE))
                 {
@@ -644,8 +628,7 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
                     {
                         Symbol* lSym = rhs_value_to_symbol(act->id);
                         /* -- Not sure rhs id can even be a symbol at this point.  Temporary warning here. -- */
-                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences(). Please report"
-                              " to Soar Umich group.\n", lSym);
+                        thisAgent->outputManager->printa_sf(thisAgent, "ERROR!  Unexpected symbol %y in calculate_support_for_instantiation_preferences().\n", lSym);
                         if (lSym->is_state())
                         {
                             operator_proposal = true;
@@ -686,47 +669,30 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
 
                         if (pass == 0)
                         {
-
                             if (w->id->id->isa_goal == true)
                             {
-
-                                if (lowest_goal_wme == NIL)
-                                {
-                                    lowest_goal_wme = w;
-                                }
-
+                                if (lowest_goal_wme == NIL) lowest_goal_wme = w;
                                 else
-                                {
-                                    if (w->id->id->level > lowest_goal_wme->id->id->level)
-                                    {
-                                        lowest_goal_wme = w;
-                                    }
-                                }
+                                    if (w->id->id->level > lowest_goal_wme->id->id->level) lowest_goal_wme = w;
                             }
 
                         }
 
                         else
                         {
-                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) &&
-                                (w->acceptable == false) &&
-                                (w->id == lowest_goal_wme->id))
+                            if ((w->attr == thisAgent->symbolManager->soarSymbols.operator_symbol) && (w->acceptable == false) && (w->id == lowest_goal_wme->id))
                             {
-                                /* iff RHS has only operator elaborations
-                                    then it's IE_PROD, otherwise PE_PROD, so
-                                    look for non-op-elabs in the actions  KJC 1/00 */
+                                /* iff RHS has only operator elaborations then it's IE_PROD, otherwise PE_PROD, so look for non-op-elabs in the actions  */
                                 for (act = inst->prod->action_list;
                                     act != NIL ; act = act->next)
                                 {
                                     if (act->type == MAKE_ACTION)
                                     {
-                                        if ((rhs_value_is_symbol(act->id)) &&
-                                            (rhs_value_to_symbol(act->id) == w->value))
+                                        if ((rhs_value_is_symbol(act->id)) && (rhs_value_to_symbol(act->id) == w->value))
                                         {
                                             op_elab = true;
                                         }
-                                        else if (rhs_value_is_reteloc(act->id) &&
-                                            w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), inst->rete_token, w))
+                                        else if (rhs_value_is_reteloc(act->id) && w->value == get_symbol_from_rete_loc(rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), inst->rete_token, w))
                                         {
                                             op_elab = true;
                                         }
@@ -790,11 +756,13 @@ void calculate_support_for_instantiation_preferences(agent* thisAgent, instantia
  - if "need_to_do_support_calculations" is true, calculates o-support
  for preferences_generated;
  ----------------------------------------------------------------------- */
-
-void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal)
+void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_do_support_calculations, instantiation*  original_inst, bool addToGoal, bool is_chunk_inst)
 {
     condition* cond;
     preference* p;
+
+    bool isSubGoalMatch = (inst->match_goal_level > TOP_GOAL_LEVEL);
+    bool lDoIdentities = (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]);
 
     /* We don't add a prod refcount for justifications so that they will be
      * excised when they no longer match or no longer have preferences asserted */
@@ -802,47 +770,98 @@ void finalize_instantiation(agent* thisAgent, instantiation* inst, bool need_to_
     {
         production_add_ref(inst->prod);
     }
-
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
         if (cond->type == POSITIVE_CONDITION)
         {
             #ifndef DO_TOP_LEVEL_COND_REF_CTS
-            if (inst->match_goal_level > TOP_GOAL_LEVEL)
+            if (isSubGoalMatch)
             #endif
             {
                 wme_add_ref(cond->bt.wme_);
-
-                /* if trace is for a lower level, find one for this level */
+            }
+            if (isSubGoalMatch && cond->bt.trace)
+            {
+                if (cond->bt.trace->level > inst->match_goal_level)
+                {
+                    cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
+                }
                 if (cond->bt.trace)
                 {
-                    if (cond->bt.trace->level > inst->match_goal_level)
+                    preference_add_ref(cond->bt.trace);
+                    if (lDoIdentities)
                     {
-                        cond->bt.trace =  find_clone_for_level(cond->bt.trace, inst->match_goal_level);
+                        test lTest_id = cond->data.tests.id_test->eq_test;
+                        test lTest_attr = cond->data.tests.attr_test->eq_test;
+                        test lTest_value = cond->data.tests.value_test->eq_test;
+
+                        if (cond->bt.trace->level == inst->match_goal_level)
+                        {
+                            dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition at match goal level %l\n", cond);
+                            if (lTest_id->identity)
+                                set_test_identity_set(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, cond->bt.trace->identity_sets.id));
+                            if (lTest_attr->identity)
+                                set_test_identity_set(thisAgent, lTest_attr, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, cond->bt.trace->identity_sets.attr));
+                            if (lTest_value->identity)
+                                set_test_identity_set(thisAgent, lTest_value, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, cond->bt.trace->identity_sets.value));
+                        } else if  (inst->match_goal_level > TOP_GOAL_LEVEL) {
+                            dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for subgoal condition not at match goal level %l\n", cond);
+                            if (lTest_id->identity)
+                                set_test_identity_set(thisAgent, lTest_id, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_id->identity, NULL_IDENTITY_SET));
+                            if (lTest_attr->identity)
+                                set_test_identity_set(thisAgent, lTest_attr, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_attr->identity, NULL_IDENTITY_SET));
+                            if (lTest_value->identity)
+                                set_test_identity_set(thisAgent, lTest_value, thisAgent->explanationBasedChunker->get_or_add_id_set(lTest_value->identity, NULL_IDENTITY_SET));
+                        }
                     }
-                    if (cond->bt.trace)
-                    {
-                        preference_add_ref(cond->bt.trace);
-                    }
+                }
+            }
+            /* Check for local singletons */
+            if (cond->bt.wme_->local_singleton_value_identity_set && lDoIdentities && (cond->bt.wme_->id == inst->match_goal))
+            {
+                dprint(DT_PROPAGATE_ID_SETS, "Propagating local singleton identity sets %u and %u for condition %l\n", cond->bt.wme_->local_singleton_id_identity_set->get_identity(), cond->bt.wme_->local_singleton_value_identity_set->get_identity(), cond);
+                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.id_test->eq_test->identity, cond->bt.wme_->local_singleton_id_identity_set);
+                thisAgent->explanationBasedChunker->force_identity_to_id_set_mapping(cond->data.tests.value_test->eq_test->identity, cond->bt.wme_->local_singleton_value_identity_set);
+                set_test_identity_set(thisAgent, cond->data.tests.id_test->eq_test, cond->bt.wme_->local_singleton_id_identity_set);
+                set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, cond->bt.wme_->local_singleton_value_identity_set);
+            }
+            if (lDoIdentities)
+            {
+                dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for cond with no pref at this level (possibly architectural or RL) %l\n", cond);
+                /* Architectural WME or we couldn't find a pref at the current level.  Start a new identity set */
+                if (!cond->data.tests.id_test->eq_test->identity_set && cond->data.tests.id_test->eq_test->identity)
+                {
+                    set_test_identity_set(thisAgent, cond->data.tests.id_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.id_test->eq_test->identity, NULL_IDENTITY_SET));
+                }
+                if (!cond->data.tests.attr_test->eq_test->identity_set && cond->data.tests.attr_test->eq_test->identity)
+                {
+                    set_test_identity_set(thisAgent, cond->data.tests.attr_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.attr_test->eq_test->identity, NULL_IDENTITY_SET));
+                }
+                if (!cond->data.tests.value_test->eq_test->identity_set && cond->data.tests.value_test->eq_test->identity)
+                {
+                    set_test_identity_set(thisAgent, cond->data.tests.value_test->eq_test, thisAgent->explanationBasedChunker->get_or_add_id_set(cond->data.tests.value_test->eq_test->identity, NULL_IDENTITY_SET));
                 }
             }
         }
         cond->inst = inst;
     }
 
-    if (addToGoal)
+    if (lDoIdentities) thisAgent->explanationBasedChunker->update_identity_sets_in_condlist(cond = inst->top_of_instantiated_conditions, inst);
+
+    for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
     {
-        assert(inst->match_goal);
-        for (p = inst->preferences_generated; p != NIL; p = p->inst_next)
+        if (lDoIdentities)
+        {
+            dprint(DT_PROPAGATE_ID_SETS, "Propagating identity sets for rhs preference %p\n", p);
+            thisAgent->explanationBasedChunker->update_identity_sets_in_preferences(p, is_chunk_inst);
+        }
+        if (addToGoal)
         {
             insert_at_head_of_dll(inst->match_goal->id->preferences_from_goal, p, all_of_goal_next, all_of_goal_prev);
             p->on_goal_list = true;
         }
     }
-    if (need_to_do_support_calculations)
-    {
-        calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
-    }
+    if (need_to_do_support_calculations) calculate_support_for_instantiation_preferences(thisAgent, inst, original_inst);
 }
 
 void add_pref_to_inst(agent* thisAgent, preference* pref, instantiation* inst)
@@ -921,17 +940,17 @@ void add_pref_to_arch_inst(agent* thisAgent, instantiation* inst, Symbol* pID, S
 {
     preference* pref;
 
-    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue,  NIL);
+    pref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, pID, pAttr, pValue);
     thisAgent->symbolManager->symbol_add_ref(pref->id);
     thisAgent->symbolManager->symbol_add_ref(pref->attr);
     thisAgent->symbolManager->symbol_add_ref(pref->value);
     if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(pref->id);
+        pref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->id);
         if (pref->attr->is_sti())
-            pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(pref->attr);
+            pref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->attr);
         if (pref->value->is_sti())
-            pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(pref->value);
+            pref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(pref->value);
     }
     add_pref_to_inst(thisAgent, pref, inst);
 }
@@ -968,15 +987,15 @@ void add_deep_copy_prefs_to_inst(agent* thisAgent, preference* pref, instantiati
         add_cond_to_arch_inst(thisAgent, inst->bottom_of_instantiated_conditions, inst, lNewDC_WME->deep_copied_wme);
 
         /* Add the copied preference */
-        lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value, NULL);
+        lPref = make_preference(thisAgent, ACCEPTABLE_PREFERENCE_TYPE, lNewDC_WME->id, lNewDC_WME->attr, lNewDC_WME->value);
 
         if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
         {
             /* We set the identities of the preferences so that they are dependent on the explanation behind
              * the working memory elements that they were copied from */
-            lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->id);
-            lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->attr);
-            lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity(lNewDC_WME->deep_copied_wme->value);
+            lPref->identities.id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->id);
+            lPref->identities.attr = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->attr);
+            lPref->identities.value = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewDC_WME->deep_copied_wme->value);
         }
 
         /* Now add a preferences that will create the deep-copied WME */
@@ -1026,12 +1045,20 @@ void init_instantiation(agent* thisAgent, instantiation* &inst, Symbol* backup_n
     inst->explain_depth = 0;
     inst->explain_tc_num = 0;
 
-    inst->prod_name = prod ? prod->name : backup_name ? backup_name : NULL;
+    if (prod)
+    {
+        inst->prod_name = prod->name;
+        inst->prod_naming_depth = prod->naming_depth;
+    } else {
+        inst->prod_name = backup_name;
+        inst->prod_naming_depth = 0;
+    }
+
     if (inst->prod_name)
     {
         thisAgent->symbolManager->symbol_add_ref(inst->prod_name);
-        IDI_add(thisAgent, inst);
     }
+    IDI_add(thisAgent, inst);
 }
 
 inline bool trace_firings_of_inst(agent* thisAgent, instantiation* inst)
@@ -1058,18 +1085,14 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     int64_t index;
     Symbol** cell;
 
-    #ifdef BUG_139_WORKAROUND  /* This is now checked for before we call this function */
-    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
-    #endif
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->start();
 
-    debug_refcount_change_start(thisAgent, true);
+    //debug_refcount_change_start(thisAgent, true);
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.architecture_inst_symbol, prod, tok, w);
     inst->next = thisAgent->newly_created_instantiations;
     thisAgent->newly_created_instantiations = inst;
     inst->in_newly_created = true;
     inst->in_ms = true;
-    /* It seems we can get the match goal level and goal from the waterfall variables. No need to search */
     inst->match_goal_level = thisAgent->active_level;
     inst->match_goal = thisAgent->active_goal;
 
@@ -1089,31 +1112,19 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     prod->firing_count++;
     thisAgent->production_firing_count++;
 
-    AddAdditionalTestsMode additional_test_mode = DONT_EXPLAIN;
+    ExplainTraceType ebcTraceType = WM_Trace;
     if (prod->type == TEMPLATE_PRODUCTION_TYPE)
     {
-        additional_test_mode = JUST_INEQUALITIES;
-    } else if ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON]) {
-        additional_test_mode = ALL_ORIGINALS;
+        ebcTraceType = WM_Trace_w_Inequalities;
+    } else if ((inst->match_goal_level > TOP_GOAL_LEVEL) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        ebcTraceType = Explanation_Trace;
     }
 
     /* build the instantiated conditions, and bind LHS variables */
-    if (additional_test_mode == DONT_EXPLAIN)
-    {
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), NULL,
-            inst->i_id, additional_test_mode);
-    } else {
-        p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w,
-            &(inst->top_of_instantiated_conditions),
-            &(inst->bottom_of_instantiated_conditions), &(rhs_vars),
-            inst->i_id, additional_test_mode);
-    }
+    p_node_to_conditions_and_rhs(thisAgent, prod->p_node, tok, w, &(inst->top_of_instantiated_conditions), &(inst->bottom_of_instantiated_conditions), (ebcTraceType != WM_Trace) ? &(rhs_vars) : NULL , ebcTraceType);
 
     /* record the level of each of the wmes that was positively tested */
-//    set_bt_and_find_match_goal(inst);
-
     for (cond = inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         if (cond->type == POSITIVE_CONDITION)
         {
@@ -1164,7 +1175,6 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     {
         if (prod->type != TEMPLATE_PRODUCTION_TYPE)
         {
-            dprint(DT_RL_VARIABLIZATION, "Executing action for non-template production.\n");
             if (a2 && isSubGoalMatch)
             {
                 pref = execute_action(thisAgent, a, tok, w, a2);
@@ -1174,10 +1184,9 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         }
         else
         {
-            dprint(DT_RL_VARIABLIZATION, "Executing action for template production.  (building template instantiation)\n");
+            dprint(DT_RL_VARIABLIZATION, "RL template %y matched.  Building instance of it...\n", inst->prod_name);
             pref = NIL;
             rl_build_template_instantiation(thisAgent, inst, tok, w, a2);
-
         }
         if (pref)
         {
@@ -1194,17 +1203,13 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
                 add_deep_copy_prefs_to_inst(thisAgent, pref, inst);
             }
         }
-
         if (a2)  a2 = a2->next;
     }
 
     /* reset rhs_variable_bindings array to all zeros */
     index = 0;
     cell = thisAgent->rhs_variable_bindings;
-    while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index)
-    {
-        *(cell++) = NIL;
-    }
+    while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index) *(cell++) = NIL;
 
     /* fill in lots of other stuff */
     finalize_instantiation(thisAgent, inst, false, NIL, true);
@@ -1223,12 +1228,15 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
     if (rhs_vars) deallocate_action_list(thisAgent, rhs_vars);
 
     dprint(DT_PRINT_INSTANTIATIONS,  "Created instantiation for match of %y (%u) in %y (%d) : \n%5", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level), inst->top_of_instantiated_conditions, inst->preferences_generated);
+
+    if (isSubGoalMatch && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON])
+    {
+        thisAgent->explanationBasedChunker->clear_identity_to_id_set_map();
+    }
+
     dprint_header(DT_MILESTONES, PrintAfter, "Created instantiation for match of %y (%u) finished in state %y(%d).\n", inst->prod_name, inst->i_id, inst->match_goal, static_cast<long long>(inst->match_goal_level));
 
-    if (isSubGoalMatch || (prod->type == TEMPLATE_PRODUCTION_TYPE))
-    {
-        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
-    }
+    if (isSubGoalMatch) thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     thisAgent->explanationBasedChunker->ebc_timers->instantiation_creation->stop();
 
@@ -1237,23 +1245,18 @@ void create_instantiation(agent* thisAgent, production* prod, struct token_struc
         /* Copy any operator selection knowledge preferences for conditions of this instantiation */
         thisAgent->explanationBasedChunker->copy_OSK(inst);
 
-        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+        //debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
 
         /* build chunks/justifications if necessary */
         thisAgent->explanationBasedChunker->set_learning_for_instantiation(inst);
-        thisAgent->explanationBasedChunker->learn_EBC_rule(inst, &(thisAgent->newly_created_instantiations));
+        thisAgent->explanationBasedChunker->learn_rule_from_instance(inst, &(thisAgent->newly_created_instantiations));
     }
     else
     {
-        debug_refcount_change_end(thisAgent, (std::string(inst->prod_name->sc->name) + std::string(" instantiation creation")).c_str(), true);
+        //debug_refcount_change_end(thisAgent, inst->prod_name->sc->name, " instantiation creation", true);
     }
 
-    if (!thisAgent->system_halted)
-    {
-        /* invoke callback function */
-        soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
-
-    }
+    if (!thisAgent->system_halted) soar_invoke_callbacks(thisAgent, FIRING_CALLBACK, static_cast<soar_call_data>(inst));
 }
 
 /* -----------------------------------------------------------------------
@@ -1280,17 +1283,19 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     condition_list cond_stack;
     inst_list l_instantiation_list;
     instantiation* lInst;
-    std::string lDebugRefcountString = std::string(inst->prod_name->sc->name) + std::string(" instantiation deallocation: ");
+    char* lProdName;
+
     l_instantiation_list.push_back(inst);
     inst_list::iterator next_iter = l_instantiation_list.begin();
 
     while (next_iter != l_instantiation_list.end())
     {
         lInst = *next_iter;
-        assert(lInst);
         ++next_iter;
         dprint(DT_DEALLOCATE_INST, "Deallocating instantiation: Stage 1 (prefs) for %u (%y)\n", lInst->i_id, lInst->prod_name);
-        debug_refcount_change_start(thisAgent, false);
+        //dprint(DT_DEALLOCATE_INST,  "Deallocating instantiation for match of %y (%u) in %y (%d) : \n%5", lInst->prod_name, lInst->i_id, lInst->match_goal, static_cast<long long>(lInst->match_goal_level), lInst->top_of_instantiated_conditions, lInst->preferences_generated);
+        //debug_refcount_change_start(thisAgent, false);
+        lProdName = lInst->prod_name ? lInst->prod_name->sc->name : NULL;
 
         for (condition* cond = lInst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
         {
@@ -1375,7 +1380,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             {
                                 dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) removing from temporary memory %p (%u) at level %d...\n", lPref, lPref->p_id, static_cast<int64_t>(lPref->level));
                                 remove_preference_from_tm(thisAgent, lPref);
-                        //        return;
                             }
                             if (lPref->on_goal_list)
                             {
@@ -1392,20 +1396,19 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
                             {
                                 next_iter = l_instantiation_list.insert(next_iter, lPref->inst);
                             }
-
                             cond_stack.push_back(cond);
                         }
                     }
                 }
             }
         }
-        debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("wme and clones")).c_str(), false);
+        //debug_refcount_change_end(thisAgent, lProdName, "instantiation deallocation: wme and clones", false);
     }
 
     /* --------------------------------------------------
      * deallocate_preference() part 2 (cleans up bt pref)
      * -------------------------------------------------- */
-    debug_refcount_change_start(thisAgent, false);
+    //debug_refcount_change_start(thisAgent, false);
     while (!cond_stack.empty())
     {
         condition* temp = cond_stack.back();
@@ -1414,7 +1417,16 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", temp->bt.trace, temp->bt.trace->p_id, static_cast<int64_t>(temp->bt.trace->level));
         deallocate_preference_contents(thisAgent, temp->bt.trace, true);
     }
-    debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("cumulative bt pref cleanup")).c_str(), false);
+
+//    condition* cond_temp;
+//    for  (condition_list::iterator cond_it = cond_stack.begin(), end = cond_stack.end(); cond_it != end; ++cond_it)
+//    {
+//        cond_temp = *cond_it;
+//        dprint(DT_DEALLOCATE_PREF, "Stage 1 (prefs) deallocating preference %p (%u) at level %d...\n", cond_temp->bt.trace, cond_temp->bt.trace->p_id, static_cast<int64_t>(cond_temp->bt.trace->level));
+//        deallocate_preference_contents(thisAgent, cond_temp->bt.trace, true);
+//    }
+
+    //debug_refcount_change_end(thisAgent, "All conds", "instantiation deallocation: cumulative bt pref cleanup", false);
 
     // free instantiations in the reverse order
 
@@ -1422,8 +1434,9 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
     for (inst_list::reverse_iterator riter = l_instantiation_list.rbegin(); riter != l_instantiation_list.rend(); ++riter)
     {
         instantiation* lDelInst = *riter;
+        lProdName = lDelInst->prod_name ? lDelInst->prod_name->sc->name : NULL;
 
-        debug_refcount_change_start(thisAgent, false);
+        //debug_refcount_change_start(thisAgent, false);
         dprint(DT_MILESTONES, "Deallocating instantiation for %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
         dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) deallocating instantiation: %u (%y)\n", lDelInst->i_id, lDelInst->prod_name);
 
@@ -1445,7 +1458,6 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         }
         if (lDelInst->OSK_proposal_slot)
         {
-            assert(lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = lDelInst);
             lDelInst->OSK_proposal_slot->instantiation_with_temp_OSK = NULL;
         }
 
@@ -1455,8 +1467,9 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
         while (lDelInst->preferences_cached)
         {
             next_pref = lDelInst->preferences_cached->inst_next;
-            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation %u (match of %y): %p\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached);
-            deallocate_preference(thisAgent, lDelInst->preferences_cached);
+            dprint(DT_EXPLAIN_CACHE, "Deallocating cached preference for instantiation i%u (match of %y): p%u (^%y ^%y ^%y) at level %d\n", lDelInst->i_id, lDelInst->prod_name, lDelInst->preferences_cached->p_id,
+                lDelInst->preferences_cached->id, lDelInst->preferences_cached->attr, lDelInst->preferences_cached->value, static_cast<int64_t>(lDelInst->preferences_cached->level));
+            deallocate_preference(thisAgent, lDelInst->preferences_cached, true);
             lDelInst->preferences_cached = next_pref;
         }
 
@@ -1478,12 +1491,15 @@ void deallocate_instantiation(agent* thisAgent, instantiation*& inst)
             }
         }
 
-        debug_refcount_change_end(thisAgent, (lDebugRefcountString + std::string("final cleanup")).c_str(), false);
+        //debug_refcount_change_end(thisAgent, lProdName, "final cleanup", false);
         IDI_remove(thisAgent, lDelInst->i_id);
         thisAgent->memoryManager->free_with_pool(MP_instantiation, lDelInst);
     }
-    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.\n");
+    dprint(DT_DEALLOCATE_INST, "Stage 2 (instantiations) has finished deallocating all instantiations in list.  Deallocating identity sets...\n");
+
     inst = NULL;
+
+    dprint(DT_DEALLOCATE_INST, "All stages of deallocate_instantiation() call complete.\n");
 }
 
 /* -----------------------------------------------------------------------
@@ -1508,7 +1524,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
     /* retract any preferences that are in TM and aren't o-supported */
     pref = inst->preferences_generated;
 
-    debug_refcount_change_start(thisAgent, true);
+    //debug_refcount_change_start(thisAgent, true);
     while (pref != NIL)
     {
         next = pref->inst_next;
@@ -1536,7 +1552,7 @@ void retract_instantiation(agent* thisAgent, instantiation* inst)
         }
         pref = next;
     }
-    debug_refcount_change_end(thisAgent, "Instantiation retraction", true);
+    //debug_refcount_change_end(thisAgent, "Instantiation ", "retraction", true);
     /* prod may not exist if rule was manually excised */
     if (inst->prod)
     {
@@ -1581,9 +1597,6 @@ instantiation* make_architectural_instantiation_for_memory_system(agent* thisAge
     inst->match_goal = pState;
     inst->match_goal_level = pState->id->level;
     inst->tested_LTM = true;
-
-    /* MToDo | Remove. */
-    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     dprint(DT_DEALLOCATE_INST, "Allocating architectural instantiation %u (match of %y)\n", inst->i_id, inst->prod_name);
 
@@ -1667,11 +1680,6 @@ preference* make_architectural_instantiation_for_impasse_item(agent* thisAgent, 
         if (ap_wme->value == cand->value) break;
     for (ss_link_wme = goal->id->impasse_wmes; ss_link_wme != NIL; ss_link_wme = ss_link_wme->next)
         if (ss_link_wme->attr == thisAgent->symbolManager->soarSymbols.superstate_symbol) break;
-
-    assert(ap_wme && ss_link_wme);
-
-    /* MToDo | Remove */
-    thisAgent->explanationBasedChunker->clear_symbol_identity_map();
 
     init_instantiation(thisAgent, inst, thisAgent->symbolManager->soarSymbols.fake_instantiation_symbol);
 

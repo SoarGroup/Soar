@@ -1,0 +1,22 @@
+###
+### MOVE-BLOCK
+###
+
+# Propose moving a clear block ontop a clear object
+## Modified to test that block is moveable instead of clear
+##   clear will not stay in working memory during a move
+## Added gripper tests so only proposed when gripper is empty or it is holding <blockA>
+sp {P5*propose*move-block
+   (state <s> ^name blocks-world)
+   (<s> ^moveable <blockA>
+        ^clear { <> <blockA> <object> })
+   (<blockA> ^type block)
+ -{(<s> ^ontop <ontop>)      # needed to avoid moving a block onto the table that is already there
+    (<ontop> ^top-block <blockA>
+             ^bottom-block <object>)}
+  -{(<s> ^gripper.holding <> <blockA> <> nothing)}
+-->
+   (<s> ^operator <o> +, =)
+   (<o> ^name move-block
+        ^moving-block <blockA>
+        ^destination <object>)}

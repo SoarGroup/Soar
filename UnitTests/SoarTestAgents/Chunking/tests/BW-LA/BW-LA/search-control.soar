@@ -1,0 +1,8 @@
+sp {blocks-world*select-operator*reject*move-block*twice
+   (state <s> ^name blocks-world
+              ^superstate.operator.name evaluate-operator ## Do this only during look-ahead
+              ^operator <o> +
+              ^last-moved-block <mb>)
+   (<o> ^moving-block <mb>)
+-->
+   (<s> ^operator <o> -)}

@@ -1,0 +1,1343 @@
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+
+multi-attributes subtraction-facts 100
+multi-attributes facts 50
+multi-attributes add10-facts 10
+multi-attributes arithmetic 3
+
+chunk singleton any current-column any
+
+chunk singleton any next-column any 
+chunk singleton any digit1 any 
+chunk singleton any digit2 any 
+chunk singleton any carry any
+
+#srand 1 # For consistency for testing
+chunk always
+chunk add-osk on
+
+
+sp {arithmetic*propose*initialize-arithmetic
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-arithmetic)
+}
+
+sp {arithmetic*apply*initialize-arithmetic
+   (state <s> ^operator.name initialize-arithmetic)
+-->
+   (<s> ^name arithmetic
+        ^count 1000)}
+
+sp {arithmetic*elaborate*state*top-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Top Number: | <d1>)
+   (<ap> ^top-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*bottom-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Bottom Number: | <d1>)
+   (<ap> ^bottom-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*result-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column nil)
+-->
+  # (write (crlf) |Result Number: | <d1>)
+   (<ap> ^result-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*top-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column nil)
+-->
+#   (write (crlf) |Top Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column nil)
+-->
+  # (write (crlf) |Bottom Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Result Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*top-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit1 <d3>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Top Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit2 <d3>
+         ^next-column nil)
+-->
+  # (write (crlf) |Bottom Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column <hc>)
+   (<hc> ^result <d3>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Result Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+sp {arithmetic*elaborate*state*top-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit1 <d3>
+         ^next-column <thc>)
+   (<thc> ^digit1 <d4>
+          ^next-column nil)
+-->
+  # (write (crlf) |Top Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit2 <d3>
+         ^next-column <thc>)
+   (<thc> ^digit2 <d4>
+          ^next-column nil)
+-->
+#   (write (crlf) |Bottom Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column <hc>)
+   (<hc> ^result <d3>
+         ^next-column <thc>)
+   (<thc> ^result <d4>
+          ^next-column nil)
+-->
+  # (write (crlf) |Result Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+
+sp {arithmetic*elaborate*state*compute-answer*add
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation addition)
+-->
+   (<ap> ^computed-result (+ <tn> <bn>))
+ #  (write (crlf) |Computed Addition Result : | (+ <tn> <bn>))
+}
+
+sp {arithmetic*elaborate*state*compute-answer*sub
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation subtraction)
+-->
+   (<ap> ^computed-result (- <tn> <bn>))
+ #  (write (crlf) |Computed Subtraction Result : | (- <tn> <bn>))
+}
+
+#sp {arithmetic*elaborate*state*compare-results*equal
+#   (state <s> ^name arithmetic
+#              ^superstate nil
+#              ^arithmetic-problem <ap>)
+#   (<ap> ^computed-result <cr>
+#         ^result-number <cr>)
+#-->
+#   (write (crlf) |Results Correct.|)
+#}
+
+sp {arithmetic*elaborate*state*compare-results*not-equal
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^computed-result <cr>
+         ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation-symbol <os> 
+         ^result-number { <> <cr> <rn>})
+-->
+   (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))
+   (halt)
+}
+
+
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>)
+-->
+   (<s> ^top-state <ts>)
+}
+
+sp {process-column*elaborate*arithmetic-problem
+   (state <s> ^name 
+              ^superstate.arithmetic-problem <ap>)
+-->
+   (<s> ^arithmetic-problem <ap>)
+}
+
+sp {process-column*elaborate*arithmetic-facts
+   (state <s> ^name 
+              ^superstate.arithmetic <a>)
+-->
+   (<s> ^arithmetic <a>)
+}
+#
+sp {process-column*elaborate*current-column
+   (state <s> ^name <> compute-subtraction-result <> compute-subtraction-borrow-result
+              ^arithmetic-problem <ap>)
+   (<ap> ^current-column <cc>)
+-->
+   (<s> ^current-column <cc>)
+}
+
+sp {compute-result*propose*add-ten
+   (state <s> ^name compute-subtraction-borrow-result
+              ^current-column.new-digit1 <r>
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add-ten)
+}
+
+sp {compute-result*apply*add-ten
+   (state <s> ^operator <op>
+              ^arithmetic.add10-facts <af>
+              ^superstate <ss>)
+   (<ss> ^digit1 <d>
+         ^digit2 > <d>)
+   (<af> ^digit1 <d>
+         ^digit-10 <d10>)
+   (<op> ^name add-ten)
+-->
+   (<ss> ^digit1 <d> -
+                 <d10>)
+}
+
+sp {compute-result*propose*borrow
+   (state <s> ^name compute-subtraction-borrow-result
+             -^current-column.new-digit1 <r>
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name borrow)
+}
+
+sp {compute-result*apply*borrow
+   (state <s> ^operator <op>
+              ^result <r>
+              ^current-column <cc>)
+#   (<cc> ^digit1 <d1>)
+   (<op> ^name borrow)
+-->
+   (<cc> ^new-digit1 <r>)
+}
+
+sp {process-column*propose*carry
+ #  :interrupt
+   (state <s> ^name << process-column get-digit1 >>
+              ^carry 1
+              ^current-column.next-column <nc>)
+   (<nc> ^carry unknown)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name carry)
+}
+
+sp {process-column*propose*carry*nil
+  # :interrupt
+   (state <s> ^name << process-column get-digit1 >>
+              ^carry 1
+              ^current-column.next-column nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name carry)
+}
+sp {process-column*apply*carry
+   (state <s> ^operator.name carry
+              ^carry 1
+              ^current-column.next-column <nc>)
+   (<nc> ^column t
+         ^carry unknown)
+-->
+   (<nc> ^carry 1
+         ^carry unknown -)
+}
+
+sp {process-column*compare*carry
+   (state <s> ^name process-column
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name carry)
+   (<op2> ^name write-result)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {process-column*propose*compute-addition-result
+   (state <s> ^name process-column
+              ^digit1 <d1>
+              ^digit2 <d2>   
+              ^arithmetic-problem.operation addition
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-addition-result)
+}
+
+sp {process-column*apply*compute-addition-result
+   (state <s> ^operator.name compute-addition-result
+              ^digit1 <d1>
+              ^digit2 <d2>   
+              ^arithmetic.facts <af>)
+   (<af> ^digit1 <d1>
+         ^digit2 <d2>
+         ^sum <sum>
+         ^carry <cb>)
+-->
+   (<s> ^result <sum>
+        ^carry <cb>)
+}
+sp {get-digit1*propose*compute-result
+   (state <s> ^name get-digit1
+              ^digit1 <a1>
+              ^digit2 <a2>
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-addition-result)
+}
+
+### Add in the carry for addition will be done by process-column*apply*compute-result*addition
+### Subtract the borrow will be done by process-column*apply*compute-result*subtraction
+## Carry needed
+
+sp {process-column*propose*compute-subtraction-borrow-result
+   (state <s> ^name process-column
+              ^arithmetic-problem.operation subtraction
+              ^digit1 <a1>
+              ^digit2 { > <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-borrow-result)
+}
+
+
+## No carry needed
+sp {process-column*propose*compute-subtraction-result
+   (state <s> ^name process-column
+              ^arithmetic-problem.operation subtraction
+              ^digit1 <a1>
+              ^digit2 { <= <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-no-borrow-result)
+}
+
+sp {process-column*apply*compute-subtraction-no-carru-result*subtraction
+   (state <s> ^operator.name compute-subtraction-no-borrow-result
+              ^arithmetic.subtraction-facts <af>
+              ^digit1 <a1>
+              ^digit2 <a2>)
+   (<af> ^digit1 <a1>
+         ^digit2 <a2>
+         ^result <result>)
+-->
+   (<s> ^result <result>
+        ^carry 0)
+}
+
+# This subgoal is only used for subtraction when use
+## subtraction facts - don't know how to use borrow directly 
+## and must recursively borrow/add-10
+
+sp {compute-result*elaborate*substate
+#   :interrupt
+   (state <s> ^name compute-subtraction-borrow-result
+              ^top-state.one-fact <one>
+              ^superstate.current-column <cc>)
+   (<cc> ^next-column <nc>)
+   (<nc> ^digit1 <d1>)
+-->
+   (<s> ^current-column <nc>
+        ^digit1 <d1>
+        ^digit2 <one>)
+}
+sp {generate-problem*propose*finish-problem-generation
+   (state <s> ^name generate-problem
+              ^current-column nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name finish-problem-generation)
+}
+
+sp {generate-problem*apply*finish-problem-generation
+   (state <s> ^operator <op>
+              ^superstate <ss>
+              ^problem <p>)
+   (<op> ^name finish-problem-generation)
+-->
+   (<ss> ^arithmetic-problem <p>)
+}
+
+sp {arithmetic*propose*finish-problem
+   (state <s> ^name arithmetic
+              ^count <count>
+              ^arithmetic-problem.current-column <c>)
+   (<c> ^result
+        ^next-column nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name finish-problem
+         ^count <count>)
+}
+
+sp {arithmetic*apply*finish-problem*decrement-count
+   (state <s> ^name arithmetic
+              ^operator <o>
+              ^arithmetic-problem <ap>
+              ^count <c>)
+   (<o>  ^name finish-problem
+         ^count <c>)
+-->
+   (<s> ^arithmetic-problem <ap> -
+        ^count <c> -
+               (- <c> 1))
+}
+
+########## Print out problem and answer #############
+sp {arithmetic*apply*finish-problem*1column*result
+   (state <s> ^name arithmetic
+              ^operator <o>
+              ^arithmetic-problem <ap>)
+   (<o>  ^name finish-problem)
+   (<ap> ^one-column <oc>
+         ^operation-symbol <as>)
+   (<oc> ^digit1 <n1>
+         ^digit2 <n2>
+         ^result <n3>
+         ^next-column nil)
+-->
+   (write (crlf) (crlf) | | <n1> )
+   (write (crlf) <as> <n2> )
+   (write (crlf) |--|)
+   (write (crlf) | | <n3> )
+}
+sp {arithmetic*apply*finish-problem*2column*result
+   (state <s> ^name arithmetic
+              ^operator <o>
+              ^arithmetic-problem <ap>)
+   (<o>  ^name finish-problem)
+   (<ap> ^one-column <oc>
+         ^operation-symbol <as>)
+   (<oc> ^digit1 <n1>
+         ^digit2 <n2>
+         ^result <a1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <n3>
+         ^digit2 <n4>
+         ^result <a2>
+         ^next-column nil)
+-->
+   (write (crlf) (crlf) | |   <n3> <n1> )
+   (write (crlf)  <as> <n4> <n2> )
+   (write (crlf) |---|)
+   (write (crlf) | |   <a2> <a1>)
+}
+
+sp {arithmetic*apply*finish-problem3*column*result
+   (state <s> ^name arithmetic
+              ^operator <o>
+              ^arithmetic-problem <ap>)
+   (<o>  ^name finish-problem)
+   (<ap> ^one-column <oc>
+         ^operation-symbol <as>)
+   (<oc> ^digit1 <n1>
+         ^digit2 <n2>
+         ^result <a1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <n3>
+         ^digit2 <n4>
+         ^result <a2>
+         ^next-column <vc>)
+   (<vc> ^digit1 <n5>
+         ^digit2 <n6>
+         ^result <a3>
+         ^next-column nil)
+-->
+   (write (crlf) | |) 
+   (write (crlf) | |   <n5> <n3> <n1> )
+   (write (crlf)  <as> <n6> <n4> <n2> )
+   (write (crlf) |----|)
+   (write (crlf) | |   <a3> <a2> <a1>)
+}
+
+sp {arithmetic*apply*finish-problem4*column*result
+   (state <s> ^name arithmetic
+              ^operator <o>
+              ^arithmetic-problem <ap>)
+   (<o>  ^name finish-problem)
+   (<ap> ^one-column <oc>
+         ^operation-symbol <as>)
+   (<oc> ^digit1 <n1>
+         ^digit2 <n2>
+         ^result <a1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <n3>
+         ^digit2 <n4>
+         ^result <a2>
+         ^next-column <vc>)
+   (<vc> ^digit1 <n5>
+         ^digit2 <n6>
+         ^result <a3>
+         ^next-column <uc>)
+   (<uc> ^digit1 <n7>
+         ^digit2 <n8>
+         ^result <a4>
+         ^next-column nil)
+-->
+   (write (crlf) | |)
+   (write (crlf) | |   <n7> <n5> <n3> <n1> )
+   (write (crlf)  <as> <n8> <n6> <n4> <n2> )
+   (write (crlf) |----|)
+   (write (crlf) | |  <a4> <a3> <a2> <a1>)
+}
+
+sp {generate-problem*propose*generate-digit1
+   (state <s> ^name generate-problem
+              ^digits <d>
+              ^current-column { <> nil <cc> })
+   (<cc> -^digit1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name generate-digit1
+         ^digit1 <d>)
+}
+
+
+## For subtraction, make sure most significant digit of the top number
+## is not zero (so can insure top number is > bottom number). 
+
+sp {generate-problem*compare*generate-digit1
+   (state <s> ^name generate-problem
+              ^current-column <cc>
+              ^problem.operation subtraction
+              ^operator <op1> +)
+   (<op1> ^name generate-digit1
+          ^digit1 0)
+   (<cc> ^next-column nil)
+-->
+   (<s> ^operator <op1> -)
+}
+
+sp {generate-problem*apply*generate-digit1
+   (state <s> ^operator <op>
+              ^current-column <c1>)
+   (<op> ^name generate-digit1
+         ^digit1 <d>)
+-->
+   (write (crlf) <d>)
+   (<c1> ^digit1 <d>)
+}
+
+sp {generate-problem*propose*generate-digit2
+   (state <s> ^name generate-problem
+              ^digits <d>
+              ^current-column  { <> nil <cc> })
+   (<cc> -^digit2
+          ^digit1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name generate-digit2
+         ^digit2 <d>)
+}
+
+### For subtraction problem, make sure most significant digit of second number
+### is less than the most significant digit of the top-number 
+### Generate-digit1 will not have a 0 as most significant digit
+
+sp {generate-problem*compare*generate-digit2
+   (state <s> ^name generate-problem
+              ^current-column <cc>
+              ^problem.operation subtraction
+              ^operator <op1> +)
+   (<op1> ^name generate-digit2
+          ^digit2 >= <d>)
+   (<cc> ^digit1 <d>
+         ^next-column nil)
+-->
+   (<s> ^operator <op1> <)
+}
+
+
+sp {generate-problem*apply*generate-digit2
+   (state <s> ^operator <op>
+              ^current-column <c1>)
+   (<op> ^name generate-digit2
+         ^digit2 <d>)
+-->
+   (write (crlf) <d>)
+   (<c1> ^digit2 <d>)
+}
+
+sp {arithmetic*propose*generate-facts
+   (state <s> ^name arithmetic
+             -^arithmetic.facts)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name generate-facts)
+}
+
+sp {arithmetic*apply*generate-facts*add*sub
+   (state <s> ^operator.name generate-facts)
+-->
+   (<s> ^one-fact 1
+        ^arithmetic.facts
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
+                          <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
+                          <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
+                          <a31> <a32> <a33> <a34> <a35> <a36> <a37> <a38> <a39> <a30>
+                          <a41> <a42> <a43> <a44> <a45> <a46> <a47> <a48> <a49> <a40>
+                          <a51> <a52> <a53> <a54> <a55> <a56> <a57> <a58> <a59> <a50>
+                          <a61> <a62> <a63> <a64> <a65> <a66> <a67> <a68> <a69> <a60>
+                          <a71> <a72> <a73> <a74> <a75> <a76> <a77> <a78> <a79> <a70>
+                          <a81> <a82> <a83> <a84> <a85> <a86> <a87> <a88> <a89> <a80>
+                          <a91> <a92> <a93> <a94> <a95> <a96> <a97> <a98> <a99> <a90>)
+   (<a00> ^digit1 0 ^digit2 0 ^sum 0 ^carry 0)
+   (<a01> ^digit1 0 ^digit2 1 ^sum 1 ^carry 0)
+   (<a02> ^digit1 0 ^digit2 2 ^sum 2 ^carry 0)
+   (<a03> ^digit1 0 ^digit2 3 ^sum 3 ^carry 0)
+   (<a04> ^digit1 0 ^digit2 4 ^sum 4 ^carry 0)
+   (<a05> ^digit1 0 ^digit2 5 ^sum 5 ^carry 0)
+   (<a06> ^digit1 0 ^digit2 6 ^sum 6 ^carry 0)
+   (<a07> ^digit1 0 ^digit2 7 ^sum 7 ^carry 0)
+   (<a08> ^digit1 0 ^digit2 8 ^sum 8 ^carry 0)
+   (<a09> ^digit1 0 ^digit2 9 ^sum 9 ^carry 0)
+   (<a10> ^digit1 1 ^digit2 0 ^sum 1 ^carry 0)
+   (<a11> ^digit1 1 ^digit2 1 ^sum 2 ^carry 0)
+   (<a12> ^digit1 1 ^digit2 2 ^sum 3 ^carry 0)
+   (<a13> ^digit1 1 ^digit2 3 ^sum 4 ^carry 0)
+   (<a14> ^digit1 1 ^digit2 4 ^sum 5 ^carry 0)
+   (<a15> ^digit1 1 ^digit2 5 ^sum 6 ^carry 0)
+   (<a16> ^digit1 1 ^digit2 6 ^sum 7 ^carry 0)
+   (<a17> ^digit1 1 ^digit2 7 ^sum 8 ^carry 0)
+   (<a18> ^digit1 1 ^digit2 8 ^sum 9 ^carry 0)
+   (<a19> ^digit1 1 ^digit2 9 ^sum 0 ^carry 1)
+   (<a20> ^digit1 2 ^digit2 0 ^sum 2 ^carry 0)
+   (<a21> ^digit1 2 ^digit2 1 ^sum 3 ^carry 0)
+   (<a22> ^digit1 2 ^digit2 2 ^sum 4 ^carry 0)
+   (<a23> ^digit1 2 ^digit2 3 ^sum 5 ^carry 0)
+   (<a24> ^digit1 2 ^digit2 4 ^sum 6 ^carry 0)
+   (<a25> ^digit1 2 ^digit2 5 ^sum 7 ^carry 0)
+   (<a26> ^digit1 2 ^digit2 6 ^sum 8 ^carry 0)
+   (<a27> ^digit1 2 ^digit2 7 ^sum 9 ^carry 0)
+   (<a28> ^digit1 2 ^digit2 8 ^sum 0 ^carry 1)
+   (<a29> ^digit1 2 ^digit2 9 ^sum 1 ^carry 1)
+   (<a30> ^digit1 3 ^digit2 0 ^sum 3 ^carry 0)
+   (<a31> ^digit1 3 ^digit2 1 ^sum 4 ^carry 0)
+   (<a32> ^digit1 3 ^digit2 2 ^sum 5 ^carry 0)
+   (<a33> ^digit1 3 ^digit2 3 ^sum 6 ^carry 0)
+   (<a34> ^digit1 3 ^digit2 4 ^sum 7 ^carry 0)
+   (<a35> ^digit1 3 ^digit2 5 ^sum 8 ^carry 0)
+   (<a36> ^digit1 3 ^digit2 6 ^sum 9 ^carry 0)
+   (<a37> ^digit1 3 ^digit2 7 ^sum 0 ^carry 1)
+   (<a38> ^digit1 3 ^digit2 8 ^sum 1 ^carry 1)
+   (<a39> ^digit1 3 ^digit2 9 ^sum 2 ^carry 1)
+   (<a40> ^digit1 4 ^digit2 0 ^sum 4 ^carry 0)
+   (<a41> ^digit1 4 ^digit2 1 ^sum 5 ^carry 0)
+   (<a42> ^digit1 4 ^digit2 2 ^sum 6 ^carry 0)
+   (<a43> ^digit1 4 ^digit2 3 ^sum 7 ^carry 0)
+   (<a44> ^digit1 4 ^digit2 4 ^sum 8 ^carry 0)
+   (<a45> ^digit1 4 ^digit2 5 ^sum 9 ^carry 0)
+   (<a46> ^digit1 4 ^digit2 6 ^sum 0 ^carry 1)
+   (<a47> ^digit1 4 ^digit2 7 ^sum 1 ^carry 1)
+   (<a48> ^digit1 4 ^digit2 8 ^sum 2 ^carry 1)
+   (<a49> ^digit1 4 ^digit2 9 ^sum 3 ^carry 1)
+   (<a50> ^digit1 5 ^digit2 0 ^sum 5 ^carry 0)
+   (<a51> ^digit1 5 ^digit2 1 ^sum 6 ^carry 0)
+   (<a52> ^digit1 5 ^digit2 2 ^sum 7 ^carry 0)
+   (<a53> ^digit1 5 ^digit2 3 ^sum 8 ^carry 0)
+   (<a54> ^digit1 5 ^digit2 4 ^sum 9 ^carry 0)
+   (<a55> ^digit1 5 ^digit2 5 ^sum 0 ^carry 1)
+   (<a56> ^digit1 5 ^digit2 6 ^sum 1 ^carry 1)
+   (<a57> ^digit1 5 ^digit2 7 ^sum 2 ^carry 1)
+   (<a58> ^digit1 5 ^digit2 8 ^sum 3 ^carry 1)
+   (<a59> ^digit1 5 ^digit2 9 ^sum 4 ^carry 1)
+   (<a60> ^digit1 6 ^digit2 0 ^sum 6 ^carry 0)
+   (<a61> ^digit1 6 ^digit2 1 ^sum 7 ^carry 0)
+   (<a62> ^digit1 6 ^digit2 2 ^sum 8 ^carry 0)
+   (<a63> ^digit1 6 ^digit2 3 ^sum 9 ^carry 0)
+   (<a64> ^digit1 6 ^digit2 4 ^sum 0 ^carry 1)
+   (<a65> ^digit1 6 ^digit2 5 ^sum 1 ^carry 1)
+   (<a66> ^digit1 6 ^digit2 6 ^sum 2 ^carry 1)
+   (<a67> ^digit1 6 ^digit2 7 ^sum 3 ^carry 1)
+   (<a68> ^digit1 6 ^digit2 8 ^sum 4 ^carry 1)
+   (<a69> ^digit1 6 ^digit2 9 ^sum 5 ^carry 1)
+   (<a70> ^digit1 7 ^digit2 0 ^sum 7 ^carry 0)
+   (<a71> ^digit1 7 ^digit2 1 ^sum 8 ^carry 0)
+   (<a72> ^digit1 7 ^digit2 2 ^sum 9 ^carry 0)
+   (<a73> ^digit1 7 ^digit2 3 ^sum 0 ^carry 1)
+   (<a74> ^digit1 7 ^digit2 4 ^sum 1 ^carry 1)
+   (<a75> ^digit1 7 ^digit2 5 ^sum 2 ^carry 1)
+   (<a76> ^digit1 7 ^digit2 6 ^sum 3 ^carry 1)
+   (<a77> ^digit1 7 ^digit2 7 ^sum 4 ^carry 1)
+   (<a78> ^digit1 7 ^digit2 8 ^sum 5 ^carry 1)
+   (<a79> ^digit1 7 ^digit2 9 ^sum 6 ^carry 1)
+   (<a80> ^digit1 8 ^digit2 0 ^sum 8 ^carry 0)
+   (<a81> ^digit1 8 ^digit2 1 ^sum 9 ^carry 0)
+   (<a82> ^digit1 8 ^digit2 2 ^sum 0 ^carry 1)
+   (<a83> ^digit1 8 ^digit2 3 ^sum 1 ^carry 1)
+   (<a84> ^digit1 8 ^digit2 4 ^sum 2 ^carry 1)
+   (<a85> ^digit1 8 ^digit2 5 ^sum 3 ^carry 1)
+   (<a86> ^digit1 8 ^digit2 6 ^sum 4 ^carry 1)
+   (<a87> ^digit1 8 ^digit2 7 ^sum 5 ^carry 1)
+   (<a88> ^digit1 8 ^digit2 8 ^sum 6 ^carry 1)
+   (<a89> ^digit1 8 ^digit2 9 ^sum 7 ^carry 1)
+   (<a90> ^digit1 9 ^digit2 0 ^sum 9 ^carry 0)
+   (<a91> ^digit1 9 ^digit2 1 ^sum 0 ^carry 1)
+   (<a92> ^digit1 9 ^digit2 2 ^sum 1 ^carry 1)
+   (<a93> ^digit1 9 ^digit2 3 ^sum 2 ^carry 1)
+   (<a94> ^digit1 9 ^digit2 4 ^sum 3 ^carry 1)
+   (<a95> ^digit1 9 ^digit2 5 ^sum 4 ^carry 1)
+   (<a96> ^digit1 9 ^digit2 6 ^sum 5 ^carry 1)
+   (<a97> ^digit1 9 ^digit2 7 ^sum 6 ^carry 1)
+   (<a98> ^digit1 9 ^digit2 8 ^sum 7 ^carry 1)
+   (<a99> ^digit1 9 ^digit2 9 ^sum 8 ^carry 1)
+}
+
+sp {arithmetic*apply*generate-facts*sub
+   (state <s> ^operator.name generate-facts)
+-->
+   (<s> ^arithmetic.subtraction-facts
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
+                          <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
+                          <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
+                          <a31> <a32> <a33> <a34> <a35> <a36> <a37> <a38> <a39> <a30>
+                          <a41> <a42> <a43> <a44> <a45> <a46> <a47> <a48> <a49> <a40>
+                          <a51> <a52> <a53> <a54> <a55> <a56> <a57> <a58> <a59> <a50>
+                          <a61> <a62> <a63> <a64> <a65> <a66> <a67> <a68> <a69> <a60>
+                          <a71> <a72> <a73> <a74> <a75> <a76> <a77> <a78> <a79> <a70>
+                          <a81> <a82> <a83> <a84> <a85> <a86> <a87> <a88> <a89> <a80>
+                          <a91> <a92> <a93> <a94> <a95> <a96> <a97> <a98> <a99> <a90>)
+   (<a00> ^digit1 0 ^digit2 0 ^result 0)
+   (<a01> ^digit1 10 ^digit2 1 ^result 9)
+   (<a02> ^digit1 10 ^digit2 2 ^result 8)
+   (<a03> ^digit1 10 ^digit2 3 ^result 7)
+   (<a04> ^digit1 10 ^digit2 4 ^result 6)
+   (<a05> ^digit1 10 ^digit2 5 ^result 5)
+   (<a06> ^digit1 10 ^digit2 6 ^result 4)
+   (<a07> ^digit1 10 ^digit2 7 ^result 3)
+   (<a08> ^digit1 10 ^digit2 8 ^result 2)
+   (<a09> ^digit1 10 ^digit2 9 ^result 1)
+   (<a10> ^digit1 1 ^digit2 0 ^result 1)
+   (<a11> ^digit1 1 ^digit2 1 ^result 0)
+   (<a12> ^digit1 11 ^digit2 2 ^result 9)
+   (<a13> ^digit1 11 ^digit2 3 ^result 8)
+   (<a14> ^digit1 11 ^digit2 4 ^result 7)
+   (<a15> ^digit1 11 ^digit2 5 ^result 6)
+   (<a16> ^digit1 11 ^digit2 6 ^result 5)
+   (<a17> ^digit1 11 ^digit2 7 ^result 4)
+   (<a18> ^digit1 11 ^digit2 8 ^result 3)
+   (<a19> ^digit1 11 ^digit2 9 ^result 2)
+   (<a20> ^digit1 2 ^digit2 0 ^result 2)
+   (<a21> ^digit1 2 ^digit2 1 ^result 1)
+   (<a22> ^digit1 2 ^digit2 2 ^result 0)
+   (<a23> ^digit1 12 ^digit2 3 ^result 9)
+   (<a24> ^digit1 12 ^digit2 4 ^result 8)
+   (<a25> ^digit1 12 ^digit2 5 ^result 7)
+   (<a26> ^digit1 12 ^digit2 6 ^result 6)
+   (<a27> ^digit1 12 ^digit2 7 ^result 5)
+   (<a28> ^digit1 12 ^digit2 8 ^result 4)
+   (<a29> ^digit1 12 ^digit2 9 ^result 3)
+   (<a30> ^digit1 3 ^digit2 0 ^result 3)
+   (<a31> ^digit1 3 ^digit2 1 ^result 2)
+   (<a32> ^digit1 3 ^digit2 2 ^result 1)
+   (<a33> ^digit1 3 ^digit2 3 ^result 0)
+   (<a34> ^digit1 13 ^digit2 4 ^result 9)
+   (<a35> ^digit1 13 ^digit2 5 ^result 8)
+   (<a36> ^digit1 13 ^digit2 6 ^result 7)
+   (<a37> ^digit1 13 ^digit2 7 ^result 6)
+   (<a38> ^digit1 13 ^digit2 8 ^result 5)
+   (<a39> ^digit1 13 ^digit2 9 ^result 4)
+   (<a40> ^digit1 4 ^digit2 0 ^result 4)
+   (<a41> ^digit1 4 ^digit2 1 ^result 3)
+   (<a42> ^digit1 4 ^digit2 2 ^result 2)
+   (<a43> ^digit1 4 ^digit2 3 ^result 1)
+   (<a44> ^digit1 4 ^digit2 4 ^result 0)
+   (<a45> ^digit1 14 ^digit2 5 ^result 9)
+   (<a46> ^digit1 14 ^digit2 6 ^result 8)
+   (<a47> ^digit1 14 ^digit2 7 ^result 7)
+   (<a48> ^digit1 14 ^digit2 8 ^result 6)
+   (<a49> ^digit1 14 ^digit2 9 ^result 5)
+   (<a50> ^digit1 5 ^digit2 0 ^result 5)
+   (<a51> ^digit1 5 ^digit2 1 ^result 4)
+   (<a52> ^digit1 5 ^digit2 2 ^result 3)
+   (<a53> ^digit1 5 ^digit2 3 ^result 2)
+   (<a54> ^digit1 5 ^digit2 4 ^result 1)
+   (<a55> ^digit1 5 ^digit2 5 ^result 0)
+   (<a56> ^digit1 15 ^digit2 6 ^result 9)
+   (<a57> ^digit1 15 ^digit2 7 ^result 8)
+   (<a58> ^digit1 15 ^digit2 8 ^result 7)
+   (<a59> ^digit1 15 ^digit2 9 ^result 6)
+   (<a60> ^digit1 6 ^digit2 0 ^result 6)
+   (<a61> ^digit1 6 ^digit2 1 ^result 5)
+   (<a62> ^digit1 6 ^digit2 2 ^result 4)
+   (<a63> ^digit1 6 ^digit2 3 ^result 3)
+   (<a64> ^digit1 6 ^digit2 4 ^result 2)
+   (<a65> ^digit1 6 ^digit2 5 ^result 1)
+   (<a66> ^digit1 6 ^digit2 6 ^result 0)
+   (<a67> ^digit1 16 ^digit2 7 ^result 9)
+   (<a68> ^digit1 16 ^digit2 8 ^result 8)
+   (<a69> ^digit1 16 ^digit2 9 ^result 7)
+   (<a70> ^digit1 7 ^digit2 0 ^result 7)
+   (<a71> ^digit1 7 ^digit2 1 ^result 6)
+   (<a72> ^digit1 7 ^digit2 2 ^result 5)
+   (<a73> ^digit1 7 ^digit2 3 ^result 4)
+   (<a74> ^digit1 7 ^digit2 4 ^result 3)
+   (<a75> ^digit1 7 ^digit2 5 ^result 2)
+   (<a76> ^digit1 7 ^digit2 6 ^result 1)
+   (<a77> ^digit1 7 ^digit2 7 ^result 0)
+   (<a78> ^digit1 17 ^digit2 8 ^result 9)
+   (<a79> ^digit1 17 ^digit2 9 ^result 8)
+   (<a80> ^digit1 8 ^digit2 0 ^result 8)
+   (<a81> ^digit1 8 ^digit2 1 ^result 7)
+   (<a82> ^digit1 8 ^digit2 2 ^result 6)
+   (<a83> ^digit1 8 ^digit2 3 ^result 5)
+   (<a84> ^digit1 8 ^digit2 4 ^result 4)
+   (<a85> ^digit1 8 ^digit2 5 ^result 3)
+   (<a86> ^digit1 8 ^digit2 6 ^result 2)
+   (<a87> ^digit1 8 ^digit2 7 ^result 1)
+   (<a88> ^digit1 8 ^digit2 8 ^result 0)
+   (<a89> ^digit1 18 ^digit2 9 ^result 9)
+   (<a90> ^digit1 9 ^digit2 0 ^result 9)
+   (<a91> ^digit1 9 ^digit2 1 ^result 8)
+   (<a92> ^digit1 9 ^digit2 2 ^result 7)
+   (<a93> ^digit1 9 ^digit2 3 ^result 6)
+   (<a94> ^digit1 9 ^digit2 4 ^result 5)
+   (<a95> ^digit1 9 ^digit2 5 ^result 4)
+   (<a96> ^digit1 9 ^digit2 6 ^result 3)
+   (<a97> ^digit1 9 ^digit2 7 ^result 2)
+   (<a98> ^digit1 9 ^digit2 8 ^result 1)
+   (<a99> ^digit1 9 ^digit2 9 ^result 0)
+}
+
+
+sp {arithmetic*apply*generate-facts*add10
+   (state <s> ^operator.name generate-facts)
+-->
+   (<s> ^arithmetic.add10-facts
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>)
+   (<a00> ^digit1 0 ^digit-10 10)
+   (<a01> ^digit1 1 ^digit-10 11)
+   (<a02> ^digit1 2 ^digit-10 12)
+   (<a03> ^digit1 3 ^digit-10 13)
+   (<a04> ^digit1 4 ^digit-10 14)
+   (<a05> ^digit1 5 ^digit-10 15)
+   (<a06> ^digit1 6 ^digit-10 16)
+   (<a07> ^digit1 7 ^digit-10 17)
+   (<a08> ^digit1 8 ^digit-10 18)
+   (<a09> ^digit1 9 ^digit-10 19)
+}
+
+sp {generate-problem*propose*generate-operation-add
+   (state <s> ^quiescence t
+              ^name generate-problem
+             -^problem)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name generate-operation
+         ^operation addition
+         ^operation-symbol |+|
+         ^carry-borrow carry)
+}
+
+sp {generate-problem*propose*generate-operation-sub
+   (state <s> ^quiescence t
+              ^name generate-problem
+             -^problem)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name generate-operation
+         ^operation subtraction
+         ^operation-symbol |-|
+         ^carry-borrow borrow)
+}
+
+sp {generate-problem*apply*generate-operation
+   (state <s> ^operator <op>)
+   (<op> ^name generate-operation
+         ^operation <oper>
+         ^operation-symbol <os>
+         ^carry-borrow <cb>)
+-->
+   (write (crlf) <oper>)
+   (<s> ^digits 0 1 2 3 4 5 6 7 8 9
+        ^problem <p>
+        ^current-column <c1>)
+   (<p> ^operation <oper>
+        ^operation-symbol <os>
+        ^current-column <c1>
+        ^one-column <c1>)
+   (<c1> ^next-column <c2>
+         ^<cb> unknown
+         ^column t)
+   (<c2> ^next-column <c3>
+         ^<cb> unknown
+         ^column t)
+   (<c3> ^next-column nil
+         ^<cb> unknown
+         ^column t)}
+## Generates problems
+## For now only generates 3 column addition problems
+
+sp {arithmetic*propose*generate-problem
+   (state <s> ^name arithmetic
+             -^arithmetic-problem
+             -^count 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name generate-problem)
+}
+
+
+# Terminated in generate-problem/finish-problem-generation
+sp {process-column*propose*get-digit1
+   (state <s> ^name process-column
+             -^digit1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-digit1)
+}
+
+sp {process-column*apply*get-digit1
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation addition
+              ^current-column <cc>)
+   (<cc> ^digit1 <a>
+        -^new-digit1
+         ^carry << 0 unknown >>)
+-->
+   (<s> ^digit1 <a>)
+}
+
+## If there has been a borrow
+sp {process-column*apply*get-digit1-new 
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation addition
+              ^current-column <cc>)
+   (<cc> ^digit1 
+         ^new-digit1 <a>
+         ^carry << 0 unknown >>)
+-->
+   (<s> ^digit1 <a>)
+}
+
+sp {process-column*apply*get-digit1*subtraction
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation subtraction
+              ^current-column <cc>)
+   (<cc> ^digit1 <a>
+        -^new-digit1)
+-->
+   (<s> ^digit1 <a>)
+}
+
+sp {process-column*apply*get-digit1*subtraction*new
+   (state <s> ^operator.name get-digit1
+              ^arithmetic-problem.operation subtraction
+              ^current-column <cc>)
+   (<cc> ^digit1
+         ^new-digit1 <a>)
+-->
+   (<s> ^digit1 <a>)
+}
+sp {process-column*propose*get-digit2
+   (state <s> ^name process-column
+             -^digit2)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-digit2)
+}
+
+sp {process-column*apply*get-digit2
+   (state <s> ^operator.name get-digit2
+              ^current-column.digit2 <a>)
+-->
+   (<s> ^digit2 <a>)
+}
+
+
+
+# Use this rule to create a specific problem, which will
+# be solved repeatedly - useful in debugging
+#
+#sp {arithmetic*apply*initialize-arithmetic*example
+#   (state <s> ^operator <op>)
+#   (<op> ^name initialize-arithmetic)
+#-->
+#   (<s> ^arithmetic-problem <p>)
+#   (<p> ^operation subtraction
+#        ^operation-symbol |-|
+#        ^current-column <c1>
+#        ^one-column <c1>)
+#   (<c1> ^next-column <c2>
+#         ^digit1 0
+#         ^digit2 1
+#         ^column t)
+#   (<c2> ^next-column <c3>
+#         ^digit1 0
+#         ^digit2 0
+#         ^column t)
+#   (<c3> ^next-column nil
+#         ^digit1 1
+#         ^digit2 0
+#         ^column t)}
+#
+#
+#sp {arithmetic*monitor*state*1column
+#   (state <s> ^name arithmetic
+#              ^arithmetic-problem <ap>)
+#   (<ap> ^one-column <oc>
+#         ^operation-symbol <as>)
+#   (<oc> ^digit1 <n1>
+#         ^digit2 <n2>
+#         ^next-column nil)
+#-->
+#   (write (crlf) | | <n1> )
+#   (write (crlf) <as> <n2> )
+#   (write (crlf) |--|)
+#}
+#
+#
+#sp {arithmetic*monitor*state*2column
+#   (state <s> ^name arithmetic
+#              ^arithmetic-problem <ap>)
+#   (<ap> ^one-column <oc>
+#         ^operation-symbol <as>)
+#   (<oc> ^digit1 <n1>
+#         ^digit2 <n2>
+#         ^next-column <tc>)   
+#   (<tc> ^digit1 <n3>
+#         ^digit2 <n4>
+#         ^next-column nil)
+#-->
+#   (write (crlf) | |  <n3> <n1> )
+#   (write (crlf) <as> <n4> <n2> )
+#   (write (crlf) |---|)
+#}
+#
+sp {arithmetic*monitor*state*3column
+   (state <s> ^name arithmetic
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>
+         ^operation-symbol <as>)
+   (<oc> ^digit1 <n1>
+         ^digit2 <n2>
+         ^next-column <tc>)   
+   (<tc> ^digit1 <n3>
+         ^digit2 <n4>
+         ^next-column <hc>)
+   (<hc> ^digit1 <n5>
+         ^digit2 <n6>
+         ^next-column nil)
+-->
+#   (write (crlf) | |  <n5> <n3> <n1> )
+#   (write (crlf) <as> <n6> <n4> <n2> )
+#   (write (crlf) |----|)
+}
+#
+
+sp {carry*propose*new-column
+   (state <s> ^name carry
+              ^current-column.next-column nil)
+-->
+   (<s> ^operator.name new-column)}
+
+sp {carry*apply*new-column
+   (state <s> ^operator.name new-column
+              ^current-column <cc>)
+-->
+   (<cc> ^next-column <nc>
+                      nil -)
+   (<nc> ^digit1 0
+         ^digit2 0
+         ^column t
+         ^carry 1
+         ^next-column nil)
+}
+
+sp {compute-result*propose*compute-result
+   (state <s> ^name compute-subtraction-borrow-result
+              ^digit1 <a1>
+              ^digit2 { <= <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-no-borrow-result)
+}
+
+
+sp {compute-result*propose*subtraction-carry-result
+   (state <s> ^name compute-subtraction-borrow-result
+              ^digit1 <a1>
+              ^digit2 { > <a1> <a2> }
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-subtraction-borrow-result)
+}
+sp {generate-problem*propose*next-column
+   (state <s> ^name generate-problem
+              ^current-column <c1>)
+   (<c1> ^digit1
+         ^digit2
+         ^next-column <x>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-column)
+}
+
+sp {generate-problem*apply*next-column
+   (state <s> ^name generate-problem
+              ^operator <op>
+              ^current-column <cc>)
+   (<op> ^name next-column)
+   (<cc> ^next-column <nc>)
+-->
+   (<s> ^current-column <cc> -
+                        <nc>)
+}
+sp {get-digit1*elaborate*state
+#   :interrupt
+   (state <s> ^name get-digit1
+              ^current-column <c>)
+   (<c> ^digit1 <a>
+        ^carry <cb>) 
+-->
+   (<s> ^digit1 <a>
+        ^digit2 <cb>)
+}
+sp {arithmetic*propose*next-column
+   (state <s> ^name arithmetic
+              ^arithmetic-problem.current-column <c>)
+   (<c> ^result
+        ^next-column <nc>)
+   (<nc> ^column t)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-column)
+}
+
+sp {arithmetic*apply*next-column
+   (state <s> ^operator.name next-column
+              ^arithmetic-problem <ap>)
+   (<ap> ^current-column <c>)
+   (<c> ^next-column <nc>)
+-->
+   (<ap> ^current-column <c> -
+                         <nc>)
+}
+
+sp {arithmetic*propose*process-column
+   (state <s> ^name arithmetic
+              ^arithmetic-problem.current-column <cc>)
+  -(<cc> ^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name process-column)
+}
+
+
+
+sp {arithmetic*propose*stop-arithmetic
+   (state <s> ^name arithmetic
+              ^count 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name stop-arithmetic)
+}
+sp {arithmetic*apply*stop-arithmetic
+   (state <s> ^operator <op>)
+   (<op> ^name stop-arithmetic)
+-->
+   (write |Finished|)
+   (halt)
+}
+
+sp {elaborate*top-state*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)
+}
+
+sp {process-column*propose*write-digit1
+   (state <s> ^name get-digit1
+              ^result <a>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name write-digit1)
+}
+
+sp {process-column*apply*write-digit1-carry1
+   (state <s> ^operator.name write-digit1
+              ^result <a>
+              ^carry 1
+              ^superstate <ss>)
+-->
+   (<ss> ^digit1 <a>
+         ^carry 1)
+}
+
+
+sp {process-column*apply*write-digit1*carry0
+   (state <s> ^operator.name write-digit1
+              ^result <a>
+              ^carry 0 
+              ^superstate <ss>)
+-->
+   (<ss> ^digit1 <a>)
+}
+
+
+## Won't chunk correctly because carry is a local negation!
+
+sp {process-column*propose*write-result
+   (state <s> ^name process-column
+              ^result <a>
+              ^carry << 0 unknown >>
+             -^current-column.result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name write-result)
+}
+
+# This is required so that chunking works correctly 
+sp {process-column*propose*write-result2
+   (state <s> ^name process-column
+              ^result <a>
+              ^carry 1
+              ^current-column <cc>)
+   (<cc> ^next-column.carry 1
+        -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name write-result)
+}
+
+sp {process-column*apply*write-result
+   (state <s> ^operator.name write-result
+              ^result <a>
+              ^current-column <cc>)
+-->
+   (<cc> ^result <a>)
+}
+
+

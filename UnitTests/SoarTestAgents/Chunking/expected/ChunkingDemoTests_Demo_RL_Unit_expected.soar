@@ -1,0 +1,107 @@
+sp {rlanswer*value*function*9
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name four-four)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*8
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name four-one)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*7
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name three-two)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*6
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name three-one)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*5
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name two-three)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*4
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name two-one)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*3
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name one-two)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*2
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name one-one)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {rlanswer*value*function*1
+    (state <s1> ^operator <o1> +)
+    (<o1> ^rl alpha ^name initialize-rl-unit)
+    -->
+    (<s1> ^operator <o1> = 0)
+}
+
+sp {answer*apply*four-four*OpNoChange*t24-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name four)
+    -->
+    (<s1> ^case four - ^case five +)
+}
+
+sp {answer*apply*four-three-one*OpNoChange*t23-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name four-three)
+    -->
+    (<s1> ^phase three - ^phase four +)
+}
+
+sp {answer*apply*three-two*OpNoChange*t16-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name three)
+    -->
+    (<s1> ^case three - ^case four +)
+}
+
+sp {answer*apply*three-one-one*OpNoChange*t15-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name three-one)
+    -->
+    (<s1> ^phase two +)
+}
+
+sp {answer*apply*two-three*OpNoChange*t10-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name two)
+    -->
+    (<s1> ^case two - ^case three +)
+}
+
+sp {answer*apply*one-two*OpNoChange*t5-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name one)
+    -->
+    (<s1> ^case one - ^case two +)
+}
+
+
+

@@ -5,6 +5,7 @@
 #include "condition_record.h"
 #include "condition.h"
 #include "dprint.h"
+#include "ebc.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
 #include "memory_manager.h"
@@ -50,12 +51,30 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     cached_production = new production_record_set();
 }
 
+Explanation_Memory::~Explanation_Memory()
+{
+    dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
+
+    current_recording_chunk = NULL;
+    current_discussed_chunk = NULL;
+    clear_explanations();
+
+    delete chunks;
+    delete chunks_by_ID;
+    delete all_conditions;
+    delete all_actions;
+    delete instantiations;
+    delete production_id_map;
+    delete cached_production;
+    delete settings;
+    dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
+}
+
 void Explanation_Memory::initialize_counters()
 {
     chunk_id_count = 1;
     condition_id_count = 0;
     action_id_count = 0;
-    id_set_counter = 0;
 
     stats.duplicates = 0;
     stats.justification_did_not_match = 0;
@@ -149,23 +168,6 @@ void Explanation_Memory::clear_explanations()
     dprint(DT_EXPLAIN, "Explanation logger done clearing explanation records...\n");
 }
 
-Explanation_Memory::~Explanation_Memory()
-{
-    dprint(DT_EXPLAIN, "Deleting explanation logger.\n");
-
-    current_recording_chunk = NULL;
-    current_discussed_chunk = NULL;
-    clear_explanations();
-
-    delete chunks;
-    delete chunks_by_ID;
-    delete all_conditions;
-    delete all_actions;
-    delete instantiations;
-    delete production_id_map;
-    dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
-}
-
 void Explanation_Memory::re_init()
 {
     dprint(DT_EXPLAIN_CACHE, "Re-initializing explanation logger.\n");
@@ -245,7 +247,7 @@ void Explanation_Memory::add_result_instantiations(instantiation* pBaseInst, pre
     }
 }
 
-void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
+void Explanation_Memory::record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation)
 {
     if (current_recording_chunk)
     {
@@ -499,6 +501,7 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
+            thisAgent->visualizationManager->reset_colors_for_id();
         }
         current_discussed_chunk = pChunkRecord;
         current_discussed_chunk->generate_dependency_paths();
@@ -553,39 +556,6 @@ bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID
     return true;
 }
 
-bool Explanation_Memory::print_condition_explanation_for_id(uint64_t pConditionID)
-{
-    std::unordered_map< uint64_t, condition_record* >::iterator iter_inst;
-    identity_quadruple lWatchIdentities;
-
-    iter_inst = all_conditions->find(pConditionID);
-    if (iter_inst == all_conditions->end())
-    {
-        outputManager->printa_sf(thisAgent, "Could not find a condition with ID %u.\n", pConditionID);
-        return false;
-    } else
-    {
-        if ((iter_inst->second->condition_tests.id->eq_test->identity == current_explained_ids.id) &&
-            (iter_inst->second->condition_tests.attr->eq_test->identity == current_explained_ids.attr) &&
-            (iter_inst->second->condition_tests.value->eq_test->identity == current_explained_ids.value))
-        {
-            current_explained_ids.id = 0;
-            current_explained_ids.attr = 0;
-            current_explained_ids.value = 0;
-            outputManager->printa_sf(thisAgent, "No longer highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
-                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
-        } else
-        {
-            current_explained_ids.id = iter_inst->second->condition_tests.id->eq_test->identity;
-            current_explained_ids.attr = iter_inst->second->condition_tests.attr->eq_test->identity;
-            current_explained_ids.value = iter_inst->second->condition_tests.value->eq_test->identity;
-            outputManager->printa_sf(thisAgent, "Highlighting conditions related to condition %u: (%t ^%t %t).\n", pConditionID,
-                iter_inst->second->condition_tests.id, iter_inst->second->condition_tests.attr, iter_inst->second->condition_tests.value);
-        }
-    }
-    return true;
-}
-
 bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDString)
 {
     bool lSuccess = false;
@@ -598,45 +568,11 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-//bool Explanation_Memory::explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString)
-//{
-//    /* First argument must be an object type.  Current valid types are 'chunk',
-//     * and 'instantiation' */
-//    bool lSuccess = false;
-//    uint64_t lObjectID = 0;
-//    char lFirstChar = pObjectTypeString->at(0);
-//    if (lFirstChar == 'c')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The chunk ID must be a number.  Use 'explain [chunk-name] to explain by name.'\n");
-//        }
-//            lSuccess = print_chunk_explanation_for_id(lObjectID);
-//        }
-//    else if (lFirstChar == 'i')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The instantiation ID must be a number.\n");
-//        }
-//            lSuccess = print_instantiation_explanation_for_id(lObjectID);
-//        }
-//    else if (lFirstChar == 'l')
-//    {
-//        if (!from_string(lObjectID, pObjectIDString->c_str()))
-//        {
-//            outputManager->printa_sf(thisAgent, "The condition ID must be a number.\n");
-//        }
-//        lSuccess = print_condition_explanation_for_id(lObjectID);
-//    } else
-//    {
-//        outputManager->printa_sf(thisAgent, "'%s' is not a type of item Soar can explain.\n", pObjectTypeString->c_str());
-//        return false;
-//    }
-//
-//    return lSuccess;
-//}
-
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID)
+{
+    if (current_recording_chunk)
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSetID, pToJoinSetID);
+}
 
 bool Explanation_Memory::current_discussed_chunk_exists()
 {

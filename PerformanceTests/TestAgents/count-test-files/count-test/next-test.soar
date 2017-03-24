@@ -1,0 +1,38 @@
+sp {count-test*propose*next-test
+   (state <s> ^name count-test
+              ^current-test <ct>)
+   (<ct> ^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-test
+         ^current-test <ct>)
+}
+
+sp {count-test*apply*next-test*monitor
+   (state <s> ^operator.name next-test
+              ^current-test <ct>)
+   (<ct> ^test-number <tn>
+         ^test-complete true)
+-->
+  (write (crlf) |Test #| <tn> | Complete.|)
+}
+
+
+sp {count-test*apply*next-test
+   (state <s> ^operator.name next-test
+              ^current-test <ct>)
+   (<ct> ^next-test <nt>)
+-->
+   (<s> ^current-test <ct> -
+                      <nt>)
+}
+
+sp {count-test*apply*no-next-test
+   (state <s> ^operator <o>
+              ^current-test <ct>)
+   (<o> ^current-test <ct>)
+   (<ct> ^next-test nil)
+-->
+   (write (crlf) |**************Tests all complete.**********|)
+   (halt)
+}

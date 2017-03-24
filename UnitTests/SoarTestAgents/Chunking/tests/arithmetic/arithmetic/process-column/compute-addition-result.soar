@@ -1,0 +1,24 @@
+sp {process-column*propose*compute-addition-result
+   (state <s> ^name process-column
+              ^digit1 <d1>
+              ^digit2 <d2>   
+              ^arithmetic-problem.operation addition
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-addition-result)
+}
+
+sp {process-column*apply*compute-addition-result
+   (state <s> ^operator.name compute-addition-result
+              ^digit1 <d1>
+              ^digit2 <d2>   
+              ^arithmetic.facts <af>)
+   (<af> ^digit1 <d1>
+         ^digit2 <d2>
+         ^sum <sum>
+         ^carry <cb>)
+-->
+   (<s> ^result <sum>
+        ^carry <cb>)
+}

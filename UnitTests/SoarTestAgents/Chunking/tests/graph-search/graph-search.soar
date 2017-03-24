@@ -1,0 +1,3 @@
+pushd graph-search
+source graph-search_source.soar
+popd

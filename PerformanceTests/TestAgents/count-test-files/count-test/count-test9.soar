@@ -1,0 +1,11 @@
+sp {count-test*propose*count-test9
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 9
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test9)
+}

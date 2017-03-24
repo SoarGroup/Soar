@@ -1,0 +1,53 @@
+sp {propose*initialize-count-test
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-count-test)
+}
+
+sp {apply*initialize-count-test
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-count-test)
+-->
+   (<s> ^name count-test
+        ^current-test <t1>)
+   (<t1> ^test-number 1
+         ^test-comment |Count in top-state using operators.|
+         ^test-count 5000
+         ^next-test <t2>)
+   (<t2> ^test-number 2
+         ^test-comment |Count in top-state in single operator using rules.|
+         ^test-count 5000
+         ^next-test <t3>)
+   (<t3> ^test-number 3
+         ^test-comment |Count in top-state using monotonic applications - no deletions. Can grow WM to be very large.|
+         ^test-count 10000
+         ^next-test <t4>)
+   (<t4> ^test-number 4
+         ^test-comment |Count in substate using operators - test operator no-change, o-support results, chunking.|
+         ^test-count 5000
+         ^next-test <t5>)
+   (<t5> ^test-number 5
+         ^test-comment |Create count operators in substate - test state no-change, i-support results via suboperator, chunking.|
+         ^test-count 5000
+         ^next-test <t6>)
+   (<t6> ^test-number 6
+         ^test-comment |Create count operators in substate - test state no-change, i-support results via elaboration, chunking.|
+         ^test-count 5000
+         ^next-test <t7>)
+   (<t7> ^test-number 7
+         ^test-comment |Select count operators in substate - test tie subgoal, i-support results via supoperator, chunking.|
+         ^test-count 5000
+         ^next-test <t8>)
+   (<t8> ^test-number 8
+         ^test-comment |Select count operators in substate - test tie subgoal, i-support results, chunking.|
+         ^test-count 5000
+         ^next-test <t9>)
+   (<t9> ^test-number 9
+         ^test-count 5000
+         ^test-comment |Select count operators in substate - try to get chunking to crash on conditions.|
+         ^next-test nil)
+}
+
+

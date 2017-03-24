@@ -1,0 +1,32 @@
+sp {move-block*elaborate*succcess
+   (state <s> ^name move-block
+              ^desired <d>
+              ^top-state.ontop <ontop1>)
+   (<d> ^moving-block <blockA>
+        ^destination <blockB>)
+   (<ontop1> ^top-block <blockA>
+             ^bottom-block <blockB>)
+-->
+   (<s> ^success <d>)}
+
+sp {move-block*elaborate*cover*moving-block*failure
+   (state <s> ^name move-block
+              ^desired <d>
+              ^top-state <ss>)
+   (<ss> ^ontop <ontop>)
+   (<ontop> ^bottom-block <blockA>
+            ^top-block <tblock>)
+   (<d> ^moving-block <blockA>)
+-->
+   (<s> ^failure <d>)}
+#
+#
+sp {move-block*elaborate*cover*moving-block*failure2
+   (state <s> ^name move-block
+              ^tried-tied-operator
+              ^desired <d>
+              ^top-state <ss>)
+   (<ss> ^gripper.holding { <> nothing <blockA> })
+   (<d> ^moving-block <> <blockA>)
+-->
+   (<s> ^failure <d>)}

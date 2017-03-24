@@ -1,0 +1,14 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _readme.soar
+source monitor-waypoint.soar
+source go-to-location.soar
+pushd go-to-location
+source go-to-location_source.soar
+popd
+source initialize-graph-search.soar

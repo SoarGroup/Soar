@@ -274,7 +274,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("enabled",learning->get_string(), 55).c_str());
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("database", database->get_string(), 55).c_str(), "Store database in memory or file");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("append", append_db->get_string(), 55).c_str(), "Append or overwrite after init");
-    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("path", path->get_string(), 55).c_str(), "Path to database on disk");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("path", path->get_cstring(), 55).c_str(), "Path to database on disk");
     outputManager->printa(thisAgent, "-------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [? | help]", "", 55).c_str(), "Print this help screen");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("smem [--enable | --disable ]", "", 55).c_str(), "Enable/disable semantic memory");
@@ -336,7 +336,7 @@ void smem_param_container::print_summary(agent* thisAgent)
 //    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("database", database->get_string(), 52).c_str());
 //    outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("append", append_db->get_string(), 52).c_str());
     if (strlen(path->get_value()) > 0)
-        outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("path", path->get_string(), 52).c_str());
+        outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("path", path->get_cstring(), 52).c_str());
     outputManager->printa(thisAgent,    "----------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Nodes", std::to_string(thisAgent->SMem->statistics->nodes->get_value()), 52).c_str());
     outputManager->printa_sf(thisAgent, "%s   %-\n", concatJustified("Edges", std::to_string(thisAgent->SMem->statistics->edges->get_value()), 52).c_str());

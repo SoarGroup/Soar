@@ -16,6 +16,7 @@
 #include "agent.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "preference.h"
 #include "print.h"
 #include "production.h"
@@ -40,24 +41,14 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     cons* c;
     cons* fl;
 
-    if (rv == NULL) return;
+    if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
-    dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value ");
-
-    if (rhs_value_is_reteloc(rv))
-    {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "reteloc. Ignoring.\n");
-        return;
-    }
-    if (rhs_value_is_unboundvar(rv))
-    {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "unboundvar.  Ignoring.\n");
-        return;
-    }
+    dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
     if (rhs_value_is_funcall(rv))
     {
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "which is a function call.\n");
-       fl = rhs_value_to_funcall_list(rv);
+
+        RFI_remove(thisAgent, rv);
+        fl = rhs_value_to_funcall_list(rv);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             deallocate_rhs_value(thisAgent, static_cast<char*>(c->first));
@@ -67,11 +58,8 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        dprint_noprefix(DT_DEALLOCATE_RHS_VALUE, "%y(%u)\n", r->referent, r->o_id);
-        if (r->referent)
-        {
-            thisAgent->symbolManager->symbol_remove_ref(&r->referent);
-        }
+        RSI_remove(thisAgent, r);
+        if (r->referent) thisAgent->symbolManager->symbol_remove_ref(&r->referent);
         thisAgent->memoryManager->free_with_pool(MP_rhs_symbol, r);
     }
 }
@@ -80,7 +68,7 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
    Returns a new copy of the given rhs_value.
 --------------------------------------------------------------*/
 
-rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
+rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, bool get_cloned_identity)
 {
     cons* c = NULL, *new_c = NULL, *prev_new_c = NULL;
     cons* fl=NULL, *new_fl=NULL;
@@ -99,22 +87,42 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool unify_identities)
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             allocate_cons(thisAgent, &new_c);
-            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first), unify_identities);
+            new_c->first = copy_rhs_value(thisAgent, static_cast<char*>(c->first), get_identity_set, get_cloned_identity);
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
+        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
     {
         rhs_symbol r = rhs_value_to_rhs_symbol(rv);
-        uint64_t lID = r->o_id;
-        if (unify_identities)
+        uint64_t lID = r->identity;
+        IdentitySet* lIDSet = r->identity_set;
+        if (get_identity_set)
         {
-            lID = thisAgent->explanationBasedChunker->get_identity(lID);
+            if (lIDSet)
+            {
+                if (lIDSet->get_clone_identity())
+                {
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_clone_identity());
+                }
+                else
+                {
+                    lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lIDSet->get_identity());
+                }
+            }
+            else if (lID)
+                lIDSet = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
         }
-        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, r->was_unbound_var);
+        if (lIDSet && get_cloned_identity)
+        {
+            lID = lIDSet->get_clone_identity();
+            lIDSet = NULL_IDENTITY_SET; // Will be filled in later based when finalizing
+        }
+
+        return allocate_rhs_value_for_symbol(thisAgent, r->referent, lID, lIDSet, r->was_unbound_var);
     }
 }
 
@@ -130,6 +138,9 @@ void deallocate_action_list(agent* thisAgent, action* actions)
     {
         a = actions;
         actions = actions->next;
+
+        ADI_remove(thisAgent, a);
+
         if (a->type == FUNCALL_ACTION)
         {
             deallocate_rhs_value(thisAgent, a->value);
@@ -329,6 +340,9 @@ action* make_action(agent* thisAgent)
     new_action->attr = NIL;
     new_action->value = NIL;
     new_action->referent = NIL;
+
+    ADI_add(thisAgent, new_action);
+
     return new_action;
 }
 
@@ -347,10 +361,7 @@ action* copy_action(agent* thisAgent, action* pAction)
         new_action->id = copy_rhs_value(thisAgent, pAction->id);
         new_action->attr = copy_rhs_value(thisAgent, pAction->attr);
         new_action->value = copy_rhs_value(thisAgent, pAction->value);
-        if (preference_is_binary(pAction->preference_type))
-        {
-            new_action->referent = copy_rhs_value(thisAgent, pAction->referent);
-        }
+        if (preference_is_binary(pAction->preference_type)) new_action->referent = copy_rhs_value(thisAgent, pAction->referent);
     }
     return new_action;
 }
@@ -370,8 +381,7 @@ rhs_value create_RHS_value(agent* thisAgent,
                            rhs_value rv,
                            condition* cond,
                            char first_letter,
-                           uint64_t pI_id,
-                           AddAdditionalTestsMode add_original_vars)
+                           ExplainTraceType ebcTraceType)
 {
     cons* c, *new_c, *prev_new_c;
     cons* fl, *new_fl;
@@ -394,9 +404,9 @@ rhs_value create_RHS_value(agent* thisAgent,
         t = var_test_bound_in_reconstructed_conds(thisAgent, cond,
                 rhs_value_to_reteloc_field_num(rv),
                 rhs_value_to_reteloc_levels_up(rv));
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %u\n", t->data.referent, t->identity);
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: reteloc %y %us%u\n", t->data.referent, t->identity, t->identity_set ? t->identity_set->get_identity() : 0);
 
-        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity);
+        return allocate_rhs_value_for_symbol(thisAgent, t->data.referent, t->identity, t->identity_set);
     }
 
     if (rhs_value_is_unboundvar(rv))
@@ -415,26 +425,26 @@ rhs_value create_RHS_value(agent* thisAgent,
             {
                 thisAgent->highest_rhs_unboundvar_index = index;
             }
-            if (add_original_vars && pI_id)
+            if (ebcTraceType == Explanation_Trace)
             {
-                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
+                lO_id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(sym);
             }
             /* generate will increment the refcount on the new variable, so don't need to do it here. */
             dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: unbound %y %u\n", sym, lO_id);
-            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, true);
+            return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, lO_id, NULL, true);
         }
         else
         {
             /* unbound variable was already created in previous rhs action */
             sym = *(thisAgent->rhs_variable_bindings + index);
         }
-        if (add_original_vars && pI_id)
+        if (ebcTraceType == Explanation_Trace)
         {
-            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity(sym);
+            lO_id = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(sym);
         }
 
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y <%u> in i%u\n", sym, lO_id, pI_id);
-        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, true);
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: previous unbound %y [%u]\n", sym, lO_id);
+        return allocate_rhs_value_for_symbol(thisAgent, sym, lO_id, NULL, true);
     }
 
     if (rhs_value_is_funcall(rv))
@@ -450,29 +460,30 @@ rhs_value create_RHS_value(agent* thisAgent,
                                             static_cast<char*>(c->first),
                                             cond,
                                             first_letter,
-                                            pI_id,
-                                            add_original_vars);
+                                            ebcTraceType);
             prev_new_c->rest = new_c;
             prev_new_c = new_c;
         }
         prev_new_c->rest = NIL;
+        RFI_add(thisAgent, funcall_list_to_rhs_value(new_fl));
         return funcall_list_to_rhs_value(new_fl);
     }
     else
     {
         /* Literal values including those in function calls. */
         rhs_symbol rs = rhs_value_to_rhs_symbol(rv);
-        uint64_t lO_id = (add_original_vars != DONT_EXPLAIN) ? rs->o_id : 0;
-        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, lO_id);
-        return allocate_rhs_value_for_symbol(thisAgent, rs->referent, lO_id, rs->was_unbound_var);
+        dprint(DT_ALLOCATE_RHS_VALUE, "create_RHS_value: rhs_symbol %y %u\n", rs->referent, rs->identity);
+        if (ebcTraceType == Explanation_Trace)
+            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, rs->identity, rs->identity_set, rs->was_unbound_var);
+        else
+            return allocate_rhs_value_for_symbol(thisAgent, rs->referent, LITERAL_VALUE, NULL, rs->was_unbound_var);
     }
 }
 
 action* create_RHS_action_list(agent* thisAgent,
                                action* actions,
                                condition* cond,
-                               uint64_t pI_id,
-                               AddAdditionalTestsMode add_original_vars)
+                               ExplainTraceType ebcTraceType)
 {
     action* old, *New, *prev, *first;
     char first_letter;
@@ -497,19 +508,17 @@ action* create_RHS_action_list(agent* thisAgent,
         New->support = old->support;
         if (old->type == FUNCALL_ACTION)
         {
-            New->value = create_RHS_value(thisAgent, old->value, cond, 'v', pI_id, add_original_vars);
+            New->value = create_RHS_value(thisAgent, old->value, cond, 'v', ebcTraceType);
         }
         else
         {
-            New->id = create_RHS_value(thisAgent, old->id, cond, 's', pI_id, add_original_vars);
-            New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', pI_id, add_original_vars);
+            New->id = create_RHS_value(thisAgent, old->id, cond, 's', ebcTraceType);
+            New->attr = create_RHS_value(thisAgent, old->attr, cond, 'a', ebcTraceType);
             first_letter = first_letter_from_rhs_value(New->attr);
-            New->value = create_RHS_value(thisAgent, old->value, cond,
-                                          first_letter, pI_id, add_original_vars);
+            New->value = create_RHS_value(thisAgent, old->value, cond, first_letter, ebcTraceType);
             if (preference_is_binary(old->preference_type))
             {
-                New->referent = create_RHS_value(thisAgent, old->referent,
-                                                 cond, first_letter, pI_id, add_original_vars);
+                New->referent = create_RHS_value(thisAgent, old->referent, cond, first_letter, ebcTraceType);
             }
         }
         old = old->next;
@@ -525,26 +534,41 @@ action* create_RHS_action_list(agent* thisAgent,
     return first;
 }
 
-rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet, bool pWasUnbound)
 {
     rhs_symbol new_rhs_symbol;
 
     if (!sym) return reinterpret_cast<rhs_value>(NIL);
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
-    new_rhs_symbol->o_id = pO_ID;
+    new_rhs_symbol->identity = pIdentity;
+    new_rhs_symbol->identity_set = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
+
+    RSI_add(thisAgent, new_rhs_symbol);
 
     return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
-rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pO_ID, bool pWasUnbound)
+rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t pIdentity, IdentitySet* pIDSet, bool pWasUnbound)
 {
-    if (sym)
+    rhs_symbol new_rhs_symbol;
+
+    if (!sym)
     {
+        return reinterpret_cast<rhs_value>(NIL);
+    } else {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }
-    return allocate_rhs_value_for_symbol_no_refcount(thisAgent, sym, pO_ID, pWasUnbound);
+    thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
+    new_rhs_symbol->referent = sym;
+    new_rhs_symbol->identity = pIdentity;
+    new_rhs_symbol->identity_set = pIDSet;
+    new_rhs_symbol->was_unbound_var = pWasUnbound;
+
+    RSI_add(thisAgent, new_rhs_symbol);
+
+    return rhs_symbol_to_rhs_value(new_rhs_symbol);
 }
 
 bool rhs_value_is_literalizing_function(rhs_value rv)
@@ -559,4 +583,5 @@ bool rhs_value_is_literalizing_function(rhs_value rv)
     }
     return false;
 }
+
 

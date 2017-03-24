@@ -310,6 +310,9 @@ inline void rl_remove_ref(Symbol* goal, production* prod)
     }
 
     rules->remove(prod);
+    /* For use when we try using a vector with a new memory allocator that can handle variable size allocations */
+    //production_list::iterator newEnd = std::remove(rules->begin(), rules->end(), prod);
+    //rules->erase(newEnd, rules->end());
 }
 
 void rl_clear_refs(Symbol* goal)
@@ -574,7 +577,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         condition* c_top;
         condition* c_bottom;
 
-        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, JUST_INEQUALITIES);
+        p_node_to_conditions_and_rhs(thisAgent, my_template_instance->prod->p_node, NIL, NIL, &(c_top), &(c_bottom), NIL, WM_Trace_w_Inequalities);
         my_template_instance->prod->rl_template_conds = c_top;
         dprint(DT_RL_VARIABLIZATION, "Template conds: \n%1", c_top);
         dprint(DT_RL_VARIABLIZATION, "Template actions: \n%2", rhs_actions);
@@ -598,16 +601,14 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
         }
         while (thisAgent->symbolManager->find_str_constant(new_name.c_str()) != NIL);
         new_name_symbol = thisAgent->symbolManager->make_str_constant(new_name.c_str());
-        /* --- Assign a new instantiation ID --- */
-        /* We need to set a chunk ID because variablization uses it to assign new identities */
-        thisAgent->explanationBasedChunker->set_new_chunk_id();
+
         copy_condition_list(thisAgent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom, false, false, true);
 
         dprint(DT_RL_VARIABLIZATION, "rl_build_template_instantiation variablizing following instantiation: \n%1", cond_top);
         thisAgent->symbolManager->reset_variable_generator(cond_top, NIL);
         thisAgent->explanationBasedChunker->set_rule_type(ebc_template);
         rl_add_goal_or_impasse_tests_to_conds(thisAgent, cond_top);
-        thisAgent->explanationBasedChunker->variablize_condition_list(cond_top);
+        thisAgent->explanationBasedChunker->variablize_rl_condition_list(cond_top);
         action* new_action = thisAgent->explanationBasedChunker->variablize_rl_action(rhs_actions, tok, w, init_value);
 
         // make new production
@@ -641,8 +642,7 @@ Symbol* rl_build_template_instantiation(agent* thisAgent, instantiation* my_temp
             new_name_symbol = NULL;
         }
 
-        thisAgent->explanationBasedChunker->clear_variablization_maps();
-        thisAgent->explanationBasedChunker->clear_chunk_id();
+        thisAgent->explanationBasedChunker->clear_symbol_identity_map();
         thisAgent->explanationBasedChunker->set_rule_type(ebc_no_rule);
         deallocate_condition_list(thisAgent, cond_top);
 

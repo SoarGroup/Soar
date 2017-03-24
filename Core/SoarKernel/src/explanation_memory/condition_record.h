@@ -38,8 +38,6 @@ class condition_record
 
         void        connect_to_action();
         void        viz_connect_to_action(goal_stack_level pMatchLevel);
-        void        create_identity_paths(const inst_record_list* pInstPath);
-        bool        contains_identity_from_set(const id_set* pIDs);
         void        set_path_to_base(inst_record_list* pPath)
                     {   assert(pPath);
                         if (!path_to_base) path_to_base = new inst_record_list();
@@ -49,8 +47,8 @@ class condition_record
         void        set_matched_wme_for_cond(condition* pCond);
         void        update_condition(condition* pCond, instantiation_record* pInst);
 
-        void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper);
-        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, bool printInitialPort, bool printFinalPort, bool isAttribute, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper);
+        void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printAcceptable, bool isSuper);
+        void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper);
         void        visualize_for_wm_trace(goal_stack_level match_level);
         void        visualize_for_explanation_trace(condition* pCond, goal_stack_level match_level);
         void        visualize_for_chunk();

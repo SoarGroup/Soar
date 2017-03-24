@@ -31,6 +31,15 @@ typedef struct identity_quadruple_struct
         identity_quadruple_struct(uint64_t new_id = 0, uint64_t new_attr = 0, uint64_t new_value = 0, uint64_t new_referent = 0): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_quadruple;
 
+typedef struct identity_set_quadruple_struct
+{
+        IdentitySet* id;
+        IdentitySet* attr;
+        IdentitySet* value;
+        IdentitySet* referent;
+
+//        identity_set_quadruple_struct(IdentitySet* new_id, IdentitySet* new_attr, IdentitySet* new_value, IdentitySet* new_referent): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
+} identity_set_quadruple;
 
 typedef struct bool_quadruple_struct
 {
@@ -61,17 +70,11 @@ typedef struct deep_copy_struct
         deep_copy_struct(Symbol* new_id = NULL, Symbol* new_attr = NULL, Symbol* new_value = NULL, wme* new_wme = NULL): id(new_id), attr(new_attr), value(new_value), deep_copied_wme(new_wme) {}
 } deep_copy_wme;
 
-typedef struct sym_identity_struct {
-        uint64_t    identity;
-        Symbol*     variable_sym;
-} sym_identity_info;
-
 typedef struct identity_mapping_struct {
         uint64_t            from_identity;
         uint64_t            to_identity;
         IDSet_Mapping_Type  mappingType;
 } identity_mapping;
-
 
 typedef struct chunk_element_struct {
         Symbol*     variable_sym;
@@ -96,13 +99,5 @@ typedef struct constraint_struct
     test constraint_test;
     constraint_struct(test new_eq, test new_constraint) : eq_test(new_eq), constraint_test(new_constraint) {}
 } constraint;
-
-typedef struct attachment_struct
-{
-        condition* cond;
-        WME_Field field;
-        attachment_struct(condition* new_cond, WME_Field new_field) : cond(new_cond), field(new_field) {}
-
-} attachment_point;
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_STL_STRUCTS_H_ */

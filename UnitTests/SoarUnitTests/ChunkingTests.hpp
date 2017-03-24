@@ -76,9 +76,10 @@ public:
     TEST(Operator_Selection_Knowledge_In_Proposal, -1);
 
     TEST(Rhs_Func_Literalization, -1);
+    TEST(RHS_Math, -1);
     TEST(RHS_Math_Abs, -1);
     TEST(RHS_Math_Mixed, -1);
-    TEST(RHS_Math, -1);
+    TEST(RHS_Math_Children_Force_Learn, -1);
     TEST(RHS_Referent_Function, -1);
     TEST(RHS_Unbound_Multivalue, -1);
 
@@ -116,24 +117,6 @@ public:
     TEST(Link_STM_to_LTM, -1);
     TEST(Deep_Copy_Identity_Expansion, -1);
 
-    TEST(Demo_Arithmetic, -1);
-    TEST(Demo_Blocks_World_Hierarchical_Look_Ahead, -1);
-    TEST(Demo_Blocks_World_Hierarchical, -1);
-    TEST(Demo_Blocks_World_Look_Ahead_State_Evaluation, -1);
-    TEST(Demo_Blocks_World_Look_Ahead, -1);
-    TEST(Demo_Blocks_World_Operator_Subgoaling, -1);
-    TEST(Demo_Eight_Puzzle, -1);
-    TEST(Demo_MaC_Planning, -1);
-    TEST(Demo_RL_Unit, -1);
-    TEST(Demo_ToH_Recursive, -1);
-    TEST(Demo_Water_Jug_Hierarchy, -1);
-    TEST(Demo_Water_Jug_Look_Ahead, -1);
-    TEST(Demo_Water_Jug_Tie, -1);
-    TEST(PRIMS_Sanity1, -1);
-    TEST(PRIMS_Sanity2, -1);
-    TEST(GamesAgent_Sanity1, -1);
-    TEST(Games_Nccx2_Long_Lived, -1);
-
     void All_Test_Types();
     void BUNCPS_0();
     void BUNCPS_1();
@@ -149,22 +132,10 @@ public:
     void Chunk_Superstate_Operator_Preference();
     void Chunked_Justification_with_extras();
     void Conflated_Constants();
+    void Constraint_Ungrounded();
     void Constraint_Prop_from_Base_Conds();
     void Constraint_Prop_Simple();
     void Deep_Copy_Identity_Expansion();
-    void Demo_Arithmetic();
-    void Demo_Blocks_World_Hierarchical_Look_Ahead();
-    void Demo_Blocks_World_Hierarchical();
-    void Demo_Blocks_World_Look_Ahead_State_Evaluation();
-    void Demo_Blocks_World_Look_Ahead();
-    void Demo_Blocks_World_Operator_Subgoaling();
-    void Demo_Eight_Puzzle();
-    void Demo_MaC_Planning();
-    void Demo_RL_Unit();
-    void Demo_ToH_Recursive();
-    void Demo_Water_Jug_Hierarchy();
-    void Demo_Water_Jug_Look_Ahead();
-    void Demo_Water_Jug_Tie();
     void Disjunction_Merge();
     void Duplicates();
     void Faux_Operator();
@@ -179,6 +150,8 @@ public:
     void Literalization_with_BT_Constraints2();
     void Literalization_with_Constraints();
     void Maintain_Instantiation_Specific_Identity();
+    void Max_Chunks();
+    void Max_Dupes();
     void NC_Disjunction();
     void NC_Simple_No_Exist();
     void NC_with_RC_and_Local_Variable();
@@ -188,13 +161,12 @@ public:
     void NCC_from_Backtrace();
     void NCC_Simple_Literals();
     void NCC_with_Relational_Constraint();
+    void No_Grounds();
     void No_Topstate_Match();
     void Opaque_State_Barrier();
     void Operator_Selection_Knowledge_Ghost_Operator();
     void Operator_Selection_Knowledge_In_Proposal();
     void Operator_Selection_Knowledge_Mega_Test();
-    void PRIMS_Sanity1();
-    void PRIMS_Sanity2();
     void Promoted_STI();
     void Reorderer_Bad_Conjunction();
     void Repair_NOR_Temporal_Constraint();
@@ -202,9 +174,11 @@ public:
     void Result_On_Operator();
     void Rete_Bug_Deep_vs_Deep();
     void Rete_Bug_Deep_vs_Top();
+    void Rhs_Func_Literalization();
     void RHS_Math_Abs();
     void RHS_Math_Mixed();
     void RHS_Math();
+    void RHS_Math_Children_Force_Learn();
     void RHS_Referent_Function();
     void RHS_Unbound_Multivalue();
     void RL_Variablization();
@@ -226,12 +200,6 @@ public:
     void Unify_Ambiguous_Output();
     void Unify_Children_Results();
     void Unify_through_Two_Traces_Four_Deep();
-    void Constraint_Ungrounded();
-    void Games_Nccx2_Long_Lived();
-    void Max_Chunks();
-    void Max_Dupes();
-    void No_Grounds();
-    void Rhs_Func_Literalization();
 
 private:
     void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);

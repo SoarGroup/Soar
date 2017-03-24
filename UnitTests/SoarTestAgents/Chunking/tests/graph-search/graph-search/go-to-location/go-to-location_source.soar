@@ -1,0 +1,3 @@
+source elaborations.soar
+source problem-space.soar
+source go-to-waypoint.soar

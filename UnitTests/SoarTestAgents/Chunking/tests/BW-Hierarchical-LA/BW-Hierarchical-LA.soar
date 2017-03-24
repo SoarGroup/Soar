@@ -1,0 +1,3 @@
+pushd BW-Hierarchical-LA
+source BW-Hierarchical-LA_source.soar
+popd

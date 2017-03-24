@@ -1,0 +1,77 @@
+## A visual-soar project for the selection and evaluation substates
+############################# -*- Mode: Soar -*- #############################
+## 
+## File            : default/selection.soar
+## Author          : John Laird
+## Created on      : Mon Feb 27 16:15:34 1989  
+## Last Modified On: January 24, 2017
+## 
+## Contents:     Default productions for selection problem space for Soar 9.6
+##
+##  Change made for Soar 9.6
+##   1. Added chunk singleton declarations for default rule structures. These should 
+##      improve chunking for Soar 9.6. Also added some multiattribute declaration.
+##      Added these to all/declarations.soar
+##   2. Modify evaluate-operator*propose*look-ahead to include require preference
+##      so chunks using add-osk don't include conditions for all proposals of all other operators. 
+##
+###########################################################################
+##  Change made for Soar 9.3
+##   1. Added expected-value as a result - these get translated into numeric preferences
+#########################################################################
+##  Change made for Soar 9.0 
+##   Added exhaustion-failure so could make sure no attempts to chunk over it.
+##   1. modify top-goal*halt*failure
+##   2. add selection*select*exhaustion-failure-evaluation-becomes-reject-preference
+##   3. modify evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+##   4. modify evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
+##   5. modify monitor*goal*failure
+##   6. evaluate-operator*elaborate*evaluation*failure*constraint-failure
+##   7. evaluate-operator*elaborate*evaluation*failure*no-operators
+##   8. selection*elaborate*state*all-objects-evaluated mod so not test for non evaluate-operator
+########################################################################
+### Change made for Soar 8.5
+###
+### Significant Changes made to Convert to Soar 8.2
+###    1. evaluate-object -> evaluate-operator
+###    2. Removed other types of evaulate-
+###    3. Change from problem-space.name selection -> name selection
+###    4. Simplified so only handles vanillia evaluate-operator
+###    5. Don't copy down problem space, just copy down name and
+###       assume problem space will be regenerated in subgoal based on name
+###    6. Added some documentation
+###    
+
+###
+
+###    State structure:
+###    (state <s> ^evaluation <e>
+###               ^not-all-operators-evaulated true
+###               ^operator-selection not-indifferent
+###               ^found-value true)
+###    (<e> ^numeric-value  novalue
+###         ^expected-al
+###         ^symbolic-value novalue/success/failure
+###         ^value true
+###         ^operator (identifier of operator being evaluated)
+###         ^desired <d>
+###
+###
+###    (<o> ^name evaluate-operator
+###         ^operator <so>
+###         ^evaluation <e>  ;# same as on state
+###         ^superproblem-space
+###         ^superstate 
+
+### Changes May 2007 (SBW):
+### Added a 'no local negations' mode. If the problem space has a ^no-local-negations flag, rules will be used 
+### that avoid local negations, supporting versions of Soar that refuse to chunk over local negations.
+### There are a number of assumptions that must hold for this mode to work, though:
+###
+###  ^default-operator-copy yes must be on the problem-space
+###  ^default-state-copy yes must be on the problem-space
+###  ^default-desired-copy yes is not supported
+###  ^dont-copy and ^dont-copy-anything are not supported
+###  all-attributes-at-level mode are not supported
+###  attributes on task operators cannot refer to attributes attached to the state
+###  the state must be a tree-- no value can be referred to by multiple attributes

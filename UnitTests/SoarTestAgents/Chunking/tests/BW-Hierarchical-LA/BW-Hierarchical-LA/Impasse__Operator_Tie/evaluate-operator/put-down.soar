@@ -1,0 +1,35 @@
+### Apply *evaluate-operator
+
+sp {apply*put-down*evaluate-operator
+   (state <s> ^operator <op>
+              ^name evaluate-operator
+              ^top-state <ts>)
+   (<ts> ^ontop <ontop>
+         ^gripper <g>)
+   (<ontop> ^top-block <mblock>
+            ^bottom-block <bblock>)
+   (<op> ^name put-down
+         ^destination <tblock>)
+   (<g> ^holding { <> nothing <mblock> })
+-->
+   (<g> ^holding nothing
+                 <mblock> -)
+   (<ontop> ^bottom-block <tblock>
+            ^bottom-block <bblock> -)}
+
+
+sp {apply*put-down*evaluate-operator*up
+   (state <s> ^operator <op>
+              ^name evaluate-operator
+              ^top-state <ts>)
+   (<ts> ^ontop <ontop>
+         ^gripper <g>)
+   (<ontop> ^top-block <mblock>
+           -^bottom-block <bblock>)
+    (<op> ^name put-down
+         ^destination <tblock>)
+   (<g> ^holding { <> nothing <mblock> })
+-->
+   (<g> ^holding nothing
+                 <mblock> -)
+   (<ontop> ^bottom-block <tblock>)}

@@ -8,7 +8,6 @@
 #include "ebc.h"
 
 #include "agent.h"
-#include <assert.h>
 #include "condition.h"
 #include "instantiation.h"
 #include "print.h"
@@ -86,7 +85,6 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
 
 void Explanation_Based_Chunker::merge_conditions()
 {
-//    if (!ebc_settings[SETTING_EBC_LEARNING_ON] || !ebc_settings[SETTING_EBC_MERGE]) return;
     if (!ebc_settings[SETTING_EBC_MERGE]) return;
 
     dprint_header(DT_MERGE, PrintBoth, "= Merging Conditions =\n%1", m_lhs);
@@ -127,7 +125,6 @@ void Explanation_Based_Chunker::merge_conditions()
                     /* -- At the head of the list.  This probably can never
                      *    occur since the head of the list will never be found
                      *    as a previously seen condition.  -- */
-                    assert(false);
                     dprint(DT_MERGE, "...deleting head of list.\n");
                     m_lhs = cond->next;
                     deallocate_condition(thisAgent, cond);

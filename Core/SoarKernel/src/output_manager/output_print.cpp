@@ -263,9 +263,12 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
     test t, ct;
     char ch = 0;
     char* ch2 = 0;
-	int next_column, indent_amount, next_position, i=0;
-	size_t m;
+    int next_column, indent_amount, next_position, i=0;
+    size_t m;
     std::string sf = format;
+
+    /* MToDo | Possible efficiency improvement */
+    destString.reserve(sf.size());
 
     va_list args;
     va_copy(args, pargs);
@@ -372,9 +375,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     {
                                         destString += test_type_to_string(t->type);
                                     }
-                                    destString += "[";
-                                    destString += std::to_string(t->identity);
-                                    destString += "]";
+                                    identity_to_string(thisAgent, t->identity, t->identity_set, destString);
                                 } else {
                                     test_to_string(t, destString);
                                 }
@@ -384,7 +385,6 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                                 {
                                     ct = static_cast<test>(c->first);
-                                    assert(ct);
                                     if (ct->identity)
                                     {
                                         if (ct->type != EQUALITY_TEST)
@@ -392,9 +392,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                             destString += test_type_to_string(ct->type);
                                         }
                                         if (!isFirst) destString += ' '; else isFirst = false;
-                                        destString += "[";
-                                        destString += std::to_string(ct->identity);
-                                        destString += "]";
+                                        identity_to_string(thisAgent, ct->identity, ct->identity_set, destString);
                                     } else {
                                         test_to_string(ct, destString);
                                     }
@@ -451,7 +449,7 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         char* la = va_arg(args, char *);
                         if (la)
                         {
-                            this->rhs_value_to_string(la, destString, NULL );
+                            this->rhs_value_to_string(la, destString);
 
                         } else {
                             destString += '#';

@@ -1,0 +1,27 @@
+sp {selection*propose*remove-stale-estimated-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^estimated-cost <pc1> { <pc2> < <pc1> })
+  -(<e> ^estimated-cost > <pc1>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name remove-stale-estimated-cost
+         ^evaluation <e>)
+}
+
+sp {selection*apply*emove-stale-estimated-cost
+   :default
+ #interrupt
+   (state <s> ^name selection
+              ^evaluation <e>
+              ^operator <op>)
+   (<e> ^estimated-cost <pc1> { <pc2> < <pc1> })
+  -(<e> ^estimated-cost > <pc1>)
+   (<op> ^name remove-stale-estimated-cost
+         ^evaluation <e>)
+-->
+#  (interrupt)
+   (write (crlf) |Remove Stale Estimated Cost: | <e> |: | <pc2> | better: | <pc1>)
+   (<e> ^estimated-cost <pc2> -)
+}

@@ -295,10 +295,10 @@ sp {arithmetic*apply*finish-problem*1column*result
          ^result <n3>
          ^next-column nil)
 -->
-   (write (crlf) (crlf) | | <n1> )
-   (write (crlf) <as> <n2> )
-   (write (crlf) |--|)
-   (write (crlf) | | <n3> )
+#   (write (crlf) (crlf) | | <n1> )
+#   (write (crlf) <as> <n2> )
+#   (write (crlf) |--|)
+#   (write (crlf) | | <n3> )
 }
 
 sp {arithmetic*apply*finish-problem*2column*result
@@ -317,10 +317,10 @@ sp {arithmetic*apply*finish-problem*2column*result
          ^result <a2>
          ^next-column nil)
 -->
-   (write (crlf) (crlf) | |   <n3> <n1> )
-   (write (crlf)  <as> <n4> <n2> )
-   (write (crlf) |---|)
-   (write (crlf) | |   <a2> <a1>)
+#   (write (crlf) (crlf) | |   <n3> <n1> )
+#   (write (crlf)  <as> <n4> <n2> )
+#   (write (crlf) |---|)
+#   (write (crlf) | |   <a2> <a1>)
 }
 
 sp {arithmetic*apply*finish-problem3*column*result
@@ -343,11 +343,11 @@ sp {arithmetic*apply*finish-problem3*column*result
          ^result <a3>
          ^next-column nil)
 -->
-   (write (crlf) | |) 
-   (write (crlf) | |   <n5> <n3> <n1> )
-   (write (crlf)  <as> <n6> <n4> <n2> )
-   (write (crlf) |----|)
-   (write (crlf) | |   <a3> <a2> <a1>)
+#   (write (crlf) | |) 
+#   (write (crlf) | |   <n5> <n3> <n1> )
+#   (write (crlf)  <as> <n6> <n4> <n2> )
+#   (write (crlf) |----|)
+#   (write (crlf) | |   <a3> <a2> <a1>)
 }
 
 sp {arithmetic*apply*finish-problem4*column*result
@@ -374,11 +374,11 @@ sp {arithmetic*apply*finish-problem4*column*result
          ^result <a4>
          ^next-column nil)
 -->
-   (write (crlf) | |)
-   (write (crlf) | |   <n7> <n5> <n3> <n1> )
-   (write (crlf)  <as> <n8> <n6> <n4> <n2> )
-   (write (crlf) |----|)
-   (write (crlf) | |  <a4> <a3> <a2> <a1>)
+#   (write (crlf) | |)
+#   (write (crlf) | |   <n7> <n5> <n3> <n1> )
+#   (write (crlf)  <as> <n8> <n6> <n4> <n2> )
+#   (write (crlf) |----|)
+#   (write (crlf) | |  <a4> <a3> <a2> <a1>)
 }
 
 sp {arithmetic*propose*generate-facts
@@ -1154,6 +1154,6 @@ sp {arithmetic*apply*stop-arithmetic
    (<op> ^name stop-arithmetic)
 -->
    (write |Finished|)
-   (succeeded)
+   (halt)
 }
 

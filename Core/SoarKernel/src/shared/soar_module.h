@@ -160,7 +160,8 @@ namespace soar_module
 
             //
 
-            virtual char* get_string() = 0;
+            virtual const std::string get_string() = 0;
+            virtual char* get_cstring() = 0;
     };
 
 
@@ -315,7 +316,14 @@ namespace soar_module
 
             //
 
-            virtual char* get_string()
+            virtual const std::string get_string()
+            {
+                std::string temp_str;
+                to_string(value, temp_str);
+                return temp_str;
+            }
+
+            virtual char* get_cstring()
             {
                 std::string temp_str;
                 to_string(value, temp_str);
@@ -385,7 +393,12 @@ namespace soar_module
 
             //
 
-            virtual char* get_string()
+            virtual const std::string get_string()
+            {
+                return (*value);
+            }
+
+            virtual char* get_cstring()
             {
                 char* return_val = new char[ value->length() + 1 ];
                 strcpy(return_val, value->c_str());
@@ -444,7 +457,12 @@ namespace soar_module
                 delete prot_pred;
             }
 
-            virtual char* get_string()
+            virtual const std::string get_string()
+            {
+                return (*value);
+            }
+
+            virtual char* get_cstring()
             {
                 char* return_val = new char[ value->length() + 1 ];
                 strcpy(return_val, value->c_str());
@@ -557,8 +575,12 @@ namespace soar_module
             }
 
             //
+            virtual const std::string get_string()
+            {
+                return (*value);
+            }
 
-            virtual char* get_string()
+            virtual char* get_cstring()
             {
                 char* return_val = new char[ value->length() + 1 ];
                 strcpy(return_val, value->c_str());
@@ -689,8 +711,21 @@ namespace soar_module
             }
 
             //
+            virtual const std::string get_string()
+            {
+                typename std::map<T, const char*>::iterator p;
+                p = value_to_string->find(value);
+                std::string returnString;
 
-            virtual char* get_string()
+                if (p != value_to_string->end())
+                {
+                    returnString += p->second;
+                }
+                return returnString;
+            }
+
+
+            virtual char* get_cstring()
             {
                 typename std::map<T, const char*>::iterator p;
                 p = value_to_string->find(value);
@@ -839,7 +874,16 @@ namespace soar_module
 
             //
 
-            virtual char* get_string()
+            virtual const std::string get_string()
+            {
+                T my_val = get_value();
+
+                std::string temp_str;
+                to_string(my_val, temp_str);
+                return temp_str;
+            }
+
+            virtual char* get_cstring()
             {
                 T my_val = get_value();
 
@@ -922,8 +966,16 @@ namespace soar_module
             }
 
             //
+            virtual const std::string get_string()
+            {
+                double my_val = value();
 
-            virtual char* get_string()
+                std::string temp_str;
+                to_string(my_val, temp_str);
+                return temp_str;
+            }
+
+            virtual char* get_cstring()
             {
                 double my_value = value();
 

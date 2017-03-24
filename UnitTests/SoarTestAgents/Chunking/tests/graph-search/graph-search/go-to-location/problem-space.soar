@@ -1,0 +1,10 @@
+## sets up the problem space structure so the default rules copy the appropriate state information the substate
+
+sp {graph-search*elaborate*problem-space
+   (state <s> ^name go-to-location)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name graph-search
+        ^default-state-copy yes
+        ^two-level-attributes top-state
+                            )}

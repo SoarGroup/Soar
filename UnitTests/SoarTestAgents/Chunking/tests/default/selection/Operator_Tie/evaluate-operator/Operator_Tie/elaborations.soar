@@ -1,0 +1,48 @@
+
+###         A. pass-back-success
+## if an operator leads to success and it is being
+## tried out in a subgoal to evaluate another operator -
+## give that second operator a success evaluation also
+
+## Dangerous rule - for success test can lead to non-optimal path being learned
+## this is the conservative version
+sp {selection*pass-back-success    
+   :default
+   (state <s> ^superstate.superstate.operator <sso>
+              ^evaluation.symbolic-value << required-success >>) # partial-success success >>)
+   (<sso> ^name evaluate-operator 
+          ^evaluation <e2> 
+          ^superoperator.name)
+   -->
+   (<e2> ^symbolic-value partial-success)}
+
+## Below is a safer way - using discounted expected value
+
+sp {selection*pass-back-expected-value-discounted  
+   :default
+   (state <s> ^superstate.superstate.operator <sso>
+              ^evaluation.expected-value <ev>) 
+   (<sso> ^name evaluate-operator 
+          ^evaluation <e2> 
+          ^superoperator.name)
+   -->
+   (<e2> ^expected-value (* .9 <ev>))}
+
+### If all operators have been evaluated, and all have value novalue, and
+### there is a operator being evaluated in a higher context, assign that
+### operator novalue.
+
+sp {selection*elaborate*evaluate-operator*all-operators-novalue
+   :default
+   (state <s> ^superstate.superstate <sss>
+              ^operator <o>
+             -^not-all-operators-evaluated
+             -^found-value
+              ^quiescence t
+              ^choices multiple)
+   (<sss> ^name selection
+                ^operator <sso>)
+   (<sso> ^name evaluate-operator
+          ^evaluation <e>)
+   -->
+   (<e> ^numeric-value novalue)}

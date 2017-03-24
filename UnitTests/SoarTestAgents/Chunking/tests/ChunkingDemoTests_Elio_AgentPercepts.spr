@@ -1,0 +1,43 @@
+4240798098
+1 -3 add-wme I2 task procedure-a string
+408 -4 add-wme I2 in1 lime4 string
+408 -5 add-wme I2 in2 9 int
+408 -6 add-wme P57 status complete string
+578 -4 remove-wme
+578 -5 remove-wme
+578 -7 add-wme I2 in1 lime2 string
+578 -8 add-wme I2 in2 5 int
+578 -9 add-wme P80 status complete string
+915 -7 remove-wme
+915 -8 remove-wme
+915 -10 add-wme I2 in1 solid string
+915 -11 add-wme I2 in2 6 int
+915 -12 add-wme P125 status complete string
+1905 -10 remove-wme
+1905 -11 remove-wme
+1905 -13 add-wme P256 status complete string
+2013 -14 add-wme I2 in1 algae string
+2013 -15 add-wme I2 in2 2 int
+2013 -16 add-wme P272 status complete string
+2373 -14 remove-wme
+2373 -15 remove-wme
+2373 -17 add-wme I2 in1 solid string
+2373 -18 add-wme I2 in2 6 int
+2373 -19 add-wme P320 status complete string
+3073 -17 remove-wme
+3073 -18 remove-wme
+3073 -20 add-wme P416 status complete string
+4274 -21 add-wme P573 status complete string
+4382 -22 add-wme I2 in1 toxinmax string
+4382 -23 add-wme I2 in2 8 int
+4382 -24 add-wme P589 status complete string
+4493 -22 remove-wme
+4493 -23 remove-wme
+4493 -25 add-wme I2 in1 toxinmin string
+4493 -26 add-wme I2 in2 2 int
+4493 -27 add-wme P605 status complete string
+5190 -25 remove-wme
+5190 -26 remove-wme
+5190 -28 add-wme P701 status complete string
+6092 -29 add-wme P822 status complete string
+6707 -30 add-wme P905 status complete string

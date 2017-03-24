@@ -1,0 +1,12 @@
+sp {answer*blocks-world*apply*operator*move-block*change-ontop*OpNoChange*t4-1
+    (state <s1> ^inplace-object <i1> ^clear <i1> ^operator <o1> ^ontop <o2>
+          ^clear <t1>)
+    (<o1> ^name move-block ^destination <d1>)
+    (<o2> ^bottom-block <d1> ^top-block { <t1> <> <i1> }
+          ^bottom-block { <b1> <> <i1> })
+    -->
+    (<o2> ^bottom-block <i1> + ^bottom-block <b1> -)
+}
+
+
+

@@ -1288,7 +1288,7 @@ epmem_wme_list* epmem_get_augs_of_id(Symbol* id, tc_number tc)
     return return_val;
 }
 
-inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes)
+inline void _epmem_process_buffered_wme_list(agent* thisAgent, Symbol* state, wme_set& cue_wmes, symbol_triple_list& my_list, preference_list* epmem_wmes)
 {
     if (my_list.empty())
     {
@@ -2072,7 +2072,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
             // cache_size
             {
                 std::string cache_sql("PRAGMA cache_size = ");
-                char* str = thisAgent->EpMem->epmem_params->cache_size->get_string();
+                char* str = thisAgent->EpMem->epmem_params->cache_size->get_cstring();
                 cache_sql.append(str);
                 free(str);
                 str = NULL;
@@ -3193,6 +3193,7 @@ inline void _epmem_install_id_wme(agent* thisAgent, Symbol* parent, Symbol* attr
                 if (thisAgent->SMem->lti_exists(val_num))
                 {
                     id_p->second.first->id->LTI_ID = val_num;
+                    id_p->second.first->update_cached_lti_print_str();
                     id_p->second.first->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
                 }
             } else {

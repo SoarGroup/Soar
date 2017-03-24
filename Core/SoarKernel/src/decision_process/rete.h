@@ -399,8 +399,7 @@ extern void p_node_to_conditions_and_rhs(agent* thisAgent,
         condition** dest_top_cond,
         condition** dest_bottom_cond,
         action** dest_rhs,
-        uint64_t i_id = 0,
-        AddAdditionalTestsMode additional_tests = DONT_EXPLAIN);
+        ExplainTraceType ebcTraceType = WM_Trace);
 extern Symbol* get_symbol_from_rete_loc(unsigned short levels_up,
                                         byte field_num,
                                         struct token_struct* tok, wme* w);
@@ -421,7 +420,6 @@ extern bool save_rete_net(agent* thisAgent, FILE* dest_file, bool use_rete_net_6
 extern bool load_rete_net(agent* thisAgent, FILE* source_file);
 
 extern void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t);
-extern void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t, uint64_t pI_id, bool pNoConstantIdentities = false);
 
 /* ---------------------------------------------------------------------
 

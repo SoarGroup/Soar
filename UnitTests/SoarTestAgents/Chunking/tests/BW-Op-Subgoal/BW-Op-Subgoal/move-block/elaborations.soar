@@ -1,0 +1,34 @@
+sp {move-block*elaborate*operator-subgoal
+    (state <s> ^impasse no-change 
+               ^attribute operator 
+               ^superstate.operator.name move-block)
+-->
+    (<s> ^type operator-subgoal
+         ^name blocks-world 
+         ^desired <d>)
+}
+
+sp {move-block*elaborate*copy*superstate
+   (state <s> ^type operator-subgoal ^superstate <ss>)
+   (<ss> ^{ << ontop inplace-object clear >> <att> } <value>)
+-->
+   (<s> ^<att> <value>)
+}
+sp {move-block*elaborate*operator-subgoal*clear*destination
+    (state <s> ^name blocks-world ^type operator-subgoal ^desired <d>
+          ^superstate <s*1>)
+    (<s*1> ^operator <so>)
+    (<so> ^destination <mb>)
+    -->
+    (<d> ^clear <mb>)
+}
+
+sp {move-block*elaborate*operator-subgoal*clear*moving-block
+    (state <s> ^name blocks-world ^type operator-subgoal ^desired <d>
+          ^superstate <s*1>)
+    (<s*1> ^operator <so>)
+    (<so> ^moving-block <mb>)
+    -->
+    (<d> ^clear <mb>)
+}
+

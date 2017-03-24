@@ -1,0 +1,4222 @@
+# Settings
+
+smem -e
+chunk only
+chunk bottom-only off
+chunk add-osk off
+chunk lhs-repair on
+chunk rhs-repair on
+chunk allow-local-negations on
+chunk add-ltm-links on
+chunk max-chunks 50
+chunk max-dupes 3
+soar max-elaborations 100
+soar max-goal-depth 23
+soar wait-snc off
+
+load percepts --open ChunkingDemoTests_Elio_AgentPercepts.spr
+
+# Procedural Memory
+
+sp {lib*actr*set*newwm*swap*with-next
+    :o-support
+    (state <s> ^NW <n> ^WM <w>)
+    (<n> ^slot3 <w> ^slot1 <n1> ^slot2 <n2> ^slot4 <n4>)
+    (<w> ^slot4 <wmnext>)
+    -->
+    (<s> ^WM <w> - ^WM <w2> +)
+    (<w2> ^slot1 <n1> + ^slot2 <n2> + ^slot3 <w> + ^slot4 <n4> +)
+    (<w> ^slot4 <wmnext> - ^slot4 <w2> +)
+    (<n> ^slot1 <n1> - ^slot2 <n2> - ^slot3 <w> - ^slot4 <n4> -)
+}
+
+sp {lib*actr*set*newwm*swap
+    :o-support
+    (state <s> ^NW <n> ^WM { <> <n3> <w> })
+    (<n> ^slot1 <n1> ^slot3 <n3> ^slot2 <n2> ^slot4 <n4>)
+    -->
+    (<s> ^WM <w> - ^WM <w2> +)
+    (<w2> ^slot1 <n1> + ^slot2 <n2> + ^slot3 <n3> + ^slot4 <n4> +)
+    (<n> ^slot1 <n1> - ^slot2 <n2> - ^slot3 <n3> - ^slot4 <n4> -)
+}
+
+sp {lib*actr*apply*query*collect*clean*nonil*all
+    :o-support
+    (state <s> ^Q <q> ^RT <r> ^G <g>)
+   -{ (<q> ^<slot> <s*1>)
+      (<r> ^<slot> { <> <s*1> <rval> })}
+    (<g> ^clear-rt <any>)
+    -->
+    (<g> ^clear-rt <any> -)
+}
+
+sp {lib*actr*apply*query*collect*clean*nonil
+    :o-support
+    (state <s> ^Q <Q*1> ^G <g> ^RT <r>)
+    (<g> ^clear-rt <any>)
+    (<r> ^<slot> <val>)
+    (<Q*1> ^<slot> { <> <val> <s*1> })
+    -->
+    (<r> ^<slot> <val> -)
+    (<g> ^clear-rt <any> -)
+}
+
+sp {lib*actr*apply*query*collect*clean*slot4
+    :o-support
+    (state <s> ^G <g> ^RT <r>)
+   -{ (<s> ^Q <Q*1>)
+      (<Q*1> ^slot4 <s*1>)}
+    (<g> ^clear-rt <any>)
+    (<r> ^slot4 <val>)
+    -->
+    (<r> ^slot4 <val> -)
+    (<g> ^clear-rt <any> -)
+}
+
+sp {lib*actr*apply*query*collect*clean
+    :o-support
+    (state <s> ^G <g> ^RT <r>)
+    (<g> ^clear-rt <any>)
+    (<r> ^{ <> slot4 <slot> } <val>)
+   -{ (<s> ^Q <Q*1>)
+      (<Q*1> ^<slot> <s*1>)}
+    -->
+    (<r> ^<slot> <val> - ^<slot> nil +)
+    (<g> ^clear-rt <any> -)
+}
+
+sp {lib*actr*set*queries*clean*slot4
+    :o-support
+    (state <s> ^Q <q>)
+    (<q> ^slot4 nil)
+    -->
+    (<q> ^slot4 nil -)
+}
+
+sp {lib*actr*set*queries*rt*slot4*new
+    :o-support
+    (state <s> ^RT <r> ^Q <q>)
+    (<r> -^slot4 <old>)
+    (<q> ^slot4 { <> nil <val> })
+    -->
+    (<r> ^slot4 <val> +)
+    (<q> ^slot4 <val> -)
+}
+
+sp {lib*actr*set*queries*rt*slot4
+    :o-support
+    (state <s> ^Q <q> ^RT <r>)
+    (<q> ^slot4 { <> nil <val> })
+    (<r> ^slot4 <old>)
+    -->
+    (<r> ^slot4 <old> - ^slot4 <val> +)
+    (<q> ^slot4 <val> -)
+}
+
+sp {lib*actr*set*queries*rt*remove-q
+    :o-support
+    (state <s> ^Q <q> ^RT <r>)
+    (<r> ^{ <> slot4 <slot> } <val>)
+    (<q> ^<slot> <val>)
+    -->
+    (<q> ^<slot> <val> -)
+}
+
+sp {lib*actr*set*queries*rt
+    :o-support
+    (state <s> ^Q <q> ^RT <r>)
+    (<r> ^{ <> slot4 <slot> } <old>)
+    (<q> ^<slot> { <> <old> <val> })
+    -->
+    (<r> ^<slot> <old> - ^<slot> <val> +)
+    (<q> ^<slot> <val> -)
+}
+
+sp {lib*actr*elaborate*query*failure
+    (state <s> ^RT <r> ^smem <s*1>)
+    (<r> -^slot4 { <> nil <s*2> })
+    (<s*1> ^result <r*1>)
+    (<r*1> ^failure <f*1>)
+    -->
+    (<r> ^slot4 nil +)
+}
+
+sp {lib*actr*elaborate*query*collect*replace
+    :o-support
+    (state <s> ^RT <r> ^smem <s*1>)
+    (<r> ^slot4 <old>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <r*2>)
+    (<r*2> ^slot4 { <> <old> <val> })
+    -->
+    (<r> ^slot4 <old> -)
+}
+
+sp {lib*actr*elaborate*query*collect
+    (state <s> ^RT <r> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> ^success <s*2> ^retrieved <lti>)
+    (<lti> ^slot1 <s1> ^slot3 <s3> ^slot2 <s2> ^slot4 <val>)
+    -->
+    (<r> ^slot4 <val> +)
+}
+
+sp {lib*actr*elaborate*query*transfer
+    (state <s> ^RT <r> ^smem <s*1>)
+    (<s*1> ^command <c*1>)
+    (<c*1> ^query <q>)
+    (<r> ^{ <> slot4 <attr> } { <> nil <val> })
+    -->
+    (<q> ^<attr> <val> +)
+}
+
+sp {lib*actr*elaborate*visual*in
+    (state <s> ^V <v> ^io <i*1>)
+    (<i*1> ^input-link <il>)
+    (<il> ^in2 <i2> ^in1 <i1>)
+    -->
+    (<v> ^Vlabel <i1> + ^Vvalue <i2> +)
+    (write (crlf) |Read: | <i1> | | <i2>)
+}
+
+sp {lib*actr*set*clean*output
+    :o-support
+    (state <s> ^AC <a> ^io <i*1>)
+    (<a> ^ACout1 enter ^ACout2 <os2>)
+    (<i*1> ^output-link <ol>)
+    (<ol> ^say <os>)
+    (<os> ^out2 <os2> ^out1 enter ^status complete)
+    -->
+    (<ol> ^say <os> -)
+    (<a> ^ACout1 enter - ^ACout2 <os2> -)
+}
+
+sp {lib*actr*elaborate*action*output
+    (state <s> ^AC <a> ^io <i*1>)
+    (<a> ^ACout2 { <> nil <o2> } ^ACout1 { <> nil <o1> })
+    (<i*1> ^output-link <ol>)
+    -->
+    (<ol> ^say <p> +)
+    (<p> ^out1 <o1> + ^out2 <o2> +)
+    (write (crlf) |Say: | <o1> | | <o2>)
+}
+
+sp {lib*actr*set*nil*output
+    :o-support
+    (state <s> ^AC <a>)
+    (<a> -^ACout2 <A*2> -^ACout1 <A*1>)
+    -->
+    (<a> ^ACout1 nil + ^ACout2 nil +)
+}
+
+sp {lib*actr*set*input*task
+    :o-support
+    (state <s> ^G <g> ^io <i*1>)
+    (<g> ^Gcontrol <old> ^Gtask <oldtask>)
+    (<i*1> ^input-link <il>)
+    (<il> ^task { <> <old> <task> })
+    -->
+    (<g> ^Gcontrol <old> - ^Gcontrol <task> + ^Gtask <oldtask> -
+           ^Gtask <task> +)
+    (write (crlf) |***TASK SET TO | <task> | ***|)
+}
+
+sp {lib*actr*instruction*search*impasse
+    (state <s> ^props-flag impasse ^WM <W*1>)
+    -->
+    (write |    Well, well, well. I see I've run out of instructions. Goodnight.| (crlf))
+    (halt)
+}
+
+sp {lib*actr*elaborate*finish
+    (state <s> ^G <G*1> ^io <i*1>)
+    (<G*1> ^Gtask finish)
+    (<i*1> ^output-link <ol>)
+    -->
+    (<ol> ^finish <f> +)
+    (<f> ^finish true +)
+}
+
+sp {lib*actr*apply*finish
+    (state <s> ^operator <o*1> ^G <g> ^WM <w> ^RT <r>)
+    (<o*1> ^name elio-finish)
+    (<g> ^Gparent <gparent> ^Gtop <gtop> ^Gcontrol <gcontrol> ^Gtask <gtask>)
+    (<w> ^slot1 <w1> ^slot3 <w3> ^slot2 <w2> ^slot4 <w4>)
+    (<r> ^slot1 <r1> ^slot3 <r3> ^slot2 <r2>)
+    -->
+    (<g> ^Gcontrol <gcontrol> - ^Gtask <gtask> - ^Gtop <gtop> -
+           ^Gparent <gparent> - ^Gcontrol nil + ^Gtask nil + ^Gtop nil +
+           ^Gparent nil +)
+    (<w> ^slot1 <w1> - ^slot2 <w2> - ^slot3 <w3> - ^slot4 <w4> - ^slot1 nil +
+           ^slot2 nil + ^slot3 nil + ^slot4 nil +)
+    (<r> ^slot1 <r1> - ^slot2 <r2> - ^slot3 <r3> - ^slot1 nil + ^slot2 nil +
+           ^slot3 nil +)
+    (<s> ^props-flag reset-manual-sequence +)
+	(halt)
+}
+
+sp {lib*actr*propose*finish
+    (state <s> ^G <G*1>)
+    (<G*1> ^Gtask finish)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name elio-finish +)
+}
+
+sp {apply*elio*init
+    (state <s> ^operator <o*1> ^smem <s*1> ^io <i*1>)
+    (<o*1> ^name buffer-init)
+    (<s*1> ^command <scmd>)
+    (<i*1> ^output-link <ol>)
+    -->
+    (<s> ^G <g> + ^V <v> + ^WM <w> + ^NW <n> + ^RT <r> + ^Q <q> + ^AC <a> +)
+    (<g> ^Gtask nil + ^Gcontrol nil + ^Gtop nil + ^Gparent nil +)
+    (<w> ^slot1 nil + ^slot2 nil + ^slot3 nil + ^slot4 nil +)
+    (<r> ^slot1 nil + ^slot2 nil + ^slot3 nil +)
+    (<scmd> ^query <qq> +)
+    (write (crlf) INITTED (crlf))
+}
+
+sp {propose*elio*init
+    (state <s> ^superstate nil -^WM <W*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name buffer-init +)
+}
+
+sp {apply*props*combine*search*merge*pair
+    (state <s> ^operator <o> ^new <new> ^superstate <ss>)
+    (<o> ^name props-merge-pair ^sym2 <s2> ^sym1 <s1> ^attr <attr>
+          ^literalize <l*1>)
+    (<new> ^lti-name <name>)
+    (<ss> ^props-instructions <ins> ^smem <s*1>)
+    (<ins> ^<attr> <s2> ^<attr> <s1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ss> ^props-to-combine <cc> +)
+    (<cc> ^attr <attr> + ^sym1 <s1> + ^sym2 <s2> + ^newname <name> +)
+    (force-learn <s>)
+}
+
+sp {propose*props*combine*search*merge*pair
+    (state <s> ^name props-combine-search ^new <new> ^attr <attr>
+          ^symbol2 <s2> ^symbol1 <s1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-merge-pair + ^sym1 <s1> + ^sym2 <s2> + ^attr <attr> +
+           ^literalize (+ 1 (int <attr>) (int <s1>) (int <s2>)) +)
+}
+
+sp {apply*props*combine*search*combine*pair
+    (state <s> ^operator <o> ^pair <p> ^attr <attr> ^static-counts <pc>
+          ^smem <s*1>)
+    (<o> ^name props-combine-pair)
+    (<p> ^attr <attr> ^prop-combine <snew> ^ins <ins> ^symbol2 <s2>
+          ^symbol1 <s1>)
+    (<pc> ^count <c>)
+    (<c> ^symbol2 <s2> ^symbol1 <s1> ^value <val>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^new <p> +)
+    (<p> ^symbol1 <s1> - ^symbol2 <s2> - ^prop-combine <snew> - ^attr <attr> -
+           ^ins <ins> - ^static-counts <pc> - ^<attr> <s1> + ^<attr> <s2> +
+           ^prop-type composite + ^lti-name <snew> +)
+    (<pc> ^count <c> -)
+    (<c> ^symbol1 <s1> - ^symbol2 <s2> - ^value <val> -)
+    (<scmd> ^pre-store <p> + ^pre-store <pc> + ^pre-store <c> +)
+}
+
+sp {propose*props*combine*search*combine*pair
+    (state <s> ^name props-combine-search -^new <n*1> ^pair <p>)
+    (<p> ^symbol2 <s2> ^symbol1 <s1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-combine-pair +)
+}
+
+sp {apply*props*combine*search*cancel*reset
+    (state <s> ^operator <o*1> ^pair <p> ^attr <attr> ^ins <ins> ^symbol2 <s2>
+          ^symbol1 <s1> ^smem <smem>)
+    (<o*1> ^name props-combine-prohibit)
+    (<p> ^attr <attr> ^ins <ins> ^symbol2 <s2> ^symbol1 <s1>
+          ^prop-combine <combine> ^static-counts <pc>)
+    (<smem> ^command <scmd>)
+    -->
+    (<s> ^pair <p> - ^symbol1 <s1> - ^symbol2 <s2> - ^attr <attr> -
+           ^ins <ins> - ^static-counts <pc> - ^props-flag combine-prohibit -)
+    (<p> ^symbol1 <s1> - ^symbol2 <s2> - ^prop-combine <combine> -
+           ^ins <ins> - ^attr <attr> - ^static-counts <pc> -)
+    (<scmd> ^pre-store <p> +)
+}
+
+sp {propose*props*combine*search*cancel*reset
+    (state <s> ^props-flag combine-prohibit ^name props-combine-search)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-combine-prohibit +)
+}
+
+sp {prefer*props*combine*prohibit
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name props-combine-verify)
+    (<o1> ^name props-combine-prohibit)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {set*props*combine*search*cancel
+    :o-support
+    (state <s> ^impasse no-change ^attribute operator ^superstate <ss>)
+    (<ss> ^name props-combine-search ^pair <p>)
+    -->
+    (<ss> ^props-flag combine-prohibit +)
+}
+
+sp {apply*props*combine*search*retrieve*fail
+    (state <s> ^operator <o*1> ^lti-name <name> ^superstate <ss>)
+    (<o*1> ^name props-combine-retrieve-fail)
+    -->
+    (<ss> ^props-quiescent <name> +)
+}
+
+sp {propose*props*combine*search*retrieve*fail
+    (state <s> ^name props-combine-search ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^failure <f*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-combine-retrieve-fail +)
+}
+
+sp {apply*props*combine*search*check*pair
+    (state <s> ^operator <o*1> ^attr <attr> ^symbol2 <s2> ^symbol1 <s1>
+          ^superstate <ss>)
+    (<o*1> ^name props-combine-verify)
+    (<ss> ^props-instructions <ins> ^smem <s*1>)
+    (<ins> ^<attr> <s2> ^<attr> <s1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^props-flag combine-valid +)
+}
+
+sp {propose*props*combine*search*check*pair
+    (state <s> ^name props-combine-search -^props-flag combine-valid
+          ^pair <p*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-combine-verify +)
+}
+
+sp {apply*props*combine*search*retrieve*pair
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-pair ^pair <pair>)
+    (<pair> ^attr <attr> ^static-counts <pc> ^ins <ins> ^symbol2 <s2>
+          ^symbol1 <s1>)
+    -->
+    (<s> ^pair <pair> + ^symbol1 <s1> + ^symbol2 <s2> + ^static-counts <pc> +
+           ^ins <ins> + ^attr <attr> +)
+}
+
+sp {propose*props*combine*search*retrieve*pair
+    (state <s> ^name props-combine-search -^pair <p*1> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> ^success <cue> ^retrieved <pair>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-retrieve-pair + ^pair <pair> +)
+}
+
+sp {apply*props*combine*search*query*pair
+    (state <s> ^name props-combine-search ^operator <o> ^lti <lti> ^smem <s*1>)
+    (<o> ^name props-load-pair)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 3 +)
+    (<q> ^symbol1 <sym1> + ^ins <lti> + ^prop-combine <any> +)
+}
+
+sp {propose*props*combine*search*query*pair
+    (state <s> ^name props-combine-search -^pair <p*1> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> -^{ << success failure >> <a*1> } <v*1>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-load-pair +)
+}
+
+sp {set*props*combine*search*cascade*prohibits
+    :o-support
+    (state <s> ^name props-combine-search ^smem <s*3> ^superstate <s*1>)
+    (<s*3> ^prohibit-list <pl>)
+    (<s*1> ^smem <s*2>)
+    (<s*2> ^prohibit-list <p*1>)
+    (<p*1> ^prohibit <prbt>)
+    (<prbt> ^prop-combine <p*2>)
+    -->
+    (<pl> ^prohibit <prbt> +)
+}
+
+sp {elaborate*props*state*combine*search
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>)
+    (<o> ^name props-combine-search ^lti <lti> ^lti-name <symname>)
+    -->
+    (<s> ^name props-combine-search + ^lti <lti> + ^lti-name <symname> +)
+}
+
+sp {apply*props*sub*buffer*fill*partial*result
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-buffer-finalize ^oldid2 <oldid2> ^val <val>
+          ^oldattr2 <oldattr2> ^id2 <id2> ^id1 <id1> ^attr2 <attr2>
+          ^attr1 <attr1> ^ins <ins>)
+    -->
+    (<id1> ^<attr1> <val> +)
+    (<ins> ^end-id1 <id1> - ^buff-id2 <id2> - ^buff-attr2 <attr2> -
+           ^id2 <oldid2> - ^id2 <id2> + ^attr2 <oldattr2> - ^attr2 <attr2> +
+           ^oldattr2 <oldattr2> +)
+}
+
+sp {propose*props*sub*buffer*fill*partial*result
+    (state <s> ^literalize <l> ^props-instructions <ins>)
+    (<ins> ^buff-attr2 <attr2> ^end-id1 <id1> ^buff-id2 <id2>
+          ^oldattr1 <attr1> ^id2 <oldid2> ^attr2 <oldattr2>)
+    (<oldid2> ^<oldattr2> <val>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-buffer-finalize + ^ins <ins> + ^id1 <id1> +
+           ^attr1 <attr1> + ^val <val> + ^id2 <id2> + ^attr2 <attr2> +
+           ^oldid2 <oldid2> + ^oldattr2 <oldattr2> +)
+}
+
+sp {apply*props*sub*return*result*add*buffer*arg1
+    (state <s> ^name sub-props ^operator <o> ^props-sub <u>)
+    (<o> ^name props-sub-return-result ^literalize <l>)
+    (<u> ^symbol <sym> ^sub <sub>)
+    (<sym> ^prop-type add ^attr1 <attr1>)
+    (<sub> ^buff-chaining <bc> ^curr-id <res> ^curr-attr <curr>)
+    (<bc> ^id2 <nid2> ^id1 <nid1> ^attr2 <nattr2> ^attr1 <nattr1>)
+    -->
+    (<sym> ^id1 <nid1> + ^attr1 <attr1> - ^attr1 <nattr1> + ^end-id1 <res> +
+           ^buff-id2 <nid2> + ^buff-attr2 <nattr2> + ^oldattr1 <attr1> +)
+    (<sub> ^curr-attr <curr> - ^buff-chaining <ins> -)
+    (<s> ^props-sub <u> - ^name sub-props -)
+}
+
+sp {apply*props*sub*return*result
+    (state <s> ^name sub-props ^operator <o> ^props-sub <u>)
+    (<o> ^name props-sub-return-result ^sub <sub> ^sym <sym> ^literalize <l>)
+    (<sub> -^buff-chaining <b*1> ^curr-id <res> ^curr-attr <attr>
+          ^target-arg <arg>)
+    -->
+    (<sym> ^<arg> <res> +)
+    (<sub> ^curr-attr <attr> -)
+    (<s> ^props-sub <u> - ^name sub-props -)
+}
+
+sp {propose*props*sub*return*result
+    (state <s> ^props-sub <u> ^literalize <l>)
+    (<u> ^iterated true ^sub <sub> ^symbol <sym>)
+    (<sub> ^curr-id <c*1> ^curr-attr <c*2>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-sub-return-result + ^literalize <l> + ^sub <sub> +
+           ^sym <sym> +)
+}
+
+sp {apply*props*sub*chain*iterate*fail
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-fail ^sym <sym> ^literalize <l*1>)
+    -->
+    (<sym> ^status fail +)
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug*unsupported
+    (state <s> ^literalize <l> ^props-sub <u> ^evalstate <e*1>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^curr-id <id> ^curr-attr <node>
+          ^target-attr <tattr>)
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^name <n*1>)}
+    (<node> ^chain-attr operator)
+    (<sym> -^prop-type { << action negation >> <p*1> } -^id2 <i*2> -^id1 <i*1>
+          ^<tattr> name ^attr2 <a*1>)
+    (<e*1> ^const <const>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-fail + ^sym <sym> + ^literalize <l> +)
+    (write |WARNING: PROPS condition s.operator.name failed due to lack of said structure, but the value 
+    tested against uses a dot-notation chain. This is unsupported at this time and may cause infinite loops.| (crlf))
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug*name
+    (state <s> ^literalize <l> ^props-sub <u> ^evalstate <e*1>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^curr-attr <node> ^target-attr <tattr>
+          ^curr-id <id>)
+    (<node> ^chain-attr operator ^chain-next <next-node>)
+    (<sym> -^prop-type { << action negation >> <p*1> } ^<tattr> name
+          ^id2 <const> ^attr2 <cnum>)
+    (<e*1> ^const <const>)
+    (<const> ^<cnum> <opname>)
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^name <opname>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-fail + ^sym <sym> +
+           ^literalize (+ 1 (int <l>) (int <cnum>)) +)
+}
+
+sp {propose*props*sub*chain*iterate*fail*operator*aug
+    (state <s> ^literalize <l> ^props-sub <u>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^curr-attr <node> ^curr-id <id>
+          ^target-attr <tattr>)
+    (<node> ^chain-attr operator ^chain-next <next-node>)
+    (<sym> -^prop-type { << action negation >> <p*1> }
+          ^<tattr> { <> name <attr> })
+   -{ (<id> ^operator <o*1>)
+      (<o*1> ^<attr> <a*1>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-fail + ^sym <sym> +
+           ^literalize (+ 1 (int <l>) (int <attr>)) +)
+}
+
+sp {propose*props*sub*chain*iterate*fail
+    (state <s> ^literalize <l> ^props-sub <u> ^rootstate <rs>)
+   -{ (<s> ^operator <o1> +)
+      (<o1> ^name props-sub-chain-iterate)}
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^curr-id <id> ^curr-attr <node>)
+    (<sym> -^prop-type { << action negation >> <p*1> })
+    (<node> ^chain-attr <attr> ^chain-next <next-node>)
+    (<id> -^<attr> <a*1>)
+   -{ (<sub> ^curr-id <rs>)
+      (<node> ^chain-attr operator)}
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-fail + ^sym <sym> +
+           ^literalize (+ 1 (int <l>) (int <attr>)) +)
+}
+
+sp {apply*props*sub*chain*iterate*special*success
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-special-success ^attr <attr> ^sym <sym>
+          ^literalize <l*1> ^id <id>)
+    -->
+    (<sym> ^status success +)
+    (write |  *** Absence success: | <id> | ^| <attr> | already gone.| (crlf))
+}
+
+sp {propose*props*sub*chain*iterate*special*success
+    (state <s> ^literalize <l> ^props-sub <u>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate ^curr-id <id> ^curr-attr <node>)
+    (<node> ^chain-attr <attr> ^chain-next <next-node>)
+    (<id> -^<attr> <a*1>)
+    (<sym> ^prop-type { << negation remove >> <p*1> })
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-special-success + ^id <id> + ^attr <attr> +
+           ^sym <sym> + ^literalize (+ 1 (int <l>) (int <attr>)) +)
+}
+
+sp {apply*props*sub*chain*iterate*iterated
+    (state <s> ^operator <o*1> ^props-sub <u>)
+    (<o*1> ^name props-sub-chain-iterate)
+    -->
+    (<u> ^iterated true +)
+}
+
+sp {apply*props*sub*chain*iterate*create
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate ^create-val <val> ^create-attr <attr>
+          ^create-id <id>)
+    -->
+    (<id> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*buff
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate ^buff-val2 <val> ^buff-attr <attr>
+          ^buff-id1 <id1> ^sub <sub> ^buff-id2 <id2>)
+    -->
+    (<sub> ^buff-chaining <new-inst> +)
+    (<new-inst> ^id1 <id1> + ^attr1 <attr> + ^id2 <id2> + ^attr2 <attr> +)
+    (<id2> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*ops
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate ^ops-target <idn> ^ops-val <val>
+          ^ops-attr <attr> ^ops-id <op> ^sym <sym> ^literalize <l>)
+    -->
+    (<sym> ^ops <ops> +)
+    (<ops> ^op <op> + ^op-target <idn> +)
+    (<op> ^<attr> <val> +)
+}
+
+sp {apply*props*sub*chain*iterate*literalize
+    (state <s> ^operator <o> ^literalize { <> <l> <ol> })
+    (<o> ^name props-sub-chain-iterate ^literalize <l>)
+    -->
+    (<s> ^literalize <ol> - ^literalize <l> +)
+}
+
+sp {apply*props*sub*chain*iterate*attr
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate ^next-node <next-node>
+          ^curr-node <node> ^sub <sub>)
+    (<sub> ^curr-attr <node>)
+    -->
+    (<sub> ^curr-attr <node> - ^curr-attr <next-node> +)
+}
+
+sp {apply*props*sub*chain*iterate*id
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-chain-iterate ^next-id <next-id> ^curr-id <id>
+          ^sub <sub>)
+    (<sub> ^curr-id <id>)
+    -->
+    (<sub> ^curr-id <id> - ^curr-id <next-id> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*mid*new
+    (state <s> ^literalize <l> ^props-sub <u> ^evalstate <e*1>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^buff-chaining <b*1> -^curr-id props$rootstate -^status fail
+          -^status success -^curr-attr done ^target-arg id1 ^curr-attr <node>
+          ^curr-id <id>)
+    (<node> ^chain-attr props$const ^chain-next { <> done <next> })
+    (<sym> ^prop-type add)
+    (<next> ^chain-next <close> ^chain-attr <const-arg>)
+    (<e*1> ^const <const>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +
+           ^name2 iterate-find-operator-mid-new + ^sub <sub> + ^sym <sym> +
+           ^curr-id <id> + ^next-id <new-id> + ^curr-node <node> +
+           ^next-node <close> +
+           ^literalize (+ 1 (int <l>) (int <const-arg>)) + ^buff-id1 <id> +
+           ^buff-id2 <new-id> + ^buff-attr operator + ^buff-val2 <op-new> +
+           ^create-id <op-new> + ^create-attr name + ^create-val <name> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*mid*exists
+    (state <s> ^literalize <l> ^props-sub <u> ^evalstate <e*1>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^buff-chaining <b*1> -^curr-id props$rootstate -^status fail
+          -^status success -^curr-attr done ^target-arg id1 ^curr-attr <node>
+          ^curr-id <id>)
+    (<node> ^chain-attr props$const ^chain-next { <> done <next> })
+    (<next> ^chain-next <close> ^chain-attr <const-arg>)
+    (<e*1> ^const <const>)
+    (<sym> ^prop-type { << add remove >> <p*1> })
+    (<id> ^operator <so> +)
+    (<so> ^name <name>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate +
+           ^name2 iterate-find-operator-mid-exists + ^sub <sub> + ^sym <sym> +
+           ^curr-id <id> + ^next-id <new-id> + ^curr-node <node> +
+           ^next-node <close> +
+           ^literalize (+ 1 (int <l>) (int <const-arg>)) + ^buff-id1 <id> +
+           ^buff-id2 <new-id> + ^buff-attr operator + ^buff-val2 <so> +)
+}
+
+sp {propose*props*sub*chain*iterate*find*operator*end
+    (state <s> ^literalize <l> ^props-sub <u> ^evalstate <e*1>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^curr-attr <node> ^curr-id <id>
+          ^target-attr <tattr>)
+    (<node> ^chain-next done ^chain-attr props$const)
+    (<sym> ^prop-type proposal ^<tattr> <const-arg>)
+    (<e*1> ^const <const>)
+    (<const> ^<const-arg> <name>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate + ^sub <sub> + ^sym <sym> +
+           ^curr-node <node> + ^next-node <next-node> +
+           ^literalize (+ 1 (int <l>) (int <tattr>) (int <const-arg>)) +
+           ^ops-id <op-new> + ^ops-attr name + ^ops-val <name> +
+           ^ops-target <tattr> +)
+}
+
+sp {propose*props*sub*chain*iterate*create*extend
+    (state <s> ^literalize <l> ^props-sub <u>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^curr-id props$rootstate -^status fail -^status success
+          -^curr-attr done ^buff-chaining <b*1> ^curr-id <id>
+          ^curr-attr <node>)
+    (<sym> ^prop-type add)
+    (<node> ^chain-attr <attr> ^chain-next <next-node>)
+    (<id> -^<attr> <a*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate + ^sub <sub> + ^sym <sym> +
+           ^literalize (+ 1 (int <l>) (int <attr>)) + ^create-id <id> +
+           ^create-attr <attr> + ^create-val <new> +)
+}
+
+sp {propose*props*sub*chain*iterate*create*chain
+    (state <s> ^literalize <l> ^props-sub <u>)
+    (<u> ^sub <sub> ^symbol <sym>)
+    (<sub> -^buff-chaining <b*1> -^curr-id props$rootstate -^status fail
+          -^status success -^curr-attr done ^curr-id <id> ^curr-attr <node>)
+    (<sym> ^prop-type add ^attr2 <oldattr>)
+    (<node> ^chain-next <next-node> ^chain-attr { <> props$const <attr> })
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate + ^sub <sub> + ^sym <sym> +
+           ^curr-id <id> + ^next-id <new> + ^curr-node <node> +
+           ^next-node <next-node> +
+           ^literalize (+ 1 (int <l>) (int <attr>) (int <oldattr>)) +
+           ^buff-id1 <id> + ^buff-id2 <new-id> + ^buff-attr <attr> +
+           ^buff-val2 <new> +)
+}
+
+sp {propose*props*sub*chain*iterate*normal
+    (state <s> ^literalize <l> ^props-sub <u>)
+    (<u> ^sub <sub>)
+    (<sub> -^status fail -^status success -^curr-attr done ^curr-id <id>
+          ^curr-attr <node>)
+    (<node> ^chain-next <next-node> ^chain-attr <attr>)
+    (<id> ^<attr> <next-id>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-sub-chain-iterate + ^sub <sub> + ^curr-id <id> +
+           ^next-id <next-id> + ^curr-node <node> + ^next-node <next-node> +
+           ^literalize (+ 1 (int <l>) (int <attr>)) +)
+}
+
+sp {prefer*props*sub*iterate*normal
+    (state <s> ^operator <o2> + ^operator <o1> + ^props-sub <u>)
+    (<o2> ^name props-sub-chain-iterate ^buff-id1 <b*2>)
+    (<o1> -^buff-id1 <b*1> ^name props-sub-chain-iterate)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {apply*props*sub*replace*keywords*rootstate
+    (state <s> ^operator <o> ^props-sub <p*1>)
+    (<o> ^name props-sub-replace-keywords ^rootstate <rs>)
+    (<p*1> ^sub <sub>)
+    (<sub> ^<attr> props$rootstate)
+    -->
+    (<sub> ^<attr> props$rootstate - ^<attr> <rs> +)
+}
+
+sp {propose*props*sub*replace*keywords
+    (state <s> ^props-sub <u> ^rootstate <rs>)
+    (<u> ^sub <sub>)
+    (<sub> ^<att> props$rootstate)
+    -->
+    (<s> ^operator <o> + ^operator <o> > ^operator <o> =)
+    (<o> ^name props-sub-replace-keywords + ^rootstate <rs> +)
+}
+
+sp {apply*props*sub*chain*receive*replace
+    (state <s> ^operator <o> ^props-sub <u>)
+    (<o> ^name props-sub-chain-receive ^oldsub <sub1> ^result <sub2>)
+    (<u> ^sub <sub1>)
+    -->
+    (<u> ^sub <sub1> -)
+    (<sub2> ^curr-attr <sub2> +)
+}
+
+sp {apply*props*sub*chain*received*all
+    (state <s> ^operator <o> ^props-sub <u>)
+    (<o> ^name props-sub-chain-receive ^result <sub>)
+    (<sub> ^depth { <= 2 <d*1> })
+    -->
+    (<sub> ^curr-attr <sub> +)
+}
+
+sp {apply*props*sub*chain*receive
+    (state <s> ^operator <o> ^literalize <ol> ^props-sub <u>)
+    (<o> ^name props-sub-chain-receive ^result <sub>)
+    (<sub> ^chain-attr <attr>)
+    -->
+    (<u> ^sub <sub> +)
+    (<s> ^literalize <ol> - ^literalize (+ 1 (int <ol>) (int <attr>)) +)
+}
+
+sp {propose*props*sub*chain*receive*depth
+    (state <s> ^props-sub <p*1> ^smem <smem>)
+    (<p*1> ^sub <sub>)
+    (<smem> ^result <r*1> ^command <c*1>)
+    (<r*1> ^retrieved { <> <sub> <lti> })
+    (<c*1> ^retrieve <r*2>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-receive + ^result <lti> + ^oldsub <sub> +)
+}
+
+sp {propose*props*sub*chain*receive*normal
+    (state <s> ^props-sub <u> ^smem <smem>)
+    (<smem> ^result <r*1> ^command <c*1>)
+    (<r*1> ^retrieved <lti>)
+    (<c*1> ^query <q*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-sub-chain-receive + ^result <lti> +)
+}
+
+sp {apply*props*sub*chain*load*depth
+    (state <s> ^operator <o> ^smem <s*1>)
+    (<o> ^name props-sub-chain-depth ^sub <sub>)
+    (<sub> ^depth <d>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^retrieve <sub> + ^depth <d> +)
+}
+
+sp {propose*props*sub*chain*load*depth
+    (state <s> ^props-sub <u>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^{ << success failure >> <a*1> } <v*1>)}
+    (<u> ^sub <sub>)
+    (<sub> -^curr-attr <c*1> ^depth { > 2 <d*1> })
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-sub-chain-depth + ^sub <sub> +)
+}
+
+sp {apply*props*sub*chain*query
+    (state <s> ^operator <o> ^smem <s*1>)
+    (<o> ^name props-sub-chain-query ^sub <symname>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 2 +)
+    (<q> ^lti-name <symname> +)
+}
+
+sp {propose*props*sub*chain*query
+    (state <s> ^props-sub <u>)
+    (<u> -^sub <s*2> ^subname <symname>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-sub-chain-query + ^sub <symname> +)
+}
+
+sp {prefer*props*sub*chain*iterate*find*op*exists
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name2 iterate-find-operator-mid-new)
+    (<o1> ^name2 iterate-find-operator-mid-exists)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*iterate
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name props-sub-return-result)
+    (<o1> ^name props-sub-chain-iterate)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*fail
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-sub-chain-fail)
+    (<o2>
+          ^name { << props-sub-chain-iterate props-sub-return-result >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*replace*keywords
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-sub-replace-keywords)
+    (<o2>
+          ^name { << props-sub-chain-iterate props-sub-return-result >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*sub*chain*load
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2>
+          ^name { << props-sub-replace-keywords props-sub-chain-iterate >> <n*2> })
+    (<o1>
+          ^name { << props-sub-chain-query props-sub-chain-depth props-sub-chain-receive >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {elaborate*props*sub*target*attr1
+    (state <s1> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<sub> ^target-arg id2)
+    -->
+    (<sub> ^target-attr attr2 +)
+}
+
+sp {elaborate*props*sub*target*attr2
+    (state <s1> ^props-sub <p*1>)
+    (<p*1> ^sub <sub>)
+    (<sub> ^target-arg id1)
+    -->
+    (<sub> ^target-attr attr1 +)
+}
+
+sp {elaborate*props*sub*class*action
+    (state <s1> ^props-instructions <p1>)
+    (<p1> ^prop-type { << add remove proposal >> <c1> }
+          ^{ << sub1 sub2 >> <a*1> } <c2>)
+    -->
+    (<p1> ^prop-type action +)
+}
+
+sp {elaborate*props*sub*class*proposal
+    (state <s1> ^props-instructions <p1>)
+    (<p1>
+          ^prop-type { << acceptable indifferent better worse require >> <c1> }
+          ^{ << sub1 sub2 >> <a*1> } <c2>)
+    -->
+    (<p1> ^prop-type proposal +)
+}
+
+sp {apply*props*sub*begin
+    (state <s> ^operator <o>)
+    (<o> ^name props-sub-begin ^symname <symname> ^literalize <l> ^ins <ins>)
+    -->
+    (<s> ^name sub-props + ^props-sub <u> + ^literalize <l> +)
+    (<u> ^symbol <ins> + ^subname <symname> +)
+}
+
+sp {propose*props*sub*begin*arg2
+    (state <s> ^superstate <ss> -^name <n*1>)
+    (<ss> ^literalize <l> ^operator <oo>)
+    (<oo> ^symbol <ins> ^prop <p*1>)
+    (<ins> -^id2 <i*1> ^sub2 <symname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> <)
+    (<o> ^name props-sub-begin + ^literalize <l> + ^symname <symname> +
+           ^ins <ins> +)
+}
+
+sp {propose*props*sub*begin*arg1
+    (state <s> ^superstate <ss> -^name <n*1>)
+    (<ss> ^literalize <l> ^operator <oo>)
+    (<oo> ^symbol <ins> ^prop <p*1>)
+    (<ins> -^id1 <i*1> ^sub1 <symname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> <)
+    (<o> ^name props-sub-begin + ^literalize <l> + ^symname <symname> +
+           ^ins <ins> +)
+}
+
+sp {apply*props*count*return*count
+    (state <s> ^operator <o> ^container <cont>)
+    (<o> ^name props-count-return-count ^total <tot>)
+    -->
+    (<cont> ^total <tot> +)
+}
+
+sp {propose*props*count*return*count
+    (state <s> ^name props-count-instruction-parts ^total <tot>)
+   -{ (<s> ^items <i*1> -^counted <sym>)
+      (<i*1> ^{ << condition action >> <a*1> } <sym>)}
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-count-return-count + ^total <tot> +)
+}
+
+sp {apply*props*count*iterate
+    (state <s> ^operator <o> ^total <tot>)
+    (<o> ^name props-count-symbol ^sym <sym>)
+    -->
+    (<s> ^total <tot> - ^total (+ 1 <tot>) + ^counted <sym> +)
+}
+
+sp {propose*props*count*iterate*actions
+    (state <s> ^name props-count-instruction-parts ^items <ins>
+          -^counted <sym>)
+    (<ins> ^action <sym>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-count-symbol + ^sym <sym> +)
+}
+
+sp {propose*props*count*iterate*conditions
+    (state <s> ^name props-count-instruction-parts ^items <ins>
+          -^counted <sym>)
+    (<ins> ^condition <sym>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-count-symbol + ^sym <sym> +)
+}
+
+sp {set*props*state*count
+    :o-support
+    (state <s> ^superstate <s*1> -^total <t*1>)
+    (<s*1> ^operator <oo>)
+    (<oo> ^name props-count-instruction-parts ^container <cont> ^items <ins>)
+    -->
+    (<s> ^name props-count-instruction-parts + ^items <ins> +
+           ^container <cont> + ^total 0 +)
+}
+
+sp {elaborate*props*instruction*learning*on*combo*top*onc
+    (state <s> ^name instruction ^operator <o*1> ^evalstate <es>
+          ^rootstate <rs>)
+    (<o*1> ^name props-begin-instructions-query)
+    (<es> ^props-instructions <rhs> ^props-instructions <lhs>
+          ^superstate <ess>)
+    (<rhs> ^prop-type instruction-rhs ^action <a1> -^action { <> <a1> <a2> })
+    (<lhs> ^prop-type instruction-lhs ^condition <c1>
+          -^condition { <> <c1> <c2> })
+    (<ess> ^superstate <rs>)
+    -->
+    (write (crlf) |*** LEARNING PRODUCTION | <ess> | ***| (crlf))
+}
+
+sp {elaborate*props*instruction*learning*on*combo*top
+    (state <s> ^name instruction ^operator <o*1> ^evalstate <es>
+          ^rootstate <rs>)
+    (<o*1> ^name props-begin-instructions-query)
+    (<es> ^props-instructions <rhs> ^props-instructions <lhs> ^superstate <rs>)
+    (<rhs> ^prop-type instruction-rhs ^action <a1> -^action { <> <a1> <a2> })
+    (<lhs> ^prop-type instruction-lhs ^condition <c1>
+          -^condition { <> <c1> <c2> })
+    -->
+    (write (crlf) |*** LEARNING PRODUCTION | <es> | ***| (crlf))
+}
+
+sp {apply*props*success*action*require
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^rootstate <rs> ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^ops <ops> ^action <a*1> ^id1 <id1>)
+    (<ops> ^op-target attr1 ^op <op1>)
+    (<a*1> ^prop-type require)
+    -->
+    (<id1> ^operator <op1> + ^operator <op1> !)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*worst
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^item <i> ^rootstate <rs>)
+    (<i> -^attr2 <a*2> ^ops <ops> ^action <a*1> ^id1 <id1>)
+    (<ops> ^op-target attr1 ^op <op1>)
+    (<a*1> ^prop-type worse)
+    (<e*1> ^rule-name <name>)
+    -->
+    (<id1> ^operator <op1> + ^operator <op1> <)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*best
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^item <i> ^rootstate <rs>)
+    (<i> -^attr2 <a*2> ^ops <ops> ^action <a*1> ^id1 <id1>)
+    (<ops> ^op-target attr1 ^op <op1>)
+    (<a*1> ^prop-type better)
+    (<e*1> ^rule-name <name>)
+    -->
+    (<id1> ^operator <op1> + ^operator <op1> >)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*worse
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^rootstate <rs> ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^ops <ops2> ^ops <ops1> ^action <a*1> ^id2 <id2> ^id1 <id1>)
+    (<ops2> ^op-target attr2 ^op <op2>)
+    (<ops1> ^op-target attr1 ^op <op1>)
+    (<a*1> ^prop-type worse)
+    (<id2> ^operator <op2> +)
+    (<id1> ^operator <op1> +)
+    -->
+    (<id1> ^operator <op1> < <op2>)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*better
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^rootstate <rs> ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^ops <ops2> ^ops <ops1> ^action <a*1> ^id2 <id2> ^id1 <id1>)
+    (<ops2> ^op-target attr2 ^op <op2>)
+    (<ops1> ^op-target attr1 ^op <op1>)
+    (<a*1> ^prop-type better)
+    (<id2> ^operator <op2> +)
+    (<id1> ^operator <op1> +)
+    -->
+    (<id1> ^operator <op1> > <op2>)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*indifferent
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^rootstate <rs> ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^ops <ops> ^action <a*1> ^id1 <id1>)
+    (<ops> ^op-target attr1 ^op <o1>)
+    (<a*1> ^prop-type acceptable)
+    -->
+    (<id1> ^operator <o1> + ^operator <o1> =)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*acceptable
+    (state <s> ^instructions <ins> ^operator <o> ^props-buffer-copy <bff>
+          ^evalstate <e*1>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^rootstate <rs> ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^ops <ops> ^action <a*1> ^id1 <id1>)
+    (<ops> ^op-target attr1 ^op <o1>)
+    (<a*1> ^prop-type acceptable)
+    (<o1> ^name <op-name>)
+   -{ (<o> ^item <ii>)
+      (<ii> ^id1 <id1> ^ops <o*1> ^action <a*2>)
+      (<o*1> ^op <o*2>)
+      (<o*2> ^name <op-name>)
+      (<a*2> ^prop-type { << indifferent better worse require >> <p*2> })}
+    -->
+    (<id1> ^operator <o1> +)
+    (<ins> ^props-result success +)
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*nonproposal*active-rule
+    (state <s> ^operator <o> ^evalstate <es> ^rootstate <rs>)
+    (<o> ^name props-success-apply ^item <i*1>)
+    (<es> ^props-instructions <rhsins> ^rule-name <name>)
+    (<rhsins> -^flag o-supported ^prop-type instruction-rhs)
+    (<i*1> ^action <a*1>)
+    (<a*1> ^prop-type { << add remove >> <p*1> })
+    -->
+    (<rs> ^props-active-rule <name> +)
+}
+
+sp {apply*props*success*action*remove
+    (state <s> ^instructions <ins> ^operator <o> ^evalstate <e*1>
+          ^rootstate <rs>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^action <a*1> ^id1 <id1> ^attr1 <attr1> ^literalize <l*1>)
+    (<a*1> ^prop-type remove)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<id1> ^<attr1> <val> -)
+    (<ins> ^props-result success +)
+}
+
+sp {apply*props*success*action*add*replace
+    (state <s> ^instructions <ins> ^operator <o> ^evalstate <e*1>
+          ^rootstate <rs>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^action <a*1> ^id2 <id2> ^id1 <id1> ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1>)
+    (<a*1> ^prop-type add)
+    (<id1> ^<attr1> <old>)
+    (<id2> ^<attr2> { <> <old> <val> })
+    -->
+    (<id1> ^<attr1> <old> - ^<attr1> <val> +)
+    (<ins> ^props-result success +)
+}
+
+sp {apply*props*success*action*add*new
+    (state <s> ^instructions <ins> ^operator <o> ^evalstate <e*1>
+          ^rootstate <rs>)
+    (<ins> -^props-result <p*1>)
+    (<o> ^name props-success-apply ^item <i>)
+    (<e*1> ^rule-name <name>)
+    (<i> ^action <a*1> ^id2 <id2> ^id1 <id1> ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1>)
+    (<a*1> ^prop-type add)
+    (<id2> ^<attr2> <val>)
+    (<id1> -^<attr1> { <> <val> <old> })
+    -->
+    (<id1> ^<attr1> <val> +)
+    (<ins> ^props-result success +)
+}
+
+sp {apply*props*success*apply*ground*ids*ops
+    (state <s> ^operator <o> + ^props-buffer-copy <bff>)
+    (<o> ^name props-success-apply ^item <i>)
+    (<bff> ^action <ins>)
+    (<i> ^action <ins>)
+    (<ins> ^ops <ops>)
+    -->
+    (<i> ^ops <ops> +)
+}
+
+sp {apply*props*success*apply*literalize*2arg
+    (state <s> ^operator <o> + ^props-buffer-copy <bff>)
+    (<o> ^name props-success-apply)
+    (<bff> ^action <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1> ^attr2 <attr2> ^attr1 <attr1>
+          ^lti-name <name>)
+    -->
+    (<o> ^item <i> +)
+    (<i> ^action <ins> + ^id1 <id1> + ^id2 <id2> + ^attr1 <attr1> +
+           ^attr2 <attr2> +
+           ^literalize (+ 1 (int <attr1>) (int <attr2>) (int <name>)) +)
+}
+
+sp {apply*props*success*apply*literalize*1arg
+    (state <s> ^operator <o> + ^props-buffer-copy <bff>)
+    (<o> ^name props-success-apply)
+    (<bff> ^action <ins>)
+    (<ins> -^attr2 <attr2> ^id1 <id1> ^attr1 <attr1> ^lti-name <name>)
+    -->
+    (<o> ^item <i> +)
+    (<i> ^action <ins> + ^attr1 <attr1> + ^id1 <id1> +
+           ^literalize (+ 1 (int <attr1>) (int <name>)) +)
+}
+
+sp {propose*props*success*apply*buffer
+    (state <s> ^props-flag flushing ^instructions <ins> ^rootstate <rs>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-success-apply + ^rootstate <rs> +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*success*clean*buffer*op*transfer
+    (state <s> ^operator <o*1> ^props-buffer <bff>)
+    (<o*1> ^name props-result-affirm-success)
+    (<bff> ^action <a2> ^action { <> <a2> <a1> })
+    (<a2> ^ops <o*3>)
+    (<o*3> ^op <op2>)
+    (<a1> ^ops <o*2>
+          ^prop-type { << acceptable indifferent better worse require >> <p*1> })
+    (<o*2> ^op <op1>)
+    (<op2> ^name <name> ^{ <> name <attr> } <val>)
+    (<op1> ^name <name>)
+    -->
+    (<op1> ^<attr> <val> +)
+}
+
+sp {apply*props*success*clean*buffer*op*convert
+    (state <s> ^operator <o*1> ^props-buffer <bff>)
+    (<o*1> ^name props-result-affirm-success)
+    (<bff> ^action <a>)
+    (<a> -^buff-id2 <b*1> ^attr2 operator ^attr1 operator ^id2 <id2>)
+    (<id2> ^operator <onew> ^{ <> operator <other> } <val>)
+    -->
+    (<a> ^ops <ops> +)
+    (<ops> ^op <onew> + ^op-target attr1 +)
+    (<onew> ^<other> <val> +)
+}
+
+sp {apply*props*success*clean*buffer*store
+    (state <s> ^props-buffer-copy <p*1> ^operator <o*1> ^evalstate <es>
+          ^smem <s*1>)
+   -{ (<s> ^props-buffer <p*2>)
+      (<p*2> ^action <a*1>)}
+    (<o*1> ^name props-success-buffer-flush)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^store <bff> +)
+    (<s> ^props-flag flushing +)
+}
+
+sp {apply*props*success*clean*buffer*transfer
+    (state <s> ^operator <o*1> ^props-buffer-copy <bc> ^props-buffer <bff>)
+    (<o*1> ^name props-success-buffer-flush)
+    (<bff> ^action <a>)
+    -->
+    (<bff> ^action <a> -)
+    (<bc> ^action <a> +)
+}
+
+sp {propose*props*success*clean*buffer
+    (state <s> ^name instruction ^cancel <c*1> ^props-buffer-copy <p*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-success-buffer-flush +)
+}
+
+sp {apply*props*result*affirm*success*lhs*opnochange
+    (state <s> ^instructions <ins> ^superstate <ss> ^evalstate <es>
+          ^operator <o*1>)
+    (<ins> ^prop-type instruction-lhs)
+    (<ss> ^impasse no-change ^attribute operator ^superstate <es>)
+    (<o*1> ^name props-result-affirm-success)
+    -->
+    (<ins> ^props-result success +)
+    (<ss> ^props-blink result*affirm*success*lhs*opnochange +
+           ^props-flag reset-prohibits +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*result*affirm*success*lhs
+    (state <s> ^instructions <ins> ^operator <o*1> ^evalstate <es>
+          ^superstate { <> nil <ss> })
+    (<ins> ^prop-type instruction-lhs ^name <name>)
+    (<o*1> ^name props-result-affirm-success)
+   -{ (<ss> ^impasse no-change ^attribute operator ^superstate <es>)}
+    -->
+    (<ins> ^props-result success +)
+    (<es> ^props-blink result*affirm*success*lhs +
+           ^props-flag reset-prohibits + ^rule-name <name> +)
+    (write |    | <ins> | SUCCESS| (crlf) | | (crlf))
+}
+
+sp {apply*props*result*affirm*success
+    (state <s> ^props-buffer <bff> ^operator <o*1>)
+    (<bff> -^flag no-actions)
+    (<o*1> ^name props-result-affirm-success)
+    -->
+    (<s> ^props-flag flushing + ^props-buffer-copy <bff> +)
+}
+
+sp {elaborate*props*buffer*no-actions
+    (state <s> ^props-buffer <bff>)
+    (<bff> -^action <a*1>)
+    -->
+    (<bff> ^flag no-actions +)
+}
+
+sp {propose*props*result*affirm*success
+    (state <s> ^evals <evals> -^props-flag apply-actions ^evalstate <ss>
+          ^superstate <ss>)
+    (<evals> ^total { > 0 <tval> } ^passed { >= <tval> <p*1> })
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-result-affirm-success +)
+}
+
+sp {elaborate*props*result*affirm*failure
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^status fail
+          ^prop-type { << instruction-lhs instruction-rhs >> <p*1> })
+    -->
+    (<ins> ^props-result failure +)
+}
+
+sp {apply*props*symbol*require
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-require ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*worst
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-worst ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*best
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-best ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*worse
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-worse ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*better
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-better ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*indifferent
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-indifferent ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none + ^prop-type indifferent +)
+}
+
+sp {apply*props*symbol*acceptable
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-acceptable ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize none +)
+}
+
+sp {apply*props*symbol*remove
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> ^name prop-remove ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1> ^lti-name <name>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize (+ 1 (int <name>)) +)
+}
+
+sp {apply*props*symbol*add
+    (state <s> ^operator <o> ^props-buffer <bff>)
+    (<o> -^name prop-acceptable ^name prop-add ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1> ^lti-name <name>)
+    -->
+    (<bff> ^action <ins> +)
+    (<ins> ^status success + ^literalize (+ 1 (int <name>)) +)
+}
+
+sp {apply*props*symbol*existence*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-existence ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> -^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*existence
+    (state <s> ^operator <o>)
+    (<o> ^name prop-existence ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val>)) +)
+}
+
+sp {apply*props*symbol*negation*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-negation ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*negation
+    (state <s> ^operator <o>)
+    (<o> ^name prop-negation ^attr1 <attr1> ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id1 <id1>)
+    (<id1> -^<attr1> <val>)
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <attr1>)) +)
+}
+
+sp {apply*props*symbol*greater*equal*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-equal ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { >= <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*greater*equal
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-equal ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { <= <val1> <val2> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*less*equal*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-equal ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { <= <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*less*equal
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-equal ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { >= <val1> <val2> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*greater*than*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-than ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { > <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*greater*than
+    (state <s> ^operator <o>)
+    (<o> ^name prop-greater-than ^attr2 <attr2> ^attr1 <attr1>
+          ^literalize <l*1> ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { < <val1> <val2> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*less*than*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-than ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> -^<attr1> { < <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*less*than
+    (state <s> ^operator <o>)
+    (<o> ^name prop-less-than ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> ^<attr2> { > <val1> <val2> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*teq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-teq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id1> ^<attr1> <val1>)
+    (<id2> -^<attr2> { <=> <val1> <val2> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*teq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-teq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <=> <val2> <val1> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*neq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-neq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*neq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-neq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <> <val2> <val1> })
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val2>)) +)
+}
+
+sp {apply*props*symbol*eq*fail
+    (state <s> ^operator <o>)
+    (<o> ^name prop-eq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val2>)
+    (<id1> ^<attr1> { <> <val2> <val1> })
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*eq
+    (state <s> ^operator <o>)
+    (<o> ^name prop-eq ^attr2 <attr2> ^attr1 <attr1> ^literalize <l*1>
+          ^symbol <ins>)
+    (<ins> ^id2 <id2> ^id1 <id1>)
+    (<id2> ^<attr2> <val>)
+    (<id1> ^<attr1> <val>)
+    -->
+    (<ins> ^status success + ^literalize (+ 1 (int <val>)) +)
+}
+
+sp {propose*props*symbol*require
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type require)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-require + ^prop action +)
+}
+
+sp {propose*props*symbol*worst
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> -^attr2 <a*2> ^prop-type worse ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-worst + ^prop action +)
+}
+
+sp {propose*props*symbol*best
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> -^attr2 <a*2> ^prop-type better ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-best + ^prop action +)
+}
+
+sp {propose*props*symbol*worse
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type worse ^attr2 <a*2> ^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-worse + ^prop action +)
+}
+
+sp {propose*props*symbol*better
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type better ^attr2 <attr2> ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-better + ^prop action +)
+}
+
+sp {propose*props*symbol*indifferent
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> -^attr2 <attr2> ^prop-type add ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-indifferent + ^prop action +)
+}
+
+sp {propose*props*symbol*acceptable
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type acceptable)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-acceptable + ^prop action +)
+}
+
+sp {propose*props*symbol*remove
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type remove)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-remove + ^prop action +)
+}
+
+sp {propose*props*symbol*add
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type add ^attr2 <attr2> ^attr1 <attr1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-add + ^prop action +)
+}
+
+sp {propose*props*symbol*existence
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type existence ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-existence + ^prop condition +)
+}
+
+sp {propose*props*symbol*negation
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type negation ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-negation + ^prop condition +)
+}
+
+sp {propose*props*symbol*greater*equal
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type greater-equal)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-greater-equal + ^prop condition +)
+}
+
+sp {propose*props*symbol*less*equal
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type less-equal)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-less-equal + ^prop condition +)
+}
+
+sp {propose*props*symbol*greater*than
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type greater-than)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-greater-than + ^prop condition +)
+}
+
+sp {propose*props*symbol*less*than
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type less-than)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-less-than + ^prop condition +)
+}
+
+sp {propose*props*symbol*teq
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type type-equality)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-teq + ^prop condition +)
+}
+
+sp {propose*props*symbol*neq
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type inequality)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-neq + ^prop condition +)
+}
+
+sp {propose*props*symbol*eq
+    (state <s> ^name instruction ^props-instructions <ins>)
+    (<ins> ^prop-type equality ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^symbol <ins> + ^name prop-eq + ^prop condition +)
+}
+
+sp {elaborate*props*print*prop
+    (state <s> ^operator <o>)
+    (<o> ^prop <any> ^symbol <ins>)
+    (<ins> ^lti-name <name>)
+    -->
+    (write |    EVALUATING PROP | <ins> |:| <name>)
+}
+
+sp {elaborate*props*symbol*2arg*sub*buf
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> ^oldattr2 <oat2> ^oldattr1 <oat1> ^id2 <i*2> ^id1 <i*1>
+          ^attr2 <attr2> ^attr1 <attr1> ^{ << sub1 sub2 >> <a*1> } <v*1>)
+    -->
+    (<o> ^attr1 <attr1> + ^attr2 <attr2> +
+           ^literalize (+ 1 (int <oat1>) (int <oat2>) (int <attr1>) (int <attr2>)) +)
+}
+
+sp {elaborate*props*symbol*1arg*sub*buf
+    (state <s> ^literalize <l> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^attr2 <attr2> ^oldattr1 <oat1> ^sub1 <s*1> ^id1 <i*1>
+          ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> + ^literalize (+ 1 (int <oat1>) (int <attr1>)) +)
+}
+
+sp {elaborate*props*symbol*2arg*sub
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^oldattr2 <oat2> -^oldattr1 <oat1> ^id2 <i*2> ^id1 <i*1>
+          ^attr2 <attr2> ^attr1 <attr1> ^{ << sub1 sub2 >> <a*1> } <v*1>)
+    -->
+    (<o> ^attr1 <attr1> + ^attr2 <attr2> +
+           ^literalize (+ 1 (int <attr1>) (int <attr2>)) +)
+}
+
+sp {elaborate*props*symbol*1arg*sub
+    (state <s> ^literalize <l> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^attr2 <attr2> -^oldattr1 <oat1> ^sub1 <s*1> ^id1 <i*1>
+          ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> + ^literalize (+ 1 (int <attr1>)) +)
+}
+
+sp {elaborate*props*symbol*2arg*const
+    (state <s> ^const <c> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1> ^id2 <c> ^attr2 <attr2>
+          ^attr1 <attr1>)
+    (<c> ^<attr2> <val>)
+    -->
+    (<o> ^attr1 <attr1> + ^attr2 <attr2> +
+           ^literalize (+ 1 (int <attr1>) (int <attr2>) (int <val>)) +)
+}
+
+sp {elaborate*props*symbol*2arg*noconst
+    (state <s> ^const <c> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1> ^id2 <c> ^attr2 <attr2>
+          ^attr1 <attr1>)
+    (<c> -^<attr2> <val>)
+    -->
+    (<o> ^attr1 <attr1> + ^attr2 <attr2> +
+           ^literalize (+ 1 (int <attr1>) (int <attr2>)) +)
+}
+
+sp {elaborate*props*symbol*2arg
+    (state <s> ^const <c> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^{ << sub1 sub2 >> <a*1> } <v*1> -^id2 <c> ^attr2 <attr2>
+          ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> + ^attr2 <attr2> +
+           ^literalize (+ 1 (int <attr1>) (int <attr2>)) +)
+}
+
+sp {elaborate*props*symbol*1arg
+    (state <s> ^operator <o> +)
+    (<o> ^symbol <ins>)
+    (<ins> -^sub1 <s*1> -^attr2 <attr2> ^attr1 <attr1>)
+    -->
+    (<o> ^attr1 <attr1> + ^literalize (+ 1 (int <attr1>)) +)
+}
+
+sp {set*props*symbol*status*chunked*action*evaluated
+    :o-support
+    (state <s> ^name instruction ^props-instructions <pins> ^evals <evals>
+          ^props-buffer <p*1>)
+    (<pins> -^status <s*1> ^lti-name <symname>)
+    (<evals> -^evaluated <symname> ^passed <pval>)
+    (<p*1> ^action <a*1>)
+    (<a*1> ^lti-name <symname>)
+    -->
+    (<evals> ^evaluated <symname> + ^passed <pval> - ^passed (+ 1 <pval>) +)
+    (<pins> ^status success +)
+}
+
+sp {set*props*symbol*status*response*propagate*evaluated*consting
+    :o-support
+    (state <s> ^name instruction ^props-instructions <pins> ^evals <evals>)
+    (<pins> ^status success ^literalize <l*1> ^lti-name <symname>)
+    (<evals> -^evaluated <symname> ^passed <pval>)
+    -->
+    (<evals> ^evaluated <symname> + ^passed <pval> - ^passed (+ 1 <pval>) +)
+}
+
+sp {set*props*symbol*status*response*propagate*evaluated*noconsting
+    :o-support
+    (state <s> ^name instruction ^props-instructions <pins> ^evals <evals>)
+    (<pins> -^literalize <l*1> ^status success ^lti-name <symname>)
+    (<evals> -^evaluated <symname> ^passed <pval>)
+    -->
+    (<evals> ^evaluated <symname> + ^passed <pval> - ^passed (+ 1 <pval>) +)
+}
+
+sp {set*props*symbol*status*response*propagate*fail
+    :o-support
+    (state <s> ^name instruction ^props-instructions <pins>
+          ^instructions <ins>)
+    (<pins> ^status fail)
+    -->
+    (<ins> ^status fail +)
+}
+
+sp {apply*props*symbol*generic*fail*arg2
+    (state <s> ^name instruction ^operator <o>)
+    (<o> ^prop condition ^symbol <ins>)
+    (<ins> ^id2 <id2> ^attr2 <attr2>)
+    (<id2> -^<attr2> <any>)
+    -->
+    (<ins> ^status fail +)
+    (write |*** FAILED | <ins> |, CAN'T FIND: | <id2> | ^| <attr2> (crlf))
+}
+
+sp {apply*props*symbol*generic*fail*arg1
+    (state <s> ^name instruction ^operator <o>)
+    (<o> -^name prop-existence -^name prop-negation ^prop condition
+          ^symbol <ins>)
+    (<ins> ^id1 <id1> ^attr1 <attr1>)
+    (<id1> -^<attr1> <blah>)
+    -->
+    (<ins> ^status fail +)
+    (write |*** FAILED | <ins> |, CAN'T FIND: | <id1> | ^| <attr1> (crlf))
+}
+
+sp {reject*props*symbol*evaluated*action
+    (state <s> ^name instruction ^props-buffer <p*1> ^operator <o> +)
+    (<p*1> ^action <a>)
+    (<a> ^lti-name <symname> ^success <s*1>)
+    (<o> ^symbol <ins>)
+    (<ins> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> -)
+}
+
+sp {reject*props*symbol*evaluated*condition
+    (state <s> ^name instruction ^evals <e*1> ^operator <o> +)
+    (<e*1> ^evaluated <symname>)
+    (<o> ^symbol <s*1>)
+    (<s*1> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> -)
+}
+
+sp {propose*props*symbol*composite
+    (state <s> ^name instruction ^props-instructions <pins>)
+    (<pins> -^attr1 <a*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name instruction + ^symbol <pins> +)
+}
+
+sp {apply*props*symbol*success
+    (state <s> ^operator <o>)
+    (<o> ^name props-success ^p-pval <p-pval> ^p-track <p-track>
+          ^sym <symname> ^literalize <l*1> ^ins <ins>)
+    -->
+    (<p-track> ^evaluated <symname> + ^passed <p-pval> -
+           ^passed (+ 1 <p-pval>) +)
+    (<ins> ^status success +)
+}
+
+sp {propose*props*symbol*success
+    (state <s> ^name instruction ^evals <evals> ^instructions <ins>
+          ^superstate <ss>)
+   -{ (<s> ^props-instructions <pins>)
+      (<pins> -^status success)}
+    (<evals> ^total <tval> ^passed { >= <tval> > 0 <pval> })
+    (<ins> ^lti-name <symname>)
+    (<ss> ^evals <par-evals>)
+    (<par-evals> -^evaluated <symname> ^passed <par-pval>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-success + ^sym <symname> + ^ins <ins> +
+           ^p-track <par-evals> + ^p-pval <par-pval> +
+           ^literalize (+ 1 (int <symname>)) +)
+}
+
+sp {set*props*flag*counted*done
+    :o-support
+    (state <s> ^props-flag counting ^props-instructions <ins>)
+    (<ins> ^{ << condition action >> <a*1> } <s1>
+          -^{ << condition action >> <a*2> } { <> <s1> <v*1> })
+    -->
+    (<s> ^props-flag counting -)
+}
+
+sp {set*props*flag*counted*quiescence
+    :o-support
+    (state <s> ^props-flag counting)
+   -{ (<s> ^props-instructions <ins> -^props-quiescent <name>)
+      (<ins> ^lti-name <name>)}
+    -->
+    (<s> ^props-flag counting -)
+}
+
+sp {apply*props*increase*counts
+    (state <s> ^props-instructions <ins> ^operator <o*1>
+          ^props-temp-counts <cs> ^props-static <p*1> ^smem <s*1>)
+    (<ins> -^props-result <p*2> ^lti-name <symname>
+          ^{ << condition action >> <a*2> } <s2>
+          ^{ << condition action >> <a*1> } <s1>)
+    (<o*1> ^name props-increase-counts)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^count <cnt>)
+    (<cnt> ^symbol2 <s2> ^symbol1 <s1> ^value <val>)
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2> ^symbol1 <s1>)}
+    (<s*1> ^command <scmd>)
+    -->
+    (<cnt> ^value (+ 1 <val>) + ^value <val> -)
+    (<scmd> ^pre-store <pc> + ^pre-store <cnt> +)
+    (<cs> ^count <cnew> +)
+    (<cnew> ^symbol1 <s1> + ^symbol2 <s2> +)
+}
+
+sp {propose*props*increase*counts
+    (state <s> ^name props-eval ^props-instructions <ins>
+          -^props-can-evaluate <lti-name> ^props-temp-counts <cs>
+          ^props-static <p*1>)
+   -{ (<s> ^operator <oo> +)
+      (<oo>
+            ^name { << props-combine-search props-init-symbol-counts >> <n*1> })}
+    (<ins> -^props-result <p*3> ^lti-name <lti-name>
+          ^prop-type { << instruction-lhs instruction-rhs >> <p*2> }
+          ^{ << condition action >> <a*2> } <s2>
+          ^{ << condition action >> <a*1> } <s1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^count <cnt>)
+    (<cnt> ^symbol2 <s2> ^symbol1 <s1> ^value <val>)
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2> ^symbol1 <s1>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-increase-counts +)
+}
+
+sp {apply*props*init*counts
+    (state <s> ^operator <o> ^props-static <p*1>)
+    (<o> ^name props-init-symbol-counts ^sym2 <s2> ^sym1 <s1>)
+    (<p*1> ^prop-counts <tpc>)
+    -->
+    (<tpc> ^count <ynew> +)
+    (<ynew> ^symbol1 <s1> + ^symbol2 <s2> + ^value 0 +)
+}
+
+sp {propose*props*init*counts
+    (state <s> ^name props-eval -^instructions <i*1> ^props-temp-counts <cs>
+          ^props-instructions <ins> ^props-static <p*1>)
+    (<p*1> ^prop-counts <pc>)
+    (<ins> ^{ << condition action >> <attr> } <s2> ^<attr> { < <s2> <s1> })
+   -{ (<cs> ^count <c>)
+      (<c> ^symbol2 <s2> ^symbol1 <s1>)}
+   -{ (<pc> ^count <c>)
+      (<c> ^symbol2 <s2> ^symbol1 <s1>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-init-symbol-counts + ^sym1 <s1> + ^sym2 <s2> +)
+}
+
+sp {apply*props*combine*do
+    (state <s> ^operator <o> ^props-to-combine <ptc> ^props-instructions <ins>
+          ^smem <s*1>)
+    (<o> ^name props-combine-do ^to-combine <ptc>)
+    (<ptc> ^newname <name> ^sym2 <s2> ^sym1 <s1> ^attr <attr>)
+    (<ins> ^<attr> <s2> ^<attr> <s1>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ins> ^<attr> <s1> - ^<attr> <s2> - ^<attr> <name> +)
+    (<scmd> ^pre-store <ins> +)
+    (<s> ^props-to-combine <ptc> -)
+}
+
+sp {propose*props*combine*do
+    (state <s> ^props-to-combine <ptc> ^props-instructions <ins>)
+    (<ptc> ^sym2 <s2> ^sym1 <s1> ^attr <attr>)
+    (<ins> ^<attr> <s2> ^<attr> <s1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> = ^operator <o> >)
+    (<o> ^name props-combine-do + ^to-combine <ptc> +)
+}
+
+sp {propose*props*combine*symbols
+    (state <s> ^props-instructions <ins> -^instructions <i*1>
+          -^props-quiescent <symname>)
+    (<ins> -^flag no-combine ^lti-name <symname>
+          ^prop-type { << instruction-lhs instruction-rhs >> <p*1> })
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-combine-search + ^lti <ins> + ^lti-name <symname> +)
+}
+
+sp {elaborate*props*instructions*no-combinations
+    (state <s> ^props-instructions <ins>)
+    (<ins> ^{ << condition action >> <attr> } <s1> -^<attr> { <> <s1> <s2> })
+    -->
+    (<ins> ^flag no-combine +)
+}
+
+sp {apply*props*prep*combine*remove-quiescent
+    (state <s> ^operator <o*1> ^props-quiescent <symname>)
+    (<o*1> ^name props-prep-combine)
+    -->
+    (<s> ^props-quiescent <symname> -)
+}
+
+sp {apply*props*prep*combine
+    (state <s> ^operator <o*1> ^props-instructions <ins> ^props-static <p*1>
+          ^smem <s*1>)
+    (<o*1> ^name props-prep-combine)
+    (<ins> ^lti-name <symname> ^{ << condition action >> <a*1> } <s2>
+          ^{ << condition action >> <attr> } <s1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^threshold <th> ^count <c>)
+    (<c> ^symbol2 <s2> ^symbol1 <s1> ^value { >= <th> <val> })
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^pre-store <new> +)
+    (<new> ^symbol1 <s1> + ^symbol2 <s2> + ^static-counts <pc> +
+           ^attr <attr> + ^ins <ins> +
+           ^prop-combine (make-constant-symbol |_| <s2>) +)
+    (<s> ^props-prepped <symname> +)
+}
+
+sp {propose*props*prep*combine
+    (state <s> ^name props-eval ^props-instructions <ins>
+          -^props-prepped <symname> -^props-can-evaluate <symname>
+          ^props-static <p*1>)
+    (<ins> ^lti-name <symname>
+          ^prop-type { << instruction-lhs instruction-rhs >> <p*2> }
+          ^{ << condition action >> <a*2> } <s2>
+          ^{ << condition action >> <a*1> } <s1>)
+    (<p*1> ^prop-counts <pc>)
+    (<pc> ^threshold <th> ^count <c>)
+    (<c> ^symbol2 <s2> ^symbol1 <s1> ^value { >= <th> <val> })
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-prep-combine +)
+}
+
+sp {apply*props*symbols*count*single
+    (state <s> ^operator <o*1> ^evals <evals> ^instructions <ins>)
+    (<o*1> ^name props-count-instruction-parts)
+    (<ins> ^{ << condition action >> <a*1> } <s1>
+          -^{ << condition action >> <a*2> } { <> <s1> <v*1> })
+    -->
+    (<evals> ^total 1 +)
+}
+
+sp {apply*props*symbols*count*zero
+    (state <s> ^evals <evals> ^operator <o*1>)
+   -{ (<s> ^instructions <i*1>)
+      (<i*1> ^{ << condition action >> <a*1> } <v*1>)}
+    (<o*1> ^name props-count-instruction-parts)
+    -->
+    (<evals> ^total 0 +)
+}
+
+sp {propose*props*symbols*count
+    (state <s> ^name instruction ^evals <evals> ^instructions <ins>)
+    (<evals> -^total <t*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-count-instruction-parts + ^items <ins> +
+           ^container <evals> +)
+}
+
+sp {set*props*instruction*format*substitute*const
+    (state <s> ^operator <o>
+          ^{ << props-instructions instructions >> <a*1> } <ins>)
+    (<o> ^name props-receive-symbol ^const <c>)
+    (<ins> ^<something> props$const)
+    -->
+    (<ins> ^<something> props$const - ^<something> <c> +)
+}
+
+sp {set*props*instruction*format*substitute*rootstate
+    (state <s> ^operator <o>
+          ^{ << props-instructions instructions >> <a*1> } <ins>)
+    (<o> ^name props-receive-symbol ^rootstate <rs>)
+    (<ins> ^<something> props$rootstate)
+    -->
+    (<ins> ^<something> props$rootstate - ^<something> <rs> +)
+}
+
+sp {apply*props*instructions*receive*type*indifferent
+    (state <s> ^operator <o>)
+    (<o> ^name props-receive-symbol ^instructions <ins>)
+    (<ins> -^attr2 <a*2> ^prop-type add ^attr1 <a*1>)
+    -->
+    (<ins> ^prop-type indifferent +)
+}
+
+sp {apply*props*instruction*receive
+    (state <s> ^operator <o> ^smem <s*1>)
+    (<o> ^name props-receive-symbol ^literalize <l*1> ^instructions <lti>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<s> ^props-instructions <lti> +)
+}
+
+sp {propose*props*instruction*receive
+    (state <s> ^name instruction ^const <c> ^instructions <i*1>
+          ^rootstate <rs> ^smem <s*1>)
+    (<s*1> ^result <sres>)
+    (<sres> ^success <q> ^retrieved <lti>)
+    (<q> ^lti-name <symname>)
+    (<lti> ^lti-name <symname>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-receive-symbol + ^rootstate <rs> + ^const <c> +
+           ^instructions <lti> + ^literalize (int <symname>) +)
+}
+
+sp {apply*props*symbol*load
+    (state <s> ^operator <o> ^smem <s*1>)
+    (<o> ^name props-load-symbol ^sym <symname>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 2 +)
+    (<q> ^lti-name <symname> +)
+}
+
+sp {propose*props*symbol*load*action
+    (state <s> ^name instruction ^instructions <ins> ^smem <s*1>)
+    (<ins> ^action <symname>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <symname>)}
+    (<s*1> ^result <sres>)
+    (<sres> -^failure <f*1> -^success <s*2>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-load-symbol + ^sym <symname> +)
+}
+
+sp {propose*props*symbol*load*condition
+    (state <s> ^name instruction ^instructions <ins> ^smem <s*1>)
+    (<ins> ^condition <symname>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <symname>)}
+    (<s*1> ^result <sres>)
+    (<sres> -^failure <f*1> -^success <s*2>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-load-symbol + ^sym <symname> +)
+}
+
+sp {apply*props*instruction*begin*force-learn
+    (state <s> ^operator <o>)
+    (<o> -^top true ^name props-begin-instructions-query)
+    -->
+    (write (crlf) | *** ENABLING LEARNING SUBSTATE : | <s> | ***| (crlf))
+    (force-learn <s>)
+}
+
+sp {apply*props*instruction*begin*init*buffer
+    (state <s> ^operator <o*1> -^props-buffer <p*1>)
+    (<o*1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^props-buffer <bff> +)
+}
+
+sp {apply*props*instruction*begin*init*literalize
+    (state <s> ^operator <o*1> -^literalize <l*1>)
+    (<o*1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^literalize 0 +)
+}
+
+sp {apply*props*instruction*begin*write*name
+    (state <s> ^operator <o>)
+    (<o> ^name props-begin-instructions-query ^instructions <ins>)
+    (<ins> ^name <name>)
+    -->
+    (write |  (| <name> |)| (crlf))
+}
+
+sp {apply*props*instruction*begin*retrieve
+    (state <s> ^operator <o> ^superstate <s*1>)
+    (<o> ^name props-begin-instructions-query ^instructions <lti>)
+    (<s*1> ^props-instructions <lti>)
+    -->
+    (<s> ^instructions <lti> + ^name instruction + ^props-flag participating +
+           ^evals <evals> +)
+    (<evals> ^passed 0 +)
+    (write |  EVALUATING INSTRUCTIONS | <lti> (crlf))
+}
+
+sp {propose*props*instruction*begin
+    (state <s> ^impasse no-change -^evals <e*1> ^attribute operator
+          ^superstate <ss>)
+    (<ss> ^operator <oo>)
+    (<oo> ^name instruction ^symbol <ins>)
+    (<ins> ^prop-type composite)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-begin-instructions-query + ^instructions <ins> +)
+}
+
+sp {propose*props*instruction*begin*top
+    (state <s> ^impasse no-change -^evals <e*1> ^superstate <ss>)
+    (<ss> ^props-instructions <ins> ^props-can-evaluate <id>)
+    (<ins> -^prop-type composite ^lti-name <id>)
+    -->
+    (<s> ^operator <o> + ^operator <o> =)
+    (<o> ^name props-begin-instructions-query + ^top true +
+           ^instructions <ins> +)
+}
+
+sp {apply*props*enable*eval
+    (state <s> ^operator <o>)
+    (<o> ^name props-enable-evaluation ^instructions <i*1>)
+    (<i*1> ^lti-name <id>)
+    -->
+    (<s> ^props-can-evaluate <id> +)
+}
+
+sp {propose*props*enable*eval
+    (state <s> ^props-instructions <ins> -^name instruction
+          -^props-can-evaluate <id>)
+    (<ins> -^{ << status props-result >> <a*1> } <v*1> ^lti-name <id>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-enable-evaluation + ^instructions <ins> +)
+}
+
+sp {prefer*props*symbol*unevaluated
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name instruction ^symbol <sym2> ^status <s*2>)
+    (<o1> -^status <s*1> ^name instruction ^symbol <sym1>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*success*apply
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name props-result-affirm-success)
+    (<o1>
+          ^name { << props-success-apply props-success-buffer-load props-success-buffer-flush >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*success
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name props-result-affirm-success)
+    (<o1> ^name props-success)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*success*action*buffer
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name props-result-affirm-success)
+    (<o1> ^name props-prep-action-buffer)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instruction*props
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2> ^name instruction ^symbol <s*2>)
+    (<o1> ^prop <any> ^symbol <s*1>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instruction*props*worst
+    (state <s> ^operator <o2> +)
+    (<o2> ^prop <any> ^symbol <s*1>)
+    -->
+    (<s> ^operator <o2> <)
+}
+
+sp {prefer*props*instruction*symbols*worst
+    (state <s> ^operator <o2> +)
+    (<o2> ^name instruction ^symbol <s*1>)
+    -->
+    (<s> ^operator <o2> <)
+}
+
+sp {prefer*props*count*parts
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-count-instruction-parts)
+    (<o2> ^name { << props-load-symbol props-sub >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*retrieve*buffer
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-query-action-buffer)
+    (<o2>
+          ^name { << props-count-instruction-parts props-load-symbol props-sub >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*init*counts
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-init-symbol-counts)
+    (<o2>
+          ^name { << props-increase-counts props-enable-evaluation props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*combine
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-combine-search)
+    (<o2>
+          ^name { << props-enable-evaluation props-init-symbol-counts props-increase-counts props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*combine*prep
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-prep-combine)
+    (<o2>
+          ^name { << props-enable-evaluation props-count-instruction-parts props-combine-search >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*increase*counts
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-increase-counts)
+    (<o2>
+          ^name { << props-enable-evaluation props-prep-combine props-count-instruction-parts >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*load*symbol
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2>
+          ^name { << props-increase-counts props-init-symbol-counts props-prep-combine props-combine-search props-sub >> <n*2> })
+    (<o1> ^name { << props-load-symbol props-receive-symbol >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*load*instructions
+    (state <s> ^operator <o2> + ^operator <o1> +)
+    (<o2>
+          ^name { << props-count-instruction-parts props-init-symbol-counts >> <n*2> })
+    (<o1>
+          ^name { << props-load-instructions props-receive-instructions >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*begin*instructions
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name props-begin-instructions)
+    (<o2> ^name { << props-load-instructions props-load-symbol >> <n*1> })
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {elaborate*props*failure*blink
+    (state <s> ^impasse no-change ^attribute operator ^rootstate <rs>
+          ^superstate <s*1>)
+    (<s*1> ^operator <o*1>)
+    (<o*1>
+          ^name { << props-result-affirm-fail props-result-fail props-success-apply >> <n*1> })
+    -->
+    (<rs> ^operator <o> + ^operator <o> > ^operator <o> !)
+    (<o> ^name props-blink +)
+    #(interrupt)
+}
+
+sp {reject*blink*competed
+    :o-support
+    (state <s> ^operator <o1> + ^props-blink <any> ^operator <o2> +)
+    (<o1> ^name props-blink)
+    (<o2> ^name { <> props-blink <n*1> })
+    -->
+    (<s> ^operator <o1> ~ ^props-blink <any> -)
+}
+
+sp {apply*props*blink
+    (state <s> ^operator <o*1> ^props-blink <any>)
+    (<o*1> ^name props-blink)
+    -->
+    (<s> ^props-blink <any> -)
+}
+
+sp {propose*props*blink
+    (state <s> ^props-blink <p*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> <)
+    (<o> ^name props-blink +)
+}
+
+sp {set*props*lhs*fail*cleanup
+    :o-support
+    (state <s> ^props-instructions <ins> ^evalstate <e*1>)
+    (<ins> ^props-result failure)
+    (<e*1> ^smem <s*1>)
+    (<s*1> ^command <c*1>)
+    (<c*1> ^prohibit <ins>)
+    -->
+    (<s> ^props-instructions <ins> -)
+}
+
+sp {apply*props*fail*search*prohibit
+    (state <s> ^superstate <ss> ^operator <o>)
+    (<ss> -^props-blink { <> search*prohibit <p*1> })
+    (<o> ^name props-result-fail ^ins <ins>)
+    (<ins> ^name <name>)
+    -->
+    (<ss> ^props-blink fail*search*prohibit +)
+    (write |    RETRACTING | <name> (crlf) | | (crlf))
+}
+
+sp {propose*props*fail*search*prohibit
+    (state <s> ^props-instructions <ins> ^props-static <p*1> ^smem <s*1>
+          ^superstate <ss>)
+    (<ins> ^props-result failure)
+    (<p*1> ^prop-prohibits <pp>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<pp> ^prohibit <ins> +)
+    (<scmd> ^pre-store <pp> +)
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-result-fail + ^ins <ins> +)
+}
+
+sp {set*props*success*search*end*unprohibit
+    :o-support
+    (state <s> ^props-flag reset-prohibits ^props-static <p*1> ^smem <s*1>)
+    (<p*1> ^prop-prohibits <pl>)
+    (<pl> ^prohibit <prbt>)
+    (<prbt> -^props-result success)
+    (<s*1> ^command <scmd>)
+    -->
+    (<pl> ^prohibit <prbt> -)
+    (<scmd> ^pre-store <pl> +)
+}
+
+sp {set*props*flag*clean*reset-prohibits
+    :o-support
+    (state <s> ^props-flag reset-prohibits ^smem <s*1>)
+    (<s*1> ^prohibit-list <pl>)
+   -{ (<pl> ^prohibit <prbt>)
+      (<s> -^props-instructions <prbt>)}
+    -->
+    (<s> ^props-flag reset-prohibits -)
+}
+
+sp {set*props*clean*flag*prepped
+    :o-support
+    (state <s> ^props-prepped <name>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <name>)}
+    -->
+    (<s> ^props-prepped <name> -)
+}
+
+sp {set*props*clean*flag*quiescent
+    :o-support
+    (state <s> ^props-quiescent <name>)
+   -{ (<s> ^props-instructions <p*1>)
+      (<p*1> ^lti-name <name>)}
+    -->
+    (<s> ^props-quiescent <name> -)
+}
+
+sp {set*props*clean*prop*temp*counts
+    :o-support
+    (state <s> ^props-temp-counts <ptc>)
+    (<ptc> ^count <c>)
+    (<c> ^symbol2 <s2> ^symbol1 <s1>)
+   -{ (<s> ^props-instructions <ins>)
+      (<ins> ^{ << condition action >> <a*2> } <s2>
+            ^{ << condition action >> <a*1> } <s1>)}
+    -->
+    (<ptc> ^count <c> -)
+}
+
+sp {elaborate*props*consts*cascade
+    (state <s> ^superstate <ss>)
+    (<ss> ^const <c> ^name { << props-eval instruction >> <n*1> })
+    -->
+    (<s> ^const <c> +)
+}
+
+sp {elaborate*props*consts
+    (state <s> ^props-instructions <p*1> -^const { <> <q> <c*1> })
+    (<p*1> ^const <q>)
+    -->
+    (<s> ^const <q> +)
+}
+
+sp {elaborate*props*buffer
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^props-buffer <pb>)
+    -->
+    (<s> ^props-buffer <pb> +)
+}
+
+sp {elaborate*props*evalstate*cascade
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^evalstate <es>)
+    -->
+    (<s> ^evalstate <es> +)
+}
+
+sp {elaborate*props*evalstate
+    (state <s> ^superstate <ss>)
+    (<ss> ^name props-eval)
+    -->
+    (<s> ^evalstate <ss> +)
+}
+
+sp {elaborate*props*rootstate*cascade*deep
+    (state <s> ^superstate <ss> -^rootstate <s>)
+    (<ss> ^rootstate <rs>)
+    -->
+    (<s> ^rootstate <rs> +)
+}
+
+sp {elaborate*props*rootstate*init-onc
+    (state <s> ^name props-eval ^superstate <ss>)
+    (<ss> ^impasse no-change ^attribute operator ^superstate <sss>)
+    -->
+    (<s> ^rootstate <sss> +)
+}
+
+sp {elaborate*props*rootstate*init-snc
+    (state <s> ^name props-eval ^superstate <ss>)
+    (<ss> -^impasse <i*1>)
+    -->
+    (<s> ^rootstate <ss> +)
+}
+
+sp {elaborate*props*temp*counts
+    (state <s> ^props-instructions <ins> -^instructions <i*1>)
+    (<ins> -^props-result <p*1>)
+    -->
+    (<s> ^props-temp-counts <tnew> +)
+}
+
+sp {elaborate*props*prohibit*list
+    (state <s> ^props-static <p*1> ^smem <s*1>)
+    (<p*1> ^prop-prohibits <pp>)
+    (<s*1> ^prohibit-list <pl>)
+    (<pp> ^prohibit <prbt>)
+    -->
+    (<pl> ^prohibit <prbt> +)
+}
+
+sp {elaborate*props*flag*participating
+    (state <s> ^superstate <s*1>)
+    (<s*1> ^props-flag participating)
+    -->
+    (<s> ^props-flag participating +)
+}
+
+sp {elaborate*props*flag*deliberating
+    (state <s> ^props-instructions <ins>)
+    (<ins> -^props-result <p*1> -^status <s*1>)
+    -->
+    (<s> ^props-flag deliberating +)
+}
+
+sp {apply*props*manual*next-rule*reset
+    (state <s> ^props-static <ps> ^operator <o*1> ^smem <s*1>)
+    (<ps> ^top nil ^manual-next-rule <name>)
+    (<o*1> ^name props-manual-next-rule)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ps> ^manual-next-rule <name> - ^top nil -)
+    (<scmd> ^pre-store <ps> +)
+    (write (crlf) |MANUAL CLEARED!| (crlf))
+}
+
+sp {apply*props*manual*next-rule
+    (state <s> ^operator <o*1> ^props-static <ps> ^smem <s*1>)
+    (<o*1> ^name props-manual-next-rule)
+    (<ps> ^top <top> ^manual-next-rule <name>)
+    (<top> ^next <next> ^name <newname>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<ps> ^manual-next-rule <name> - ^manual-next-rule <newname> +
+           ^top <top> - ^top <next> +)
+    (<scmd> ^pre-store <ps> +)
+    (write (crlf) |NEXT!| (crlf))
+}
+
+sp {propose*props*manual*next-rule
+    (state <s> ^props-instructions <ins> ^props-static <ps>)
+    (<ins> ^prop-type instruction-rhs ^name <oldname>)
+    (<ps> ^manual-next-rule <oldname>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-manual-next-rule +)
+}
+
+sp {apply*props*retrieve*rhs
+    (state <s> ^superstate <ss> ^operator <o>)
+    (<ss> -^props-blink { <> retrieve*rhs <p*1> })
+    (<o> ^name props-retrieve-rhs ^instructions <lti>)
+    (<lti> ^name <name>)
+    -->
+    (<ss> ^props-instructions <lti> +)
+    (write |  FIRING | <name> | - | <lti> (crlf))
+}
+
+sp {propose*props*retrieve*rhs
+    (state <s> ^name props-retrieve-rhs ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <ins>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-retrieve-rhs + ^instructions <ins> +)
+}
+
+sp {apply*props*query*rhs
+    (state <s> ^operator <o*1> ^smem <s*1> ^retrieve <name>)
+    (<o*1> ^name props-query-rhs)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 2 +)
+    (<q> ^prop-type instruction-rhs + ^name <name> +)
+}
+
+sp {propose*props*query*rhs
+    (state <s> ^name props-retrieve-rhs ^retrieve <name>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-query-rhs +)
+}
+
+sp {apply*props*begin*rhs
+    (state <s> ^operator <o>)
+    (<o> ^name props-begin-rhs ^retrieve <name>)
+    -->
+    (<s> ^name props-retrieve-rhs + ^retrieve <name> +)
+}
+
+sp {propose*props*begin*rhs
+    (state <s> ^impasse no-change -^name <n*1> ^attribute state
+          ^superstate <ss>)
+    (<ss> ^props-instructions <lhs>)
+    (<lhs> ^props-result success ^prop-type instruction-lhs ^name <name>)
+    -->
+    (<s> ^operator <o> +)
+    (<o> ^name props-begin-rhs + ^retrieve <name> +)
+}
+
+sp {apply*props*retrieve*lhs*reject*used
+    (state <s> ^operator <o> ^rootstate <rs>)
+    (<o> ^name props-retrieve-lhs ^instructions <ins>)
+    (<rs> ^props-active-rule <name>)
+    (<ins> ^name <name>)
+    -->
+    (<ins> ^props-result failure +)
+    (write |RULE | <name> | ALREADY IN USE| (crlf))
+}
+
+sp {apply*props*retrieve*lhs
+    (state <s> ^operator <o> ^smem <s*1>)
+    (<o> ^name props-retrieve-lhs ^instructions <lti>)
+    (<s*1> ^command <scmd>)
+    (<lti> ^name <name>)
+    -->
+    (<s> ^props-instructions <lti> +)
+    (write |   RETRIEVED | <lti> | - | <name> (crlf))
+}
+
+sp {propose*props*retrieve*lhs
+    (state <s> ^smem <smem> -^name instruction)
+   -{ (<smem> ^conds <c*2>)
+      (<c*2> ^counted <c*3>)}
+    (<smem> ^result <r*1> ^command <c*1>)
+    (<r*1> ^retrieved <ins>)
+    (<c*1> ^query <q*1>)
+    (<q*1> ^prop-type instruction-lhs)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-retrieve-lhs + ^instructions <ins> +)
+}
+
+sp {set*props*clean*quit*instructions
+    :o-support
+    (state <s> ^props-flag impasse ^props-instructions <any>)
+    -->
+    (<s> ^props-instructions <any> -)
+}
+
+sp {set*props*clean*quit*quiescent
+    :o-support
+    (state <s> ^props-flag impasse ^props-quiescent <any>)
+    -->
+    (<s> ^props-quiescent <any> -)
+}
+
+sp {propose*props*search*lhs*quit
+    (state <s> ^rootstate <rs> ^props-static <ps> ^operator <o*1> ^smem <s*1>)
+    (<rs> -^props-blink { <> search*lhs*quit <p*1> })
+    (<ps> -^manual-next-rule <m*1>)
+    (<o*1> ^name props-query-lhs)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^failure <cue>)
+    -->
+    (<rs> ^props-flag impasse + ^props-blink search*lhs*quit +)
+    (write |*** NO MORE INSTRUCTIONS TO TRY - YOU'VE REACHED A PROPER STATE NO-CHANGE ***| (crlf))
+}
+
+sp {propose*props*manual*next-rule*prohibited
+    (state <s> ^name props-eval -^props-flag deliberating
+          -^props-instructions <p*1> ^props-static <ps>)
+    (<ps> ^prop-prohibits <p*2> ^manual-next-rule <name>)
+    (<p*2> ^prohibit <p*3>)
+    (<p*3> ^name <name>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-manual-next-rule +)
+}
+
+sp {apply*props*query*lhs*manual
+    (state <s> ^operator <o*1> ^props-static <p*1> ^smem <s*1>)
+    (<o*1> ^name props-query-lhs)
+    (<p*1> ^manual-next-rule <name>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 2 +)
+    (<q> ^prop-type instruction-lhs + ^name <name> +)
+}
+
+sp {apply*props*query*lhs
+    (state <s> ^smem <s*1> ^operator <o*1>)
+   -{ (<s> ^props-static <p*1>)
+      (<p*1> ^manual-next-rule <name>)}
+    (<o*1> ^name props-query-lhs)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 2 +)
+    (<q> ^prop-type instruction-lhs +)
+}
+
+sp {propose*props*begin*lhs
+    (state <s> ^name props-eval -^props-flag deliberating
+          -^props-instructions <p*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> <)
+    (<o> ^name props-query-lhs +)
+}
+
+sp {reject*props*rhs*completed
+    (state <s> ^operator <o> + ^superstate <ss>)
+    (<o> ^name props-begin-rhs ^retrieve <name>)
+    (<ss> ^props-instructions <rhs> ^props-instructions <lhs>)
+    (<rhs> ^prop-type instruction-rhs ^name <name> ^props-result <p*2>)
+    (<lhs> ^prop-type instruction-lhs ^name <name> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o> -)
+    (<o> ^rejected true +)
+}
+
+sp {reject*props*instructions*completed
+    (state <s> ^operator <o> +)
+    (<o> ^name props-begin-instructions-query ^instructions <i*1>)
+    (<i*1> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o> -)
+    (<o> ^rejected true +)
+}
+
+sp {prefer*props*instructions
+    (state <s> ^operator <o2> + ^operator <o1> + ^smem <s*1>)
+    (<o2> ^name props-begin-instructions-query ^instructions <i2>)
+    (<o1> ^name props-begin-instructions-query ^instructions <i1>)
+    (<s*1> ^prohibit-list <pl>)
+    (<pl> -^prohibit <i1> ^prohibit <i2>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instructions*rhs
+    (state <s> ^operator <o2> + ^operator <o1> +)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^prohibit-list <p*1>)
+      (<p*1> ^prohibit <il>)}
+    (<o2> ^name props-begin-rhs)
+    (<o1> ^name props-begin-instructions-query ^instructions <i*1>)
+    (<i*1> ^prop-type instruction-rhs)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*instructions*lhs
+    (state <s> ^props-instructions <ins> ^operator <o2> + ^operator <o1> +)
+    (<ins> -^props-result <p*1>)
+    (<o2> ^name props-begin-lhs)
+    (<o1> ^name props-begin-instructions-query)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*rhs
+    (state <s> ^operator <o2> + ^operator <o1> + ^superstate <ss>)
+    (<o2> ^name props-begin-lhs)
+    (<o1> ^name props-begin-rhs ^retrieve <name>)
+   -{ (<ss> ^props-instructions <rhs>)
+      (<rhs> ^prop-type instruction-rhs ^name <name> ^props-result <p*1>)}
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {prefer*props*lhs
+    (state <s> ^operator <o2> + ^operator <o1> + ^superstate <ss>)
+    (<o2> ^name props-begin-rhs ^retrieve <name>)
+    (<o1> ^name props-begin-lhs)
+    (<ss> ^props-instructions <rhs>)
+    (<rhs> ^prop-type instruction-rhs ^name <name> ^props-result <p*1>)
+    -->
+    (<s> ^operator <o1> > <o2>)
+}
+
+sp {apply*props*reset*manual-sequence*complete
+    (state <s> ^superstate <ss> ^operator <o*1>)
+    (<ss> ^props-flag reset-manual-sequence)
+    (<o*1> ^name props-reset-sequence-complete)
+    -->
+    (<ss> ^props-flag reset-manual-sequence -)
+}
+
+sp {propose*props*reset*manual-sequence*complete
+    (state <s> ^name props-reset-sequence ^props-static <x>)
+    (<x> -^manual-next-rule <m*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-reset-sequence-complete +)
+}
+
+sp {apply*props*reset*manual-sequence*store
+    (state <s> ^operator <o*1> ^props-static <x> ^smem <s*1>)
+    (<o*1> ^name props-reset-sequence-store)
+    (<x> ^top <top> ^manual-next-rule <rulename>)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^store <x> +)
+    (<x> ^manual-next-rule <rulename> - ^top <top> -)
+}
+
+sp {propose*props*reset*manual-sequence*store
+    (state <s> ^name props-reset-sequence ^props-static <x>)
+    (<x> ^top <top> ^manual-next-rule <rulename>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-reset-sequence-store +)
+}
+
+sp {apply*props*reset*manual-sequence*retrieve-static
+    (state <s> ^operator <o>)
+    (<o> ^name props-reset-sequence-retrieve-static ^static <x>)
+    -->
+    (<s> ^props-static <x> +)
+}
+
+sp {propose*props*reset*manual-sequence*retrieve-static
+    (state <s> ^name props-reset-sequence -^props-static <p*1> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <x>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-reset-sequence-retrieve-static + ^static <x> +)
+}
+
+sp {apply*props*reset*manual-sequence*load-static
+    (state <s> ^operator <o*1> ^smem <s*1>)
+    (<o*1> ^name props-reset-sequence-load-static)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 1 +)
+    (<q> ^props-static props-static +)
+    (<s> ^name props-reset-sequence +)
+}
+
+sp {propose*props*reset*manual-sequence*load-static
+    (state <s> ^superstate <s*1> -^props-static <p*1> -^complete <c*1>)
+   -{ (<s> ^smem <s*2>)
+      (<s*2> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    (<s*1> ^operator <o*1>)
+    (<o*1> ^name reset-manual-sequence)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-reset-sequence-load-static +)
+}
+
+sp {propose*props*reset*manual-sequence
+    (state <s> ^props-flag reset-manual-sequence)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name reset-manual-sequence +)
+}
+
+sp {apply*props*eval*retrieve*static*init-manual
+    (state <s> ^operator <o> ^rootstate <r*1> ^smem <s*1>)
+    (<o> ^name props-retrieve-static ^static <x>)
+    (<x> -^top <t*1> -^manual-next-rule <m*1> ^<taskname> <seq>)
+    (<s*1> ^command <scmd>)
+    (<r*1> ^io <i*1>)
+    (<i*1> ^input-link <i*2>)
+    (<i*2> ^task <taskname>)
+    (<seq> ^top <top> ^name <name>)
+    -->
+    (<x> ^manual-next-rule <name> + ^top <top> +)
+    (<scmd> ^pre-store <x> +)
+}
+
+sp {apply*props*eval*retrieve*static
+    (state <s> ^operator <o>)
+    (<o> ^name props-retrieve-static ^static <x>)
+    -->
+    (<s> ^props-static <x> +)
+}
+
+sp {propose*props*eval*retrieve*static
+    (state <s> ^name props-eval -^props-static <p*1> ^smem <s*1>)
+    (<s*1> ^result <r*1>)
+    (<r*1> ^retrieved <x>)
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-retrieve-static + ^static <x> +)
+}
+
+sp {apply*props*eval*query*static
+    (state <s> ^operator <o*1> ^smem <s*1>)
+    (<o*1> ^name props-load-static)
+    (<s*1> ^command <scmd>)
+    -->
+    (<scmd> ^query <q> + ^depth 3 +)
+    (<q> ^props-static props-static +)
+}
+
+sp {propose*props*eval*query*static
+    (state <s> ^name props-eval -^props-static <p*1>)
+   -{ (<s> ^smem <s*1>)
+      (<s*1> ^result <r*1>)
+      (<r*1> ^retrieved <r*2>)}
+    -->
+    (<s> ^operator <o> + ^operator <o> >)
+    (<o> ^name props-load-static +)
+}
+
+sp {elaborate*props*eval*state
+    (state <s> ^impasse no-change ^attribute state)
+   -{ (<s> ^superstate <s*1>)
+      (<s*1> ^name props-eval)}
+    -->
+    (<s> ^name props-eval +)
+}
+
+sp {apply*lib*store*prestore
+    (state <s> ^operator <o*1> ^smem <s*1>)
+    (<o*1> ^name lib-auto-smem-pre-store)
+    (<s*1> ^command <scmd>)
+    (<scmd> ^pre-store <ps>)
+    -->
+    (<scmd> ^store <ps> + ^pre-store <ps> -)
+}
+
+sp {propose*lib*store*prestore
+    (state <s> ^smem <s*1>)
+    (<s*1> ^pre-store-ready <p*1>)
+    -->
+    (<s> ^operator <o> + ^operator <o> !)
+    (<o> ^name lib-auto-smem-pre-store +)
+}
+
+sp {elaborate*lib*prestore*ready
+    (state <s> ^smem <smem>)
+    (<smem> ^command <c*1>)
+    (<c*1> ^pre-store <p*1>)
+    -->
+    (<smem> ^pre-store-ready true +)
+}
+
+sp {elaborate*lib*prohibit*list*commands
+    (state <s> ^smem <smem>)
+    (<smem> ^command <scmd> ^prohibit-list <p*1>)
+    (<scmd> -^pre-store <p*2> -^store <s*1>)
+    (<p*1> ^prohibit <p>)
+    -->
+    (<scmd> ^prohibit <p> +)
+}
+
+sp {elaborate*lib*prohibit*list
+    (state <s> ^smem <smem>)
+    -->
+    (<smem> ^prohibit-list <pl> +)
+}
+
+sp {set*clean*query*depth
+    :o-support
+    (state <s> ^smem <smem>
+          ^name { << props-eval instruction props-combine-search sub-props props-reset-sequence >> <n*1> })
+    (<smem> ^result <r*1> ^command <sc>)
+    (<sc> ^depth <d>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^depth <d> -)
+}
+
+sp {set*clean*stores
+    :o-support
+    (state <s> ^smem <smem>
+          ^name { << props-eval instruction props-combine-search sub-props props-reset-sequence >> <n*1> })
+    (<smem> ^result <r*1> ^command <sc>)
+    (<sc> ^store <cue>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^store <cue> -)
+}
+
+sp {set*clean*queries
+    :o-support
+    (state <s> ^smem <smem>
+          ^name { << props-eval instruction props-combine-search sub-props props-reset-sequence >> <n*1> })
+    (<smem> ^result <r*1> ^command <sc>)
+    (<sc> ^query <q>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^query <q> -)
+}
+
+sp {set*clean*retrieves
+    :o-support
+    (state <s> ^smem <smem>
+          ^name { << props-eval instruction props-combine-search sub-props >> <n*1> })
+    (<smem> ^result <r*1> ^command <sc>)
+    (<sc> ^retrieve <q>)
+    (<r*1> ^{ << success failure >> <a*1> } <cue>)
+    -->
+    (<sc> ^retrieve <q> -)
+}
+
+sp {chunk*apply*props*success*action*add*replace*OpNoChange*t9421-1*b
+    :chunk
+    (state <s1> ^operator <o1> ^G <g1> ^WM <w1> ^RT <r1>)
+    (<o1> ^name elio-index1-div-marine-finish)
+    (<w1> ^slot2 <old>)
+    (<r1> ^slot4 { <> <old> <c1> })
+    -->
+    (<w1> ^slot2 <old> - ^slot2 <c1> +)
+}
+
+
+
+# Semantic Memory
+
+smem --add {
+(@213 ^name propose*elio*triple-lime*finish ^prop-type instruction-lhs ^const @214 ^condition |_P2| _P27 ^lti-name _Z217)
+(@212 ^name apply*elio*triple-lime*finish ^prop-type instruction-rhs ^const @211 ^action _P38 _P37 _P39 ^lti-name _Z220 ^flag o-supported)
+(@240 ^name apply*elio*procedure-b*finish ^prop-type instruction-lhs ^const @241 ^condition |_P5| ^lti-name _Z199)
+(@1 ^props-static props-static ^prop-prohibits @3 ^prop-counts @2 ^procedure-d @692 ^procedure-c @693 ^procedure-b @691 ^procedure-a @690)
+(@4 ^props-buffer props-buffer)
+(@2 ^threshold 1)
+(@297 ^name propose*elio*index1-plus-index2*start ^prop-type instruction-lhs ^const @298 ^condition |_P2| _P27 ^lti-name _Z161)
+(@214 ^1 triple-lime ^3 elio-triple-lime-finish ^2 add)
+(@5 ^name apply*elio*procedure-d*step-7 ^prop-type instruction-lhs ^const @6 ^condition |_P5| ^lti-name _Z331)
+(@6 ^1 elio-procedure-d-step-7 ^3 finish ^2 enter)
+(@7 ^name apply*elio*procedure-d*step-7 ^prop-type instruction-rhs ^const @6 ^action _P10 _P11 _P21 _P18 ^lti-name _Z332 ^flag o-supported)
+(@8 ^name propose*elio*procedure-d*step-7 ^prop-type instruction-lhs ^const @9 ^condition |_P2| |_P9| ^lti-name _Z329)
+(@9 ^1 procedure-d ^3 elio-procedure-d-step-7 ^2 index1-plus-index2)
+(@11 ^name apply*elio*procedure-d*step-6 ^prop-type instruction-lhs ^const @12 ^condition |_P5| ^lti-name _Z327)
+(@10 ^name propose*elio*procedure-d*step-7 ^prop-type instruction-rhs ^const @9 ^action |_P4| ^lti-name _Z330)
+(@12 ^1 elio-procedure-d-step-6 ^3 index2 ^2 enter ^4 index1-plus-index2)
+(@14 ^name propose*elio*procedure-d*step-6 ^prop-type instruction-lhs ^const @15 ^condition |_P2| |_P9| ^lti-name _Z325)
+(@13 ^name apply*elio*procedure-d*step-6 ^prop-type instruction-rhs ^const @12 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z328 ^flag o-supported)
+(@15 ^1 procedure-d ^3 elio-procedure-d-step-6 ^2 part-mult-index1)
+(@17 ^name apply*elio*procedure-d*step-5 ^prop-type instruction-lhs ^const @18 ^condition |_P5| ^lti-name _Z323)
+(@16 ^name propose*elio*procedure-d*step-6 ^prop-type instruction-rhs ^const @15 ^action |_P4| ^lti-name _Z326)
+(@18 ^1 elio-procedure-d-step-5 ^3 index1 ^2 enter ^4 part-mult-index1)
+(@20 ^name propose*elio*procedure-d*step-5 ^prop-type instruction-lhs ^const @21 ^condition |_P2| |_P9| ^lti-name _Z321)
+(@19 ^name apply*elio*procedure-d*step-5 ^prop-type instruction-rhs ^const @18 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z324 ^flag o-supported)
+(@21 ^1 procedure-d ^3 elio-procedure-d-step-5 ^2 mineral-div-marine)
+(@23 ^name apply*elio*procedure-d*step-4 ^prop-type instruction-lhs ^const @24 ^condition |_P5| ^lti-name _Z319)
+(@22 ^name propose*elio*procedure-d*step-5 ^prop-type instruction-rhs ^const @21 ^action |_P4| ^lti-name _Z322)
+(@24 ^1 elio-procedure-d-step-4 ^3 marine ^2 enter ^4 mineral-div-marine)
+(@26 ^name propose*elio*procedure-d*step-4 ^prop-type instruction-lhs ^const @27 ^condition |_P2| |_P9| ^lti-name _Z317)
+(@25 ^name apply*elio*procedure-d*step-4 ^prop-type instruction-rhs ^const @24 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z320 ^flag o-supported)
+(@27 ^1 procedure-d ^3 elio-procedure-d-step-4 ^2 solid-div-lime)
+(@29 ^name apply*elio*procedure-d*step-3 ^prop-type instruction-lhs ^const @30 ^condition |_P5| ^lti-name _Z315)
+(@28 ^name propose*elio*procedure-d*step-4 ^prop-type instruction-rhs ^const @27 ^action |_P4| ^lti-name _Z318)
+(@30 ^1 elio-procedure-d-step-3 ^3 mineral ^2 enter ^5 solid-div-lime ^4 nil)
+(@31 ^name apply*elio*procedure-d*step-3 ^prop-type instruction-rhs ^const @30 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z316 ^flag o-supported)
+(@32 ^name propose*elio*procedure-d*step-3 ^prop-type instruction-lhs ^const @33 ^condition |_P2| |_P9| ^lti-name _Z313)
+(@33 ^1 procedure-d ^3 elio-procedure-d-step-3 ^2 lesser-evil)
+(@35 ^name apply*elio*procedure-d*step-2 ^prop-type instruction-lhs ^const @36 ^condition |_P5| ^lti-name _Z311)
+(@34 ^name propose*elio*procedure-d*step-3 ^prop-type instruction-rhs ^const @33 ^action |_P4| ^lti-name _Z314)
+(@36 ^1 elio-procedure-d-step-2 ^3 particulate ^2 enter ^5 lesser-evil ^4 nil)
+(@37 ^name apply*elio*procedure-d*step-2 ^prop-type instruction-rhs ^const @36 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z312 ^flag o-supported)
+(@38 ^name propose*elio*procedure-d*step-2 ^prop-type instruction-lhs ^const @39 ^condition |_P2| |_P9| ^lti-name _Z309)
+(@39 ^1 procedure-d ^3 elio-procedure-d-step-2 ^2 triple-lime)
+(@41 ^name apply*elio*procedure-d*start ^prop-type instruction-lhs ^const @42 ^condition |_P5| ^lti-name _Z307)
+(@40 ^name propose*elio*procedure-d*step-2 ^prop-type instruction-rhs ^const @39 ^action |_P4| ^lti-name _Z310)
+(@42 ^1 elio-procedure-d-start ^2 triple-lime)
+(@43 ^name apply*elio*procedure-d*start ^prop-type instruction-rhs ^const @42 ^action |_P6| |_P7| |_P8| ^lti-name _Z308 ^flag o-supported)
+(@44 ^name propose*elio*procedure-d*start ^prop-type instruction-lhs ^const @45 ^condition |_P2| |_P1| |_P3| ^lti-name _Z305)
+(@45 ^1 procedure-d ^3 elio-procedure-d-start ^2 nil)
+(@47 ^name apply*elio*procedure-c*step-7 ^prop-type instruction-lhs ^const @48 ^condition |_P5| ^lti-name _Z303)
+(@46 ^name propose*elio*procedure-d*start ^prop-type instruction-rhs ^const @45 ^action |_P4| ^lti-name _Z306)
+(@48 ^1 elio-procedure-c-step-7 ^3 finish ^2 enter)
+(@49 ^name apply*elio*procedure-c*step-7 ^prop-type instruction-rhs ^const @48 ^action _P10 _P11 _P21 _P18 ^lti-name _Z304 ^flag o-supported)
+(@50 ^name propose*elio*procedure-c*step-7 ^prop-type instruction-lhs ^const @51 ^condition |_P2| |_P9| ^lti-name _Z301)
+(@51 ^1 procedure-c ^3 elio-procedure-c-step-7 ^2 index2-min-mineral)
+(@52 ^name propose*elio*procedure-c*step-7 ^prop-type instruction-rhs ^const @51 ^action |_P4| ^lti-name _Z302)
+(@53 ^name apply*elio*procedure-c*step-6 ^prop-type instruction-lhs ^const @54 ^condition |_P5| ^lti-name _Z299)
+(@54 ^1 elio-procedure-c-step-6 ^3 index2 ^2 enter ^4 index2-min-mineral)
+(@55 ^name apply*elio*procedure-c*step-6 ^prop-type instruction-rhs ^const @54 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z300 ^flag o-supported)
+(@56 ^name propose*elio*procedure-c*step-6 ^prop-type instruction-lhs ^const @57 ^condition |_P2| |_P9| ^lti-name _Z297)
+(@57 ^1 procedure-c ^3 elio-procedure-c-step-6 ^2 index1-div-marine)
+(@58 ^name propose*elio*procedure-c*step-6 ^prop-type instruction-rhs ^const @57 ^action |_P4| ^lti-name _Z298)
+(@59 ^name apply*elio*procedure-c*step-5 ^prop-type instruction-lhs ^const @60 ^condition |_P5| ^lti-name _Z295)
+(@60 ^1 elio-procedure-c-step-5 ^3 marine ^2 enter ^4 index1-div-marine)
+(@61 ^name apply*elio*procedure-c*step-5 ^prop-type instruction-rhs ^const @60 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z296 ^flag o-supported)
+(@62 ^name propose*elio*procedure-c*step-5 ^prop-type instruction-lhs ^const @63 ^condition |_P2| |_P9| ^lti-name _Z293)
+(@63 ^1 procedure-c ^3 elio-procedure-c-step-5 ^2 solid-div-lime)
+(@65 ^name apply*elio*procedure-c*step-4 ^prop-type instruction-lhs ^const @66 ^condition |_P5| ^lti-name _Z291)
+(@64 ^name propose*elio*procedure-c*step-5 ^prop-type instruction-rhs ^const @63 ^action |_P4| ^lti-name _Z294)
+(@66 ^1 elio-procedure-c-step-4 ^3 index1 ^2 enter ^5 solid-div-lime ^4 nil)
+(@67 ^name apply*elio*procedure-c*step-4 ^prop-type instruction-rhs ^const @66 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z292 ^flag o-supported)
+(@68 ^name propose*elio*procedure-c*step-4 ^prop-type instruction-lhs ^const @69 ^condition |_P2| |_P9| ^lti-name _Z289)
+(@69 ^1 procedure-c ^3 elio-procedure-c-step-4 ^2 part-plus-mineral)
+(@70 ^name propose*elio*procedure-c*step-4 ^prop-type instruction-rhs ^const @69 ^action |_P4| ^lti-name _Z290)
+(@71 ^name apply*elio*procedure-c*step-3 ^prop-type instruction-lhs ^const @72 ^condition |_P5| ^lti-name _Z287)
+(@72 ^1 elio-procedure-c-step-3 ^3 mineral ^2 enter ^4 part-plus-mineral)
+(@73 ^name apply*elio*procedure-c*step-3 ^prop-type instruction-rhs ^const @72 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z288 ^flag o-supported)
+(@74 ^name propose*elio*procedure-c*step-3 ^prop-type instruction-lhs ^const @75 ^condition |_P2| |_P9| ^lti-name _Z285)
+(@75 ^1 procedure-c ^3 elio-procedure-c-step-3 ^2 lesser-evil)
+(@77 ^name apply*elio*procedure-c*step-2 ^prop-type instruction-lhs ^const @78 ^condition |_P5| ^lti-name _Z283)
+(@76 ^name propose*elio*procedure-c*step-3 ^prop-type instruction-rhs ^const @75 ^action |_P4| ^lti-name _Z286)
+(@78 ^1 elio-procedure-c-step-2 ^3 particulate ^2 enter ^5 lesser-evil ^4 nil)
+(@79 ^name apply*elio*procedure-c*step-2 ^prop-type instruction-rhs ^const @78 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z284 ^flag o-supported)
+(@80 ^name propose*elio*procedure-c*step-2 ^prop-type instruction-lhs ^const @81 ^condition |_P2| |_P9| ^lti-name _Z281)
+(@81 ^1 procedure-c ^3 elio-procedure-c-step-2 ^2 triple-lime)
+(@83 ^name apply*elio*procedure-c*start ^prop-type instruction-lhs ^const @84 ^condition |_P5| ^lti-name _Z279)
+(@82 ^name propose*elio*procedure-c*step-2 ^prop-type instruction-rhs ^const @81 ^action |_P4| ^lti-name _Z282)
+(@84 ^1 elio-procedure-c-start ^2 triple-lime)
+(@85 ^name apply*elio*procedure-c*start ^prop-type instruction-rhs ^const @84 ^action |_P6| |_P7| |_P8| ^lti-name _Z280 ^flag o-supported)
+(@86 ^name propose*elio*procedure-c*start ^prop-type instruction-lhs ^const @87 ^condition |_P2| |_P1| |_P3| ^lti-name _Z277)
+(@87 ^1 procedure-c ^3 elio-procedure-c-start ^2 nil)
+(@89 ^name apply*elio*solid-div-lime*finish ^prop-type instruction-lhs ^const @90 ^condition |_P5| ^lti-name _Z275)
+(@88 ^name propose*elio*procedure-c*start ^prop-type instruction-rhs ^const @87 ^action |_P4| ^lti-name _Z278)
+(@90 ^1 elio-solid-div-lime-finish ^2 solid-div-lime)
+(@91 ^name apply*elio*solid-div-lime*finish ^prop-type instruction-rhs ^const @90 ^action _P38 _P37 _P39 ^lti-name _Z276 ^flag o-supported)
+(@92 ^name propose*elio*solid-div-lime*finish ^prop-type instruction-lhs ^const @93 ^condition |_P2| _P27 ^lti-name _Z273)
+(@93 ^1 solid-div-lime ^3 elio-solid-div-lime-finish ^2 div)
+(@95 ^name apply*elio*solid-div-lime*div-lime1 ^prop-type instruction-lhs ^const @96 ^condition |_P5| ^lti-name _Z271)
+(@94 ^name propose*elio*solid-div-lime*finish ^prop-type instruction-rhs ^const @93 ^action |_P4| ^lti-name _Z274)
+(@96 ^1 elio-solid-div-lime-div-lime1 ^2 div)
+(@97 ^name apply*elio*solid-div-lime*div-lime1 ^prop-type instruction-rhs ^const @96 ^action _P30 _P31 _P32 ^lti-name _Z272 ^flag o-supported)
+(@98 ^name propose*elio*solid-div-lime*div-lime1 ^prop-type instruction-lhs ^const @99 ^condition |_P2| _P27 _P28 ^lti-name _Z269)
+(@99 ^1 solid-div-lime ^3 lime1 ^2 nil ^4 elio-solid-div-lime-div-lime1)
+(@101 ^name apply*elio*solid-div-lime*read-lime1 ^prop-type instruction-lhs ^const @102 ^condition |_P5| ^lti-name _Z267)
+(@100 ^name propose*elio*solid-div-lime*div-lime1 ^prop-type instruction-rhs ^const @99 ^action _P29 ^lti-name _Z270)
+(@102 ^1 elio-solid-div-lime-read-lime1 ^3 lime1 ^2 read)
+(@103 ^name apply*elio*solid-div-lime*read-lime1 ^prop-type instruction-rhs ^const @102 ^action _P10 _P26 _P24 ^lti-name _Z268 ^flag o-supported)
+(@104 ^name propose*elio*solid-div-lime*read-lime1 ^prop-type instruction-lhs ^const @105 ^condition |_P2| _P25 ^lti-name _Z265)
+(@108 ^1 elio-solid-div-lime-read-solid ^3 solid ^2 read)
+(@105 ^1 solid-div-lime ^3 elio-solid-div-lime-read-lime1 ^2 solid)
+(@107 ^name apply*elio*solid-div-lime*read-solid ^prop-type instruction-lhs ^const @108 ^condition |_P5| ^lti-name _Z263)
+(@106 ^name propose*elio*solid-div-lime*read-lime1 ^prop-type instruction-rhs ^const @105 ^action |_P4| ^lti-name _Z266)
+(@109 ^name apply*elio*solid-div-lime*read-solid ^prop-type instruction-rhs ^const @108 ^action _P10 _P24 ^lti-name _Z264 ^flag o-supported)
+(@110 ^name propose*elio*solid-div-lime*read-solid ^prop-type instruction-lhs ^const @111 ^condition |_P2| _P22 ^lti-name _Z261)
+(@111 ^1 solid-div-lime ^2 elio-solid-div-lime-read-solid)
+(@112 ^name propose*elio*solid-div-lime*read-solid ^prop-type instruction-rhs ^const @111 ^action _P23 ^lti-name _Z262)
+(@113 ^name apply*elio*lesser-evil*greater-than-false ^prop-type instruction-lhs ^const @114 ^condition |_P5| ^lti-name _Z259)
+(@143 ^name propose*elio*lesser-evil*read-intermediate ^prop-type instruction-lhs ^const @144 ^condition |_P2| _P27 ^lti-name _Z249)
+(@114 ^1 elio-lesser-evil-greater-than-false ^2 lesser-evil)
+(@115 ^name apply*elio*lesser-evil*greater-than-false ^prop-type instruction-rhs ^const @114 ^action _P37 _P39 _P73 ^lti-name _Z260 ^flag o-supported)
+(@116 ^prop-type add ^lti-name _P73 ^attr1 slot2 ^attr2 slot3 ^sub1 _U113 ^sub2 _U114)
+(@117 ^depth 1 ^lti-name _U113 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@118 ^depth 1 ^lti-name _U114 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@119 ^name propose*elio*lesser-evil*greater-than-false ^prop-type instruction-lhs ^const @120 ^condition |_P2| _P27 _P70 _P71 ^lti-name _Z257)
+(@120 ^1 lesser-evil ^3 false ^2 greater-than ^4 elio-lesser-evil-greater-than-false)
+(@122 ^name apply*elio*lesser-evil*greater-than-true ^prop-type instruction-lhs ^const @123 ^condition |_P5| ^lti-name _Z255)
+(@121 ^name propose*elio*lesser-evil*greater-than-false ^prop-type instruction-rhs ^const @120 ^action _P29 ^lti-name _Z258)
+(@123 ^1 elio-lesser-evil-greater-than-true ^2 lesser-evil)
+(@124 ^name apply*elio*lesser-evil*greater-than-true ^prop-type instruction-rhs ^const @123 ^action _P37 _P39 _P72 ^lti-name _Z256 ^flag o-supported)
+(@125 ^prop-type add ^lti-name _P72 ^attr1 slot2 ^attr2 slot2 ^sub1 _U111 ^sub2 _U112)
+(@126 ^depth 1 ^lti-name _U111 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@127 ^depth 1 ^lti-name _U112 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@128 ^name propose*elio*lesser-evil*greater-than-true ^prop-type instruction-lhs ^const @129 ^condition |_P2| _P27 _P70 _P71 ^lti-name _Z253)
+(@129 ^1 lesser-evil ^3 true ^2 greater-than ^4 elio-lesser-evil-greater-than-true)
+(@130 ^prop-type equality ^lti-name _P70 ^attr1 RT ^attr2 RT ^id1 props$rootstate ^id2 props$rootstate)
+(@131 ^prop-type equality ^lti-name _P71 ^attr1 slot4 ^attr2 3 ^id2 props$const ^sub1 _U110)
+(@132 ^depth 1 ^lti-name _U110 ^target-arg id1 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@133 ^name propose*elio*lesser-evil*greater-than-true ^prop-type instruction-rhs ^const @129 ^action _P29 ^lti-name _Z254)
+(@134 ^name apply*elio*lesser-evil*read-intermediate ^prop-type instruction-lhs ^const @135 ^condition |_P5| _P46 ^lti-name _Z251)
+(@135 ^1 elio-lesser-evil-read-intermediate ^2 greater-than)
+(@136 ^name apply*elio*lesser-evil*read-intermediate ^prop-type instruction-rhs ^const @135 ^action _P18 _P30 _P31 _P68 _P69 _P58 ^lti-name _Z252 ^flag o-supported)
+(@137 ^prop-type add ^lti-name _P68 ^attr1 slot3 ^attr2 slot3 ^sub1 _U106 ^sub2 _U107)
+(@138 ^depth 1 ^lti-name _U106 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@139 ^depth 1 ^lti-name _U107 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@140 ^prop-type add ^lti-name _P69 ^attr1 slot4 ^attr2 WM ^id2 props$rootstate ^sub1 _U108)
+(@141 ^depth 2 ^lti-name _U108 ^target-arg id1 ^chain-attr RT ^curr-id props$rootstate ^chain-next @142)
+(@142 ^chain-attr slot3 ^chain-next done)
+(@144 ^1 lesser-evil ^3 elio-lesser-evil-read-intermediate ^2 intermediate)
+(@146 ^name apply*elio*lesser-evil*toxin3 ^prop-type instruction-lhs ^const @147 ^condition |_P5| ^lti-name _Z247)
+(@145 ^name propose*elio*lesser-evil*read-intermediate ^prop-type instruction-rhs ^const @144 ^action |_P4| ^lti-name _Z250)
+(@147 ^1 elio-lesser-evil-toxin3)
+(@148 ^name apply*elio*lesser-evil*toxin3 ^prop-type instruction-rhs ^const @147 ^action _P38 _P64 _P65 _P66 _P67 ^lti-name _Z248 ^flag o-supported)
+(@149 ^prop-type add ^lti-name _P64 ^attr1 slot1 ^attr2 slot1 ^sub1 _U94 ^sub2 _U95)
+(@209 ^name propose*elio*lesser-evil*read-solid ^prop-type instruction-rhs ^const @208 ^action _P23 ^lti-name _Z222)
+(@150 ^depth 1 ^lti-name _U94 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@151 ^depth 2 ^lti-name _U95 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next @152)
+(@152 ^chain-attr slot3 ^chain-next done)
+(@153 ^prop-type add ^lti-name _P65 ^attr1 slot2 ^attr2 slot2 ^sub1 _U97 ^sub2 _U98)
+(@154 ^depth 1 ^lti-name _U97 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@155 ^depth 2 ^lti-name _U98 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next @156)
+(@156 ^chain-attr slot3 ^chain-next done)
+(@157 ^prop-type add ^lti-name _P66 ^attr1 slot3 ^attr2 slot3 ^sub1 _U100 ^sub2 _U101)
+(@158 ^depth 1 ^lti-name _U100 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@159 ^depth 2 ^lti-name _U101 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next @160)
+(@160 ^chain-attr slot3 ^chain-next done)
+(@161 ^prop-type add ^lti-name _P67 ^attr1 slot4 ^attr2 slot4 ^sub1 _U103 ^sub2 _U104)
+(@162 ^depth 1 ^lti-name _U103 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@163 ^depth 2 ^lti-name _U104 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next @164)
+(@164 ^chain-attr slot3 ^chain-next done)
+(@165 ^name propose*elio*lesser-evil*toxin3 ^prop-type instruction-lhs ^const @166 ^condition |_P2| _P27 _P28 ^lti-name _Z245)
+(@166 ^1 lesser-evil ^3 toxin3 ^2 add ^4 elio-lesser-evil-toxin3)
+(@168 ^name apply*elio*lesser-evil*add-toxin3 ^prop-type instruction-lhs ^const @169 ^condition |_P5| ^lti-name _Z243)
+(@167 ^name propose*elio*lesser-evil*toxin3 ^prop-type instruction-rhs ^const @166 ^action _P29 ^lti-name _Z246)
+(@169 ^1 elio-lesser-evil-add-toxin3 ^2 add)
+(@170 ^name apply*elio*lesser-evil*add-toxin3 ^prop-type instruction-rhs ^const @169 ^action _P30 _P31 _P32 ^lti-name _Z244 ^flag o-supported)
+(@171 ^name propose*elio*lesser-evil*add-toxin3 ^prop-type instruction-lhs ^const @172 ^condition |_P2| _P27 _P28 ^lti-name _Z241)
+(@172 ^1 lesser-evil ^3 toxin3 ^2 nil ^4 elio-lesser-evil-add-toxin3)
+(@174 ^name apply*elio*lesser-evil*read-toxin3 ^prop-type instruction-lhs ^const @175 ^condition |_P5| ^lti-name _Z239)
+(@173 ^name propose*elio*lesser-evil*add-toxin3 ^prop-type instruction-rhs ^const @172 ^action _P29 ^lti-name _Z242)
+(@175 ^1 elio-lesser-evil-read-toxin3 ^3 toxin3 ^2 read)
+(@176 ^name apply*elio*lesser-evil*read-toxin3 ^prop-type instruction-rhs ^const @175 ^action _P10 _P26 _P24 ^lti-name _Z240 ^flag o-supported)
+(@177 ^name propose*elio*lesser-evil*read-toxin3 ^prop-type instruction-lhs ^const @178 ^condition |_P2| _P25 ^lti-name _Z237)
+(@178 ^1 lesser-evil ^3 elio-lesser-evil-read-toxin3 ^2 algae)
+(@180 ^name apply*elio*lesser-evil*read-algae ^prop-type instruction-lhs ^const @181 ^condition |_P5| _P61 ^lti-name _Z235)
+(@179 ^name propose*elio*lesser-evil*read-toxin3 ^prop-type instruction-rhs ^const @178 ^action |_P4| ^lti-name _Z238)
+(@181 ^1 elio-lesser-evil-read-algae ^3 intermediate ^2 algae ^5 read ^4 nil)
+(@182 ^prop-type inequality ^lti-name _P61 ^attr1 ACout2 ^attr2 2 ^id2 props$const ^sub1 _U91)
+(@183 ^depth 1 ^lti-name _U91 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@184 ^name apply*elio*lesser-evil*read-algae ^prop-type instruction-rhs ^const @181 ^action _P12 _P13 _P14 _P15 _P16 _P38 _P62 _P63 ^lti-name _Z236 ^flag o-supported)
+(@185 ^prop-type add ^lti-name _P62 ^attr1 ACout1 ^attr2 5 ^id2 props$const ^sub1 _U92)
+(@186 ^depth 1 ^lti-name _U92 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@187 ^prop-type add ^lti-name _P63 ^attr1 ACout2 ^attr2 2 ^id2 props$const ^sub1 _U93)
+(@188 ^depth 1 ^lti-name _U93 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@189 ^name propose*elio*lesser-evil*read-algae ^prop-type instruction-lhs ^const @190 ^condition |_P2| _P27 _P28 ^lti-name _Z233)
+(@190 ^1 lesser-evil ^3 lime1 ^2 add ^4 elio-lesser-evil-read-algae)
+(@192 ^name apply*elio*lesser-evil*add-lime1 ^prop-type instruction-lhs ^const @193 ^condition |_P5| ^lti-name _Z231)
+(@191 ^name propose*elio*lesser-evil*read-algae ^prop-type instruction-rhs ^const @190 ^action _P29 ^lti-name _Z234)
+(@193 ^1 elio-lesser-evil-add-lime1 ^2 add)
+(@194 ^name apply*elio*lesser-evil*add-lime1 ^prop-type instruction-rhs ^const @193 ^action _P30 _P31 _P32 ^lti-name _Z232 ^flag o-supported)
+(@195 ^name propose*elio*lesser-evil*add-lime1 ^prop-type instruction-lhs ^const @196 ^condition |_P2| _P27 _P28 ^lti-name _Z229)
+(@196 ^1 lesser-evil ^3 lime1 ^2 nil ^4 elio-lesser-evil-add-lime1)
+(@198 ^name apply*elio*lesser-evil*read-lime1 ^prop-type instruction-lhs ^const @199 ^condition |_P5| ^lti-name _Z227)
+(@197 ^name propose*elio*lesser-evil*add-lime1 ^prop-type instruction-rhs ^const @196 ^action _P29 ^lti-name _Z230)
+(@199 ^1 elio-lesser-evil-read-lime1 ^3 lime1 ^2 read)
+(@200 ^name apply*elio*lesser-evil*read-lime1 ^prop-type instruction-rhs ^const @199 ^action _P10 _P26 _P24 ^lti-name _Z228 ^flag o-supported)
+(@201 ^name propose*elio*lesser-evil*read-lime1 ^prop-type instruction-lhs ^const @202 ^condition |_P2| _P25 ^lti-name _Z225)
+(@202 ^1 lesser-evil ^3 elio-lesser-evil-read-lime1 ^2 solid)
+(@204 ^name apply*elio*lesser-evil*read-solid ^prop-type instruction-lhs ^const @205 ^condition |_P5| ^lti-name _Z223)
+(@203 ^name propose*elio*lesser-evil*read-lime1 ^prop-type instruction-rhs ^const @202 ^action |_P4| ^lti-name _Z226)
+(@205 ^1 elio-lesser-evil-read-solid ^3 solid ^2 read)
+(@206 ^name apply*elio*lesser-evil*read-solid ^prop-type instruction-rhs ^const @205 ^action _P10 _P24 ^lti-name _Z224 ^flag o-supported)
+(@207 ^name propose*elio*lesser-evil*read-solid ^prop-type instruction-lhs ^const @208 ^condition |_P2| _P22 ^lti-name _Z221)
+(@208 ^1 lesser-evil ^2 elio-lesser-evil-read-solid)
+(@210 ^name apply*elio*triple-lime*finish ^prop-type instruction-lhs ^const @211 ^condition |_P5| ^lti-name _Z219)
+(@211 ^1 elio-triple-lime-finish ^2 triple-lime)
+(@215 ^name propose*elio*triple-lime*finish ^prop-type instruction-rhs ^const @214 ^action |_P4| ^lti-name _Z218)
+(@216 ^name apply*elio*triple-lime*add ^prop-type instruction-lhs ^const @217 ^condition |_P5| ^lti-name _Z215)
+(@217 ^1 elio-triple-lime-add ^2 add)
+(@218 ^name apply*elio*triple-lime*add ^prop-type instruction-rhs ^const @217 ^action _P30 _P31 _P32 ^lti-name _Z216 ^flag o-supported)
+(@219 ^name propose*elio*triple-lime*add ^prop-type instruction-lhs ^const @220 ^condition |_P2| _P27 _P28 ^lti-name _Z213)
+(@220 ^1 triple-lime ^3 algae ^2 nil ^4 elio-triple-lime-add)
+(@222 ^name apply*elio*triple-lime*read ^prop-type instruction-lhs ^const @223 ^condition |_P5| ^lti-name _Z211)
+(@221 ^name propose*elio*triple-lime*add ^prop-type instruction-rhs ^const @220 ^action _P29 ^lti-name _Z214)
+(@223 ^1 elio-triple-lime-read ^3 algae ^2 read)
+(@224 ^name apply*elio*triple-lime*read ^prop-type instruction-rhs ^const @223 ^action _P10 _P18 _P38 _P24 ^lti-name _Z212 ^flag o-supported)
+(@225 ^name propose*elio*triple-lime*read ^prop-type instruction-lhs ^const @226 ^condition |_P2| _P28 _P41 ^lti-name _Z209)
+(@226 ^1 triple-lime ^3 limemin ^2 nil ^4 elio-triple-lime-read)
+(@228 ^name apply*elio*triple-lime*mult ^prop-type instruction-lhs ^const @229 ^condition |_P5| ^lti-name _Z207)
+(@227 ^name propose*elio*triple-lime*read ^prop-type instruction-rhs ^const @226 ^action _P29 ^lti-name _Z210)
+(@229 ^1 elio-triple-lime-mult ^3 3 ^2 mult)
+(@230 ^name apply*elio*triple-lime*mult ^prop-type instruction-rhs ^const @229 ^action _P30 _P35 _P40 ^lti-name _Z208 ^flag o-supported)
+(@231 ^name propose*elio*triple-lime*mult ^prop-type instruction-lhs ^const @232 ^condition |_P2| _P27 _P28 ^lti-name _Z205)
+(@232 ^1 triple-lime ^3 limemin ^2 nil ^4 elio-triple-lime-mult)
+(@234 ^name apply*elio*triple-lime*start ^prop-type instruction-lhs ^const @235 ^condition |_P5| ^lti-name _Z203)
+(@233 ^name propose*elio*triple-lime*mult ^prop-type instruction-rhs ^const @232 ^action _P29 ^lti-name _Z206)
+(@235 ^1 elio-triple-lime-start ^3 limemin ^2 read)
+(@236 ^name apply*elio*triple-lime*start ^prop-type instruction-rhs ^const @235 ^action _P10 _P24 ^lti-name _Z204 ^flag o-supported)
+(@237 ^name propose*elio*triple-lime*start ^prop-type instruction-lhs ^const @238 ^condition |_P2| _P22 ^lti-name _Z201)
+(@238 ^1 triple-lime ^2 elio-triple-lime-start)
+(@239 ^name propose*elio*triple-lime*start ^prop-type instruction-rhs ^const @238 ^action _P23 ^lti-name _Z202)
+(@303 ^name propose*elio*part-mult-index1*finish ^prop-type instruction-lhs ^const @304 ^condition |_P2| _P27 ^lti-name _Z157)
+(@241 ^1 elio-procedure-b-finish ^3 finish ^2 enter)
+(@242 ^name apply*elio*procedure-b*finish ^prop-type instruction-rhs ^const @241 ^action _P10 _P11 _P21 _P18 ^lti-name _Z200 ^flag o-supported)
+(@243 ^name propose*elio*procedure-b*finish ^prop-type instruction-lhs ^const @244 ^condition |_P2| |_P9| ^lti-name _Z197)
+(@244 ^1 procedure-b ^3 elio-procedure-b-finish ^2 index1-plus-index2)
+(@245 ^name propose*elio*procedure-b*finish ^prop-type instruction-rhs ^const @244 ^action |_P4| ^lti-name _Z198)
+(@246 ^name apply*elio*procedure-b*step-6 ^prop-type instruction-lhs ^const @247 ^condition |_P5| ^lti-name _Z195)
+(@247 ^1 elio-procedure-b-step-6 ^3 index2 ^2 enter ^4 index1-plus-index2)
+(@248 ^name apply*elio*procedure-b*step-6 ^prop-type instruction-rhs ^const @247 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z196 ^flag o-supported)
+(@249 ^name propose*elio*procedure-b*step-6 ^prop-type instruction-lhs ^const @250 ^condition |_P2| |_P9| ^lti-name _Z193)
+(@250 ^1 procedure-b ^3 elio-procedure-b-step-6 ^2 part-mult-index1)
+(@251 ^name propose*elio*procedure-b*step-6 ^prop-type instruction-rhs ^const @250 ^action |_P4| ^lti-name _Z194)
+(@252 ^name apply*elio*procedure-b*step-5 ^prop-type instruction-lhs ^const @253 ^condition |_P5| ^lti-name _Z191)
+(@253 ^1 elio-procedure-b-step-5 ^3 index1 ^2 enter ^4 part-mult-index1)
+(@254 ^name apply*elio*procedure-b*step-5 ^prop-type instruction-rhs ^const @253 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z192 ^flag o-supported)
+(@255 ^name propose*elio*procedure-b*step-5 ^prop-type instruction-lhs ^const @256 ^condition |_P2| |_P9| ^lti-name _Z189)
+(@259 ^1 elio-procedure-b-step-4 ^3 marine ^2 enter ^4 mineral-div-marine)
+(@256 ^1 procedure-b ^3 elio-procedure-b-step-5 ^2 mineral-div-marine)
+(@258 ^name apply*elio*procedure-b*step-4 ^prop-type instruction-lhs ^const @259 ^condition |_P5| ^lti-name _Z187)
+(@257 ^name propose*elio*procedure-b*step-5 ^prop-type instruction-rhs ^const @256 ^action |_P4| ^lti-name _Z190)
+(@260 ^name apply*elio*procedure-b*step-4 ^prop-type instruction-rhs ^const @259 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z188 ^flag o-supported)
+(@261 ^name propose*elio*procedure-b*step-4 ^prop-type instruction-lhs ^const @262 ^condition |_P2| |_P9| ^lti-name _Z185)
+(@262 ^1 procedure-b ^3 elio-procedure-b-step-4 ^2 greater-algae)
+(@264 ^name apply*elio*procedure-b*step-3 ^prop-type instruction-lhs ^const @265 ^condition |_P5| ^lti-name _Z183)
+(@263 ^name propose*elio*procedure-b*step-4 ^prop-type instruction-rhs ^const @262 ^action |_P4| ^lti-name _Z186)
+(@265 ^1 elio-procedure-b-step-3 ^3 mineral ^2 enter ^5 greater-algae ^4 nil)
+(@266 ^name apply*elio*procedure-b*step-3 ^prop-type instruction-rhs ^const @265 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z184 ^flag o-supported)
+(@267 ^name propose*elio*procedure-b*step-3 ^prop-type instruction-lhs ^const @268 ^condition |_P2| |_P9| ^lti-name _Z181)
+(@268 ^1 procedure-b ^3 elio-procedure-b-step-3 ^2 solid-lime-diff)
+(@270 ^name apply*elio*procedure-b*step-2 ^prop-type instruction-lhs ^const @271 ^condition |_P5| ^lti-name _Z179)
+(@269 ^name propose*elio*procedure-b*step-3 ^prop-type instruction-rhs ^const @268 ^action |_P4| ^lti-name _Z182)
+(@271 ^1 elio-procedure-b-step-2 ^3 particulate ^2 enter ^5 solid-lime-diff ^4 nil)
+(@272 ^name apply*elio*procedure-b*step-2 ^prop-type instruction-rhs ^const @271 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name _Z180 ^flag o-supported)
+(@273 ^name propose*elio*procedure-b*step-2 ^prop-type instruction-lhs ^const @274 ^condition |_P2| |_P9| ^lti-name _Z177)
+(@274 ^1 procedure-b ^3 elio-procedure-b-step-2 ^2 mean-toxin)
+(@276 ^name apply*elio*procedure-b*start ^prop-type instruction-lhs ^const @277 ^condition |_P5| ^lti-name _Z175)
+(@275 ^name propose*elio*procedure-b*step-2 ^prop-type instruction-rhs ^const @274 ^action |_P4| ^lti-name _Z178)
+(@277 ^1 elio-procedure-b-start ^2 mean-toxin)
+(@278 ^name apply*elio*procedure-b*start ^prop-type instruction-rhs ^const @277 ^action |_P6| |_P7| |_P8| ^lti-name _Z176 ^flag o-supported)
+(@279 ^name propose*elio*procedure-b*start ^prop-type instruction-lhs ^const @280 ^condition |_P2| |_P1| |_P3| ^lti-name _Z173)
+(@280 ^1 procedure-b ^3 elio-procedure-b-start ^2 nil)
+(@282 ^name apply*elio*index1-plus-index2*finish ^prop-type instruction-lhs ^const @283 ^condition |_P5| ^lti-name _Z171)
+(@281 ^name propose*elio*procedure-b*start ^prop-type instruction-rhs ^const @280 ^action |_P4| ^lti-name _Z174)
+(@283 ^1 elio-index1-plus-index2-finish ^2 index1-plus-index2)
+(@284 ^name apply*elio*index1-plus-index2*finish ^prop-type instruction-rhs ^const @283 ^action _P38 _P37 _P39 ^lti-name _Z172 ^flag o-supported)
+(@288 ^name apply*elio*index1-plus-index2*add ^prop-type instruction-lhs ^const @289 ^condition |_P5| ^lti-name _Z167)
+(@285 ^name propose*elio*index1-plus-index2*finish ^prop-type instruction-lhs ^const @286 ^condition |_P2| _P27 ^lti-name _Z169)
+(@286 ^1 index1-plus-index2 ^3 elio-index1-plus-index2-finish ^2 add)
+(@287 ^name propose*elio*index1-plus-index2*finish ^prop-type instruction-rhs ^const @286 ^action |_P4| ^lti-name _Z170)
+(@289 ^1 elio-index1-plus-index2-add ^2 add)
+(@290 ^name apply*elio*index1-plus-index2*add ^prop-type instruction-rhs ^const @289 ^action _P18 _P30 _P31 _P58 ^lti-name _Z168 ^flag o-supported)
+(@291 ^name propose*elio*index1-plus-index2*add ^prop-type instruction-lhs ^const @292 ^condition |_P2| _P27 ^lti-name _Z165)
+(@292 ^1 index1-plus-index2 ^3 elio-index1-plus-index2-add ^2 index1)
+(@293 ^name propose*elio*index1-plus-index2*add ^prop-type instruction-rhs ^const @292 ^action |_P4| ^lti-name _Z166)
+(@294 ^name apply*elio*index1-plus-index2*start ^prop-type instruction-lhs ^const @295 ^condition |_P5| ^lti-name _Z163)
+(@295 ^1 elio-index1-plus-index2-start)
+(@296 ^name apply*elio*index1-plus-index2*start ^prop-type instruction-rhs ^const @295 ^action _P42 _P43 _P44 _P45 ^lti-name _Z164 ^flag o-supported)
+(@319 ^name propose*elio*part-mult-index1*start ^prop-type instruction-lhs ^const @320 ^condition |_P2| _P27 ^lti-name _Z149)
+(@298 ^1 index1-plus-index2 ^3 elio-index1-plus-index2-start ^2 nil)
+(@299 ^name propose*elio*index1-plus-index2*start ^prop-type instruction-rhs ^const @298 ^action |_P4| ^lti-name _Z162)
+(@300 ^name apply*elio*part-mult-index1*finish ^prop-type instruction-lhs ^const @301 ^condition |_P5| ^lti-name _Z159)
+(@301 ^1 elio-part-mult-index1-finish)
+(@302 ^name apply*elio*part-mult-index1*finish ^prop-type instruction-rhs ^const @301 ^action _P38 _P39 ^lti-name _Z160 ^flag o-supported)
+(@337 ^name propose*elio*mineral-div-marine*skip ^prop-type instruction-lhs ^const @338 ^condition |_P2| _P27 ^lti-name _Z137)
+(@304 ^1 part-mult-index1 ^3 elio-part-mult-index1-finish ^2 mult)
+(@305 ^name propose*elio*part-mult-index1*finish ^prop-type instruction-rhs ^const @304 ^action |_P4| ^lti-name _Z158)
+(@306 ^name apply*elio*part-mult-index1*mult ^prop-type instruction-lhs ^const @307 ^condition |_P5| _P49 ^lti-name _Z155)
+(@307 ^1 elio-part-mult-index1-mult ^3 part-mult-index1 ^2 mult ^4 nil)
+(@308 ^name apply*elio*part-mult-index1*mult ^prop-type instruction-rhs ^const @307 ^action _P18 _P14 _P16 |_P6| _P30 _P47 _P48 _P59 _P60 ^lti-name _Z156 ^flag o-supported)
+(@309 ^prop-type add ^lti-name _P59 ^attr1 slot1 ^attr2 3 ^id2 props$const ^sub1 _U89)
+(@310 ^depth 1 ^lti-name _U89 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@311 ^prop-type add ^lti-name _P60 ^attr1 slot3 ^attr2 4 ^id2 props$const ^sub1 _U90)
+(@312 ^depth 1 ^lti-name _U90 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@313 ^name propose*elio*part-mult-index1*mult ^prop-type instruction-lhs ^const @314 ^condition |_P2| _P27 ^lti-name _Z153)
+(@314 ^1 part-mult-index1 ^3 elio-part-mult-index1-mult ^2 particulate)
+(@315 ^name propose*elio*part-mult-index1*mult ^prop-type instruction-rhs ^const @314 ^action |_P4| ^lti-name _Z154)
+(@316 ^name apply*elio*part-mult-index1*start ^prop-type instruction-lhs ^const @317 ^condition |_P5| ^lti-name _Z151)
+(@317 ^1 elio-part-mult-index1-start)
+(@318 ^name apply*elio*part-mult-index1*start ^prop-type instruction-rhs ^const @317 ^action _P42 _P43 _P44 _P45 ^lti-name _Z152 ^flag o-supported)
+(@330 ^name apply*elio*mineral-div-marine*divide ^prop-type instruction-rhs ^const @329 ^action _P18 _P30 _P47 _P48 ^lti-name _Z144 ^flag o-supported)
+(@331 ^name propose*elio*mineral-div-marine*divide ^prop-type instruction-lhs ^const @332 ^condition |_P2| _P27 ^lti-name _Z141)
+(@320 ^1 part-mult-index1 ^3 elio-part-mult-index1-start ^2 nil)
+(@321 ^name propose*elio*part-mult-index1*start ^prop-type instruction-rhs ^const @320 ^action |_P4| ^lti-name _Z150)
+(@322 ^name apply*elio*mineral-div-marine*finish ^prop-type instruction-lhs ^const @323 ^condition |_P5| ^lti-name _Z147)
+(@323 ^1 elio-mineral-div-marine-finish ^2 mineral-div-marine)
+(@324 ^name apply*elio*mineral-div-marine*finish ^prop-type instruction-rhs ^const @323 ^action _P38 _P37 _P39 ^lti-name _Z148 ^flag o-supported)
+(@325 ^name propose*elio*mineral-div-marine*finish ^prop-type instruction-lhs ^const @326 ^condition |_P2| _P27 ^lti-name _Z145)
+(@326 ^1 mineral-div-marine ^3 elio-mineral-div-marine-finish ^2 div)
+(@327 ^name propose*elio*mineral-div-marine*finish ^prop-type instruction-rhs ^const @326 ^action |_P4| ^lti-name _Z146)
+(@328 ^name apply*elio*mineral-div-marine*divide ^prop-type instruction-lhs ^const @329 ^condition |_P5| ^lti-name _Z143)
+(@329 ^1 elio-mineral-div-marine-divide ^2 div)
+(@342 ^name apply*elio*mineral-div-marine*start ^prop-type instruction-rhs ^const @341 ^action _P42 _P43 _P44 _P45 ^lti-name _Z136 ^flag o-supported)
+(@343 ^name propose*elio*mineral-div-marine*start ^prop-type instruction-lhs ^const @344 ^condition |_P2| _P27 ^lti-name _Z133)
+(@332 ^1 mineral-div-marine ^3 elio-mineral-div-marine-divide ^2 mineral)
+(@333 ^name propose*elio*mineral-div-marine*divide ^prop-type instruction-rhs ^const @332 ^action |_P4| ^lti-name _Z142)
+(@334 ^name apply*elio*mineral-div-marine*skip ^prop-type instruction-lhs ^const @335 ^condition |_P5| ^lti-name _Z139)
+(@335 ^1 elio-mineral-div-marine-skip)
+(@336 ^name apply*elio*mineral-div-marine*skip ^prop-type instruction-rhs ^const @335 ^action _P54 _P55 _P56 _P57 ^lti-name _Z140 ^flag o-supported)
+(@364 ^name propose*elio*index2-min-mineral*start ^prop-type instruction-lhs ^const @365 ^condition |_P2| _P27 ^lti-name _Z121)
+(@338 ^1 mineral-div-marine ^3 elio-mineral-div-marine-skip ^2 particulate)
+(@339 ^name propose*elio*mineral-div-marine*skip ^prop-type instruction-rhs ^const @338 ^action |_P4| ^lti-name _Z138)
+(@340 ^name apply*elio*mineral-div-marine*start ^prop-type instruction-lhs ^const @341 ^condition |_P5| ^lti-name _Z135)
+(@341 ^1 elio-mineral-div-marine-start)
+(@381 ^name apply*elio*index1-div-marine*next ^prop-type instruction-rhs ^const @380 ^action _P54 _P55 _P56 _P57 ^lti-name _Z112 ^flag o-supported)
+(@382 ^prop-type add ^lti-name _P54 ^attr1 slot1 ^attr2 slot1 ^sub1 _U75 ^sub2 _U76)
+(@344 ^1 mineral-div-marine ^3 elio-mineral-div-marine-start ^2 nil)
+(@345 ^name propose*elio*mineral-div-marine*start ^prop-type instruction-rhs ^const @344 ^action |_P4| ^lti-name _Z134)
+(@346 ^name apply*elio*index2-min-mineral*finish ^prop-type instruction-lhs ^const @347 ^condition |_P5| ^lti-name _Z131)
+(@347 ^1 elio-index2-min-mineral-finish ^2 index2-min-mineral)
+(@348 ^name apply*elio*index2-min-mineral*finish ^prop-type instruction-rhs ^const @347 ^action _P38 _P37 _P39 ^lti-name _Z132 ^flag o-supported)
+(@349 ^name propose*elio*index2-min-mineral*finish ^prop-type instruction-lhs ^const @350 ^condition |_P2| _P27 ^lti-name _Z129)
+(@350 ^1 index2-min-mineral ^3 elio-index2-min-mineral-finish ^2 subtract)
+(@351 ^name propose*elio*index2-min-mineral*finish ^prop-type instruction-rhs ^const @350 ^action |_P4| ^lti-name _Z130)
+(@352 ^name apply*elio*index2-min-mineral*subtract ^prop-type instruction-lhs ^const @353 ^condition |_P5| ^lti-name _Z127)
+(@353 ^1 elio-index2-min-mineral-subtract ^2 subtract)
+(@354 ^name apply*elio*index2-min-mineral*subtract ^prop-type instruction-rhs ^const @353 ^action _P18 _P30 _P31 _P58 ^lti-name _Z128 ^flag o-supported)
+(@355 ^prop-type add ^lti-name _P58 ^attr1 slot3 ^attr2 slot2 ^sub1 _U87 ^sub2 _U88)
+(@356 ^depth 1 ^lti-name _U87 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@357 ^depth 1 ^lti-name _U88 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@358 ^name propose*elio*index2-min-mineral*subtract ^prop-type instruction-lhs ^const @359 ^condition |_P2| _P27 ^lti-name _Z125)
+(@359 ^1 index2-min-mineral ^3 elio-index2-min-mineral-subtract ^2 mineral)
+(@360 ^name propose*elio*index2-min-mineral*subtract ^prop-type instruction-rhs ^const @359 ^action |_P4| ^lti-name _Z126)
+(@361 ^name apply*elio*index2-min-mineral*start ^prop-type instruction-lhs ^const @362 ^condition |_P5| ^lti-name _Z123)
+(@362 ^1 elio-index2-min-mineral-start)
+(@363 ^name apply*elio*index2-min-mineral*start ^prop-type instruction-rhs ^const @362 ^action _P42 _P43 _P44 _P45 ^lti-name _Z124 ^flag o-supported)
+(@404 ^name propose*elio*index1-div-marine*start ^prop-type instruction-lhs ^const @405 ^condition |_P2| _P27 ^lti-name _Z105)
+(@365 ^1 index2-min-mineral ^3 elio-index2-min-mineral-start ^2 nil)
+(@366 ^name propose*elio*index2-min-mineral*start ^prop-type instruction-rhs ^const @365 ^action |_P4| ^lti-name _Z122)
+(@367 ^name apply*elio*index1-div-marine*finish ^prop-type instruction-lhs ^const @368 ^condition |_P5| ^lti-name _Z119)
+(@368 ^1 elio-index1-div-marine-finish ^2 index1-div-marine)
+(@369 ^name apply*elio*index1-div-marine*finish ^prop-type instruction-rhs ^const @368 ^action _P38 _P37 _P39 ^lti-name _Z120 ^flag o-supported)
+(@370 ^name propose*elio*index1-div-marine*finish ^prop-type instruction-lhs ^const @371 ^condition |_P2| _P27 ^lti-name _Z117)
+(@371 ^1 index1-div-marine ^3 elio-index1-div-marine-finish ^2 div)
+(@372 ^name propose*elio*index1-div-marine*finish ^prop-type instruction-rhs ^const @371 ^action |_P4| ^lti-name _Z118)
+(@373 ^name apply*elio*index1-div-marine*divide ^prop-type instruction-lhs ^const @374 ^condition |_P5| ^lti-name _Z115)
+(@374 ^1 elio-index1-div-marine-divide ^2 div)
+(@375 ^name apply*elio*index1-div-marine*divide ^prop-type instruction-rhs ^const @374 ^action _P18 _P30 _P47 _P48 ^lti-name _Z116 ^flag o-supported)
+(@376 ^name propose*elio*index1-div-marine*divide ^prop-type instruction-lhs ^const @377 ^condition |_P2| _P27 ^lti-name _Z113)
+(@377 ^1 index1-div-marine ^3 elio-index1-div-marine-divide ^2 index1)
+(@378 ^name propose*elio*index1-div-marine*divide ^prop-type instruction-rhs ^const @377 ^action |_P4| ^lti-name _Z114)
+(@379 ^name apply*elio*index1-div-marine*next ^prop-type instruction-lhs ^const @380 ^condition |_P5| ^lti-name _Z111)
+(@380 ^1 elio-index1-div-marine-next)
+(@387 ^depth 1 ^lti-name _U78 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@383 ^depth 1 ^lti-name _U75 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@384 ^depth 2 ^lti-name _U76 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next @385)
+(@385 ^chain-attr slot4 ^chain-next done)
+(@386 ^prop-type add ^lti-name _P55 ^attr1 slot2 ^attr2 slot2 ^sub1 _U78 ^sub2 _U79)
+(@391 ^depth 1 ^lti-name _U81 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@388 ^depth 2 ^lti-name _U79 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next @389)
+(@389 ^chain-attr slot4 ^chain-next done)
+(@390 ^prop-type add ^lti-name _P56 ^attr1 slot3 ^attr2 slot3 ^sub1 _U81 ^sub2 _U82)
+(@395 ^depth 1 ^lti-name _U84 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@392 ^depth 2 ^lti-name _U82 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next @393)
+(@393 ^chain-attr slot4 ^chain-next done)
+(@394 ^prop-type add ^lti-name _P57 ^attr1 slot4 ^attr2 slot4 ^sub1 _U84 ^sub2 _U85)
+(@399 ^1 index1-div-marine ^3 elio-index1-div-marine-next ^2 mineral)
+(@396 ^depth 2 ^lti-name _U85 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next @397)
+(@397 ^chain-attr slot4 ^chain-next done)
+(@398 ^name propose*elio*index1-div-marine*next ^prop-type instruction-lhs ^const @399 ^condition |_P2| _P27 ^lti-name _Z109)
+(@440 ^name apply*elio*part-plus-mineral*finish ^prop-type instruction-lhs ^const @441 ^condition |_P5| _P49 ^lti-name _Z83)
+(@400 ^name propose*elio*index1-div-marine*next ^prop-type instruction-rhs ^const @399 ^action |_P4| ^lti-name _Z110)
+(@401 ^name apply*elio*index1-div-marine*start ^prop-type instruction-lhs ^const @402 ^condition |_P5| ^lti-name _Z107)
+(@402 ^1 elio-index1-div-marine-start)
+(@403 ^name apply*elio*index1-div-marine*start ^prop-type instruction-rhs ^const @402 ^action _P42 _P43 _P44 _P45 ^lti-name _Z108 ^flag o-supported)
+(@471 ^name apply*elio*part-plus-mineral*start ^prop-type instruction-rhs ^const @470 ^action _P42 _P43 _P44 _P45 ^lti-name _Z76 ^flag o-supported)
+(@472 ^prop-type add ^lti-name _P42 ^attr1 slot1 ^attr2 slot1 ^sub1 _U51 ^sub2 _U52)
+(@405 ^1 index1-div-marine ^3 elio-index1-div-marine-start ^2 nil)
+(@406 ^name propose*elio*index1-div-marine*start ^prop-type instruction-rhs ^const @405 ^action |_P4| ^lti-name _Z106)
+(@407 ^name apply*elio*mean-toxin*finish ^prop-type instruction-lhs ^const @408 ^condition |_P5| ^lti-name _Z103)
+(@408 ^1 elio-mean-toxin-finish ^2 mean-toxin)
+(@409 ^name apply*elio*mean-toxin*finish ^prop-type instruction-rhs ^const @408 ^action _P38 _P37 _P39 ^lti-name _Z104 ^flag o-supported)
+(@410 ^name propose*elio*mean-toxin*finish ^prop-type instruction-lhs ^const @411 ^condition |_P2| _P27 ^lti-name _Z101)
+(@411 ^1 mean-toxin ^3 elio-mean-toxin-finish ^2 div)
+(@413 ^name apply*elio*mean-toxin*divide ^prop-type instruction-lhs ^const @414 ^condition |_P5| ^lti-name _Z99)
+(@412 ^name propose*elio*mean-toxin*finish ^prop-type instruction-rhs ^const @411 ^action |_P4| ^lti-name _Z102)
+(@414 ^1 elio-mean-toxin-divide ^3 2 ^2 div)
+(@415 ^name apply*elio*mean-toxin*divide ^prop-type instruction-rhs ^const @414 ^action _P30 _P40 _P53 ^lti-name _Z100 ^flag o-supported)
+(@416 ^prop-type add ^lti-name _P53 ^attr1 slot2 ^attr2 slot4 ^sub1 _U73 ^sub2 _U74)
+(@417 ^depth 1 ^lti-name _U73 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@418 ^depth 1 ^lti-name _U74 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@419 ^name propose*elio*mean-toxin*divide ^prop-type instruction-lhs ^const @420 ^condition |_P2| _P27 ^lti-name _Z97)
+(@420 ^1 mean-toxin ^3 elio-mean-toxin-divide ^2 add)
+(@422 ^name apply*elio*mean-toxin*add ^prop-type instruction-lhs ^const @423 ^condition |_P5| ^lti-name _Z95)
+(@421 ^name propose*elio*mean-toxin*divide ^prop-type instruction-rhs ^const @420 ^action |_P4| ^lti-name _Z98)
+(@423 ^1 elio-mean-toxin-add ^2 add)
+(@424 ^name apply*elio*mean-toxin*add ^prop-type instruction-rhs ^const @423 ^action _P30 _P31 _P32 ^lti-name _Z96 ^flag o-supported)
+(@425 ^name propose*elio*mean-toxin*add ^prop-type instruction-lhs ^const @426 ^condition |_P2| _P27 _P28 ^lti-name _Z93)
+(@429 ^1 elio-mean-toxin-toxinmin ^3 toxinmin ^2 read)
+(@426 ^1 mean-toxin ^3 toxinmin ^2 nil ^4 elio-mean-toxin-add)
+(@428 ^name apply*elio*mean-toxin*toxinmin ^prop-type instruction-lhs ^const @429 ^condition |_P5| ^lti-name _Z91)
+(@427 ^name propose*elio*mean-toxin*add ^prop-type instruction-rhs ^const @426 ^action _P29 ^lti-name _Z94)
+(@430 ^name apply*elio*mean-toxin*toxinmin ^prop-type instruction-rhs ^const @429 ^action _P10 _P26 _P24 ^lti-name _Z92 ^flag o-supported)
+(@431 ^name propose*elio*mean-toxin*toxinmin ^prop-type instruction-lhs ^const @432 ^condition |_P2| _P25 ^lti-name _Z89)
+(@432 ^1 mean-toxin ^3 elio-mean-toxin-toxinmin ^2 toxinmax)
+(@433 ^name propose*elio*mean-toxin*toxinmin ^prop-type instruction-rhs ^const @432 ^action |_P4| ^lti-name _Z90)
+(@434 ^name apply*elio*mean-toxin*start ^prop-type instruction-lhs ^const @435 ^condition |_P5| ^lti-name _Z87)
+(@435 ^1 elio-mean-toxin-start ^3 toxinmax ^2 read)
+(@436 ^name apply*elio*mean-toxin*start ^prop-type instruction-rhs ^const @435 ^action _P10 _P24 ^lti-name _Z88 ^flag o-supported)
+(@437 ^name propose*elio*mean-toxin*start ^prop-type instruction-lhs ^const @438 ^condition |_P2| _P22 ^lti-name _Z85)
+(@438 ^1 mean-toxin ^2 elio-mean-toxin-start)
+(@439 ^name propose*elio*mean-toxin*start ^prop-type instruction-rhs ^const @438 ^action _P23 ^lti-name _Z86)
+(@533 ^name apply*elio*solid-lime-diff*finish ^prop-type instruction-rhs ^const @532 ^action _P38 _P37 _P39 ^lti-name _Z48 ^flag o-supported)
+(@534 ^prop-type add ^lti-name _P37 ^attr1 slot1 ^attr2 2 ^id2 props$const ^sub1 _U44)
+(@441 ^1 elio-part-plus-mineral-finish ^3 nil ^2 part-plus-mineral)
+(@442 ^prop-type negation ^lti-name _P49 ^attr1 slot1 ^sub1 _U68)
+(@443 ^depth 1 ^lti-name _U68 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@444 ^name apply*elio*part-plus-mineral*finish ^prop-type instruction-rhs ^const @441 ^action _P15 _P39 _P50 _P51 _P52 ^lti-name _Z84 ^flag o-supported)
+(@445 ^prop-type add ^lti-name _P50 ^attr1 slot1 ^attr2 2 ^id2 props$const ^sub1 _U69)
+(@446 ^depth 1 ^lti-name _U69 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@447 ^prop-type add ^lti-name _P51 ^attr1 slot2 ^attr2 slot4 ^sub1 _U70 ^sub2 _U71)
+(@448 ^depth 1 ^lti-name _U70 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@449 ^depth 1 ^lti-name _U71 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@450 ^prop-type add ^lti-name _P52 ^attr1 slot4 ^attr2 3 ^id2 props$const ^sub1 _U72)
+(@451 ^depth 1 ^lti-name _U72 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@452 ^name propose*elio*part-plus-mineral*finish ^prop-type instruction-lhs ^const @453 ^condition |_P2| _P27 ^lti-name _Z81)
+(@453 ^1 part-plus-mineral ^3 elio-part-plus-mineral-finish ^2 add)
+(@454 ^name propose*elio*part-plus-mineral*finish ^prop-type instruction-rhs ^const @453 ^action |_P4| ^lti-name _Z82)
+(@455 ^name apply*elio*part-plus-mineral*add ^prop-type instruction-lhs ^const @456 ^condition |_P5| _P46 ^lti-name _Z79)
+(@456 ^1 elio-part-plus-mineral-add ^2 add)
+(@457 ^prop-type negation ^lti-name _P46 ^attr1 slot1 ^sub1 _U63)
+(@458 ^depth 1 ^lti-name _U63 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@459 ^name apply*elio*part-plus-mineral*add ^prop-type instruction-rhs ^const @456 ^action _P18 |_P6| _P30 _P47 _P48 ^lti-name _Z80 ^flag o-supported)
+(@460 ^prop-type add ^lti-name _P47 ^attr1 slot2 ^attr2 slot2 ^sub1 _U64 ^sub2 _U65)
+(@461 ^depth 1 ^lti-name _U64 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@462 ^depth 1 ^lti-name _U65 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@463 ^prop-type add ^lti-name _P48 ^attr1 slot3 ^attr2 slot2 ^sub1 _U66 ^sub2 _U67)
+(@464 ^depth 1 ^lti-name _U66 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@465 ^depth 1 ^lti-name _U67 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@466 ^name propose*elio*part-plus-mineral*add ^prop-type instruction-lhs ^const @467 ^condition |_P2| _P27 ^lti-name _Z77)
+(@467 ^1 part-plus-mineral ^3 elio-part-plus-mineral-add ^2 particulate)
+(@468 ^name propose*elio*part-plus-mineral*add ^prop-type instruction-rhs ^const @467 ^action |_P4| ^lti-name _Z78)
+(@469 ^name apply*elio*part-plus-mineral*start ^prop-type instruction-lhs ^const @470 ^condition |_P5| ^lti-name _Z75)
+(@470 ^1 elio-part-plus-mineral-start)
+(@477 ^depth 1 ^lti-name _U54 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@473 ^depth 1 ^lti-name _U51 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@474 ^depth 2 ^lti-name _U52 ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next @475)
+(@475 ^chain-attr Gtop ^chain-next done)
+(@476 ^prop-type add ^lti-name _P43 ^attr1 slot2 ^attr2 slot2 ^sub1 _U54 ^sub2 _U55)
+(@481 ^depth 1 ^lti-name _U57 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@478 ^depth 2 ^lti-name _U55 ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next @479)
+(@479 ^chain-attr Gtop ^chain-next done)
+(@480 ^prop-type add ^lti-name _P44 ^attr1 slot3 ^attr2 slot3 ^sub1 _U57 ^sub2 _U58)
+(@485 ^depth 1 ^lti-name _U60 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@482 ^depth 2 ^lti-name _U58 ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next @483)
+(@483 ^chain-attr Gtop ^chain-next done)
+(@484 ^prop-type add ^lti-name _P45 ^attr1 slot4 ^attr2 slot4 ^sub1 _U60 ^sub2 _U61)
+(@489 ^1 part-plus-mineral ^3 elio-part-plus-mineral-start ^2 nil)
+(@486 ^depth 2 ^lti-name _U61 ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next @487)
+(@487 ^chain-attr Gtop ^chain-next done)
+(@488 ^name propose*elio*part-plus-mineral*start ^prop-type instruction-lhs ^const @489 ^condition |_P2| _P27 ^lti-name _Z73)
+(@547 ^name apply*elio*solid-lime-diff*mult ^prop-type instruction-rhs ^const @546 ^action _P30 _P35 _P36 ^lti-name _Z44 ^flag o-supported)
+(@548 ^prop-type add ^lti-name _P35 ^attr1 slot2 ^attr2 Vvalue ^sub1 _U40 ^sub2 _U41)
+(@490 ^name propose*elio*part-plus-mineral*start ^prop-type instruction-rhs ^const @489 ^action |_P4| ^lti-name _Z74)
+(@491 ^name apply*elio*greater-algae*finish ^prop-type instruction-lhs ^const @492 ^condition |_P5| ^lti-name _Z71)
+(@492 ^1 elio-greater-algae-finish ^2 greater-algae)
+(@493 ^name apply*elio*greater-algae*finish ^prop-type instruction-rhs ^const @492 ^action _P38 _P37 _P39 ^lti-name _Z72 ^flag o-supported)
+(@494 ^name propose*elio*greater-algae*finish ^prop-type instruction-lhs ^const @495 ^condition |_P2| _P27 _P28 ^lti-name _Z69)
+(@495 ^1 greater-algae ^3 solid ^2 greater-of ^4 elio-greater-algae-finish)
+(@497 ^name apply*elio*greater-algae*greater ^prop-type instruction-lhs ^const @498 ^condition |_P5| ^lti-name _Z67)
+(@496 ^name propose*elio*greater-algae*finish ^prop-type instruction-rhs ^const @495 ^action _P29 ^lti-name _Z70)
+(@498 ^1 elio-greater-algae-greater ^2 greater-of)
+(@499 ^name apply*elio*greater-algae*greater ^prop-type instruction-rhs ^const @498 ^action _P30 _P31 _P36 ^lti-name _Z68 ^flag o-supported)
+(@500 ^name propose*elio*greater-algae*greater ^prop-type instruction-lhs ^const @501 ^condition |_P2| _P27 _P28 ^lti-name _Z65)
+(@501 ^1 greater-algae ^3 solid ^2 div ^4 elio-greater-algae-greater)
+(@503 ^name apply*elio*greater-algae*div-3 ^prop-type instruction-lhs ^const @504 ^condition |_P5| ^lti-name _Z63)
+(@502 ^name propose*elio*greater-algae*greater ^prop-type instruction-rhs ^const @501 ^action _P29 ^lti-name _Z66)
+(@504 ^1 elio-greater-algae-div-3 ^3 3 ^2 div)
+(@505 ^name apply*elio*greater-algae*div-3 ^prop-type instruction-rhs ^const @504 ^action _P30 _P35 _P40 ^lti-name _Z64 ^flag o-supported)
+(@506 ^name propose*elio*greater-algae*div-3 ^prop-type instruction-lhs ^const @507 ^condition |_P2| _P27 _P28 ^lti-name _Z61)
+(@507 ^1 greater-algae ^3 solid ^2 nil ^4 elio-greater-algae-div-3)
+(@509 ^name apply*elio*greater-algae*read-solid ^prop-type instruction-lhs ^const @510 ^condition |_P5| ^lti-name _Z59)
+(@508 ^name propose*elio*greater-algae*div-3 ^prop-type instruction-rhs ^const @507 ^action _P29 ^lti-name _Z62)
+(@510 ^1 elio-greater-algae-read-solid ^3 solid ^2 read)
+(@511 ^name apply*elio*greater-algae*read-solid ^prop-type instruction-rhs ^const @510 ^action _P10 _P18 _P38 _P24 ^lti-name _Z60 ^flag o-supported)
+(@512 ^name propose*elio*greater-algae*read-solid ^prop-type instruction-lhs ^const @513 ^condition |_P2| _P28 _P41 ^lti-name _Z57)
+(@513 ^1 greater-algae ^3 algae ^2 nil ^4 elio-greater-algae-read-solid)
+(@515 ^depth 1 ^lti-name _U50 ^target-arg id1 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@514 ^prop-type inequality ^lti-name _P41 ^attr1 slot4 ^attr2 2 ^id2 props$const ^sub1 _U50)
+(@516 ^name propose*elio*greater-algae*read-solid ^prop-type instruction-rhs ^const @513 ^action _P29 ^lti-name _Z58)
+(@517 ^name apply*elio*greater-algae*div-2 ^prop-type instruction-lhs ^const @518 ^condition |_P5| ^lti-name _Z55)
+(@518 ^1 elio-greater-algae-div-2 ^3 2 ^2 div)
+(@519 ^name apply*elio*greater-algae*div-2 ^prop-type instruction-rhs ^const @518 ^action _P30 _P35 _P40 ^lti-name _Z56 ^flag o-supported)
+(@520 ^prop-type add ^lti-name _P40 ^attr1 slot3 ^attr2 3 ^id2 props$const ^sub1 _U49)
+(@521 ^depth 1 ^lti-name _U49 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@522 ^name propose*elio*greater-algae*div-2 ^prop-type instruction-lhs ^const @523 ^condition |_P2| _P27 _P28 ^lti-name _Z53)
+(@523 ^1 greater-algae ^3 algae ^2 nil ^4 elio-greater-algae-div-2)
+(@525 ^name apply*elio*greater-algae*start ^prop-type instruction-lhs ^const @526 ^condition |_P5| ^lti-name _Z51)
+(@524 ^name propose*elio*greater-algae*div-2 ^prop-type instruction-rhs ^const @523 ^action _P29 ^lti-name _Z54)
+(@526 ^1 elio-greater-algae-start ^3 algae ^2 read)
+(@527 ^name apply*elio*greater-algae*start ^prop-type instruction-rhs ^const @526 ^action _P10 _P24 ^lti-name _Z52 ^flag o-supported)
+(@528 ^name propose*elio*greater-algae*start ^prop-type instruction-lhs ^const @529 ^condition |_P2| _P22 ^lti-name _Z49)
+(@529 ^1 greater-algae ^2 elio-greater-algae-start)
+(@531 ^name apply*elio*solid-lime-diff*finish ^prop-type instruction-lhs ^const @532 ^condition |_P5| ^lti-name _Z47)
+(@530 ^name propose*elio*greater-algae*start ^prop-type instruction-rhs ^const @529 ^action _P23 ^lti-name _Z50)
+(@532 ^1 elio-sld-finish ^2 solid-lime-diff)
+(@600 ^depth 1 ^lti-name _U24 ^target-arg id1 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@535 ^depth 1 ^lti-name _U44 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@536 ^prop-type add ^lti-name _P38 ^attr1 slot2 ^attr2 slot4 ^sub1 _U45 ^sub2 _U46)
+(@537 ^depth 1 ^lti-name _U45 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@538 ^depth 1 ^lti-name _U46 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@539 ^prop-type add ^lti-name _P39 ^attr1 Gtask ^attr2 Gparent ^sub1 _U47 ^sub2 _U48)
+(@540 ^depth 1 ^lti-name _U47 ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@541 ^depth 1 ^lti-name _U48 ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@542 ^name propose*elio*solid-lime-diff*finish ^prop-type instruction-lhs ^const @543 ^condition |_P2| _P27 ^lti-name _Z45)
+(@543 ^1 solid-lime-diff ^3 elio-sld-finish ^2 mult)
+(@544 ^name propose*elio*solid-lime-diff*finish ^prop-type instruction-rhs ^const @543 ^action |_P4| ^lti-name _Z46)
+(@545 ^name apply*elio*solid-lime-diff*mult ^prop-type instruction-lhs ^const @546 ^condition |_P5| ^lti-name _Z43)
+(@546 ^1 elio-sld-mult ^2 mult)
+(@670 ^prop-type equality ^lti-name |_P5| ^attr1 name ^attr2 1 ^id2 props$const ^sub1 |_U4|)
+(@671 ^depth 1 ^lti-name |_U4| ^target-arg id1 ^chain-attr operator ^curr-id props$rootstate ^chain-next done)
+(@549 ^depth 1 ^lti-name _U40 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@550 ^depth 1 ^lti-name _U41 ^target-arg id2 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@551 ^prop-type add ^lti-name _P36 ^attr1 slot3 ^attr2 slot4 ^sub1 _U42 ^sub2 _U43)
+(@552 ^depth 1 ^lti-name _U42 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@553 ^depth 1 ^lti-name _U43 ^target-arg id2 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@554 ^name propose*elio*solid-lime-diff*mult ^prop-type instruction-lhs ^const @555 ^condition |_P2| _P27 _P28 ^lti-name _Z41)
+(@555 ^1 solid-lime-diff ^3 solid ^2 subtract ^4 elio-sld-mult)
+(@556 ^name propose*elio*solid-lime-diff*mult ^prop-type instruction-rhs ^const @555 ^action _P29 ^lti-name _Z42)
+(@557 ^name apply*elio*solid-lime-diff*diff ^prop-type instruction-lhs ^const @558 ^condition |_P5| ^lti-name _Z39)
+(@558 ^1 elio-sld-diff ^3 read ^2 subtract ^4 solid)
+(@559 ^name apply*elio*solid-lime-diff*diff ^prop-type instruction-rhs ^const @558 ^action _P30 _P31 _P32 _P33 _P34 ^lti-name _Z40 ^flag o-supported)
+(@560 ^prop-type add ^lti-name _P30 ^attr1 slot1 ^attr2 2 ^id2 props$const ^sub1 _U33)
+(@561 ^depth 1 ^lti-name _U33 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@562 ^prop-type add ^lti-name _P31 ^attr1 slot2 ^attr2 slot2 ^sub1 _U34 ^sub2 _U35)
+(@563 ^depth 1 ^lti-name _U34 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@564 ^depth 1 ^lti-name _U35 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@565 ^prop-type add ^lti-name _P32 ^attr1 slot3 ^attr2 Vvalue ^sub1 _U36 ^sub2 _U37)
+(@566 ^depth 1 ^lti-name _U36 ^target-arg id1 ^chain-attr Q ^curr-id props$rootstate ^chain-next done)
+(@567 ^depth 1 ^lti-name _U37 ^target-arg id2 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@568 ^prop-type add ^lti-name _P33 ^attr1 ACout1 ^attr2 3 ^id2 props$const ^sub1 _U38)
+(@569 ^depth 1 ^lti-name _U38 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@570 ^prop-type add ^lti-name _P34 ^attr1 ACout2 ^attr2 4 ^id2 props$const ^sub1 _U39)
+(@571 ^depth 1 ^lti-name _U39 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@572 ^name propose*elio*solid-lime-diff*diff ^prop-type instruction-lhs ^const @573 ^condition |_P2| _P27 _P28 ^lti-name _Z37)
+(@573 ^1 solid-lime-diff ^3 lime2 ^2 nil ^4 elio-sld-diff)
+(@574 ^prop-type equality ^lti-name _P27 ^attr1 slot1 ^attr2 2 ^id2 props$const ^sub1 _U30)
+(@575 ^depth 1 ^lti-name _U30 ^target-arg id1 ^chain-attr RT ^curr-id props$rootstate ^chain-next done)
+(@576 ^prop-type equality ^lti-name _P28 ^attr1 Vlabel ^attr2 3 ^id2 props$const ^sub1 _U31)
+(@577 ^depth 1 ^lti-name _U31 ^target-arg id1 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@578 ^name propose*elio*solid-lime-diff*diff ^prop-type instruction-rhs ^const @573 ^action _P29 ^lti-name _Z38)
+(@579 ^prop-type acceptable ^lti-name _P29 ^attr1 4 ^sub1 _U32)
+(@580 ^depth 1 ^lti-name _U32 ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@581 ^name apply*elio*solid-lime-diff*step-2 ^prop-type instruction-lhs ^const @582 ^condition |_P5| ^lti-name _Z35)
+(@582 ^1 elio-sld-2 ^3 lime2 ^2 read)
+(@583 ^name apply*elio*solid-lime-diff*step-2 ^prop-type instruction-rhs ^const @582 ^action _P10 _P26 _P24 ^lti-name _Z36 ^flag o-supported)
+(@584 ^prop-type add ^lti-name _P26 ^attr1 slot2 ^attr2 Vvalue ^sub1 _U28 ^sub2 _U29)
+(@585 ^depth 1 ^lti-name _U28 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@586 ^depth 1 ^lti-name _U29 ^target-arg id2 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@587 ^name propose*elio*solid-lime-diff*step-2 ^prop-type instruction-lhs ^const @588 ^condition |_P2| _P25 ^lti-name _Z33)
+(@588 ^1 solid-lime-diff ^3 elio-sld-2 ^2 lime4)
+(@589 ^prop-type equality ^lti-name _P25 ^attr1 Vlabel ^attr2 2 ^id2 props$const ^sub1 _U27)
+(@590 ^depth 1 ^lti-name _U27 ^target-arg id1 ^chain-attr V ^curr-id props$rootstate ^chain-next done)
+(@591 ^name propose*elio*solid-lime-diff*step-2 ^prop-type instruction-rhs ^const @588 ^action |_P4| ^lti-name _Z34)
+(@592 ^name apply*elio*solid-lime-diff*step-1 ^prop-type instruction-lhs ^const @593 ^condition |_P5| ^lti-name _Z31)
+(@593 ^1 elio-sld-1 ^3 lime4 ^2 read)
+(@594 ^name apply*elio*solid-lime-diff*step-1 ^prop-type instruction-rhs ^const @593 ^action _P10 _P24 ^lti-name _Z32 ^flag o-supported)
+(@595 ^prop-type add ^lti-name _P24 ^attr1 ACout2 ^attr2 3 ^id2 props$const ^sub1 _U26)
+(@596 ^depth 1 ^lti-name _U26 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@597 ^name propose*elio*solid-lime-diff*step-1 ^prop-type instruction-lhs ^const @598 ^condition |_P2| _P22 ^lti-name _Z29)
+(@598 ^1 solid-lime-diff ^2 elio-sld-1)
+(@599 ^prop-type negation ^lti-name _P22 ^attr1 Vlabel ^sub1 _U24)
+(@827 ^name apply*elio*triple-lime*start ^next @828)
+(@601 ^name propose*elio*solid-lime-diff*step-1 ^prop-type instruction-rhs ^const @598 ^action _P23 ^lti-name _Z30)
+(@602 ^prop-type acceptable ^lti-name _P23 ^attr1 2 ^sub1 _U25)
+(@603 ^depth 1 ^lti-name _U25 ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@604 ^name apply*elio*procedure-A*step-7 ^prop-type instruction-lhs ^const @605 ^condition |_P5| ^lti-name _Z27)
+(@605 ^1 elio-A-7 ^3 finish ^2 enter)
+(@606 ^name apply*elio*procedure-A*step-7 ^prop-type instruction-rhs ^const @605 ^action _P10 _P11 _P21 _P18 ^lti-name _Z28 ^flag o-supported)
+(@607 ^prop-type add ^lti-name _P21 ^attr1 Gtask ^attr2 3 ^id2 props$const ^sub1 _U23)
+(@608 ^depth 1 ^lti-name _U23 ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@609 ^name propose*elio*procedure-A*step-7 ^prop-type instruction-lhs ^const @610 ^condition |_P2| |_P9| ^lti-name _Z25)
+(@610 ^1 procedure-a ^3 elio-A-7 ^2 index2-min-mineral)
+(@611 ^name propose*elio*procedure-A*step-7 ^prop-type instruction-rhs ^const @610 ^action |_P4| ^lti-name _Z26)
+(@612 ^name apply*elio*procedure-A*step-6 ^prop-type instruction-lhs ^const @613 ^condition |_P5| ^lti-name _Z23)
+(@613 ^1 elio-A-6 ^3 index2 ^2 enter ^4 index2-min-mineral)
+(@615 ^name propose*elio*procedure-A*step-6 ^prop-type instruction-lhs ^const @616 ^condition |_P2| |_P9| ^lti-name _Z21)
+(@614 ^name apply*elio*procedure-A*step-6 ^prop-type instruction-rhs ^const @613 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z24 ^flag o-supported)
+(@616 ^1 procedure-a ^3 elio-A-6 ^2 index1-div-marine)
+(@618 ^name apply*elio*procedure-A*step-5 ^prop-type instruction-lhs ^const @619 ^condition |_P5| ^lti-name _Z19)
+(@617 ^name propose*elio*procedure-A*step-6 ^prop-type instruction-rhs ^const @616 ^action |_P4| ^lti-name _Z22)
+(@619 ^1 elio-A-5 ^3 marine ^2 enter ^4 index1-div-marine)
+(@621 ^name propose*elio*procedure-A*step-5 ^prop-type instruction-lhs ^const @622 ^condition |_P2| |_P9| ^lti-name _Z17)
+(@620 ^name apply*elio*procedure-A*step-5 ^prop-type instruction-rhs ^const @619 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z20 ^flag o-supported)
+(@622 ^1 procedure-a ^3 elio-A-5 ^2 mean-toxin)
+(@623 ^name propose*elio*procedure-A*step-5 ^prop-type instruction-rhs ^const @622 ^action |_P4| ^lti-name _Z18)
+(@624 ^name apply*elio*procedure-A*step-4 ^prop-type instruction-lhs ^const @625 ^condition |_P5| ^lti-name _Z15)
+(@625 ^1 elio-A-4 ^3 index1 ^2 enter ^5 mean-toxin ^4 nil)
+(@626 ^name apply*elio*procedure-A*step-4 ^prop-type instruction-rhs ^const @625 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P16 _P17 _P20 ^lti-name _Z16 ^flag o-supported)
+(@627 ^prop-type add ^lti-name _P20 ^attr1 slot3 ^attr2 slot3 ^sub1 _U21 ^sub2 _U22)
+(@628 ^depth 1 ^lti-name _U21 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@629 ^depth 1 ^lti-name _U22 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@630 ^name propose*elio*procedure-A*step-4 ^prop-type instruction-lhs ^const @631 ^condition |_P2| |_P9| ^lti-name _Z13)
+(@631 ^1 procedure-a ^3 elio-A-4 ^2 part-plus-mineral)
+(@632 ^name propose*elio*procedure-A*step-4 ^prop-type instruction-rhs ^const @631 ^action |_P4| ^lti-name _Z14)
+(@633 ^name apply*elio*procedure-A*step-3 ^prop-type instruction-lhs ^const @634 ^condition |_P5| ^lti-name _Z11)
+(@634 ^1 elio-A-3 ^3 mineral ^2 enter ^4 part-plus-mineral)
+(@636 ^prop-type add ^lti-name _P19 ^attr1 Gtask ^attr2 4 ^id2 props$const ^sub1 _U20)
+(@635 ^name apply*elio*procedure-A*step-3 ^prop-type instruction-rhs ^const @634 ^action _P10 _P11 _P18 _P12 _P19 ^lti-name _Z12 ^flag o-supported)
+(@637 ^depth 1 ^lti-name _U20 ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@638 ^name propose*elio*procedure-A*step-3 ^prop-type instruction-lhs ^const @639 ^condition |_P2| |_P9| ^lti-name |_Z9|)
+(@639 ^1 procedure-a ^3 elio-A-3 ^2 greater-algae)
+(@640 ^name propose*elio*procedure-A*step-3 ^prop-type instruction-rhs ^const @639 ^action |_P4| ^lti-name _Z10)
+(@641 ^name apply*elio*procedure-A*step-2 ^prop-type instruction-lhs ^const @642 ^condition |_P5| ^lti-name |_Z7|)
+(@642 ^1 elio-A-2 ^3 particulate ^2 enter ^5 greater-algae ^4 nil)
+(@643 ^name apply*elio*procedure-A*step-2 ^prop-type instruction-rhs ^const @642 ^action _P10 _P11 _P18 _P12 _P13 _P14 _P15 _P16 _P17 ^lti-name |_Z8| ^flag o-supported)
+(@644 ^prop-type add ^lti-name _P10 ^attr1 ACout1 ^attr2 2 ^id2 props$const ^sub1 _U10)
+(@645 ^depth 1 ^lti-name _U10 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@646 ^prop-type add ^lti-name _P11 ^attr1 ACout2 ^attr2 slot2 ^sub1 _U11 ^sub2 _U12)
+(@647 ^depth 1 ^lti-name _U11 ^target-arg id1 ^chain-attr AC ^curr-id props$rootstate ^chain-next done)
+(@648 ^depth 1 ^lti-name _U12 ^target-arg id2 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@649 ^prop-type add ^lti-name _P12 ^attr1 slot1 ^attr2 3 ^id2 props$const ^sub1 _U13)
+(@650 ^depth 1 ^lti-name _U13 ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@651 ^prop-type add ^lti-name _P13 ^attr1 slot1 ^attr2 4 ^id2 props$const ^sub1 _U14)
+(@652 ^depth 1 ^lti-name _U14 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@653 ^prop-type add ^lti-name _P14 ^attr1 slot2 ^attr2 4 ^id2 props$const ^sub1 _U15)
+(@654 ^depth 1 ^lti-name _U15 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@655 ^prop-type add ^lti-name _P15 ^attr1 slot3 ^attr2 WM ^id2 props$rootstate ^sub1 _U16)
+(@656 ^depth 1 ^lti-name _U16 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@657 ^prop-type add ^lti-name _P16 ^attr1 slot4 ^attr2 4 ^id2 props$const ^sub1 _U17)
+(@658 ^depth 1 ^lti-name _U17 ^target-arg id1 ^chain-attr NW ^curr-id props$rootstate ^chain-next done)
+(@659 ^prop-type add ^lti-name _P17 ^attr1 Gtask ^attr2 5 ^id2 props$const ^sub1 _U18)
+(@660 ^depth 1 ^lti-name _U18 ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@664 ^1 procedure-a ^3 elio-A-2 ^2 solid-lime-diff)
+(@661 ^prop-type add ^lti-name _P18 ^attr1 clear-rt ^attr2 2 ^id2 props$const ^sub1 _U19)
+(@662 ^depth 1 ^lti-name _U19 ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@663 ^name propose*elio*procedure-A*step-2 ^prop-type instruction-lhs ^const @664 ^condition |_P2| |_P9| ^lti-name |_Z5|)
+(@665 ^prop-type equality ^lti-name |_P9| ^attr1 slot1 ^attr2 2 ^id2 props$const ^sub1 |_U9|)
+(@666 ^depth 1 ^lti-name |_U9| ^target-arg id1 ^chain-attr WM ^curr-id props$rootstate ^chain-next done)
+(@667 ^name propose*elio*procedure-A*step-2 ^prop-type instruction-rhs ^const @664 ^action |_P4| ^lti-name |_Z6|)
+(@668 ^name apply*elio*procedure-A*step-1 ^prop-type instruction-lhs ^const @669 ^condition |_P5| ^lti-name |_Z3|)
+(@669 ^1 elio-A-1 ^2 solid-lime-diff)
+(@893 ^name apply*elio*triple-lime*start ^next @894)
+(@672 ^name apply*elio*procedure-A*step-1 ^prop-type instruction-rhs ^const @669 ^action |_P6| |_P7| |_P8| ^lti-name |_Z4| ^flag o-supported)
+(@673 ^prop-type add ^lti-name |_P6| ^attr1 Gtop ^attr2 WM ^id2 props$rootstate ^sub1 |_U5|)
+(@674 ^depth 1 ^lti-name |_U5| ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@675 ^prop-type add ^lti-name |_P7| ^attr1 Gparent ^attr2 Gtask ^sub1 |_U6| ^sub2 |_U7|)
+(@676 ^depth 1 ^lti-name |_U6| ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@677 ^depth 1 ^lti-name |_U7| ^target-arg id2 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@678 ^prop-type add ^lti-name |_P8| ^attr1 Gtask ^attr2 2 ^id2 props$const ^sub1 |_U8|)
+(@679 ^depth 1 ^lti-name |_U8| ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@680 ^name propose*elio*procedure-A*step-1 ^prop-type instruction-lhs ^const @681 ^condition |_P2| |_P1| |_P3| ^lti-name |_Z1|)
+(@681 ^1 procedure-a ^3 elio-A-1 ^2 nil)
+(@682 ^prop-type equality ^lti-name |_P1| ^attr1 G ^attr2 G ^id1 props$rootstate ^id2 props$rootstate)
+(@683 ^prop-type equality ^lti-name |_P2| ^attr1 Gtask ^attr2 1 ^id2 props$const ^sub1 |_U1|)
+(@684 ^depth 1 ^lti-name |_U1| ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@685 ^prop-type equality ^lti-name |_P3| ^attr1 Gtop ^attr2 2 ^id2 props$const ^sub1 |_U2|)
+(@686 ^depth 1 ^lti-name |_U2| ^target-arg id1 ^chain-attr G ^curr-id props$rootstate ^chain-next done)
+(@687 ^name propose*elio*procedure-A*step-1 ^prop-type instruction-rhs ^const @681 ^action |_P4| ^lti-name |_Z2|)
+(@688 ^prop-type acceptable ^lti-name |_P4| ^attr1 3 ^sub1 |_U3|)
+(@689 ^depth 1 ^lti-name |_U3| ^target-arg id1 ^chain-attr props$const ^curr-id props$rootstate ^chain-next done)
+(@690 ^name propose*elio*procedure-A*step-1 ^top @694)
+(@691 ^name propose*elio*procedure-b*start ^top @695)
+(@692 ^name propose*elio*procedure-d*start ^top @697)
+(@693 ^name propose*elio*procedure-c*start ^top @696)
+(@694 ^name apply*elio*procedure-A*step-1 ^next @698)
+(@695 ^name apply*elio*procedure-b*start ^next @762)
+(@696 ^name apply*elio*procedure-c*start ^next @826)
+(@697 ^name apply*elio*procedure-d*start ^next @892)
+(@698 ^name propose*elio*solid-lime-diff*step-1 ^next @699)
+(@699 ^name apply*elio*solid-lime-diff*step-1 ^next @700)
+(@700 ^name propose*elio*solid-lime-diff*step-2 ^next @701)
+(@701 ^name apply*elio*solid-lime-diff*step-2 ^next @702)
+(@702 ^name propose*elio*solid-lime-diff*diff ^next @703)
+(@703 ^name apply*elio*solid-lime-diff*diff ^next @704)
+(@704 ^name propose*elio*solid-lime-diff*mult ^next @705)
+(@705 ^name apply*elio*solid-lime-diff*mult ^next @706)
+(@706 ^name propose*elio*solid-lime-diff*finish ^next @707)
+(@707 ^name apply*elio*solid-lime-diff*finish ^next @708)
+(@708 ^name propose*elio*procedure-A*step-2 ^next @709)
+(@709 ^name apply*elio*procedure-A*step-2 ^next @710)
+(@710 ^name propose*elio*greater-algae*start ^next @711)
+(@711 ^name apply*elio*greater-algae*start ^next @712)
+(@712 ^name propose*elio*greater-algae*div-2 ^next @713)
+(@713 ^name apply*elio*greater-algae*div-2 ^next @714)
+(@714 ^name propose*elio*greater-algae*read-solid ^next @715)
+(@715 ^name apply*elio*greater-algae*read-solid ^next @716)
+(@716 ^name propose*elio*greater-algae*div-3 ^next @717)
+(@717 ^name apply*elio*greater-algae*div-3 ^next @718)
+(@718 ^name propose*elio*greater-algae*greater ^next @719)
+(@719 ^name apply*elio*greater-algae*greater ^next @720)
+(@720 ^name propose*elio*greater-algae*finish ^next @721)
+(@721 ^name apply*elio*greater-algae*finish ^next @722)
+(@722 ^name propose*elio*procedure-A*step-3 ^next @723)
+(@723 ^name apply*elio*procedure-A*step-3 ^next @724)
+(@724 ^name propose*elio*part-plus-mineral*start ^next @725)
+(@725 ^name apply*elio*part-plus-mineral*start ^next @726)
+(@726 ^name propose*elio*part-plus-mineral*add ^next @727)
+(@727 ^name apply*elio*part-plus-mineral*add ^next @728)
+(@728 ^name propose*elio*part-plus-mineral*finish ^next @729)
+(@729 ^name apply*elio*part-plus-mineral*finish ^next @730)
+(@730 ^name propose*elio*procedure-A*step-4 ^next @731)
+(@731 ^name apply*elio*procedure-A*step-4 ^next @732)
+(@732 ^name propose*elio*mean-toxin*start ^next @733)
+(@733 ^name apply*elio*mean-toxin*start ^next @734)
+(@734 ^name propose*elio*mean-toxin*toxinmin ^next @735)
+(@735 ^name apply*elio*mean-toxin*toxinmin ^next @736)
+(@736 ^name propose*elio*mean-toxin*add ^next @737)
+(@737 ^name apply*elio*mean-toxin*add ^next @738)
+(@738 ^name propose*elio*mean-toxin*divide ^next @739)
+(@739 ^name apply*elio*mean-toxin*divide ^next @740)
+(@740 ^name propose*elio*mean-toxin*finish ^next @741)
+(@741 ^name apply*elio*mean-toxin*finish ^next @742)
+(@742 ^name propose*elio*procedure-A*step-5 ^next @743)
+(@743 ^name apply*elio*procedure-A*step-5 ^next @744)
+(@744 ^name propose*elio*index1-div-marine*start ^next @745)
+(@745 ^name apply*elio*index1-div-marine*start ^next @746)
+(@746 ^name propose*elio*index1-div-marine*next ^next @747)
+(@747 ^name apply*elio*index1-div-marine*next ^next @748)
+(@748 ^name propose*elio*index1-div-marine*divide ^next @749)
+(@749 ^name apply*elio*index1-div-marine*divide ^next @750)
+(@750 ^name propose*elio*index1-div-marine*finish ^next @751)
+(@751 ^name apply*elio*index1-div-marine*finish ^next @752)
+(@752 ^name propose*elio*procedure-A*step-6 ^next @753)
+(@753 ^name apply*elio*procedure-A*step-6 ^next @754)
+(@754 ^name propose*elio*index2-min-mineral*start ^next @755)
+(@755 ^name apply*elio*index2-min-mineral*start ^next @756)
+(@756 ^name propose*elio*index2-min-mineral*subtract ^next @757)
+(@757 ^name apply*elio*index2-min-mineral*subtract ^next @758)
+(@758 ^name propose*elio*index2-min-mineral*finish ^next @759)
+(@759 ^name apply*elio*index2-min-mineral*finish ^next @760)
+(@760 ^name propose*elio*procedure-A*step-7 ^next @761)
+(@761 ^name apply*elio*procedure-A*step-7 ^next nil)
+(@762 ^name propose*elio*mean-toxin*start ^next @763)
+(@763 ^name apply*elio*mean-toxin*start ^next @764)
+(@764 ^name propose*elio*mean-toxin*toxinmin ^next @765)
+(@765 ^name apply*elio*mean-toxin*toxinmin ^next @766)
+(@766 ^name propose*elio*mean-toxin*add ^next @767)
+(@767 ^name apply*elio*mean-toxin*add ^next @768)
+(@768 ^name propose*elio*mean-toxin*divide ^next @769)
+(@769 ^name apply*elio*mean-toxin*divide ^next @770)
+(@770 ^name propose*elio*mean-toxin*finish ^next @771)
+(@771 ^name apply*elio*mean-toxin*finish ^next @772)
+(@772 ^name propose*elio*procedure-b*step-2 ^next @773)
+(@773 ^name apply*elio*procedure-b*step-2 ^next @774)
+(@774 ^name propose*elio*solid-lime-diff*step-1 ^next @775)
+(@775 ^name apply*elio*solid-lime-diff*step-1 ^next @776)
+(@776 ^name propose*elio*solid-lime-diff*step-2 ^next @777)
+(@777 ^name apply*elio*solid-lime-diff*step-2 ^next @778)
+(@778 ^name propose*elio*solid-lime-diff*diff ^next @779)
+(@779 ^name apply*elio*solid-lime-diff*diff ^next @780)
+(@780 ^name propose*elio*solid-lime-diff*mult ^next @781)
+(@781 ^name apply*elio*solid-lime-diff*mult ^next @782)
+(@782 ^name propose*elio*solid-lime-diff*finish ^next @783)
+(@783 ^name apply*elio*solid-lime-diff*finish ^next @784)
+(@784 ^name propose*elio*procedure-b*step-3 ^next @785)
+(@785 ^name apply*elio*procedure-b*step-3 ^next @786)
+(@786 ^name propose*elio*greater-algae*start ^next @787)
+(@787 ^name apply*elio*greater-algae*start ^next @788)
+(@788 ^name propose*elio*greater-algae*div-2 ^next @789)
+(@789 ^name apply*elio*greater-algae*div-2 ^next @790)
+(@790 ^name propose*elio*greater-algae*read-solid ^next @791)
+(@791 ^name apply*elio*greater-algae*read-solid ^next @792)
+(@792 ^name propose*elio*greater-algae*div-3 ^next @793)
+(@793 ^name apply*elio*greater-algae*div-3 ^next @794)
+(@794 ^name propose*elio*greater-algae*greater ^next @795)
+(@795 ^name apply*elio*greater-algae*greater ^next @796)
+(@796 ^name propose*elio*greater-algae*finish ^next @797)
+(@797 ^name apply*elio*greater-algae*finish ^next @798)
+(@798 ^name propose*elio*procedure-b*step-4 ^next @799)
+(@799 ^name apply*elio*procedure-b*step-4 ^next @800)
+(@800 ^name propose*elio*mineral-div-marine*start ^next @801)
+(@801 ^name apply*elio*mineral-div-marine*start ^next @802)
+(@802 ^name propose*elio*mineral-div-marine*skip ^next @803)
+(@803 ^name apply*elio*mineral-div-marine*skip ^next @804)
+(@804 ^name propose*elio*mineral-div-marine*divide ^next @805)
+(@805 ^name apply*elio*mineral-div-marine*divide ^next @806)
+(@806 ^name propose*elio*mineral-div-marine*finish ^next @807)
+(@807 ^name apply*elio*mineral-div-marine*finish ^next @808)
+(@808 ^name propose*elio*procedure-b*step-5 ^next @809)
+(@809 ^name apply*elio*procedure-b*step-5 ^next @810)
+(@810 ^name propose*elio*part-mult-index1*start ^next @811)
+(@811 ^name apply*elio*part-mult-index1*start ^next @812)
+(@812 ^name propose*elio*part-mult-index1*mult ^next @813)
+(@813 ^name apply*elio*part-mult-index1*mult ^next @814)
+(@814 ^name propose*elio*part-mult-index1*finish ^next @815)
+(@815 ^name apply*elio*part-mult-index1*finish ^next @816)
+(@816 ^name propose*elio*procedure-b*step-6 ^next @817)
+(@817 ^name apply*elio*procedure-b*step-6 ^next @818)
+(@818 ^name propose*elio*index1-plus-index2*start ^next @819)
+(@819 ^name apply*elio*index1-plus-index2*start ^next @820)
+(@820 ^name propose*elio*index1-plus-index2*add ^next @821)
+(@821 ^name apply*elio*index1-plus-index2*add ^next @822)
+(@822 ^name propose*elio*index1-plus-index2*finish ^next @823)
+(@823 ^name apply*elio*index1-plus-index2*finish ^next @824)
+(@824 ^name propose*elio*procedure-b*finish ^next @825)
+(@825 ^name apply*elio*procedure-b*finish ^next nil)
+(@826 ^name propose*elio*triple-lime*start ^next @827)
+(@828 ^name propose*elio*triple-lime*mult ^next @829)
+(@829 ^name apply*elio*triple-lime*mult ^next @830)
+(@830 ^name propose*elio*triple-lime*read ^next @831)
+(@831 ^name apply*elio*triple-lime*read ^next @832)
+(@832 ^name propose*elio*triple-lime*add ^next @833)
+(@833 ^name apply*elio*triple-lime*add ^next @834)
+(@834 ^name propose*elio*triple-lime*finish ^next @835)
+(@835 ^name apply*elio*triple-lime*finish ^next @836)
+(@836 ^name propose*elio*procedure-c*step-2 ^next @837)
+(@837 ^name apply*elio*procedure-c*step-2 ^next @838)
+(@838 ^name propose*elio*lesser-evil*read-solid ^next @839)
+(@839 ^name apply*elio*lesser-evil*read-solid ^next @840)
+(@840 ^name propose*elio*lesser-evil*read-lime1 ^next @841)
+(@841 ^name apply*elio*lesser-evil*read-lime1 ^next @842)
+(@842 ^name propose*elio*lesser-evil*add-lime1 ^next @843)
+(@843 ^name apply*elio*lesser-evil*add-lime1 ^next @844)
+(@844 ^name propose*elio*lesser-evil*read-algae ^next @845)
+(@845 ^name apply*elio*lesser-evil*read-algae ^next @846)
+(@846 ^name propose*elio*lesser-evil*read-toxin3 ^next @847)
+(@847 ^name apply*elio*lesser-evil*read-toxin3 ^next @848)
+(@848 ^name propose*elio*lesser-evil*toxin3 ^next @849)
+(@849 ^name apply*elio*lesser-evil*toxin3 ^next @850)
+(@850 ^name propose*elio*lesser-evil*read-intermediate ^next @851)
+(@851 ^name apply*elio*lesser-evil*read-intermediate ^next @852)
+(@852 ^name propose*elio*lesser-evil*greater-than-false ^next @853)
+(@853 ^name apply*elio*lesser-evil*greater-than-false ^next @854)
+(@854 ^name propose*elio*procedure-c*step-3 ^next @855)
+(@855 ^name apply*elio*procedure-c*step-3 ^next @856)
+(@856 ^name propose*elio*part-plus-mineral*start ^next @857)
+(@857 ^name apply*elio*part-plus-mineral*start ^next @858)
+(@858 ^name propose*elio*part-plus-mineral*add ^next @859)
+(@859 ^name apply*elio*part-plus-mineral*add ^next @860)
+(@860 ^name propose*elio*part-plus-mineral*finish ^next @861)
+(@861 ^name apply*elio*part-plus-mineral*finish ^next @862)
+(@862 ^name propose*elio*procedure-c*step-4 ^next @863)
+(@863 ^name apply*elio*procedure-c*step-4 ^next @864)
+(@864 ^name propose*elio*solid-div-lime*read-solid ^next @865)
+(@865 ^name apply*elio*solid-div-lime*read-solid ^next @866)
+(@866 ^name propose*elio*solid-div-lime*read-lime1 ^next @867)
+(@867 ^name apply*elio*solid-div-lime*read-lime1 ^next @868)
+(@868 ^name propose*elio*solid-div-lime*div-lime1 ^next @869)
+(@869 ^name apply*elio*solid-div-lime*div-lime1 ^next @870)
+(@870 ^name propose*elio*solid-div-lime*finish ^next @871)
+(@871 ^name apply*elio*solid-div-lime*finish ^next @872)
+(@872 ^name propose*elio*procedure-c*step-5 ^next @873)
+(@873 ^name apply*elio*procedure-c*step-5 ^next @874)
+(@874 ^name propose*elio*index1-div-marine*start ^next @875)
+(@875 ^name apply*elio*index1-div-marine*start ^next @876)
+(@876 ^name propose*elio*index1-div-marine*next ^next @877)
+(@877 ^name apply*elio*index1-div-marine*next ^next @878)
+(@878 ^name propose*elio*index1-div-marine*divide ^next @879)
+(@879 ^name apply*elio*index1-div-marine*divide ^next @880)
+(@880 ^name propose*elio*index1-div-marine*finish ^next @881)
+(@881 ^name apply*elio*index1-div-marine*finish ^next @882)
+(@882 ^name propose*elio*procedure-c*step-6 ^next @883)
+(@883 ^name apply*elio*procedure-c*step-6 ^next @884)
+(@884 ^name propose*elio*index2-min-mineral*start ^next @885)
+(@885 ^name apply*elio*index2-min-mineral*start ^next @886)
+(@886 ^name propose*elio*index2-min-mineral*subtract ^next @887)
+(@887 ^name apply*elio*index2-min-mineral*subtract ^next @888)
+(@888 ^name propose*elio*index2-min-mineral*finish ^next @889)
+(@889 ^name apply*elio*index2-min-mineral*finish ^next @890)
+(@890 ^name propose*elio*procedure-c*step-7 ^next @891)
+(@891 ^name apply*elio*procedure-c*step-7 ^next nil)
+(@892 ^name propose*elio*triple-lime*start ^next @893)
+(@894 ^name propose*elio*triple-lime*mult ^next @895)
+(@895 ^name apply*elio*triple-lime*mult ^next @896)
+(@896 ^name propose*elio*triple-lime*read ^next @897)
+(@897 ^name apply*elio*triple-lime*read ^next @898)
+(@898 ^name propose*elio*triple-lime*add ^next @899)
+(@899 ^name apply*elio*triple-lime*add ^next @900)
+(@900 ^name propose*elio*triple-lime*finish ^next @901)
+(@901 ^name apply*elio*triple-lime*finish ^next @902)
+(@902 ^name propose*elio*procedure-d*step-2 ^next @903)
+(@903 ^name apply*elio*procedure-d*step-2 ^next @904)
+(@904 ^name propose*elio*lesser-evil*read-solid ^next @905)
+(@905 ^name apply*elio*lesser-evil*read-solid ^next @906)
+(@906 ^name propose*elio*lesser-evil*read-lime1 ^next @907)
+(@907 ^name apply*elio*lesser-evil*read-lime1 ^next @908)
+(@908 ^name propose*elio*lesser-evil*add-lime1 ^next @909)
+(@909 ^name apply*elio*lesser-evil*add-lime1 ^next @910)
+(@910 ^name propose*elio*lesser-evil*read-algae ^next @911)
+(@911 ^name apply*elio*lesser-evil*read-algae ^next @912)
+(@912 ^name propose*elio*lesser-evil*read-toxin3 ^next @913)
+(@913 ^name apply*elio*lesser-evil*read-toxin3 ^next @914)
+(@914 ^name propose*elio*lesser-evil*toxin3 ^next @915)
+(@915 ^name apply*elio*lesser-evil*toxin3 ^next @916)
+(@916 ^name propose*elio*lesser-evil*read-intermediate ^next @917)
+(@917 ^name apply*elio*lesser-evil*read-intermediate ^next @918)
+(@918 ^name propose*elio*lesser-evil*greater-than-false ^next @919)
+(@919 ^name apply*elio*lesser-evil*greater-than-false ^next @920)
+(@920 ^name propose*elio*procedure-d*step-3 ^next @921)
+(@921 ^name apply*elio*procedure-d*step-3 ^next @922)
+(@922 ^name propose*elio*solid-div-lime*read-solid ^next @923)
+(@923 ^name apply*elio*solid-div-lime*read-solid ^next @924)
+(@924 ^name propose*elio*solid-div-lime*read-lime1 ^next @925)
+(@925 ^name apply*elio*solid-div-lime*read-lime1 ^next @926)
+(@926 ^name propose*elio*solid-div-lime*div-lime1 ^next @927)
+(@927 ^name apply*elio*solid-div-lime*div-lime1 ^next @928)
+(@928 ^name propose*elio*solid-div-lime*finish ^next @929)
+(@929 ^name apply*elio*solid-div-lime*finish ^next @930)
+(@930 ^name propose*elio*procedure-d*step-4 ^next @931)
+(@931 ^name apply*elio*procedure-d*step-4 ^next @932)
+(@932 ^name propose*elio*mineral-div-marine*start ^next @933)
+(@933 ^name apply*elio*mineral-div-marine*start ^next @934)
+(@934 ^name propose*elio*mineral-div-marine*skip ^next @935)
+(@935 ^name apply*elio*mineral-div-marine*skip ^next @936)
+(@936 ^name propose*elio*mineral-div-marine*divide ^next @937)
+(@937 ^name apply*elio*mineral-div-marine*divide ^next @938)
+(@938 ^name propose*elio*mineral-div-marine*finish ^next @939)
+(@939 ^name apply*elio*mineral-div-marine*finish ^next @940)
+(@940 ^name propose*elio*procedure-d*step-5 ^next @941)
+(@941 ^name apply*elio*procedure-d*step-5 ^next @942)
+(@942 ^name propose*elio*part-mult-index1*start ^next @943)
+(@943 ^name apply*elio*part-mult-index1*start ^next @944)
+(@944 ^name propose*elio*part-mult-index1*mult ^next @945)
+(@945 ^name apply*elio*part-mult-index1*mult ^next @946)
+(@946 ^name propose*elio*part-mult-index1*finish ^next @947)
+(@947 ^name apply*elio*part-mult-index1*finish ^next @948)
+(@948 ^name propose*elio*procedure-d*step-6 ^next @949)
+(@949 ^name apply*elio*procedure-d*step-6 ^next @950)
+(@950 ^name propose*elio*index1-plus-index2*start ^next @951)
+(@951 ^name apply*elio*index1-plus-index2*start ^next @952)
+(@952 ^name propose*elio*index1-plus-index2*add ^next @953)
+(@953 ^name apply*elio*index1-plus-index2*add ^next @954)
+(@954 ^name propose*elio*index1-plus-index2*finish ^next @955)
+(@955 ^name apply*elio*index1-plus-index2*finish ^next @956)
+(@956 ^name propose*elio*procedure-d*step-7 ^next @957)
+(@957 ^name apply*elio*procedure-d*step-7 ^next nil)
+(@958 ^slot4 4 ^slot2 9 ^slot3 5 ^slot1 subtract ^isa fact)
+(@959 ^slot4 24 ^slot2 6 ^slot3 4 ^slot1 mult ^isa fact)
+(@960 ^slot4 1 ^slot2 2 ^slot3 2 ^slot1 div ^isa fact)
+(@961 ^slot4 2 ^slot2 6 ^slot3 3 ^slot1 div ^isa fact)
+(@962 ^slot4 2 ^slot2 1 ^slot3 2 ^slot1 greater-of ^isa fact)
+(@963 ^slot4 26 ^slot2 24 ^slot3 2 ^slot1 add ^isa fact)
+(@964 ^slot4 10 ^slot2 8 ^slot3 2 ^slot1 add ^isa fact)
+(@965 ^slot4 5 ^slot2 10 ^slot3 2 ^slot1 div ^isa fact)
+(@966 ^slot4 5 ^slot2 26 ^slot3 5 ^slot1 div ^isa fact)
+(@967 ^slot4 3 ^slot2 5 ^slot3 2 ^slot1 subtract ^isa fact)
+(@968 ^slot4 12 ^slot2 24 ^slot3 2 ^slot1 div ^isa fact)
+(@969 ^slot4 60 ^slot2 5 ^slot3 12 ^slot1 mult ^isa fact)
+(@970 ^slot4 72 ^slot2 60 ^slot3 12 ^slot1 add ^isa fact)
+(@971 ^slot4 3 ^slot2 1 ^slot3 3 ^slot1 mult ^isa fact)
+(@972 ^slot4 5 ^slot2 3 ^slot3 2 ^slot1 add ^isa fact)
+(@973 ^slot4 9 ^slot2 6 ^slot3 3 ^slot1 add ^isa fact)
+(@974 ^slot4 9 ^slot2 2 ^slot3 7 ^slot1 add ^isa fact)
+(@975 ^slot4 false ^slot2 9 ^slot3 9 ^slot1 greater-than ^isa fact)
+(@976 ^slot4 14 ^slot2 5 ^slot3 9 ^slot1 add ^isa fact)
+(@977 ^slot4 2 ^slot2 6 ^slot3 3 ^slot1 div ^isa fact)
+(@978 ^slot4 7 ^slot2 14 ^slot3 2 ^slot1 div ^isa fact)
+(@979 ^slot4 -2 ^slot2 7 ^slot3 9 ^slot1 subtract ^isa fact)
+(@980 ^slot4 4 ^slot2 9 ^slot3 2 ^slot1 div ^isa fact)
+(@981 ^slot4 20 ^slot2 5 ^slot3 4 ^slot1 mult ^isa fact)
+(@982 ^slot4 24 ^slot2 20 ^slot3 4 ^slot1 add ^isa fact)
+}
+
+# EXTRAS:
+
+multi-attributes condition 4
+multi-attributes action 5
+multi-attributes instructions 3
+multi-attributes props-instructions 3
+multi-attributes count 10
+
+chunk singleton state literalize constant
+chunk singleton identifier condition constant
+chunk singleton identifier action constant
+chunk singleton identifier lti-name constant
+
