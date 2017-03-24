@@ -27,6 +27,8 @@
 #include "run_soar.h"
 #include "symbol_manager.h"
 
+#include <locale>
+
 /* -----------------------------------------------------------------
                        First Letter From Symbol
 
