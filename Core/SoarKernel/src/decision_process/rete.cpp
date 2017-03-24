@@ -2748,25 +2748,6 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     }
 }
 
-void add_varname_identity_to_test(agent* thisAgent, varnames* vn, test t)
-{
-//    test New;
-    cons* c;
-    Symbol* temp;
-
-    if (vn == NIL) return;
-
-    assert (varnames_is_one_var(vn));
-    temp = varnames_to_one_var(vn);
-    if (!t->data.referent->is_variable())
-    {
-        t->identity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(temp);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test adding identity %u for var %y\n", t->identity, temp);
-    } else {
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varname_identity_to_test did not add identity to %y because ungrounded NCC var\n", temp);
-    }
-}
-
 /* -------------------------------------------------------------------
      Creating the Node Varnames Structures for a List of Conditions
 
@@ -3974,19 +3955,15 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
             production_addition_result = REFRACTED_INST_MATCHED;
         }
     }
-    
-    /* The following was used to discard var names.  Not currently compatible with EBC.  If we want to
-     * save memory and throw the chunk names out, we'll need to change explanation trace
-     * generation to handle a null nvn.  It might just be a matter of gensymm'ing symbols, but
-     * we might have to keep track of stuff to get the identities of the gensymmed vars consistent 
-     * across conditions and actions. */
 
     /* --- if not a chunk, store variable name information --- */
-    if ((p->type==CHUNK_PRODUCTION_TYPE) && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_REGENERATE_VARS]) {
+    if (p->type == CHUNK_PRODUCTION_TYPE)
+    {
         p->p_node->b.p.parents_nvn = NIL;
         p->rhs_unbound_variables = NIL;
         thisAgent->symbolManager->deallocate_symbol_list_removing_references (rhs_unbound_vars_for_new_prod);
-    } else
+    }
+    else
     {
         /* --- Store variable name information --- */
         p->p_node->b.p.parents_nvn = get_nvn_for_condition_list(thisAgent, lhs_top, NIL);
