@@ -27,8 +27,6 @@
 #include "run_soar.h"
 #include "symbol_manager.h"
 
-#include <locale>
-
 /* -----------------------------------------------------------------
                        First Letter From Symbol
 
@@ -46,11 +44,11 @@ char first_letter_from_symbol(Symbol* sym)
     switch (sym->symbol_type)
     {
         case VARIABLE_SYMBOL_TYPE:
-            return std::tolower(*(sym->var->name + 1));
+            return static_cast<char>(*(sym->var->name + 1));
         case IDENTIFIER_SYMBOL_TYPE:
-            return std::tolower(sym->id->name_letter);
+            return sym->id->name_letter;
         case STR_CONSTANT_SYMBOL_TYPE:
-            return std::tolower(*(sym->sc->name));
+            return static_cast<char>(tolower(*(sym->sc->name)));
         case INT_CONSTANT_SYMBOL_TYPE:
             return 'i';
         case FLOAT_CONSTANT_SYMBOL_TYPE:
