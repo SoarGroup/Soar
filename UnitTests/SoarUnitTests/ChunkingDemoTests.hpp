@@ -40,6 +40,7 @@ class ChunkingDemoTests : public FunctionalTestHarness
         TEST(PRIMS_Sanity1, -1);
         TEST(PRIMS_Sanity2, -1);
         TEST(Teach_Soar_90_Games, -1);
+//        TEST(Teach_Soar_9_Games, -1);
 
 
         void Demo_Arithmetic();
@@ -60,6 +61,7 @@ class ChunkingDemoTests : public FunctionalTestHarness
         void PRIMS_Sanity1();
         void PRIMS_Sanity2();
         void Teach_Soar_90_Games();
+        void Teach_Soar_9_Games();
 
     private:
         void check_chunk(const char* pTestName, int64_t decisions, int64_t expected_chunks, bool directSourceChunks = false);

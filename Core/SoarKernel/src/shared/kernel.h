@@ -68,12 +68,34 @@
 /* =============================== */
 #ifndef SOAR_RELEASE_VERSION
 
-    //#define MEMORY_POOL_STATS     /* Collects memory pool stats for stats command */
-    #define MEM_POOLS_ENABLED 1   /* Whether to use memory pools or the heap for allocation */
+    //#define MEMORY_POOL_STATS             /* Collects memory pool stats for stats command */
+    #define MEM_POOLS_ENABLED 1             /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
         #define USE_UNORDERED_STL           /* Whether to use unordered STL structures that don't use memory pools instead of ordered ones that do */
     #endif
+
+    //#define EBC_SANITY_CHECK_RULES
+    //#define DONT_PROPAGATE_ID_SETS
+
+/* The debug inventories keep track of instantiations/prefs/wme allocation/deallocation
+     * using numeric IDs to see if any are still around at soar init or exit.  Code that
+     * changes refcounts are instrumented to add these counts.  Compiled out in optimized build.
+     *
+     * Note: Unit tests that use multiple agents will fail if inventories are enabled. If
+     *       someone wanted to use this stuff with multiple agents, they'd need to move the
+     *       inventory tracking maps somewhere that they can be agent specific. */
+
+    //#define DEBUG_GDS_INVENTORY
+    //#define DEBUG_INSTANTIATION_INVENTORY
+    //#define DEBUG_PREFERENCE_INVENTORY
+    //#define DEBUG_WME_INVENTORY
+    //#define DEBUG_IDSET_INVENTORY
+    //#define DEBUG_RHS_SYMBOL_INVENTORY
+    //#define DEBUG_RHS_FUNCTION_INVENTORY
+    //#define DEBUG_ACTION_INVENTORY
+    //#define DEBUG_TEST_INVENTORY
+    //#define DEBUG_REFCOUNT_CHANGE_REGIONS
 
     //#define DEBUG_MEMORY            /* Fills with garbage on deallocation. Can be set to also zero out memory on init.*/
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting */

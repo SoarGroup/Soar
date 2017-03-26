@@ -8,9 +8,6 @@
 #ifndef EBC_MANAGER_H_
 #define EBC_MANAGER_H_
 
-//#define EBC_SANITY_CHECK_RULES
-//#define DONT_PROPAGATE_ID_SETS
-
 #include "kernel.h"
 
 #include "ebc_structs.h"
