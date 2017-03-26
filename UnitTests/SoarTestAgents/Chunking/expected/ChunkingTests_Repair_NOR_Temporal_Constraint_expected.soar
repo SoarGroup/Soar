@@ -20,5 +20,4 @@ sp {answer*apply*query*success*1*OpNoChange*t4-1
     -->
     (<s1> ^result <l1> +)
     (<l1> ^D Y +)
-    (link-stm-to-ltm <l1> 2)
 }
