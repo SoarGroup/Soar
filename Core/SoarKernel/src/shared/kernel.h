@@ -13,7 +13,7 @@
 #include "forward.h"
 #include "macros.h"
 
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -72,7 +72,7 @@
     #define MEM_POOLS_ENABLED 1             /* Whether to use memory pools or the heap for allocation */
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1   /* Whether to use custom STL allocators that use memory pools */
-        #define USE_UNORDERED_STL           /* Whether to use unordered STL structures that don't use memory pools instead of ordered ones that do */
+        //#define USE_UNORDERED_STL           /* Whether to use unordered STL structures that don't use memory pools instead of ordered ones that do */
     #endif
 
     //#define EBC_SANITY_CHECK_RULES
@@ -110,7 +110,7 @@
     #define MEM_POOLS_ENABLED 1
     #ifdef MEM_POOLS_ENABLED
         #define USE_MEM_POOL_ALLOCATORS 1
-        //#define USE_UNORDERED_STL
+//        #define USE_UNORDERED_STL
     #endif
 #endif
 
