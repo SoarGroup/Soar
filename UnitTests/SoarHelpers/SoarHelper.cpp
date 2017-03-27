@@ -17,6 +17,12 @@
 
 std::string SoarHelper::ResourceDirectory = "./SoarUnitTests/";
 
+bool SoarHelper::run_as_unit_test = true;
+bool SoarHelper::no_explainer = false;
+bool SoarHelper::save_after_action_report = false;
+bool SoarHelper::save_logs = false;
+bool SoarHelper::no_init_soar = false;
+
 void SoarHelper::agent_command(sml::Agent* agent, const char* pCmd)
 {
     agent->ExecuteCommandLine(pCmd, true, false);
@@ -36,25 +42,29 @@ bool SoarHelper::source(sml::Agent* agent, const std::string& pCategoryName, con
 void SoarHelper::check_learning_override(sml::Agent* agent)
 {
     #ifdef ALWAYS_LEARN
-        #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
             SoarHelper::agent_command(agent,"output log -a Forcing learning on.");
-        #endif
+    }
         SoarHelper::agent_command(agent,"chunk always");
     #endif
     #ifdef NEVER_LEARN
-        #ifdef SAVE_LOG_FILES
+        if (SoarHelper::save_logs)
+        {
             SoarHelper::agent_command(agent,"output log -a Forcing learning off.");
-        #endif
+        }
         SoarHelper::agent_command(agent,"chunk never");
     #endif
 }
 
 void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
 {
-    #ifdef INIT_AFTER_RUN
-    #ifdef SAVE_LOG_FILES
-        SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
-    #endif
+    if (!SoarHelper::no_init_soar)
+    {
+        if (SoarHelper::save_logs)
+        {
+            SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
+        }
     SoarHelper::agent_command(agent,"soar init");
     SoarHelper::agent_command(agent,"trace 0");
     SoarHelper::agent_command(agent,"run 100");
@@ -66,7 +76,7 @@ void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
     std::cout << "Init passed.  Test ";
     #endif
     std::cout.flush();
-#endif
+    }
 }
 void SoarHelper::add_log_dir_if_exists(std::string &lPath)
 {
@@ -82,35 +92,40 @@ void SoarHelper::add_log_dir_if_exists(std::string &lPath)
 void SoarHelper::start_log(sml::Agent* agent, const char* pTestName)
 {
     std::string lCmdName("output log ");
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         SoarHelper::add_log_dir_if_exists(lCmdName);
-    #endif
+    }
     lCmdName += pTestName;
     lCmdName += "_log.txt";
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         SoarHelper::agent_command(agent,lCmdName.c_str());
-    #endif
+    }
 }
 
 void SoarHelper::continue_log(sml::Agent* agent, const char* pTestName)
 {
     std::string lCmdName("output log -A ");
-    #ifdef SAVE_LOG_FILES
-        SoarHelper::add_log_dir_if_exists(lCmdName);
-    #endif
+    if (SoarHelper::save_logs)
+    {
+       SoarHelper::add_log_dir_if_exists(lCmdName);
+    }
     lCmdName += pTestName;
     lCmdName += "_log.txt";
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         SoarHelper::agent_command(agent,lCmdName.c_str());
-    #endif
+    }
 }
 
 void SoarHelper::close_log(sml::Agent* agent)
 {
     std::string lCmdName("output log -c");
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         SoarHelper::agent_command(agent,lCmdName.c_str());
-    #endif
+    }
 }
 int SoarHelper::getD_CYCLE_COUNT(sml::Agent* agent)
 {

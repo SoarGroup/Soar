@@ -48,15 +48,16 @@ void ChunkingDemoTests::tearDown(bool caught)
 void ChunkingDemoTests::save_chunks(const char* pTestName)
 {
     std::string lCmdName;
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         lCmdName = "output command-to-file ";
         SoarHelper::add_log_dir_if_exists(lCmdName);
         lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frc";
-    #else
+    } else {
         lCmdName = "output command-to-file temp_chunks.soar print -fcr";
-    #endif
+    }
     SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
@@ -64,30 +65,32 @@ void ChunkingDemoTests::save_chunks(const char* pTestName)
 void ChunkingDemoTests::save_chunks_internal(const char* pTestName)
 {
     std::string lCmdName;
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         lCmdName = "output command-to-file ";
         SoarHelper::add_log_dir_if_exists(lCmdName);
         lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar print -frci";
-    #else
+    } else {
         lCmdName = "output command-to-file temp_chunks.soar print -fcri";
-    #endif
+    }
     SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
 void ChunkingDemoTests::source_saved_chunks(const char* pTestName)
 {
     std::string lCmdName;
-    #ifdef SAVE_LOG_FILES
+    if (SoarHelper::save_logs)
+    {
         lCmdName = "source ";
         SoarHelper::add_log_dir_if_exists(lCmdName);
         lCmdName += "temp_chunks_";
         lCmdName += pTestName;
         lCmdName += ".soar";
-    #else
+    } else {
         lCmdName = "source temp_chunks.soar";
-    #endif
+    }
     SoarHelper::agent_command(agent,lCmdName.c_str());
 }
 
@@ -95,13 +98,15 @@ void ChunkingDemoTests::check_chunk(const char* pTestName, int64_t decisions, in
 {
     SoarHelper::start_log(agent, pTestName);
     assertTrue_msg("Could not find " + this->getCategoryName() + " test file '" + pTestName + "'", SoarHelper::source(agent, this->getCategoryName(), pTestName));
-    #ifdef TURN_EXPLAINER_ON
+    if (!SoarHelper::no_explainer)
+    {
         SoarHelper::agent_command(agent,"explain all on");
         SoarHelper::agent_command(agent,"explain just on");
-    #endif
-//    #ifdef SAVE_LOG_FILES
-//        SoarHelper::agent_command(agent,"trace -CbL 2");
-//    #endif
+    }
+    //    if (SoarHelper::save_logs)
+    //    {
+    //        SoarHelper::agent_command(agent,"trace -CbL 2");
+    //    }
     SoarHelper::check_learning_override(agent);
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
@@ -111,11 +116,12 @@ void ChunkingDemoTests::check_chunk(const char* pTestName, int64_t decisions, in
 
 void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chunks, bool directSourceChunks)
 {
-    #ifdef SAVE_LOG_FILES
-    SoarHelper::agent_command(agent,"chunk ?");
-    SoarHelper::agent_command(agent,"production firing-count");
-    SoarHelper::agent_command(agent,"print -cf");
-    #endif
+    if (SoarHelper::save_logs)
+    {
+        SoarHelper::agent_command(agent,"chunk ?");
+        SoarHelper::agent_command(agent,"production firing-count");
+        SoarHelper::agent_command(agent,"print -cf");
+    }
     if (!directSourceChunks)
     {
         SoarHelper::close_log(agent);
@@ -151,15 +157,17 @@ void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chu
         if (ignored < expected_chunks)
         {
             outStringStream << "Only learned " << ignored << " of the expected " << expected_chunks << ".";
-            #ifdef SAVE_LOG_FILES
-            agent->ExecuteCommandLine((std::string("output log --add |") + outStringStream.str().c_str() + std::string("|")).c_str(), false, false);
-            SoarHelper::agent_command(agent,"print -cf");
-            #endif
+            if (SoarHelper::save_logs)
+            {
+                agent->ExecuteCommandLine((std::string("output log --add |") + outStringStream.str().c_str() + std::string("|")).c_str(), false, false);
+                SoarHelper::agent_command(agent,"print -cf");
+            }
         } else {
             std::cout << " " << ignored << "/" << expected_chunks << " ";
-            #ifdef SAVE_LOG_FILES
-            agent->ExecuteCommandLine("output log -a Success!!!  All expected rules were learned!!!", false, false);
-            #endif
+            if (SoarHelper::save_logs)
+            {
+                agent->ExecuteCommandLine("output log -a Success!!!  All expected rules were learned!!!", false, false);
+            }
         }
         assertTrue_msg(outStringStream.str().c_str(), ignored >= expected_chunks);
     }

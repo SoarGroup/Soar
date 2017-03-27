@@ -9,11 +9,6 @@
 #ifndef SoarHelper_cpp
 #define SoarHelper_cpp
 
-
-//#define INIT_AFTER_RUN                    // Tests for Soar identifier leaks on soar init
-#define CONFIGURE_SOAR_FOR_UNIT_TESTS     // Insures debug printing and settings.soar file don't interfere
-//#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
-#define TURN_EXPLAINER_ON               // Turns the explainer on for all chunking unit tests
 //#define NEVER_LEARN                     // Overrides learning settings in many unit tests
 //#define ALWAYS_LEARN
 
@@ -58,6 +53,12 @@ public:
     static void start_log(sml::Agent* agent, const char* path);
     static void continue_log(sml::Agent* agent, const char* path);
     static void close_log(sml::Agent* agent);
+
+    static bool no_explainer;
+    static bool save_after_action_report;
+    static bool save_logs;
+    static bool no_init_soar;
+    static bool run_as_unit_test;
 
 private:
 	static std::string FindFile(std::string filename, std::string path);
