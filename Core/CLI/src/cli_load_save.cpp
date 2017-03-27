@@ -766,7 +766,6 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     if (m_first_sourced_file.empty() && (filename != "settings.soar") && (filename != "settings_mazin.soar"))
     {
-        std::cout << "Setting m_first_sourced_file to " << filename << std::endl;
         m_first_sourced_file = filename;
     }
 

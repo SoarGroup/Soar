@@ -15,29 +15,3 @@ sp {answer*selection*select*success-evaluation-becomes-best-preference*Tie*t37-1
     -->
     (<s1> ^operator <o6> >)
 }
-
-sp {answer*P2b*elaborate*table*clear*Tie*t14-5
-    (state <s1> ^top-state <t1>)
-   -{ (<s1> ^operator <o1>)
-      (<o1> ^name evaluate-operator)}
-    (<t1> ^flag move-block-lookahead ^object <o2>)
-    (<o2> ^type table)
-    -->
-    (<t1> ^clear <o2> +)
-}
-
-sp {answer*P1b*elaborate*block*clear*Tie*t14-1
-    (state <s1> ^top-state <t1>)
-   -{ (<s1> ^operator <o1>)
-      (<o1> ^name evaluate-operator)}
-    (<t1> ^flag move-block-lookahead ^object <o2>)
-   -{ (<t1> ^ontop <o3>)
-      (<o3> ^bottom-block <o2>)}
-   -{ (<t1> ^gripper <g1>)
-      (<g1> ^holding <o2>)}
-    -->
-    (<t1> ^clear <o2> +)
-}
-
-
-

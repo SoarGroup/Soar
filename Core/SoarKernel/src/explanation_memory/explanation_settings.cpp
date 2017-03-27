@@ -26,7 +26,7 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     constraints = new soar_module::boolean_param("constraints", on, new soar_module::f_predicate<boolean>());
     identity = new soar_module::boolean_param("identity", on, new soar_module::f_predicate<boolean>());
     stats = new soar_module::boolean_param("stats", on, new soar_module::f_predicate<boolean>());
-    after_action_report = new soar_module::boolean_param("after-action-report", on, new soar_module::f_predicate<boolean>());
+    after_action_report = new soar_module::boolean_param("after-action-report", off, new soar_module::f_predicate<boolean>());
 
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());

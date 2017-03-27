@@ -1,0 +1,20 @@
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+
+multi-attributes jug 3
+multi-attributes superstate-set 20
+
+chunk singleton any volume any
+chunk singleton any contents any
+chunk singleton any jug any
+
+pushd "../../default" 
+source selection.soar
+popd
+
+srand 1 # For consistency for testing
+
+chunk always
+chunk add-osk on

@@ -16,7 +16,7 @@
  * able to detect they're duplicates using the sourcing mechanism these tests use to verify chunk contents.  */
 
 void ChunkingDemoTests::Demo_Arithmetic()                                 { check_chunk("Demo_Arithmetic", 2810, 29, false); }
-void ChunkingDemoTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 3, false); }
+void ChunkingDemoTests::Demo_Blocks_World_Hierarchical_Look_Ahead()       { check_chunk("Demo_Blocks_World_Hierarchical_Look_Ahead", 47, 1, false); }
 void ChunkingDemoTests::Demo_Blocks_World_Hierarchical()                  { check_chunk("Demo_Blocks_World_Hierarchical", 24, 20, false); }
 void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead_State_Evaluation()   { check_chunk("Demo_Blocks_World_Look_Ahead_State_Evaluation", 61, 40, false); }
 void ChunkingDemoTests::Demo_Blocks_World_Look_Ahead()                    { check_chunk("Demo_Blocks_World_Look_Ahead", 64, 8, false); }
@@ -27,7 +27,7 @@ void ChunkingDemoTests::Demo_MaC_Planning()                               { chec
 void ChunkingDemoTests::Demo_RL_Unit()                                    { check_chunk("Demo_RL_Unit", 26, 15, false); }
 void ChunkingDemoTests::Demo_ToH_Recursive()                              { check_chunk("Demo_ToH_Recursive", 30, 61, false); }
 void ChunkingDemoTests::Demo_Water_Jug_Hierarchy()                        { check_chunk("Demo_Water_Jug_Hierarchy", 99, 3, false); }
-void ChunkingDemoTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 419, 34, false); }
+void ChunkingDemoTests::Demo_Water_Jug_Look_Ahead()                       { check_chunk("Demo_Water_Jug_Look_Ahead", 400, 34, false); }
 void ChunkingDemoTests::Demo_Water_Jug_Tie()                              { check_chunk("Demo_Water_Jug_Tie", 21, 5, false); }
 void ChunkingDemoTests::Elio_Agent()                                      { check_chunk("Elio_Agent", 795, 135, false); }
 void ChunkingDemoTests::PRIMS_Sanity1()                                   { check_chunk("PRIMS_Sanity1", 795, 23, false); }
