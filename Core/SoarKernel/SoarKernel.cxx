@@ -36,6 +36,7 @@
 #include <explanation_memory.cpp>
 #include <explanation_settings.cpp>
 #include <exploration.cpp>
+#include <after_action_report.cpp>
 #include <identity_record.cpp>
 #include <instantiation_record.cpp>
 #include <instantiation.cpp>

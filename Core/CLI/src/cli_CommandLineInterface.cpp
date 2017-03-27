@@ -88,6 +88,8 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::TraceCommand(*this));
     m_Parser.AddCommand(new cli::WMCommand(*this));
     m_Parser.AddCommand(new cli::SVSCommand(*this));
+
+    Soar_Instance::Get_Soar_Instance().Set_CLI(this);
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface()

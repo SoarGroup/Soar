@@ -103,6 +103,7 @@ class Explanation_Memory
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
+        chunk_record*           get_current_discussed_chunk() { return current_discussed_chunk; };
 
         void increment_stat_duplicates(production* duplicate_rule);
         void increment_stat_justification_did_not_match() { stats.justification_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true;};
@@ -151,7 +152,7 @@ class Explanation_Memory
 //        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
         void print_global_stats();
-        void print_chunk_stats();
+        void print_chunk_stats(chunk_record* pChunkRecord);
         void print_all_watched_rules();
         void print_all_chunks(bool pChunks);
         void print_formation_explanation();
@@ -163,6 +164,10 @@ class Explanation_Memory
         void visualize_last_output();
         void visualize_instantiation_graph();
         void visualize_contributors();
+
+        void create_after_action_report();
+        void after_action_report_for_init();
+        void after_action_report_for_exit();
 
         Explanation_Memory(agent* myAgent);
         ~Explanation_Memory();
@@ -183,6 +188,8 @@ class Explanation_Memory
         chunk_record*           current_discussed_chunk;
         chunk_record*           current_recording_chunk;
         identity_quadruple      current_explained_ids;
+
+        std::string             after_action_report_file;
 
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
@@ -233,7 +240,6 @@ class Explanation_Memory
         std::unordered_map< uint64_t, action_record* >*         all_actions;
         production_record_set*                                  cached_production;
         std::unordered_map< uint64_t, production* >*            production_id_map;
-
 };
 
 #endif /* EBC_EXPLAIN_H_ */

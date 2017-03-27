@@ -223,7 +223,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
             {
                 return SetError("Please first specify the chunk you want to discuss with the command 'explain chunk [chunk-name | chunk ID]'.");
             }
-            thisAgent->explanationMemory->print_chunk_stats();
+            thisAgent->explanationMemory->print_chunk_stats(thisAgent->explanationMemory->get_current_discussed_chunk());
             return true;
 
         }

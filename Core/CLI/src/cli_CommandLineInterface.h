@@ -183,7 +183,7 @@ namespace cli
             // utility for kernel SML
             bool IsLogOpen();
             bool IsSourcingFile() { return !m_SourceFileStack.empty(); }
-
+            std::string Get_First_Sourced_File() { return m_first_sourced_file; }
             bool GetCurrentWorkingDirectory(std::string& directory);
 
         private:
@@ -327,6 +327,7 @@ namespace cli
             bool                    m_callbacks_were_enabled;
             bool                    m_console_was_enabled;
             bool                    m_output_was_enabled;
+            std::string             m_first_sourced_file;
     };
 } // namespace cli
 

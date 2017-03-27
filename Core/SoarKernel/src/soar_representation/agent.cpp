@@ -315,6 +315,9 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
+    /* Tell explainer to write out after action report before we clean up everything */
+    delete_agent->explanationMemory->after_action_report_for_exit();
+
     delete delete_agent->visualizationManager;
     delete delete_agent->explanationBasedChunker;
     delete_agent->explanationBasedChunker = NULL;
@@ -421,6 +424,8 @@ void destroy_soar_agent(agent* delete_agent)
 
 void reinitialize_agent(agent* thisAgent)
 {
+    /* Tell explainer to write out after action report before we clean up everything */
+    thisAgent->explanationMemory->after_action_report_for_init();
 
     /* Clean up explanation-based chunking, episodic and semantic memory data structures */
     epmem_reinit(thisAgent);

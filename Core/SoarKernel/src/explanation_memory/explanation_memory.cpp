@@ -472,6 +472,10 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
         if (!print_chunk_explanation_for_id(lObjectID))
         {
             outputManager->printa_sf(thisAgent, "Could not find a rule name or id %s.\nType 'explain list-chunks' or 'explain list-justifications' to see a list of rule formations Soar has recorded.\n", pStringParameter->c_str());
+        } else {
+            outputManager->printa_sf(thisAgent, "Now explaining %y.\n", current_discussed_chunk->name);
+            print_chunk_explanation();
+            return true;
         }
     } else {
 
@@ -483,6 +487,8 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
             if (lFoundChunk)
             {
                 discuss_chunk(lFoundChunk);
+                outputManager->printa_sf(thisAgent, "Now explaining %y.\n", lFoundChunk->name);
+                print_chunk_explanation();
                 return true;
             }
 
@@ -497,7 +503,6 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -507,7 +512,6 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
         current_discussed_chunk->generate_dependency_paths();
     }
     last_printed_id = 0;
-    print_chunk_explanation();
 
 }
 
