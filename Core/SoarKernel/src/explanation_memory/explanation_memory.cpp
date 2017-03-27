@@ -471,7 +471,7 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
     {
         if (!print_chunk_explanation_for_id(lObjectID))
         {
-            outputManager->printa_sf(thisAgent, "Could not find chunk name or id %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+            outputManager->printa_sf(thisAgent, "Could not find a rule name or id %s.\nType 'explain list-chunks' or 'explain list-justifications' to see a list of rule formations Soar has recorded.\n", pStringParameter->c_str());
         }
     } else {
 
@@ -486,7 +486,7 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
                 return true;
             }
 
-            outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain -l' to see a list of all chunk formations Soar has recorded.\n", pStringParameter->c_str());
+            outputManager->printa_sf(thisAgent, "Soar has not recorded an explanation for %s.\nType 'explain list-chunks' or 'explain list-justifications' to see a list of rule formations Soar has recorded.\n", pStringParameter->c_str());
             return false;
         }
     }
@@ -531,12 +531,7 @@ bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
     std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
 
     iter_chunk = chunks_by_ID->find(pChunkID);
-    if (iter_chunk == chunks_by_ID->end())
-    {
-        outputManager->printa_sf(thisAgent, "Could not find a chunk with ID %u.\n", pChunkID);
-        return false;
-    }
-
+    if (iter_chunk == chunks_by_ID->end()) return false;
     discuss_chunk(iter_chunk->second);
     return true;
 }
