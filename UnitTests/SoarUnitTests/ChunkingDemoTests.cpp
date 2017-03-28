@@ -101,7 +101,7 @@ void ChunkingDemoTests::check_chunk(const char* pTestName, int64_t decisions, in
     if (!SoarHelper::no_explainer)
     {
         SoarHelper::agent_command(agent,"explain all on");
-//        SoarHelper::agent_command(agent,"explain just on");
+        SoarHelper::agent_command(agent,"explain just on");
     }
     //    if (SoarHelper::save_logs)
     //    {
