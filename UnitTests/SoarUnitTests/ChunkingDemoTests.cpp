@@ -126,6 +126,10 @@ void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chu
     {
         SoarHelper::close_log(agent);
         save_chunks(pTestName);
+        if (SoarHelper::save_after_action_report)
+        {
+            SoarHelper::agent_command(agent,"explain after-action-report on");
+        }
         SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();
@@ -134,6 +138,10 @@ void ChunkingDemoTests::verify_chunk(const char* pTestName, int64_t expected_chu
     } else {
         SoarHelper::close_log(agent);
         save_chunks_internal(pTestName);
+        if (SoarHelper::save_after_action_report)
+        {
+            SoarHelper::agent_command(agent,"explain after-action-report on");
+        }
         SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();

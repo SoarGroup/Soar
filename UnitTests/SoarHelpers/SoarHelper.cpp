@@ -65,17 +65,21 @@ void SoarHelper::init_check_to_find_refcount_leaks(sml::Agent* agent)
         {
             SoarHelper::agent_command(agent,"output log -a Testing re-initialization of Soar for memory leaks and crashes.");
         }
-    SoarHelper::agent_command(agent,"soar init");
-    SoarHelper::agent_command(agent,"trace 0");
-    SoarHelper::agent_command(agent,"run 100");
-    SoarHelper::agent_command(agent,"trace 1");
-    SoarHelper::agent_command(agent,"soar init");
-    #ifndef _WIN32
-    std::cout << "✅ ";
-    #else
-    std::cout << "Init passed.  Test ";
-    #endif
-    std::cout.flush();
+        SoarHelper::agent_command(agent,"soar init");
+        if (SoarHelper::save_after_action_report)
+        {
+            SoarHelper::agent_command(agent,"explain after-action-report off");
+        }
+        SoarHelper::agent_command(agent,"trace 0");
+        SoarHelper::agent_command(agent,"run 100");
+        SoarHelper::agent_command(agent,"trace 1");
+        SoarHelper::agent_command(agent,"soar init");
+#ifndef _WIN32
+        std::cout << "✅ ";
+#else
+        std::cout << "Init passed.  Test ";
+#endif
+        std::cout.flush();
     }
 }
 void SoarHelper::add_log_dir_if_exists(std::string &lPath)

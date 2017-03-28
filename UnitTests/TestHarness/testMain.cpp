@@ -120,6 +120,7 @@ int main(int argc, char** argv)
         }
         else if ((argument == "--after-action-reports" || argument == "-a"))
         {
+            SoarHelper::no_explainer = false;
             SoarHelper::save_after_action_report = true;
         }
         else if ((argument == "--logs" || argument == "-l"))

@@ -173,7 +173,6 @@ void ChunkingTests::check_chunk(const char* pTestName, int64_t decisions, int64_
     agent->RunSelf(decisions, sml::sml_DECISION);
     assertTrue_msg(agent->GetLastErrorDescription(), agent->GetLastCommandLineResult());
 
-    SoarHelper::init_check_to_find_refcount_leaks(agent);
     verify_chunk(pTestName, expected_chunks, directSourceChunks);
 }
 
@@ -189,6 +188,11 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
     {
         SoarHelper::close_log(agent);
         save_chunks(pTestName);
+        if (SoarHelper::save_after_action_report)
+        {
+            SoarHelper::agent_command(agent,"explain after-action-report on");
+        }
+        SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();
         SoarHelper::continue_log(agent, pTestName);
@@ -196,6 +200,11 @@ void ChunkingTests::verify_chunk(const char* pTestName, int64_t expected_chunks,
     } else {
         SoarHelper::close_log(agent);
         save_chunks_internal(pTestName);
+        if (SoarHelper::save_after_action_report)
+        {
+            SoarHelper::agent_command(agent,"explain after-action-report on");
+        }
+        SoarHelper::init_check_to_find_refcount_leaks(agent);
         tearDown(false);
         setUp();
         SoarHelper::continue_log(agent, pTestName);
@@ -370,8 +379,6 @@ void ChunkingTests::Singleton_Element_Types()
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-i operator");
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-s operator");
     SoarHelper::agent_command(agent,"chunk singleton identifier constant-f operator");
-
-    SoarHelper::init_check_to_find_refcount_leaks(agent);
 
     verify_chunk("Singleton_Element_Types", 8, false);
 
