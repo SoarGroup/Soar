@@ -770,7 +770,9 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
     } else if (rete_addition_result == REFRACTED_INST_DID_NOT_MATCH) {
         if (m_prod_type == JUSTIFICATION_PRODUCTION_TYPE)
         {
-            thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+            #ifdef EBC_DEBUG_STATISTICS
+                thisAgent->explanationMemory->increment_stat_justification_did_not_match();
+            #endif
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
@@ -779,7 +781,9 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 print_current_built_rule("Justification that did not match WM: ");
             }
         } else {
-            thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
+            #ifdef EBC_DEBUG_STATISTICS
+                thisAgent->explanationMemory->increment_stat_chunk_did_not_match();
+            #endif
             thisAgent->explanationMemory->increment_stat_chunks_succeeded();
             if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING])
             {
@@ -951,7 +955,9 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     {
         thisAgent->explanationMemory->cancel_chunk_record();
     }
-    if (m_tested_deep_copy) thisAgent->explanationMemory->increment_stat_tested_deep_copy(m_rule_type);
+    #ifdef EBC_DETAILED_STATISTICS
+        if (m_tested_deep_copy) thisAgent->explanationMemory->increment_stat_tested_deep_copy(m_rule_type);
+    #endif
     if (m_tested_local_negation) thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
     if (m_tested_ltm_recall) thisAgent->explanationMemory->increment_stat_tested_ltm_recall(m_rule_type);
     if (m_tested_quiescence) thisAgent->explanationMemory->increment_stat_tested_quiescence();
@@ -1024,7 +1030,9 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
             {
                 thisAgent->outputManager->printa_sf(thisAgent, "Soar will learn a justification instead of a variablized rule.");
             }
-            thisAgent->explanationMemory->increment_stat_chunks_reverted();
+            #ifdef EBC_DEBUG_STATISTICS
+                thisAgent->explanationMemory->increment_stat_chunks_reverted();
+            #endif
         } else {
             if (ebc_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS]){
                 thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_justification, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
@@ -1032,10 +1040,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
                 clean_up(l_clean_up_id, false, lLocalTimerPtr);
-                thisAgent->explanationMemory->increment_stat_justifications_ungrounded_ignored();
                 return;
-            } else {
-                thisAgent->explanationMemory->increment_stat_justifications_ungrounded_added();
             }
         }
     }

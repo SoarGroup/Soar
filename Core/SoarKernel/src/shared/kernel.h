@@ -37,36 +37,48 @@
  * Note:  Debug printing will prevent Soar from sending output to the SoarJavaDebugger.
  * */
 
-/* Print a warning whenever we are ignoring a situation when there's no instance to
- * retract for a justification.  We can't find documentation on what the original bug
- * was.  We have seen the warning pop up in agents still.  */
-//#define BUG_139_WORKAROUND_WARNING
-#define BUG_139_WORKAROUND
+/* BUG_139_WORKAROUND:  Print a warning whenever we are ignoring a situation when there's
+ * no instance to retract for a justification.  We can't find documentation on what the
+ * original bug was.  We have seen the warning pop up in agents still.  */
 
-/* -------- Potentially expensive options ---------------*/
-/* Whether to increment refcounts on prefs and WMEs for the conditions in top level
- * instantiation matches.  May be more safe, but allows a situations where many
- * data structures are never deallocated because of a sequence of dependent
- * instantiation firings in the top state.
+/* DO_TOP_LEVEL_COND_REF_CTS: Whether to increment refcounts on prefs and WMEs
+ * for the conditions in top level instantiation matches.  May be more safe,
+ * but allows a situations where many data structures are never deallocated
+ * because of a sequence of dependent instantiation firings in the top state.
  * - This option was turned on in Soar 6 to 8.6 and turned off in 9.0 to 9.5.1b
  */
-//#define DO_TOP_LEVEL_COND_REF_CTS
+/*  RETE stat tracking                     Note:  May be broken right now though bug might be superficial */
 
+#define BUG_139_WORKAROUND
+//#define BUG_139_WORKAROUND_WARNING
+//#define DO_TOP_LEVEL_COND_REF_CTS
+//#define TOKEN_SHARING_STATS           /* get statistics on token counts with and without sharing */
+//#define SHARING_FACTORS               /* gather statistics on beta node sharing */
+//#define NULL_ACTIVATION_STATS         /* gather statistics on null activation */
+
+/* Timer settings */
 //#define NO_TIMING_STUFF             /* Eliminates all timing statistics. */
 #ifndef NO_TIMING_STUFF               /* Tracks additional statistics on how much time is spent in various parts of the system. */
 //    #define DETAILED_TIMING_STATS
 #endif
 
-/*  RETE stat tracking                     Note:  May be broken right now though bug might be superficial */
-//#define TOKEN_SHARING_STATS           /* get statistics on token counts with and without sharing */
-//#define SHARING_FACTORS               /* gather statistics on beta node sharing */
-//#define NULL_ACTIVATION_STATS         /* gather statistics on null activation */
 
 /* --------------- Compiler directives for debugging ---------------------- *
  *   Note: #defines that enable trace messages pf SQL processing and errors   *
  *   can be found in soar_db.cpp                                              */
 /* =============================== */
-#ifndef SOAR_RELEASE_VERSION
+#ifdef SOAR_RELEASE_VERSION
+
+    #define EBC_DETAILED_STATISTICS
+
+    //#define MEMORY_POOL_STATS
+    #define MEM_POOLS_ENABLED 1
+    #ifdef MEM_POOLS_ENABLED
+        #define USE_MEM_POOL_ALLOCATORS 1
+//        #define USE_UNORDERED_STL
+    #endif
+
+#else
 
     /* Memory settings */
 
@@ -86,7 +98,11 @@
 
     /* Only used for EBC debugging and experimentation */
     //#define EBC_SANITY_CHECK_RULES
-    //#define DONT_PROPAGATE_ID_SETS
+    //#define EBC_DONT_PROPAGATE_ID_SETS
+    #define EBC_DETAILED_STATISTICS
+    #define EBC_DEBUG_STATISTICS
+    #define EBC_DETAILED_TIMERS
+
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting that increments and decrements for identifiers in attribute elements*/
 
     /* The debug inventories are a tool to keep track of instantiations/prefs/wme
@@ -109,13 +125,6 @@
     //#define DEBUG_TEST_INVENTORY
     //#define DEBUG_REFCOUNT_CHANGE_REGIONS
 
-#else
-    //#define MEMORY_POOL_STATS
-    #define MEM_POOLS_ENABLED 1
-    #ifdef MEM_POOLS_ENABLED
-        #define USE_MEM_POOL_ALLOCATORS 1
-//        #define USE_UNORDERED_STL
-    #endif
 #endif
 
 #endif

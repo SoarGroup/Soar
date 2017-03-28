@@ -24,45 +24,45 @@
 #include <string>
 
 typedef struct chunking_stats_struct {
-        uint64_t            duplicates;
-        uint64_t            justification_did_not_match;
-        uint64_t            chunk_did_not_match;
-        uint64_t            no_grounds;
-        uint64_t            max_chunks;
-        uint64_t            max_dupes;
-        uint64_t            tested_local_negation;
-        uint64_t            tested_quiescence;
-        uint64_t            tested_deep_copy;
-        uint64_t            tested_ltm_recall;
-        uint64_t            rhs_arguments_literalized;
-        uint64_t            tested_local_negation_just;
-        uint64_t            tested_deep_copy_just;
-        uint64_t            tested_ltm_recall_just;
-        uint64_t            rhs_arguments_literalized_just;
-        uint64_t            merged_conditions;
-        uint64_t            merged_disjunctions;
-        uint64_t            eliminated_disjunction_values;
-        uint64_t            merged_disjunction_values;
+        /* Core */
         uint64_t            chunks_attempted;
         uint64_t            chunks_succeeded;
         uint64_t            justifications_attempted;
         uint64_t            justifications_succeeded;
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
+        uint64_t            duplicates;
+        uint64_t            no_grounds;
+        uint64_t            max_chunks;
+        uint64_t            max_dupes;
+        uint64_t            tested_local_negation;
+        uint64_t            tested_quiescence;
+        uint64_t            tested_ltm_recall;
+        uint64_t            tested_local_negation_just;
+        uint64_t            tested_ltm_recall_just;
+        uint64_t            chunks_repaired;
+
+        /* Detailed (only used if EBC_DETAILED_STATISTICS is #defined) */
+        uint64_t            grounding_conditions_added;
+        uint64_t            merged_conditions;
+        uint64_t            merged_disjunctions;
+        uint64_t            merged_disjunction_values;
+        uint64_t            eliminated_disjunction_values;
         uint64_t            constraints_attached;
         uint64_t            constraints_collected;
-        uint64_t            grounding_conditions_added;
+        uint64_t            rhs_arguments_literalized;
+        uint64_t            rhs_arguments_literalized_just;
+        uint64_t            tested_deep_copy;
+        uint64_t            tested_deep_copy_just;
+
+        /* Debug stats (only used if EBC_DEBUG_STATISTICS is #defined) */
         uint64_t            lhs_unconnected;
         uint64_t            rhs_unconnected;
-        uint64_t            repair_failed;
-        uint64_t            ungrounded_justifications;
-        uint64_t            chunks_repaired;
+        uint64_t            chunk_did_not_match;
+        uint64_t            justification_did_not_match;
         uint64_t            chunks_reverted;
-        uint64_t            justifications_repaired;
-        uint64_t            ungrounded_justifications_added;
-        uint64_t            ungrounded_justifications_ignored;
-        uint64_t            chunks_explained;
-        uint64_t            justifications_explained;
+        uint64_t            repair_failed;
+
 } chunking_stats;
 
 
@@ -111,7 +111,7 @@ class Explanation_Memory
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
-        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.rhs_arguments_literalized_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
+        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_rhs_arguments_literalized(ebc_rule_type pType) { if (pType == ebc_chunk) stats.rhs_arguments_literalized++; else stats.rhs_arguments_literalized_just++; if (current_recording_chunk) current_recording_chunk->stats.rhs_arguments_literalized++; };
         void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
         void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
@@ -132,12 +132,8 @@ class Explanation_Memory
         void increment_stat_lhs_unconnected() { stats.lhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.lhs_unconnected = true; };
         void increment_stat_rhs_unconnected() { stats.rhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.rhs_unconnected = true; };
         void increment_stat_could_not_repair() { stats.repair_failed++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
-        void increment_stat_ungrounded_justifications() { stats.ungrounded_justifications++; };
         void increment_stat_chunks_repaired() { stats.chunks_repaired++; };
         void increment_stat_chunks_reverted();
-        void increment_stat_justifications_repaired() { stats.justifications_repaired++; };
-        void increment_stat_justifications_ungrounded_added() { stats.ungrounded_justifications_added++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
-        void increment_stat_justifications_ungrounded_ignored() { stats.ungrounded_justifications_ignored++; };
 
         uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
         uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };

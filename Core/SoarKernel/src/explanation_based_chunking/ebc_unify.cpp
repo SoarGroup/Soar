@@ -210,7 +210,9 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
                 {
 //                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, lIDSet, 0);
                     lIDSet->literalize();
-                    thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
+                    #ifdef EBC_DETAILED_STATISTICS
+                        thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
+                    #endif
                 }
             }
         }

@@ -45,7 +45,9 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
             new_constraint->constraint_test = ctest;
             dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
             constraints->push_back(new_constraint);
-            thisAgent->explanationMemory->increment_stat_constraints_collected();
+            #ifdef EBC_DETAILED_STATISTICS
+                thisAgent->explanationMemory->increment_stat_constraints_collected();
+            #endif
         }
     }
 }
@@ -106,7 +108,9 @@ void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, co
     {
         add_test(thisAgent, &(pCond->data.tests.id_test), pRelational_test, true);
     }
-    thisAgent->explanationMemory->increment_stat_constraints_attached();
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_constraints_attached();
+    #endif
 }
 
 void Explanation_Based_Chunker::add_additional_constraints()
@@ -128,7 +132,6 @@ void Explanation_Based_Chunker::add_additional_constraints()
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
             attach_relational_test(constraint_test, lOperationalCond, lConstraint->eq_test->identity_set->get_operational_field());
             dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lOperationalCond);
-            thisAgent->explanationMemory->increment_stat_constraints_attached();
         }
         else if (lOperationalConstraintCond && !lConstraint->constraint_test->identity_set->literalized())
         {
@@ -138,7 +141,6 @@ void Explanation_Based_Chunker::add_additional_constraints()
             attach_relational_test(constraint_test, lOperationalConstraintCond, lConstraint->constraint_test->identity_set->get_operational_field());
             deallocate_test(thisAgent, eq_copy);
             dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lOperationalConstraintCond);
-            thisAgent->explanationMemory->increment_stat_constraints_attached();
         } else {
             dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
                 lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->literalized()) ? "true" : "false",

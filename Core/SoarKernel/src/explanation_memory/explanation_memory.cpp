@@ -107,14 +107,8 @@ void Explanation_Memory::initialize_counters()
     stats.lhs_unconnected = 0;
     stats.rhs_unconnected = 0;
     stats.repair_failed = 0;
-    stats.ungrounded_justifications = 0;
     stats.chunks_repaired = 0;
     stats.chunks_reverted = 0;
-    stats.justifications_repaired = 0;
-    stats.ungrounded_justifications_added = 0;
-    stats.ungrounded_justifications_ignored = 0;
-    stats.chunks_explained = 0;
-    stats.justifications_explained = 0;
 }
 
 void Explanation_Memory::clear_explanations()

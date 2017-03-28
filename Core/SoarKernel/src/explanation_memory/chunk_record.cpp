@@ -158,10 +158,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
             if (cond->data.tests.id_test->eq_test->data.referent->is_sti())
             {
                 type = ebc_justification;
-                thisAgent->explanationMemory->stats.justifications_explained++;
             } else {
                 type = ebc_chunk;
-                thisAgent->explanationMemory->stats.chunks_explained++;
             }
         }
         if (lChunkCondInst)

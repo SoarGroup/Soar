@@ -255,10 +255,11 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         ++final_count;
     }
     destination->data.disjunction_list = c_first;
-    thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
-    thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
-    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
+        thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
+        thisAgent->explanationMemory->increment_stat_merged_disjunctions();
+    #endif
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
