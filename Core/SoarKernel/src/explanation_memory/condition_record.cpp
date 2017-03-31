@@ -50,6 +50,8 @@ void simplify_identity_in_test(agent* thisAgent, test t)
                     t->clone_identity = t->identity_set->idset_id;
                 else
                     t->clone_identity = LITERAL_VALUE;
+            } else {
+                t->clone_identity = LITERAL_VALUE;
             }
             clear_test_identity_set(thisAgent, t);
             break;

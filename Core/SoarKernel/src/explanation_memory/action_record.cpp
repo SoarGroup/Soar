@@ -44,8 +44,6 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
         if (r->identity_set->idset_id != r->identity)
         {
             r->identity_unjoined = r->identity_set->idset_id;
-        } else {
-            r->identity_unjoined = r->identity_set->get_clone_identity();;
         }
         thisAgent->outputManager->printa_sf(thisAgent, "%u -> %u\n", r->identity_unjoined, r->identity);
     } else r->identity = LITERAL_VALUE;
@@ -73,6 +71,8 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         if (pPref->identity_sets.id->idset_id != pPref->identities.id)
         {
             pPref->clone_identities.id = pPref->identity_sets.id->idset_id;
+        } else {
+            pPref->clone_identities.id = LITERAL_VALUE;
         }
 //        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.id, pPref->clone_identities.id);
         set_pref_identity_set(thisAgent, pPref, ID_ELEMENT, NULL_IDENTITY_SET);
@@ -94,6 +94,8 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         if (pPref->identity_sets.attr->idset_id != pPref->identities.attr)
         {
             pPref->clone_identities.attr = pPref->identity_sets.attr->idset_id;
+        } else {
+            pPref->clone_identities.attr = LITERAL_VALUE;
         }
         set_pref_identity_set(thisAgent, pPref, ATTR_ELEMENT, NULL_IDENTITY_SET);
     }
@@ -111,13 +113,16 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 
     if (pPref->identity_sets.value)
     {
-//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
+        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
+        break_if_id_matches(pPref->clone_identities.value, 40);
         pPref->identities.value = pPref->identity_sets.value->super_join->idset_id;
         if (pPref->identity_sets.value->idset_id != pPref->identities.value)
         {
             pPref->clone_identities.value = pPref->identity_sets.value->idset_id;
+        } else {
+            pPref->clone_identities.value = LITERAL_VALUE;
         }
-//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
+        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
         set_pref_identity_set(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
     }
     else if (pPref->clone_identities.value)
