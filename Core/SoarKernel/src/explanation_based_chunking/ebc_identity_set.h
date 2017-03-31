@@ -74,6 +74,7 @@ class IdentitySet
 
         /* An ID used for printing and to make debugging easier. Not used by identity analysis logic. */
         uint64_t                    idset_id;
+        uint64_t                    clone_identity;
 
         /* A pointer to the join super identity.  Used to point back to itself but that's bad with shared pointers */
         IdentitySet*                super_join;
@@ -90,7 +91,6 @@ class IdentitySet
 
         /* Fields for variablization and chunk instantiation identity creation */
         Symbol*                     new_var;
-        uint64_t                    clone_identity;
         bool                        m_literalized;
 
         /* Fields for transitive constraint attachment  */

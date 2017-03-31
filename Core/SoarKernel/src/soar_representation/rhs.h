@@ -35,9 +35,10 @@ typedef char* rhs_value;
 typedef struct rhs_struct
 {
     Symbol*             referent;
-    uint64_t            identity;
-    IdentitySet*        identity_set;
-    bool                was_unbound_var; /* used by re-orderer so that it does not treat as unconnected */
+    uint64_t            identity;           /* variable identity ID */
+    uint64_t            identity_unjoined;  /* only used for the explainer */
+    IdentitySet*        identity_set;       /* pointer to identity set for EBC */
+    bool                was_unbound_var;    /* used by re-orderer */
 
     #ifdef DEBUG_RHS_SYMBOL_INVENTORY
     uint64_t            r_id;

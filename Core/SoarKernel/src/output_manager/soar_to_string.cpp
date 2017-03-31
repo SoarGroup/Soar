@@ -283,7 +283,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     else if (rhs_value_is_unboundvar(rv))
     {
         /* -- unbound variable -- */
-        destString += "[STI_UV]";
+        destString += "<unbound-variable>";
 
     }
     else if (rhs_value_is_symbol(rv))
@@ -299,7 +299,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 destString += '#';
             }
         }
-        if (m_print_identity_effective && rsym->identity) {
+        if (m_print_identity_effective && (rsym->identity || rsym->identity_unjoined)) {
             IdentitySet* lIDSet = rsym->identity_set;
 
             if (lIDSet)
@@ -312,6 +312,10 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 {
                     sprint_sf(destString, " [v%us%u]", rsym->identity, lIDSet->get_sub_identity());
                 }
+            }
+            else if (rsym->identity_unjoined)
+            {
+                sprint_sf(destString, " [%u->%u]", rsym->identity_unjoined, rsym->identity);
             }
             else
             {

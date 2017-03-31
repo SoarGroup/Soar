@@ -542,6 +542,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
+    new_rhs_symbol->identity_unjoined = LITERAL_VALUE;
     new_rhs_symbol->identity_set = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 
@@ -563,6 +564,7 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->identity = pIdentity;
+    new_rhs_symbol->identity_unjoined = LITERAL_VALUE;
     new_rhs_symbol->identity_set = pIDSet;
     new_rhs_symbol->was_unbound_var = pWasUnbound;
 

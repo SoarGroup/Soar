@@ -43,8 +43,14 @@ void simplify_identity_in_test(agent* thisAgent, test t)
             clear_test_identity_set(thisAgent, t);
             break;
         default:
-            if (t->identity_set) t->identity = t->identity_set->super_join->idset_id;
-//            else t->identity = LITERAL_VALUE;
+            if (t->identity_set)
+            {
+                t->identity = t->identity_set->super_join->idset_id;
+                if (t->identity_set->idset_id != t->identity)
+                    t->clone_identity = t->identity_set->idset_id;
+                else
+                    t->clone_identity = LITERAL_VALUE;
+            }
             clear_test_identity_set(thisAgent, t);
             break;
     }
@@ -261,9 +267,14 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
                 visualizer->graphviz_output += "^";
             }
         }
-        if (pTestIdentity && pTestIdentity->identity)
+        if (pTestIdentity && (pTestIdentity->identity || pTestIdentity->clone_identity))
         {
-            thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTestIdentity->identity);
+            if (pTestIdentity->clone_identity)
+            {
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTestIdentity->clone_identity, pTestIdentity->identity);
+            } else {
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTestIdentity->identity);
+            }
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
         }
@@ -319,9 +330,14 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         }
         if (printIdentity || !pMatchedWME || (pTest->type != EQUALITY_TEST))
         {
-            if (pTest->identity)
+            if (pTest->identity || pTest->clone_identity)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTest->identity);
+                if (pTest->clone_identity)
+                {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTest->clone_identity, pTest->identity);
+                } else {
+                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTest->identity);
+                }
             } else {
                 thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
             }

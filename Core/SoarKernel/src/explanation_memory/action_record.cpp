@@ -36,10 +36,18 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     if (r->identity_set)
     {
+        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", r->identity, r->identity_set->idset_id, r->identity_set->super_join->idset_id, r->identity_set->clone_identity, r->identity_set->super_join->clone_identity);
         uint64_t lID = r->identity_set->get_identity();
         if (!lID) lID = r->identity_set->get_clone_identity();
         if (!lID) lID = r->identity;
         r->identity = lID;
+        if (r->identity_set->idset_id != r->identity)
+        {
+            r->identity_unjoined = r->identity_set->idset_id;
+        } else {
+            r->identity_unjoined = r->identity_set->get_clone_identity();;
+        }
+        thisAgent->outputManager->printa_sf(thisAgent, "%u -> %u\n", r->identity_unjoined, r->identity);
     } else r->identity = LITERAL_VALUE;
 
     r->identity_set = NULL;
@@ -57,35 +65,95 @@ void simplify_identity_in_action(agent* thisAgent, action* pAction)
 
 void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 {
+    uint64_t temp;
     if (pPref->identity_sets.id)
     {
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.id, pPref->clone_identities.id, pPref->identity_sets.id->idset_id, pPref->identity_sets.id->super_join->idset_id, pPref->identity_sets.id->clone_identity, pPref->identity_sets.id->super_join->clone_identity);
         pPref->identities.id = pPref->identity_sets.id->super_join->idset_id;
+        if (pPref->identity_sets.id->idset_id != pPref->identities.id)
+        {
+            pPref->clone_identities.id = pPref->identity_sets.id->idset_id;
+        }
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.id, pPref->clone_identities.id);
         set_pref_identity_set(thisAgent, pPref, ID_ELEMENT, NULL_IDENTITY_SET);
-    } else
-        if (pPref->clone_identities.id) pPref->identities.id = pPref->clone_identities.id;
-
+    }
+    else if (pPref->clone_identities.id)
+    {
+        temp = pPref->identities.id;
+        pPref->identities.id = pPref->clone_identities.id;
+        if (temp == pPref->identities.id)
+        {
+            pPref->clone_identities.id = LITERAL_VALUE;
+        } else {
+            pPref->clone_identities.id = temp;
+        }
+    }
     if (pPref->identity_sets.attr)
     {
         pPref->identities.attr = pPref->identity_sets.attr->super_join->idset_id;
+        if (pPref->identity_sets.attr->idset_id != pPref->identities.attr)
+        {
+            pPref->clone_identities.attr = pPref->identity_sets.attr->idset_id;
+        }
         set_pref_identity_set(thisAgent, pPref, ATTR_ELEMENT, NULL_IDENTITY_SET);
-    } else
-        if (pPref->clone_identities.attr) pPref->identities.id = pPref->clone_identities.attr;
+    }
+    else if (pPref->clone_identities.attr)
+    {
+        temp = pPref->identities.attr;
+        pPref->identities.attr = pPref->clone_identities.attr;
+        if (temp == pPref->identities.attr)
+        {
+            pPref->clone_identities.attr = LITERAL_VALUE;
+        } else {
+            pPref->clone_identities.attr = temp;
+        }
+    }
 
     if (pPref->identity_sets.value)
     {
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
         pPref->identities.value = pPref->identity_sets.value->super_join->idset_id;
+        if (pPref->identity_sets.value->idset_id != pPref->identities.value)
+        {
+            pPref->clone_identities.value = pPref->identity_sets.value->idset_id;
+        }
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
         set_pref_identity_set(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
-    } else
-        if (pPref->clone_identities.value) pPref->identities.id = pPref->clone_identities.value;
+    }
+    else if (pPref->clone_identities.value)
+    {
+        temp = pPref->identities.value;
+        pPref->identities.value = pPref->clone_identities.value;
+        if (temp == pPref->identities.value)
+        {
+            pPref->clone_identities.value = LITERAL_VALUE;
+        } else {
+            pPref->clone_identities.value = temp;
+        }
+    }
 
     if (preference_is_binary(pPref->type))
     {
         if (pPref->identity_sets.referent)
         {
             pPref->identities.referent = pPref->identity_sets.referent->super_join->idset_id;
+            if (pPref->identity_sets.referent->idset_id != pPref->identities.referent)
+            {
+                pPref->clone_identities.referent = pPref->identity_sets.referent->idset_id;
+            }
             set_pref_identity_set(thisAgent, pPref, REFERENT_ELEMENT, NULL_IDENTITY_SET);
-        } else
-            if (pPref->clone_identities.referent) pPref->identities.id = pPref->clone_identities.referent;
+        }
+        else if (pPref->clone_identities.referent)
+        {
+            temp = pPref->identities.referent;
+            pPref->identities.referent = pPref->clone_identities.referent;
+            if (temp == pPref->identities.referent)
+            {
+                pPref->clone_identities.referent = LITERAL_VALUE;
+            } else {
+                pPref->clone_identities.referent = temp;
+            }
+        }
     }
     if (pPref->rhs_funcs.id) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.id);
     if (pPref->rhs_funcs.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_funcs.attr);
@@ -155,7 +223,7 @@ void action_record::print_rhs_chunk_value(const rhs_value pRHS_value, const rhs_
     }
     thisAgent->outputManager->clear_print_test_format();
 }
-void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, bool printActual)
+void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, const rhs_value pPref_func, uint64_t pID, uint64_t pIDClone, bool printActual)
 {
     std::string tempString("");
 
@@ -170,11 +238,13 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
             thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, true, NULL, NULL, true);
             thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
         } else {
-            if (!pID)
+            if (!(pID || pIDClone))
             {
                 thisAgent->outputManager->set_print_test_format(true, false);
                 thisAgent->outputManager->rhs_value_to_string(pRHS_value, tempString);
                 thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
+            } else if (pIDClone) {
+                thisAgent->outputManager->printa_sf(thisAgent, "[%u->%u]", pIDClone, pID);
             } else {
                 thisAgent->outputManager->printa_sf(thisAgent, "[%u]", pID);
             }
@@ -206,15 +276,15 @@ void action_record::print_chunk_action(action* pAction, int lActionCount)
             print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, instantiated_pref->clone_identities.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, instantiated_pref->clone_identities.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, instantiated_pref->clone_identities.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, instantiated_pref->clone_identities.referent, false);
         }
 
         outputManager->printa(thisAgent, ")\n");
@@ -234,33 +304,33 @@ void action_record::print_instantiation_action(action* pAction, int lActionCount
         outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
     } else {
         outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, true);
+        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, instantiated_pref->clone_identities.id, true);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, true);
+        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, instantiated_pref->clone_identities.attr, true);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, true);
+        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, instantiated_pref->clone_identities.value, true);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, true);
+            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, instantiated_pref->clone_identities.referent, true);
         }
         outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
+        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, instantiated_pref->clone_identities.id, false);
         outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
+        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, instantiated_pref->clone_identities.attr, false);
         outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
+        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, instantiated_pref->clone_identities.value, false);
         outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
         if (pAction->referent)
         {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
+            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, instantiated_pref->clone_identities.referent, false);
         }
         outputManager->printa(thisAgent, ")\n");
     }
     tempString.clear();
 }
 
-void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pRHS_func, uint64_t pID, uint64_t pNodeID, char pTypeChar, WME_Field pField)
+void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pRHS_variablized_value, const rhs_value pRHS_func, uint64_t pID, uint64_t pIDClone, uint64_t pNodeID, char pTypeChar, WME_Field pField)
 {
     std::string tempString;
     bool identity_printed = false;
@@ -287,8 +357,13 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
             identity_printed = true;
         }
     }
-    if (!identity_printed && pID) {
-        thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " [%u]", pID);
+    if (!identity_printed && (pID || pIDClone)) {
+        if (pIDClone)
+        {
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " [%u->%u]", pIDClone, pID);
+        } else {
+            thisAgent->outputManager->sprinta_sf(thisAgent, thisAgent->visualizationManager->graphviz_output, " [%u]", pID);
+        }
     }
 
     thisAgent->visualizationManager->viz_table_element_end();
@@ -403,16 +478,16 @@ void action_record::viz_action(action* pAction)
     } else {
         thisAgent->visualizationManager->viz_record_start();
 
-        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, actionID, 'a', ID_ELEMENT);
-        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr);
+        viz_rhs_value(pAction->id, (variablized_action ? variablized_action->id : NULL), instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, instantiated_pref->clone_identities.id, actionID, 'a', ID_ELEMENT);
+        viz_rhs_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, instantiated_pref->clone_identities.attr);
 
         if (pAction->referent)
         {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, instantiated_pref->clone_identities.value);
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
-            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, instantiated_pref->clone_identities.referent, actionID, 'a', VALUE_ELEMENT);
         } else {
-            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, actionID, 'a', VALUE_ELEMENT);
+            viz_rhs_value(pAction->value, (variablized_action ? variablized_action->value : NULL), instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, instantiated_pref->clone_identities.value, actionID, 'a', VALUE_ELEMENT);
             thisAgent->visualizationManager->graphviz_output += ' ';
             thisAgent->visualizationManager->graphviz_output += preference_to_char(pAction->preference_type);
         }
