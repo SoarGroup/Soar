@@ -37,9 +37,6 @@ void simplify_identity_in_test(agent* thisAgent, test t)
         case CONJUNCTIVE_TEST:
             for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
                 simplify_identity_in_test(thisAgent, static_cast<test>(c->first));
-            /* MToDo | Probably not needed */
-            assert(!t->identity && !t->identity_set);
-            t->identity = LITERAL_VALUE;
             clear_test_identity_set(thisAgent, t);
             break;
         default:

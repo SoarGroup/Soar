@@ -36,7 +36,7 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
     rhs_symbol r = rhs_value_to_rhs_symbol(rv);
     if (r->identity_set)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", r->identity, r->identity_set->idset_id, r->identity_set->super_join->idset_id, r->identity_set->clone_identity, r->identity_set->super_join->clone_identity);
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", r->identity, r->identity_set->idset_id, r->identity_set->super_join->idset_id, r->identity_set->clone_identity, r->identity_set->super_join->clone_identity);
         uint64_t lID = r->identity_set->get_identity();
         if (!lID) lID = r->identity_set->get_clone_identity();
         if (!lID) lID = r->identity;
@@ -45,7 +45,7 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
         {
             r->identity_unjoined = r->identity_set->idset_id;
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "%u -> %u\n", r->identity_unjoined, r->identity);
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u -> %u\n", r->identity_unjoined, r->identity);
     } else r->identity = LITERAL_VALUE;
 
     r->identity_set = NULL;
@@ -113,7 +113,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 
     if (pPref->identity_sets.value)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
         break_if_id_matches(pPref->clone_identities.value, 40);
         pPref->identities.value = pPref->identity_sets.value->super_join->idset_id;
         if (pPref->identity_sets.value->idset_id != pPref->identities.value)
@@ -122,7 +122,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         } else {
             pPref->clone_identities.value = LITERAL_VALUE;
         }
-        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
+//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
         set_pref_identity_set(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
     }
     else if (pPref->clone_identities.value)
