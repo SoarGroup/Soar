@@ -434,15 +434,12 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
     }
 }
 
-void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID, uint64_t pTargetCondID)
+void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID)
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
     graphviz_output += " -\xF2 chunk";
     graphviz_output += std::to_string(pTargetRuleID);
-//    graphviz_output += ":c_";
-//    graphviz_output += std::to_string(pTargetCondID);
-//    graphviz_output += "_l";
     graphviz_output += "[style = \"dashed\"  penwidth = \"2\"]\n";
 }
 

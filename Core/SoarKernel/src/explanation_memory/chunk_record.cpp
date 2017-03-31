@@ -465,19 +465,11 @@ void chunk_record::visualize()
         visualizer->viz_object_end(viz_chunk_record);
     }
 
-    visualizer->viz_connect_inst_to_chunk(baseInstantiation->get_instantiationID(), chunkID, 0);
-//    for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
-//    {
-//        lCond = (*it);
-//        uint64_t x1, x2, x3;
-//        instantiation_record* i1 = lCond->get_instantiation();
-//        x1 = i1->get_instantiationID();
-//        x2 = chunkID;
-//        x3 = lCond->get_conditionID();
-//        visualizer->viz_connect_inst_to_chunk(x1, x2, x3);
-////        visualizer->viz_connect_inst_to_chunk(lCond->get_instantiation()->get_instantiationID(), chunkID, lCond->get_conditionID());
-//    }
-
+    visualizer->viz_connect_inst_to_chunk(baseInstantiation->get_instantiationID(), chunkID);
+    for (auto it = result_inst_records->begin(); it != result_inst_records->end(); ++it)
+    {
+        visualizer->viz_connect_inst_to_chunk((*it)->get_instantiationID(), chunkID);
+    }
 }
 
 /* This function is not currently used, but I'm leaving in case we ever add something
