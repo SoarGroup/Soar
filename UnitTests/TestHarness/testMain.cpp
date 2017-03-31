@@ -78,9 +78,9 @@ void usage(std::string arg0)
     std::cout << "\t" << "-f --expected-failure-test"       << "\t\t" << "Ignore this test failing." << std::endl;
     std::cout << "\t" << "-n --no-refcount-leak-check"      << "\t\t" << "Do not init-soar and check for refcount leaks." << std::endl;
     std::cout << "\t" << "-a --after-action-reports"        << "\t\t" << "Generate reports for each agent trial." << std::endl;
-    std::cout << "\t" << "-l --logs"                        << "\t\t" << "Record logs of agent trials." << std::endl;
-    std::cout << "\t" << "-x --no-explainer"                << "\t\t" << "Run learning agents with explainer on." << std::endl;
-    std::cout << "\t" << "-r --run-debug-mode"              << "\t\t" << "Don't force strict unit test settings." << std::endl;
+    std::cout << "\t" << "-l --logs"                        << "\t\t\t\t" << "Record logs of agent trials." << std::endl;
+    std::cout << "\t" << "-x --no-explainer"                << "\t\t\t" << "Run learning agents with explainer on." << std::endl;
+    std::cout << "\t" << "-r --run-debug-mode"              << "\t\t\t" << "Don't force strict unit test settings." << std::endl;
     std::cout << "\t" << "-h --help"                        << "\t\t\t\t" << "This help message." << std::endl;
     std::cout << "\t" << "-s --silent"                      << "\t\t\t\t" << "Always return 0.  Read Test.xml for results." << std::endl;
     std::cout << std::endl;
