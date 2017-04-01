@@ -170,7 +170,7 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
             ebc_timers->dependency_analysis->stop();
             if (!pCond->data.tests.value_test->eq_test->identity_set)
             {
-                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set, NULL);
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, last_cond->data.tests.value_test->eq_test->identity_set, NULL);
                 last_cond->data.tests.value_test->eq_test->identity_set->literalize();
             } else if (!last_cond->data.tests.value_test->eq_test->identity_set)
             {
