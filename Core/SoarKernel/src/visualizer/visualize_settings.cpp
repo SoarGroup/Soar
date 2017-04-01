@@ -18,47 +18,58 @@ Viz_Parameters::Viz_Parameters(agent* new_agent): soar_module::param_container(n
     rule_format->add_mapping(viz_name, "name");
     rule_format->add_mapping(viz_full, "full");
 
+    line_style = new soar_module::string_param("line-style", "polyline", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    separate_states = new soar_module::boolean_param("separate_states", on, new soar_module::f_predicate<boolean>());
+    architectural_wmes = new soar_module::boolean_param("architectural-wmes", off, new soar_module::f_predicate<boolean>());
+    use_joined_identities = new soar_module::boolean_param("use-joined-identities", on, new soar_module::f_predicate<boolean>());
+    color_identities = new soar_module::boolean_param("color-identities", off, new soar_module::f_predicate<boolean>());
+
+    file_name = new soar_module::string_param("file-name", "soar_viz", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+    use_same_file = new soar_module::boolean_param("use-same-file", off, new soar_module::f_predicate<boolean>());
+    gen_image = new soar_module::boolean_param("generate-image", on, new soar_module::f_predicate<boolean>());
+    image_type = new soar_module::string_param("image-type", "svg", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
+
     launch_viewer = new soar_module::boolean_param("viewer-launch", on, new soar_module::f_predicate<boolean>());
     launch_editor = new soar_module::boolean_param("editor-launch", off, new soar_module::f_predicate<boolean>());
     print_gv = new soar_module::boolean_param("print", off, new soar_module::f_predicate<boolean>());
-    gen_image = new soar_module::boolean_param("generate-image", on, new soar_module::f_predicate<boolean>());
-
-    image_type = new soar_module::string_param("image-type", "svg", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    file_name = new soar_module::string_param("file-name", "soar_viz", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    use_same_file = new soar_module::boolean_param("use-same-file", off, new soar_module::f_predicate<boolean>());
-    line_style = new soar_module::string_param("line-style", "polyline", new soar_module::predicate<const char*>(), new soar_module::f_predicate<const char*>());
-    architectural_wmes = new soar_module::boolean_param("architectural-wmes", off, new soar_module::f_predicate<boolean>());
-    separate_states = new soar_module::boolean_param("separate_states", on, new soar_module::f_predicate<boolean>());
-
 
     viz_wm = new soar_module::boolean_param("wm", on, new soar_module::f_predicate<boolean>());
     viz_smem = new soar_module::boolean_param("smem", on, new soar_module::f_predicate<boolean>());
     viz_epmem = new soar_module::boolean_param("epmem", on, new soar_module::f_predicate<boolean>());
-    viz_last = new soar_module::boolean_param("last", on, new soar_module::f_predicate<boolean>());
+    viz_last = new soar_module::boolean_param("last-item-printed", on, new soar_module::f_predicate<boolean>());
     viz_instantiations = new soar_module::boolean_param("instantiations", on, new soar_module::f_predicate<boolean>());
-    viz_contributors = new soar_module::boolean_param("contributors", on, new soar_module::f_predicate<boolean>());
+    viz_contributors = new soar_module::boolean_param("ebc_analysis", on, new soar_module::f_predicate<boolean>());
+    viz_identity_graph = new soar_module::boolean_param("identity_graph", on, new soar_module::f_predicate<boolean>());
 
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
 
     add(memory_format);
     add(rule_format);
+
+    add(line_style);
+    add(separate_states);
+    add(architectural_wmes);
+    add(use_joined_identities);
+    add(color_identities);
+
+    add(file_name);
+    add(use_same_file);
+    add(gen_image);
+    add(image_type);
+
     add(launch_viewer);
     add(launch_editor);
     add(print_gv);
-    add(gen_image);
-    add(image_type);
-    add(file_name);
-    add(use_same_file);
-    add(line_style);
-    add(architectural_wmes);
-    add(separate_states);
+
     add(viz_wm);
     add(viz_smem);
     add(viz_epmem);
     add(viz_last);
     add(viz_instantiations);
     add(viz_contributors);
+    add(viz_identity_graph);
+
     add(help_cmd);
     add(qhelp_cmd);
 
@@ -73,8 +84,9 @@ void Viz_Parameters::print_visualization_settings(agent* thisAgent)
     outputManager->set_column_indent(1, 55);
     outputManager->printa_sf(thisAgent, "======= Visualization Commands and Settings =======\n");
     outputManager->printa_sf(thisAgent, "visualize ? %-%-%s\n", "Print this help listing");
-    outputManager->printa_sf(thisAgent, "visualize [wm | smem | epmem] [id] [depth] %-%-%s\n", "Visualize from memory system");
-    outputManager->printa_sf(thisAgent, "visualize [ last | instantiations | contributors] %-%-%s\n", "Visualize explainer analysis");
+    outputManager->printa_sf(thisAgent, "visualize [wm | smem | epmem] [id] [depth] %-%-%s\n", "Visualize contents of memory system");
+//    outputManager->printa_sf(thisAgent, "visualize [ instantiations | preferences] %-%-%s\n", "Visualize preference memory and support*");
+    outputManager->printa_sf(thisAgent, "visualize [ identity_graph | ebc_analysis] %-%-%s\n", "Visualize EBC explainer analysis");
     outputManager->printa_sf(thisAgent, "------------------ Presentation -------------------\n");
     tempString = "[ ";
     tempString += (rule_format->get_value() == viz_name) ?  "NAME" : "name";
@@ -92,8 +104,10 @@ void Viz_Parameters::print_visualization_settings(agent* thisAgent)
         concatJustified("memory-format", tempString, 51).c_str(),"Print memories as records or just simple nodes");
 
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("line-style", line_style->get_value(), 51).c_str(), "GraphViz line style that will be used");
-    outputManager->printa_sf(thisAgent, "separate-states                   %-%s%-%s\n", capitalizeOnOff(separate_states->get_value()), "Whether to create links between goal states");
-    outputManager->printa_sf(thisAgent, "architectural-wmes                %-%s%-%s\n", capitalizeOnOff(architectural_wmes->get_value()), "Whether to include WMEs created by the Soar architecture");
+    outputManager->printa_sf(thisAgent, "separate-states                   %-%s%-%s\n", capitalizeOnOff(separate_states->get_value()), "Create links between different goal states");
+    outputManager->printa_sf(thisAgent, "architectural-wmes                %-%s%-%s\n", capitalizeOnOff(architectural_wmes->get_value()), "Include WMEs created by the Soar architecture");
+    outputManager->printa_sf(thisAgent, "color-identities                  %-%s%-%s\n", capitalizeOnOff(color_identities->get_value()), "Color identities differently in visualization");
+    outputManager->printa_sf(thisAgent, "use-joined-identities             %-%s%-%s\n", capitalizeOnOff(use_joined_identities->get_value()), "Color using final joined identity sets");
     outputManager->printa_sf(thisAgent, "------------------ File Handling ------------------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("file-name", file_name->get_value(), 51).c_str(), "");
     outputManager->printa_sf(thisAgent, "use-same-file                   %-%s%-%s\n", capitalizeOnOff(use_same_file->get_value()), "Whether to create new files each time");

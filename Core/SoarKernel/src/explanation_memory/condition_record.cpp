@@ -202,16 +202,25 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
     test c1_test, c2_test;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     std::string highlight_str;
+    uint64_t lIdentityForColor = 0;
+
     if (pTestIdentity)
     {
         if ((pTest->type == CONJUNCTIVE_TEST) && pTestIdentity->eq_test->identity)
         {
-            highlight_str += visualizer->get_color_for_id(pTestIdentity->eq_test->identity);
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->eq_test->clone_identity)
+                lIdentityForColor = pTestIdentity->eq_test->identity;
+            else
+                lIdentityForColor = pTestIdentity->eq_test->clone_identity;
         } else  if (pTestIdentity && pTestIdentity->identity)
         {
-            highlight_str += visualizer->get_color_for_id(pTestIdentity->identity);
-        } else highlight_str = " ";
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->clone_identity)
+                lIdentityForColor = pTestIdentity->identity;
+            else
+                lIdentityForColor = pTestIdentity->clone_identity;
+        }
     }
+    if (lIdentityForColor) highlight_str += visualizer->get_color_for_id(lIdentityForColor); else highlight_str = " ";
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {
@@ -287,16 +296,25 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
     cons* c;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     std::string highlight_str;
+    uint64_t lIdentityForColor = 0;
+
     if (pTest->eq_test && pTest->eq_test->identity)
     {
-        if (pTest->type == CONJUNCTIVE_TEST)
+        if ((pTest->type == CONJUNCTIVE_TEST) && pTest->eq_test->identity)
         {
-            highlight_str += visualizer->get_color_for_id(pTest->eq_test->identity);
-        } else {
-            highlight_str += visualizer->get_color_for_id(pTest->identity);
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->eq_test->clone_identity)
+                lIdentityForColor = pTest->eq_test->identity;
+            else
+                lIdentityForColor = pTest->eq_test->clone_identity;
+        } else if (pTest->identity)
+        {
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->clone_identity)
+                lIdentityForColor = pTest->identity;
+            else
+                lIdentityForColor = pTest->clone_identity;
         }
-    } else highlight_str = " ";
-
+    }
+    if (lIdentityForColor) highlight_str += visualizer->get_color_for_id(lIdentityForColor); else highlight_str = " ";
 
     if (pTest->type == CONJUNCTIVE_TEST)
     {

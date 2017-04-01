@@ -340,8 +340,12 @@ void action_record::viz_rhs_value(const rhs_value pRHS_value, const rhs_value pR
     std::string tempString;
     bool identity_printed = false;
     tempString = "";
+    std::string highlight_str;
+    if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pIDClone)
+        highlight_str = thisAgent->visualizationManager->get_color_for_id(pID);
+    else
+        highlight_str = thisAgent->visualizationManager->get_color_for_id(pIDClone);
 
-    std::string highlight_str = thisAgent->visualizationManager->get_color_for_id(pID);;
     thisAgent->visualizationManager->viz_table_element_start(pNodeID, pTypeChar, pField, false, highlight_str.c_str());
 
     thisAgent->outputManager->set_print_test_format(true, false);

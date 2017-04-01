@@ -62,7 +62,7 @@ void WM_Visualization_Map::visualize_wm_as_linked_records(Symbol* pSym, int pDep
     augmentation_set* lAugSet;
     Symbol* lIDSym;
     augmentation* lAug;
-    bool lSeparateStates = thisAgent->visualizationManager->settings->separate_states->get_value();
+    bool lSeparateStates = (thisAgent->visualizationManager->settings->separate_states->get_value() == on);
     std::string graphviz_connections;
 
     reset();
@@ -102,7 +102,7 @@ void WM_Visualization_Map::visualize_wm_as_graph(Symbol* pSym, int pDepth)
     augmentation_set* lAugSet;
     Symbol* lIDSym;
     augmentation* lAug;
-    bool lSeparateStates = thisAgent->visualizationManager->settings->separate_states->get_value();
+    bool lSeparateStates = (thisAgent->visualizationManager->settings->separate_states->get_value() == on);
 
     reset();
     get_wmes_for_symbol(pSym, pDepth);
@@ -218,7 +218,7 @@ void WM_Visualization_Map::add_wmes_of_id(Symbol* id, int depth, int maxdepth, t
     }
     qsort(list, num_attr, sizeof(wme*), compare_attr2);
 
-    bool addArch = thisAgent->visualizationManager->settings->architectural_wmes->get_value();
+    bool addArch = (thisAgent->visualizationManager->settings->architectural_wmes->get_value() == on);
     for (attr = 0; attr < num_attr; attr++)
     {
         w = list[attr];

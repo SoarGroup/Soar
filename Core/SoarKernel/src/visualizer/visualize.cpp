@@ -64,6 +64,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     settings = new Viz_Parameters(thisAgent);
     m_file_count = 0;
     m_next_color = 0;
+    m_unique_counter = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()

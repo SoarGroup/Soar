@@ -96,7 +96,7 @@ std::string GraphViz_Visualizer::get_color_for_id(uint64_t pID)
 {
     std::string returnStr;
 
-    if (pID)
+    if (pID && (settings->color_identities->get_value() == on))
     {
         returnStr = " BGCOLOR=\"";
         auto iter = m_identity_colors.find(pID);
