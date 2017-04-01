@@ -431,8 +431,14 @@ void action_record::viz_action_list(agent* thisAgent, action_record_list* pActio
             {
                 lAction->viz_preference();
             } else {
-                lAction->viz_action(rhs);
-                rhs = rhs->next;
+                if (rhs)
+                {
+                    lAction->viz_action(rhs);
+                    rhs = rhs->next;
+                } else {
+                    /* For deep copy */
+                    lAction->viz_preference();
+                }
             }
         }
         thisAgent->visualizationManager->graphviz_output += "\n";

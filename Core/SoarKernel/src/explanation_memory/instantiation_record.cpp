@@ -681,7 +681,15 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            lCond->visualize_for_explanation_trace(print_cond, match_level);
+
+            /* Visualize it */
+            if (print_cond)
+            {
+                lCond->visualize_for_explanation_trace(print_cond, match_level);
+            } else {
+                /* For deep copy */
+                lCond->visualize_for_chunk();
+            }
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;
@@ -692,7 +700,7 @@ void instantiation_record::viz_et_instantiation()
                     lInNegativeConditions = false;
                 }
             } else {
-                current_cond = current_cond->next;
+                if (current_cond) current_cond = current_cond->next;
             }
             if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
             {
