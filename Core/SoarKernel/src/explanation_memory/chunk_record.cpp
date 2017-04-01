@@ -206,8 +206,7 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
 
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
-//    identity_analysis.set_original_ebc_mappings(pIdentitySetMappings);
-//    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
+    identity_analysis.generate_identity_sets(chunkInstantiationID, lhs);
 
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }

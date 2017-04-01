@@ -25,7 +25,7 @@ class identity_record
         void    init(agent* myAgent);
         void    clean_up();
 
-        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID);
+        void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID, IdentitySet* pToID);
         void    generate_identity_sets(uint64_t pInstID, condition* lhs);
 
         void    print_mappings();
@@ -42,7 +42,7 @@ class identity_record
 
         void    clear_mappings();
 
-        void    print_mapping_list(identity_mapping_list* pMapList, bool printHeader = false);
+        void    print_mapping_list(identity_mapping_list* pMapList, bool pLiteralizationMode, std::string* pInstString = NULL);
 
 };
 

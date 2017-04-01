@@ -6,6 +6,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
 #include "memory_manager.h"
@@ -561,10 +562,10 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID)
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet)
 {
     if (current_recording_chunk)
-        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSetID, pToJoinSetID);
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSet, pToJoinSet);
 }
 
 bool Explanation_Memory::current_discussed_chunk_exists()

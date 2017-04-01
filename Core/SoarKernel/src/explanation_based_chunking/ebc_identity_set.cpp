@@ -83,7 +83,6 @@ void IdentitySet::store_variablization(Symbol* variable, Symbol* pMatched_sym)
     super_join->new_var = variable;
     super_join->clone_identity = thisAgent->explanationBasedChunker->get_new_var_identity_id();
     super_join->touch();
-//        thisAgent->explanationMemory->add_identity_set_mapping(instantiation_being_built->i_id, IDS_base_instantiation, pIdentitySet, lVarInfo->identity);
 }
 
 uint64_t IdentitySet::update_clone_id()

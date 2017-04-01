@@ -156,19 +156,19 @@ void Explanation_Based_Chunker::add_pref_to_results(preference* pref, preference
             {
                 join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.id);
                 dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.id->get_identity());
-    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, pLinkPref->identity_sets.id);
             }
             if (pField == ATTR_ELEMENT)
             {
                 join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.attr);
                 dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.attr->get_identity());
-    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, pLinkPref->identity_sets.attr);
             }
             if (pField == VALUE_ELEMENT)
             {
                 join_identity_sets(pref->identity_sets.id, pLinkPref->identity_sets.value);
                 dprint(DT_EXTRA_RESULTS, "...adding identity mapping from identifier element to parent value element: %u -> %u\n", pref->identity_sets.id->get_identity(), pLinkPref->identity_sets.value->get_identity());
-    //            thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id->get_identity(), linked_id->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(pref->inst->i_id, IDS_unified_child_result, pref->identity_sets.id, pLinkPref->identity_sets.value);
             }
             ebc_timers->chunk_instantiation_creation->start();
         }
