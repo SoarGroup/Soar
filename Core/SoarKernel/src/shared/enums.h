@@ -174,11 +174,12 @@ enum ChunkingSettings {
 
 enum IDSet_Mapping_Type {
     IDS_join,
-    IDS_unified_with_local_singleton,
     IDS_unified_with_singleton,
     IDS_unified_child_result,
-    IDS_literalized,
+    IDS_literalized_RHS_literal,
+    IDS_literalized_LHS_literal,
     IDS_literalized_RHS_function_arg,
+    IDS_literalized_RHS_function_compare,
 };
 
 enum IDSet_Deallocation_Type {

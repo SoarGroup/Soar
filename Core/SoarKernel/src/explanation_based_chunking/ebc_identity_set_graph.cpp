@@ -10,6 +10,7 @@
 #include "condition.h"
 #include "debug_inventories.h"
 #include "dprint.h"
+#include "explanation_memory.h"
 #include "symbol_manager.h"
 #include "preference.h"
 #include "rhs.h"
@@ -21,7 +22,11 @@ IdentitySet* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &lID_Set);
     lID_Set->init(thisAgent);
 
+    #ifdef EBC_DETAILED_STATISTICS
+    thisAgent->explanationMemory->increment_stat_identities_created();
+    #endif
     ISI_add(thisAgent, lID_Set->idset_id);
+
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id, pIdentity);
     return lID_Set;
 }
@@ -103,6 +108,11 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     if (iter != (*identities_to_id_sets).end())
     {
         IdentitySet* lID_Set = iter->second;
+
+        #ifdef EBC_DETAILED_STATISTICS
+        if (pIDSet) thisAgent->explanationMemory->increment_stat_identity_propagations_blocked();
+        #endif
+
         dprint(DT_PROPAGATE_ID_SETS, "--> Assigning identity set for variable identity %u with identity set %u already used in rule.\n", pID, lID_Set->get_identity());
         return lID_Set;
     }
@@ -118,6 +128,10 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     {
         IdentitySet* newIdentitySet = make_identity_set(pID);
         (*identities_to_id_sets)[pID] = newIdentitySet;
+
+        #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_identity_propagations();
+        #endif
         dprint(DT_PROPAGATE_ID_SETS, "--> No parent identity set.  Creating new identity join set %u for %u\n", newIdentitySet->get_identity(), pID);
         return newIdentitySet;
     }
@@ -141,6 +155,10 @@ void Explanation_Based_Chunker::join_identity_sets(IdentitySet* lFromJoinSet, Id
     lToJoinSet = lToJoinSet->super_join;
 
     if (lFromJoinSet == lToJoinSet) return;
+
+    #ifdef EBC_DETAILED_STATISTICS
+    thisAgent->explanationMemory->increment_stat_identities_joined();
+    #endif
 
     ebc_timers->variablization_rhs->start();
     ebc_timers->variablization_rhs->stop();

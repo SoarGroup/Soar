@@ -518,7 +518,6 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
     if (has_local_negation)
     {
         m_tested_local_negation = true;
-        thisAgent->explanationMemory->increment_stat_tested_local_negation(m_rule_type);
         if (ebc_settings[SETTING_EBC_INTERRUPT_WARNING] && !ebc_settings[SETTING_EBC_ALLOW_LOCAL_NEGATIONS])
         {
             thisAgent->stop_soar = true;
@@ -639,7 +638,7 @@ void Explanation_Based_Chunker::make_clones_of_results()
         }
 
         /* We record the identity set ids for the explainer so they match up with identity sets on this level */
-        if (thisAgent->explanationMemory->isRecordingChunk())
+        if (thisAgent->explanationMemory->is_any_enabled())
         {
             if (lResultPref->identity_sets.id) lClonedPref->clone_identities.id = lResultPref->identity_sets.id->get_identity();
             if (lResultPref->identity_sets.attr) lClonedPref->clone_identities.attr = lResultPref->identity_sets.attr->get_identity();
@@ -730,7 +729,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
             thisAgent->explanationMemory->increment_stat_justifications_succeeded();
             /* We'll interrupt on justification learning only if explainer is recording justifications.  In
              * most cases I think we wouldn't want to interrupt on every justification learned */
-            if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingChunk())
+            if (ebc_settings[SETTING_EBC_INTERRUPT] && thisAgent->explanationMemory->isRecordingJustifications())
             {
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Soar learned a new justification.";
@@ -744,7 +743,7 @@ bool Explanation_Based_Chunker::add_chunk_to_rete()
                 thisAgent->reason_for_stopping = "Soar learned a new rule.";
 
             }
-            if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && m_prod->explain_its_chunks && thisAgent->explanationMemory->isRecordingChunk())
+            if (ebc_settings[SETTING_EBC_INTERRUPT_WATCHED] && thisAgent->explanationMemory->isCurrentlyRecording())
             {
                 thisAgent->stop_soar = true;
                 thisAgent->reason_for_stopping = "Soar learned a new rule from a watched production.";

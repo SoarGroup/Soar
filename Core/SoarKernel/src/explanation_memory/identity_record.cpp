@@ -57,8 +57,6 @@ void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pIn
             pID_Set->insert(pTest->identity);
             pID_Set_Map->insert({pTest->identity, pTest->data.referent});
             thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
-            dprint(DT_EXPLAIN_IDENTITIES, "Adding identity used in chunk: %y [%u]\n", pTest->data.referent, pTest->identity);
-            //thisAgent->explanationMemory->add_identity_set_mapping(pInstID, IDS_base_instantiation, pTest->identity_set, lNewIDSet->identity);
         }
     }
 }
@@ -86,6 +84,14 @@ void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
     generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, idset_to_var_map);
 
     /* MToDo | Might need to generate identity sets for RHS as well for unbound vars */
+
+    #ifdef EBC_DETAILED_STATISTICS
+    for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
+    {
+        thisAgent->explanationMemory->increment_stat_identities_participated();
+    }
+    #endif
+
 }
 
 void identity_record::print_identity_mappings_for_instantiation(instantiation_record* pInstRecord)
@@ -123,6 +129,37 @@ void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pT
     lMapping->to_identity = pToID ? pToID->get_identity() : 0;
     lMapping->mappingType = pType;
     lInstMappingList->push_back(lMapping);
+
+    #ifdef EBC_DETAILED_STATISTICS
+    switch (lMapping->mappingType)
+    {
+        case IDS_join:
+            thisAgent->explanationMemory->increment_stat_identities_joined_variable();
+            break;
+        case IDS_unified_with_singleton:
+            thisAgent->explanationMemory->increment_stat_identities_joined_singleton();
+            break;
+        case IDS_unified_child_result:
+            thisAgent->explanationMemory->increment_stat_identities_joined_child_results();
+            break;
+        case IDS_literalized_LHS_literal:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_lhs_literal();
+            break;
+        case IDS_literalized_RHS_literal:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_literal();
+            break;
+        case IDS_literalized_RHS_function_arg:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_arg();
+            break;
+        case IDS_literalized_RHS_function_compare:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_compare();
+            break;
+        default:
+            assert(false);
+            break;
+    }
+    #endif
+
 }
 
 void identity_record::print_mappings()
@@ -174,9 +211,8 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
     Symbol* lSym;
 
     outputManager->reset_column_indents();
-    outputManager->set_column_indent(1, 3);  // Variablization identity mapping
-    outputManager->set_column_indent(2, 23); // Chunk variable
-    outputManager->set_column_indent(3, 35); // Mapping type
+    outputManager->set_column_indent(1, 3);
+    outputManager->set_column_indent(2, 33);
 
     for (auto it = pMapList->begin(); it != pMapList->end(); ++it)
     {
@@ -208,22 +244,26 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             case IDS_join:
                 outputManager->printa_sf(thisAgent, "%-| Two identity sets propagated into same variable");
                 break;
-            case IDS_unified_with_local_singleton:
-                outputManager->printa_sf(thisAgent, "%-| Tested local ^superstate singleton WME");
-                break;
             case IDS_unified_with_singleton:
-                outputManager->printa_sf(thisAgent, "%-| Tested superstate singleton WME");
+                outputManager->printa_sf(thisAgent, "%-| Tested a previously tested super-state singleton WME");
                 break;
             case IDS_unified_child_result:
                 outputManager->printa_sf(thisAgent, "%-| Connected to parent result");
                 break;
-            case IDS_literalized:
-                outputManager->printa_sf(thisAgent, "%-| Variable compared against literal");
+            case IDS_literalized_LHS_literal:
+                outputManager->printa_sf(thisAgent, "%-| Literal value in condition compared against RHS variable");
+                break;
+            case IDS_literalized_RHS_literal:
+                outputManager->printa_sf(thisAgent, "%-| Variable in condition compared against literal RHS value");
                 break;
             case IDS_literalized_RHS_function_arg:
                 outputManager->printa_sf(thisAgent, "%-| Argument in intermediate RHS function");
                 break;
+            case IDS_literalized_RHS_function_compare:
+                outputManager->printa_sf(thisAgent, "%-| Tested result of RHS function");
+                break;
             default:
+                assert(false);
                 outputManager->printa_sf(thisAgent, "%-| Bad identity mapping type");
                 break;
         }

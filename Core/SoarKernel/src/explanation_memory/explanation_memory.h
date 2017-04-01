@@ -49,8 +49,6 @@ typedef struct chunking_stats_struct {
         uint64_t            eliminated_disjunction_values;
         uint64_t            constraints_attached;
         uint64_t            constraints_collected;
-        uint64_t            rhs_arguments_literalized;
-        uint64_t            rhs_arguments_literalized_just;
         uint64_t            tested_deep_copy;
         uint64_t            tested_deep_copy_just;
 
@@ -59,9 +57,9 @@ typedef struct chunking_stats_struct {
         uint64_t            identities_joined_variable;
         uint64_t            identities_joined_local_singleton;
         uint64_t            identities_joined_singleton;
-        uint64_t            identities_joined_user_singleton;
         uint64_t            identities_joined_child_results;
-        uint64_t            identities_literalized_literal;
+        uint64_t            identities_literalized_rhs_literal;
+        uint64_t            identities_literalized_lhs_literal;
         uint64_t            identities_literalized_rhs_func_arg;
         uint64_t            identities_literalized_rhs_func_compare;
 
@@ -70,7 +68,6 @@ typedef struct chunking_stats_struct {
         uint64_t            identity_propagations_blocked;
         uint64_t            operational_constraints;
         uint64_t            OSK_instantiations;
-        uint64_t            child_result_instantiations;
 
         /* Debug stats (only used if EBC_DEBUG_STATISTICS is #defined) */
         uint64_t            lhs_unconnected;
@@ -98,7 +95,7 @@ class Explanation_Memory
         bool                    is_any_enabled() { return (m_all_enabled || (num_rules_watched > 0)); }
         bool                    is_all_enabled() { return m_all_enabled; }
         void                    set_all_enabled(bool pEnabled) { m_all_enabled = pEnabled; }
-        bool                    isRecordingChunk() { return (m_all_enabled || current_recording_chunk); }
+        bool                    isCurrentlyRecording() { return (current_recording_chunk != NULL); }
 
         bool                    isRecordingJustifications() { return m_justifications_enabled; };
         void                    set_justifications_enabled(bool pEnabled) { m_justifications_enabled = pEnabled; };
@@ -128,8 +125,7 @@ class Explanation_Memory
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
         void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
-        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
-        void increment_stat_rhs_arguments_literalized(ebc_rule_type pType) { if (pType == ebc_chunk) stats.rhs_arguments_literalized++; else stats.rhs_arguments_literalized_just++; if (current_recording_chunk) current_recording_chunk->stats.rhs_arguments_literalized++; };
+        void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
         void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
         void increment_stat_tested_quiescence() { stats.tested_quiescence++; if (current_recording_chunk) current_recording_chunk->stats.tested_quiescence = true; };
@@ -154,20 +150,22 @@ class Explanation_Memory
 
         void increment_stat_identities_created() { stats.identities_created++; if (current_recording_chunk) current_recording_chunk->stats.identities_created++; };
         void increment_stat_identities_joined() { stats.identities_joined++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined++; };
+        void increment_stat_identity_propagations() { stats.identity_propagations++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations++; };
+        void increment_stat_identities_propagated_local_singleton() { stats.identities_joined_local_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_local_singleton++; };
+        void increment_stat_identity_propagations_blocked() { stats.identity_propagations_blocked++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations_blocked++; };
+        void increment_stat_OSK_instantiations() { stats.OSK_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.OSK_instantiations++; };
+
+        void increment_stat_operational_constraints() { stats.operational_constraints++; if (current_recording_chunk) current_recording_chunk->stats.operational_constraints++; };
+
+        /* Only occur with the explainer on */
         void increment_stat_identities_joined_variable() { stats.identities_joined_variable++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_variable++; };
-        void increment_stat_identities_joined_local_singleton() { stats.identities_joined_local_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_local_singleton++; };
         void increment_stat_identities_joined_singleton() { stats.identities_joined_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_singleton++; };
-        void increment_stat_identities_joined_user_singleton() { stats.identities_joined_user_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_user_singleton++; };
         void increment_stat_identities_joined_child_results() { stats.identities_joined_child_results++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_child_results++; };
-        void increment_stat_identities_literalized_literal() { stats.identities_literalized_literal++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_literal++; };
+        void increment_stat_identities_literalized_rhs_literal() { stats.identities_literalized_rhs_literal++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_literal++; };
+        void increment_stat_identities_literalized_lhs_literal() { stats.identities_literalized_lhs_literal++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_lhs_literal++; };
         void increment_stat_identities_literalized_rhs_func_arg() { stats.identities_literalized_rhs_func_arg++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_func_arg++; };
         void increment_stat_identities_literalized_rhs_func_compare() { stats.identities_literalized_rhs_func_compare++; if (current_recording_chunk) current_recording_chunk->stats.identities_literalized_rhs_func_compare++; };
-        void increment_stat_identities_participated() { stats.identities_participated++; if (current_recording_chunk) current_recording_chunk->stats.identities_participated++; };
-        void increment_stat_identity_propagations() { stats.identity_propagations++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations++; };
-        void increment_stat_identity_propagations_blocked() { stats.identity_propagations_blocked++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations_blocked++; };
-        void increment_stat_operational_constraints() { stats.operational_constraints++; if (current_recording_chunk) current_recording_chunk->stats.operational_constraints++; };
-        void increment_stat_OSK_instantiations() { stats.OSK_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.OSK_instantiations++; };
-        void increment_stat_child_result_instantiations() { stats.child_result_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.child_result_instantiations++; };
+        void increment_stat_identities_participated(int pCount = 1) { stats.identities_participated += pCount; if (current_recording_chunk) current_recording_chunk->stats.identities_participated += pCount; };
 
         uint64_t get_stat_succeeded() { return stats.chunks_succeeded; };
         uint64_t get_stat_chunks_attempted() { return stats.chunks_attempted; };

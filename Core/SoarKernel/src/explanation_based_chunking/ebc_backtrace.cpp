@@ -118,7 +118,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
         ebc_timers->dependency_analysis->start();
     }
 
-    if (thisAgent->explanationMemory->isRecordingChunk())
+    if (thisAgent->explanationMemory->isCurrentlyRecording())
     {
         ++bt_depth;
         if (inst->explain_depth > bt_depth)
@@ -229,6 +229,12 @@ void Explanation_Based_Chunker::backtrace_through_OSK(cons* pOSKPrefList, uint64
 {
     cons* l_OSK_prefs;
     preference* p;
+
+    #ifdef EBC_DETAILED_STATISTICS
+    thisAgent->explanationMemory->increment_stat_OSK_instantiations();
+    #endif
+
+
     for (l_OSK_prefs = pOSKPrefList; l_OSK_prefs != NIL; l_OSK_prefs = l_OSK_prefs->rest)
     {
         p = static_cast<preference_struct*>(l_OSK_prefs->first);

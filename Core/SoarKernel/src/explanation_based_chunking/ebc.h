@@ -65,7 +65,7 @@ class Explanation_Based_Chunker
         uint64_t    get_new_var_identity_id()       { increment_counter(variablization_identity_counter); return variablization_identity_counter; };
         uint64_t    get_new_identity_set_id()       { increment_counter(identity_set_counter); return identity_set_counter; };
         void        reset_identity_set_id_counter() {identity_set_counter = 0; };
-
+        bool        is_learning_chunk()             { return (m_inst != NULL); };
         /* identity generation functions */
         uint64_t get_or_create_identity_for_sym(Symbol* orig_var);
         void     add_identity_to_test(test pTest);

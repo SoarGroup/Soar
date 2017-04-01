@@ -84,12 +84,10 @@ void Explanation_Memory::initialize_counters()
     stats.max_chunks = 0;
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
-    stats.rhs_arguments_literalized = 0;
     stats.tested_deep_copy = 0;
     stats.tested_quiescence = 0;
     stats.tested_ltm_recall = 0;
     stats.tested_local_negation_just = 0;
-    stats.rhs_arguments_literalized_just = 0;
     stats.tested_deep_copy_just = 0;
     stats.tested_ltm_recall_just = 0;
     stats.merged_conditions = 0;
@@ -115,15 +113,13 @@ void Explanation_Memory::initialize_counters()
     stats.identities_joined_variable        = 0;
     stats.identities_joined_local_singleton = 0;
     stats.identities_joined_singleton       = 0;
-    stats.identities_joined_user_singleton  = 0;
     stats.identities_joined_child_results   = 0;
-    stats.identities_literalized_literal    = 0;
+    stats.identities_literalized_rhs_literal    = 0;
     stats.identities_participated           = 0;
     stats.identity_propagations             = 0;
     stats.identity_propagations_blocked     = 0;
     stats.operational_constraints           = 0;
     stats.OSK_instantiations                = 0;
-    stats.child_result_instantiations       = 0;
     stats.identities_literalized_rhs_func_arg       = 0;
     stats.identities_literalized_rhs_func_compare   = 0;
 }

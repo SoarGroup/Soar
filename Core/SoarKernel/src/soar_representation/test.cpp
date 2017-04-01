@@ -386,6 +386,10 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 return;
             }
 
+    #ifdef EBC_DETAILED_STATISTICS
+    if (thisAgent->explanationBasedChunker->is_learning_chunk()) thisAgent->explanationMemory->increment_stat_operational_constraints();
+    #endif
+
     add_test(thisAgent, t, add_me, merge_disjunctions);
 }
 
