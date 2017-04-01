@@ -107,7 +107,7 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
         return lID_Set;
     }
 
-    #ifndef DONT_PROPAGATE_ID_SETS
+    #ifndef EBC_DONT_PROPAGATE_ID_SETS
     if (pIDSet)
     {
         (*identities_to_id_sets)[pID] = pIDSet;

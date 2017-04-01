@@ -66,6 +66,23 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.constraints_attached              = 0;
     stats.constraints_collected             = 0;
 
+    stats.identities_created                = 0;
+    stats.identities_joined                 = 0;
+    stats.identities_joined_variable        = 0;
+    stats.identities_joined_local_singleton = 0;
+    stats.identities_joined_singleton       = 0;
+    stats.identities_joined_user_singleton  = 0;
+    stats.identities_joined_child_results   = 0;
+    stats.identities_literalized_literal    = 0;
+    stats.identities_participated           = 0;
+    stats.identity_propagations             = 0;
+    stats.identity_propagations_blocked     = 0;
+    stats.operational_constraints           = 0;
+    stats.OSK_instantiations                = 0;
+    stats.child_result_instantiations       = 0;
+    stats.identities_literalized_rhs_func_arg       = 0;
+    stats.identities_literalized_rhs_func_compare   = 0;
+
     dprint(DT_EXPLAIN, "Created new empty chunk record c%u\n", chunkID);
 }
 

@@ -337,6 +337,23 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Backtracing produced actions unconnected to goal                   %-%u\n\n", stats.rhs_unconnected);
 #endif
 #ifdef EBC_DETAILED_STATISTICS
+    outputManager->printa_sf(thisAgent, "Identities created                                                 %-%u\n", stats.identities_created);
+    outputManager->printa_sf(thisAgent, "Identities joined                                                  %-%u\n", stats.identities_joined);
+    outputManager->printa_sf(thisAgent, "Identities joined_variable                                         %-%u\n", stats.identities_joined_variable);
+    outputManager->printa_sf(thisAgent, "Identities joined_local_singleton                                  %-%u\n", stats.identities_joined_local_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_singleton                                        %-%u\n", stats.identities_joined_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_user_singleton                                   %-%u\n", stats.identities_joined_user_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_child_results                                    %-%u\n", stats.identities_joined_child_results);
+    outputManager->printa_sf(thisAgent, "Identities literalized_literal                                     %-%u\n", stats.identities_literalized_literal);
+    outputManager->printa_sf(thisAgent, "Identities participated                                            %-%u\n", stats.identities_participated);
+    outputManager->printa_sf(thisAgent, "Identity propagations                                              %-%u\n", stats.identity_propagations);
+    outputManager->printa_sf(thisAgent, "Identity propagations blocked                                      %-%u\n", stats.identity_propagations_blocked);
+    outputManager->printa_sf(thisAgent, "Operational constraints                                            %-%u\n", stats.operational_constraints);
+    outputManager->printa_sf(thisAgent, "OSK instantiations                                                 %-%u\n", stats.OSK_instantiations);
+    outputManager->printa_sf(thisAgent, "Child _result instantiations                                       %-%u\n", stats.child_result_instantiations);
+    outputManager->printa_sf(thisAgent, "Identities literalized rhs func arg                                %-%u\n", stats.identities_literalized_rhs_func_arg);
+    outputManager->printa_sf(thisAgent, "Identities literalized rhs func compare                            %-%u\n", stats.identities_literalized_rhs_func_compare);
+
     outputManager->printa_sf(thisAgent, "Chunk identities literalized by RHS functions                      %-%u\n", stats.rhs_arguments_literalized);
     outputManager->printa_sf(thisAgent, "Chunks tested knowledge created by deep-copy                       %-%u\n\n", stats.tested_deep_copy);
     outputManager->printa_sf(thisAgent, "Justification identities literalized by RHS functions              %-%u\n", stats.rhs_arguments_literalized_just);
@@ -434,6 +451,23 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord) {
     outputManager->printa_sf(thisAgent, "Rule learned did not match WM                      %-%s\n", (pChunkRecord->stats.did_not_match_wm ? "Yes" : "No"));
     #endif
     #ifdef EBC_DETAILED_STATISTICS
+    outputManager->printa_sf(thisAgent, "Identities created                                     %-%u\n", stats.identities_created);
+    outputManager->printa_sf(thisAgent, "Identities joined                                      %-%u\n", stats.identities_joined);
+    outputManager->printa_sf(thisAgent, "Identities joined_variable                             %-%u\n", stats.identities_joined_variable);
+    outputManager->printa_sf(thisAgent, "Identities joined_local_singleton                      %-%u\n", stats.identities_joined_local_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_singleton                            %-%u\n", stats.identities_joined_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_user_singleton                       %-%u\n", stats.identities_joined_user_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined_child_results                        %-%u\n", stats.identities_joined_child_results);
+    outputManager->printa_sf(thisAgent, "Identities literalized_literal                         %-%u\n", stats.identities_literalized_literal);
+    outputManager->printa_sf(thisAgent, "Identities participated                                %-%u\n", stats.identities_participated);
+    outputManager->printa_sf(thisAgent, "Identity propagations                                  %-%u\n", stats.identity_propagations);
+    outputManager->printa_sf(thisAgent, "Identity propagations blocked                          %-%u\n", stats.identity_propagations_blocked);
+    outputManager->printa_sf(thisAgent, "Operational constraints                                %-%u\n", stats.operational_constraints);
+    outputManager->printa_sf(thisAgent, "OSK instantiations                                     %-%u\n", stats.OSK_instantiations);
+    outputManager->printa_sf(thisAgent, "Child _result instantiations                           %-%u\n", stats.child_result_instantiations);
+    outputManager->printa_sf(thisAgent, "Identities literalized rhs func arg                    %-%u\n", stats.identities_literalized_rhs_func_arg);
+    outputManager->printa_sf(thisAgent, "Identities literalized rhs func compare                %-%u\n", stats.identities_literalized_rhs_func_compare);
+
     outputManager->printa_sf(thisAgent, "Identities literalized by RHS functions            %-%u\n", pChunkRecord->stats.rhs_arguments_literalized);
     outputManager->printa_sf(thisAgent, "Tested knowledge that was deep copied              %-%s\n", (pChunkRecord->stats.tested_deep_copy ? "Yes" : "No"));
     #endif

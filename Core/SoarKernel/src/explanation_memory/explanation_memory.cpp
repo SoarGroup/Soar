@@ -110,6 +110,22 @@ void Explanation_Memory::initialize_counters()
     stats.repair_failed = 0;
     stats.chunks_repaired = 0;
     stats.chunks_reverted = 0;
+    stats.identities_created                = 0;
+    stats.identities_joined                 = 0;
+    stats.identities_joined_variable        = 0;
+    stats.identities_joined_local_singleton = 0;
+    stats.identities_joined_singleton       = 0;
+    stats.identities_joined_user_singleton  = 0;
+    stats.identities_joined_child_results   = 0;
+    stats.identities_literalized_literal    = 0;
+    stats.identities_participated           = 0;
+    stats.identity_propagations             = 0;
+    stats.identity_propagations_blocked     = 0;
+    stats.operational_constraints           = 0;
+    stats.OSK_instantiations                = 0;
+    stats.child_result_instantiations       = 0;
+    stats.identities_literalized_rhs_func_arg       = 0;
+    stats.identities_literalized_rhs_func_compare   = 0;
 }
 
 void Explanation_Memory::clear_explanations()
