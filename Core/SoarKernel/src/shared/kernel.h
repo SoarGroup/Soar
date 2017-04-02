@@ -105,6 +105,9 @@
 
     //#define DEBUG_ATTR_AS_LINKS     /* Experimental link count setting that increments and decrements for identifiers in attribute elements*/
 
+    //#define DEBUG_REFCOUNT_CHANGE_REGIONS
+    //#define DEBUG_TRACE_IDSET_REFCOUNTS
+
     /* The debug inventories are a tool to keep track of instantiations/prefs/wme
      * allocation/deallocation manually using numeric IDs to see if any are still
      * around at soar init or exit.  Code that changes refcounts are instrumented
@@ -123,8 +126,6 @@
     //#define DEBUG_RHS_FUNCTION_INVENTORY
     //#define DEBUG_ACTION_INVENTORY
     //#define DEBUG_TEST_INVENTORY
-    //#define DEBUG_REFCOUNT_CHANGE_REGIONS
-
 #endif
 
 #endif

@@ -179,6 +179,20 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
             thisAgent->explanationMemory->visualize_contributors();
             lValidVisualizationGenerated = true;
         }
+        else if (my_param == thisAgent->visualizationManager->settings->viz_identity_graph)
+        {
+            if (pArg2)
+            {
+                return SetError("Explanation visualization cannot take an additional argument.\n");
+            }
+            if (!thisAgent->explanationMemory->current_discussed_chunk_exists())
+            {
+                return SetError("Please first specify the chunk you want to visualize with the command 'explain [chunk-name]' or 'explain chunk [chunk ID]'.\n");
+            }
+
+            thisAgent->explanationMemory->visualize_identity_graph();
+            lValidVisualizationGenerated = true;
+        }
         else if ((my_param == thisAgent->visualizationManager->settings->help_cmd) || (my_param == thisAgent->visualizationManager->settings->qhelp_cmd))
         {
             thisAgent->visualizationManager->settings->print_visualization_settings(thisAgent);

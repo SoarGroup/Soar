@@ -17,8 +17,13 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
 
     if (result->identities.id)
     {
+        /* Match goal is not calculated yet, so we're passing in NULL, which would normally be a problem 
+         * for the explainer since it wouldn't know where to record the identity set.  But in this function, 
+         * we're creating actions, not preferences, so that means we should never be creating new unbound 
+         * RHS values and these calls to get_or_add_id_set should always be doing a look-up and won't need 
+         * the match goal. */
         if (!result->identity_sets.id)
-            result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id);
+            result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id, NULL);
         result->clone_identities.id = result->identity_sets.id->update_clone_id();
     } else
         result->clone_identities.id = LITERAL_VALUE;
@@ -34,7 +39,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
     if (result->identities.attr)
     {
         if (!result->identity_sets.attr)
-            result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr);
+            result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr, NULL);
         result->clone_identities.attr = result->identity_sets.attr->update_clone_id();
     } else
         result->clone_identities.attr = LITERAL_VALUE;
@@ -50,7 +55,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
     if (result->identities.value)
     {
         if(!result->identity_sets.value)
-            result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value);
+            result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value, NULL);
         result->clone_identities.value = result->identity_sets.value->update_clone_id();
     } else
         result->clone_identities.value = LITERAL_VALUE;
@@ -68,7 +73,7 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
         if (result->identities.referent)
         {
             if (!result->identity_sets.referent)
-                result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent);
+                result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent, NULL);
             result->clone_identities.referent = result->identity_sets.referent->update_clone_id();
         } else result->clone_identities.referent = LITERAL_VALUE;
 

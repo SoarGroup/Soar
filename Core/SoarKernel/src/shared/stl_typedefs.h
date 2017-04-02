@@ -2,6 +2,8 @@
 #define STL_TYPEDEFS_H_
 
 #include "kernel.h"
+
+#include "ebc_identity_set.h"
 #include "mempool_allocator.h"
 #include "stl_structs.h"
 
@@ -11,6 +13,9 @@
 #include <unordered_set>
 #include <list>
 #include <vector>
+
+
+struct IDSetLessThan;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 
@@ -32,7 +37,7 @@
     typedef std::list< deep_copy_wme*, soar_module::soar_memory_pool_allocator< deep_copy_wme* > >                  deep_copy_wme_list;
     typedef std::list< wme*, soar_module::soar_memory_pool_allocator< wme* > >                                      wme_list;
 
-    typedef std::set< IdentitySet*, std::less< IdentitySet* >,
+    typedef std::set< IdentitySet*, IDSetLessThan,
                       soar_module::soar_memory_pool_allocator< IdentitySet* > >                                     identity_set_set;
     typedef std::set< instantiation*, std::less< instantiation* >,
                       soar_module::soar_memory_pool_allocator< instantiation* > >                                   inst_set;
@@ -80,7 +85,7 @@
     typedef std::list< Symbol* >                                symbol_list;
     typedef std::list< wme* >                                   wme_list;
 
-    typedef std::set< IdentitySet* >                            identity_set_set;
+    typedef std::set< IdentitySet*, IDSetLessThan >             identity_set_set;
     typedef std::set< instantiation* >                          inst_set;
     typedef std::set< production_record* >                      production_record_set;
     typedef std::set< instantiation_record* >                   inst_record_set;
@@ -109,6 +114,7 @@
     typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
     typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
     typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
+    typedef std::unordered_map< Symbol*, identity_set_set >         sym_to_identity_set_map;
     typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
     typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
     typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
@@ -153,6 +159,8 @@
                           soar_module::soar_memory_pool_allocator< std::pair< Symbol*, condition* > > >               sym_to_cond_map;
     typedef std::map< Symbol*, uint64_t, std::less< Symbol* >,
                           soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > >                 sym_to_id_map;
+    typedef std::map< Symbol*, identity_set_set*, std::less< Symbol* >,
+                          soar_module::soar_memory_pool_allocator< std::pair< Symbol*, identity_set_set* > > >        sym_to_identity_set_map;
     typedef std::map< Symbol*, chunk_element*, std::less< Symbol* >,
                           soar_module::soar_memory_pool_allocator< std::pair< Symbol*, chunk_element* > > >           sym_to_sym_id_map;
     typedef std::map< Symbol*, sym_to_cond_map, std::less< Symbol* >,

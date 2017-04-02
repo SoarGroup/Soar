@@ -102,6 +102,8 @@ class Explanation_Memory
 
         void                    re_init();
         void                    clear_explanations();
+        void                    clear_identity_sets();
+        void                    clear_identity_sets_for_goal(Symbol* pGoal);
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
         void                    add_bt_instantiation(instantiation* pInst, BTSourceType bt_type) { if (current_recording_chunk) current_recording_chunk->backtraced_instantiations->insert(pInst); };
@@ -114,6 +116,7 @@ class Explanation_Memory
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
+        void                    add_identity(IdentitySet* pNewIdentity, Symbol* pGoal);
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
@@ -192,6 +195,7 @@ class Explanation_Memory
         void visualize_last_output();
         void visualize_instantiation_graph();
         void visualize_contributors();
+        void visualize_identity_graph();
 
         void create_after_action_report();
         void after_action_report_for_init();
@@ -224,16 +228,17 @@ class Explanation_Memory
         instantiation_record*   get_instantiation(instantiation* pInst);
         condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
         action_record*          add_result(preference* pPref, action* pAction = NULL);
-
         uint64_t                add_production_id_if_necessary(production* pProd);
         production*             get_production(uint64_t pId);
 
         void                    discuss_chunk(chunk_record* pChunkRecord);
+
         void                    clear_chunk_from_instantiations();
+        void                    clear_identities_in_set(identity_set_set* lIdenty_set);
+
         void                    print_chunk_list(short pNumToPrint = 0, bool pChunks = true);
         void                    print_rules_watched(short pNumToPrint = 0);
         bool                    print_watched_rules_of_type(agent* thisAgent, unsigned int productionType, short &pNumToPrint);
-
         void                    print_action_list(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs = NULL, production_record* pExcisedRule = NULL);
         void                    print_chunk_actions(action_record_list* pActionRecords, production* pOriginalRule, production_record* pExcisedRule);
         void                    print_instantiation_actions(action_record_list* pActionRecords, production* pOriginalRule, action* pRhs);
@@ -261,11 +266,14 @@ class Explanation_Memory
         chunking_stats      stats;
 
         /* These maps store all of the records the logger keeps */
+        /* MToDo | Why aren't these using the ones stl_typedefs? */
         std::unordered_map< Symbol*, chunk_record* >*           chunks;
         std::unordered_map< uint64_t, chunk_record* >*          chunks_by_ID;
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
+        sym_to_identity_set_map*                                all_identities_in_goal;
+
         production_record_set*                                  cached_production;
         std::unordered_map< uint64_t, production* >*            production_id_map;
 };

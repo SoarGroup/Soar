@@ -15,6 +15,7 @@
 #include "symbol.h"
 #include "symbol_manager.h"
 #include "test.h"
+#include "visualize.h"
 #include "working_memory.h"
 
 void identity_record::init(agent* myAgent)
@@ -23,6 +24,58 @@ void identity_record::init(agent* myAgent)
     idset_to_var_map = new id_to_sym_map();
     identities_in_chunk = new id_set();
     instantiation_mappings = new inst_identities_map();
+}
+
+void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID,  IdentitySet* pToID)
+{
+    identity_mapping_list* lInstMappingList;
+
+    dprint(DT_EXPLAIN_IDENTITIES, "Adding identity mappings type %d: %u -> %u\n", static_cast<int>(pType), pFromID->get_identity(), pToID ? pToID->get_identity() : 0);
+    auto lIterInst = instantiation_mappings->find(pI_ID);
+    if (lIterInst == instantiation_mappings->end())
+    {
+        lInstMappingList = new identity_mapping_list();
+        (*instantiation_mappings)[pI_ID] = lInstMappingList;
+    } else {
+        lInstMappingList = lIterInst->second;
+    }
+    identity_mapping* lMapping;
+    thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
+    lMapping->from_identity = pFromID->get_identity();
+    lMapping->to_identity = pToID ? pToID->get_identity() : 0;
+    lMapping->mappingType = pType;
+    lInstMappingList->push_back(lMapping);
+
+    #ifdef EBC_DETAILED_STATISTICS
+    switch (lMapping->mappingType)
+    {
+        case IDS_join:
+            thisAgent->explanationMemory->increment_stat_identities_joined_variable();
+            break;
+        case IDS_unified_with_singleton:
+            thisAgent->explanationMemory->increment_stat_identities_joined_singleton();
+            break;
+        case IDS_unified_child_result:
+            thisAgent->explanationMemory->increment_stat_identities_joined_child_results();
+            break;
+        case IDS_literalized_LHS_literal:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_lhs_literal();
+            break;
+        case IDS_literalized_RHS_literal:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_literal();
+            break;
+        case IDS_literalized_RHS_function_arg:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_arg();
+            break;
+        case IDS_literalized_RHS_function_compare:
+            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_compare();
+            break;
+        default:
+            assert(false);
+            break;
+    }
+    #endif
+
 }
 
 void identity_record::clean_up()
@@ -43,6 +96,22 @@ void identity_record::clean_up()
     delete instantiation_mappings;
 }
 
+void identity_record::clear_mappings()
+{
+    Output_Manager* outputManager = thisAgent->outputManager;
+
+    for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
+    {
+        identity_mapping* lMapping;
+        identity_mapping_list* lMapList = it->second;
+        for (auto it2 = lMapList->begin(); it2 != lMapList->end(); ++it2)
+        {
+            lMapping = *it2;
+            thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
+        }
+        delete lMapList;
+    }
+}
 
 void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_map* pID_Set_Map)
 {
@@ -110,56 +179,17 @@ void identity_record::print_identities_in_chunk()
     thisAgent->outputManager->printa(thisAgent, "\n");
 }
 
-void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID,  IdentitySet* pToID)
+void identity_record::print_instantiation_mappings(uint64_t pI_ID)
 {
-    identity_mapping_list* lInstMappingList;
-
-    dprint(DT_EXPLAIN_IDENTITIES, "Adding identity mappings type %d: %u -> %u\n", static_cast<int>(pType), pFromID->get_identity(), pToID ? pToID->get_identity() : 0);
     auto lIterInst = instantiation_mappings->find(pI_ID);
     if (lIterInst == instantiation_mappings->end())
     {
-        lInstMappingList = new identity_mapping_list();
-        (*instantiation_mappings)[pI_ID] = lInstMappingList;
+        thisAgent->outputManager->printa_sf(thisAgent, "No identity set unifications for instantiation %u.\n", pI_ID);
     } else {
-        lInstMappingList = lIterInst->second;
+        thisAgent->outputManager->printa_sf(thisAgent, "Identity set unifications:\n\n", pI_ID);
+        print_mapping_list(lIterInst->second, false);
+        print_mapping_list(lIterInst->second, true);
     }
-    identity_mapping* lMapping;
-    thisAgent->memoryManager->allocate_with_pool(MP_identity_mapping, &lMapping);
-    lMapping->from_identity = pFromID->get_identity();
-    lMapping->to_identity = pToID ? pToID->get_identity() : 0;
-    lMapping->mappingType = pType;
-    lInstMappingList->push_back(lMapping);
-
-    #ifdef EBC_DETAILED_STATISTICS
-    switch (lMapping->mappingType)
-    {
-        case IDS_join:
-            thisAgent->explanationMemory->increment_stat_identities_joined_variable();
-            break;
-        case IDS_unified_with_singleton:
-            thisAgent->explanationMemory->increment_stat_identities_joined_singleton();
-            break;
-        case IDS_unified_child_result:
-            thisAgent->explanationMemory->increment_stat_identities_joined_child_results();
-            break;
-        case IDS_literalized_LHS_literal:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_lhs_literal();
-            break;
-        case IDS_literalized_RHS_literal:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_literal();
-            break;
-        case IDS_literalized_RHS_function_arg:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_arg();
-            break;
-        case IDS_literalized_RHS_function_compare:
-            thisAgent->explanationMemory->increment_stat_identities_literalized_rhs_func_compare();
-            break;
-        default:
-            assert(false);
-            break;
-    }
-    #endif
-
 }
 
 void identity_record::print_mappings()
@@ -272,32 +302,8 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
     }
 }
 
-void identity_record::print_instantiation_mappings(uint64_t pI_ID)
+void identity_record::visualize()
 {
-    auto lIterInst = instantiation_mappings->find(pI_ID);
-    if (lIterInst == instantiation_mappings->end())
-    {
-        thisAgent->outputManager->printa_sf(thisAgent, "No identity set unifications for instantiation %u.\n", pI_ID);
-    } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "Identity set unifications:\n\n", pI_ID);
-        print_mapping_list(lIterInst->second, false);
-        print_mapping_list(lIterInst->second, true);
-    }
-}
+    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
 
-void identity_record::clear_mappings()
-{
-    Output_Manager* outputManager = thisAgent->outputManager;
-
-    for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
-    {
-        identity_mapping* lMapping;
-        identity_mapping_list* lMapList = it->second;
-        for (auto it2 = lMapList->begin(); it2 != lMapList->end(); ++it2)
-        {
-            lMapping = *it2;
-            thisAgent->memoryManager->free_with_pool(MP_identity_mapping, lMapping);
-        }
-        delete lMapList;
-    }
 }

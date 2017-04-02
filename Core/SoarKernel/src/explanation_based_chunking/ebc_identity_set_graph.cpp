@@ -16,7 +16,7 @@
 #include "rhs.h"
 #include "test.h"
 
-IdentitySet* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
+IdentitySet* Explanation_Based_Chunker::make_identity_set(Symbol* pGoal)
 {
     IdentitySet* lID_Set;
     thisAgent->memoryManager->allocate_with_pool(MP_identity_sets, &lID_Set);
@@ -26,8 +26,9 @@ IdentitySet* Explanation_Based_Chunker::make_identity_set(uint64_t pIdentity)
     thisAgent->explanationMemory->increment_stat_identities_created();
     #endif
     ISI_add(thisAgent, lID_Set->idset_id);
+    if (thisAgent->explanationMemory->is_any_enabled()) thisAgent->explanationMemory->add_identity(lID_Set, pGoal);
 
-    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id, pIdentity);
+    dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id);
     return lID_Set;
 }
 
@@ -87,10 +88,10 @@ void clear_test_identity_set(agent* thisAgent, test pTest)
     pTest->identity_set = NULL;
 }
 
-IdentitySet* Explanation_Based_Chunker::get_floating_identity_set()
+IdentitySet* Explanation_Based_Chunker::get_floating_identity_set(Symbol* pGoal)
 {
     dprint(DT_PROPAGATE_ID_SETS, "Creating floating identity join set for singleton\n");
-    IdentitySet* lID_Set = make_identity_set(0);
+    IdentitySet* lID_Set = make_identity_set(pGoal);
     lID_Set->add_ref();
     return lID_Set;
 }
@@ -102,7 +103,7 @@ IdentitySet* Explanation_Based_Chunker::get_id_set_for_identity(uint64_t pID)
     else return NULL_IDENTITY_SET;
 }
 
-IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet)
+IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet, Symbol* pGoal)
 {
     auto iter = (*identities_to_id_sets).find(pID);
     if (iter != (*identities_to_id_sets).end())
@@ -126,7 +127,8 @@ IdentitySet* Explanation_Based_Chunker::get_or_add_id_set(uint64_t pID, Identity
     } else
     #endif
     {
-        IdentitySet* newIdentitySet = make_identity_set(pID);
+        assert(pGoal);
+        IdentitySet* newIdentitySet = make_identity_set(pGoal);
         (*identities_to_id_sets)[pID] = newIdentitySet;
 
         #ifdef EBC_DETAILED_STATISTICS
@@ -266,13 +268,13 @@ void Explanation_Based_Chunker::update_identity_sets_in_condlist(condition* pCon
     }
 }
 
-void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref, bool is_chunk_inst)
+void Explanation_Based_Chunker::update_identity_sets_in_preferences(preference* lPref, Symbol* pGoal, bool is_chunk_inst)
 {
 
-    if (lPref->identities.id) set_pref_identity_set(thisAgent, lPref, ID_ELEMENT, get_or_add_id_set(lPref->identities.id, NULL));
-    if (lPref->identities.attr) set_pref_identity_set(thisAgent, lPref, ATTR_ELEMENT, get_or_add_id_set(lPref->identities.attr, NULL));
-    if (lPref->identities.value) set_pref_identity_set(thisAgent, lPref, VALUE_ELEMENT, get_or_add_id_set(lPref->identities.value, NULL));
-    if (lPref->identities.referent) set_pref_identity_set(thisAgent, lPref, REFERENT_ELEMENT, get_or_add_id_set(lPref->identities.referent, NULL));
+    if (lPref->identities.id) set_pref_identity_set(thisAgent, lPref, ID_ELEMENT, get_or_add_id_set(lPref->identities.id, NULL, pGoal));
+    if (lPref->identities.attr) set_pref_identity_set(thisAgent, lPref, ATTR_ELEMENT, get_or_add_id_set(lPref->identities.attr, NULL, pGoal));
+    if (lPref->identities.value) set_pref_identity_set(thisAgent, lPref, VALUE_ELEMENT, get_or_add_id_set(lPref->identities.value, NULL, pGoal));
+    if (lPref->identities.referent) set_pref_identity_set(thisAgent, lPref, REFERENT_ELEMENT, get_or_add_id_set(lPref->identities.referent, NULL, pGoal));
 
     if (is_chunk_inst)
     {

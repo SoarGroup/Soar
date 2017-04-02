@@ -27,6 +27,7 @@
 #include "dprint.h"
 #include "ebc.h"
 #include "episodic_memory.h"
+#include "explanation_memory.h"
 #include "exploration.h"
 #include "instantiation.h"
 #include "io_link.h"
@@ -1934,8 +1935,8 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
             if (level > TOP_GOAL_LEVEL)
             {
                 dprint(DT_DEALLOCATE_ID_SETS, "Creating floating identity join set for singleton: %w\n", lSSWME);
-                lSSWME->local_singleton_id_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
-                lSSWME->local_singleton_value_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set();
+                lSSWME->local_singleton_id_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set(impasseID);
+                lSSWME->local_singleton_value_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set(impasseID);
             }
         }
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);
@@ -2509,11 +2510,18 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
     /* --- invoke callback routine --- */
     soar_invoke_callbacks(thisAgent, POP_CONTEXT_STACK_CALLBACK, static_cast<soar_call_data>(goal));
 
-    if ((goal != thisAgent->top_goal) && rl_enabled(thisAgent))
+    if (goal != thisAgent->top_goal)
     {
-        rl_tabulate_reward_value_for_goal(thisAgent, goal);
-        rl_perform_update(thisAgent, 0, true, goal, false);   // this update only sees reward - there is no next state
-        rl_clear_refs(goal);
+        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationMemory->is_any_enabled())
+        {
+            thisAgent->explanationMemory->clear_identity_sets_for_goal(goal);
+        }
+        if (rl_enabled(thisAgent))
+        {
+            rl_tabulate_reward_value_for_goal(thisAgent, goal);
+            rl_perform_update(thisAgent, 0, true, goal, false);   // this update only sees reward - there is no next state
+            rl_clear_refs(goal);
+        }
     }
 
     /* --- disconnect this goal from the goal stack --- */

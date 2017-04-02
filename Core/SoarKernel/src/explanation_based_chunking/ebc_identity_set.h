@@ -9,8 +9,9 @@
 
 #include "kernel.h"
 
-#include "dprint.h"
-#include "stl_typedefs.h"
+#include "mempool_allocator.h"
+
+#include <list>
 
 //#define DEBUG_TRACE_IDSET_REFCOUNTS
 
@@ -19,6 +20,12 @@
 #define DEBUG_MAC_STACKTRACE
     void get_stacktrace(std::string& return_string);
 #endif
+#endif
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+    typedef std::list< IdentitySet*, soar_module::soar_memory_pool_allocator< IdentitySet* > >                      identity_set_list;
+#else
+    typedef std::list< IdentitySet* >                           identity_set_list;
 #endif
 
 class IdentitySet
@@ -99,6 +106,13 @@ class IdentitySet
 
         uint64_t                    refcount;
 
+};
+
+struct IDSetLessThan : public std::binary_function<IdentitySet*, IdentitySet*, bool> {
+        bool operator()(const IdentitySet* lhs, const IdentitySet* rhs) const
+        {
+            return (lhs->idset_id < rhs->idset_id);
+        }
 };
 
 #endif /* CORE_SOARKERNEL_SRC_EXPLANATION_BASED_CHUNKING_EBC_IDENTITY_SET_H_ */

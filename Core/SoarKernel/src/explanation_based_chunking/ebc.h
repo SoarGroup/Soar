@@ -74,7 +74,7 @@ class Explanation_Based_Chunker
         void update_identity_sets_in_test(test pTest, instantiation* pInst);
         void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);
         void update_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
-        void update_identity_sets_in_preferences(preference* lPref, bool is_chunk_inst = false);
+        void update_identity_sets_in_preferences(preference* lPref, Symbol* pGoal, bool is_chunk_inst = false);
 
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
@@ -83,10 +83,10 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        IdentitySet*   make_identity_set(uint64_t pIDSet);
+        IdentitySet*   make_identity_set(Symbol* pGoal);
         IdentitySet*   get_id_set_for_identity(uint64_t pID);
-        IdentitySet*   get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet);
-        IdentitySet*   get_floating_identity_set();
+        IdentitySet*   get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet, Symbol* pGoal);
+        IdentitySet*   get_floating_identity_set(Symbol* pGoal);
         void           force_identity_to_id_set_mapping(uint64_t pID, IdentitySet* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; };
 
         /* Methods to handle identity unification of conditions that test singletons */

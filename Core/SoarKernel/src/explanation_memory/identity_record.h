@@ -33,6 +33,8 @@ class identity_record
         void    print_instantiation_mappings(uint64_t pI_ID);
         void    print_identities_in_chunk();
 
+        void    visualize();
+
     private:
 
         agent*                  thisAgent;
