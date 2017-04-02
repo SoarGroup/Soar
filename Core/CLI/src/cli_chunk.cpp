@@ -62,7 +62,6 @@ bool CommandLineInterface::DoChunk(const std::string* pArg1, const std::string* 
     if (my_param == thisAgent->explanationBasedChunker->ebc_params->stats_cmd)
     {
         thisAgent->explanationMemory->print_global_stats();
-
     }
     else if ((my_param == thisAgent->explanationBasedChunker->ebc_params->always_cmd) ||
         (my_param == thisAgent->explanationBasedChunker->ebc_params->never_cmd) ||

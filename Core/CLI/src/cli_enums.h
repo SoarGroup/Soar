@@ -182,6 +182,7 @@ namespace cli
         STATS_STOP_TRACK,
         STATS_DECISION,
         STATS_AGENT,
+        STATS_EBC,
         STATS_NUM_OPTIONS, // must be last
     };
     typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;

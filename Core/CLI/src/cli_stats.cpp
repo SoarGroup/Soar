@@ -8,24 +8,23 @@
 
 #include "portability.h"
 
-//#include <time.h>
-
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
+
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
 #include "agent.h"
-#include "stats.h"
+#include "explanation_memory.h"
 #include "print.h"
-#include "rete.h" // for get_node_count_statistics
+#include "rete.h"
 #include "soar_db.h"
-
-extern const char* bnode_type_names[256];
+#include "stats.h"
 
 #include <iomanip>
+
+extern const char* bnode_type_names[256];
 
 using namespace cli;
 using namespace sml;
@@ -39,6 +38,12 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort)
     if (options.test(STATS_AGENT))
     {
         GetAgentStats();
+        return true;
+    }
+
+    if (options.test(STATS_EBC))
+    {
+        thisAgent->explanationMemory->print_global_stats();
         return true;
     }
 
