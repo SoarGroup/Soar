@@ -306,11 +306,11 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             {
                 if (lIDSet->super_join != lIDSet)
                 {
-                    sprint_sf(destString, " [v%us%uj%u]", rsym->identity, lIDSet->get_sub_identity(), lIDSet->get_identity());
+                    sprint_sf(destString, " [%ui%uj%u]", rsym->identity, lIDSet->get_sub_identity(), lIDSet->get_identity());
                 }
                 else
                 {
-                    sprint_sf(destString, " [v%us%u]", rsym->identity, lIDSet->get_sub_identity());
+                    sprint_sf(destString, " [%ui%u]", rsym->identity, lIDSet->get_sub_identity());
                 }
             }
             else if (rsym->identity_unjoined)
@@ -319,7 +319,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
             }
             else
             {
-                sprint_sf(destString, " [v%u]", rsym->identity);
+                sprint_sf(destString, " [%u]", rsym->identity);
             }
         }
     }
@@ -414,19 +414,19 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
 
 void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString)
 {
-    destString += "[v";
+    destString += '[';
     destString += std::to_string(pID);
     if (pIDSet)
     {
-        destString += "s";
+        destString += 'i';
         destString += std::to_string(pIDSet->idset_id);
         if (pIDSet->super_join->idset_id != pIDSet->idset_id)
         {
-            destString += "j";
+            destString += 'j';
             destString += std::to_string(pIDSet->super_join->idset_id);
         }
     }
-    destString += "]";
+    destString += ']';
 }
 
 void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::string &destString)

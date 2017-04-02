@@ -102,7 +102,7 @@ void identity_record::print_identity_mappings_for_instantiation(instantiation_re
 
 void identity_record::print_identities_in_chunk()
 {
-    thisAgent->outputManager->printa_sf(thisAgent, "\nVariable identities (%u): ", identities_in_chunk->size());
+    thisAgent->outputManager->printa_sf(thisAgent, "\nLearned rules contained %u identities: ", identities_in_chunk->size());
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
         thisAgent->outputManager->printa_sf(thisAgent, "%u ", (*it));
@@ -231,7 +231,7 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
             continue;
 
         if (lMapping->to_identity)
-            outputManager->printa_sf(thisAgent, "%-%u joined %u", lMapping->from_identity, lMapping->to_identity);
+            outputManager->printa_sf(thisAgent, "%-%u merged with %u", lMapping->from_identity, lMapping->to_identity);
         else
             outputManager->printa_sf(thisAgent, "%-%u literalized", lMapping->from_identity);
 
@@ -242,25 +242,25 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         switch (lMapping->mappingType)
         {
             case IDS_join:
-                outputManager->printa_sf(thisAgent, "%-| Two identity sets propagated into same variable");
+                outputManager->printa_sf(thisAgent, "%-| Two identities propagated into the same variable");
                 break;
             case IDS_unified_with_singleton:
-                outputManager->printa_sf(thisAgent, "%-| Tested a previously tested super-state singleton WME");
+                outputManager->printa_sf(thisAgent, "%-| Tested a super-state singleton WME previously tested by another rule");
                 break;
             case IDS_unified_child_result:
-                outputManager->printa_sf(thisAgent, "%-| Connected to parent result");
+                outputManager->printa_sf(thisAgent, "%-| Identities joined to connected child result to parent result");
                 break;
             case IDS_literalized_LHS_literal:
-                outputManager->printa_sf(thisAgent, "%-| Literal value in condition compared against RHS variable");
+                outputManager->printa_sf(thisAgent, "%-| Literal value in another rule compared against RHS variable");
                 break;
             case IDS_literalized_RHS_literal:
-                outputManager->printa_sf(thisAgent, "%-| Variable in condition compared against literal RHS value");
+                outputManager->printa_sf(thisAgent, "%-| Variable in another rule compared against literal RHS value");
                 break;
             case IDS_literalized_RHS_function_arg:
-                outputManager->printa_sf(thisAgent, "%-| Argument in intermediate RHS function");
+                outputManager->printa_sf(thisAgent, "%-| Variable was used as argument in a RHS function");
                 break;
             case IDS_literalized_RHS_function_compare:
-                outputManager->printa_sf(thisAgent, "%-| Tested result of RHS function");
+                outputManager->printa_sf(thisAgent, "%-| Variable in another rule tested result of RHS function");
                 break;
             default:
                 assert(false);

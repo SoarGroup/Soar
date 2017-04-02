@@ -494,7 +494,7 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
             if (lFoundChunk)
             {
                 discuss_chunk(lFoundChunk);
-                outputManager->printa_sf(thisAgent, "Now explaining %y.\n", lFoundChunk->name);
+                outputManager->printa_sf(thisAgent, "Now explaining %y.\n\n", lFoundChunk->name);
                 print_chunk_explanation();
                 return true;
             }

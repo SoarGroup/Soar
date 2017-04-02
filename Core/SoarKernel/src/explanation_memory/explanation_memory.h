@@ -180,7 +180,7 @@ class Explanation_Memory
 //        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
         void print_global_stats();
-        void print_chunk_stats(chunk_record* pChunkRecord);
+        void print_chunk_stats(chunk_record* pChunkRecord, bool pPrintHeader = true);
         void print_all_watched_rules();
         void print_all_chunks(bool pChunks);
         void print_formation_explanation();

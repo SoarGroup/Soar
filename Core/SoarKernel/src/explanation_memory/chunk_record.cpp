@@ -280,7 +280,7 @@ void chunk_record::print_for_explanation_trace()
     outputManager->set_column_indent(1, 60);
     outputManager->set_column_indent(2, 110);
 
-    outputManager->printa_sf(thisAgent, "Explanation Trace %-Using variable identity IDs   %-Shortest Path to Result Instantiation\n\n");
+    outputManager->printa_sf(thisAgent, "                  %-Using variable identity IDs   %-Shortest Path to Result Instantiation\n\n");
     outputManager->printa_sf(thisAgent, "sp {%y\n", name);
 
     if (conditions->empty())
@@ -335,10 +335,6 @@ void chunk_record::print_for_explanation_trace()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_identities_in_chunk();
-    outputManager->printa(thisAgent, "\n");
-    thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(chunkInstantiationID);
-    thisAgent->explanationMemory->print_footer(true);
 }
 
 void chunk_record::print_for_wme_trace()
@@ -348,7 +344,7 @@ void chunk_record::print_for_wme_trace()
     outputManager->set_column_indent(0, 7);
     outputManager->set_column_indent(1, 60);
     outputManager->set_column_indent(2, 110);
-    outputManager->printa_sf(thisAgent, "Working Memory Trace %-Instantiation that created matched WME\n\n");
+    outputManager->printa_sf(thisAgent, "                   %-Instantiation that created matched WME\n\n");
     outputManager->printa_sf(thisAgent, "sp {%y\n", name);
 
     if (conditions->empty())
@@ -421,7 +417,6 @@ void chunk_record::print_for_wme_trace()
     /* For chunks, actual rhs is same as explanation trace without identity information on the rhs*/
     thisAgent->explanationMemory->print_chunk_actions(actions, thisAgent->explanationMemory->get_production(original_productionID), excised_production);
     outputManager->printa(thisAgent, "}\n");
-    thisAgent->explanationMemory->print_footer(true);
 }
 
 void chunk_record::visualize()

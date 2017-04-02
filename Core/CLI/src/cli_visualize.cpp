@@ -218,7 +218,7 @@ bool CommandLineInterface::DoVisualize(const std::string* pArg1, const std::stri
                 thisAgent->visualizationManager->clear_visualization();
                 return SetError("Visualization produced nothing.");
             }
-            PrintCLIMessage_Header("Opening visualization...", 40);
+            PrintCLIMessage("Generating visualization...");
             std::string lFileName(thisAgent->visualizationManager->get_next_filename());
             std::string filename(lFileName);
             filename += ".gv";
