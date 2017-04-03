@@ -196,6 +196,7 @@ class Explanation_Memory
         void visualize_instantiation_graph();
         void visualize_contributors();
         void visualize_identity_graph();
+        void visualize_identity_graph_for_goal(Symbol* pGoal);
 
         void create_after_action_report();
         void after_action_report_for_init();

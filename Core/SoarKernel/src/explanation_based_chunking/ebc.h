@@ -31,6 +31,7 @@ class Explanation_Based_Chunker
 {
         friend class Repair_Manager;
         friend class IdentitySet;
+        friend class chunk_record;
 
     public:
 

@@ -742,9 +742,21 @@ void Explanation_Memory::visualize_contributors()
 
 void Explanation_Memory::visualize_identity_graph()
 {
-    thisAgent->visualizationManager->viz_graph_start();
+    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
+    vm->viz_graph_start();
     current_discussed_chunk->identity_analysis.visualize();
-    thisAgent->visualizationManager->viz_graph_end();
+    vm->viz_graph_end();
+}
+
+void Explanation_Memory::visualize_identity_graph_for_goal(Symbol* pGoal)
+{
+    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
+    vm->viz_graph_start();
+//    auto iter = all_identities_in_goal->find(thisAgent->bottom_goal);
+//    if (iter != all_identities_in_goal->end())
+//    {
+//    current_discussed_chunk->identity_analysis.visualize();
+    vm->viz_graph_end();
 }
 
 bool Explanation_Memory::visualize_instantiation_explanation_for_id(uint64_t pInstID)

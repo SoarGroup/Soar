@@ -57,6 +57,7 @@ class GraphViz_Visualizer
 
         void viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64_t pSrcActionID, uint64_t pTargetRuleID, uint64_t pTargetCondID);
         void viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID);
+        void viz_connect_identities(uint64_t pSrcRuleID, uint64_t pTargetRuleID);
 
     private:
 

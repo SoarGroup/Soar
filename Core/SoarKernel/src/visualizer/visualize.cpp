@@ -444,3 +444,11 @@ void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_
     graphviz_output += "[style = \"dashed\"  penwidth = \"2\"]\n";
 }
 
+void GraphViz_Visualizer::viz_connect_identities(uint64_t pSrcRuleID, uint64_t pTargetRuleID)
+{
+    graphviz_output += "   Identity_";
+    graphviz_output += std::to_string(pSrcRuleID);
+    graphviz_output += " -\xF2 Identity_";
+    graphviz_output += std::to_string(pTargetRuleID);
+    graphviz_output += "[style = \"dashed\"  penwidth = \"2\"]\n";
+}

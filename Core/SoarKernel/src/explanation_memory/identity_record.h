@@ -26,7 +26,8 @@ class identity_record
         void    clean_up();
 
         void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID, IdentitySet* pToID);
-        void    generate_identity_sets(uint64_t pInstID, condition* lhs);
+        void    analyze_chunk_identities(uint64_t pInstID, condition* lhs);
+        void    record_identity_sets(identity_set_set* identity_sets);
 
         void    print_mappings();
         void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);
@@ -41,6 +42,7 @@ class identity_record
         id_set*                 identities_in_chunk;
         id_to_sym_map*          idset_to_var_map;
         inst_identities_map*    instantiation_mappings;
+        id_to_id_map*           identity_joins;
 
         void    clear_mappings();
 

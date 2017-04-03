@@ -24,6 +24,7 @@ void identity_record::init(agent* myAgent)
     idset_to_var_map = new id_to_sym_map();
     identities_in_chunk = new id_set();
     instantiation_mappings = new inst_identities_map();
+    identity_joins = new id_to_id_map();
 }
 
 void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID,  IdentitySet* pToID)
@@ -94,6 +95,8 @@ void identity_record::clean_up()
 
     clear_mappings();
     delete instantiation_mappings;
+    delete identity_joins;
+
 }
 
 void identity_record::clear_mappings()
@@ -145,7 +148,7 @@ void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, ui
     }
 }
 
-void identity_record::generate_identity_sets(uint64_t pInstID, condition* lhs)
+void identity_record::analyze_chunk_identities(uint64_t pInstID, condition* lhs)
 {
     /* Generate identity sets and add mappings for all conditions in chunk */
 
@@ -301,9 +304,39 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         else outputManager->printa_sf(thisAgent, "\n");
     }
 }
+void identity_record::record_identity_sets(identity_set_set* identity_sets)
+{
+    IdentitySet* lIdentity;
+
+    for (auto it = identity_sets->begin(); it != identity_sets->end(); it++)
+    {
+        lIdentity = (*it);
+        (*identity_joins)[lIdentity->idset_id] = lIdentity->super_join->idset_id;
+    }
+}
 
 void identity_record::visualize()
 {
-    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
+    Symbol*             lSym;
+    identity_mapping*   lMapping;
+    IdentitySet*        lIdentity;
 
+//    for (auto it = identity_joins->begin(); it != identity_joins->end(); ++it)
+//    {
+//        if (it->first != it->second)
+//            thisAgent->visualizationManager->viz_connect_identities(it->first, it->second);
+//    }
+
+    for (auto it = instantiation_mappings->begin(); it != instantiation_mappings->end(); ++it)
+    {
+        if (it->second->size() != 0)
+        {
+            for (auto it2 = it->second->begin(); it2 != it->second->end(); ++it2)
+             {
+                lMapping = *it2;
+                if (lMapping->to_identity)
+                    thisAgent->visualizationManager->viz_connect_identities(lMapping->from_identity, lMapping->to_identity);
+             }
+        }
+    }
 }
