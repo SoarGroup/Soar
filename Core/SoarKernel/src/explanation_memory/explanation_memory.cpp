@@ -666,11 +666,11 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
 
 void Explanation_Memory::increment_stat_grounding_conds_added(int pNumConds)
 {
-    increment_counter(stats.grounding_conditions_added);
+    add_to_counter(stats.grounding_conditions_added, pNumConds);
     if (current_recording_chunk)
     {
         dprint(DT_EXPLAIN, "Incrementing stats for %d grounding conditions in rule %y.\n", pNumConds, current_recording_chunk->name);
-        add_to_counter(current_recording_chunk->stats.num_grounding_conditions_added, pNumConds);
+        add_to_counter(current_recording_chunk->stats.grounding_conditions_added, pNumConds);
     }
 };
 

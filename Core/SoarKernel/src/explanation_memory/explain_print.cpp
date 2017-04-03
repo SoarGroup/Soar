@@ -303,7 +303,7 @@ void Explanation_Memory::print_all_chunks(bool pChunks)
     print_chunk_list(0, pChunks);
 }
 
-void Explanation_Memory::print_global_stats()
+void Explanation_Memory::print_EBC_stats()
 {
     outputManager->set_column_indent(0, 72);
     outputManager->printa_sf(thisAgent, "===========================================================================\n");
@@ -321,7 +321,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Number of rules fired                                  %-%u\n", thisAgent->explanationBasedChunker->get_instantiation_count());
     outputManager->printa_sf(thisAgent, "Number of rule firings analyzed during backtracing     %-%u\n", stats.instantations_backtraced);
     outputManager->printa_sf(thisAgent, "Number of OSK rule firings analyzed during backtracing %-%u\n", stats.OSK_instantiations);
-    outputManager->printa_sf(thisAgent, "Number of rule firings re-visited and skipped          %-%u\n", stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Number of rule firings re-visited during backtracing   %-%u\n", stats.seen_instantations_backtraced);
 #ifdef EBC_DETAILED_STATISTICS
     outputManager->printa_sf(thisAgent, "\nConditions merged                                    %- %u\n", stats.merged_conditions);
     outputManager->printa_sf(thisAgent, "Disjunction tests merged                               %-%u\n", stats.merged_disjunctions);
@@ -329,43 +329,45 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "- Impossible values eliminated                         %-%u\n\n", stats.eliminated_disjunction_values);
     outputManager->printa_sf(thisAgent, "Operational constraints                                %-%u\n", stats.operational_constraints);
     outputManager->printa_sf(thisAgent, "Non-operational constraints detected                   %-%u\n", stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Non-operational constraints enforced                   %-%u\n\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Extra conditions added during repair                   %-%u\n", stats.grounding_conditions_added);
+    outputManager->printa_sf(thisAgent, "Non-operational constraints enforced                   %-%u\n", stats.constraints_attached);
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                           Identity Analysis\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Total number of identities created                                 %-%u\n", stats.identities_created);
-    outputManager->printa_sf(thisAgent, "Distinct Identities in learned rules                               %-%u\n", stats.identities_participated);
-    outputManager->printa_sf(thisAgent, "Identity propagations succeeded                                    %-%u\n", stats.identity_propagations);
+    outputManager->printa_sf(thisAgent, "Identities created                                                 %-%u\n", stats.identities_created);
+    outputManager->printa_sf(thisAgent, "Distinct identities in learned rules                               %-%u\n", stats.identities_participated);
+    outputManager->printa_sf(thisAgent, "Identity propagations                                              %-%u\n", stats.identity_propagations);
     outputManager->printa_sf(thisAgent, "Identity propagations blocked                                      %-%u\n", stats.identity_propagations_blocked);
     outputManager->printa_sf(thisAgent, "Identity propagations from local singleton                         %-%u\n", stats.identities_joined_local_singleton);
-    outputManager->printa_sf(thisAgent, "Total number of identities joined                                  %-%u\n", stats.identities_joined);
-    outputManager->printa_sf(thisAgent, "- Two identities propagated into same variable                     %-%u\n", stats.identities_joined_variable);
-    outputManager->printa_sf(thisAgent, "- Tested a previously-tested superstate singleton                  %-%u\n", stats.identities_joined_singleton);
-    outputManager->printa_sf(thisAgent, "- Unified to connect child WMEs of result                          %-%u\n", stats.identities_joined_child_results);
-    outputManager->printa_sf(thisAgent, "Total number of identities literalized                             %-%u\n", stats.identities_literalized_rhs_literal + stats.identities_literalized_lhs_literal + stats.identities_literalized_rhs_func_arg + stats.identities_literalized_rhs_func_compare);
-    outputManager->printa_sf(thisAgent, "- Variable matched RHS with literal value                          %-%u\n", stats.identities_literalized_rhs_literal);
-    outputManager->printa_sf(thisAgent, "- Variable matched RHS function                                    %-%u\n", stats.identities_literalized_rhs_func_compare);
-    outputManager->printa_sf(thisAgent, "- Literal value matched RHS variable                               %-%u\n", stats.identities_literalized_lhs_literal);
-    outputManager->printa_sf(thisAgent, "- Variable used as argument to a RHS function                      %-%u\n", stats.identities_literalized_rhs_func_arg);
+    outputManager->printa_sf(thisAgent, "Identities joined                                                  %-%u\n", stats.identities_joined);
+    outputManager->printa_sf(thisAgent, "- To unify two identities propagated into same variable            %-%u\n", stats.identities_joined_variable);
+    outputManager->printa_sf(thisAgent, "- To unify two conditions that tested a superstate singleton       %-%u\n", stats.identities_joined_singleton);
+    outputManager->printa_sf(thisAgent, "- To connect an child result (result in rule had children WMEs)    %-%u\n", stats.identities_joined_child_results);
+    outputManager->printa_sf(thisAgent, "Identities literalized                                             %-%u\n", stats.identities_literalized_rhs_literal + stats.identities_literalized_lhs_literal + stats.identities_literalized_rhs_func_arg + stats.identities_literalized_rhs_func_compare);
+    outputManager->printa_sf(thisAgent, "- Condition with variable matched a literal RHS element            %-%u\n", stats.identities_literalized_rhs_literal);
+    outputManager->printa_sf(thisAgent, "- Condition with variable matched a RHS function                   %-%u\n", stats.identities_literalized_rhs_func_compare);
+    outputManager->printa_sf(thisAgent, "- Condition with literal value matched a RHS variable              %-%u\n", stats.identities_literalized_lhs_literal);
+    outputManager->printa_sf(thisAgent, "- Variable used in a RHS function                                  %-%u\n", stats.identities_literalized_rhs_func_arg);
 #endif
-#if defined(EBC_DETAILED_STATISTICS) || defined(EBC_DEBUG_STATISTICS)
+#ifdef EBC_DEBUG_STATISTICS
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                    Problem-Solving Characteristics\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-#endif
-#ifdef EBC_DEBUG_STATISTICS
-    outputManager->printa_sf(thisAgent, "Backtracing produced conditions unconnected to goal                %-%u\n", stats.lhs_unconnected);
-    outputManager->printa_sf(thisAgent, "Backtracing produced actions unconnected to goal                   %-%u\n\n", stats.rhs_unconnected);
-#endif
-#ifdef EBC_DETAILED_STATISTICS
-    outputManager->printa_sf(thisAgent, "Chunks tested knowledge created by deep-copy                       %-%u\n\n", stats.tested_deep_copy);
+    outputManager->printa_sf(thisAgent, "Chunk learned that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
+    outputManager->printa_sf(thisAgent, "Justification learned that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
+    outputManager->printa_sf(thisAgent, "Chunks tested knowledge created by deep-copy                       %-%u\n", stats.tested_deep_copy);
     outputManager->printa_sf(thisAgent, "Justification tested knowledge created by deep-copy                %-%u\n", stats.tested_deep_copy_just);
+    outputManager->printa_sf(thisAgent, "Could not build chunk so reverted to justifications                %-%u\n", stats.chunks_reverted);
+    outputManager->printa_sf(thisAgent, "Could not repair unconnected conditions/actions                    %-%u\n", stats.repair_failed);
 #endif
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                  Potential Generality Issues Detected\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Chunks with extra conditions to fix partial operationality         %-%u\n", stats.chunks_repaired);
+    outputManager->printa_sf(thisAgent, "Rules repaired that had unconnected conditions or actions          %-%u\n", stats.chunks_repaired);
+    outputManager->printa_sf(thisAgent, "Extra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
+#ifdef EBC_DEBUG_STATISTICS
+    outputManager->printa_sf(thisAgent, "Rules with LHS conditions not connected to goal                    %-%u\n", stats.lhs_unconnected);
+    outputManager->printa_sf(thisAgent, "Rules with RHS actions not connected to goal                       %-%u\n", stats.rhs_unconnected);
+#endif
 
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                  Potential Correctness Issues Detected\n");
@@ -383,15 +385,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "Skipped because no super-state knowledge tested                    %-%u\n", stats.no_grounds);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-CHUNKS exceeded in a decision cycle            %-%u\n", stats.max_chunks);
     outputManager->printa_sf(thisAgent, "Skipped because MAX-DUPES exceeded for rule this decision cycle    %-%u\n", stats.max_dupes);
-#ifdef EBC_DEBUG_STATISTICS
-    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "                      Technical Debugging Statistics \n");
-    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Chunk learned that didn't match current working memory             %-%u\n", stats.chunk_did_not_match);
-    outputManager->printa_sf(thisAgent, "Justification learned that didn't match current working memory     %-%u\n", stats.justification_did_not_match);
-    outputManager->printa_sf(thisAgent, "Could not build chunk so reverted to justifications                %-%u\n", stats.chunks_reverted);
-    outputManager->printa_sf(thisAgent, "Could not repair unconnected conditions/actions                    %-%u\n", stats.repair_failed);
-#endif
 //    outputManager->printa_sf(thisAgent, "Reasoning paths existed that were not explored                     %-?\n");
 //    outputManager->printa_sf(thisAgent, "Operator selection knowledge:\n");
 //    outputManager->printa_sf(thisAgent, "- Problem-solving did not use OSK                                  %-?\n");
@@ -409,16 +402,19 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
     outputManager->set_column_indent(0, 72);
     if (pPrintHeader)
     {
-    outputManager->printa_sf(thisAgent, "===========================================================================\n");
-    outputManager->printa_sf(thisAgent, "EBC statistics for %y (c %u):\n",                         pChunkRecord->name, pChunkRecord->chunkID);
-    outputManager->printa_sf(thisAgent, "===========================================================================\n");
+    outputManager->printa_sf(thisAgent, "\nStatistics for learned rule %y (c %u):\n\n",   pChunkRecord->name, pChunkRecord->chunkID);
     }
-    outputManager->printa_sf(thisAgent, "Number of conditions           %-%u\n",          pChunkRecord->conditions->size());
-    outputManager->printa_sf(thisAgent, "Number of actions              %-%u\n",          pChunkRecord->actions->size());
-    outputManager->printa_sf(thisAgent, "Base instantiation             %-i %u (%y)\n",    pChunkRecord->baseInstantiation->instantiationID, pChunkRecord->baseInstantiation->production_name);
+    outputManager->printa_sf(thisAgent, "Number of conditions:           %-%u\n",          pChunkRecord->conditions->size());
+    #ifdef EBC_DETAILED_STATISTICS
+    outputManager->printa_sf(thisAgent, "- Operational constraints:              %-%u\n", pChunkRecord->stats.operational_constraints);
+    outputManager->printa_sf(thisAgent, "- Non-operational constraints detected: %-%u\n", pChunkRecord->stats.constraints_collected);
+    outputManager->printa_sf(thisAgent, "- Non-operational constraints enforced: %-%u\n\n", pChunkRecord->stats.constraints_attached);
+    #endif
+    outputManager->printa_sf(thisAgent, "Number of actions:              %-%u\n",          pChunkRecord->actions->size());
+    outputManager->printa_sf(thisAgent, "Base instantiation:             %-i %u (%y)\n",    pChunkRecord->baseInstantiation->instantiationID, pChunkRecord->baseInstantiation->production_name);
     if (pChunkRecord->result_inst_records->size() > 0)
     {
-        outputManager->printa_sf(thisAgent, "Number of child result instantiations  %-%u\n",          pChunkRecord->result_inst_records->size());
+        outputManager->printa_sf(thisAgent, "Number of child result instantiations:  %-%u\n",          pChunkRecord->result_inst_records->size());
         outputManager->printa_sf(thisAgent, "Child result instantiations: " );
         for (auto it = pChunkRecord->result_inst_records->begin(); it != pChunkRecord->result_inst_records->end(); ++it)
         {
@@ -426,76 +422,69 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
         }
     }
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "                       Generality and Correctness\n");
-    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa(thisAgent, "\n");
-    outputManager->printa_sf(thisAgent, "Tested negation in local substate                          %-%s\n", (pChunkRecord->stats.tested_local_negation ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "Tested knowledge from sub-state long-term memory recall    %-%s\n", (pChunkRecord->stats.tested_ltm_recall ? "Yes" : "No"));
-
-    #ifdef EBC_DETAILED_STATISTICS
-    outputManager->printa_sf(thisAgent, "Operational constraints                                    %-%u\n", stats.operational_constraints);
-    outputManager->printa_sf(thisAgent, "Non-operational constraints detected                       %-%u\n", stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Non-operational constraints enforced                       %-%u\n\n", stats.constraints_attached);
-    outputManager->printa_sf(thisAgent, "Partially operational conditions/actions repaired          %-%s\n", ((pChunkRecord->stats.num_grounding_conditions_added > 0) ? "Yes" : "No"));
-    #endif
-    #ifdef EBC_DEBUG_STATISTICS
-    outputManager->printa_sf(thisAgent, "- LHS conditions not connected to goal             %-%s\n", (pChunkRecord->stats.lhs_unconnected ? "Yes" : "No"));
-    outputManager->printa_sf(thisAgent, "- RHS conditions not connected to goal             %-%s\n", (pChunkRecord->stats.rhs_unconnected ? "Yes" : "No"));
-    #endif
-    if (pChunkRecord->stats.num_grounding_conditions_added > 0)
-    {
-        #ifdef EBC_DETAILED_STATISTICS
-        outputManager->printa_sf(thisAgent, "- Repaired conditions added                    %-%u\n", pChunkRecord->stats.num_grounding_conditions_added);
-        #endif
-    } else {
-        #ifdef EBC_DEBUG_STATISTICS
-        outputManager->printa_sf(thisAgent, "- Tried to repair but could not                %-%s\n", (pChunkRecord->stats.repair_failed ? "Yes" : "No"));
-        outputManager->printa_sf(thisAgent, "- Added justification instead                  %-%s\n", (pChunkRecord->stats.reverted ? "Yes" : "No"));
-        #endif
-    }
-    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "                             Miscellaneous\n");
-    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    #ifdef EBC_DEBUG_STATISTICS
-    outputManager->printa_sf(thisAgent, "Rule learned did not match WM                      %-%s\n", (pChunkRecord->stats.did_not_match_wm ? "Yes" : "No"));
-    #endif
-    #ifdef EBC_DETAILED_STATISTICS
-    outputManager->printa_sf(thisAgent, "Tested knowledge that was deep copied              %-%s\n", (pChunkRecord->stats.tested_deep_copy ? "Yes" : "No"));
-    #endif
-    outputManager->printa_sf(thisAgent, "Tested ^quiescence true                            %-%s\n", (pChunkRecord->stats.tested_quiescence ? "Yes" : "No"));
-
-    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                            Work Performed\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Rule firings backtraced through            %-%u\n", pChunkRecord->stats.instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "OSK rule firings backtraced through        %-%u\n", stats.OSK_instantiations);
-    outputManager->printa_sf(thisAgent, "Rule firings revisited and skipped         %-%u\n\n", pChunkRecord->stats.seen_instantations_backtraced);
-    outputManager->printa_sf(thisAgent, "Duplicates chunks later created            %-%u\n", pChunkRecord->stats.duplicates);
+    outputManager->printa_sf(thisAgent, "Number of rule firings analyzed during backtracing:     %-%u\n", pChunkRecord->stats.instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Number of OSK rule firings analyzed during backtracing: %-%u\n", pChunkRecord->stats.OSK_instantiations);
+    outputManager->printa_sf(thisAgent, "Number of rule firings re-visited during backtracing:   %-%u\n", pChunkRecord->stats.seen_instantations_backtraced);
+    outputManager->printa_sf(thisAgent, "Duplicates chunks later created:                        %-%u\n", pChunkRecord->stats.duplicates);
     #ifdef EBC_DETAILED_STATISTICS
-    outputManager->printa_sf(thisAgent, "Conditions merged                          %-%u\n", pChunkRecord->stats.merged_conditions);
-    outputManager->printa_sf(thisAgent, "Disjunction tests merged                   %-%u\n", pChunkRecord->stats.merged_disjunctions);
-    outputManager->printa_sf(thisAgent, "- Duplicate values kept                    %-%u\n", pChunkRecord->stats.merged_disjunction_values);
-    outputManager->printa_sf(thisAgent, "- Impossible values eliminated             %-%u\n", pChunkRecord->stats.eliminated_disjunction_values);
-    outputManager->printa_sf(thisAgent, "Constraints collected                      %-%u\n", pChunkRecord->stats.constraints_collected);
-    outputManager->printa_sf(thisAgent, "Constraints attached                       %-%u\n", pChunkRecord->stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "\nConditions merged:                                    %- %u\n", pChunkRecord->stats.merged_conditions);
+    outputManager->printa_sf(thisAgent, "Disjunction tests merged:                               %-%u\n", pChunkRecord->stats.merged_disjunctions);
+    outputManager->printa_sf(thisAgent, "- Redundant values:                                     %-%u\n", pChunkRecord->stats.merged_disjunction_values);
+    outputManager->printa_sf(thisAgent, "- Impossible values eliminated:                         %-%u\n", pChunkRecord->stats.eliminated_disjunction_values);
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                           Identity Analysis\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Identities created                                                 %-%u\n", stats.identities_created);
-    outputManager->printa_sf(thisAgent, "Number of final identities in learned rules                        %-%u\n", stats.identities_participated);
-    outputManager->printa_sf(thisAgent, "Identity propagations                                              %-%u\n", stats.identity_propagations);
-    outputManager->printa_sf(thisAgent, "Identity propagations blocked                                      %-%u\n", stats.identity_propagations_blocked);
-    outputManager->printa_sf(thisAgent, "Propagations from local singleton                                  %-%u\n", stats.identities_joined_local_singleton);
-    outputManager->printa_sf(thisAgent, "Identities joined                                                  %-%u\n", stats.identities_joined);
-    outputManager->printa_sf(thisAgent, "- To unify two identities propagated into same variable            %-%u\n", stats.identities_joined_variable);
-    outputManager->printa_sf(thisAgent, "- Tested a superstate singleton also tested by another identity    %-%u\n", stats.identities_joined_singleton);
-    outputManager->printa_sf(thisAgent, "- To connect WMEs that were the children of a result               %-%u\n", stats.identities_joined_child_results);
-    outputManager->printa_sf(thisAgent, "Identities literalized                                             %-%u\n", stats.identities_literalized_rhs_literal + stats.identities_literalized_lhs_literal + stats.identities_literalized_rhs_func_arg + stats.identities_literalized_rhs_func_compare);
-    outputManager->printa_sf(thisAgent, "- Condition with variable matched a literal RHS element            %-%u\n", stats.identities_literalized_rhs_literal);
-    outputManager->printa_sf(thisAgent, "- Condition with variable matched a RHS function                   %-%u\n", stats.identities_literalized_rhs_func_compare);
-    outputManager->printa_sf(thisAgent, "- Condition with literal value matched a RHS variable              %-%u\n", stats.identities_literalized_lhs_literal);
-    outputManager->printa_sf(thisAgent, "- Used Variable in a RHS function                                  %-%u\n", stats.identities_literalized_rhs_func_arg);
-    #endif
+    outputManager->printa_sf(thisAgent, "Identities created:                                                 %-%u\n", pChunkRecord->stats.identities_created);
+    outputManager->printa_sf(thisAgent, "Distinct identities in learned rules:                               %-%u\n", pChunkRecord->stats.identities_participated);
+    outputManager->printa_sf(thisAgent, "Identity propagations:                                              %-%u\n", pChunkRecord->stats.identity_propagations);
+    outputManager->printa_sf(thisAgent, "Identity propagations blocked:                                      %-%u\n", pChunkRecord->stats.identity_propagations_blocked);
+    outputManager->printa_sf(thisAgent, "Identity propagations from local singleton:                         %-%u\n", pChunkRecord->stats.identities_joined_local_singleton);
+    outputManager->printa_sf(thisAgent, "Identities joined:                                                  %-%u\n", pChunkRecord->stats.identities_joined);
+    outputManager->printa_sf(thisAgent, "- To unify two identities propagated into same variable:            %-%u\n", pChunkRecord->stats.identities_joined_variable);
+    outputManager->printa_sf(thisAgent, "- To unify two conditions that tested a superstate singleton:       %-%u\n", pChunkRecord->stats.identities_joined_singleton);
+    outputManager->printa_sf(thisAgent, "- To connect an child result (result in rule had children WMEs):    %-%u\n", pChunkRecord->stats.identities_joined_child_results);
+    outputManager->printa_sf(thisAgent, "Identities literalized:                                             %-%u\n", pChunkRecord->stats.identities_literalized_rhs_literal + pChunkRecord->stats.identities_literalized_lhs_literal + pChunkRecord->stats.identities_literalized_rhs_func_arg + pChunkRecord->stats.identities_literalized_rhs_func_compare);
+    outputManager->printa_sf(thisAgent, "- Condition with variable matched a literal RHS element:            %-%u\n", pChunkRecord->stats.identities_literalized_rhs_literal);
+    outputManager->printa_sf(thisAgent, "- Condition with variable matched a RHS function:                   %-%u\n", pChunkRecord->stats.identities_literalized_rhs_func_compare);
+    outputManager->printa_sf(thisAgent, "- Condition with literal value matched a RHS variable:              %-%u\n", pChunkRecord->stats.identities_literalized_lhs_literal);
+    outputManager->printa_sf(thisAgent, "- Variable used in a RHS function:                                  %-%u\n", pChunkRecord->stats.identities_literalized_rhs_func_arg);
+#endif
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                    Problem-Solving Characteristics\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Tested ^quiescence true:                            %-%s\n", (pChunkRecord->stats.tested_quiescence ? "Yes" : "No"));
+#ifdef EBC_DEBUG_STATISTICS
+    outputManager->printa_sf(thisAgent, "Rule learned did not match WM:                      %-%s\n", (pChunkRecord->stats.did_not_match_wm ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tested knowledge created by deep-copy:              %-%s\n", (pChunkRecord->stats.tested_deep_copy ? "Yes" : "No"));
+#endif
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                  Potential Generality Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Extra conditions added to fix unconnected conditions or actions:    %-%s\n", (pChunkRecord->stats.repaired ? "Yes" : "No"));
+#ifdef EBC_DEBUG_STATISTICS
+    outputManager->printa_sf(thisAgent, "- learned LHS condition(s) not connected to goal:                   %-%s\n", (pChunkRecord->stats.lhs_unconnected ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "- learned RHS action(s) not connected to goal:                      %-%s\n", (pChunkRecord->stats.rhs_unconnected ? "Yes" : "No"));
+#endif
+    if (pChunkRecord->stats.grounding_conditions_added > 0)
+    {
+        #ifdef EBC_DETAILED_STATISTICS
+        outputManager->printa_sf(thisAgent, "- Repaired conditions added:                                    %-%u\n", pChunkRecord->stats.grounding_conditions_added);
+        #endif
+    } else {
+        #ifdef EBC_DEBUG_STATISTICS
+        outputManager->printa_sf(thisAgent, "- Tried to repair but could not:                                %-%s\n", (pChunkRecord->stats.repair_failed ? "Yes" : "No"));
+        outputManager->printa_sf(thisAgent, "- Added justification instead:                                  %-%s\n", (pChunkRecord->stats.reverted ? "Yes" : "No"));
+        #endif
+    }
+    outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "                  Potential Correctness Issues Detected\n");
+    outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
+    outputManager->printa_sf(thisAgent, "Used negated reasoning about sub-state:              %-%s\n", (pChunkRecord->stats.tested_local_negation ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Tested knowledge retrieved from long-term memory:    %-%s\n", (pChunkRecord->stats.tested_ltm_recall ? "Yes" : "No"));
+    outputManager->printa_sf(thisAgent, "Involved operators selected probabilistically:       %-No\n");
+
 }
 
 void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)

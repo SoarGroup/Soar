@@ -43,7 +43,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort)
 
     if (options.test(STATS_EBC))
     {
-        thisAgent->explanationMemory->print_global_stats();
+        thisAgent->explanationMemory->print_EBC_stats();
         return true;
     }
 

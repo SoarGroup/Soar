@@ -19,12 +19,11 @@ typedef struct chunk_stats_struct {
         uint64_t            instantations_backtraced;
         uint64_t            seen_instantations_backtraced;
         uint64_t            duplicates;
-        uint64_t            max_dupes;
         bool                tested_local_negation;
         bool                tested_quiescence;
         bool                tested_ltm_recall;
 
-        uint64_t            num_grounding_conditions_added;
+        uint64_t            grounding_conditions_added;
         uint64_t            merged_conditions;
         uint64_t            merged_disjunctions;
         uint64_t            merged_disjunction_values;
@@ -53,6 +52,7 @@ typedef struct chunk_stats_struct {
         bool                reverted;
         bool                lhs_unconnected;
         bool                rhs_unconnected;
+        bool                repaired;
         bool                repair_failed;
         bool                did_not_match_wm;
 } chunk_stats;

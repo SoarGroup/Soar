@@ -127,7 +127,7 @@ class Explanation_Memory
         void increment_stat_chunk_did_not_match() { stats.chunk_did_not_match++; if (current_recording_chunk) current_recording_chunk->stats.did_not_match_wm = true; };
         void increment_stat_no_grounds() { stats.no_grounds++; };
         void increment_stat_max_chunks() { stats.max_chunks++; };
-        void increment_stat_max_dupes() { stats.max_dupes++; if (current_recording_chunk) current_recording_chunk->stats.max_dupes = true; };
+        void increment_stat_max_dupes() { stats.max_dupes++; };
         void increment_stat_tested_local_negation(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_local_negation++; else stats.tested_local_negation_just++; if (current_recording_chunk) current_recording_chunk->stats.tested_local_negation = true; };
         void increment_stat_tested_deep_copy(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_deep_copy++; else stats.tested_deep_copy_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_deep_copy = true; };
         void increment_stat_tested_ltm_recall(ebc_rule_type pType) { if (pType == ebc_chunk) stats.tested_ltm_recall++; else stats.tested_ltm_recall_just ++; if (current_recording_chunk) current_recording_chunk->stats.tested_ltm_recall = true; };
@@ -148,7 +148,7 @@ class Explanation_Memory
         void increment_stat_lhs_unconnected() { stats.lhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.lhs_unconnected = true; };
         void increment_stat_rhs_unconnected() { stats.rhs_unconnected++; if (current_recording_chunk) current_recording_chunk->stats.rhs_unconnected = true; };
         void increment_stat_could_not_repair() { stats.repair_failed++;  if (current_recording_chunk) current_recording_chunk->stats.repair_failed = true; };
-        void increment_stat_chunks_repaired() { stats.chunks_repaired++; };
+        void increment_stat_chunks_repaired() { stats.chunks_repaired++;   if (current_recording_chunk) current_recording_chunk->stats.repaired = true; };
         void increment_stat_chunks_reverted();
 
         void increment_stat_identities_created() { stats.identities_created++; if (current_recording_chunk) current_recording_chunk->stats.identities_created++; };
@@ -182,7 +182,7 @@ class Explanation_Memory
         bool explain_instantiation(const std::string* pStringParameter);
 //        bool explain_item(const std::string* pObjectTypeString, const std::string* pObjectIDString);
         void print_explain_summary();
-        void print_global_stats();
+        void print_EBC_stats();
         void print_chunk_stats(chunk_record* pChunkRecord, bool pPrintHeader = true);
         void print_all_watched_rules();
         void print_all_chunks(bool pChunks);

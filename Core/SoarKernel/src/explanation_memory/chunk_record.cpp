@@ -45,7 +45,6 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
 
     identity_analysis.init(thisAgent);
 
-    stats.max_dupes                         = 0;
     stats.duplicates                        = 0;
     stats.tested_local_negation             = false;
     stats.tested_deep_copy                  = false;
@@ -54,9 +53,10 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.reverted                          = false;
     stats.lhs_unconnected                   = false;
     stats.rhs_unconnected                   = false;
+    stats.repaired                          = false;
     stats.repair_failed                     = false;
     stats.did_not_match_wm                  = false;
-    stats.num_grounding_conditions_added    = 0;
+    stats.grounding_conditions_added    = 0;
     stats.merged_conditions                 = 0;
     stats.merged_disjunctions               = 0;
     stats.merged_disjunction_values         = 0;
