@@ -27,6 +27,7 @@ class identity_record
 
         void    add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID, IdentitySet* pToID);
         void    analyze_chunk_identities(uint64_t pInstID, condition* lhs);
+        void    record_identity_sets(identity_set_set* identity_sets);
 
         void    print_mappings();
         void    print_identity_mappings_for_instantiation(instantiation_record* pInstRecord);

@@ -26,6 +26,7 @@ IdentitySet* Explanation_Based_Chunker::make_identity_set(Symbol* pGoal)
     thisAgent->explanationMemory->increment_stat_identities_created();
     #endif
     ISI_add(thisAgent, lID_Set->idset_id);
+    if (thisAgent->explanationMemory->is_any_enabled()) thisAgent->explanationMemory->add_identity(lID_Set, pGoal);
 
     dprint(DT_DEALLOCATE_ID_SETS, "Created identity set %u for variable identity %u\n", lID_Set->idset_id);
     return lID_Set;

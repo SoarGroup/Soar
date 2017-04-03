@@ -222,6 +222,9 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     dprint(DT_EXPLAIN, "(6) Recording identity mappings...\n");
 
     identity_analysis.analyze_chunk_identities(chunkInstantiationID, lhs);
+    auto lGoalIter = thisAgent->explanationMemory->all_identities_in_goal->find(thisAgent->explanationBasedChunker->m_inst->match_goal);
+    assert(lGoalIter != thisAgent->explanationMemory->all_identities_in_goal->end());
+    identity_analysis.record_identity_sets(lGoalIter->second);
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
 
