@@ -304,16 +304,6 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         else outputManager->printa_sf(thisAgent, "\n");
     }
 }
-void identity_record::record_identity_sets(identity_set_set* identity_sets)
-{
-    IdentitySet* lIdentity;
-
-    for (auto it = identity_sets->begin(); it != identity_sets->end(); it++)
-    {
-        lIdentity = (*it);
-        (*identity_joins)[lIdentity->idset_id] = lIdentity->super_join->idset_id;
-    }
-}
 
 void identity_record::visualize()
 {

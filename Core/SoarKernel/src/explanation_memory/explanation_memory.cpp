@@ -45,7 +45,6 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     /* Create data structures used for EBC */
     all_actions = new std::unordered_map< uint64_t, action_record* >();
     all_conditions = new std::unordered_map< uint64_t, condition_record* >();
-    all_identities_in_goal = new sym_to_identity_set_map();
     cached_production = new production_record_set();
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
     chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
@@ -60,11 +59,9 @@ Explanation_Memory::~Explanation_Memory()
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
     clear_explanations();
-    clear_identity_sets();
 
     delete all_actions;
     delete all_conditions;
-    delete all_identities_in_goal;
     delete cached_production;
     delete chunks;
     delete chunks_by_ID;
@@ -183,8 +180,6 @@ void Explanation_Memory::re_init()
 {
     dprint(DT_EXPLAIN_CACHE, "Re-initializing explanation logger.\n");
     clear_explanations();
-    /* MToDo | Might not need to do.  They might get popped with stack */
-    clear_identity_sets();
     initialize_counters();
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
@@ -572,72 +567,6 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-
-void Explanation_Memory::add_identity(IdentitySet* pNewIdentity, Symbol* pGoal)
-{
-    assert(pNewIdentity && pGoal);
-    identity_set_set* lIdentities;
-
-    auto iter = all_identities_in_goal->find(pGoal);
-    if (iter == all_identities_in_goal->end())
-    {
-        dprint(DT_EXPLAIN_IDENTITIES, "Creating new identities set and increasing refcount on goal %y\n", pGoal);
-        lIdentities = new identity_set_set();
-        (*all_identities_in_goal)[pGoal] = lIdentities;
-        thisAgent->symbolManager->symbol_add_ref(pGoal);
-    } else {
-        lIdentities = iter->second;
-    }
-    dprint(DT_EXPLAIN_IDENTITIES, "Increasing refcount of identity %u and adding to identities set of goal %y\n", pNewIdentity->idset_id, pGoal);
-    lIdentities->insert(pNewIdentity);
-    pNewIdentity->add_ref();
-}
-
-void Explanation_Memory::clear_identities_in_set(identity_set_set* lIdenty_set)
-{
-    IdentitySet*        lIdentity;
-
-    for (auto it = lIdenty_set->begin(); it != lIdenty_set->end(); ++it)
-    {
-        lIdentity = (*it);
-        dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", lIdentity->idset_id);
-        lIdentity->remove_ref();
-    }
-    delete lIdenty_set;
-}
-
-void Explanation_Memory::clear_identity_sets()
-{
-    Symbol*             lSym;
-
-    assert(all_identities_in_goal->size() == 0);
-    for (auto it1 = all_identities_in_goal->begin(); it1 != all_identities_in_goal->end(); ++it1)
-    {
-        lSym = it1->first;
-        dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", it1->first);
-        clear_identities_in_set(it1->second);
-        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", it1->first);
-        thisAgent->symbolManager->symbol_remove_ref(&lSym);
-    }
-    all_identities_in_goal->clear();
-}
-
-void Explanation_Memory::clear_identity_sets_for_goal(Symbol* pGoal)
-{
-    Symbol*             lSym;
-
-    dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", pGoal);
-    auto iter = all_identities_in_goal->find(pGoal);
-    if (iter != all_identities_in_goal->end())
-    {
-        lSym = iter->first;
-        clear_identities_in_set(iter->second);
-        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", pGoal);
-        thisAgent->symbolManager->symbol_remove_ref(&lSym);
-        all_identities_in_goal->erase(iter);
-    }
-}
-
 void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet)
 {
     if (current_recording_chunk)
@@ -745,17 +674,6 @@ void Explanation_Memory::visualize_identity_graph()
     GraphViz_Visualizer* vm = thisAgent->visualizationManager;
     vm->viz_graph_start();
     current_discussed_chunk->identity_analysis.visualize();
-    vm->viz_graph_end();
-}
-
-void Explanation_Memory::visualize_identity_graph_for_goal(Symbol* pGoal)
-{
-    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
-    vm->viz_graph_start();
-//    auto iter = all_identities_in_goal->find(thisAgent->bottom_goal);
-//    if (iter != all_identities_in_goal->end())
-//    {
-//    current_discussed_chunk->identity_analysis.visualize();
     vm->viz_graph_end();
 }
 

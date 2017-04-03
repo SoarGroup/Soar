@@ -2512,10 +2512,6 @@ void remove_existing_context_and_descendents(agent* thisAgent, Symbol* goal)
 
     if (goal != thisAgent->top_goal)
     {
-        if (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && thisAgent->explanationMemory->is_any_enabled())
-        {
-            thisAgent->explanationMemory->clear_identity_sets_for_goal(goal);
-        }
         if (rl_enabled(thisAgent))
         {
             rl_tabulate_reward_value_for_goal(thisAgent, goal);

@@ -102,8 +102,6 @@ class Explanation_Memory
 
         void                    re_init();
         void                    clear_explanations();
-        void                    clear_identity_sets();
-        void                    clear_identity_sets_for_goal(Symbol* pGoal);
 
         void                    set_backtrace_number(uint64_t pBT_num) { backtrace_number = pBT_num; };
         void                    add_bt_instantiation(instantiation* pInst, BTSourceType bt_type) { if (current_recording_chunk) current_recording_chunk->backtraced_instantiations->insert(pInst); };
@@ -116,7 +114,6 @@ class Explanation_Memory
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity(IdentitySet* pNewIdentity, Symbol* pGoal);
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
@@ -196,7 +193,6 @@ class Explanation_Memory
         void visualize_instantiation_graph();
         void visualize_contributors();
         void visualize_identity_graph();
-        void visualize_identity_graph_for_goal(Symbol* pGoal);
 
         void create_after_action_report();
         void after_action_report_for_init();
@@ -235,7 +231,6 @@ class Explanation_Memory
         void                    discuss_chunk(chunk_record* pChunkRecord);
 
         void                    clear_chunk_from_instantiations();
-        void                    clear_identities_in_set(identity_set_set* lIdenty_set);
 
         void                    print_chunk_list(short pNumToPrint = 0, bool pChunks = true);
         void                    print_rules_watched(short pNumToPrint = 0);
@@ -273,7 +268,6 @@ class Explanation_Memory
         std::unordered_map< uint64_t, instantiation_record* >*  instantiations;
         std::unordered_map< uint64_t, condition_record* >*      all_conditions;
         std::unordered_map< uint64_t, action_record* >*         all_actions;
-        sym_to_identity_set_map*                                all_identities_in_goal;
 
         production_record_set*                                  cached_production;
         std::unordered_map< uint64_t, production* >*            production_id_map;
