@@ -33,10 +33,10 @@ typedef struct identity_quadruple_struct
 
 typedef struct identity_set_quadruple_struct
 {
-        IdentitySet* id;
-        IdentitySet* attr;
-        IdentitySet* value;
-        IdentitySet* referent;
+        Identity* id;
+        Identity* attr;
+        Identity* value;
+        Identity* referent;
 
 //        identity_set_quadruple_struct(IdentitySet* new_id, IdentitySet* new_attr, IdentitySet* new_value, IdentitySet* new_referent): id(new_id), attr(new_attr), value(new_value), referent(new_referent) {}
 } identity_set_quadruple;
@@ -79,11 +79,11 @@ typedef struct identity_mapping_struct {
 typedef struct chunk_element_struct {
         Symbol*     variable_sym;
         Symbol*     instantiated_sym;
-        uint64_t    identity;
+        uint64_t    inst_identity;
         chunk_element_struct() {
             variable_sym = NULL;
             instantiated_sym = NULL;
-            identity = 0;
+            inst_identity = 0;
         }
 } chunk_element;
 

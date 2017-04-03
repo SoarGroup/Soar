@@ -1,5 +1,5 @@
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -15,74 +15,74 @@ action* Explanation_Based_Chunker::convert_result_into_action(preference* result
     a->type = MAKE_ACTION;
     a->preference_type = result->type;
 
-    if (result->identities.id)
+    if (result->inst_identities.id)
     {
         /* Match goal is not calculated yet, so we're passing in NULL, which would normally be a problem 
          * for the explainer since it wouldn't know where to record the identity set.  But in this function, 
          * we're creating actions, not preferences, so that means we should never be creating new unbound 
-         * RHS values and these calls to get_or_add_id_set should always be doing a look-up and won't need 
+         * RHS values and these calls to get_or_add_identity should always be doing a look-up and won't need
          * the match goal. */
-        if (!result->identity_sets.id)
-            result->identity_sets.id = get_or_add_id_set(result->identities.id, result->identity_sets.id, NULL);
-        result->clone_identities.id = result->identity_sets.id->update_clone_id();
+        if (!result->identities.id)
+            result->identities.id = get_or_add_identity(result->inst_identities.id, result->identities.id, NULL);
+        result->chunk_inst_identities.id = result->identities.id->update_clone_id();
     } else
-        result->clone_identities.id = LITERAL_VALUE;
+        result->chunk_inst_identities.id = LITERAL_VALUE;
 
-    if (!result->rhs_funcs.id)
+    if (!result->rhs_func_inst_identities.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  result->identities.id, result->identity_sets.id, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id,  result->inst_identities.id, result->identities.id, result->was_unbound_vars.id);
     } else {
-        result->cloned_rhs_funcs.id = copy_rhs_value(thisAgent, result->rhs_funcs.id, false, true);
-        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id);
+        result->rhs_func_chunk_inst_identities.id = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.id, false, true);
+        a->id = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.id);
     }
 
-    if (result->identities.attr)
+    if (result->inst_identities.attr)
     {
-        if (!result->identity_sets.attr)
-            result->identity_sets.attr = get_or_add_id_set(result->identities.attr, result->identity_sets.attr, NULL);
-        result->clone_identities.attr = result->identity_sets.attr->update_clone_id();
+        if (!result->identities.attr)
+            result->identities.attr = get_or_add_identity(result->inst_identities.attr, result->identities.attr, NULL);
+        result->chunk_inst_identities.attr = result->identities.attr->update_clone_id();
     } else
-        result->clone_identities.attr = LITERAL_VALUE;
+        result->chunk_inst_identities.attr = LITERAL_VALUE;
 
-    if (!result->rhs_funcs.attr)
+    if (!result->rhs_func_inst_identities.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr,  result->identities.attr, result->identity_sets.attr, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr,  result->inst_identities.attr, result->identities.attr, result->was_unbound_vars.attr);
     } else {
-        result->cloned_rhs_funcs.attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr, false, true);
-        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr);
+        result->rhs_func_chunk_inst_identities.attr = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.attr, false, true);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.attr);
     }
 
-    if (result->identities.value)
+    if (result->inst_identities.value)
     {
-        if(!result->identity_sets.value)
-            result->identity_sets.value = get_or_add_id_set(result->identities.value, result->identity_sets.value, NULL);
-        result->clone_identities.value = result->identity_sets.value->update_clone_id();
+        if(!result->identities.value)
+            result->identities.value = get_or_add_identity(result->inst_identities.value, result->identities.value, NULL);
+        result->chunk_inst_identities.value = result->identities.value->update_clone_id();
     } else
-        result->clone_identities.value = LITERAL_VALUE;
+        result->chunk_inst_identities.value = LITERAL_VALUE;
 
-    if (!result->rhs_funcs.value)
+    if (!result->rhs_func_inst_identities.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value,  result->identities.value, result->identity_sets.value, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value,  result->inst_identities.value, result->identities.value, result->was_unbound_vars.value);
     } else {
-        result->cloned_rhs_funcs.value = copy_rhs_value(thisAgent, result->rhs_funcs.value, false, true);
-        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value);
+        result->rhs_func_chunk_inst_identities.value = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.value, false, true);
+        a->value = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.value);
     }
 
     if (preference_is_binary(result->type))
     {
-        if (result->identities.referent)
+        if (result->inst_identities.referent)
         {
-            if (!result->identity_sets.referent)
-                result->identity_sets.referent = get_or_add_id_set(result->identities.referent, result->identity_sets.referent, NULL);
-            result->clone_identities.referent = result->identity_sets.referent->update_clone_id();
-        } else result->clone_identities.referent = LITERAL_VALUE;
+            if (!result->identities.referent)
+                result->identities.referent = get_or_add_identity(result->inst_identities.referent, result->identities.referent, NULL);
+            result->chunk_inst_identities.referent = result->identities.referent->update_clone_id();
+        } else result->chunk_inst_identities.referent = LITERAL_VALUE;
 
-        if (!result->rhs_funcs.referent)
+        if (!result->rhs_func_inst_identities.referent)
         {
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent,  result->identities.referent, result->identity_sets.referent, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent,  result->inst_identities.referent, result->identities.referent, result->was_unbound_vars.referent);
         } else {
-            result->cloned_rhs_funcs.referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent, false, true);
-            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent);
+            result->rhs_func_chunk_inst_identities.referent = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.referent, false, true);
+            a->referent = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.referent);
         }
     }
 
@@ -116,17 +116,17 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
 {
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
 
-    if (t->identity_set && t->identity_set->get_clone_identity())
+    if (t->identity && t->identity->get_clone_identity())
     {
-        dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity_set->get_clone_identity());
-        t->identity = t->identity_set->get_clone_identity();
-        clear_test_identity_set(thisAgent, t);
+        dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity->get_clone_identity());
+        t->inst_identity = t->identity->get_clone_identity();
+        clear_test_identity(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
-        t->identity = LITERAL_VALUE;
-        clear_test_identity_set(thisAgent, t);
+        t->inst_identity = LITERAL_VALUE;
+        clear_test_identity(thisAgent, t);
         return false;
     }
 
@@ -155,7 +155,7 @@ void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, boo
                         continue;
                     }
                 }
-                else if (tt->identity_set && !tt->data.referent->is_variable())
+                else if (tt->identity && !tt->data.referent->is_variable())
                 {
                     update_identities_in_test_by_lookup(tt, pSkipTopLevelEqualities);
                 }
@@ -166,7 +166,7 @@ void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, boo
     }
     else
     {
-        if (test_has_referent(t) && t->identity_set)
+        if (test_has_referent(t) && t->identity)
         {
             update_identities_in_test_by_lookup(t, pSkipTopLevelEqualities);
         }
@@ -177,16 +177,16 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
 {
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->literalized())
+        if (pTest->eq_test->identity && !pTest->eq_test->identity->literalized())
         {
             dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g from %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-            pTest->eq_test->identity = pTest->eq_test->identity_set->get_clone_identity();
-            if (!pTest->eq_test->identity) pTest->eq_test->identity = pTest->eq_test->identity_set->update_clone_id();
-            clear_test_identity_set(thisAgent, pTest->eq_test);
+            pTest->eq_test->inst_identity = pTest->eq_test->identity->get_clone_identity();
+            if (!pTest->eq_test->inst_identity) pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
+            clear_test_identity(thisAgent, pTest->eq_test);
             dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g\n", pTest->eq_test, pTest->eq_test);
         } else {
-            pTest->eq_test->identity = LITERAL_VALUE;
-            if (pTest->eq_test->identity_set) clear_test_identity_set(thisAgent, pTest->eq_test);
+            pTest->eq_test->inst_identity = LITERAL_VALUE;
+            if (pTest->eq_test->identity) clear_test_identity(thisAgent, pTest->eq_test);
         }
     }
 }
@@ -268,18 +268,18 @@ void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value p
         rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
         uint64_t lID;
 
-        dprint(DT_RHS_VARIABLIZATION, "Updating %y [v%u/s%u].\n", rs->referent, rs->identity, rs->identity_set ? rs->identity_set->get_identity() : 0);
+        dprint(DT_RHS_VARIABLIZATION, "Updating %y [v%u/s%u].\n", rs->referent, rs->inst_identity, rs->identity ? rs->identity->get_identity() : 0);
 
-        if (rs->identity_set)
+        if (rs->identity)
         {
-            lID = rs->identity_set->get_clone_identity();
+            lID = rs->identity->get_clone_identity();
             if (!lID)
-                lID = rs->identity_set->get_identity();
+                lID = rs->identity->get_identity();
         }
-        else lID = rs->identity;
+        else lID = rs->inst_identity;
 
-        if (lID) rs->identity_set = thisAgent->explanationBasedChunker->get_id_set_for_identity(lID);
+        if (lID) rs->identity = thisAgent->explanationBasedChunker->get_identity_for_id(lID);
 
-        dprint(DT_RHS_VARIABLIZATION, "...RHS value is now %y [v%u/s%u].\n", rs->referent, rs->identity, rs->identity_set ? rs->identity_set->get_identity() : 0);
+        dprint(DT_RHS_VARIABLIZATION, "...RHS value is now %y [v%u/s%u].\n", rs->referent, rs->inst_identity, rs->identity ? rs->identity->get_identity() : 0);
     }
 }

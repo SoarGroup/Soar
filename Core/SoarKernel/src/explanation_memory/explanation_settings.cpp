@@ -23,8 +23,8 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     explanation_trace = new soar_module::boolean_param("explanation-trace", on, new soar_module::f_predicate<boolean>());
     wm_trace = new soar_module::boolean_param("wm-trace", on, new soar_module::f_predicate<boolean>());
     formation = new soar_module::boolean_param("formation", on, new soar_module::f_predicate<boolean>());
-    constraints = new soar_module::boolean_param("constraints", on, new soar_module::f_predicate<boolean>());
-    identity = new soar_module::boolean_param("identity", on, new soar_module::f_predicate<boolean>());
+    constraint_analysis = new soar_module::boolean_param("constraints", on, new soar_module::f_predicate<boolean>());
+    identity_analysis = new soar_module::boolean_param("identity", on, new soar_module::f_predicate<boolean>());
     stats = new soar_module::boolean_param("stats", on, new soar_module::f_predicate<boolean>());
     after_action_report = new soar_module::boolean_param("after-action-report", off, new soar_module::f_predicate<boolean>());
 
@@ -43,8 +43,8 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     add(explanation_trace);
     add(wm_trace);
     add(formation);
-    add(constraints);
-    add(identity);
+    add(constraint_analysis);
+    add(identity_analysis);
     add(stats);
     add(help_cmd);
     add(qhelp_cmd);

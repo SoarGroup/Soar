@@ -161,8 +161,8 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
     mode_info[DT_OSK].prefix =                          strdup("OSK     | ");
     mode_info[DT_IDSET_REFCOUNTS].prefix =                   strdup("BT_Pass1| ");
-    mode_info[DT_PROPAGATE_ID_SETS].prefix =            strdup("IDS Prop| ");
-    mode_info[DT_DEALLOCATE_ID_SETS].prefix =           strdup("DelIDSet| ");
+    mode_info[DT_PROPAGATE].prefix =            strdup("IDS Prop| ");
+    mode_info[DT_DEALLOCATE_IDENTITIES].prefix =           strdup("DelIDSet| ");
 
     /* In case we forget to add a trace prefix */
     for (int i=0; i < num_trace_modes; i++)

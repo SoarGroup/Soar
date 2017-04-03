@@ -6,7 +6,7 @@
  */
 
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -52,42 +52,6 @@ void Explanation_Based_Chunker::report_local_negation(condition* c)
     xml_end_tag(thisAgent, soar_TraceNames::kTagLocalNegation);
 
     free_list(thisAgent, negated_to_print);
-}
-
-void Explanation_Based_Chunker::print_identity_set_join_map(TraceMode mode)
-{
-    if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "        Identity Set Join Map       \n");
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
-
-    if (identities_to_id_sets->size() == 0)
-    {
-        outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
-    }
-//    uint64_t            lIDSet, lIDSetID;
-//    IdentitySet*  lJoinSet, lJoinSuperSet;
-//
-//    for (auto iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
-//    {
-//        lIDSet = iter->first;
-//        lJoinSet = iter->second;
-//        lJoinSuperSet = lJoinSet->super_join;
-//        outputManager->printa_sf(thisAgent, "%u: %u", lIDSet, lJoinSet->identity);
-//        if (lJoinSuperSet) outputManager->printa_sf(thisAgent, " --> %u", lJoinSuperSet->identity);
-//        if (lJoinSet->identity_sets && (lJoinSet->identity_sets->size() > 0))
-//        {
-//            IdentitySet* lPrintIDSet;
-//            for (auto iter2 = lJoinSet->identity_sets->begin(); iter2 != lJoinSet->identity_sets->end(); ++iter2)
-//            {
-//                lPrintIDSet = *iter2;
-//                outputManager->printa_sf(thisAgent, " %u\n", lPrintIDSet->identity);
-//            }
-//        }
-//        outputManager->printa_sf(thisAgent, "\n");
-//    }
-
-    outputManager->printa_sf(thisAgent, "------------------------------------\n");
 }
 
 void Explanation_Based_Chunker::print_merge_map(TraceMode mode)
@@ -144,21 +108,21 @@ void Explanation_Based_Chunker::print_instantiation_identities_map(TraceMode mod
 }
 
 
-void Explanation_Based_Chunker::print_identity_to_id_set_map(TraceMode mode)
+void Explanation_Based_Chunker::print_id_to_identity_map(TraceMode mode)
 {
     if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
     outputManager->printa_sf(thisAgent, "     Identity to Identity Set Map\n");
     outputManager->printa_sf(thisAgent, "------------------------------------\n");
 
-    if (identities_to_id_sets->size() == 0)
+    if (inst_id_to_identity_map->size() == 0)
     {
         outputManager->printa_sf(thisAgent, "EMPTY MAP\n");
     }
 
     id_to_join_map::iterator iter;
 
-    for (iter = identities_to_id_sets->begin(); iter != identities_to_id_sets->end(); ++iter)
+    for (iter = inst_id_to_identity_map->begin(); iter != inst_id_to_identity_map->end(); ++iter)
     {
         outputManager->printa_sf(thisAgent, "   %u = %u\n", iter->first, iter->second->get_identity());
     }
@@ -199,7 +163,7 @@ void Explanation_Based_Chunker::print_tables(TraceMode mode)
     if (!thisAgent->outputManager->is_trace_enabled(mode)) return;
     print_variablization_table(mode);
     print_instantiation_identities_map(mode);
-    print_identity_to_id_set_map(mode);
+    print_id_to_identity_map(mode);
 }
 
 const char* Explanation_Based_Chunker::singletonTypeToString(singleton_element_type pType)

@@ -198,7 +198,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
             thisAgent->explanationMemory->print_formation_explanation();
             return true;
         }
-        else if (my_param == thisAgent->explanationMemory->settings->constraints)
+        else if (my_param == thisAgent->explanationMemory->settings->constraint_analysis)
         {
             if (!thisAgent->explanationMemory->current_discussed_chunk_exists())
             {
@@ -207,7 +207,7 @@ bool CommandLineInterface::DoExplain(const std::string* pArg1, const std::string
             thisAgent->explanationMemory->print_constraints_enforced();
             return true;
         }
-        else if (my_param == thisAgent->explanationMemory->settings->identity)
+        else if (my_param == thisAgent->explanationMemory->settings->identity_analysis)
         {
             if (!thisAgent->explanationMemory->current_discussed_chunk_exists())
             {

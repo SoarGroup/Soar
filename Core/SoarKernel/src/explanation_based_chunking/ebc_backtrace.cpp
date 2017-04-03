@@ -68,7 +68,7 @@ void Explanation_Based_Chunker::add_to_grounds(condition* cond)
     }
     if ((cond->bt.wme_->chunker_bt_last_ground_cond != cond) && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
-        add_singleton_unification_if_needed(cond);
+        check_for_singleton_unification(cond);
     }
     push(thisAgent, (cond), grounds);
 }
@@ -96,7 +96,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
 {
 
     instantiation* inst = pPref->inst;
-    rhs_quadruple rhs_funcs = pPref->rhs_funcs;
+    rhs_quadruple rhs_funcs = pPref->rhs_func_inst_identities;
 
     condition* c;
     cons* grounds_to_print, *locals_to_print, *negateds_to_print;
@@ -114,7 +114,7 @@ void Explanation_Based_Chunker::backtrace_through_instantiation(preference* pPre
     if (trace_cond && ebc_settings[SETTING_EBC_LEARNING_ON])
     {
         ebc_timers->dependency_analysis->stop();
-        unify_backtraced_conditions(trace_cond, pPref->identity_sets, rhs_funcs);
+        unify_lhs_rhs_connection(trace_cond, pPref->identities, rhs_funcs);
         ebc_timers->dependency_analysis->start();
     }
 
@@ -388,8 +388,6 @@ void Explanation_Based_Chunker::perform_dependency_analysis()
     ebc_timers->dependency_analysis->stop();
 
     dprint_header(DT_BACKTRACE, PrintAfter, "Dependency analysis complete.\n");
-    dprint_identity_to_id_set_map(DT_BACKTRACE);
     dprint(DT_BACKTRACE, "Grounds:\n%3", grounds);
     dprint(DT_BACKTRACE, "Locals:\n%3", locals);
-
 }

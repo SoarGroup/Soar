@@ -6,7 +6,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
 #include "memory_manager.h"
@@ -573,16 +573,16 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
 }
 
 
-void Explanation_Memory::add_identity(IdentitySet* pNewIdentity, Symbol* pGoal)
+void Explanation_Memory::add_identity(Identity* pNewIdentity, Symbol* pGoal)
 {
     assert(pNewIdentity && pGoal);
-    identity_set_set* lIdentities;
+    identity_set* lIdentities;
 
     auto iter = all_identities_in_goal->find(pGoal);
     if (iter == all_identities_in_goal->end())
     {
         dprint(DT_EXPLAIN_IDENTITIES, "Creating new identities set and increasing refcount on goal %y\n", pGoal);
-        lIdentities = new identity_set_set();
+        lIdentities = new identity_set();
         (*all_identities_in_goal)[pGoal] = lIdentities;
         thisAgent->symbolManager->symbol_add_ref(pGoal);
     } else {
@@ -593,15 +593,15 @@ void Explanation_Memory::add_identity(IdentitySet* pNewIdentity, Symbol* pGoal)
     pNewIdentity->add_ref();
 }
 
-void Explanation_Memory::clear_identities_in_set(identity_set_set* lIdenty_set)
+void Explanation_Memory::clear_identities_in_set(identity_set* lIdenty_set)
 {
-    IdentitySet*        lIdentity;
+    Identity*        l_inst_identity;
 
     for (auto it = lIdenty_set->begin(); it != lIdenty_set->end(); ++it)
     {
-        lIdentity = (*it);
-        dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", lIdentity->idset_id);
-        lIdentity->remove_ref();
+        l_inst_identity = (*it);
+        dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", l_inst_identity->idset_id);
+        l_inst_identity->remove_ref();
     }
     delete lIdenty_set;
 }
@@ -638,7 +638,7 @@ void Explanation_Memory::clear_identity_sets_for_goal(Symbol* pGoal)
     }
 }
 
-void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet)
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, Identity* pFromJoinSet, Identity* pToJoinSet)
 {
     if (current_recording_chunk)
         current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSet, pToJoinSet);

@@ -54,8 +54,8 @@ void GDI_add(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_print_and_cleanup(agent* thisAgent);
 
-void ISI_add(agent* thisAgent, uint64_t pIDSetID);
-void ISI_remove(agent* thisAgent, uint64_t pIDSetID);
+void ISI_add(agent* thisAgent, uint64_t pIdentityID);
+void ISI_remove(agent* thisAgent, uint64_t pIdentityID);
 void ISI_print_and_cleanup(agent* thisAgent);
 
 void RSI_add(agent* thisAgent, rhs_symbol pRHS);

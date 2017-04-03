@@ -1929,14 +1929,14 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
         {
             if (level == (TOP_GOAL_LEVEL + 1))
             {
-                dprint(DT_DEALLOCATE_ID_SETS, "Resetting identity join set counter for top sub-state %y\n", impasseID);
-                thisAgent->explanationBasedChunker->reset_identity_set_id_counter();
+                dprint(DT_DEALLOCATE_IDENTITIES, "Resetting identity join set counter for top sub-state %y\n", impasseID);
+                thisAgent->explanationBasedChunker->reset_identity_counter();
             }
             if (level > TOP_GOAL_LEVEL)
             {
-                dprint(DT_DEALLOCATE_ID_SETS, "Creating floating identity join set for singleton: %w\n", lSSWME);
-                lSSWME->local_singleton_id_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set(impasseID);
-                lSSWME->local_singleton_value_identity_set = thisAgent->explanationBasedChunker->get_floating_identity_set(impasseID);
+                dprint(DT_DEALLOCATE_IDENTITIES, "Creating floating identity join set for singleton: %w\n", lSSWME);
+                lSSWME->local_singleton_id_identity_set = thisAgent->explanationBasedChunker->get_floating_identity(impasseID);
+                lSSWME->local_singleton_value_identity_set = thisAgent->explanationBasedChunker->get_floating_identity(impasseID);
             }
         }
         Symbol* lreward_header = thisAgent->symbolManager->make_new_identifier('R', level);

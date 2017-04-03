@@ -116,8 +116,8 @@ class Explanation_Memory
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity(IdentitySet* pNewIdentity, Symbol* pGoal);
-        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromJoinSet, IdentitySet* pToJoinSet);
+        void                    add_identity(Identity* pNewIdentity, Symbol* pGoal);
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, Identity* pFromJoinSet, Identity* pToJoinSet);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
         chunk_record*           get_current_discussed_chunk() { return current_discussed_chunk; };
@@ -235,7 +235,7 @@ class Explanation_Memory
         void                    discuss_chunk(chunk_record* pChunkRecord);
 
         void                    clear_chunk_from_instantiations();
-        void                    clear_identities_in_set(identity_set_set* lIdenty_set);
+        void                    clear_identities_in_set(identity_set* lIdenty_set);
 
         void                    print_chunk_list(short pNumToPrint = 0, bool pChunks = true);
         void                    print_rules_watched(short pNumToPrint = 0);

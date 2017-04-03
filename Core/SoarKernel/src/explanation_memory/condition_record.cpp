@@ -5,7 +5,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "explanation_memory.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
@@ -37,20 +37,20 @@ void simplify_identity_in_test(agent* thisAgent, test t)
         case CONJUNCTIVE_TEST:
             for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
                 simplify_identity_in_test(thisAgent, static_cast<test>(c->first));
-            clear_test_identity_set(thisAgent, t);
+            clear_test_identity(thisAgent, t);
             break;
         default:
-            if (t->identity_set)
+            if (t->identity)
             {
-                t->identity = t->identity_set->super_join->idset_id;
-                if (t->identity_set->idset_id != t->identity)
-                    t->clone_identity = t->identity_set->idset_id;
+                t->inst_identity = t->identity->joined_identity->idset_id;
+                if (t->identity->idset_id != t->inst_identity)
+                    t->chunk_inst_identity = t->identity->idset_id;
                 else
-                    t->clone_identity = LITERAL_VALUE;
+                    t->chunk_inst_identity = LITERAL_VALUE;
             } else {
-                t->clone_identity = LITERAL_VALUE;
+                t->chunk_inst_identity = LITERAL_VALUE;
             }
-            clear_test_identity_set(thisAgent, t);
+            clear_test_identity(thisAgent, t);
             break;
     }
 }
@@ -206,18 +206,18 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
 
     if (pTestIdentity)
     {
-        if ((pTest->type == CONJUNCTIVE_TEST) && pTestIdentity->eq_test->identity)
+        if ((pTest->type == CONJUNCTIVE_TEST) && pTestIdentity->eq_test->inst_identity)
         {
-            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->eq_test->clone_identity)
-                lIdentityForColor = pTestIdentity->eq_test->identity;
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->eq_test->chunk_inst_identity)
+                lIdentityForColor = pTestIdentity->eq_test->inst_identity;
             else
-                lIdentityForColor = pTestIdentity->eq_test->clone_identity;
-        } else  if (pTestIdentity && pTestIdentity->identity)
+                lIdentityForColor = pTestIdentity->eq_test->chunk_inst_identity;
+        } else  if (pTestIdentity && pTestIdentity->inst_identity)
         {
-            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->clone_identity)
-                lIdentityForColor = pTestIdentity->identity;
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTestIdentity->chunk_inst_identity)
+                lIdentityForColor = pTestIdentity->inst_identity;
             else
-                lIdentityForColor = pTestIdentity->clone_identity;
+                lIdentityForColor = pTestIdentity->chunk_inst_identity;
         }
     }
     if (lIdentityForColor) highlight_str += visualizer->get_color_for_id(lIdentityForColor); else highlight_str = " ";
@@ -275,13 +275,13 @@ void condition_record::viz_combo_test(test pTest, test pTestIdentity, uint64_t p
                 visualizer->graphviz_output += "^";
             }
         }
-        if (pTestIdentity && (pTestIdentity->identity || pTestIdentity->clone_identity))
+        if (pTestIdentity && (pTestIdentity->inst_identity || pTestIdentity->chunk_inst_identity))
         {
-            if (pTestIdentity->clone_identity)
+            if (pTestIdentity->chunk_inst_identity)
             {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTestIdentity->clone_identity, pTestIdentity->identity);
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTestIdentity->chunk_inst_identity, pTestIdentity->inst_identity);
             } else {
-                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTestIdentity->identity);
+                thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTestIdentity->inst_identity);
             }
         } else {
             thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);
@@ -298,20 +298,20 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
     std::string highlight_str;
     uint64_t lIdentityForColor = 0;
 
-    if (pTest->eq_test && pTest->eq_test->identity)
+    if (pTest->eq_test && pTest->eq_test->inst_identity)
     {
-        if ((pTest->type == CONJUNCTIVE_TEST) && pTest->eq_test->identity)
+        if ((pTest->type == CONJUNCTIVE_TEST) && pTest->eq_test->inst_identity)
         {
-            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->eq_test->clone_identity)
-                lIdentityForColor = pTest->eq_test->identity;
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->eq_test->chunk_inst_identity)
+                lIdentityForColor = pTest->eq_test->inst_identity;
             else
-                lIdentityForColor = pTest->eq_test->clone_identity;
-        } else if (pTest->identity)
+                lIdentityForColor = pTest->eq_test->chunk_inst_identity;
+        } else if (pTest->inst_identity)
         {
-            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->clone_identity)
-                lIdentityForColor = pTest->identity;
+            if ((thisAgent->visualizationManager->settings->use_joined_identities->get_value() == on) || !pTest->chunk_inst_identity)
+                lIdentityForColor = pTest->inst_identity;
             else
-                lIdentityForColor = pTest->clone_identity;
+                lIdentityForColor = pTest->chunk_inst_identity;
         }
     }
     if (lIdentityForColor) highlight_str += visualizer->get_color_for_id(lIdentityForColor); else highlight_str = " ";
@@ -347,13 +347,13 @@ void condition_record::viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_
         }
         if (printIdentity || !pMatchedWME || (pTest->type != EQUALITY_TEST))
         {
-            if (pTest->identity || pTest->clone_identity)
+            if (pTest->inst_identity || pTest->chunk_inst_identity)
             {
-                if (pTest->clone_identity)
+                if (pTest->chunk_inst_identity)
                 {
-                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTest->clone_identity, pTest->identity);
+                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u->%u]", pTest, pTest->chunk_inst_identity, pTest->inst_identity);
                 } else {
-                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTest->identity);
+                    thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t [%u]", pTest, pTest->inst_identity);
                 }
             } else {
                 thisAgent->outputManager->sprinta_sf(thisAgent, visualizer->graphviz_output, "%t ", pTest);

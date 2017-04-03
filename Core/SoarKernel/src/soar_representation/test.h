@@ -45,12 +45,15 @@ typedef struct test_struct
         cons*       disjunction_list;   /* for disjunction tests */
         cons*       conjunct_list;      /* for conjunctive tests */
     } data;
+    
     test_struct*    eq_test;
-    uint64_t        identity;
-    uint64_t        clone_identity;
-    IdentitySet*    identity_set;
+    
+    uint64_t        inst_identity;
+    uint64_t        chunk_inst_identity;
+    Identity*       identity;
+    
     #ifdef DEBUG_TEST_INVENTORY
-    uint64_t            t_id;
+    uint64_t        t_id;
     #endif
 
 } test_info;
@@ -86,7 +89,7 @@ void add_rete_test_list_to_tests(agent* thisAgent, condition* cond, rete_test* r
 void add_gensymmed_equality_test(agent* thisAgent, test* t, char first_letter);
 void add_all_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
 void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** var_list);
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pIdentity, tc_number tc, matched_symbol_list* var_list);
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pInstIdentity, tc_number tc, matched_symbol_list* var_list);
 void copy_non_identical_tests(agent* thisAgent, test* t, test add_me, bool considerIdentity = false);
 
 inline bool test_has_referent(test t)

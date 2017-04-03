@@ -12,7 +12,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "instantiation.h"
 #include "lexer.h"
 #include "preference.h"
@@ -290,7 +290,7 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
     {
         /* -- rhs symbol -- */
         rsym = rhs_value_to_rhs_symbol(rv);
-        if (this->m_print_actual_effective || (!pEmptyStringForNullIdentity && (!rsym->identity)))
+        if (this->m_print_actual_effective || (!pEmptyStringForNullIdentity && (!rsym->inst_identity)))
         {
             if (rsym->referent)
             {
@@ -299,27 +299,27 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
                 destString += '#';
             }
         }
-        if (m_print_identity_effective && (rsym->identity || rsym->identity_unjoined)) {
-            IdentitySet* lIDSet = rsym->identity_set;
+        if (m_print_identity_effective && (rsym->inst_identity || rsym->identity_id_unjoined)) {
+            Identity* l_identity = rsym->identity;
 
-            if (lIDSet)
+            if (l_identity)
             {
-                if (lIDSet->super_join != lIDSet)
+                if (l_identity->joined_identity != l_identity)
                 {
-                    sprint_sf(destString, " [%ui%uj%u]", rsym->identity, lIDSet->get_sub_identity(), lIDSet->get_identity());
+                    sprint_sf(destString, " [%ui%uj%u]", rsym->inst_identity, l_identity->get_sub_identity(), l_identity->get_identity());
                 }
                 else
                 {
-                    sprint_sf(destString, " [%ui%u]", rsym->identity, lIDSet->get_sub_identity());
+                    sprint_sf(destString, " [%ui%u]", rsym->inst_identity, l_identity->get_sub_identity());
                 }
             }
-            else if (rsym->identity_unjoined)
+            else if (rsym->identity_id_unjoined)
             {
-                sprint_sf(destString, " [%u->%u]", rsym->identity_unjoined, rsym->identity);
+                sprint_sf(destString, " [%u->%u]", rsym->identity_id_unjoined, rsym->inst_identity);
             }
             else
             {
-                sprint_sf(destString, " [%u]", rsym->identity);
+                sprint_sf(destString, " [%u]", rsym->inst_identity);
             }
         }
     }
@@ -412,18 +412,18 @@ void Output_Manager::action_list_to_string(agent* thisAgent, action* action_list
     }
 }
 
-void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString)
+void Output_Manager::identity_to_string(agent* thisAgent, uint64_t pID, const Identity* pIdentity, std::string &destString)
 {
     destString += '[';
     destString += std::to_string(pID);
-    if (pIDSet)
+    if (pIdentity)
     {
         destString += 'i';
-        destString += std::to_string(pIDSet->idset_id);
-        if (pIDSet->super_join->idset_id != pIDSet->idset_id)
+        destString += std::to_string(pIdentity->idset_id);
+        if (pIdentity->joined_identity->idset_id != pIdentity->idset_id)
         {
             destString += 'j';
-            destString += std::to_string(pIDSet->super_join->idset_id);
+            destString += std::to_string(pIdentity->joined_identity->idset_id);
         }
     }
     destString += ']';
@@ -442,16 +442,16 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
     if (m_print_identity_effective)
     {
         std::string lID, lAttr, lValue, lReferent;
-        if (pref->identities.id || pref->identity_sets.id)
-            identity_to_string(thisAgent, pref->identities.id, pref->identity_sets.id, lID);
+        if (pref->inst_identities.id || pref->identities.id)
+            identity_to_string(thisAgent, pref->inst_identities.id, pref->identities.id, lID);
         else
             lID = pref->id->to_string(true);
-        if (pref->identities.attr || pref->identity_sets.attr)
-            identity_to_string(thisAgent, pref->identities.attr, pref->identity_sets.attr, lAttr);
+        if (pref->inst_identities.attr || pref->identities.attr)
+            identity_to_string(thisAgent, pref->inst_identities.attr, pref->identities.attr, lAttr);
         else
             lAttr = pref->attr->to_string(true);
-        if (pref->identities.value || pref->identity_sets.value)
-            identity_to_string(thisAgent, pref->identities.value, pref->identity_sets.value, lValue);
+        if (pref->inst_identities.value || pref->identities.value)
+            identity_to_string(thisAgent, pref->inst_identities.value, pref->identities.value, lValue);
         else
             lValue = pref->value->to_string(true);
 
@@ -460,8 +460,8 @@ void Output_Manager::pref_to_string(agent* thisAgent, preference* pref, std::str
 
         if (preference_is_binary(pref->type))
         {
-            if (pref->identities.referent && pref->identity_sets.referent)
-                identity_to_string(thisAgent, pref->identities.referent, pref->identity_sets.referent, lReferent);
+            if (pref->inst_identities.referent && pref->identities.referent)
+                identity_to_string(thisAgent, pref->inst_identities.referent, pref->identities.referent, lReferent);
             else
                 sprinta_sf(thisAgent, destString, " %y", pref->referent);
         }

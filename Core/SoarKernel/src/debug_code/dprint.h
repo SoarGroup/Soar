@@ -20,7 +20,8 @@
     #define dprint_saved_test_list(mode, st) ((void)0)
     #define dprint_partial_matches(mode, p_p_node) ((void)0)
     #define dprint_variablization_table(mode, ...) ((void)0)
-    #define dprint_identity_to_id_set_map(mode) ((void)0)
+    #define dprint_id_to_identity_map(mode) ((void)0)
+    #define dprint_instantiation_identities_map(mode) ((void)0)
 
 #else
 
@@ -36,7 +37,7 @@
     #define dprint_saved_test_list(mode, st) Output_Manager::Get_OM().print_saved_test_list (mode, st)
     #define dprint_partial_matches(mode, p_p_node) Output_Manager::Get_OM().print_partial_matches (mode, p_p_node)
     #define dprint_variablization_table(mode) thisAgent->explanationBasedChunker->print_variablization_table (mode)
-    #define dprint_identity_to_id_set_map(mode) thisAgent->explanationBasedChunker->print_identity_to_id_set_map (mode)
+    #define dprint_id_to_identity_map(mode) thisAgent->explanationBasedChunker->print_id_to_identity_map (mode)
     #define dprint_instantiation_identities_map(mode) thisAgent->explanationBasedChunker->print_instantiation_identities_map (mode)
 
 #endif

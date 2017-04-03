@@ -19,18 +19,18 @@
 #include <cstdlib>
 
 tc_number       get_new_tc_number(agent* thisAgent);
-uint64_t        get_joined_identity_id(IdentitySet* pID_Set);
-IdentitySet*    get_joined_identity_set(IdentitySet* pID_Set);
-uint64_t        get_joined_identity_clone_id(IdentitySet* pID_Set);
-void            IdentitySet_remove_ref(agent* thisAgent, IdentitySet* &pID_Set);
-void            set_test_identity_set(agent* thisAgent, test pTest, IdentitySet* pID_Set);
-void            set_pref_identity_set(agent* thisAgent, preference* pPref, WME_Field pField, IdentitySet* pID_Set);
-void            clear_test_identity_set(agent* thisAgent, test pTest);
+uint64_t        get_joined_identity_id(Identity* pIdentity);
+Identity*       get_joined_identity(Identity* pIdentity);
+uint64_t        get_joined_identity_chunk_inst_id(Identity* pIdentity);
+void            IdentitySet_remove_ref(agent* thisAgent, Identity* &pIdentity);
+void            set_test_identity(agent* thisAgent, test pTest, Identity* pIdentity);
+void            set_pref_identity(agent* thisAgent, preference* pPref, WME_Field pField, Identity* pIdentity);
+void            clear_test_identity(agent* thisAgent, test pTest);
 
 class Explanation_Based_Chunker
 {
         friend class Repair_Manager;
-        friend class IdentitySet;
+        friend class Identity;
         friend class chunk_record;
 
     public:
@@ -63,19 +63,20 @@ class Explanation_Based_Chunker
         uint64_t    get_new_inst_id()               { increment_counter(inst_id_counter); return inst_id_counter; };
         uint64_t    get_new_prod_id()               { increment_counter(prod_id_counter); return prod_id_counter; };
         uint64_t    get_instantiation_count()       { return inst_id_counter; };
-        uint64_t    get_new_var_identity_id()       { increment_counter(variablization_identity_counter); return variablization_identity_counter; };
-        uint64_t    get_new_identity_set_id()       { increment_counter(identity_set_counter); return identity_set_counter; };
-        void        reset_identity_set_id_counter() {identity_set_counter = 0; };
+        uint64_t    get_new_inst_identity_id()       { increment_counter(inst_identity_counter); return inst_identity_counter; };
+        uint64_t    get_new_identity_id()           { increment_counter(identity_counter); return identity_counter; };
+        void        reset_identity_counter()        {identity_counter = 0; };
         bool        is_learning_chunk()             { return (m_inst != NULL); };
-        /* identity generation functions */
-        uint64_t get_or_create_identity_for_sym(Symbol* orig_var);
-        void     add_identity_to_test(test pTest);
-        void     force_add_identity(Symbol* pSym, uint64_t pID);
 
-        void update_identity_sets_in_test(test pTest, instantiation* pInst);
-        void update_identity_sets_in_cond(condition* pCond, instantiation* pInst);
-        void update_identity_sets_in_condlist(condition* pCondTop, instantiation* pInst);
-        void update_identity_sets_in_preferences(preference* lPref, Symbol* pGoal, bool is_chunk_inst = false);
+        /* identity generation functions */
+        uint64_t get_or_create_inst_identity_for_sym(Symbol* orig_var);
+        void     add_inst_identity_to_test(test pTest);
+        void     force_add_inst_identity(Symbol* pSym, uint64_t pID);
+
+        void update_identities_in_test(test pTest, instantiation* pInst);
+        void update_identities_in_cond(condition* pCond, instantiation* pInst);
+        void update_identities_in_condlist(condition* pCondTop, instantiation* pInst);
+        void update_identities_in_preferences(preference* lPref, Symbol* pGoal, bool is_chunk_inst = false);
 
         /* Methods for operator selection knowledge tracking. */
         void    add_to_OSK(slot* s, preference* pref, bool unique_value = true);
@@ -84,11 +85,11 @@ class Explanation_Based_Chunker
         void    update_proposal_OSK(slot* s, preference* winner);
 
         /* Methods for identity set propagation and analysis */
-        IdentitySet*   make_identity_set(Symbol* pGoal);
-        IdentitySet*   get_id_set_for_identity(uint64_t pID);
-        IdentitySet*   get_or_add_id_set(uint64_t pID, IdentitySet* pIDSet, Symbol* pGoal);
-        IdentitySet*   get_floating_identity_set(Symbol* pGoal);
-        void           force_identity_to_id_set_mapping(uint64_t pID, IdentitySet* pIDSet)    { (*identities_to_id_sets)[pID] = pIDSet; };
+        Identity*   create_new_identity(Symbol* pGoal);
+        Identity*   get_identity_for_id(uint64_t pID);
+        Identity*   get_or_add_identity(uint64_t pID, Identity* pIdentity, Symbol* pGoal);
+        Identity*   get_floating_identity(Symbol* pGoal);
+        void        force_id_to_identity_mapping(uint64_t pID, Identity* pIdentity)    { (*inst_id_to_identity_map)[pID] = pIdentity; };
 
         /* Methods to handle identity unification of conditions that test singletons */
         void                add_to_singletons(wme* pWME);
@@ -110,7 +111,7 @@ class Explanation_Based_Chunker
          * 1 - Used by repair manager when creating grounding conditions
          * 2 - Used by reinforcement learning when building template instances. */
 
-        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity);
+        void        add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity);
         void        sti_variablize_test(test pTest, bool generate_identity = true);
         void        sti_variablize_rhs_symbol(rhs_value &pRhs_val, bool generate_identity = true);
         void        clear_sti_variablization_map() { m_sym_to_var_map->clear(); };
@@ -128,8 +129,7 @@ class Explanation_Based_Chunker
         void print_constraints(TraceMode mode);
         void print_merge_map(TraceMode mode);
         void print_instantiation_identities_map(TraceMode mode);
-        void print_identity_to_id_set_map(TraceMode mode);
-        void print_identity_set_join_map(TraceMode mode);
+        void print_id_to_identity_map(TraceMode mode);
 
         void print_singleton_summary();
         const char* singletonTypeToString(singleton_element_type pType);
@@ -139,7 +139,7 @@ class Explanation_Based_Chunker
         /* Clean-up */
         void reinit();
         void clear_symbol_identity_map()        { instantiation_identities->clear(); }
-        void clear_identity_to_id_set_map()     { identities_to_id_sets->clear(); }
+        void clear_id_to_identity_map()     { inst_id_to_identity_map->clear(); }
         void clear_singletons();
 
     private:
@@ -158,10 +158,10 @@ class Explanation_Based_Chunker
         char*               justification_name_prefix;
 
         /* -- A counter for variablization and instantiation id's - */
-        uint64_t inst_id_counter;
-        uint64_t identity_set_counter;
-        uint64_t variablization_identity_counter;
-        uint64_t prod_id_counter;
+        uint64_t            inst_id_counter;
+        uint64_t            prod_id_counter;
+        uint64_t            inst_identity_counter;
+        uint64_t            identity_counter;
 
         /* Variables used by dependency analysis methods */
         cons*               grounds;
@@ -204,13 +204,13 @@ class Explanation_Based_Chunker
         /* Core tables used by EBC during identity assignment during instantiation
          * creation. The data stored within them is temporary and cleared after use. */
         sym_to_id_map*      instantiation_identities;
-        id_to_join_map*     identities_to_id_sets;
+        id_to_join_map*     inst_id_to_identity_map;
 
         /* A variablization map used for old school soar identifier variablization */
         sym_to_sym_id_map*  m_sym_to_var_map;
 
         /* Identity sets that have had their transient data changed */
-        identity_set_set    identity_sets_to_clean_up;  // cleaned up after a rule is learned
+        identity_set        identities_to_clean_up;  // cleaned up after a rule is learned
 
         /* Set of all attribute symbols that may be singletons */
         symbol_set*         singletons;
@@ -263,9 +263,9 @@ class Explanation_Based_Chunker
         void report_local_negation(condition* c);
 
         /* Identity analysis and unification methods */
-        void join_identity_sets(IdentitySet* lFromJoinSet, IdentitySet* lToJoinSet);
-        void unify_backtraced_conditions(condition* lhs_cond, identity_set_quadruple &rhs_id_sets, const rhs_quadruple rhs_funcs);
-        void add_singleton_unification_if_needed(condition* pCond);
+        void join_identities(Identity* lFromJoinSet, Identity* lToJoinSet);
+        void unify_lhs_rhs_connection(condition* lhs_cond, identity_set_quadruple &rhs_id_sets, const rhs_quadruple rhs_funcs);
+        void check_for_singleton_unification(condition* pCond);
         void literalize_RHS_function_args(const rhs_value rv, uint64_t inst_id);
 
         /* Constraint analysis and enforcement methods */
@@ -315,7 +315,7 @@ class Explanation_Based_Chunker
         condition*  get_previously_seen_cond(condition* pCond);
 
         /* Clean-up methods */
-        void clean_up_identity_sets();
+        void clean_up_identities();
         void clear_merge_map();
         void clear_cached_constraints();
         void clear_data();

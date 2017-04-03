@@ -369,13 +369,13 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                         {
                             if (t->type != CONJUNCTIVE_TEST)
                             {
-                                if (t->identity)
+                                if (t->inst_identity)
                                 {
                                     if (t->type != EQUALITY_TEST)
                                     {
                                         destString += test_type_to_string(t->type);
                                     }
-                                    identity_to_string(thisAgent, t->identity, t->identity_set, destString);
+                                    identity_to_string(thisAgent, t->inst_identity, t->identity, destString);
                                 } else {
                                     test_to_string(t, destString);
                                 }
@@ -385,14 +385,14 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                 for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                                 {
                                     ct = static_cast<test>(c->first);
-                                    if (ct->identity)
+                                    if (ct->inst_identity)
                                     {
                                         if (ct->type != EQUALITY_TEST)
                                         {
                                             destString += test_type_to_string(ct->type);
                                         }
                                         if (!isFirst) destString += ' '; else isFirst = false;
-                                        identity_to_string(thisAgent, ct->identity, ct->identity_set, destString);
+                                        identity_to_string(thisAgent, ct->inst_identity, ct->identity, destString);
                                     } else {
                                         test_to_string(ct, destString);
                                     }

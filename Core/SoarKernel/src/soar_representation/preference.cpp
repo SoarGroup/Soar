@@ -63,11 +63,11 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->parent_action = NULL;
     p->level = 0;
 
-    p->identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
-    p->identity_sets = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
-    p->rhs_funcs = { NULL, NULL, NULL, NULL };
-    p->clone_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
-    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->inst_identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
+    p->identities = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->rhs_func_inst_identities = { NULL, NULL, NULL, NULL };
+    p->chunk_inst_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
+    p->rhs_func_chunk_inst_identities = { NULL, NULL, NULL, NULL };
     p->was_unbound_vars.id = pWas_unbound_vars.id;
     p->was_unbound_vars.attr = pWas_unbound_vars.attr;
     p->was_unbound_vars.value = pWas_unbound_vars.value;
@@ -110,7 +110,7 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     p->next_result = NIL;
     p->parent_action = NULL;
 
-    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->rhs_func_chunk_inst_identities = { NULL, NULL, NULL, NULL };
     p->was_unbound_vars = { false, false, false, false };
 
     /* Now copy over stuff that we do want */
@@ -129,21 +129,21 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
 
-    p->identities = {pPref->identities.id, pPref->identities.attr, pPref->identities.value, pPref->identities.referent};
-    p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
+    p->inst_identities = {pPref->inst_identities.id, pPref->inst_identities.attr, pPref->inst_identities.value, pPref->inst_identities.referent};
+    p->chunk_inst_identities = {pPref->chunk_inst_identities.id, pPref->chunk_inst_identities.attr, pPref->chunk_inst_identities.value, pPref->chunk_inst_identities.referent};
 
-    p->identity_sets = { NULL, NULL, NULL, NULL };
-    set_pref_identity_set(thisAgent, p, ID_ELEMENT, pPref->identity_sets.id);
-    set_pref_identity_set(thisAgent, p, ATTR_ELEMENT, pPref->identity_sets.attr);
-    set_pref_identity_set(thisAgent, p, VALUE_ELEMENT, pPref->identity_sets.value);
-    set_pref_identity_set(thisAgent, p, REFERENT_ELEMENT, pPref->identity_sets.referent);
+    p->identities = { NULL, NULL, NULL, NULL };
+    set_pref_identity(thisAgent, p, ID_ELEMENT, pPref->identities.id);
+    set_pref_identity(thisAgent, p, ATTR_ELEMENT, pPref->identities.attr);
+    set_pref_identity(thisAgent, p, VALUE_ELEMENT, pPref->identities.value);
+    set_pref_identity(thisAgent, p, REFERENT_ELEMENT, pPref->identities.referent);
 
     PDI_add(thisAgent, p, true);
 
-    p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
-    p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
-    p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
-    p->rhs_funcs.referent = copy_rhs_value(thisAgent, pPref->rhs_funcs.referent);
+    p->rhs_func_inst_identities.id = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.id);
+    p->rhs_func_inst_identities.attr = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.attr);
+    p->rhs_func_inst_identities.value = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.value);
+    p->rhs_func_inst_identities.referent = copy_rhs_value(thisAgent, pPref->rhs_func_inst_identities.referent);
 
     dprint(DT_PREFS, "Created shallow copy of preference %p (%u)\n", p, p->p_id);
 
@@ -183,19 +183,19 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
-    if (pref->identity_sets.id) IdentitySet_remove_ref(thisAgent, pref->identity_sets.id);
-    if (pref->identity_sets.attr) IdentitySet_remove_ref(thisAgent, pref->identity_sets.attr);
-    if (pref->identity_sets.value) IdentitySet_remove_ref(thisAgent, pref->identity_sets.value);
-    if (pref->identity_sets.referent) IdentitySet_remove_ref(thisAgent, pref->identity_sets.referent);
+    if (pref->identities.id) IdentitySet_remove_ref(thisAgent, pref->identities.id);
+    if (pref->identities.attr) IdentitySet_remove_ref(thisAgent, pref->identities.attr);
+    if (pref->identities.value) IdentitySet_remove_ref(thisAgent, pref->identities.value);
+    if (pref->identities.referent) IdentitySet_remove_ref(thisAgent, pref->identities.referent);
 
-    if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
-    if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);
-    if (pref->rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
-    if (pref->rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->rhs_funcs.referent);
-    if (pref->cloned_rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.id);
-    if (pref->cloned_rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.attr);
-    if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
-    if (pref->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.referent);
+    if (pref->rhs_func_inst_identities.id) deallocate_rhs_value(thisAgent, pref->rhs_func_inst_identities.id);
+    if (pref->rhs_func_inst_identities.attr) deallocate_rhs_value(thisAgent, pref->rhs_func_inst_identities.attr);
+    if (pref->rhs_func_inst_identities.value) deallocate_rhs_value(thisAgent, pref->rhs_func_inst_identities.value);
+    if (pref->rhs_func_inst_identities.referent) deallocate_rhs_value(thisAgent, pref->rhs_func_inst_identities.referent);
+    if (pref->rhs_func_chunk_inst_identities.id) deallocate_rhs_value(thisAgent, pref->rhs_func_chunk_inst_identities.id);
+    if (pref->rhs_func_chunk_inst_identities.attr) deallocate_rhs_value(thisAgent, pref->rhs_func_chunk_inst_identities.attr);
+    if (pref->rhs_func_chunk_inst_identities.value) deallocate_rhs_value(thisAgent, pref->rhs_func_chunk_inst_identities.value);
+    if (pref->rhs_func_chunk_inst_identities.referent) deallocate_rhs_value(thisAgent, pref->rhs_func_chunk_inst_identities.referent);
 
     //debug_refcount_change_end(thisAgent, (pref->inst && pref->in_tm) ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST", " preference deallocation", false);
 

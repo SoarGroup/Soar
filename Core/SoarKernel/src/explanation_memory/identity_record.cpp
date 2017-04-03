@@ -4,7 +4,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "explanation_memory.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
@@ -27,7 +27,7 @@ void identity_record::init(agent* myAgent)
     identity_joins = new id_to_id_map();
 }
 
-void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, IdentitySet* pFromID,  IdentitySet* pToID)
+void identity_record::add_identity_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, Identity* pFromID,  Identity* pToID)
 {
     identity_mapping_list* lInstMappingList;
 
@@ -116,34 +116,34 @@ void identity_record::clear_mappings()
     }
 }
 
-void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pID_Set, id_to_sym_map* pID_Set_Map)
+void generate_identity_sets_from_test(agent* thisAgent, test pTest, uint64_t pInstID, id_set* pIdentity, id_to_sym_map* pID_Set_Map)
 {
     if (pTest->type == CONJUNCTIVE_TEST)
     {
         pTest = pTest->eq_test;
     }
-    if (pTest->identity)
+    if (pTest->inst_identity)
     {
-        if (pID_Set->find(pTest->identity) == pID_Set->end())
+        if (pIdentity->find(pTest->inst_identity) == pIdentity->end())
         {
-            pID_Set->insert(pTest->identity);
-            pID_Set_Map->insert({pTest->identity, pTest->data.referent});
+            pIdentity->insert(pTest->inst_identity);
+            pID_Set_Map->insert({pTest->inst_identity, pTest->data.referent});
             thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         }
     }
 }
 
-void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pID_Set, id_to_sym_map* pID_Set_Map)
+void generate_identity_sets_from_conditions(agent* thisAgent, condition* lhs, uint64_t pInstID, id_set* pIdentity, id_to_sym_map* pID_Set_Map)
 {
     for (condition* lCond = lhs; lCond != NULL; lCond = lCond->next)
     {
         if (lCond->type == CONJUNCTIVE_NEGATION_CONDITION)
         {
-            generate_identity_sets_from_conditions(thisAgent, lCond->data.ncc.top, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_conditions(thisAgent, lCond->data.ncc.top, pInstID, pIdentity, pID_Set_Map);
         } else {
-            generate_identity_sets_from_test(thisAgent, lCond->data.tests.id_test, pInstID, pID_Set, pID_Set_Map);
-            generate_identity_sets_from_test(thisAgent, lCond->data.tests.attr_test, pInstID, pID_Set, pID_Set_Map);
-            generate_identity_sets_from_test(thisAgent, lCond->data.tests.value_test, pInstID, pID_Set, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.id_test, pInstID, pIdentity, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.attr_test, pInstID, pIdentity, pID_Set_Map);
+            generate_identity_sets_from_test(thisAgent, lCond->data.tests.value_test, pInstID, pIdentity, pID_Set_Map);
         }
     }
 }
@@ -304,14 +304,14 @@ void identity_record::print_mapping_list(identity_mapping_list* pMapList, bool p
         else outputManager->printa_sf(thisAgent, "\n");
     }
 }
-void identity_record::record_identity_sets(identity_set_set* identity_sets)
+void identity_record::record_identity_sets(identity_set* identity_sets)
 {
-    IdentitySet* lIdentity;
+    Identity* l_inst_identity;
 
     for (auto it = identity_sets->begin(); it != identity_sets->end(); it++)
     {
-        lIdentity = (*it);
-        (*identity_joins)[lIdentity->idset_id] = lIdentity->super_join->idset_id;
+        l_inst_identity = (*it);
+        (*identity_joins)[l_inst_identity->idset_id] = l_inst_identity->joined_identity->idset_id;
     }
 }
 
@@ -319,7 +319,7 @@ void identity_record::visualize()
 {
     Symbol*             lSym;
     identity_mapping*   lMapping;
-    IdentitySet*        lIdentity;
+    Identity*        l_inst_identity;
 
 //    for (auto it = identity_joins->begin(); it != identity_joins->end(); ++it)
 //    {
