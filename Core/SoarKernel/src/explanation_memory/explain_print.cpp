@@ -221,7 +221,7 @@ void Explanation_Memory::print_instantiation_explanation(instantiation_record* p
     {
         pInstRecord->print_for_explanation_trace(false, printFooter);
     } else {
-        pInstRecord->print_for_wme_trace(printFooter);
+        pInstRecord->print_for_wme_trace(false, printFooter);
     }
 }
 
@@ -231,9 +231,9 @@ void Explanation_Memory::print_chunk_explanation()
 
     if (print_explanation_trace)
     {
-        current_discussed_chunk->print_for_explanation_trace();
+        current_discussed_chunk->chunkInstantiation->print_for_explanation_trace(true, false);
     } else {
-        current_discussed_chunk->print_for_wme_trace();
+        current_discussed_chunk->chunkInstantiation->print_for_wme_trace(true, false);
     }
 //    print_chunk_stats(current_discussed_chunk, false);
 //    outputManager->printa(thisAgent, "\n");

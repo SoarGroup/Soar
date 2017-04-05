@@ -103,7 +103,7 @@ void instantiation_record::record_instantiation_contents(bool isChunkInstantiati
 }
 
 
-void instantiation_record::viz_connect_conditions(bool isChunkInstantiation = false)
+void instantiation_record::viz_connect_conditions(bool isChunkInstantiation)
 {
     condition_record* lCondRecord;
     for (auto it = conditions->begin(); it != conditions->end(); it++)
@@ -242,7 +242,7 @@ id_set* instantiation_record::get_lhs_identities()
     }
     return lhs_identities;
 }
-void instantiation_record::print_for_wme_trace(bool printFooter)
+void instantiation_record::print_for_wme_trace(bool isChunk, bool printFooter)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
 
@@ -357,8 +357,8 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
                 thisAgent->explanationMemory->print_explanation_trace = false;
-//                print_for_wme_trace(printFooter);
-                print_arch_inst_for_explanation_trace(printFooter);
+//                print_for_wme_trace(isChunk, printFooter);
+                print_arch_inst_for_explanation_trace(isChunk, printFooter);
                 thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
@@ -481,7 +481,7 @@ void instantiation_record::print_for_explanation_trace(bool isChunk, bool printF
         }
     }
 }
-void instantiation_record::print_arch_inst_for_explanation_trace(bool printFooter)
+void instantiation_record::print_arch_inst_for_explanation_trace(bool isChunk, bool printFooter)
 {
 
     Output_Manager* outputManager = thisAgent->outputManager;

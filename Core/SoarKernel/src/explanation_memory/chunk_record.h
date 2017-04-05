@@ -72,11 +72,8 @@ class chunk_record
         void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, tc_number pBacktraceNumber, instantiation* pChunkInstantiation);
         void                    generate_dependency_paths();
         void                    end_chunk_record();
-
         void                    excise_chunk_record();
 
-        void                    print_for_explanation_trace();
-        void                    print_for_wme_trace();
         void                    visualize();
 
     private:
@@ -90,10 +87,6 @@ class chunk_record
         production_record*      excised_production;
         uint64_t                time_formed;
         goal_stack_level        match_level;
-
-
-        condition_record_list*  conditions;
-        action_record_list*     actions;
 
         instantiation_record*   chunkInstantiation;
         instantiation_record*   baseInstantiation;
