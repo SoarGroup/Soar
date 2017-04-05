@@ -118,7 +118,6 @@ void Explanation_Memory::print_path_to_base(const inst_record_list* pPathToBase,
             outputManager->printa(thisAgent, pFailedStr);
         }
     }
-    outputManager->printa(thisAgent, "\n");
 }
 
 void Explanation_Memory::print_chunk_actions(action_record_list* pActionRecords, production* pOriginalRule, production_record* pExcisedRule)
@@ -220,7 +219,7 @@ void Explanation_Memory::print_instantiation_explanation(instantiation_record* p
 {
     if (print_explanation_trace)
     {
-        pInstRecord->print_for_explanation_trace(printFooter);
+        pInstRecord->print_for_explanation_trace(false, printFooter);
     } else {
         pInstRecord->print_for_wme_trace(printFooter);
     }
@@ -236,9 +235,9 @@ void Explanation_Memory::print_chunk_explanation()
     } else {
         current_discussed_chunk->print_for_wme_trace();
     }
-    print_chunk_stats(current_discussed_chunk, false);
-    outputManager->printa(thisAgent, "\n");
-    thisAgent->explanationMemory->print_footer(true);
+//    print_chunk_stats(current_discussed_chunk, false);
+//    outputManager->printa(thisAgent, "\n");
+//    thisAgent->explanationMemory->print_footer(true);
 }
 
 void Explanation_Memory::print_explain_summary()
@@ -576,6 +575,8 @@ void Explanation_Memory::print_rules_watched(short pNumToPrint)
 void Explanation_Memory::print_identity_set_explanation()
 {
     assert(current_discussed_chunk);
+    outputManager->printa_sf(thisAgent, "\nIdentity analysis of problem-solving behind rule %y (c %u):\n\n",   current_discussed_chunk->name, current_discussed_chunk->chunkID);
+
     current_discussed_chunk->identity_analysis.print_identities_in_chunk();
     current_discussed_chunk->identity_analysis.print_mappings();
 }
@@ -583,7 +584,7 @@ void Explanation_Memory::print_identity_set_explanation()
 void Explanation_Memory::print_constraints_enforced()
 {
     assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Constraints enforced during formation of chunk %y.\n\nNot yet implemented.\n", current_discussed_chunk->name);
+    outputManager->printa_sf(thisAgent, "\nConstraint analysis of problem-solving behind rule %y (c %u):\n\n",   current_discussed_chunk->name, current_discussed_chunk->chunkID);
 }
 
 

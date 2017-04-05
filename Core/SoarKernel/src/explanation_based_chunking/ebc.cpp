@@ -351,6 +351,14 @@ void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsN
         }
     }
 }
+
+goal_stack_level Explanation_Based_Chunker::get_inst_match_level()
+{
+    if (m_inst)
+        return m_inst->match_goal_level;
+    else return 0;
+}
+
 ebc_timer_container::ebc_timer_container(agent* new_agent): soar_module::timer_container(new_agent)
 {
     instantiation_creation = new ebc_timer("1.00 Instantiation creation", thisAgent, soar_module::timer::one);

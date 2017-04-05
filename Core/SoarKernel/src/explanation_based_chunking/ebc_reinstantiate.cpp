@@ -25,7 +25,13 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest, bool pIsInstanti
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
     }
-    if (test_has_referent(pTest) && pTest->inst_identity && pIsInstantiationCond) pTest->inst_identity = pTest->chunk_inst_identity;
+    if (test_has_referent(pTest) && pTest->inst_identity && pIsInstantiationCond)
+    {
+        uint64_t temp;
+        temp = pTest->inst_identity;
+        pTest->inst_identity = pTest->chunk_inst_identity;
+        pTest->chunk_inst_identity = temp;
+    }
 }
 
 void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pIsInstantiationCond, bool pIsNCC)
@@ -71,12 +77,12 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
             /* This case is rare (if it should happen at all any more).  It occurs when a learning attempt fails
              * and is being reverted to a justification instead */
             reinstantiate_condition(cond, false);
-            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond = copy_condition(thisAgent, cond, false, false, false, false);
             reinstantiate_condition(cond, true);
             lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
         } else {
-            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond = copy_condition(thisAgent, cond, false, false, false, false);
             lCond->bt = cond->bt;
             lCond->inst = m_chunk_inst;
             reinstantiate_condition(lCond, true);

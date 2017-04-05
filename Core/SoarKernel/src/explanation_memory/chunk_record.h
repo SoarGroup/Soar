@@ -85,7 +85,6 @@ class chunk_record
         Symbol*                 name;
         ebc_rule_type           type;
         uint64_t                chunkID;
-        instantiation*          chunkInstantiation;
         uint64_t                chunkInstantiationID;
         uint64_t                original_productionID;
         production_record*      excised_production;
@@ -96,6 +95,7 @@ class chunk_record
         condition_record_list*  conditions;
         action_record_list*     actions;
 
+        instantiation_record*   chunkInstantiation;
         instantiation_record*   baseInstantiation;
         inst_set*               result_instantiations;
         inst_record_set*        result_inst_records;

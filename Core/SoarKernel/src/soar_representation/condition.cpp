@@ -82,6 +82,7 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
     cond->test_for_acceptable_preference = false;
     cond->next = cond->prev = NULL;
     cond->inst = NULL;
+    cond->explain_inst = NULL;
     cond->bt.wme_ = NULL;
     cond->bt.level = NO_WME_LEVEL;
     cond->bt.trace = NULL;
@@ -93,7 +94,7 @@ condition* make_condition(agent* thisAgent, test pId, test pAttr, test pValue)
    Returns a new copy of the given condition.
 ---------------------------------------------------------------- */
 
-condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pStripGoalImpasseTests)
+condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity, bool pStripLiteralConjuncts, bool pCopyInstantiation, bool pStripGoalImpasseTests)
 {
     condition* New;
 
@@ -103,6 +104,13 @@ condition* copy_condition(agent* thisAgent, condition* cond, bool pUnify_variabl
     }
     New = make_condition(thisAgent);
     New->type = cond->type;
+    if (pCopyInstantiation)
+    {
+        New->inst = cond->inst;
+    } else {
+        New->explain_inst = cond->inst;
+        New->bt = cond->bt;
+    }
 
     switch (cond->type)
     {
@@ -146,11 +154,7 @@ void copy_condition_list(agent* thisAgent,
     prev = NIL;
     while (top_cond)
     {
-        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pStripGoalImpasseTests);
-        if (pCopyInstantiation)
-        {
-            New->inst = top_cond->inst;
-        }
+        New = copy_condition(thisAgent, top_cond, pUnify_variablization_identity, pStripLiteralConjuncts, pCopyInstantiation, pStripGoalImpasseTests);
         if (prev)
         {
             prev->next = New;

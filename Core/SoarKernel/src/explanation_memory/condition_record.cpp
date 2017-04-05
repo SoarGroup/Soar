@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-void simplify_identity_in_test(agent* thisAgent, test t)
+void simplify_identity_in_test(agent* thisAgent, test t, bool isChunkInstantiation)
 {
     test new_ct;
 
@@ -36,26 +36,34 @@ void simplify_identity_in_test(agent* thisAgent, test t)
             break;
         case CONJUNCTIVE_TEST:
             for (cons* c = t->data.conjunct_list; c != NIL; c = c->rest)
-                simplify_identity_in_test(thisAgent, static_cast<test>(c->first));
+                simplify_identity_in_test(thisAgent, static_cast<test>(c->first), isChunkInstantiation);
+            /* MToDo | Don't think we really need */
+            assert(!t->identity);
             clear_test_identity(thisAgent, t);
             break;
         default:
-            if (t->identity)
+            if(isChunkInstantiation)
             {
-                t->inst_identity = t->identity->joined_identity->idset_id;
-                if (t->identity->idset_id != t->inst_identity)
-                    t->chunk_inst_identity = t->identity->idset_id;
-                else
-                    t->chunk_inst_identity = LITERAL_VALUE;
-            } else {
+                t->inst_identity = t->chunk_inst_identity;
                 t->chunk_inst_identity = LITERAL_VALUE;
+            } else {
+                if (t->identity)
+                {
+                    t->inst_identity = t->identity->joined_identity->idset_id;
+                    if (t->identity->idset_id != t->inst_identity)
+                        t->chunk_inst_identity = t->identity->idset_id;
+                    else
+                        t->chunk_inst_identity = LITERAL_VALUE;
+                } else {
+                    t->chunk_inst_identity = LITERAL_VALUE;
+                }
             }
             clear_test_identity(thisAgent, t);
             break;
     }
 }
 
-void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
+void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation)
 {
     thisAgent = myAgent;
     conditionID = pCondID;
@@ -64,14 +72,14 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     path_to_base = NULL;
     my_instantiation = NULL;
 
-    dprint(DT_EXPLAIN_CONDS, "   Creating condition %u for %l.\n", conditionID, pCond);
+    dprint(DT_EXPLAIN_CONDS, "Creating condition %u for %l.\n", conditionID, pCond);
 
     condition_tests.id = copy_test(thisAgent, pCond->data.tests.id_test);
     condition_tests.attr = copy_test(thisAgent, pCond->data.tests.attr_test);
     condition_tests.value = copy_test(thisAgent, pCond->data.tests.value_test);
-    simplify_identity_in_test(thisAgent, condition_tests.id);
-    simplify_identity_in_test(thisAgent, condition_tests.attr);
-    simplify_identity_in_test(thisAgent, condition_tests.value);
+    simplify_identity_in_test(thisAgent, condition_tests.id, isChunkInstantiation);
+    simplify_identity_in_test(thisAgent, condition_tests.attr, isChunkInstantiation);
+    simplify_identity_in_test(thisAgent, condition_tests.value, isChunkInstantiation);
     dprint(DT_EXPLAIN_CONDS, "   ...simplified condition: (%t ^%t %t) [(%g ^%g %g)]\n", condition_tests.id, condition_tests.attr, condition_tests.value, condition_tests.id, condition_tests.attr, condition_tests.value);
     test_for_acceptable_preference = pCond->test_for_acceptable_preference;
 
@@ -93,13 +101,46 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID)
     /* Cache the pref to make it easier to connect this condition to the action that created
      * the preference later. Tricky because NCs and NCCs have neither and architectural
      * may have neither */
-    cached_pref = pCond->bt.trace;
+    parent_instantiation = NULL;
     cached_wme = pCond->bt.wme_;
+    break_if_id_matches(conditionID, 30);
     if (pCond->bt.trace)
     {
-        parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
+        if (isChunkInstantiation)
+        {
+            assert(pCond->explain_inst);
+            my_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
+            assert(my_instantiation);
+
+            cached_pref = pCond->bt.trace;
+            parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
+
+            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for chunk instantiation cond %l is now %u %u %u\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0, cached_pref ? cached_pref->p_id : 0);
+            if (pCond->bt.trace)
+            {
+                dprint(DT_EXPLAIN_CONDS, "   (parent inst record found %s) inst match level %d, pref level %d, pref inst i%u, explain inst i%u\n", parent_instantiation ? "Yes" : "No", thisAgent->explanationBasedChunker->get_inst_match_level(), pCond->bt.trace->level, pCond->bt.trace->inst->i_id, pCond->explain_inst->i_id);
+                dprint(DT_EXPLAIN_CONDS, "   (bt pref id %u) (bt pref found id %u) (explain pref id %u)\n", pCond->bt.trace ? pCond->bt.trace->p_id : 0, cached_pref ? cached_pref->p_id : 0);
+
+            }
+        }
+        else
+        {
+            cached_pref = pCond->bt.trace;
+            parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->bt.trace->inst);
+            my_instantiation = pInst;
+
+            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond %l is now %u %u %u\n", pCond, my_instantiation->get_instantiationID(), parent_instantiation ? parent_instantiation->get_instantiationID() : 0, cached_pref ? cached_pref->p_id : 0);
+            dprint(DT_EXPLAIN_CONDS, "   (parent inst record found %s)  inst match level %d, pref level %d, pref inst i%u\n", parent_instantiation ? "Yes" : "No", thisAgent->explanationBasedChunker->get_inst_match_level(), pCond->bt.trace->level, pCond->bt.trace->inst->i_id);
+            dprint(DT_EXPLAIN_CONDS, "   (bt pref id %u) (bt pref found id %u) (explain pref id %u)\n", pCond->bt.trace ? pCond->bt.trace->p_id : 0, cached_pref ? cached_pref->p_id : 0);
+        }
     } else {
-        parent_instantiation = NULL;
+        if (pCond->explain_inst)
+        {
+            cached_pref = NULL;
+            my_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
+            parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
+            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond with no pref %l is now %u %u N/A\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0);
+        }
     }
     dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
 }
@@ -128,7 +169,6 @@ void condition_record::connect_to_action()
 {
     if (parent_instantiation && cached_pref)
     {
-        assert(cached_pref);
         parent_action = parent_instantiation->find_rhs_action(cached_pref);
         assert(parent_action);
         dprint(DT_EXPLAIN_CONNECT, "   Linked condition %u (%t ^%t %t) to a%u in i%u.\n", conditionID, condition_tests.id, condition_tests.attr, condition_tests.value, parent_action->get_actionID(), parent_instantiation->get_instantiationID());
@@ -149,7 +189,7 @@ void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
     }
 }
 
-void condition_record::update_condition(condition* pCond, instantiation_record* pInst)
+void condition_record::update_condition(condition* pCond, instantiation_record* pInst, bool isChunkInstantiation)
 {
     //dprint(DT_EXPLAIN_UPDATE, "   Updating condition c%u for %l.\n", conditionID, pCond);
     if (!matched_wme.id)

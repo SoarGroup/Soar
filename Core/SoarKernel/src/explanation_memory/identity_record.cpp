@@ -174,7 +174,7 @@ void identity_record::print_identity_mappings_for_instantiation(instantiation_re
 
 void identity_record::print_identities_in_chunk()
 {
-    thisAgent->outputManager->printa_sf(thisAgent, "\nLearned rules contained %u identities: ", identities_in_chunk->size());
+    thisAgent->outputManager->printa_sf(thisAgent, "\nLearned rule contained %u identities: ", identities_in_chunk->size());
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)
     {
         thisAgent->outputManager->printa_sf(thisAgent, "%u ", (*it));
@@ -189,7 +189,7 @@ void identity_record::print_instantiation_mappings(uint64_t pI_ID)
     {
         thisAgent->outputManager->printa_sf(thisAgent, "No identity set unifications for instantiation %u.\n", pI_ID);
     } else {
-        thisAgent->outputManager->printa_sf(thisAgent, "Identity set unifications:\n\n", pI_ID);
+        thisAgent->outputManager->printa_sf(thisAgent, "Identity operations:\n\n", pI_ID);
         print_mapping_list(lIterInst->second, false);
         print_mapping_list(lIterInst->second, true);
     }

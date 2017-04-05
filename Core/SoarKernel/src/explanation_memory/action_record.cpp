@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
+void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv, bool isChunkInstantiation)
 {
     if (!rv || (rhs_value_is_reteloc(rv)) || (rhs_value_is_unboundvar(rv))) return;
 
@@ -28,7 +28,7 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
         cons* fl = rhs_value_to_funcall_list(rv);
         for (cons* c = fl->rest; c != NIL; c = c->rest)
         {
-            simplify_identity_in_rhs_value(thisAgent, static_cast<char*>(c->first));
+            simplify_identity_in_rhs_value(thisAgent, static_cast<char*>(c->first), isChunkInstantiation);
         }
         return;
     }
@@ -41,7 +41,7 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
         if (!lID) lID = r->identity->get_clone_identity();
         if (!lID) lID = r->inst_identity;
         r->inst_identity = lID;
-        if (r->identity->idset_id != r->inst_identity)
+        if (!isChunkInstantiation && (r->identity->idset_id != r->inst_identity))
         {
             r->identity_id_unjoined = r->identity->idset_id;
         }
@@ -51,28 +51,38 @@ void simplify_identity_in_rhs_value(agent* thisAgent, rhs_value rv)
     r->identity = NULL;
 }
 
-void simplify_identity_in_action(agent* thisAgent, action* pAction)
+void simplify_identity_in_action(agent* thisAgent, action* pAction, bool isChunkInstantiation)
 {
-    simplify_identity_in_rhs_value(thisAgent, pAction->id);
-    simplify_identity_in_rhs_value(thisAgent, pAction->attr);
-    simplify_identity_in_rhs_value(thisAgent, pAction->value);
+
+    simplify_identity_in_rhs_value(thisAgent, pAction->id, isChunkInstantiation);
+    simplify_identity_in_rhs_value(thisAgent, pAction->attr, isChunkInstantiation);
+    simplify_identity_in_rhs_value(thisAgent, pAction->value, isChunkInstantiation);
     if (preference_is_binary(pAction->preference_type))
-        simplify_identity_in_rhs_value(thisAgent, pAction->referent);
+        simplify_identity_in_rhs_value(thisAgent, pAction->referent, isChunkInstantiation);
 }
 
 
-void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
+void simplify_identity_in_preference(agent* thisAgent, preference* pPref, bool isChunkInstantiation)
 {
     uint64_t temp;
     if (pPref->identities.id)
     {
 //        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.id, pPref->clone_identities.id, pPref->identity_sets.id->idset_id, pPref->identity_sets.id->super_join->idset_id, pPref->identity_sets.id->clone_identity, pPref->identity_sets.id->super_join->clone_identity);
-        pPref->inst_identities.id = pPref->identities.id->joined_identity->idset_id;
-        if (pPref->identities.id->idset_id != pPref->inst_identities.id)
+
+        if (isChunkInstantiation)
         {
-            pPref->chunk_inst_identities.id = pPref->identities.id->idset_id;
-        } else {
+            pPref->inst_identities.id = pPref->chunk_inst_identities.id;
             pPref->chunk_inst_identities.id = LITERAL_VALUE;
+        }
+        else
+        {
+            pPref->inst_identities.id = pPref->identities.id->joined_identity->idset_id;
+            if (pPref->identities.id->idset_id != pPref->inst_identities.id)
+            {
+                pPref->chunk_inst_identities.id = pPref->identities.id->idset_id;
+            } else {
+                pPref->chunk_inst_identities.id = LITERAL_VALUE;
+            }
         }
 //        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.id, pPref->clone_identities.id);
         set_pref_identity(thisAgent, pPref, ID_ELEMENT, NULL_IDENTITY_SET);
@@ -81,7 +91,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
     {
         temp = pPref->inst_identities.id;
         pPref->inst_identities.id = pPref->chunk_inst_identities.id;
-        if (temp == pPref->inst_identities.id)
+        if (isChunkInstantiation || (temp == pPref->inst_identities.id))
         {
             pPref->chunk_inst_identities.id = LITERAL_VALUE;
         } else {
@@ -90,12 +100,20 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
     }
     if (pPref->identities.attr)
     {
-        pPref->inst_identities.attr = pPref->identities.attr->joined_identity->idset_id;
-        if (pPref->identities.attr->idset_id != pPref->inst_identities.attr)
+        if (isChunkInstantiation)
         {
-            pPref->chunk_inst_identities.attr = pPref->identities.attr->idset_id;
-        } else {
+            pPref->inst_identities.attr = pPref->chunk_inst_identities.attr;
             pPref->chunk_inst_identities.attr = LITERAL_VALUE;
+        }
+        else
+        {
+            pPref->inst_identities.attr = pPref->identities.attr->joined_identity->idset_id;
+            if (pPref->identities.attr->idset_id != pPref->inst_identities.attr)
+            {
+                pPref->chunk_inst_identities.attr = pPref->identities.attr->idset_id;
+            } else {
+                pPref->chunk_inst_identities.attr = LITERAL_VALUE;
+            }
         }
         set_pref_identity(thisAgent, pPref, ATTR_ELEMENT, NULL_IDENTITY_SET);
     }
@@ -103,7 +121,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
     {
         temp = pPref->inst_identities.attr;
         pPref->inst_identities.attr = pPref->chunk_inst_identities.attr;
-        if (temp == pPref->inst_identities.attr)
+        if (isChunkInstantiation || (temp == pPref->inst_identities.attr))
         {
             pPref->chunk_inst_identities.attr = LITERAL_VALUE;
         } else {
@@ -113,23 +131,28 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
 
     if (pPref->identities.value)
     {
-//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u %u %u %u = ", pPref->identities.value, pPref->clone_identities.value, pPref->identity_sets.value->idset_id, pPref->identity_sets.value->super_join->idset_id, pPref->identity_sets.value->clone_identity, pPref->identity_sets.value->super_join->clone_identity);
-        break_if_id_matches(pPref->chunk_inst_identities.value, 40);
-        pPref->inst_identities.value = pPref->identities.value->joined_identity->idset_id;
-        if (pPref->identities.value->idset_id != pPref->inst_identities.value)
+        if (isChunkInstantiation)
         {
-            pPref->chunk_inst_identities.value = pPref->identities.value->idset_id;
-        } else {
+            pPref->inst_identities.value = pPref->chunk_inst_identities.value;
             pPref->chunk_inst_identities.value = LITERAL_VALUE;
         }
-//        thisAgent->outputManager->printa_sf(thisAgent, "%u %u\n", pPref->identities.value, pPref->clone_identities.value);
+        else
+        {
+            pPref->inst_identities.value = pPref->identities.value->joined_identity->idset_id;
+            if (pPref->identities.value->idset_id != pPref->inst_identities.value)
+            {
+                pPref->chunk_inst_identities.value = pPref->identities.value->idset_id;
+            } else {
+                pPref->chunk_inst_identities.value = LITERAL_VALUE;
+            }
+        }
         set_pref_identity(thisAgent, pPref, VALUE_ELEMENT, NULL_IDENTITY_SET);
     }
     else if (pPref->chunk_inst_identities.value)
     {
         temp = pPref->inst_identities.value;
         pPref->inst_identities.value = pPref->chunk_inst_identities.value;
-        if (temp == pPref->inst_identities.value)
+        if (isChunkInstantiation || (temp == pPref->inst_identities.value))
         {
             pPref->chunk_inst_identities.value = LITERAL_VALUE;
         } else {
@@ -142,7 +165,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         if (pPref->identities.referent)
         {
             pPref->inst_identities.referent = pPref->identities.referent->joined_identity->idset_id;
-            if (pPref->identities.referent->idset_id != pPref->inst_identities.referent)
+            if (!isChunkInstantiation && (pPref->identities.referent->idset_id != pPref->inst_identities.referent))
             {
                 pPref->chunk_inst_identities.referent = pPref->identities.referent->idset_id;
             }
@@ -152,7 +175,7 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
         {
             temp = pPref->inst_identities.referent;
             pPref->inst_identities.referent = pPref->chunk_inst_identities.referent;
-            if (temp == pPref->inst_identities.referent)
+            if (isChunkInstantiation || (temp == pPref->inst_identities.referent))
             {
                 pPref->chunk_inst_identities.referent = LITERAL_VALUE;
             } else {
@@ -160,24 +183,25 @@ void simplify_identity_in_preference(agent* thisAgent, preference* pPref)
             }
         }
     }
-    if (pPref->rhs_func_inst_identities.id) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.id);
-    if (pPref->rhs_func_inst_identities.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.attr);
-    if (pPref->rhs_func_inst_identities.value) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.value);
-    if (pPref->rhs_func_inst_identities.referent) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.referent);
+    if (pPref->rhs_func_inst_identities.id) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.id, isChunkInstantiation);
+    if (pPref->rhs_func_inst_identities.attr) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.attr, isChunkInstantiation);
+    if (pPref->rhs_func_inst_identities.value) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.value, isChunkInstantiation);
+    if (pPref->rhs_func_inst_identities.referent) simplify_identity_in_rhs_value(thisAgent, pPref->rhs_func_inst_identities.referent, isChunkInstantiation);
 }
 
-void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID)
+void action_record::init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID, bool isChunkInstantiation)
 {
     thisAgent               = myAgent;
     actionID                = pActionID;
     instantiated_pref       = shallow_copy_preference(thisAgent, pPref);
     original_pref           = pPref;
-    simplify_identity_in_preference(thisAgent, instantiated_pref);
+
+    simplify_identity_in_preference(thisAgent, instantiated_pref, isChunkInstantiation);
 
     if (pAction)
     {
         variablized_action = copy_action(thisAgent, pAction);
-        simplify_identity_in_action(thisAgent, variablized_action);
+        simplify_identity_in_action(thisAgent, variablized_action, isChunkInstantiation);
     } else {
         variablized_action = NULL;
     }

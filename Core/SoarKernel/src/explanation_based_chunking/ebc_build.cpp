@@ -432,8 +432,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
         /* --- make the instantiated condition --- */
         dprint(DT_BACKTRACE, "   processing ground condition: %l\n", ground);
 
-        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true);
-        c_vrblz->inst = ground->inst;
+        c_vrblz = copy_condition(thisAgent, ground, true, should_unify_and_simplify, true, true);
 
         /* Find tests in conditions that we can attach transitive constraints to */
         if (ebc_settings[SETTING_EBC_LEARNING_ON])
@@ -494,8 +493,7 @@ void Explanation_Based_Chunker::create_initial_chunk_condition_lists()
                 print_condition(thisAgent, cc->cond);
             }
             dprint(DT_BUILD_CHUNK_CONDS, "...adding negated condition %l\n", cc->cond);
-            c_vrblz = copy_condition(thisAgent, cc->cond, true, false);
-            c_vrblz->inst = cc->cond->inst;
+            c_vrblz = copy_condition(thisAgent, cc->cond, true, false, true, true);
 
             add_cond(&c_vrblz, &prev_vrblz, &first_vrblz);
         }

@@ -21,7 +21,7 @@ class action_record
         action_record() {};
         ~action_record() {};
 
-        void init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID);
+        void init(agent* myAgent, preference* pPref, action* pAction, uint64_t pActionID, bool isChunkInstantiation);
         void clean_up();
 
         uint64_t                get_actionID()   { return actionID; };

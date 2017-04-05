@@ -81,14 +81,8 @@ typedef struct condition_struct
     bt_info                     bt;             /* backtrace info for top-level positive cond's:
                                                    used by chunking and the rete */
     reorder_info                reorder;        /* used only during reordering */
-    instantiation*              inst;           /* ID for the instantiation where this condition
-                                                   came to the grounds from.  This is used by
-                                                   EBC's explain mechanism to properly link
-                                                   the chunk condition to the proper condition
-                                                   in the explanation trace.  We could not used
-                                                   preferences because architectural wme's
-                                                   don't have preferences.  Used only during
-                                                   chunking.*/
+    instantiation*              inst;
+    instantiation*              explain_inst;
 
 } condition;
 
@@ -98,7 +92,7 @@ typedef struct condition_struct
 
 condition*  make_condition(agent* thisAgent, test pId = NULL, test pAttr = NULL, test pValue = NULL);
 uint32_t    hash_condition(agent* thisAgent, condition* cond);
-condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pStripGoalImpasseTests = false);
+condition*  copy_condition(agent* thisAgent, condition* cond, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool pCopyInstantiation = false, bool pStripGoalImpasseTests = false);
 void        copy_condition_list(agent* thisAgent, condition* top_cond, condition** dest_top,
                          condition** dest_bottom, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false,
                          bool pCopyInstantiation = false, bool pStripGoalImpasseTests = false);

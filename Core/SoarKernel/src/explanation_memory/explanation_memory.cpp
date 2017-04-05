@@ -267,7 +267,7 @@ void Explanation_Memory::record_chunk_contents(production* pProduction, conditio
     }
 }
 
-condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
+condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst, bool pMakeNegative, bool isChunkInstantiation)
 {
     dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
@@ -276,8 +276,7 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
     {
         thisAgent->memoryManager->allocate_with_pool(MP_condition_record, &lCondRecord);
         increment_counter(condition_id_count);
-        lCondRecord->init(thisAgent, pCond, condition_id_count);
-        lCondRecord->set_instantiation(pInst);
+        lCondRecord->init(thisAgent, pCond, condition_id_count, pInst, isChunkInstantiation);
         if (pMakeNegative)
         {
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;
@@ -294,13 +293,13 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
         condition_record* new_cond_record;
         for (condition* cond = pCond->data.ncc.top; cond != NIL; cond = cond->next)
         {
-            new_cond_record = add_condition(pCondList, cond, pInst, true);
+            new_cond_record = add_condition(pCondList, cond, pInst, true, isChunkInstantiation);
         }
         return new_cond_record;
     }
 }
 
-instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst, uint64_t pChunkID)
+instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst, uint64_t pChunkID, bool isChunkInstantiation)
 {
     if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
@@ -333,9 +332,8 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
 
         instantiation_record* lInstRecord;
         thisAgent->memoryManager->allocate_with_pool(MP_instantiation_record, &lInstRecord);
-        lInstRecord->init(thisAgent, pInst);
+        lInstRecord->init(thisAgent, pInst, isChunkInstantiation);
         instantiations->insert({pInst->i_id, lInstRecord});
-        lInstRecord->terminal = lIsTerminalInstantiation;
         lInstRecord->creating_chunk = pChunkID;
         dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
             pInst->i_id, pInst->prod_name);
@@ -355,7 +353,6 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         pInst->explain_tc_num = backtrace_number;
 
         instantiation_record* lInstRecord = get_instantiation(pInst);
-        lInstRecord->terminal = lIsTerminalInstantiation;
         dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
@@ -370,13 +367,13 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
     return get_instantiation(pInst);
 }
 
-action_record* Explanation_Memory::add_result(preference* pPref, action* pAction)
+action_record* Explanation_Memory::add_result(preference* pPref, action* pAction, bool isChunkInstantiation)
 {
     increment_counter(action_id_count);
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord;
     thisAgent->memoryManager->allocate_with_pool(MP_action_record, &lActionRecord);
-    lActionRecord->init(thisAgent, pPref, pAction, action_id_count);
+    lActionRecord->init(thisAgent, pPref, pAction, action_id_count, isChunkInstantiation);
 
     all_actions->insert({lActionRecord->actionID, lActionRecord});
     return lActionRecord;

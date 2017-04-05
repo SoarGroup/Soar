@@ -119,7 +119,7 @@ class Explanation_Memory
         void                    add_identity(Identity* pNewIdentity, Symbol* pGoal);
         void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, Identity* pFromJoinSet, Identity* pToJoinSet);
 
-        instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
+        instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0, bool isChunkInstantiation = false);
         chunk_record*           get_current_discussed_chunk() { return current_discussed_chunk; };
 
         void increment_stat_duplicates(production* duplicate_rule);
@@ -227,8 +227,8 @@ class Explanation_Memory
         void                    initialize_counters();
         chunk_record*           get_chunk_record(Symbol* pChunkName);
         instantiation_record*   get_instantiation(instantiation* pInst);
-        condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false);
-        action_record*          add_result(preference* pPref, action* pAction = NULL);
+        condition_record*       add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst = NULL, bool pMakeNegative = false, bool isChunkInstantiation = false);
+        action_record*          add_result(preference* pPref, action* pAction, bool isChunkInstantiation);
         uint64_t                add_production_id_if_necessary(production* pProd);
         production*             get_production(uint64_t pId);
 
