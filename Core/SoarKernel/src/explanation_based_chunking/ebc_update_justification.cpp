@@ -132,7 +132,7 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
     else
     {
         t->inst_identity = LITERAL_VALUE;
-        if (t->identity) t->chunk_inst_identity = t->identity->get_clone_identity();;
+        t->chunk_inst_identity = LITERAL_VALUE;
         clear_test_identity(thisAgent, t);
         return false;
     }
@@ -184,23 +184,24 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
 {
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        if (pTest->eq_test->identity && !pTest->eq_test->identity->literalized())
+        if (pTest->eq_test->identity)
         {
-            dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g from %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-            pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
-            pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_identity();
+            dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g in %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
+            if (!pTest->eq_test->identity->literalized())
+            {
+                pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
+                pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_identity();
+            } else {
+                pTest->eq_test->inst_identity = LITERAL_VALUE;
+                pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
+            }
             clear_test_identity(thisAgent, pTest->eq_test);
             dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g [%u]\n", pTest->eq_test, pTest->eq_test, pTest->eq_test->chunk_inst_identity);
         } else {
-            if (pTest->eq_test->identity)
-            {
-                pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_identity();
-                clear_test_identity(thisAgent, pTest->eq_test);
-            } else
-            {
-                pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
-            }
+            dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t in %t with no identity \n", pTest->eq_test, pTest);
             pTest->eq_test->inst_identity = LITERAL_VALUE;
+            pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
+            dprint(DT_LHS_VARIABLIZATION, "...to produce %t 0 [0]\n", pTest->eq_test);
         }
     }
 }

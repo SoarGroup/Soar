@@ -264,7 +264,7 @@ void action_record::print_rhs_instantiation_value(const rhs_value pRHS_value, co
     } else {
         if (pPref_func) {
             thisAgent->outputManager->set_print_test_format(false, true);
-            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, true, NULL, NULL, true);
+            thisAgent->outputManager->rhs_value_to_string(pPref_func, tempString, true, NULL, NULL, false);
             thisAgent->outputManager->printa_sf(thisAgent, "[%s]", tempString.c_str());
         } else {
             if (!(pID || pIDClone))
