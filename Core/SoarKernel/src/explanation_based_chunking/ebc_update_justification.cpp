@@ -116,21 +116,28 @@ bool Explanation_Based_Chunker::update_identities_in_test_by_lookup(test t, bool
 {
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
 
-    if (t->identity && t->identity->get_clone_identity())
+    if (t->identity)
     {
         dprint(DT_LHS_VARIABLIZATION, "Updating identity by lookup %t %g...with %u\n", t, t, t->identity->get_clone_identity());
-        t->inst_identity = t->identity->get_clone_identity();
+        if (!t->identity->literalized() && t->identity->get_clone_identity())
+        {
+            t->inst_identity = t->identity->get_clone_identity();
+        } else {
+            t->inst_identity = LITERAL_VALUE;
+        }
+        t->chunk_inst_identity = t->identity->get_identity();
         clear_test_identity(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
         t->inst_identity = LITERAL_VALUE;
+        if (t->identity) t->chunk_inst_identity = t->identity->get_clone_identity();;
         clear_test_identity(thisAgent, t);
         return false;
     }
 
-    return true;
+    return (t->inst_identity != LITERAL_VALUE);
 }
 
 void Explanation_Based_Chunker::update_identities_in_tests_by_lookup(test t, bool pSkipTopLevelEqualities)
@@ -180,13 +187,20 @@ void Explanation_Based_Chunker::update_identities_in_equality_tests(test pTest)
         if (pTest->eq_test->identity && !pTest->eq_test->identity->literalized())
         {
             dprint(DT_LHS_VARIABLIZATION, "Updating equality test %t %g from %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-            pTest->eq_test->inst_identity = pTest->eq_test->identity->get_clone_identity();
-            if (!pTest->eq_test->inst_identity) pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
+            pTest->eq_test->inst_identity = pTest->eq_test->identity->update_clone_id();
+            pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_identity();
             clear_test_identity(thisAgent, pTest->eq_test);
-            dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g\n", pTest->eq_test, pTest->eq_test);
+            dprint(DT_LHS_VARIABLIZATION, "...to produce %t %g [%u]\n", pTest->eq_test, pTest->eq_test, pTest->eq_test->chunk_inst_identity);
         } else {
+            if (pTest->eq_test->identity)
+            {
+                pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_identity();
+                clear_test_identity(thisAgent, pTest->eq_test);
+            } else
+            {
+                pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
+            }
             pTest->eq_test->inst_identity = LITERAL_VALUE;
-            if (pTest->eq_test->identity) clear_test_identity(thisAgent, pTest->eq_test);
         }
     }
 }

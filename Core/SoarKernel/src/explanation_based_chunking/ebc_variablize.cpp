@@ -58,8 +58,8 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
     {
         if (rs->referent->is_sti())
         {
+            /* Can this still occur now.  I thought it could when trying to variablize a locally promoted STI, but assert hasn't fired in anything.*/
             assert(false);
-            /* I think this can only occur now when trying to variablize a locally promoted STI.*/
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
             return LITERAL_VALUE;
         }
@@ -93,7 +93,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         rs->referent = new_var;
         rs->inst_identity = l_identity->get_identity();
         uint64_t returnID = l_identity->get_clone_identity();
-//        rs->identity_set_wp.reset();
         rs->identity = NULL;
 
         /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
@@ -105,7 +104,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         return returnID;
     }
     rs->identity = NULL;
-//    rs->identity_set_wp.reset();
     rs->inst_identity = LITERAL_VALUE;
     return LITERAL_VALUE;
 }
