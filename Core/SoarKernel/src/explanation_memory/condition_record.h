@@ -37,7 +37,7 @@ class condition_record
         wme*                            get_cached_wme()    { return cached_wme; };
 
         void        connect_to_action();
-        void        viz_connect_to_action(goal_stack_level pMatchLevel);
+        void        viz_connect_to_action(goal_stack_level pMatchLevel, bool isChunkInstantiation = false);
         void        set_path_to_base(inst_record_list* pPath)
                     {   assert(pPath);
                         if (!path_to_base) path_to_base = new inst_record_list();

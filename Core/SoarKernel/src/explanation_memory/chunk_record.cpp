@@ -471,6 +471,25 @@ void chunk_record::print_for_wme_trace()
 
 void chunk_record::visualize()
 {
+    if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
+    {
+        chunkInstantiation->viz_simple_instantiation(viz_simple_inst);
+    } else {
+        if (thisAgent->explanationMemory->print_explanation_trace)
+        {
+            chunkInstantiation->viz_et_instantiation(viz_chunk_record);
+        } else {
+            chunkInstantiation->viz_wm_instantiation(viz_chunk_record);
+        }
+    }
+//    chunkInstantiation->viz_connect_conditions(true);
+    thisAgent->visualizationManager->viz_connect_inst_to_chunk(baseInstantiation->get_instantiationID(), chunkInstantiation->get_instantiationID());
+    for (auto it = result_inst_records->begin(); it != result_inst_records->end(); ++it)
+    {
+        thisAgent->visualizationManager->viz_connect_inst_to_chunk((*it)->get_instantiationID(), chunkInstantiation->get_instantiationID());
+    }
+    return;
+
     Output_Manager* outputManager = thisAgent->outputManager;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
     condition_record* lCond;

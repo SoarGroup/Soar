@@ -64,10 +64,10 @@ class instantiation_record
         condition_record_list*  conditions;
         action_record_list*     actions;
 
-        void                    viz_et_instantiation();
-        void                    viz_wm_instantiation();
-        void                    viz_simple_instantiation();
-        void                    viz_connect_conditions();
+        void                    viz_et_instantiation(visObjectType objectType);
+        void                    viz_wm_instantiation(visObjectType objectType);
+        void                    viz_simple_instantiation(visObjectType objectType);
+        void                    viz_connect_conditions(bool isChunkInstantiation = false);
 
 };
 

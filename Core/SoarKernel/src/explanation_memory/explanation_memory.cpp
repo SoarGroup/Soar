@@ -725,7 +725,6 @@ void Explanation_Memory::visualize_instantiation_graph()
 void Explanation_Memory::visualize_contributors()
 {
     thisAgent->visualizationManager->viz_graph_start();
-    current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
         (*it)->visualize();
@@ -734,6 +733,7 @@ void Explanation_Memory::visualize_contributors()
     {
         (*it)->viz_connect_conditions();
     }
+    current_discussed_chunk->visualize();
     thisAgent->visualizationManager->viz_graph_end();
 }
 

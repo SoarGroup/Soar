@@ -103,7 +103,7 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
      * may have neither */
     parent_instantiation = NULL;
     cached_wme = pCond->bt.wme_;
-    break_if_id_matches(conditionID, 30);
+
     if (pCond->bt.trace)
     {
         if (isChunkInstantiation)
@@ -134,13 +134,14 @@ void condition_record::init(agent* myAgent, condition* pCond, uint64_t pCondID, 
             dprint(DT_EXPLAIN_CONDS, "   (bt pref id %u) (bt pref found id %u) (explain pref id %u)\n", pCond->bt.trace ? pCond->bt.trace->p_id : 0, cached_pref ? cached_pref->p_id : 0);
         }
     } else {
+        cached_pref = NULL;
         if (pCond->explain_inst)
         {
-            cached_pref = NULL;
             my_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
-            parent_instantiation = thisAgent->explanationMemory->get_instantiation(pCond->explain_inst);
-            dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond with no pref %l is now %u %u N/A\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0);
+        } else  {
+            my_instantiation = pInst;
         }
+        dprint(DT_EXPLAIN_CONDS, "   My, Parent instantiation and pref for cond with no pref %l is now %u %u N/A\n", pCond, my_instantiation ? my_instantiation->get_instantiationID() : 0, parent_instantiation ? parent_instantiation->get_instantiationID() : 0);
     }
     dprint(DT_EXPLAIN_CONDS, "   Done creating condition %u.\n", conditionID);
 }
@@ -178,14 +179,18 @@ void condition_record::connect_to_action()
 //    cached_pref = NULL;
 }
 
-void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel)
+void condition_record::viz_connect_to_action(goal_stack_level pMatchLevel, bool isChunkInstantiation)
 {
     if (parent_instantiation && (wme_level_at_firing == pMatchLevel))
     {
         assert(parent_action);
         assert(my_instantiation);
-        thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
-            parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
+        if (isChunkInstantiation)
+        {
+        } else {
+            thisAgent->visualizationManager->viz_connect_action_to_cond(parent_instantiation->get_instantiationID(),
+                parent_action->get_actionID(), my_instantiation->get_instantiationID(), conditionID);
+        }
     }
 }
 

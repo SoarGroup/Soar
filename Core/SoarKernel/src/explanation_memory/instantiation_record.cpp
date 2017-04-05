@@ -103,13 +103,13 @@ void instantiation_record::record_instantiation_contents(bool isChunkInstantiati
 }
 
 
-void instantiation_record::viz_connect_conditions()
+void instantiation_record::viz_connect_conditions(bool isChunkInstantiation = false)
 {
     condition_record* lCondRecord;
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
         lCondRecord = (*it);
-        lCondRecord->viz_connect_to_action(this->match_level);
+        lCondRecord->viz_connect_to_action(this->match_level, isChunkInstantiation);
     }
 }
 
@@ -564,14 +564,14 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool printFoote
     }
 }
 
-void instantiation_record::viz_simple_instantiation()
+void instantiation_record::viz_simple_instantiation(visObjectType objectType)
 {
-    thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_simple_inst);
-    thisAgent->visualizationManager->viz_object_end(viz_simple_inst);
+    thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
+    thisAgent->visualizationManager->viz_object_end(objectType);
 }
 
 
-void instantiation_record::viz_wm_instantiation()
+void instantiation_record::viz_wm_instantiation(visObjectType objectType)
 {
 
     Output_Manager* outputManager = thisAgent->outputManager;
@@ -591,7 +591,7 @@ void instantiation_record::viz_wm_instantiation()
         action* rhs;
 
         thisAgent->outputManager->set_print_test_format(false, true);
-        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -625,11 +625,11 @@ void instantiation_record::viz_wm_instantiation()
         }
         thisAgent->visualizationManager->viz_seperator();
         action_record::viz_action_list(thisAgent, actions, thisAgent->explanationMemory->get_production(original_productionID), rhs, excised_production);
-        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(objectType);
     }
 }
 
-void instantiation_record::viz_et_instantiation()
+void instantiation_record::viz_et_instantiation(visObjectType objectType)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
@@ -660,7 +660,7 @@ void instantiation_record::viz_et_instantiation()
                 assert(rhs);
             } else {
                 thisAgent->explanationMemory->print_explanation_trace = false;
-                viz_wm_instantiation();
+                viz_wm_instantiation(objectType);
                 thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
@@ -676,7 +676,7 @@ void instantiation_record::viz_et_instantiation()
         }
         outputManager->set_print_test_format(true, false);
 
-        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -740,7 +740,7 @@ void instantiation_record::viz_et_instantiation()
         {
             deallocate_condition_list(thisAgent, top);
         }
-        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(objectType);
     }
 }
 
@@ -748,13 +748,13 @@ void instantiation_record::visualize()
 {
     if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
-        viz_simple_instantiation();
+        viz_simple_instantiation(viz_simple_inst);
     } else {
         if (thisAgent->explanationMemory->print_explanation_trace)
         {
-            viz_et_instantiation();
+            viz_et_instantiation(viz_inst_record);
         } else {
-            viz_wm_instantiation();
+            viz_wm_instantiation(viz_inst_record);
         }
     }
 }
