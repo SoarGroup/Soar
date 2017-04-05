@@ -380,25 +380,24 @@ void Output_Manager::vsnprint_sf(agent* thisAgent, std::string &destString, cons
                                     test_to_string(t, destString);
                                 }
                             } else {
-                                destString += "{ ";
-                                bool isFirst = true;
+                                destString += '{';
                                 for (cons *c = t->data.conjunct_list; c != NIL; c = c->rest)
                                 {
+                                    destString += ' ';
                                     ct = static_cast<test>(c->first);
                                     if (ct->inst_identity)
                                     {
                                         if (ct->type != EQUALITY_TEST)
                                         {
                                             destString += test_type_to_string(ct->type);
+                                            destString += ' ';
                                         }
-                                        if (!isFirst) destString += ' '; else isFirst = false;
                                         identity_to_string(thisAgent, ct->inst_identity, ct->identity, destString);
                                     } else {
                                         test_to_string(ct, destString);
                                     }
-                                    destString += ' ';
                                 }
-                                destString += '}';
+                                destString += " }";
                             }
                         } else {
                             destString += '#';

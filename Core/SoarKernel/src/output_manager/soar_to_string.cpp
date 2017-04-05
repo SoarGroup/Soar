@@ -222,16 +222,16 @@ void Output_Manager::condition_to_string(agent* thisAgent, condition* cond, std:
     {
         if (m_print_actual_effective)
         {
-            sprinta_sf(thisAgent, destString, "(%t %s^%t %t)",
+            sprinta_sf(thisAgent, destString, "(%t%s^%t %t)",
             cond->data.tests.id_test,
-                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                (cond->type == NEGATIVE_CONDITION) ? " -": " ",
             cond->data.tests.attr_test, cond->data.tests.value_test);
         }
         if (m_print_identity_effective) {
-            sprinta_sf(thisAgent, destString, "%s(%g %s^%g %g)",
+            sprinta_sf(thisAgent, destString, "%s(%g%s^%g %g)",
                 m_print_actual_effective ? ", " : NULL,
                 cond->data.tests.id_test,
-                (cond->type == NEGATIVE_CONDITION) ? "- ": NULL,
+                (cond->type == NEGATIVE_CONDITION) ? " -": " ",
                 cond->data.tests.attr_test, cond->data.tests.value_test);
         }
     }
@@ -302,24 +302,25 @@ void Output_Manager::rhs_value_to_string(rhs_value rv, std::string &destString, 
         if (m_print_identity_effective && (rsym->inst_identity || rsym->identity_id_unjoined)) {
             Identity* l_identity = rsym->identity;
 
+            if (m_print_actual_effective) destString += ' ';
             if (l_identity)
             {
                 if (l_identity->joined_identity != l_identity)
                 {
-                    sprint_sf(destString, " [%ui%uj%u]", rsym->inst_identity, l_identity->get_sub_identity(), l_identity->get_identity());
+                    sprint_sf(destString, "[%ui%uj%u]", rsym->inst_identity, l_identity->get_sub_identity(), l_identity->get_identity());
                 }
                 else
                 {
-                    sprint_sf(destString, " [%ui%u]", rsym->inst_identity, l_identity->get_sub_identity());
+                    sprint_sf(destString, "[%ui%u]", rsym->inst_identity, l_identity->get_sub_identity());
                 }
             }
             else if (rsym->identity_id_unjoined)
             {
-                sprint_sf(destString, " [%u->%u]", rsym->identity_id_unjoined, rsym->inst_identity);
+                sprint_sf(destString, "[%u->%u]", rsym->identity_id_unjoined, rsym->inst_identity);
             }
             else
             {
-                sprint_sf(destString, " [%u]", rsym->inst_identity);
+                sprint_sf(destString, "[%u]", rsym->inst_identity);
             }
         }
     }
