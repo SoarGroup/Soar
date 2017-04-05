@@ -403,13 +403,13 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
     {
     outputManager->printa_sf(thisAgent, "\nStatistics for learned rule %y (c %u):\n\n",   pChunkRecord->name, pChunkRecord->chunkID);
     }
-    outputManager->printa_sf(thisAgent, "Number of conditions:           %-%u\n",          pChunkRecord->conditions->size());
+    outputManager->printa_sf(thisAgent, "Number of conditions:           %-%u\n",          pChunkRecord->chunkInstantiation->conditions->size());
     #ifdef EBC_DETAILED_STATISTICS
     outputManager->printa_sf(thisAgent, "- Operational constraints:              %-%u\n", pChunkRecord->stats.operational_constraints);
     outputManager->printa_sf(thisAgent, "- Non-operational constraints detected: %-%u\n", pChunkRecord->stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "- Non-operational constraints enforced: %-%u\n\n", pChunkRecord->stats.constraints_attached);
     #endif
-    outputManager->printa_sf(thisAgent, "Number of actions:              %-%u\n",          pChunkRecord->actions->size());
+    outputManager->printa_sf(thisAgent, "Number of actions:              %-%u\n",          pChunkRecord->chunkInstantiation->actions->size());
     outputManager->printa_sf(thisAgent, "Base instantiation:             %-i %u (%y)\n",    pChunkRecord->baseInstantiation->instantiationID, pChunkRecord->baseInstantiation->production_name);
     if (pChunkRecord->result_inst_records->size() > 0)
     {
@@ -435,11 +435,8 @@ void Explanation_Memory::print_chunk_stats(chunk_record* pChunkRecord, bool pPri
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                           Identity Analysis\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
-    outputManager->printa_sf(thisAgent, "Identities created:                                                 %-%u\n", pChunkRecord->stats.identities_created);
+    outputManager->printa_sf(thisAgent, "Identities created in rule's sub-state:                             %-%u\n", pChunkRecord->stats.identities_created);
     outputManager->printa_sf(thisAgent, "Distinct identities in learned rules:                               %-%u\n", pChunkRecord->stats.identities_participated);
-    outputManager->printa_sf(thisAgent, "Identity propagations:                                              %-%u\n", pChunkRecord->stats.identity_propagations);
-    outputManager->printa_sf(thisAgent, "Identity propagations blocked:                                      %-%u\n", pChunkRecord->stats.identity_propagations_blocked);
-    outputManager->printa_sf(thisAgent, "Identity propagations from local singleton:                         %-%u\n", pChunkRecord->stats.identities_joined_local_singleton);
     outputManager->printa_sf(thisAgent, "Identities joined:                                                  %-%u\n", pChunkRecord->stats.identities_joined);
     outputManager->printa_sf(thisAgent, "- To unify two identities propagated into same variable:            %-%u\n", pChunkRecord->stats.identities_joined_variable);
     outputManager->printa_sf(thisAgent, "- To unify two conditions that tested a superstate singleton:       %-%u\n", pChunkRecord->stats.identities_joined_singleton);

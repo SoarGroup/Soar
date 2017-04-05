@@ -53,7 +53,7 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.repaired                          = false;
     stats.repair_failed                     = false;
     stats.did_not_match_wm                  = false;
-    stats.grounding_conditions_added    = 0;
+    stats.grounding_conditions_added        = 0;
     stats.merged_conditions                 = 0;
     stats.merged_disjunctions               = 0;
     stats.merged_disjunction_values         = 0;
@@ -66,13 +66,10 @@ void chunk_record::init(agent* myAgent, uint64_t pChunkID)
     stats.identities_created                = 0;
     stats.identities_joined                 = 0;
     stats.identities_joined_variable        = 0;
-    stats.identities_joined_local_singleton = 0;
     stats.identities_joined_singleton       = 0;
     stats.identities_joined_child_results   = 0;
-    stats.identities_literalized_rhs_literal    = 0;
+    stats.identities_literalized_rhs_literal= 0;
     stats.identities_participated           = 0;
-    stats.identity_propagations             = 0;
-    stats.identity_propagations_blocked     = 0;
     stats.operational_constraints           = 0;
     stats.OSK_instantiations                = 0;
     stats.identities_literalized_rhs_func_arg       = 0;
@@ -182,6 +179,8 @@ void chunk_record::record_chunk_contents(production* pProduction, condition* lhs
     auto lGoalIter = thisAgent->explanationMemory->all_identities_in_goal->find(thisAgent->explanationBasedChunker->m_inst->match_goal);
     assert(lGoalIter != thisAgent->explanationMemory->all_identities_in_goal->end());
     identity_analysis.record_identity_sets(lGoalIter->second);
+    stats.identities_created = lGoalIter->second->size();
+
     dprint(DT_EXPLAIN, "DONE recording chunk contents...\n");
 }
 

@@ -35,7 +35,6 @@ typedef struct chunk_stats_struct {
         uint64_t            identities_created;
         uint64_t            identities_joined;
         uint64_t            identities_joined_variable;
-        uint64_t            identities_joined_local_singleton;
         uint64_t            identities_joined_singleton;
         uint64_t            identities_joined_child_results;
         uint64_t            identities_literalized_rhs_literal;
@@ -44,8 +43,6 @@ typedef struct chunk_stats_struct {
         uint64_t            identities_literalized_rhs_func_compare;
 
         uint64_t            identities_participated;
-        uint64_t            identity_propagations;
-        uint64_t            identity_propagations_blocked;
         uint64_t            operational_constraints;
         uint64_t            OSK_instantiations;
 

@@ -151,13 +151,13 @@ class Explanation_Memory
         void increment_stat_chunks_repaired() { stats.chunks_repaired++;   if (current_recording_chunk) current_recording_chunk->stats.repaired = true; };
         void increment_stat_chunks_reverted();
 
-        void increment_stat_identities_created() { stats.identities_created++; if (current_recording_chunk) current_recording_chunk->stats.identities_created++; };
-        void increment_stat_identities_joined() { stats.identities_joined++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined++; };
-        void increment_stat_identity_propagations() { stats.identity_propagations++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations++; };
-        void increment_stat_identities_propagated_local_singleton() { stats.identities_joined_local_singleton++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined_local_singleton++; };
-        void increment_stat_identity_propagations_blocked() { stats.identity_propagations_blocked++; if (current_recording_chunk) current_recording_chunk->stats.identity_propagations_blocked++; };
-        void increment_stat_OSK_instantiations() { stats.OSK_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.OSK_instantiations++; };
+        void increment_stat_identities_created() { stats.identities_created++;};
+        void increment_stat_identity_propagations() { stats.identity_propagations++;};
+        void increment_stat_identities_propagated_local_singleton() { stats.identities_joined_local_singleton++; };
+        void increment_stat_identity_propagations_blocked() { stats.identity_propagations_blocked++; };
 
+        void increment_stat_identities_joined() { stats.identities_joined++; if (current_recording_chunk) current_recording_chunk->stats.identities_joined++; };
+        void increment_stat_OSK_instantiations() { stats.OSK_instantiations++; if (current_recording_chunk) current_recording_chunk->stats.OSK_instantiations++; };
         void increment_stat_operational_constraints() { stats.operational_constraints++; if (current_recording_chunk) current_recording_chunk->stats.operational_constraints++; };
 
         /* Only occur with the explainer on */
