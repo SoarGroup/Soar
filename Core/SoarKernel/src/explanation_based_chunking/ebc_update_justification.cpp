@@ -289,11 +289,18 @@ void Explanation_Based_Chunker::update_identities_in_rhs_value(const rhs_value p
         {
             lID = rs->identity->get_clone_identity();
             if (!lID)
-                lID = rs->identity->get_identity();
+                rs->identity = NULL_IDENTITY_SET;
+//                lID = rs->identity->get_identity();
         }
         else lID = rs->inst_identity;
 
-        if (lID) rs->identity = thisAgent->explanationBasedChunker->get_identity_for_id(lID);
+        if (lID)
+        {
+            rs->identity = thisAgent->explanationBasedChunker->get_identity_for_id(lID);
+        } else {
+            rs->identity = NULL_IDENTITY_SET;
+            rs->inst_identity = LITERAL_VALUE;
+        }
 
         dprint(DT_RHS_VARIABLIZATION, "...RHS value is now %y [v%u/s%u].\n", rs->referent, rs->inst_identity, rs->identity ? rs->identity->get_identity() : 0);
     }

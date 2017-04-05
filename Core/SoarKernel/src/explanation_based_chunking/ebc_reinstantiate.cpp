@@ -146,6 +146,8 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
         }
     } else {
         dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->inst_identity);
+        rs->inst_identity = LITERAL_VALUE;
+        rs->identity = NULL;
     }
 }
 

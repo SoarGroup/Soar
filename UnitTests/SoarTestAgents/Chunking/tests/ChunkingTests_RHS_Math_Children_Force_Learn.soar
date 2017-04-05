@@ -58,15 +58,20 @@ sp {add-child-with-rhs-function
 
 sp {apply
    (state <s4> ^operator <o2>
-              ^foo <bar>
               ^math <number>
               ^child <child>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^foo <bar>)
    (<ts> ^wme {<> <bar> <value> }
           ^value <new-num>)
    (<o2> ^name make-chunk)
 -->
-   (<ts> ^result <value> ^new-math (* <number> <new-num>) ^math (* <number> 2) ^copied-math <number> ^bar <bar> ^child <child>)}
+   (<ts> ^result <value> 
+         ^new-math (* <number> <new-num>) 
+         ^math (* <number> 2) 
+         ^copied-math <number> 
+         ^bar <bar> 
+         ^child <child>)}
 
 sp {apply*test-done
    (state <s3> ^result <r>)
