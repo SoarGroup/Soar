@@ -18,16 +18,22 @@
  *       someone wanted to use this stuff with multiple agents, they'd need to move the
  *       inventory tracking maps somewhere that they can be agent specific. */
 
-//#define DEBUG_GDS_INVENTORY
-//#define DEBUG_INSTANTIATION_INVENTORY
-//#define DEBUG_PREFERENCE_INVENTORY
-//#define DEBUG_WME_INVENTORY
-//#define DEBUG_IDSET_INVENTORY
-//#define DEBUG_RHS_SYMBOL_INVENTORY
-//#define DEBUG_RHS_FUNCTION_INVENTORY
-//#define DEBUG_ACTION_INVENTORY
-//#define DEBUG_TEST_INVENTORY
+#define DEBUG_GDS_INVENTORY
+#define DEBUG_INSTANTIATION_INVENTORY
+#define DEBUG_PREFERENCE_INVENTORY
+#define DEBUG_WME_INVENTORY
+#define DEBUG_IDSET_INVENTORY
+#define DEBUG_RHS_SYMBOL_INVENTORY
+#define DEBUG_RHS_FUNCTION_INVENTORY
+#define DEBUG_ACTION_INVENTORY
+#define DEBUG_TEST_INVENTORY
 //#define DEBUG_REFCOUNT_CHANGE_REGIONS
+
+#if (defined(DEBUG_GDS_INVENTORY) || defined(DEBUG_INSTANTIATION_INVENTORY) || defined(DEBUG_PREFERENCE_INVENTORY) || \
+     defined(DEBUG_WME_INVENTORY) || defined(DEBUG_IDSET_INVENTORY) || defined(DEBUG_RHS_SYMBOL_INVENTORY) || \
+     defined(DEBUG_RHS_FUNCTION_INVENTORY) || defined(DEBUG_ACTION_INVENTORY) || defined(DEBUG_TEST_INVENTORY))
+    #define DEBUG_SOME_INVENTORY_ON
+#endif
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking

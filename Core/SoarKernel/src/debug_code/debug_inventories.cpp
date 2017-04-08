@@ -25,6 +25,9 @@
 
 void clean_up_debug_inventories(agent* thisAgent)
 {
+    #ifdef DEBUG_SOME_INVENTORY_ON
+        std::cout << std::endl;
+    #endif
     IDI_print_and_cleanup(thisAgent);
     PDI_print_and_cleanup(thisAgent);
     WDI_print_and_cleanup(thisAgent);
