@@ -663,15 +663,16 @@ void Explanation_Based_Chunker::make_clones_of_results()
 void Explanation_Based_Chunker::remove_chunk_instantiation()
 {
     preference* lNext, *lResultPref;
-    bool lRemoved;
 
+    excise_production(thisAgent, m_chunk_inst->prod, false, true);
+    production_remove_ref(thisAgent, m_chunk_inst->prod);
+    m_chunk_inst->prod = NULL;
     m_chunk_inst->in_ms = false;
     for (lResultPref = m_chunk_inst->preferences_generated; lResultPref != NIL; lResultPref = lNext)
     {
         lNext = lResultPref->inst_next;
         dprint(DT_EBC_CLEANUP, "Removing cloned preference %p (%d)\n", lResultPref, lResultPref->reference_count);
-        lRemoved = remove_preference_from_clones_and_deallocate(thisAgent, lResultPref);
-        assert(lRemoved);
+        remove_preference_from_clones_and_deallocate(thisAgent, lResultPref);
     }
     m_chunk_inst = NULL;
 }
@@ -1096,8 +1097,8 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
     IDI_add(thisAgent, m_chunk_inst);
     //debug_refcount_change_end(thisAgent, m_chunk_inst->prod_name->sc->name, " learning rule ", false);
 
-    dprint(DT_VARIABLIZATION_MANAGER, "Chunk adding to RETE: \n%4", m_lhs, m_rhs);
-    dprint(DT_VARIABLIZATION_MANAGER, "Chunk instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
+    dprint(DT_VARIABLIZATION_MANAGER, "Production adding to RETE: \n%4", m_lhs, m_rhs);
+    dprint(DT_VARIABLIZATION_MANAGER, "Instantiation adding to RETE: \n%5", m_chunk_inst->top_of_instantiated_conditions, m_chunk_inst->preferences_generated);
     dprint(DT_DEALLOCATE_INST, "Allocating instantiation %u (match of %y) for new chunk and adding to newly_created_instantion list.\n", m_chunk_inst->i_id, m_inst->prod_name);
 
     /* Add to RETE */
@@ -1135,8 +1136,6 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         {
             clean_up_identities();
         }
-        excise_production(thisAgent, m_chunk_inst->prod, false, true);
-        m_chunk_inst->prod = NULL;
         remove_chunk_instantiation();
         clean_up(l_clean_up_id, true, lLocalTimerPtr);
     }
