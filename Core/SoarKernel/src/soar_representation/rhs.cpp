@@ -43,6 +43,9 @@ void deallocate_rhs_value(agent* thisAgent, rhs_value rv)
 
     if (!rv || rhs_value_is_reteloc(rv) || rhs_value_is_unboundvar(rv)) return;
 
+    /* MToDo | Remove */
+    assert(!rhs_value_is_null(rv));
+
     dprint(DT_DEALLOCATE_RHS_VALUE, "Deallocating rhs value %r\n", rv);
     if (rhs_value_is_funcall(rv))
     {
@@ -538,7 +541,7 @@ rhs_value allocate_rhs_value_for_symbol_no_refcount(agent* thisAgent, Symbol* sy
 {
     rhs_symbol new_rhs_symbol;
 
-    if (!sym) return reinterpret_cast<rhs_value>(NIL);
+    if (!sym) return NULL;
     thisAgent->memoryManager->allocate_with_pool(MP_rhs_symbol, &new_rhs_symbol);
     new_rhs_symbol->referent = sym;
     new_rhs_symbol->inst_identity = pInstIdentity;
@@ -557,7 +560,7 @@ rhs_value allocate_rhs_value_for_symbol(agent* thisAgent, Symbol* sym, uint64_t 
 
     if (!sym)
     {
-        return reinterpret_cast<rhs_value>(NIL);
+        return NULL;
     } else {
         thisAgent->symbolManager->symbol_add_ref(sym);
     }

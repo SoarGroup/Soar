@@ -248,7 +248,7 @@ uint64_t get_rhs_function_first_arg_identity(agent* thisAgent, rhs_value rv)
     fl = rhs_value_to_funcall_list(rv);
     rf = static_cast<rhs_function_struct*>(fl->first);
     firstArg =  static_cast<char*>(fl->rest->first);
-    uint64_t returnVal = rhs_value_to_o_id(static_cast<char*>(firstArg));
+    uint64_t returnVal = rhs_value_to_inst_identity(static_cast<char*>(firstArg));
     thisAgent->explanationBasedChunker->deep_copy_sym_expanded = rhs_value_to_symbol(static_cast<char*>(firstArg));
     return returnVal;
 }
@@ -478,7 +478,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                  * rule_action's to null */
                 rule_action->id = NULL;
             } else {
-                oid_id = rhs_value_to_o_id(rule_action->id);
+                oid_id = rhs_value_to_inst_identity(rule_action->id);
             }
         }
         if (rule_action->attr)
@@ -488,7 +488,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                 f_attr = rule_action->attr;
                 rule_action->attr = NULL;
             } else {
-                oid_attr = rhs_value_to_o_id(rule_action->attr);
+                oid_attr = rhs_value_to_inst_identity(rule_action->attr);
             }
         }
         if (rule_action->value)
@@ -505,7 +505,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                     f_value = rule_action->value;
                 }
             } else {
-                oid_value = rhs_value_to_o_id(rule_action->value);
+                oid_value = rhs_value_to_inst_identity(rule_action->value);
             }
         }
         if (rule_action->referent)
@@ -515,7 +515,7 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                 f_referent = rule_action->referent;
                 rule_action->referent = NULL;
             } else {
-                oid_referent = rhs_value_to_o_id(rule_action->referent);
+                oid_referent = rhs_value_to_inst_identity(rule_action->referent);
             }
         }
     }

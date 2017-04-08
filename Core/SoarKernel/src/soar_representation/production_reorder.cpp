@@ -182,7 +182,7 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 } else {
                     lInstSym = lSym->var->instantiated_sym;
                 }
-                lNewID = rhs_value_to_o_id(lAction->id);
+                lNewID = rhs_value_to_inst_identity(lAction->id);
                 if (isNewUngroundedElement(ungrounded_syms, lInstSym,  lNewID))
                 {
                     chunk_element* lNewUngroundedSym;
