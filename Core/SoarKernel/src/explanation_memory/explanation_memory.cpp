@@ -598,7 +598,7 @@ void Explanation_Memory::clear_identities_in_set(identity_set* lIdenty_set)
     {
         l_inst_identity = (*it);
         dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", l_inst_identity->idset_id);
-        l_inst_identity->remove_ref();
+        IdentitySet_remove_ref(thisAgent, l_inst_identity);
     }
     delete lIdenty_set;
 }
