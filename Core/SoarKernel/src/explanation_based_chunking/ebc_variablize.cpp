@@ -376,7 +376,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     if (preference_is_binary(result->type))
     {
         l_inst_identity = variablize_rhs_value(a->referent, lti_link_tc);
-        if (!result->rhs_func_inst_identities.value)
+        if (!result->rhs_func_inst_identities.referent)
         {
             result->chunk_inst_identities.referent = l_inst_identity;
         } else {
