@@ -3,7 +3,6 @@
 
 #include "kernel.h"
 
-#include "ebc_identity.h"
 #include "mempool_allocator.h"
 #include "stl_structs.h"
 

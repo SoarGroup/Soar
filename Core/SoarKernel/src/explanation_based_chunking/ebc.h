@@ -11,6 +11,7 @@
 #include "kernel.h"
 
 #include "ebc_structs.h"
+#include "ebc_identity.h"
 #include "stl_typedefs.h"
 
 #include <list>
