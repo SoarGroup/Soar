@@ -665,7 +665,8 @@ void Explanation_Based_Chunker::remove_chunk_instantiation()
     preference* lNext, *lResultPref;
 
     excise_production(thisAgent, m_chunk_inst->prod, false, true);
-    production_remove_ref(thisAgent, m_chunk_inst->prod);
+    if (m_rule_type == ebc_chunk)
+        production_remove_ref(thisAgent, m_chunk_inst->prod);
     m_chunk_inst->prod = NULL;
     m_chunk_inst->in_ms = false;
     for (lResultPref = m_chunk_inst->preferences_generated; lResultPref != NIL; lResultPref = lNext)

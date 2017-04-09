@@ -41,7 +41,7 @@ class Identity
 
 #ifndef DEBUG_TRACE_IDSET_REFCOUNTS
         void        add_ref()               { ++refcount; }
-        bool        remove_ref()            { --refcount; return (refcount == 0);}
+        bool        internal_remove_ref()            { --refcount; return (refcount == 0);}
 #else
         void        add_ref()
         {
@@ -51,7 +51,7 @@ class Identity
             if (idset_id == DEBUG_TRACE_IDSET_REFCOUNTS)
                 dprint_noprefix(DT_IDSET_REFCOUNTS, "++ %u --> %u: %s\n", idset_id, refcount, caller_string.c_str());
         }
-        bool        remove_ref()
+        bool        internal_remove_ref()
         {
             --refcount;
             std::string caller_string;

@@ -25,9 +25,6 @@
 
 void clean_up_debug_inventories(agent* thisAgent)
 {
-    #ifdef DEBUG_SOME_INVENTORY_ON
-        std::cout << std::endl;
-    #endif
     IDI_print_and_cleanup(thisAgent);
     PDI_print_and_cleanup(thisAgent);
     WDI_print_and_cleanup(thisAgent);
@@ -117,7 +114,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lPrefString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "GDS inventory:            ");
         for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
         {
             lPrefString = it->second;
@@ -126,33 +122,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, GDI_id_counter);
-            if (GDI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some GDSs were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (GDI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u GDSs were deallocated properly.\n", GDI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No GDSs were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "GDS inventory:            ");
+            if (bugCount)
             {
-                lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, GDI_id_counter);
+                if (GDI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some GDSs were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (GDI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u GDSs were deallocated properly.\n", GDI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No GDSs were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = gds_deallocation_map.begin(); it != gds_deallocation_map.end(); ++it)
+                {
+                    lPrefString = it->second;
+                    if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || GDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "Identity set inventory failure.  Leaked identity sets detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " GDSets leaked";
+            else
+                std::cout << "GDS inventory failure.  Leaked goal dependency sets detected.\n";
             //assert(false);
         }
         GDI_double_deallocation_seen = false;
@@ -197,7 +200,6 @@ void clean_up_debug_inventories(agent* thisAgent)
         std::string lInstString;
         uint64_t bugCount = 0;
 
-        thisAgent->outputManager->printa_sf(thisAgent, "Instantiation inventory:  ");
         for (auto it = IDI_deallocation_map.begin(); it != IDI_deallocation_map.end(); ++it)
         {
             lInstString = it->second;
@@ -206,33 +208,41 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
-        {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, IDI_deallocation_map.size());
-            if (IDI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some instantiations sets were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (IDI_deallocation_map.size())
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u instantiations were deallocated properly.\n", IDI_deallocation_map.size());
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No instantiations were created.\n");
 
-        if (bugCount && (bugCount <= 23))
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            for (auto it = IDI_deallocation_map.begin(); it != IDI_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "Instantiation inventory:  ");
+            if (bugCount)
             {
-                lInstString = it->second;
-                if (!lInstString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lInstString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, IDI_deallocation_map.size());
+                if (IDI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some instantiations sets were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (IDI_deallocation_map.size())
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u instantiations were deallocated properly.\n", IDI_deallocation_map.size());
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No instantiations were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = IDI_deallocation_map.begin(); it != IDI_deallocation_map.end(); ++it)
+                {
+                    lInstString = it->second;
+                    if (!lInstString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lInstString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || IDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "instantiation inventory failure.  Leaked instantiations detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " instantiations leaked";
+            else
+                std::cout << "Instantiation inventory failure.  Leaked instantiations detected.\n";
             //assert(false);
         }
         IDI_double_deallocation_seen = false;
@@ -277,7 +287,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lPrefString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Preference inventory:     ");
         for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
         {
             lPrefString = it->second;
@@ -286,33 +295,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, PDI_id_counter);
-            if (PDI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some preferences were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (PDI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u preferences were deallocated properly.\n", PDI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No preferences were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "Preference inventory:     ");
+            if (bugCount)
             {
-                lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, PDI_id_counter);
+                if (PDI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some preferences were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (PDI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u preferences were deallocated properly.\n", PDI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No preferences were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = pref_deallocation_map.begin(); it != pref_deallocation_map.end(); ++it)
+                {
+                    lPrefString = it->second;
+                    if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || PDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "Preference inventory failure.  Leaked preferences detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " preferences leaked";
+            else
+                std::cout << "Preference inventory failure.  Leaked preferences detected.\n";
             //assert(false);
         }
         PDI_double_deallocation_seen = false;
@@ -358,7 +374,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lAddString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "WME inventory:            ");
         for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
         {
             lAddString = it->second;
@@ -367,33 +382,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, WDI_id_counter);
-            if (WDI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some WMEs were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (WDI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u WMEs were deallocated properly.\n", WDI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No WMEs were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "WME inventory:            ");
+            if (bugCount)
             {
-                lAddString = it->second;
-                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, WDI_id_counter);
+                if (WDI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some WMEs were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (WDI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u WMEs were deallocated properly.\n", WDI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No WMEs were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = wme_deallocation_map.begin(); it != wme_deallocation_map.end(); ++it)
+                {
+                    lAddString = it->second;
+                    if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || WDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "WME inventory failure.  Leaked WMEs detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " WMEs leaked";
+            else
+                std::cout << "WME inventory failure.  Leaked WMEs detected.\n";
             //assert(false);
         }
         WDI_double_deallocation_seen = false;
@@ -416,6 +438,7 @@ void clean_up_debug_inventories(agent* thisAgent)
         std::string lPrefString;
         thisAgent->outputManager->sprinta_sf(thisAgent, lPrefString, "%u", pIdentityID);
         idset_deallocation_map[pIdentityID].assign(lPrefString);
+//        break_if_id_matches(pIdentityID, 3);
     }
     void ISI_remove(agent* thisAgent, uint64_t pIdentityID)
     {
@@ -436,7 +459,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lPrefString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Identity set inventory:   ");
         for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
         {
             lPrefString = it->second;
@@ -445,33 +467,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%d were not deallocated", bugCount, static_cast<int64_t>(idset_deallocation_map.size()));
-            if (ISI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some identity sets were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (idset_deallocation_map.size())
-            thisAgent->outputManager->printa_sf(thisAgent, "All %d identity sets were deallocated properly.\n", static_cast<int64_t>(idset_deallocation_map.size()));
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No identity sets were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "Identity inventory:       ");
+            if (bugCount)
             {
-                lPrefString = it->second;
-                if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%d were not deallocated", bugCount, static_cast<int64_t>(idset_deallocation_map.size()));
+                if (ISI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some identities were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (idset_deallocation_map.size())
+                thisAgent->outputManager->printa_sf(thisAgent, "All %d identities were deallocated properly.\n", static_cast<int64_t>(idset_deallocation_map.size()));
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No identities were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = idset_deallocation_map.begin(); it != idset_deallocation_map.end(); ++it)
+                {
+                    lPrefString = it->second;
+                    if (!lPrefString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lPrefString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || ISI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "Identity set inventory failure.  Leaked identity sets detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " identities leaked";
+            else
+                std::cout << "Identity inventory failure.  Leaked identities detected.\n";
             //assert(false);
         }
         ISI_double_deallocation_seen = false;
@@ -491,13 +520,15 @@ void clean_up_debug_inventories(agent* thisAgent)
 
     void RSI_add(agent* thisAgent, rhs_symbol pRHS)
     {
+        /* This assert may help detect cases when we get those pseudo-null rhs_values that give us problems (null with type bit set)*/
+        assert(pRHS);
         std::string lAddString;
         pRHS->r_id = ++RSI_id_counter;
         thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: %r", pRHS->r_id, pRHS);
         rhs_deallocation_map[pRHS->r_id] = lAddString;
 //        std::cout << "Allocating rhs symbol " << pRHS->referent->to_string() << " " << pRHS->r_id << std::endl;
 
-//        break_if_id_matches(pRHS->r_id, 3);
+//        break_if_id_matches(pRHS->r_id, 2038);
     }
     void RSI_remove(agent* thisAgent, rhs_symbol pRHS)
     {
@@ -520,7 +551,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lAddString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "RHS Symbol inventory:     ");
         for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
         {
             lAddString = it->second;
@@ -529,33 +559,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RSI_id_counter);
-            if (RSI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some RHS symbols were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (RSI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS symbols were deallocated properly.\n", RSI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No RHS symbols were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "RHS Symbol inventory:     ");
+            if (bugCount)
             {
-                lAddString = it->second;
-                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RSI_id_counter);
+                if (RSI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some RHS symbols were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (RSI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS symbols were deallocated properly.\n", RSI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No RHS symbols were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = rhs_deallocation_map.begin(); it != rhs_deallocation_map.end(); ++it)
+                {
+                    lAddString = it->second;
+                    if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || RSI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "RHS symbols inventory failure.  Leaked RHS symbols detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " RHS symbols leaked";
+            else
+                std::cout << "RHS symbols inventory failure.  Leaked RHS symbols detected.\n";
             //assert(false);
         }
         RSI_double_deallocation_seen = false;
@@ -580,10 +617,14 @@ void clean_up_debug_inventories(agent* thisAgent)
         pAction->a_id = ++ADI_id_counter;
         thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "a%u", pAction->a_id);
         action_deallocation_map[pAction->a_id] = lAddString;
-//        break_if_id_matches(pAction->a_id, 3);
+//        thisAgent->outputManager->printa_sf(thisAgent, "Action inventory adding %u\n", pAction->a_id);
+
+//        break_if_id_matches(pAction->a_id, 20);
     }
     void ADI_remove(agent* thisAgent, action* pAction)
     {
+//        thisAgent->outputManager->printa_sf(thisAgent, "Action inventory removing %u\n", pAction->a_id);
+
         auto it = action_deallocation_map.find(pAction->a_id);
         assert (it != action_deallocation_map.end());
 
@@ -596,13 +637,13 @@ void clean_up_debug_inventories(agent* thisAgent)
             break_if_bool(true);
             ADI_double_deallocation_seen = true;
         }
+//        break_if_id_matches(pAction->a_id, 581);
     }
 
     void ADI_print_and_cleanup(agent* thisAgent)
     {
         std::string lAddString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Action inventory:         ");
         for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
         {
             lAddString = it->second;
@@ -611,33 +652,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ADI_id_counter);
-            if (ADI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some actions were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (ADI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u actions were deallocated properly.\n", ADI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No actions were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "Action inventory:         ");
+            if (bugCount)
             {
-                lAddString = it->second;
-                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, ADI_id_counter);
+                if (ADI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some actions were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (ADI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u actions were deallocated properly.\n", ADI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No actions were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = action_deallocation_map.begin(); it != action_deallocation_map.end(); ++it)
+                {
+                    lAddString = it->second;
+                    if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || ADI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "Action inventory failure.  Leaked actions detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " actions leaked";
+            else
+                std::cout << "Action inventory failure.  Leaked actions detected.\n";
             //assert(false);
         }
         ADI_double_deallocation_seen = false;
@@ -659,9 +707,11 @@ void clean_up_debug_inventories(agent* thisAgent)
     void RFI_add(agent* thisAgent, rhs_value pRHS)
     {
         std::string lAddString;
+        /* This assert may help detect cases when we get those pseudo-null rhs_values that give us problems (null with type bit set)*/
+        assert(pRHS);
         thisAgent->outputManager->sprinta_sf(thisAgent, lAddString, "%u: &%u", (++RFI_id_counter), (uint64_t) pRHS);
         rhs_func_deallocation_map[pRHS] = lAddString;
-        break_if_id_matches(RFI_id_counter, 890);
+//        break_if_id_matches(RFI_id_counter, 890);
     }
     void RFI_remove(agent* thisAgent, rhs_value pRHS)
     {
@@ -683,7 +733,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lAddString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "RHS Function inventory:   ");
         for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
         {
             lAddString = it->second;
@@ -692,33 +741,41 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RFI_id_counter);
-            if (RFI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some RHS functions were deallocated twice");
-            if (bugCount <= 50)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (RFI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS functions were deallocated properly.\n", RFI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No RHS functions were created.\n");
-
-        if (bugCount && (bugCount <= 50))
-        {
-            for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "RHS Function inventory:   ");
+            if (bugCount)
             {
-                lAddString = it->second;
-                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, RFI_id_counter);
+                if (RFI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some RHS functions were deallocated twice");
+                if (bugCount <= 50)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (RFI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u RHS functions were deallocated properly.\n", RFI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No RHS functions were created.\n");
+
+            if (bugCount && (bugCount <= 50))
+            {
+                for (auto it = rhs_func_deallocation_map.begin(); it != rhs_func_deallocation_map.end(); ++it)
+                {
+                    lAddString = it->second;
+                    if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || RFI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "RHS functions inventory failure.  Leaked RHS functions detected.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " RHS functions leaked";
+            else
+                std::cout << "RHS functions inventory failure.  Leaked RHS functions detected.\n";
+
             //assert(false);
         }
         RFI_double_deallocation_seen = false;
@@ -747,7 +804,7 @@ void clean_up_debug_inventories(agent* thisAgent)
 //        thisAgent->outputManager->test_to_string(pTest, lTestString, true);
 //        std::cout << "Allocating test " << pTest->t_id << ": " << lTestString << "\n";
 
-        break_if_id_matches(pTest->t_id, 2526);
+//        break_if_id_matches(pTest->t_id, 2526);
     }
     void TDI_remove(agent* thisAgent, test pTest)
     {
@@ -773,7 +830,6 @@ void clean_up_debug_inventories(agent* thisAgent)
     {
         std::string lAddString;
         uint64_t bugCount = 0;
-        thisAgent->outputManager->printa_sf(thisAgent, "Test inventory:           ");
         for (auto it = test_deallocation_map.begin(); it != test_deallocation_map.end(); ++it)
         {
             lAddString = it->second;
@@ -782,33 +838,40 @@ void clean_up_debug_inventories(agent* thisAgent)
                 bugCount++;
             }
         }
-        if (bugCount)
+        if (!Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, TDI_id_counter);
-            if (TDI_double_deallocation_seen)
-                thisAgent->outputManager->printa_sf(thisAgent, " and some tests were deallocated twice");
-            if (bugCount <= 23)
-                thisAgent->outputManager->printa_sf(thisAgent, ":");
-            else
-                thisAgent->outputManager->printa_sf(thisAgent, "!\n");
-        }
-        else if (TDI_id_counter)
-            thisAgent->outputManager->printa_sf(thisAgent, "All %u tests were deallocated properly.\n", TDI_id_counter);
-        else
-            thisAgent->outputManager->printa_sf(thisAgent, "No tests were created.\n");
-
-        if (bugCount && (bugCount <= 23))
-        {
-            for (auto it = test_deallocation_map.begin(); it != test_deallocation_map.end(); ++it)
+            thisAgent->outputManager->printa_sf(thisAgent, "Test inventory:           ");
+            if (bugCount)
             {
-                lAddString = it->second;
-                if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                thisAgent->outputManager->printa_sf(thisAgent, "%u/%u were not deallocated", bugCount, TDI_id_counter);
+                if (TDI_double_deallocation_seen)
+                    thisAgent->outputManager->printa_sf(thisAgent, " and some tests were deallocated twice");
+                if (bugCount <= 23)
+                    thisAgent->outputManager->printa_sf(thisAgent, ":");
+                else
+                    thisAgent->outputManager->printa_sf(thisAgent, "!\n");
             }
-            thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            else if (TDI_id_counter)
+                thisAgent->outputManager->printa_sf(thisAgent, "All %u tests were deallocated properly.\n", TDI_id_counter);
+            else
+                thisAgent->outputManager->printa_sf(thisAgent, "No tests were created.\n");
+
+            if (bugCount && (bugCount <= 23))
+            {
+                for (auto it = test_deallocation_map.begin(); it != test_deallocation_map.end(); ++it)
+                {
+                    lAddString = it->second;
+                    if (!lAddString.empty()) thisAgent->outputManager->printa_sf(thisAgent, " %s", lAddString.c_str());
+                }
+                thisAgent->outputManager->printa_sf(thisAgent, "\n");
+            }
         }
         if (((bugCount > 0) || TDI_double_deallocation_seen) && Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
         {
-            std::cout << "Test inventory failure! " << bugCount << "/" << TDI_id_counter << " were not deallocated.\n";
+            if (Soar_Instance::Get_Soar_Instance().was_run_from_unit_test())
+                std::cout << ' ' << bugCount << " tests leaked";
+            else
+                std::cout << "Test inventory failure! " << bugCount << "/" << TDI_id_counter << " were not deallocated.\n";
             //assert(false);
         }
         TDI_double_deallocation_seen = false;

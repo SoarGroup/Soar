@@ -30,7 +30,7 @@ Identity* Explanation_Based_Chunker::create_new_identity(Symbol* pGoal)
 
 void IdentitySet_remove_ref(agent* thisAgent, Identity* &pIdentity)
 {
-    if (pIdentity->remove_ref())
+    if (pIdentity->internal_remove_ref())
     {
         dprint(DT_IDSET_REFCOUNTS, "Dellocating identity set %u\n", pIdentity->get_sub_identity());
         pIdentity->clean_up();
