@@ -348,7 +348,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     {
         result->chunk_inst_identities.id = l_inst_identity;
     } else {
-        result->chunk_inst_identities.id = l_inst_identity;
+        result->chunk_inst_identities.id = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.id = a->id;
         a->id = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.id, false, true);
     }
@@ -358,7 +358,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     {
         result->chunk_inst_identities.attr = l_inst_identity;
     } else {
-        result->chunk_inst_identities.attr = l_inst_identity;
+        result->chunk_inst_identities.attr = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.attr = a->attr;
         a->attr = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.attr, false, true);
     }
@@ -368,7 +368,7 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
     {
         result->chunk_inst_identities.value = l_inst_identity;
     } else {
-        result->chunk_inst_identities.value = l_inst_identity;
+        result->chunk_inst_identities.value = LITERAL_VALUE;
         result->rhs_func_chunk_inst_identities.value = a->value;
         a->value = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.value, false, true);
     }
@@ -380,8 +380,8 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
         {
             result->chunk_inst_identities.referent = l_inst_identity;
         } else {
-            result->chunk_inst_identities.referent = l_inst_identity;
-            result->rhs_func_chunk_inst_identities.referent = a->value;
+            result->chunk_inst_identities.referent = LITERAL_VALUE;
+            result->rhs_func_chunk_inst_identities.referent = a->referent;
             a->referent = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.referent, false, true);
         }
     }
