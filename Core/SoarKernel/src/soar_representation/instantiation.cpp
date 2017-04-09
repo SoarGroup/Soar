@@ -500,10 +500,10 @@ preference* execute_action(agent* thisAgent, action* a, struct token_struct* tok
                     // Extract identity from first argument of rule_action->value
                     oid_value = get_rhs_function_first_arg_identity(thisAgent, rule_action->value);
                     deallocate_rhs_value(thisAgent, rule_action->value);
-                    rule_action->value = NULL;
                 } else {
                     f_value = rule_action->value;
                 }
+                rule_action->value = NULL;
             } else {
                 oid_value = rhs_value_to_inst_identity(rule_action->value);
             }
