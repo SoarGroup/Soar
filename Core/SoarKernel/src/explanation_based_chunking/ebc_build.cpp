@@ -926,7 +926,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected:  Rule learned had no conditions.";
         }
-        clean_up(l_clean_up_id, false, lLocalTimerPtr);
+        clean_up(l_clean_up_id, lLocalTimerPtr);
         return;
     }
     dprint(DT_MILESTONES, "Dependency analysis complete.  Unified chunk conditions built for chunk id %u based on firing of %y (i %u)\n", m_chunk_inst->i_id, inst->prod_name, inst->i_id);
@@ -1037,7 +1037,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
                 ebc_timers->clean_up->start();
                 deallocate_failed_chunk();
                 thisAgent->explanationMemory->cancel_chunk_record();
-                clean_up(l_clean_up_id, false, lLocalTimerPtr);
+                clean_up(l_clean_up_id, lLocalTimerPtr);
                 return;
             }
         }
@@ -1116,7 +1116,7 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
         /* Clean up.  (Now that m_chunk_inst s on the list of insts to be asserted, we
          *             set it to to null because so that clean_up() won't delete it.) */
         m_chunk_inst = NULL;
-        clean_up(l_clean_up_id, true, lLocalTimerPtr);
+        clean_up(l_clean_up_id, lLocalTimerPtr);
 
         if ((*new_inst_list)->match_goal_level > TOP_GOAL_LEVEL)
         {
@@ -1137,11 +1137,11 @@ void Explanation_Based_Chunker::learn_rule_from_instance(instantiation* inst, in
             clean_up_identities();
         }
         remove_chunk_instantiation();
-        clean_up(l_clean_up_id, true, lLocalTimerPtr);
+        clean_up(l_clean_up_id, lLocalTimerPtr);
     }
 }
 
-void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_inst_inventory, soar_timer* pTimer)
+void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, soar_timer* pTimer)
 {
     ebc_timers->chunk_instantiation_creation->stop();
     ebc_timers->clean_up->start();
@@ -1149,7 +1149,7 @@ void Explanation_Based_Chunker::clean_up (uint64_t pClean_up_id, bool clean_up_i
     thisAgent->explanationMemory->end_chunk_record();
     if (m_chunk_inst)
     {
-        if (clean_up_inst_inventory) IDI_remove(thisAgent, m_chunk_inst->i_id);
+        IDI_remove(thisAgent, m_chunk_inst->i_id);
 
         thisAgent->memoryManager->free_with_pool(MP_instantiation, m_chunk_inst);
         m_chunk_inst = NULL;
