@@ -89,7 +89,6 @@ struct IDSetLessThan;
     typedef std::set< instantiation_record* >                   inst_record_set;
     typedef std::set< instantiation* >                          inst_set;
     typedef std::set< production_record* >                      production_record_set;
-    typedef std::set< rl_symbol_map >                           rl_symbol_map_set;
     typedef std::set< Symbol* >                                 symbol_set;
     typedef std::set< wma_decay_element* >                      wma_decay_set;
     typedef std::set< wma_d_cycle >                             wma_decay_cycle_set;
@@ -97,6 +96,7 @@ struct IDSetLessThan;
 
     typedef std::map< production*, double >                     rl_et_map;
     typedef std::map< Symbol*, Symbol* >                        rl_symbol_map;
+    typedef std::set< rl_symbol_map >                           rl_symbol_map_set;
     typedef std::map< wma_d_cycle, wma_decay_set* >             wma_forget_p_queue;
     typedef std::map< Symbol*, uint64_t >                       wma_sym_reference_map;
 
@@ -114,7 +114,7 @@ struct IDSetLessThan;
     typedef std::unordered_map< Symbol*, augmentation_set* >        sym_to_aug_map;
     typedef std::unordered_map< Symbol*, condition* >               sym_to_cond_map;
     typedef std::unordered_map< Symbol*, uint64_t >                 sym_to_id_map;
-    typedef std::unordered_map< Symbol*, identity_set >             sym_to_identity_set_map;
+    typedef std::unordered_map< Symbol*, identity_set* >            sym_to_identity_set_map;
     typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
     typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
     typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;

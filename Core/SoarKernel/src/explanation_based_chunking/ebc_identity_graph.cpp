@@ -283,10 +283,31 @@ void Explanation_Based_Chunker::update_identities_in_preferences(preference* lPr
          * are created in execute_action() which doesn't have ownership of these rhs functions and
          * previously made copies for the preference that it's creating. We now just moved it here so
          * that it can be done after identity sets have been determined. */
-        if (lPref->rhs_func_inst_identities.id) lPref->rhs_func_inst_identities.id = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.id, true);
-        if (lPref->rhs_func_inst_identities.attr) lPref->rhs_func_inst_identities.attr = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.attr, true);
-        if (lPref->rhs_func_inst_identities.value) lPref->rhs_func_inst_identities.value = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.value, true);
-        if (lPref->rhs_func_inst_identities.referent) lPref->rhs_func_inst_identities.referent = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.referent, true);
+        rhs_value lNewRHSValue;
+        if (lPref->rhs_func_inst_identities.id)
+        {
+            lNewRHSValue = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.id, true);
+            deallocate_rhs_value(thisAgent, lPref->rhs_func_inst_identities.id);
+            lPref->rhs_func_inst_identities.id = lNewRHSValue;
+        }
+        if (lPref->rhs_func_inst_identities.attr)
+        {
+            lNewRHSValue = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.attr, true);
+            deallocate_rhs_value(thisAgent, lPref->rhs_func_inst_identities.attr);
+            lPref->rhs_func_inst_identities.attr = lNewRHSValue;
+        }
+        if (lPref->rhs_func_inst_identities.value)
+        {
+            lNewRHSValue = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.value, true);
+            deallocate_rhs_value(thisAgent, lPref->rhs_func_inst_identities.value);
+            lPref->rhs_func_inst_identities.value = lNewRHSValue;
+        }
+        if (lPref->rhs_func_inst_identities.referent)
+        {
+            lNewRHSValue = copy_rhs_value(thisAgent, lPref->rhs_func_inst_identities.referent, true);
+            deallocate_rhs_value(thisAgent, lPref->rhs_func_inst_identities.referent);
+            lPref->rhs_func_inst_identities.referent = lNewRHSValue;
+        }
     }
 }
 
