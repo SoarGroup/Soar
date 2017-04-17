@@ -17,6 +17,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "dprint.h"
+#include "ebc.h"
 #include "explanation_memory.h"
 #include "lexer.h"
 #include "mem.h"
@@ -74,7 +75,6 @@ Symbol* make_placeholder_var(agent* thisAgent, char first_letter)
         first_letter = 'v';
     }
     i = tolower(first_letter) - static_cast<int>('a');
-    assert(i >= 0 && i < 26);
 
     /* --- create variable with "#" in its name:  this couldn't possibly be a
        variable in the user's code, since the lexer doesn't handle "#" --- */
@@ -327,9 +327,10 @@ Symbol* make_symbol_for_lexeme(agent* thisAgent, Lexeme* lexeme, bool allow_lti)
         case IDENTIFIER_LEXEME:
         {
 //            thisAgent->outputManager->printa_sf(thisAgent, "Found potential Soar identifier that would be invalid.  Adding as string.\n", lexeme->id_letter, lexeme->id_number);
-            std::string lStr;
-            thisAgent->outputManager->sprinta_sf(thisAgent, lStr, "|%c%d|", lexeme->id_letter, lexeme->id_number);
-            newSymbol = thisAgent->symbolManager->make_str_constant(lStr.c_str());
+            char buf[30];
+            SNPRINTF(buf, sizeof(buf) - 1, "%c%llu", lexeme->id_letter, lexeme->id_number);
+             buf[sizeof(buf) - 1] = '\0';
+            newSymbol = thisAgent->symbolManager->make_str_constant(buf);
 
             return newSymbol;
         }
@@ -1498,6 +1499,8 @@ rhs_value parse_function_call_after_lparen(agent* thisAgent,
 
     /* --- build list of rhs_function and arguments --- */
     allocate_cons(thisAgent, &fl);
+    RFI_add(thisAgent, funcall_list_to_rhs_value(fl));
+
     fl->first = rf;
     prev_c = fl;
     /* consume function name, advance to argument list */
@@ -1864,11 +1867,6 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
     PreferenceType preference_type;
     bool saw_plus_sign;
 
-    /* JC ADDED: for printint */
-    char szPrintAttr[256];
-    char szPrintValue[256];
-    char szPrintId[256];
-
     /* --- Note: this routine is set up so if there's not preference type
        indicator at all, we return an acceptable preference make.  For
        non-operators, allow only REJECT_PREFERENCE_TYPE, (and ACCEPTABLE).
@@ -1898,14 +1896,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
         if (preference_is_binary(preference_type))
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nERROR: Binary preference illegal for non-operator.");
-
-            /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
-                     correctly before we print */
-            thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
-            thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
-            id->to_string(true, false, szPrintId, 256);
-            thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
-
+            thisAgent->outputManager->printa_sf(thisAgent,  "id = %y\t attr = %r\t value = %r\n", id, attr, value);
             deallocate_action_list(thisAgent, prev_a);
             return NIL;
 
@@ -1920,14 +1911,7 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
         {
             thisAgent->outputManager->printa_sf(thisAgent,  "\nWARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.\n");
             xml_generate_warning(thisAgent, "WARNING: The only allowable non-operator preference \nis REJECT - .\nIgnoring specified preferences.");
-
-            /* JC BUG FIX: Have to check to make sure that the rhs_values are converted to strings
-                     correctly before we print */
-            thisAgent->outputManager->rhs_value_to_cstring(attr, szPrintAttr, 256);
-            thisAgent->outputManager->rhs_value_to_cstring(value, szPrintValue, 256);
-            id->to_string(true, false, szPrintId, 256);
-            thisAgent->outputManager->printa_sf(thisAgent,  "id = %s\t attr = %s\t value = %s\n", szPrintId, szPrintAttr, szPrintValue);
-
+            thisAgent->outputManager->printa_sf(thisAgent,  "id = %y\t attr = %r\t value = %r\n", id, attr, value);
         }
 
         if (preference_type == REJECT_PREFERENCE_TYPE)
@@ -1971,7 +1955,6 @@ action* parse_preferences_soar8_non_operator(agent* thisAgent, Lexer* lexer, Sym
         }
     }
 }
-/* KJC end:  10.09.98 */
 
 /* -----------------------------------------------------------------
                       Parse Attr Value Make
@@ -1991,7 +1974,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     Symbol* old_id, *new_var;
 
     /* JC Added, need to store the attribute name */
-    char    szAttribute[256];
+    std::string attr_str;
 
     if (lexer->current_lexeme.type != UP_ARROW_LEXEME)
     {
@@ -2011,7 +1994,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     }
 
     /* JC Added, we will need the attribute as a string, so we get it here */
-    thisAgent->outputManager->rhs_value_to_cstring(attr, szAttribute, 256);
+    thisAgent->outputManager->rhs_value_to_string(attr, attr_str, false);
 
     all_actions = NIL;
 
@@ -2029,7 +2012,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
          there aren't really any preferences to read, we need the default
          acceptable prefs created for all attributes in path */
 
-        if (strcmp(szAttribute, "operator") != 0)
+        if (attr_str != "operator")
         {
             new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr,
                           allocate_rhs_value_for_symbol(thisAgent, new_var, 0));
@@ -2059,7 +2042,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         }
 
         /* JC Added. We need to get the new attribute's name */
-        thisAgent->outputManager->rhs_value_to_cstring(attr, szAttribute, 256);
+        thisAgent->outputManager->rhs_value_to_string(attr, attr_str, false);
     }
     /* end of while (lexer->current_lexeme.type == PERIOD_LEXEME */
     /* end KJC 10/15/98 */
@@ -2073,7 +2056,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
             deallocate_action_list(thisAgent, all_actions);
             return NIL;
         }
-        if (strcmp(szAttribute, "operator") != 0)
+        if (attr_str != "operator")
         {
             new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr, value);
         }
@@ -2091,8 +2074,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
         last->next = all_actions;
         all_actions = new_actions;
     }
-    while ((lexer->current_lexeme.type != R_PAREN_LEXEME) &&
-            (lexer->current_lexeme.type != UP_ARROW_LEXEME));
+    while ((lexer->current_lexeme.type != R_PAREN_LEXEME) && (lexer->current_lexeme.type != UP_ARROW_LEXEME));
 
     deallocate_rhs_value(thisAgent, attr);
     return all_actions;
@@ -2121,10 +2103,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
     }
     if (!lexer->get_lexeme()) return NULL;
 
-    /* Should exit gracefully if rule has an identifier in it.  We'll just do an assert for now. 
-     * - If this can't happen, we probably don't need the second clause in the next if */
-    assert(lexer->current_lexeme.type != IDENTIFIER_LEXEME);
-
     if ((lexer->current_lexeme.type != VARIABLE_LEXEME) && (lexer->current_lexeme.type != IDENTIFIER_LEXEME))
     {
         /* --- the action is a function call --- */
@@ -2139,7 +2117,6 @@ action* parse_rhs_action(agent* thisAgent, Lexer* lexer)
         return all_actions;
     }
     /* --- the action is a regular make action --- */
-    assert(lexer->current_lexeme.type == VARIABLE_LEXEME);
 
     var = thisAgent->symbolManager->make_variable(lexer->current_lexeme.string());
 

@@ -1,0 +1,6 @@
+pushd towers-of-hanoi-recursive
+source towers-of-hanoi-recursive.soar
+popd
+
+chunk always
+

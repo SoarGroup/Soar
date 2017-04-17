@@ -1,0 +1,72 @@
+
+###
+###      7.3.1 The evaluate-operator operator
+###
+
+### Create evaluate operator in selection problem space.
+
+sp {selection*propose*evaluate-operator
+   :default
+   (state <s> ^name selection
+              ^item <i>)
+  -{(state <s> ^evaluation <e>)
+    (<e> ^superoperator <i>
+         ^value true)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name evaluate-operator
+        ^superoperator <i>)}
+
+
+### Make them indifferent if not ^operator-selection not-indifferent.
+
+sp {selection*select*evaluate-operator*indifferent
+   :default
+   (state <s> ^name selection
+             -^operator-selection not-indifferent
+              ^operator <o> +)
+   (<o> ^name evaluate-operator)
+-->
+   (<s> ^operator <o> =)}
+
+### Create evaluation once the eval operator is selected.
+ 
+sp {selection*apply*state*evaluation
+   :default
+   (state <s> ^name selection
+              ^operator <o>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+-->
+   (<s> ^evaluation <e>)
+   (<e> ^superoperator <ob>)}
+
+sp {selection*elaborate*evaluate-operator*evaluation
+  # :default
+   :o-support
+   (state <s> ^name selection
+              ^operator <o>
+              ^evaluation <e>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+   (<e> ^superoperator <ob>)
+-->
+   (<o> ^evaluation <e>)}
+
+sp {selection*elaborate*evaluate-operator*superproblem-space
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^superstate.problem-space <p2>)
+   (<o> ^name evaluate-operator)
+-->
+   (<o> ^superproblem-space <p2>)}
+
+sp {selection*elaborate*evaluate-operator*superstate
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^superstate <ss>)
+   (<o> ^name evaluate-operator)
+-->
+   (<o> ^superstate <ss>)}

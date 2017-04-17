@@ -34,7 +34,7 @@ enum TraceMode
     DT_VARIABLIZATION_MANAGER   = 6,
     DT_EXTRA_RESULTS            = 7,
     DT_BACKTRACE                = 8,
-    DT_ADD_IDENTITY_SET_MAPPING = 9,
+    DT_UNIFY_IDENTITY_SETS      = 9,
     DT_UNIFY_SINGLETONS         = 10,
     DT_BUILD_CHUNK_CONDS        = 11,
     DT_LHS_VARIABLIZATION       = 12,
@@ -92,6 +92,9 @@ enum TraceMode
     DT_RHS_LTI_LINKING          = 56,
     DT_VALIDATE                 = 57,
     DT_OSK                      = 58,
+    DT_IDSET_REFCOUNTS          = 59,
+    DT_PROPAGATE_ID_SETS        = 60,
+    DT_DEALLOCATE_ID_SETS       = 61,
     num_trace_modes
 };
 
@@ -164,20 +167,25 @@ enum ChunkingSettings {
     SETTING_EBC_REORDER_JUSTIFICATIONS,
     SETTING_EBC_ADD_LTM_LINKS,
     SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS,
+    SETTING_EBC_TIMERS,
     num_ebc_settings
  };
 
 enum IDSet_Mapping_Type {
-    IDS_no_existing_mapping,
-    IDS_transitive,
-    IDS_literalize_mappings_exist,
-    IDS_unified_with_existing_mappings,
-    IDS_unified_with_literalized_identity,
+    IDS_join,
     IDS_unified_with_local_singleton,
     IDS_unified_with_singleton,
     IDS_unified_child_result,
+    IDS_literalized,
     IDS_literalized_RHS_function_arg,
-    IDS_base_instantiation
+};
+
+enum IDSet_Deallocation_Type {
+    IDS_pref_dealloc,
+    IDS_test_dealloc,
+    IDS_wme_dealloc,
+    IDS_update_test,
+    IDS_update_pref,
 };
 
 enum BTSourceType {
@@ -299,18 +307,16 @@ MP_epmem_pedge,
 MP_epmem_uedge,
 MP_epmem_interval,
 MP_constraints,
-MP_attachments,
-
-MP_sym_triple,
-MP_identity_mapping,
-MP_chunk_element,
-MP_sym_identity,
 MP_action_record,
-MP_condition_record,
-MP_instantiation_record,
+MP_chunk_element,
 MP_chunk_record,
+MP_condition_record,
+MP_identity_mapping,
+MP_identity_sets,
+MP_instantiation_record,
 MP_production_record,
 MP_repair_path,
+MP_sym_triple,
 
 num_memory_pools
 };
@@ -338,11 +344,11 @@ enum SymbolTypes
     UNDEFINED_SYMBOL_TYPE = 5
 };
 
-enum AddAdditionalTestsMode
+enum ExplainTraceType
 {
-    DONT_EXPLAIN,
-    ALL_ORIGINALS,
-    JUST_INEQUALITIES
+    WM_Trace,
+    Explanation_Trace,
+    WM_Trace_w_Inequalities
 };
 
 enum WME_Field
@@ -350,7 +356,8 @@ enum WME_Field
     ID_ELEMENT = 0,
     ATTR_ELEMENT = 1,
     VALUE_ELEMENT = 2,
-    NO_ELEMENT = 3
+    REFERENT_ELEMENT = 3,
+    NO_ELEMENT = 4
 };
 
 enum Print_Header_Type

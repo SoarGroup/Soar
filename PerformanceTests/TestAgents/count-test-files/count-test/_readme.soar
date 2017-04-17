@@ -1,0 +1,41 @@
+## Count-test
+## Developed by John Laird
+
+## Purpose: provide a simple test of Soar
+##   1. long runs
+##   2. lots of working memory
+##   3. Various subgoals/impasses and results with chunking
+##   4. lots of chunks/results
+##   5. nasty conditions for chunking
+##   Should find any memory leaks.
+##
+
+## Test 1 - count operator at top-level - 
+##         one operator that is repeatedly selected until count is finished.
+## Test 2 - count all in one decision across multiple elaboration phases. 
+##
+## Test 3 - count all in one decision but without removing old counts
+##          working memory gets to be very large.
+## Test 4 - Count in substate using operators - tests operator no-change, o-support results, chunking.
+##
+## Test 5 - Create count operators in substate - test state no-change, i-support results via suboperator, chunking..
+##
+## Test 6 - Create count operators in substate - test state no-change, i-support results via elaboration, chunking.
+##
+## Test 7 - Select count operators in substate - test tie subgoal, i-support results via supoperator, chunking.
+##
+## Test 8 - Select count operators in substate - test tie subgoal, i-support results, chunking.
+##
+## Test 9 - Select count operators in substate - try to get chunking to crash on conditions.
+
+##   Initialize-count-test has all of the parameters for each test and describes each test
+##    Should set all test-counts to around at least 10,000.
+##    Each test is defined in count-test operator or within an impasse 
+##    Probably want to filter out rhs-functions writes
+##     watch 0
+##     run
+##     init-soar
+##     learn --on
+##     run
+##     init-soar
+##     run

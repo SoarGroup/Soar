@@ -82,6 +82,10 @@ bool CommandLineInterface::DoOutput(std::vector<std::string>& argv, const std::s
             return true;
         } else {
             int lTraceLevel;
+            if (!pArg3)
+            {
+                return SetError("Wrong number of arguments to output agent-trace command.");
+            }
             if (!my_param->validate_string(pArg3->c_str()))
             {
                 return SetError("Agent trace channel setting must be 'on' or 'off'. Use 'output ?' to see a list of valid sub-commands.");

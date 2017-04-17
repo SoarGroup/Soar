@@ -16,17 +16,14 @@
 
 #include "kernel.h"
 
-#include <string>
-
 #ifndef SOAR_RELEASE_VERSION
     /* This can be used to turn off dprints except for a decision cycle range */
-//    #define DEBUG_ONLY_AFTER_DC 2454
-//    #define DEBUG_ONLY_AFTER_DC 1238
-//    #define DEBUG_ONLY_BEFORE_DC 1240
+    //#define DEBUG_ONLY_AFTER_DC 929
+    //#define DEBUG_ONLY_BEFORE_DC 931
 
     /* This can be used to turn off dprints except for a particular chunk */
-//    #define DEBUG_ONLY_CHUNK_ID 51
-//    #define DEBUG_ONLY_CHUNK_ID_LAST 23613
+    //#define DEBUG_ONLY_CHUNK_ID 162
+    //#define DEBUG_ONLY_CHUNK_ID_LAST 163
 #endif
 
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
@@ -40,6 +37,7 @@ bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match
 bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value);
 bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
 bool break_if_test_symbol_matches_string(test t, const char* match);
+bool break_if_bool(bool shouldBreak);
 
 void debug_test(int type = 1);
 

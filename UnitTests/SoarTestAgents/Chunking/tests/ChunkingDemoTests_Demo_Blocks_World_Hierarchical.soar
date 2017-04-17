@@ -1,0 +1,3 @@
+pushd BW-Hierarchical
+source BW-Hierarchical.soar
+popd

@@ -216,92 +216,6 @@ void Explanation_Memory::print_instantiation_actions(action_record_list* pAction
 
 }
 
-void action_record::print_chunk_action(action* pAction, int lActionCount)
-{
-    std::string tempString;
-    Output_Manager* outputManager = thisAgent->outputManager;
-
-    if (pAction->type == FUNCALL_ACTION)
-    {
-        tempString = "";
-        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
-    } else {
-        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), true);
-        outputManager->printa(thisAgent, " ^");
-        print_rhs_chunk_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), true);
-        outputManager->printa(thisAgent, " ");
-        print_rhs_chunk_value(pAction->value, (variablized_action ? variablized_action->value : NULL), true);
-        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
-        if (pAction->referent)
-        {
-            print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), true);
-        }
-        outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
-        outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
-        outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
-        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
-        if (pAction->referent)
-        {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
-        }
-//        print_rhs_chunk_value(pAction->id, (variablized_action ? variablized_action->id : NULL), false);
-//        outputManager->printa(thisAgent, " ^");
-//        print_rhs_chunk_value(pAction->attr, (variablized_action ? variablized_action->attr : NULL), false);
-//        outputManager->printa(thisAgent, " ");
-//        print_rhs_chunk_value(pAction->value, (variablized_action ? variablized_action->value : NULL), false);
-//        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
-//        if (pAction->referent)
-//        {
-//            print_rhs_chunk_value(pAction->referent, (variablized_action ? variablized_action->referent : NULL), false);
-//        }
-        outputManager->printa(thisAgent, ")\n");
-    }
-    tempString.clear();
-}
-
-void action_record::print_instantiation_action(action* pAction, int lActionCount)
-{
-    std::string tempString;
-    Output_Manager* outputManager = thisAgent->outputManager;
-
-    if (pAction->type == FUNCALL_ACTION)
-    {
-        tempString = "";
-        outputManager->rhs_value_to_string(pAction->value, tempString, NULL, NULL, true);
-        outputManager->printa_sf(thisAgent, "%d:%-%s%-%s", lActionCount,  tempString.c_str(), tempString.c_str());
-    } else {
-        outputManager->printa_sf(thisAgent, "%d:%-(", lActionCount);
-        print_rhs_instantiation_value(pAction->id, NULL, instantiated_pref->identities.id, true);
-        outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, NULL, instantiated_pref->identities.attr, true);
-        outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, NULL, instantiated_pref->identities.value, true);
-        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
-        if (pAction->referent)
-        {
-            print_rhs_instantiation_value(pAction->referent, NULL, instantiated_pref->identities.referent, true);
-        }
-        outputManager->printa_sf(thisAgent, ")%-(");
-        print_rhs_instantiation_value(pAction->id, instantiated_pref->rhs_funcs.id, instantiated_pref->identities.id, false);
-        outputManager->printa(thisAgent, " ^");
-        print_rhs_instantiation_value(pAction->attr, instantiated_pref->rhs_funcs.attr, instantiated_pref->identities.attr, false);
-        outputManager->printa(thisAgent, " ");
-        print_rhs_instantiation_value(pAction->value, instantiated_pref->rhs_funcs.value, instantiated_pref->identities.value, false);
-        outputManager->printa_sf(thisAgent, " %c", preference_to_char(pAction->preference_type));
-        if (pAction->referent)
-        {
-            print_rhs_instantiation_value(pAction->referent, instantiated_pref->rhs_funcs.referent, instantiated_pref->identities.referent, false);
-        }
-        outputManager->printa(thisAgent, ")\n");
-    }
-    tempString.clear();
-}
-
 void Explanation_Memory::print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter)
 {
     if (print_explanation_trace)
@@ -409,6 +323,7 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "- Impossible values eliminated                         %-%u\n", stats.eliminated_disjunction_values);
     outputManager->printa_sf(thisAgent, "\nConstraints collected                                  %- %u\n", stats.constraints_collected);
     outputManager->printa_sf(thisAgent, "Constraints attached                                   %-%u\n", stats.constraints_attached);
+    outputManager->printa_sf(thisAgent, "\nExtra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                    Problem-Solving Characteristics\n");
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
@@ -423,7 +338,6 @@ void Explanation_Memory::print_global_stats()
     outputManager->printa_sf(thisAgent, "---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "Chunks with extra conditions to fix partial operationality         %-%u\n", stats.chunks_repaired);
     outputManager->printa_sf(thisAgent, "Justifications with extra conditions to fix partial operationality %-%u\n", stats.justifications_repaired);
-    outputManager->printa_sf(thisAgent, "Extra conditions added during repair                               %-%u\n", stats.grounding_conditions_added);
 
     outputManager->printa_sf(thisAgent, "\n---------------------------------------------------------------------------\n");
     outputManager->printa_sf(thisAgent, "                  Potential Correctness Issues Detected\n");
@@ -608,12 +522,6 @@ void Explanation_Memory::print_rules_watched(short pNumToPrint)
     {
         outputManager->printa_sf(thisAgent, "\n* Note:  Only printed the first %d rules.  Type 'explain watch' to see the other %d rules.\n", pNumToPrint, lNumLeftToPrint);
     }
-}
-
-void Explanation_Memory::print_condition_explanation(uint64_t pCondID)
-{
-    assert(current_discussed_chunk);
-    outputManager->printa_sf(thisAgent, "Printing explanation of condition %u in relation to chunk %y.\n", pCondID, current_discussed_chunk->name);
 }
 
 void Explanation_Memory::print_identity_set_explanation()

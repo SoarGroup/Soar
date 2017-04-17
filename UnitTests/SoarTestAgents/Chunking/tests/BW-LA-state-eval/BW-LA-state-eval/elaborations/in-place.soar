@@ -1,0 +1,35 @@
+sp {P3*elaborate*object-on-table
+   (state <s> ^object <table>)
+   (<table> ^name table)
+-->
+   (<s> ^inplace-object <table>)}
+
+sp {P3*elaborate*object-on-tableb
+   (state <s> ^name evaluate-operator
+              ^object <table>
+              ^tried-tied-operator)
+   (<table> ^name table)
+-->
+   (<s> ^inplace-object <table>)}
+
+sp {P4*elaborate*object-on-inplace
+   (state <s> ^desired.ontop <ontop-d>
+              ^inplace-object <blockB>
+              ^ontop <ontop-s>)
+   (<ontop-d> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<ontop-s> ^top-block <blockA>
+              ^bottom-block <blockB>)
+-->
+   (<s> ^inplace-object <blockA>)}
+
+sp {P4*elaborate*object-on-notinplace
+   (state <s> ^desired <ds>
+              ^ontop <ontopa1>)
+   (<ontopa1> ^top-block <blockA>
+              ^bottom-block <> <blockB>)
+   (<ds> ^ontop <ontop1>)
+   (<ontop1> ^top-block <blockA>
+             ^bottom-block <blockB>)
+-->
+   (<s> ^outplace-object <blockA>)}

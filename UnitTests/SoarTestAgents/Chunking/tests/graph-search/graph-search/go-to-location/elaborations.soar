@@ -1,0 +1,27 @@
+sp {go-to-location*elaborate*next-location
+   (state <s> ^name go-to-location
+              ^top-state.waypoints.waypoint <wp>
+              ^superstate.operator <so>)
+   (<so> ^name go-to-location
+         ^next-location <next>)
+   (<next> ^id <id>)
+   (<wp> ^id <id>
+         ^x <x>
+         ^y <y>)
+-->
+   (<s> ^desired.location <next>)
+}
+
+#sp {go-to-location*elaborate*success
+#   (state <s> ^name go-to-location
+#              ^superstate <ss>
+#              ^desired <d>
+#              ^top-state.current-location.id <id>)
+#   (<d> ^id <id>)
+#   (<ss> ^operator <so>
+#         ^evaluation <e>)
+#   (<so> ^name evaluate-operator
+#         ^evaluation <e>
+#         ^evaluation.desired <eb>)
+#-->
+#   (<e> ^symbolic-value success)}

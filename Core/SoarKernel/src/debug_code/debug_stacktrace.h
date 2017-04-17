@@ -11,6 +11,7 @@
 
 #include "kernel.h"
 #include "symbol.h"
+#include "ebc_identity_set.h"
 
 #ifdef DEBUG_MAC_STACKTRACE
 #include <string>

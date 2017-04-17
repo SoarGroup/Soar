@@ -1,0 +1,3 @@
+rete-net -l count-test-5000.soarx
+max-elaborations 50000
+learn -e

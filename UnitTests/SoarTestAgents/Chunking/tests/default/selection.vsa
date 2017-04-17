@@ -1,0 +1,22 @@
+VERSION 4
+\selection\selection.dm
+0	ROOT selection selection 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR declarations declarations.soar 4
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR top-state top-state.soar 6
+6	0	HLIOPERATOR Operator_Tie Operator_Tie.soar Operator_Tie 9 7
+7	6	FOPERATOR elaborations elaborations.soar 8
+8	6	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 29 9
+9	8	FOPERATOR elaborations elaborations.soar 10
+10	8	HLIOPERATOR Operator_Constraint-Failure Operator_Constraint-Failure.soar Operator_Constraint-Failure 47 11
+11	10	FOPERATOR elaborations elaborations.soar 12
+12	8	HLIOPERATOR Operator_Tie Operator_Tie.soar Operator_Tie 70 13
+13	12	FOPERATOR elaborations elaborations.soar 14
+14	8	HLIOPERATOR State_No-Change State_No-Change.soar State_No-Change 40 15
+15	14	FOPERATOR elaborations elaborations.soar 16
+16	14	HLIOPERATOR State_No-Change State_No-Change.soar State_No-Change 42 17
+17	16	FOPERATOR elaborations elaborations.soar 18
+18	8	OPERATOR task-operator task-operator.soar 19
+END

@@ -15,6 +15,14 @@ proc appendOutputBuffer {newOutput} {
   append output_buffer $newOutput
 }
 
+proc hasProcedure { procName } {
+	if { [info commands $procName] == "" } {
+		return "false"
+	} else {
+		return "true"
+	}
+}
+
 ##
 # Defines tcl procedures for soar commands.
 #
@@ -22,9 +30,18 @@ proc appendOutputBuffer {newOutput} {
 #
 
 # Define proc for executing Soar commands through SML
+# Will throw an error if the ExecuteCommandLine command failed
 proc executeCommandLine { command } {
-  global _agent
-  return [$_agent ExecuteCommandLine $command false true]
+  global _agent _kernel
+
+  set result [$_agent ExecuteCommandLine $command false true]
+  set ok [$_agent GetLastCommandLineResult]
+  if { $ok == 0 } {
+	  error $result
+  }
+
+  return $result
+  #return [$_agent ExecuteCommandLine $command false true]
 }
 
 ##
@@ -37,6 +54,17 @@ proc buildExecuteCommandArgumentString { name argList } {
   set result $name
   foreach arg $argList {
     append result " "
+
+    # This loop will escape any existing quotes in the string
+    if { $name == "sp" } {
+      set i [string first "\"" $arg]
+      while {$i >= 0 } {
+        set arg [string replace $arg $i $i "\\\""]
+        set i [string first "\"" $arg [expr $i + 2]]
+      }
+    }
+
+    # Now wrap the argument with quotes (if it has a space in it)
     if { [string first " " $arg] >= 0 } {
       append result "\"$arg\""
     } else {
@@ -64,64 +92,63 @@ proc defineSoarCommands { commands } {
   }
 }
 
+####
+# sp
+# @param args - the production being sourced
+# We define a custom procedure to handle sp commands
+# If a production is replaced (duplicate name), it prints out the rule's name
+# This is partly because the command 'source filename -v' doesn't work
+# (Tcl source can't accept command line arguments)
+#######
+
+proc sp { args } {
+    global output_buffer last_file verbose
+
+    set argstr [buildExecuteCommandArgumentString "sp" $args]
+	set result [executeCommandLine $argstr]
+	if { $verbose == "true" && $result == "#*" } {
+        set rule [lindex $argstr 1]
+        set rulename  [string range $rule 0 [string first "\n" $rule]]
+        appendOutputBuffer "\nReplacing production $rulename"
+	} else {
+        appendOutputBuffer $result
+	}
+    return ""
+}
+
+
 ##
 # Create TCL procs for all soar commands
 # Some commands like source, alias and unalias have special implementations
 # below. Dir commands also have tcl implementations: cd dirs popd pushd pwd
-
 defineSoarCommands [set allSoarCommands {
-    add-wme
-    allocate
-    capture-input
-    chunk
-    clog
-    command-to-file
-    debug
-    echo
-    epmem
-    excise
-    explain
-    firing-counts
-    gds-print
-    gp
-    help
-    indifferent-selection
-    init-soar
-    load-library
-    matches
-    memories
-    multi-attributes
-    numeric-indifferent-mode
-    output
-    pbreak
-    predict
-    preferences
-    print
-    production-find
-    pwatch
-    rand
-    remove-wme
-    replay-input
-    rete-net
-    rl
-    run
-    select
-    smem
-    soar
-    sp
-    srand
-    stats
-    stop-soar
-    svs
-    tcl
-    time
-    timers
-    version
-    visualize
-    watch
-    watch-wmes
-    wma
- }]
+  alias
+  chunk
+  debug
+  decide
+  echo
+  epmem
+  explain
+  gp
+  help
+  load
+  output
+  preferences
+  print
+  production
+  rl
+  run
+  save
+  smem
+  soar
+  #sp # handled by custom procedure above
+  srand
+  stats
+  svs
+  trace
+  visualize
+  wm
+}]
 
 global outputStringsStack currentOutputStringsProc
 
@@ -253,18 +280,27 @@ proc reconfigureOutput {} {
 # is to perform the proper directory change when sourcing the file which is not
 # done by sml::Agent::LoadProductions.
 rename source builtInSource
-proc source {arg} {
-  set dir [file dir $arg]
-  set file [file tail $arg]
-  global _agentName
+proc source {fname args} {
+  global _agentName last_file verbose
+  set dir [file dir $fname]
+  set file [file tail $fname]
+  set last_file $file
+
+  if { $args != "" && [string first "-v" $args] != -1 } {
+	  set verbose "true"
+  }
   
   pushd $dir
-  
+
   # Source the file in the global scope and catch any errors so
   # we can properly clean up the directory stack with popd
   if { [catch {uplevel #0 builtInSource $file} errorMessage] } {
     popd
-    error $errorMessage
+	if { [string first "\nError in file" $errorMessage] == 0} {
+		error "$errorMessage"
+	} else {
+		error "\nError in file [pwd]/$file: \n$errorMessage"
+	}
   }
   
   popd
@@ -272,5 +308,8 @@ proc source {arg} {
 }
 
 proc initializeSlave {} {
+  global verbose
+  set verbose "false"
+
   reconfigureOutput
 }

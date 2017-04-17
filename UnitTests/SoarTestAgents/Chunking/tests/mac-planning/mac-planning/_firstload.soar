@@ -1,0 +1,25 @@
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+
+
+pushd "../../default" 
+
+source selection.soar
+popd
+
+multi-attributes ontop 3
+
+chunk singleton any left-bank any
+chunk singleton any right-bank any
+chunk singleton any boat any
+chunk singleton any cannibals any
+chunk singleton any missionaries any
+chunk singleton any other-bank any
+chunk singleton any problem-space any
+
+srand 3 # For consistency for testing - srand 1 will lead to infinite loop
+        # not a problem with chunking but with the implementation of search
+chunk always
+chunk add-osk on

@@ -1,0 +1,57 @@
+# If an block does not have another block ontop of it, it is clear.
+
+sp {P1*elaborate*block*clear
+   (state <ts> ^top-state <ts>)
+   (<ts> ^object <block>
+        -^gripper.holding <block>
+        -^ontop.bottom-block <block>)
+-->
+   (<ts> ^clear <block>)
+}
+sp {P1b*elaborate*block*clear
+   (state <s> ^top-state <ts>)
+   (<ts> ^object <block>
+         ^flag move-block-lookahead 
+        -^gripper.holding <block>
+        -^ontop.bottom-block <block>)
+-->
+   (<ts> ^clear <block>)
+}
+
+# Table is always clear
+
+sp {P2*elaborate*table*clear
+   (state <ts> ^top-state <ts>)
+   (<ts> ^object <object>)
+   (<object> ^type table)
+-->
+   (<ts> ^clear <object>)
+}
+
+sp {P2b*elaborate*table*clear
+   (state <s> ^top-state <ts>)
+   (<ts> ^object <object>
+         ^flag move-block-lookahead)
+   (<object> ^type table)
+-->
+   (<ts> ^clear <object>)
+}
+
+sp {P1*elaborate*block*clear*top
+   (state <s> ^superstate nil
+              ^object <block>
+             -^gripper.holding <block>
+             -^ontop.bottom-block <block>)
+-->
+   (<s> ^clear <block>)
+}
+
+# Table is always clear
+
+sp {P2*elaborate*table*clear*top
+   (state <s> ^superstate nil
+              ^object <object>)
+   (<object> ^type table)
+-->
+   (<s> ^clear <object>)
+}

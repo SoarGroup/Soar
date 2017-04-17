@@ -66,6 +66,13 @@ bool break_if_pref_matches_string(preference *w, const char* match_id, const cha
         return true;
     return false;
 }
+bool break_if_bool(bool shouldBreak)
+{
+    if (shouldBreak)
+        return true;
+    return false;
+}
+
 void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled)
 {
     for (int i=0; i < num_trace_modes; i++)
@@ -99,7 +106,7 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_VARIABLIZATION_MANAGER].prefix =       strdup("VrblzMgr| ");
     mode_info[DT_EXTRA_RESULTS].prefix =                strdup("ExtraRes| ");
     mode_info[DT_BACKTRACE].prefix =                    strdup("BackTrce| ");
-    mode_info[DT_ADD_IDENTITY_SET_MAPPING].prefix =     strdup("Unify   | ");
+    mode_info[DT_UNIFY_IDENTITY_SETS].prefix =          strdup("Unify   | ");
     mode_info[DT_UNIFY_SINGLETONS].prefix =             strdup("Unify_S | ");
     mode_info[DT_BUILD_CHUNK_CONDS].prefix =            strdup("BChnkCnd| ");
     mode_info[DT_LHS_VARIABLIZATION].prefix =           strdup("VrblzLHS| ");
@@ -152,8 +159,10 @@ void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes])
     mode_info[DT_WATERFALL].prefix =                    strdup("Waterfal| ");
     mode_info[DT_DEEP_COPY].prefix =                    strdup("DeepCopy| ");
     mode_info[DT_RHS_LTI_LINKING].prefix =              strdup("RHS LTI | ");
-    mode_info[DT_OSK].prefix =                          strdup("OSK | ");
-
+    mode_info[DT_OSK].prefix =                          strdup("OSK     | ");
+    mode_info[DT_IDSET_REFCOUNTS].prefix =                   strdup("BT_Pass1| ");
+    mode_info[DT_PROPAGATE_ID_SETS].prefix =            strdup("IDS Prop| ");
+    mode_info[DT_DEALLOCATE_ID_SETS].prefix =           strdup("DelIDSet| ");
 
     /* In case we forget to add a trace prefix */
     for (int i=0; i < num_trace_modes; i++)
@@ -179,7 +188,7 @@ void debug_trace_off()
     agent* thisAgent = Output_Manager::Get_OM().get_default_agent();
     if (thisAgent)
     {
-        thisAgent->outputManager->printa(thisAgent, "Debug trace messages disabled.\n");
+        thisAgent->outputManager->printa(thisAgent, "\nDebug trace messages disabled.\n");
     }
 }
 
@@ -193,7 +202,7 @@ void debug_trace_on()
     if (thisAgent)
     {
         thisAgent->output_settings->set_output_params_agent(true);
-        thisAgent->outputManager->printa(thisAgent, "Debug trace settings restored.\n");
+        thisAgent->outputManager->printa(thisAgent, "\nDebug trace settings restored.\n");
     }
 }
 

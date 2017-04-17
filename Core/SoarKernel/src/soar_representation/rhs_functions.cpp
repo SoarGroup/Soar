@@ -469,6 +469,7 @@ set_lti_id_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
     if (thisAgent->SMem->lti_exists(ltiIDSym->ic->value))
     {
         sym->id->LTI_ID = ltiIDSym->ic->value;
+        sym->update_cached_lti_print_str();
     }
     else
     {
@@ -989,6 +990,7 @@ void remove_built_in_rhs_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("link-stm-to-ltm"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("wait"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("write"));
+    remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("trace"));
 
     remove_rhs_function(thisAgent,thisAgent->symbolManager->soarSymbols.at_symbol);
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("capitalize-symbol"));

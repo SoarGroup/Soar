@@ -1,0 +1,31 @@
+sp {putdown*propose*open-gripper
+   (state <s> ^state-type gripper-operators
+              ^top-state.gripper <g>)
+   (<g> ^open no
+        ^position down)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name open-gripper)
+}
+
+sp {put-down*select*open-gripper
+   (state <s> ^name put-down
+              ^operator <op1> +
+              ^desired.destination <dest>
+              ^top-state.gripper <g>)
+   (<g> ^holding <mblock>
+        ^above <dest>)
+   (<op1> ^name open-gripper)
+-->
+   (<s> ^operator <op1> >)
+}
+
+##################
+## For external operator implementation
+
+sp {apply*open-gripper*pass*top-state
+   (state <s> ^operator.name open-gripper
+              ^top-state.io.output-link.gripper <gripper>)
+-->
+   (<gripper> ^command open)
+}

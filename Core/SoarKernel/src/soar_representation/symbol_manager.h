@@ -17,10 +17,6 @@
 #include <string>
 bool is_DT_mode_enabled(TraceMode mode);
 
-#ifdef DEBUG_MAC_STACKTRACE
-    std::string get_stacktrace(const char* prefix);
-#endif
-
 class EXPORT Symbol_Manager {
 
         friend Output_Manager;
@@ -35,7 +31,11 @@ class EXPORT Symbol_Manager {
         void retesave(FILE* f);
 
         void create_predefined_symbols();
+        void create_common_variables_and_numbers();
+        void create_variables_for_range(const char lChar, int lStart, int lEnd);
         void release_predefined_symbols();
+        void release_variables_for_range(const char lChar, int lStart, int lEnd);
+        void release_common_variables_and_numbers();
         void print_internal_symbols();
 
         Symbol* make_variable(const char* name);
@@ -43,6 +43,7 @@ class EXPORT Symbol_Manager {
         Symbol* make_int_constant(int64_t value);
         Symbol* make_float_constant(double value);
         Symbol* make_new_identifier(char name_letter, goal_stack_level level, uint64_t name_number = NIL, bool prohibit_S = true);
+        Symbol* make_str_constant_no_find(char const* name);
         Symbol* generate_new_str_constant(const char* prefix, uint64_t* counter);
 
         void deallocate_symbol_list_removing_references(cons*& sym_list);
@@ -94,7 +95,8 @@ class EXPORT Symbol_Manager {
             std::string strName(x->to_string());
             if (strName == DEBUG_TRACE_REFCOUNT_FOR)
             {
-                std::string caller_string = get_stacktrace("add_ref");
+                std::string caller_string;
+                get_stacktrace(caller_string);
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s++\n", strName.c_str(), x->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {
@@ -114,14 +116,14 @@ class EXPORT Symbol_Manager {
 //            {
 //                std::cout << "REMOVE-REF " << (*x)->to_string() << "->" <<  ((*x)->reference_count - 1) << "\n";
 //            }
-        //    assert((x)->reference_count > 0);
             (*x)->reference_count--;
 
         #ifdef DEBUG_TRACE_REFCOUNT_FOR
             std::string strName((*x)->to_string());
             if (strName == DEBUG_TRACE_REFCOUNT_FOR)
             {
-                std::string caller_string = get_stacktrace("remove_ref");
+                std::string caller_string;
+                get_stacktrace(caller_string);
         //        dprint(DT_ID_LEAKING, "-- | %s(%u) | %s--\n", strName.c_str(), (*x)->reference_count, caller_string.c_str());
                 if (is_DT_mode_enabled(DT_ID_LEAKING))
                 {

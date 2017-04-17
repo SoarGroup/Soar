@@ -1,0 +1,74 @@
+#### Selection A*
+
+## Supports a variant of A* search using the selection space and associated default rules.
+## Requires task-specific rules that compute g(x) + h(x) where 
+##  g(x) is the path cost function (cost of search up to a point) and
+##  h(x) which is the heuristic estimated cost to the desired state
+## This is a variant in that global open and closed lists are not maintained, 
+##  although some of the properties of them can be achieved if chunking and episodic memory
+##  are used. 
+##
+## In this implementation, each evaluation in an evaluation space maintains the 
+##   estimated cost to the desired state, which is used to bias the selection between evaluate-operator operators.
+## These values are updated as results are produced further in the search by passing back updated estimates. 
+##
+###
+##
+## To work, each state must have an associated path cost g(x) and h(x). We provide calculations for when
+##  the state has a ^current-location (^x ^y) and ^desired.waypoint (^x ^y)
+##  it then maintains a ^prior-waypoint (^x ^y), ^path-cost number number, and 
+##  on the evaluation (in selection space) it maintains ^estimated-cost (based on geometric distance).
+##  It computes total-estimated-cost (path-cost + estimated-cost)
+##
+##  If there is no current-location and desired.waypoint, task-specific knowledge must maintain the other 
+##  structures (prior-waypoint, ...)
+## 
+## Need to initialize path-cost 0, estimated-cost 0 
+
+## Need to have estimated-cost updated in evaluation as search progresses forward - 
+##   Evaluation should hold best total-estimated-cost to date - (from look-aheads)
+##    initialized with path cost + estimated cost in subgoal, 
+##    How update estimated cost??
+##
+## Modify 3/1/2011: Add compare evaluations to selection space to avoid some race conditions with computing final-cost and total-estimated-cost
+
+chunk singleton any visited any
+chunk singleton any path-cost any
+chunk singleton any current-location any
+chunk singleton any estimated-cost any
+chunk singleton any updated-estimate any
+chunk singleton any total-estimated-cost any
+chunk singleton any best-total-estimate any
+chunk singleton any final-cost any
+chunk singleton any compared any
+chunk singleton any op1 any
+chunk singleton any op2 any
+
+multi-attributes evaluation 5
+
+chunk only
+srand 1
+
+#sp {apply*compute-best-total-estimate*pass-back-super
+#  # :interrupt
+#   :default
+#   (state <s> ^operator <op>
+#            # ^superstate.superstate.operator.evaluation <se>
+#              ^superstate.copy-structure.superstate-evaluation <se>
+#              ^evaluation <e>)
+#   (<op> ^name compute-best-total-estimate)
+#   (<e> ^total-estimated-cost <tes>        
+#        ^estimated-cost-count <ecc>
+#        ^superoperator <so>)
+#  -(<s> ^evaluation.total-estimated-cost < <tes>)
+#   (<se> ^estimated-cost {< <tes> <sec> }
+#         ^estimated-cost-count <ecc>)
+#-->
+# ##(write (crlf) |!!!Updated superestimated cost. Replace | <sec> | with | <tes>)
+#   (<se> ^estimated-cost <sec> -
+#                         <tes>
+#         ^estimated-cost-count <ecc> -
+#                               (+ 1 <ecc>)
+#         ^updated-estimate true)
+#}
+

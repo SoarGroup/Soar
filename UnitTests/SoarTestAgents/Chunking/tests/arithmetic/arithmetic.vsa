@@ -1,0 +1,41 @@
+VERSION 4
+\arithmetic\arithmetic.dm
+0	ROOT arithmetic arithmetic 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR monitor monitor.soar 6
+6	3	FOPERATOR top-state top-state.soar 7
+7	3	FOPERATOR Verify Verify.soar 8
+8	0	FOPERATOR _readme _readme.soar 9
+9	0	OPERATOR finish-problem finish-problem.soar 10
+10	0	OPERATOR generate-facts generate-facts.soar 11
+11	0	HLOPERATOR generate-problem generate-problem.soar generate-problem 59 12
+12	11	FOPERATOR elaborations elaborations.soar 13
+13	11	OPERATOR finish-problem-generation finish-problem-generation.soar 14
+14	11	OPERATOR generate-digit1 generate-digit1.soar 15
+15	11	OPERATOR generate-digit2 generate-digit2.soar 16
+16	11	OPERATOR generate-operation generate-operation.soar 17
+17	11	OPERATOR next-column next-column.soar 18
+18	0	OPERATOR initialize-arithmetic initialize-arithmetic.soar 19
+19	0	OPERATOR next-column next-column.soar 20
+20	0	HLOPERATOR process-column process-column.soar process-column 24 21
+21	20	FOPERATOR elaborations elaborations.soar 22
+22	20	HLOPERATOR carry carry.soar carry 45 23
+23	22	FOPERATOR elaborations elaborations.soar 24
+24	22	OPERATOR new-column new-column.soar 25
+25	20	OPERATOR compute-addition-result compute-addition-result.soar 26
+26	20	HLOPERATOR compute-subtraction-result compute-subtraction-result.soar compute-subtraction-result 85 27
+27	26	FOPERATOR elaborations elaborations.soar 28
+28	26	OPERATOR add-ten add-ten.soar 29
+29	26	OPERATOR borrow borrow.soar 30
+30	26	OPERATOR compute-result compute-result.soar 31
+31	20	HLOPERATOR get-digit1 get-digit1.soar get-digit1 40 32
+32	31	FOPERATOR elaborations elaborations.soar 33
+33	31	OPERATOR compute-result compute-result.soar 34
+34	31	OPERATOR write-digit1 write-digit1.soar 35
+35	20	OPERATOR get-digit2 get-digit2.soar 36
+36	20	OPERATOR write-result write-result.soar 37
+37	0	OPERATOR stop-arithmetic stop-arithmetic.soar 38
+END

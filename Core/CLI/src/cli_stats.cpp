@@ -8,7 +8,7 @@
 
 #include "portability.h"
 
-#include <time.h>
+//#include <time.h>
 
 #include "cli_CommandLineInterface.h"
 

@@ -24,13 +24,13 @@
 #include "callback.h"
 #include "cmd_settings.h"
 #include "condition_record.h"
-#include "debug.h"
 #include "debug_inventories.h"
 #include "decide.h"
 #include "decider.h"
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity_set.h"
 #include "ebc_repair.h"
 #include "episodic_memory.h"
 #include "explanation_memory.h"
@@ -97,11 +97,10 @@ void init_soar_agent(agent* thisAgent)
 
     thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
     thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
-    thisAgent->memoryManager->init_memory_pool(MP_attachments, sizeof(attachment_struct), "attachments");
     thisAgent->memoryManager->init_memory_pool(MP_sym_triple, sizeof(symbol_triple), "symbol_triple");
     thisAgent->memoryManager->init_memory_pool(MP_identity_mapping, sizeof(identity_mapping), "identity_map");
     thisAgent->memoryManager->init_memory_pool(MP_chunk_element, sizeof(chunk_element), "chunk_element");
-    thisAgent->memoryManager->init_memory_pool(MP_sym_identity, sizeof(sym_identity_info), "sym_identity");
+    thisAgent->memoryManager->init_memory_pool(MP_identity_sets, sizeof(IdentitySet), "identity_set");
 
     thisAgent->memoryManager->init_memory_pool(MP_action_record, sizeof(action_record), "action_record");
     thisAgent->memoryManager->init_memory_pool(MP_condition_record, sizeof(condition_record), "cond_record");
@@ -124,7 +123,7 @@ void init_soar_agent(agent* thisAgent)
     thisAgent->memoryManager->init_memory_pool(MP_smem_wmes, sizeof(preference_list), "smem_wmes");
     thisAgent->memoryManager->init_memory_pool(MP_smem_info, sizeof(smem_data), "smem_id_data");
 
-    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(epmem_wme_stack), "epmem_wmes");
+    thisAgent->memoryManager->init_memory_pool(MP_epmem_wmes, sizeof(preference_list), "epmem_wmes");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_info, sizeof(epmem_data), "epmem_id_data");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_literal, sizeof(epmem_literal), "epmem_literals");
     thisAgent->memoryManager->init_memory_pool(MP_epmem_pedge, sizeof(epmem_pedge), "epmem_pedges");
@@ -316,8 +315,8 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
-    delete delete_agent->explanationBasedChunker;
     delete delete_agent->visualizationManager;
+    delete delete_agent->explanationBasedChunker;
     delete_agent->explanationBasedChunker = NULL;
     delete_agent->visualizationManager = NULL;
     #ifndef NO_SVS
@@ -356,13 +355,18 @@ void destroy_soar_agent(agent* delete_agent)
     delete delete_agent->explanationMemory;
     delete_agent->explanationMemory = NULL;
 
-    IDI_print_and_cleanup(delete_agent);
-    PDI_print_and_cleanup(delete_agent);
-    WDI_print_and_cleanup(delete_agent);
-    GDI_print_and_cleanup(delete_agent);
+    /* Print deallocation inventory results (compiled out in release build)
+     * - Note: The last three are included here but not during init-soar because
+     *         productions can contain actions, rhs symbols and rhs functions
+     *         which aren't deallocated until exit.*/
+    clean_up_debug_inventories(delete_agent);
+    ADI_print_and_cleanup(delete_agent);
+    RSI_print_and_cleanup(delete_agent);
+    RFI_print_and_cleanup(delete_agent);
+    TDI_print_and_cleanup(delete_agent);
 
     delete_agent->symbolManager->release_predefined_symbols();
-    //deallocate_symbol_list_removing_references(delete_agent, delete_agent->parser_syms);
+    delete_agent->symbolManager->release_common_variables_and_numbers();
 
     delete_agent->memoryManager->free_with_pool(MP_rete_node, delete_agent->dummy_top_node);
     delete_agent->memoryManager->free_with_pool(MP_token, delete_agent->dummy_top_token);
@@ -452,10 +456,7 @@ void reinitialize_agent(agent* thisAgent)
     thisAgent->explanationMemory->re_init();
 
     /* Print deallocation inventory results (compiled out in release build) */
-    IDI_print_and_cleanup(thisAgent);
-    PDI_print_and_cleanup(thisAgent);
-    WDI_print_and_cleanup(thisAgent);
-    GDI_print_and_cleanup(thisAgent);
+    clean_up_debug_inventories(thisAgent);
 
     /* Reset Soar identifier hash table and counters for WMEs, SMem and Soar IDs.
      * Note:  reset_hash_table() is where refcount leaks in identifiers are detected. */

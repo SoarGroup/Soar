@@ -1,0 +1,61 @@
+# Propose a move-block operator if a block isn't on the its
+# goal block.  Ignores whether the blocks are clear.  Subgoal
+# will take care of clearing them if necessary.
+sp {blocks-world*opsub*propose*operator
+   (state <s> ^name blocks-world 
+              ^desired <d*1> 
+              ^ontop <ontop-s>)
+   (<ontop-s> ^top-block <mblock>
+              ^bottom-block <b*1>)
+   (<d*1> ^ontop <ontop-d>)
+   (<ontop-d> ^top-block <mblock> 
+              ^bottom-block { <> <b*1> <dobject> })
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-block 
+        ^moving-block <mblock>  
+        ^destination <dobject>)
+}
+
+sp {blocks-world*evaluate*operator*prefer*inplace
+    (state <s> ^inplace-object <in-obj> ^operator <o> +)
+    (<o> ^destination <in-obj>)
+    -->
+    (<s> ^operator <o> >)
+}
+sp {blocks-world*evaluate*avoid*clobbering*clear-block
+    (state <s> ^desired <d*1> ^operator <o> +)
+    (<o> ^destination.type block)
+    (<d*1> ^clear <ub>)
+    -->
+    (<s> ^operator <o> <)
+}
+
+sp {blocks-world*apply*operator*move-block*change-ontop
+   (state <s> ^clear <dobject> 
+              ^operator <o> 
+              ^clear <mblock> 
+              ^ontop <ontop>)
+   (<o> ^destination <dobject>
+        ^moving-block <mblock>)
+   (<ontop> ^top-block <mblock> 
+            ^bottom-block { <> <dobject> <object> }) 
+-->
+   (<ontop> ^bottom-block <dobject> +
+            ^bottom-block <object> -)
+}
+
+sp {blocks-world*apply*operator*move-block*change-ontop*monitor
+   (state <s> ^clear <dobject>
+              ^operator <o> 
+              ^clear <mblock> 
+              ^ontop <ontop>)
+   (<o> ^destination <dobject>
+        ^moving-block <mblock>)
+   (<ontop> ^top-block <mblock> 
+            ^bottom-block { <> <dobject> <object> })   
+   (<dobject> ^name <db-name>)
+   (<mblock> ^name <mb-name>)
+-->
+   (write (crlf) |Move block | <mb-name> | onto | <db-name> )
+}

@@ -1077,9 +1077,8 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
         // If aliases need to be expanded before going to the filter, we can change this then.
         // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
 
-        /* MToDo | Here's a new function to expand a command.  Did not use for something else
-         *         but it could solve a problem with TclSoarLib.  (Bug is that soar aliases
-         *         prevent Tcl substitution) */
+        /* The following is a new function to expand a command.  Did not use for something else
+         * but it could solve a Tcl problem where soar aliases prevent Tcl substitution) */
         //        std::string lCmd;
         //        lCmd = m_CommandLineInterface.ExpandCommand(pCommandName);
         //        pFunction = m_CommandMap[lCmd.c_str()];
@@ -1131,7 +1130,16 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
                     pFilteredOutput = "" ;
                 }
 
-                bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+                bool res;
+                if (filteredError) 
+                {
+                    pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
+                    res = this->ReturnResult(pConnection, pResponse, "") ;
+                }
+                else
+                {
+                    res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
+                }
 
                 // Can only clean this up after we're finished using it or pFilteredLine will become invalid
                 delete pFilteredXML ;
@@ -1211,7 +1219,10 @@ bool KernelSML::HandleSVSQuery(AgentSML* pAgentSML, char const* pCommandName, Co
     }
     std::string res;
 #ifndef NO_SVS
-    res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    if (pAgentSML->GetSoarAgent()->svs->is_enabled())
+    {
+        res = pAgentSML->GetSoarAgent()->svs->svs_query(pLine);
+    }
 #endif
     return this->ReturnResult(pConnection, pResponse, res.c_str());
 }

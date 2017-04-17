@@ -1,0 +1,35 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _readme.soar
+source count-test1.soar
+source count-test2.soar
+source count-test3.soar
+source count-test4.soar
+pushd count-test4
+source count-test4_source.soar
+popd
+source Impasse__Operator_Tie.soar
+pushd Impasse__Operator_Tie
+source Impasse__Operator_Tie_source.soar
+popd
+source Impasse__State_No-Change.soar
+pushd Impasse__State_No-Change
+source Impasse__State_No-Change_source.soar
+popd
+source count-test5.soar
+source count-test6.soar
+source count-test7.soar
+source count-test8.soar
+source count-test9.soar
+pushd count-test9
+source count-test9_source.soar
+popd
+source initialize-count-test.soar
+source next-test.soar
+source set-up-current-test.soar
+source test-complete.soar

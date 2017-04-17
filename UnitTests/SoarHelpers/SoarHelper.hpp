@@ -10,10 +10,12 @@
 #define SoarHelper_cpp
 
 
+#define INIT_AFTER_RUN                    // Tests for Soar identifier leaks on soar init
+#define CONFIGURE_SOAR_FOR_UNIT_TESTS     // Insures debug printing and settings.soar file don't interfere
 //#define SAVE_LOG_FILES                  // Make sure a log directory exists wherever unit tests are run
-#define TURN_EXPLAINER_ON
-#define INIT_AFTER_RUN
-#define CONFIGURE_SOAR_FOR_UNIT_TESTS
+#define TURN_EXPLAINER_ON               // Turns the explainer on for all chunking unit tests
+//#define NEVER_LEARN                     // Overrides learning settings in many unit tests
+//#define ALWAYS_LEARN
 
 #include "sml_ClientAgent.h"
 #include <string>
@@ -50,6 +52,7 @@ public:
 
     static bool source(sml::Agent* agent, const std::string& pCategoryName, const std::string& pTestName);
     static void init_check_to_find_refcount_leaks(sml::Agent* agent);
+    static void check_learning_override(sml::Agent* agent);
     static void agent_command(sml::Agent* agent, const char* pCmd);
     static void add_log_dir_if_exists(std::string &lPath);
     static void start_log(sml::Agent* agent, const char* path);

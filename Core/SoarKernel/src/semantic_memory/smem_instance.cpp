@@ -33,41 +33,42 @@ void SMem_Manager::install_buffered_triple_list(Symbol* state, wme_set& cue_wmes
     instantiation* inst = make_architectural_instantiation_for_memory_system(thisAgent, state, &cue_wmes, &my_list, true);
     for (preference* pref = inst->preferences_generated; pref;)
     {
-        assert(!pref->in_tm);  // Can this already be in TM with our new smem model?
-        // add the preference to temporary memory
-        if (!pref->in_tm)
+        if (add_preference_to_tm(thisAgent, pref))
         {
-            if (add_preference_to_tm(thisAgent, pref))
+            // and add it to the list of preferences to be removed
+            // when the goal is removed
+            dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
+            insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
+            pref->on_goal_list = true;
+            if (meta)
             {
-                // and add it to the list of preferences to be removed
-                // when the goal is removed
-                dprint(DT_SMEM_INSTANCE, "...adding preference %p to WM\n", pref);
-                insert_at_head_of_dll(state->id->preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev);
-                pref->on_goal_list = true;
-                if (meta)
-                {
-                    // if this is a meta wme, then it is completely local
-                    // to the state and thus we will manually remove it
-                    // (via preference removal) when the time comes
-                    state->id->smem_info->smem_wmes->push_back(pref);
-                }
+                // if this is a meta wme, then it is completely local
+                // to the state and thus we will manually remove it
+                // (via preference removal) when the time comes
+                state->id->smem_info->smem_wmes->push_back(pref);
             }
-            else
+        }
+        else
+        {
+            dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
+            if (pref->reference_count == 0)
             {
-                dprint(DT_SMEM_INSTANCE, "...could not add preference %p to WM.  Deallocating.\n", pref);
-                if (pref->reference_count == 0)
-                {
-                    preference* previous = pref;
-                    pref = pref->inst_next;
-                    possibly_deallocate_preference_and_clones(thisAgent, previous, true);
-                    continue;
-                }
+                preference* previous = pref;
+                pref = pref->inst_next;
+                possibly_deallocate_preference_and_clones(thisAgent, previous, true);
+                continue;
             }
         }
         if (stripLTILinks)
         {
             pref->id->id->LTI_ID = 0;
-            if (pref->value->is_sti()) pref->value->id->LTI_ID = 0;
+            pref->id->update_cached_lti_print_str();
+            if (pref->value->is_sti())
+            {
+                pref->value->id->LTI_ID = 0;
+                pref->value->update_cached_lti_print_str();
+            }
+
         }
         pref = pref->inst_next;
     }
@@ -214,6 +215,7 @@ uint64_t SMem_Manager::get_current_LTI_for_iSTI(Symbol* pISTI, bool useLookupTab
     if (pOverwriteOldLinkToLTM || !pISTI->id->LTI_ID)
     {
         pISTI->id->LTI_ID = returnVal;
+        pISTI->update_cached_lti_print_str();
         pISTI->id->smem_valid = smem_validation;
     }
     return returnVal;
@@ -241,8 +243,18 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
         {
             sti = get_current_iSTI_for_LTI(pLTI_ID, result_header->id->level);
             sti_created_here = true;
-        } else {
-            assert(sti->id->LTI_ID && sti->id->level && (sti->id->level <= result_header->id->level));
+        }
+    }
+    else
+    {
+        if (sti == NIL)
+        {
+            sti = thisAgent->symbolManager->make_new_identifier('L', NO_WME_LEVEL, NIL);
+            sti->id->level = NO_WME_LEVEL;
+            sti->id->promotion_level = NO_WME_LEVEL;
+            sti->id->LTI_ID = pLTI_ID;
+            sti->id->smem_valid = smem_validation;
+            sti_created_here = true;
         }
     }
     // activate lti
@@ -266,7 +278,7 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
     }
 
     /* Not sure if this is still needed with this new implementation of smem*/
-    if (sti_created_here)
+    if (sti_created_here && install_type == wm_install)
     {
         // if the identifier was created above we need to
         // remove a single ref count AFTER the wme
@@ -323,6 +335,10 @@ void SMem_Manager::install_memory(Symbol* state, uint64_t pLTI_ID, Symbol* sti, 
 
             // deal with ref counts - attribute/values are always created in this function
             // (thus an extra ref count is set before adding a wme)
+            if (install_type == fake_install && sti_created_here)
+            {
+                thisAgent->symbolManager->symbol_remove_ref(&sti);
+            }
             thisAgent->symbolManager->symbol_remove_ref(&attr_sym);
             thisAgent->symbolManager->symbol_remove_ref(&value_sym);
         }

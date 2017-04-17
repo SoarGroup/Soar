@@ -1,0 +1,71 @@
+sp {selection*propose*compute-best-total-estimate
+   :default
+   (state <s> ^name selection
+              ^superstate.superstate.operator.evaluation
+             -^not-all-operators-total-estimated-cost true)
+  -(<s> ^best-total-estimate <bte>)
+-->
+ ##(write (crlf) |Propose Compute Best Total Estimate|)
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-best-total-estimate)
+}
+
+### Modified JEL so applies only when there is an evaluation not <= <bte> (as opposed to not equal)
+##  If it is < <bte> that should be impossible
+sp {selection*propose*compute-best-total-estimate2
+   :default
+ #interrupt
+   (state <s> ^name selection
+              ^superstate.superstate.operator.evaluation
+             -^not-all-operators-total-estimated-cost true
+              ^best-total-estimate <bte>
+             -^evaluation.total-estimated-cost <= <bte>)  # < <bte>
+-->
+ ##(write (crlf) |Propose Compute Best Total Estimate2|)
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-best-total-estimate)
+}
+
+sp {apply*compute-best-total-estimate
+   :default
+   (state <s> ^operator <op>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost <tes>)
+  -{(<s> ^evaluation.total-estimated-cost < <tes>)}
+-->
+   (write (crlf) |  Best Total Estimate | <tes> | from | <e>)
+   (<s> ^best-total-estimate <tes>)
+}
+
+sp {apply*compute-best-total-estimate*remove-old
+   :default
+   (state <s> ^operator <op>
+              ^best-total-estimate <bte>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost { <> <bte> <tes> })
+  -{(<s> ^evaluation.total-estimated-cost < <tes>)}
+-->
+   (write (crlf) |  Remove Best Total Estimate | <bte>)
+   (<s> ^best-total-estimate <bte> -)
+}
+
+sp {apply*compute-best-total-estimate*pass-back-super
+   :default
+   (state <s> ^operator <op>
+             # ^quiescence t
+              ^superstate.superstate.operator.evaluation <se>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost <tes>
+        ^superoperator <so>)
+  -(<s> ^evaluation.total-estimated-cost < <tes>)
+   (<se> ^estimated-cost {< <tes> <sec> }
+        -^estimated-cost > <tes>)
+-->
+   (write (crlf) |!!!Updated superestimated cost. Replace | <sec> | with | <tes>)
+   (<se> ^estimated-cost <sec> -
+                         <tes>
+         ^updated-estimate true)
+}

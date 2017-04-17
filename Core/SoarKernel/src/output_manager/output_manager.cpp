@@ -14,7 +14,6 @@
 
 #include "agent.h"
 #include "callback.h"
-#include "debug.h"
 #include "dprint.h"
 #include "output_settings.h"
 #include "print.h"
@@ -104,12 +103,6 @@ void Output_Manager::print_output_modes(trace_mode_info mode_info_to_print[num_t
     }
 }
 
-void Output_Manager::init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance)
-{
-    m_Kernel = pKernel;
-    m_Soar_Instance = pSoarInstance;
-}
-
 Output_Manager::Output_Manager()
 {
     m_defaultAgent = NIL;
@@ -131,7 +124,6 @@ Output_Manager::Output_Manager()
     /* -- This is a string used when trying to print a null symbol.  Not sure if this is the best
      *    place to put it.  Leaving here for now. -- */
     NULL_SYM_STR = strdup("NULL");
-
 }
 
 Output_Manager::~Output_Manager()
@@ -147,7 +139,6 @@ Output_Manager::~Output_Manager()
 
     delete m_params;
 }
-
 
 int Output_Manager::get_printer_output_column(agent* pSoarAgent)
 {

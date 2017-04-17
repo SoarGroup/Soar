@@ -1,0 +1,81 @@
+ 
+sp {selection*apply*state*evaluation
+   :default
+   (state <s> ^name selection
+              ^operator <o>)
+   (<o> ^name evaluate-operator
+        ^superoperator <ob>)
+  -{(<s> ^evaluation.superoperator <ob>)}
+-->
+   (<s> ^evaluation <e>)
+   (<e> ^superoperator <ob>)}
+
+sp {selection*apply*state*evaluation*path-current
+   :default
+   (state <s> ^name selection
+              ^operator <o>
+              ^superstate.top-state.current-location <loc>)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>)
+  -(<e> ^path-cost
+        ^current-location)
+-->
+   (<e> ^path-cost 0
+        ^current-location <loc>)}
+
+### JEL Added to reset the path cost whenever return to the selection
+##   space  - otherwise path is maintained across multiple selections
+##   of evaluate operator. Another approach would be to have new
+##   instances of evaluate operator each time that reset the value?
+##  What about always extend from current location in the evaluation?
+##  BUT resets it when go forward 
+
+## SHOULD only update path-cost if current-location = evaluation.current-location
+
+#sp {selection*apply*state*evaluation*path-current*reset
+#   :default
+#   :interrupt
+#   (state <s> ^name selection
+#              ^operator <o>
+#              ^superstate.top-state.current-location <loc>)
+#   (<o> ^name evaluate-operator
+#        ^evaluation <e>)
+#   (<e> ^path-cost { <pcost> <> 0 }
+#        ^current-location { <> <loc> <cloc> })
+#  -(<ss> ^superstate <s>)
+#-->
+# ##(write (crlf) |@@@@@@@@ reset path cost.| )
+#   (<e> ^path-cost 0
+#                   <pcost> -)
+#   (<e> ^current-location <cloc> -
+#                          <loc>)}
+#
+sp {Impasse__Operator_Tie*elaborate*state*evaluation
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^path-cost <pc>
+        ^current-location.id <cl>
+        ^total-estimated-cost <tec>
+        ^estimated-cost <ec>
+        ^superoperator.next-waypoint.id <nid>)
+-->
+   (write (crlf) |Evaluation: | <e> |, next-waypoint: | <nid> |, current-location: | <cl> |, path-cost: | <pc> |, estimated-cost: | <ec> |, total-estimated-cost: | <tec>)
+}
+sp {chunk*evaluate-apply*task-operator2
+    :chunk
+    (state <s1> ^operator <o1>)
+    (<o1> ^name evaluate-operator ^superstate <s4> ^superproblem-space <p1>
+          ^superoperator <o2> ^superstate <s2> ^evaluation <e1>)
+    (<s4> ^name go-to-location)
+    (<o2> ^next-waypoint <w2>)
+    (<w2> ^y <c5> ^x <c4> ^id <c3>)
+    (<p1> ^name <c1>)
+    (<s2> ^top-state <s3>)
+    (<s3> ^current-location <w1>)
+    (<w1> ^y <c8> ^x <c7> ^id <c6>)
+    (<e1> ^current-location <w1> ^path-cost <c2>)
+    -->
+   (write (crlf) |Compute path cost: | <c2> | -> |  (+ <c2> (compute-range <c7> <c8> <c4> <c5>)))
+    (<e1> ^path-cost (+ <c2> (compute-range <c7> <c8> <c4> <c5>)) +
+           ^path-cost <c2> - ^current-location <w1> - ^current-location <w2> +)
+}

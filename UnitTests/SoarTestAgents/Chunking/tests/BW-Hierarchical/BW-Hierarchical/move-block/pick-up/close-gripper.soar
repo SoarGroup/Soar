@@ -1,0 +1,24 @@
+##########################################
+## Standard proposal and control knowledge
+sp {pick-up*propose*close-gripper
+   (state <s> ^name pick-up
+              ^desired.moving-block.name <mblock>
+              ^top-state.gripper <g>)
+   (<g> ^holding nothing
+        ^above.name <mblock>
+        ^open yes
+        ^position down)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name close-gripper)
+}
+
+##################
+### For external operator implementations
+#
+sp {apply*close-gripper*pass*top-state
+   (state <s> ^operator.name close-gripper
+              ^top-state.io.output-link.gripper <gripper>)
+-->
+   (<gripper> ^command close)
+}

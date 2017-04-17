@@ -15,9 +15,9 @@
 
 #include "kernel.h"
 
-#include <assert.h>
 #include <string>
 #include <list>
+#include <stdlib.h>
 
 #define MAX_COLUMNS 10
 #define MAX_LEXER_LINE_LENGTH 1000
@@ -81,10 +81,8 @@ class Output_Manager
         Output_Manager(Output_Manager const&) {};
         void operator=(Output_Manager const&) {};
 
-        Soar_Instance*                            m_Soar_Instance;
-        sml::Kernel*                              m_Kernel;
-        agent*                                    m_defaultAgent;
-        OM_Parameters*                            m_params;
+        agent*          m_defaultAgent;
+        OM_Parameters*  m_params;
 
         /* -- Global toggles for database, standard out -- */
         bool stdout_mode;
@@ -111,7 +109,6 @@ class Output_Manager
         void pref_to_string(agent* thisAgent, preference* pref, std::string &destString);
         void preflist_inst_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
         void preflist_result_to_string(agent* thisAgent, preference* top_pref, std::string &destString);
-        void test_to_string(test t, std::string &destString, bool show_equality = false);
         const char* test_type_to_string(byte test_type);
         bool wme_to_string(agent* thisAgent, wme* w, std::string &destString);
         void WM_to_string(agent* thisAgent, std::string &destString);
@@ -125,7 +122,6 @@ class Output_Manager
 
         uint64_t settings[num_output_sysparams];
 
-        void init_Output_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
         void set_output_params_global(bool pDebugEnabled);
         void set_output_mode(int modeIndex, bool pEnabled);
         void copy_output_modes(trace_mode_info mode_info_src[num_trace_modes], trace_mode_info mode_info_dest[num_trace_modes]);
@@ -141,7 +137,7 @@ class Output_Manager
         bool is_printing_to_stdout() { return stdout_mode; };
         void set_printing_to_stdout(bool pEnabled) { stdout_mode = pEnabled; };
 
-        void set_default_agent(agent* pSoarAgent) { assert(pSoarAgent); m_defaultAgent = pSoarAgent; };
+        void set_default_agent(agent* pSoarAgent) { m_defaultAgent = pSoarAgent; };
         void clear_default_agent() { m_defaultAgent = NULL; }
         agent* get_default_agent() { return m_defaultAgent; }
 
@@ -166,8 +162,10 @@ class Output_Manager
         void debug_print_sf_noprefix(TraceMode mode, const char* format, ...);
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
 
+        void test_to_string(test t, std::string &destString, bool show_equality = false);
+        void identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
-        void rhs_value_to_string(rhs_value rv, std::string &destString, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
+        void rhs_value_to_string(rhs_value rv, std::string &destString, bool rereadable = true, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
 
         /* Methods to make printing prettier */
@@ -233,6 +231,7 @@ class Output_Manager
         void print_varnames_node(TraceMode mode, node_varnames* var_names_node);
         void print_all_inst(TraceMode mode);
         void print_variables(TraceMode mode);
+        void print_identity_sets(TraceMode mode);
 
         /* A single function to print all pre-formatted Soar error messages.  Added
          * to make other code cleaner and easier to parse */
@@ -248,6 +247,8 @@ class Output_Manager
 
 inline const char* capitalizeOnOff(bool isEnabled) { return isEnabled ? "[ ON | off ]" : "[ on | OFF ]"; }
 inline const char* capitalizeYesNo(bool isEnabled) { return isEnabled ? "[ YES | no ]" : "[ yes | NO ]"; }
+inline const char* TorF(bool isTrue) { if (isTrue) return "true"; else return "false"; }
+inline const char* PassorFail(bool isTrue) { if (isTrue) return "Pass"; else return "Fail"; }
 
 inline std::string concatJustified(const char* left_string, std::string right_string, int pWidth)
 {
@@ -257,6 +258,13 @@ inline std::string concatJustified(const char* left_string, std::string right_st
     return_string.append(sepLength, ' ');
     return_string += right_string;
     return return_string;
+}
+inline const char* field_to_string(WME_Field f)
+{
+    if (f == ID_ELEMENT) return "ID";
+    if (f == ATTR_ELEMENT) return "attribute";
+    if (f == VALUE_ELEMENT) return "value";
+    return "NO-ELEMENT";
 }
 
 /* ------------------------------------

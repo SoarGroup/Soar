@@ -20,7 +20,7 @@ class ebc_param_container: public soar_module::param_container
         soar_module::constant_param<chunkNameFormats>* naming_style;
         soar_module::constant_param<singleton_element_type>* element_type;
 
-        soar_module::boolean_param* history_cmd;
+        soar_module::boolean_param* timers_cmd;
         soar_module::boolean_param* stats_cmd;
         soar_module::boolean_param* help_cmd;
         soar_module::boolean_param* qhelp_cmd;

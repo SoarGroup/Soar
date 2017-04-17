@@ -15,6 +15,7 @@
 #include "agent.h"
 #include "condition.h"
 #include "ebc.h"
+#include "ebc_timers.h"
 #include "instantiation.h"
 #include "mem.h"
 #include "preference.h"
@@ -239,6 +240,7 @@ void add_cond_to_tc(agent* thisAgent, condition* c, tc_number tc,
     {
         add_test_to_tc(thisAgent, c->data.tests.id_test, tc, id_list, var_list);
         add_test_to_tc(thisAgent, c->data.tests.value_test, tc, id_list, var_list);
+
     }
 }
 
@@ -367,19 +369,24 @@ bool reorder_and_validate_lhs_and_rhs(agent*        thisAgent,
     dprint_noprefix(DT_REORDERER, "%1", *lhs_top);
     dprint_noprefix(DT_REORDERER, "Actions:\n");
     dprint_noprefix(DT_REORDERER, "%2", *rhs_top);
+    thisAgent->explanationBasedChunker->ebc_timers->reorder->start();
 
     if (! reorder_action_list(thisAgent, rhs_top, tc, ungrounded_syms, add_ungrounded_rhs))
     {
+        thisAgent->explanationBasedChunker->ebc_timers->reorder->stop();
         /* If there are problems on the LHS, we need the ungrounded_syms
          * from them, before we return.  So we call, reorder_lhs too.
          * Note ungrounded_syms is null when not called for a chunk. */
         if (add_ungrounded_lhs)
         {
+            thisAgent->explanationBasedChunker->ebc_timers->repair->start();
             reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms);
+            thisAgent->explanationBasedChunker->ebc_timers->repair->stop();
         }
         return false;
     }
     lhs_good = reorder_lhs(thisAgent, lhs_top, reorder_nccs, ungrounded_syms, add_ungrounded_lhs);
+    thisAgent->explanationBasedChunker->ebc_timers->reorder->stop();
     if (!lhs_good)
     {
         return false;
@@ -423,6 +430,7 @@ production* make_production(agent*          thisAgent,
     thisAgent->memoryManager->allocate_with_pool(MP_production, &p);
     p->name = name;
     p->original_rule_name = make_memory_block_for_string(thisAgent, original_rule_name);
+    p->naming_depth = 0;
 
     if (name->sc->production)
     {
@@ -487,7 +495,6 @@ void deallocate_production(agent* thisAgent, production* prod)
         for (instantiation* lInst = prod->instantiations; lInst != NULL; lInst = lInst->next)
         {
             dprint(DT_DEALLOCATE_PROD, "Clearing production pointer from instantiation %u (%y).\n", lInst->i_id, lInst->prod_name);
-            assert(lInst->prod == prod);
             lInst->prod = NULL;
         }
     }

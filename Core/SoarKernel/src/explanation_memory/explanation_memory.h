@@ -94,16 +94,13 @@ class Explanation_Memory
 
         void                    add_chunk_record(instantiation* pBaseInstantiation);
         void                    add_result_instantiations(instantiation* pBaseInst, preference* pResults);
-        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_id_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
+        void                    record_chunk_contents(production* pProduction, condition* lhs, action* rhs, preference* results, id_to_join_map* pIdentitySetMappings, instantiation* pBaseInstantiation, instantiation* pChunkInstantiation);
         void                    cancel_chunk_record();
         void                    end_chunk_record();
         void                    save_excised_production(production* pProd);
         void                    excise_production_id(uint64_t pId);
 
-        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromID, uint64_t pToID)
-                                { if (current_recording_chunk) current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromID, pToID); }
-        void                    reset_identity_set_counter() { id_set_counter = 0; };
-        uint64_t                get_identity_set_counter() { return ++id_set_counter; };
+        void                    add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID);
 
         instantiation_record*   add_instantiation(instantiation* pInst, uint64_t pChunkID = 0);
 
@@ -209,8 +206,6 @@ class Explanation_Memory
         void                    print_chunk_explanation();
         bool                    print_instantiation_explanation_for_id(uint64_t pInstID);
         void                    print_instantiation_explanation(instantiation_record* pInstRecord, bool printFooter = true);
-        bool                    print_condition_explanation_for_id(uint64_t pInstID);
-        void                    print_condition_explanation(uint64_t pCondID);
         void                    print_path_to_base(const inst_record_list* pPathToBase, bool pPrintFinal = true, const char* pFailedStr = NULL, const char* pHeaderStr = NULL);
         void                    print_footer(bool pPrintDiscussedChunkCommands = false);
 
@@ -226,7 +221,6 @@ class Explanation_Memory
         uint64_t            condition_id_count;
         uint64_t            chunk_id_count;
         uint64_t            action_id_count;
-        uint64_t            id_set_counter;
 
         /* Statistics on learning performed so far */
         chunking_stats      stats;

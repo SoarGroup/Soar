@@ -1,0 +1,15 @@
+sp {Impasse__operator_tie*propose*select-super-operator-test7
+   (state <s> ^impasse tie
+              ^superstate.current-test.test-number 7)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name select-super-operator-test7)
+}
+
+sp {Impasse__operator_tie*apply*select-super-operator-test7
+   (state <s> ^operator.name select-super-operator-test7
+              ^superstate <ss>)
+   (<ss> ^operator <o> +)
+-->
+   (<ss> ^operator <o> =)
+}

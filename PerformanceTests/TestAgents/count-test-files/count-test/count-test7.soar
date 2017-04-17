@@ -1,0 +1,35 @@
+## Test 7 - tie subgoal
+
+sp {count-test*propose*count-test7
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 7
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test7)
+}
+
+sp {count-test*propose*count-test7b
+   (state <s> ^name count-test
+              ^current-test <ct>
+              ^count > 0)
+   (<ct> ^test-number 7
+         ^test-initialized true
+        -^test-complete true
+        -^test-number 6)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name count-test7)
+}
+
+sp {count-test*apply*count-test7
+   (state <s> ^operator.name count-test7
+              ^count <c>)
+-->
+   (<s> ^count <c> -
+               (- <c> 1))
+}
+

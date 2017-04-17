@@ -1,0 +1,19 @@
+# This project contains a version of blocks world that involves one level of problem spaces
+# and look-ahead but with two important extensions (based on the blocks-world-lookahead agent).
+# Demonstrates how RL-rules can be learned by chunking and then updated in the future. 
+# Advantage over simple lookahead is that it doesn't lock on to the one path found during look-ahead
+#  after chunking. It will still do some exploration.
+
+# The top level has a single operator: move-block, which moves a block (moving-block) to a destination. 
+# The destination can be the top of another block or the table.
+
+# Change made to blocks-world-lookahead:
+# Evaluates the state in the lookahead using an operator - evalaute-state
+#    this operator creates a expected-value evaluation that in the selection space is converted
+#    into an numeric indifferent preference at the top state.
+#    Chunking creates a rule that is then updated by RL. 
+# If evaluate-state operator is removed, it will do deep searches until it gets to the goal
+#   for each top-level operator - sometimes exceed Soar's max goal stack, but it will 
+#   learn RL rules from the searches and then use RL to tune them. Sweet!
+
+

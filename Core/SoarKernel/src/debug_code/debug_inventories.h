@@ -22,6 +22,12 @@
 //#define DEBUG_INSTANTIATION_INVENTORY
 //#define DEBUG_PREFERENCE_INVENTORY
 //#define DEBUG_WME_INVENTORY
+//#define DEBUG_IDSET_INVENTORY
+//#define DEBUG_RHS_SYMBOL_INVENTORY
+//#define DEBUG_RHS_FUNCTION_INVENTORY
+//#define DEBUG_ACTION_INVENTORY
+//#define DEBUG_TEST_INVENTORY
+//#define DEBUG_REFCOUNT_CHANGE_REGIONS
 
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
@@ -29,7 +35,7 @@
  * happen in the middle of the ones for instantiation allocation.  Very crude and
  * sometimes wrong, but helpful. */
 void debug_refcount_change_start(agent* thisAgent, bool twoPart);
-void debug_refcount_change_end(agent* thisAgent, const char* callerString, bool twoPart);
+void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart);
 void debug_refcount_reset();
 
 void IDI_add(agent* thisAgent, instantiation* pInst);
@@ -47,5 +53,27 @@ void WDI_print_and_cleanup(agent* thisAgent);
 void GDI_add(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_print_and_cleanup(agent* thisAgent);
+
+void ISI_add(agent* thisAgent, uint64_t pIDSetID);
+void ISI_remove(agent* thisAgent, uint64_t pIDSetID);
+void ISI_print_and_cleanup(agent* thisAgent);
+
+void RSI_add(agent* thisAgent, rhs_symbol pRHS);
+void RSI_remove(agent* thisAgent, rhs_symbol pRHS);
+void RSI_print_and_cleanup(agent* thisAgent);
+
+void RFI_add(agent* thisAgent, rhs_value pRHS);
+void RFI_remove(agent* thisAgent, rhs_value pRHS);
+void RFI_print_and_cleanup(agent* thisAgent);
+
+void ADI_add(agent* thisAgent, action* pAction);
+void ADI_remove(agent* thisAgent, action* pAction);
+void ADI_print_and_cleanup(agent* thisAgent);
+
+void TDI_add(agent* thisAgent, test pTest);
+void TDI_remove(agent* thisAgent, test pTest);
+void TDI_print_and_cleanup(agent* thisAgent);
+
+void clean_up_debug_inventories(agent* thisAgent);
 
 #endif /* CORE_SOARKERNEL_SRC_DEBUG_CODE_DEBUG_INVENTORIES_H_ */

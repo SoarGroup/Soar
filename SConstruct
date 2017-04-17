@@ -28,15 +28,16 @@ DEF_BUILD = 'build'
 DEF_TARGETS = 'kernel cli sml_java debugger headers scripts'.split()
 
 print "================================================================================"
-print "Soar", SOAR_VERSION, "scons build script started."
-print "Build targets available:"
-print "   kernel cli sml_python sml_tcl sml_java debugger tests headers tclsoarlib"
-print "Default targets:"
-print "   kernel cli sml_java debugger headers"
-print "Settings available:"
-print "   --dbg, --opt, --static, --out, --build, --scu, --no-scu, --verbose"
-print "   --cc, --cxx, --cflags, --lnflags, --no-default-flags"
-print "   --no-svs --no-scu-kernel --no-scu-cli"
+print "Building Soar", SOAR_VERSION, "                      * will be built if no target specified"
+print "Targets available:"
+print "   Core:              kernel* cli* scripts*"
+print "   Testing:           performance_tests tests"
+print "   SWIG:              sml_python sml_tcl sml_java*"
+print "   Extras:            debugger* headers* tclsoarlib"
+print "Custom Settings available:                                              *default"
+print "   Common:            --dbg, --opt*, --out, --build, --verbose, --static"
+print "   Compilation time:  --no-svs, --scu*, --no-scu, --no-scu-kernel, --no-scu-cli"
+print "   Customizations:    --cc, --cxx, --cflags, --lnflags, --no-default-flags"
 print "================================================================================"
 
 def execute(cmd):

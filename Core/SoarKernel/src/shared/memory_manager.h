@@ -126,21 +126,22 @@ class Memory_Manager
         }
         virtual ~Memory_Manager();
 
-        void init_MemPool_Manager(sml::Kernel* pKernel, Soar_Instance* pSoarInstance);
-        void add_block_to_memory_pool(memory_pool* pThisPool);
-        bool add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks);
-        void reinit_memory_pool(MemoryPoolType mempool_index);
         void init_memory_pool(MemoryPoolType mempool_index, size_t item_size, const char* name);
         void init_memory_pool_by_ptr(memory_pool* pThisPool, size_t item_size, const char* name);
         void free_memory_pool(MemoryPoolType mempool_index);
+        void reinit_memory_pool(MemoryPoolType mempool_index);
+        void add_block_to_memory_pool(memory_pool* pThisPool);
+        bool add_block_to_memory_pool_by_name(const std::string& pool_name, int blocks);
+
         memory_pool* get_memory_pool(size_t size);
         void* allocate_memory(size_t size, int usage_code);
         void* allocate_memory_and_zerofill(size_t size, int usage_code);
         void free_memory(void* mem, int usage_code);
+
         void print_memory_statistics();
         void debug_print_memory_stats(agent* thisAgent);
 
-        std::unordered_map< size_t, memory_pool* >*   dyn_memory_pools;
+        std::unordered_map< size_t, memory_pool* >   dyn_memory_pools;
 
     private:
 
@@ -150,17 +151,11 @@ class Memory_Manager
         Memory_Manager(Memory_Manager const&) {};
         void operator=(Memory_Manager const&) {};
 
-        Soar_Instance*                            m_Soar_Instance;
-        sml::Kernel*                              m_Kernel;
-
-        memory_pool                         memory_pools[num_memory_pools];
-
-        /* Counters for memory usage of various types */
+        memory_pool         memory_pools[num_memory_pools];
         size_t              memory_for_usage[NUM_MEM_USAGE_CODES];
-
-        /* List of all memory pools being used */
         memory_pool*        memory_pools_in_use;
-        size_t* memory_for_usage_overhead;
+        size_t*             memory_for_usage_overhead;
+
         void free_memory_pool_by_ptr(memory_pool* pThisPool);
 
     public:

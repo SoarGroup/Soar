@@ -28,7 +28,7 @@
 
 preference* make_preference(agent* thisAgent, PreferenceType type, 
                             Symbol* id, Symbol* attr, Symbol* value, Symbol* referent,
-                            const identity_quadruple o_ids, bool pUnify_identities, const bool_quadruple pWas_unbound_vars)
+                            const identity_quadruple &o_ids, const bool_quadruple &pWas_unbound_vars)
 {
     preference* p;
 
@@ -63,37 +63,11 @@ preference* make_preference(agent* thisAgent, PreferenceType type,
     p->parent_action = NULL;
     p->level = 0;
 
-    if (pUnify_identities)
-    {
-        if (o_ids.id) p->identities.id = thisAgent->explanationBasedChunker->get_identity(o_ids.id); else p->identities.id = 0;
-        if (o_ids.attr) p->identities.attr = thisAgent->explanationBasedChunker->get_identity(o_ids.attr); else p->identities.attr = 0;
-        if (o_ids.value) p->identities.value = thisAgent->explanationBasedChunker->get_identity(o_ids.value); else p->identities.value = 0;
-        if (o_ids.referent) p->identities.referent = thisAgent->explanationBasedChunker->get_identity(o_ids.referent); else p->identities.referent = 0;
-    }
-    else
-    {
-        p->identities.id = o_ids.id;
-        p->identities.attr = o_ids.attr;
-        p->identities.value = o_ids.value;
-        p->identities.referent = o_ids.referent;
-    }
-    p->clone_identities.id = p->identities.id;
-    p->clone_identities.attr = p->identities.attr;
-    p->clone_identities.value = p->identities.value;
-    p->clone_identities.referent = p->identities.referent;
-
-    /* We set these to NULL an leave the code creating this preference responsible
-     * for allocating these rhs_values if needed. These rhs values are used to
-     * store the variablization identities of variables used in the rhs functions */
-    p->rhs_funcs.id = NULL;
-    p->rhs_funcs.attr = NULL;
-    p->rhs_funcs.value = NULL;
-    p->rhs_funcs.referent = NULL;
-    p->cloned_rhs_funcs.id = NULL;
-    p->cloned_rhs_funcs.attr = NULL;
-    p->cloned_rhs_funcs.value = NULL;
-    p->cloned_rhs_funcs.referent = NULL;
-
+    p->identities = { o_ids.id, o_ids.attr, o_ids.value,  o_ids.referent };
+    p->identity_sets = { NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET, NULL_IDENTITY_SET };
+    p->rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->clone_identities = { LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE, LITERAL_VALUE };
+    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
     p->was_unbound_vars.id = pWas_unbound_vars.id;
     p->was_unbound_vars.attr = pWas_unbound_vars.attr;
     p->was_unbound_vars.value = pWas_unbound_vars.value;
@@ -111,6 +85,36 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     preference* p;
 
     thisAgent->memoryManager->allocate_with_pool(MP_preference, &p);
+
+    /* Initialize stuff we don't want to copy over */
+    p->inst = NULL;
+    p->in_tm = false;
+    p->on_goal_list = false;
+    p->reference_count = 0;
+    p->slot = NIL;
+    p->total_preferences_for_candidate = 0;
+    p->rl_contribution = false;
+    p->rl_rho = 1.0;
+    p->wma_o_set = NIL;
+    p->next_clone = NIL;
+    p->prev_clone = NIL;
+    p->next = NIL;
+    p->prev = NIL;
+    p->inst_next = NIL;
+    p->inst_prev = NIL;
+    p->all_of_slot_next = NIL;
+    p->all_of_slot_prev = NIL;
+    p->all_of_goal_next = NIL;
+    p->all_of_goal_prev = NIL;
+    p->next_candidate = NIL;
+    p->next_result = NIL;
+    p->parent_action = NULL;
+
+    p->cloned_rhs_funcs = { NULL, NULL, NULL, NULL };
+    p->was_unbound_vars = { false, false, false, false };
+
+    /* Now copy over stuff that we do want */
+
     p->type = pPref->type;
     p->numeric_value = pPref->numeric_value;
     p->o_supported = pPref->o_supported;
@@ -124,51 +128,22 @@ preference* shallow_copy_preference(agent* thisAgent, preference* pPref)
     thisAgent->symbolManager->symbol_add_ref(p->attr);
     thisAgent->symbolManager->symbol_add_ref(p->value);
     if (p->referent) thisAgent->symbolManager->symbol_add_ref(p->referent);
-    p->identities.id = pPref->identities.id;
-    p->identities.attr = pPref->identities.attr;
-    p->identities.value = pPref->identities.value;
-    p->identities.referent = pPref->identities.referent;
-    p->clone_identities.id = pPref->clone_identities.id;
-    p->clone_identities.attr = pPref->clone_identities.attr;
-    p->clone_identities.value = pPref->clone_identities.value;
-    p->clone_identities.referent = pPref->clone_identities.referent;
+
+    p->identities = {pPref->identities.id, pPref->identities.attr, pPref->identities.value, pPref->identities.referent};
+    p->clone_identities = {pPref->clone_identities.id, pPref->clone_identities.attr, pPref->clone_identities.value, pPref->clone_identities.referent};
+
+    p->identity_sets = { NULL, NULL, NULL, NULL };
+    set_pref_identity_set(thisAgent, p, ID_ELEMENT, pPref->identity_sets.id);
+    set_pref_identity_set(thisAgent, p, ATTR_ELEMENT, pPref->identity_sets.attr);
+    set_pref_identity_set(thisAgent, p, VALUE_ELEMENT, pPref->identity_sets.value);
+    set_pref_identity_set(thisAgent, p, REFERENT_ELEMENT, pPref->identity_sets.referent);
+
+    PDI_add(thisAgent, p, true);
 
     p->rhs_funcs.id = copy_rhs_value(thisAgent, pPref->rhs_funcs.id);
     p->rhs_funcs.attr = copy_rhs_value(thisAgent, pPref->rhs_funcs.attr);
     p->rhs_funcs.value = copy_rhs_value(thisAgent, pPref->rhs_funcs.value);
     p->rhs_funcs.referent = copy_rhs_value(thisAgent, pPref->rhs_funcs.referent);
-
-    p->cloned_rhs_funcs.id = NULL;
-    p->cloned_rhs_funcs.attr = NULL;
-    p->cloned_rhs_funcs.value = NULL;
-    p->cloned_rhs_funcs.referent = NULL;
-
-    /* Don't want this information or have the other things cleaned up*/
-    p->inst = NULL;
-    p->in_tm = false;
-    p->on_goal_list = false;
-    p->reference_count = 0;
-    p->slot = NULL;
-    p->total_preferences_for_candidate = 1;
-    p->rl_contribution = false;
-    p->rl_rho = 0;
-    p->wma_o_set = NULL;
-
-    /* Don't want to copy links to other preferences */
-    p->next_clone = NULL;
-    p->prev_clone = NULL;
-    p->next = NULL;
-    p->prev = NULL;
-    p->inst_next = NULL;
-    p->inst_prev = NULL;
-    p->all_of_slot_next = NULL;
-    p->all_of_slot_prev = NULL;
-    p->all_of_goal_next = NULL;
-    p->all_of_goal_prev = NULL;
-    p->next_candidate = NULL;
-    p->next_result = NULL;
-
-    PDI_add(thisAgent, p, true);
 
     dprint(DT_PREFS, "Created shallow copy of preference %p (%u)\n", p, p->p_id);
 
@@ -193,7 +168,7 @@ void cache_preference_if_necessary(agent* thisAgent, preference* pref)
 void deallocate_preference_contents(agent* thisAgent, preference* pref, bool dont_cache)
 {
     PDI_remove(thisAgent, pref);
-    debug_refcount_change_start(thisAgent, false);
+    //debug_refcount_change_start(thisAgent, false);
 
     /*  dereference component symbols */
     thisAgent->symbolManager->symbol_remove_ref(&pref->id);
@@ -208,6 +183,11 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
         wma_remove_pref_o_set(thisAgent, pref);
     }
 
+    if (pref->identity_sets.id) IdentitySet_remove_ref(thisAgent, pref->identity_sets.id);
+    if (pref->identity_sets.attr) IdentitySet_remove_ref(thisAgent, pref->identity_sets.attr);
+    if (pref->identity_sets.value) IdentitySet_remove_ref(thisAgent, pref->identity_sets.value);
+    if (pref->identity_sets.referent) IdentitySet_remove_ref(thisAgent, pref->identity_sets.referent);
+
     if (pref->rhs_funcs.id) deallocate_rhs_value(thisAgent, pref->rhs_funcs.id);
     if (pref->rhs_funcs.attr) deallocate_rhs_value(thisAgent, pref->rhs_funcs.attr);
     if (pref->rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->rhs_funcs.value);
@@ -217,10 +197,10 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
     if (pref->cloned_rhs_funcs.value) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.value);
     if (pref->cloned_rhs_funcs.referent) deallocate_rhs_value(thisAgent, pref->cloned_rhs_funcs.referent);
 
-    debug_refcount_change_end(thisAgent, (std::string((pref->inst && pref->in_tm) ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST" ) + std::string(" preference deallocation")).c_str(), false);
+    //debug_refcount_change_end(thisAgent, (pref->inst && pref->in_tm) ? pref->inst->prod_name ? pref->inst->prod_name->sc->name : "DEALLOCATED INST" : "DEALLOCATED INST", " preference deallocation", false);
 
-    /* MToDo | Remove.  Just for debugging. */
-    pref->p_id = 23;
+    /* Sometimes I turn this on for debugging. */
+    // pref->p_id = 23;
 
     thisAgent->memoryManager->free_with_pool(MP_preference, pref);
 
@@ -229,8 +209,8 @@ void deallocate_preference_contents(agent* thisAgent, preference* pref, bool don
 /* IMPORTANT: Any changes made to deallocate_preference should also be made to corresponding code in deallocate_instantiation */
 void deallocate_preference(agent* thisAgent, preference* pref, bool dont_cache)
 {
-    dprint(DT_DEALLOCATE_PREF, "Deallocating preference %p (%u) at level %d \n", pref, pref->p_id, static_cast<int64_t>(pref->level));
-    assert(pref->reference_count == 0);
+    /* We don't print the preference out directly with %p because identity set pointer may not be valid */
+    dprint(DT_DEALLOCATE_PREF, "Deallocating preference p%u (^%y ^%y ^%y) at level %d\n", pref->p_id, pref->id, pref->attr, pref->value, static_cast<int64_t>(pref->level));
 
     /*  Remove from temporary memory and match goal if necessary */
     if (pref->in_tm) remove_preference_from_tm(thisAgent, pref);

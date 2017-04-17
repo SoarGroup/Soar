@@ -1,0 +1,26 @@
+sp {answer*apply*put-down*OpNoChange*t6-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name fill ^fill-jug <f1>)
+    (<f1> ^filled-jug yes ^picked-up yes ^volume <v1> ^contents <c1>)
+    -->
+    (<f1> ^picked-up yes - ^filled-jug yes - ^contents <v1> + ^contents <c1> -)
+}
+
+sp {answer*apply*fill-jug*OpNoChange*t5-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name fill ^fill-jug <f1>)
+    (<f1> -^filled-jug yes ^picked-up yes)
+    -->
+    (<f1> ^filled-jug yes +)
+}
+
+sp {answer*apply*pick-up*OpNoChange*t4-1
+    (state <s1> ^operator <o1>)
+    (<o1> ^name fill ^fill-jug <f1>)
+    (<f1> -^picked-up yes)
+    -->
+    (<f1> ^picked-up yes +)
+}
+
+
+

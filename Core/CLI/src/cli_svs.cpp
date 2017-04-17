@@ -3,6 +3,7 @@
 #include "agent.h"
 #ifndef NO_SVS
 #include "svs_interface.h"
+#include "symbol.h"
 #endif
 
 using namespace cli;
@@ -30,6 +31,10 @@ bool CommandLineInterface::DoSVS(const std::vector<std::string>& args)
             else
             {
                 thisAgent->svs->set_enabled(true);
+                for (Symbol* lState = thisAgent->top_goal; lState; lState = lState->id->lower_goal)
+                {
+                    thisAgent->svs->state_creation_callback(lState);
+                }
                 m_Result << "Spatial Visual System enabled.";
             }
             return true;

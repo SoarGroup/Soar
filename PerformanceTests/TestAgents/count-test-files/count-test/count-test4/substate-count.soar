@@ -1,0 +1,16 @@
+sp {count-test4*propose*substate-count
+   (state <s> ^name count-test4
+              ^superstate.count > 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name substate-count)
+}
+
+sp {count-test4*count-operator-substate*apply*count
+   (state <s> ^operator.name substate-count
+              ^superstate <ss>)
+   (<ss> ^count <count>)
+-->
+   (<ss> ^count <count> -
+               (- <count> 1))
+}

@@ -1,0 +1,20 @@
+# John E. Laird
+# University of Michigan
+# latest version 1/27/2017
+# Soar version 9.6.0
+
+pushd "../../default"
+source selection.soar
+popd
+
+multi-attributes binding 10
+multi-attributes operator 4
+chunk singleton any cell any
+chunk singleton any tile any
+chunk singleton any blank-cell any
+chunk singleton any tile-cell any
+chunk singleton any problem-space any
+
+srand 1 # For consistency for testing
+chunk always
+chunk add-osk on

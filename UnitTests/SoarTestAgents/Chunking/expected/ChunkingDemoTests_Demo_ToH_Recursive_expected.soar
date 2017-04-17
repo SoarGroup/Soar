@@ -1,0 +1,1492 @@
+sp {answerx8*apply*move-disk*source-not-clear*target-clear*t27-11
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> } ^peg { <p4> <> <p3> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> }
+          ^peg { <p7> <> <t2> <> <p6> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p1> } ^disk <d8>)
+    (<h8> ^above <d8> ^disk <u1> ^on { <o9> <> <c1> })
+    (<h9> ^disk <u1> ^on { <o10> <> <c1> } ^above { <a1> <> none })
+    (<o10> ^name <n3>)
+    -->
+    (<h9> ^above none + ^above <a1> - ^on <c1> + ^on <o10> -)
+}
+
+sp {answerx7*apply*move-disk*source-not-clear*target-clear*OpNoChange*t27-10
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> } ^peg { <p4> <> <p3> }
+          ^peg { <> <p5> <p5> } ^peg { <p6> <> <t2> <> <p5> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p1> } ^disk <d7>)
+    (<h7> ^above <d7> ^disk <u1> ^on { <o8> <> <c1> })
+    (<h8> ^disk <u1> ^on { <o9> <> <c1> } ^above { <a1> <> none })
+    (<o9> ^name <n3>)
+    -->
+    (<h8> ^above none + ^above <a1> - ^on <c1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*source-not-clear*target-clear*OpNoChange*t27-9
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> } ^peg { <p4> <> <p3> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p1> } ^disk <d6>)
+    (<h6> ^above <d6> ^disk <u1> ^on { <o7> <> <c1> })
+    (<h7> ^disk <u1> ^on { <o8> <> <c1> } ^above { <a1> <> none })
+    (<o8> ^name <n3>)
+    -->
+    (<h7> ^above none + ^above <a1> - ^on <c1> + ^on <o8> -)
+}
+
+sp {answerx3*apply*move-disk*target-not-clear*t27-8
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <p3> <> <t2> <> <p2> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds { <h6> <> <h1> } ^holds <h7>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p3> } ^disk <d3>)
+   -{ (<d3> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h5>)
+      (<h5> ^on <p3> ^disk <l1>)}
+    (<d3> ^larger <d2>)
+    (<h6> ^disk <u1> ^on { <o4> <> <p1> } ^above <a1>)
+    (<o4> ^name <n3>)
+    (<h7> ^disk <d3> ^on { <o5> <> <p2> })
+    -->
+    (<h6> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o4> -)
+}
+
+sp {answerx9*apply*move-disk*target-not-clear*t27-7
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> } ^peg { <> <p8> <p8> }
+          ^peg { <p9> <> <t2> <> <p8> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds <h10> ^holds { <h12> <> <h1> } ^holds <h13>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p9> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p8> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p7> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p6> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p5> } ^disk <d8>)
+    (<h10> ^above <d8> ^on { <o9> <> <p4> } ^disk <d9>)
+   -{ (<d9> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h11>)
+      (<h11> ^on <p4> ^disk <l1>)}
+    (<d9> ^larger <d2>)
+    (<h12> ^disk <u1> ^on { <o10> <> <p1> } ^above <a1>)
+    (<o10> ^name <n3>)
+    (<h13> ^disk <d9> ^on { <o11> <> <p3> })
+    -->
+    (<h12> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o10> -)
+}
+
+sp {answerx8*apply*move-disk*target-not-clear*OpNoChange*t27-6
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds { <h11> <> <h1> } ^holds <h12>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p8> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p7> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p6> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p5> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p4> } ^disk <d8>)
+   -{ (<d8> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h10>)
+      (<h10> ^on <p4> ^disk <l1>)}
+    (<d8> ^larger <d2>)
+    (<h11> ^disk <u1> ^on { <o9> <> <p1> } ^above <a1>)
+    (<o9> ^name <n3>)
+    (<h12> ^disk <d8> ^on { <o10> <> <p3> })
+    -->
+    (<h11> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o9> -)
+}
+
+sp {answerx7*apply*move-disk*target-not-clear*OpNoChange*t27-5
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <p7> <> <t2> <> <p6> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8> ^holds { <h10> <> <h1> } ^holds <h11>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p7> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p6> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p5> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p4> } ^disk <d7>)
+   -{ (<d7> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h9>)
+      (<h9> ^on <p4> ^disk <l1>)}
+    (<d7> ^larger <d2>)
+    (<h10> ^disk <u1> ^on { <o8> <> <p1> } ^above <a1>)
+    (<o8> ^name <n3>)
+    (<h11> ^disk <d7> ^on { <o9> <> <p3> })
+    -->
+    (<h10> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o8> -)
+}
+
+sp {answerx6*apply*move-disk*target-not-clear*OpNoChange*t27-4
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <p6> <> <t2> <> <p5> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>
+          ^holds { <h9> <> <h1> } ^holds <h10>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+   -{ (<d6> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h8>)
+      (<h8> ^on <p4> ^disk <l1>)}
+    (<d6> ^larger <d2>)
+    (<h9> ^disk <u1> ^on { <o7> <> <p1> } ^above <a1>)
+    (<o7> ^name <n3>)
+    (<h10> ^disk <d6> ^on { <o8> <> <p3> })
+    -->
+    (<h9> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o7> -)
+}
+
+sp {answerx5*apply*move-disk*target-not-clear*OpNoChange*t27-3
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds { <h8> <> <h1> }
+          ^holds <h9>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+   -{ (<d5> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h7>)
+      (<h7> ^on <p4> ^disk <l1>)}
+    (<d5> ^larger <d2>)
+    (<h8> ^disk <u1> ^on { <o6> <> <p1> } ^above <a1>)
+    (<o6> ^name <n3>)
+    (<h9> ^disk <d5> ^on { <o7> <> <p3> })
+    -->
+    (<h8> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o6> -)
+}
+
+sp {answerx4*apply*move-disk*target-not-clear*OpNoChange*t27-2
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <> <p3> <p3> } ^peg { <p4> <> <t2> <> <p3> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>
+          ^holds { <h7> <> <h1> } ^holds <h8>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p4> ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o2> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^above <d1> ^on { <o4> <> <p4> } ^disk <d4>)
+   -{ (<d4> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h6>)
+      (<h6> ^on <p4> ^disk <l1>)}
+    (<d4> ^larger <d2>)
+    (<h7> ^disk <u1> ^on { <o5> <> <p1> } ^above <a1>)
+    (<o5> ^name <n3>)
+    (<h8> ^disk <d4> ^on { <o6> <> <p3> })
+    -->
+    (<h7> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o5> -)
+}
+
+sp {answerx3*apply*move-disk*target-not-clear*OpNoChange*t27-1
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <p2> <> <p1> }
+          ^peg { <p3> <> <t2> <> <p2> } ^holds <h2> ^holds <h3> ^holds <h4>
+          ^holds <h5> ^holds { <h6> <> <h2> } ^holds <h7>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<d1> ^larger <l1>)
+   -{ (<d1> ^larger <l2>)
+      (<l2> ^larger <l1>)
+      (<t1> ^holds <h1>)
+      (<h1> ^on <t2> ^disk <l2>)}
+    (<h2> ^on <p1> ^disk <u2>)
+    (<h3> ^above <l1> ^on { <o2> <> <p2> } ^disk <d2>)
+    (<h4> ^above <d2> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h5> ^on <t2> ^disk <l1>)
+    (<h6> ^disk <u1> ^on { <o4> <> <p1> } ^above <a1>)
+    (<o4> ^name <n3>)
+    (<h7> ^disk <d1> ^on { <o5> <> <p3> })
+    -->
+    (<h6> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o4> -)
+}
+
+sp {answerx7*apply*move-disk*source-not-clear*target-clear*t26-19
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <p6> <> <t2> <> <p5> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p1> } ^disk <d7>)
+    (<h7> ^above <d7> ^disk <u1> ^on { <o8> <> <c1> })
+    (<h8> ^disk <u1> ^on { <o9> <> <c1> } ^above { <a1> <> none })
+    (<o9> ^name <n3>)
+    -->
+    (<h8> ^above none + ^above <a1> - ^on <c1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*source-not-clear*target-clear*OpNoChange*t26-18
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p1> } ^disk <d6>)
+    (<h6> ^above <d6> ^disk <u1> ^on { <o7> <> <c1> })
+    (<h7> ^disk <u1> ^on { <o8> <> <c1> } ^above { <a1> <> none })
+    (<o8> ^name <n3>)
+    -->
+    (<h7> ^above none + ^above <a1> - ^on <c1> + ^on <o8> -)
+}
+
+sp {answerx5*apply*move-disk*source-not-clear*target-clear*OpNoChange*t26-17
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <p2> }
+          ^peg { <p4> <> <t2> <> <p3> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p1> } ^disk <d5>)
+    (<h5> ^above <d5> ^disk <u1> ^on { <o6> <> <c1> })
+    (<h6> ^disk <u1> ^on { <o7> <> <c1> } ^above { <a1> <> none })
+    (<o7> ^name <n3>)
+    -->
+    (<h6> ^above none + ^above <a1> - ^on <c1> + ^on <o7> -)
+}
+
+sp {answerx8*apply*move-disk*target-not-clear*t26-16
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds { <h10> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p8> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p7> } ^disk <d3>)
+    (<h4> ^above <d3> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h5> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h6> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+    (<h7> ^above <d6> ^on { <o7> <> <p3> } ^disk <d7>)
+    (<h8> ^above <d7> ^on { <o8> <> <p2> } ^disk <d8>)
+    (<h9> ^above <d8> ^disk <u1> ^on { <o9> <> <p1> })
+    (<h10> ^disk <u1> ^on { <o10> <> <p1> } ^above <a1>)
+    (<o10> ^name <n3>)
+    -->
+    (<h10> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o10> -)
+}
+
+sp {answerx7*apply*move-disk*target-not-clear*OpNoChange*t26-15
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <p7> <> <t2> <> <p6> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8> ^holds { <h9> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h4> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h5> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h6> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h7> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+    (<h8> ^above <d7> ^disk <u1> ^on { <o8> <> <p1> })
+    (<h9> ^disk <u1> ^on { <o9> <> <p1> } ^above <a1>)
+    (<o9> ^name <n3>)
+    -->
+    (<h9> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*target-not-clear*OpNoChange*t26-14
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <p6> <> <t2> <> <p5> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>
+          ^holds { <h8> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h4> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h5> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h6> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h7> ^above <d6> ^disk <u1> ^on { <o7> <> <p1> })
+    (<h8> ^disk <u1> ^on { <o8> <> <p1> } ^above <a1>)
+    (<o8> ^name <n3>)
+    -->
+    (<h8> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o8> -)
+}
+
+sp {answerx5*apply*move-disk*target-not-clear*OpNoChange*t26-13
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds { <h7> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h4> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h5> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h6> ^above <d5> ^disk <u1> ^on { <o6> <> <p1> })
+    (<h7> ^disk <u1> ^on { <o7> <> <p1> } ^above <a1>)
+    (<o7> ^name <n3>)
+    -->
+    (<h7> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o7> -)
+}
+
+sp {answerx4*apply*move-disk*target-not-clear*OpNoChange*t26-12
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <p4> <> <t2> <> <p3> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>
+          ^holds { <h6> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h4> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+    (<h5> ^above <d4> ^disk <u1> ^on { <o5> <> <p1> })
+    (<h6> ^disk <u1> ^on { <o6> <> <p1> } ^above <a1>)
+    (<o6> ^name <n3>)
+    -->
+    (<h6> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o6> -)
+}
+
+sp {answerx3*apply*move-disk*target-not-clear*OpNoChange*t26-11
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <p3> <> <t2> <> <p2> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds { <h5> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p3> } ^disk <d2>)
+    (<h3> ^above <d2> ^on { <o3> <> <p2> } ^disk <d3>)
+    (<h4> ^above <d3> ^disk <u1> ^on { <o4> <> <p1> })
+    (<h5> ^disk <u1> ^on { <o5> <> <p1> } ^above <a1>)
+    (<o5> ^name <n3>)
+    -->
+    (<h5> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o5> -)
+}
+
+sp {answerx2*apply*move-disk*target-not-clear*OpNoChange*t26-10
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1>
+          ^peg { <p2> <> <t2> <> <p1> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds { <h4> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^on { <o2> <> <p2> } ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o3> <> <p1> })
+    (<h4> ^disk <u1> ^on { <o4> <> <p1> } ^above <a1>)
+    (<o4> ^name <n3>)
+    -->
+    (<h4> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o4> -)
+}
+
+sp {answerx9*apply*move-disk*target-not-clear*t26-9
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> } ^peg { <> <p8> <p8> }
+          ^peg { <p9> <> <t2> <> <p8> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds <h10> ^holds { <h12> <> <h1> } ^holds <h13>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p9> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p8> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p7> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p6> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p5> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p4> } ^disk <d8>)
+    (<h10> ^above <d8> ^on { <o9> <> <p3> } ^disk <d9>)
+   -{ (<d9> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h11>)
+      (<h11> ^on <p3> ^disk <l1>)}
+    (<d9> ^larger <d2>)
+    (<h12> ^disk <u1> ^on { <o10> <> <p1> } ^above <a1>)
+    (<o10> ^name <n3>)
+    (<h13> ^disk <d9> ^on { <o11> <> <p2> })
+    -->
+    (<h12> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o10> -)
+}
+
+sp {answerx8*apply*move-disk*target-not-clear*OpNoChange*t26-8
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds { <h11> <> <h1> } ^holds <h12>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p8> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p7> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p6> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p5> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p4> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p3> } ^disk <d8>)
+   -{ (<d8> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h10>)
+      (<h10> ^on <p3> ^disk <l1>)}
+    (<d8> ^larger <d2>)
+    (<h11> ^disk <u1> ^on { <o9> <> <p1> } ^above <a1>)
+    (<o9> ^name <n3>)
+    (<h12> ^disk <d8> ^on { <o10> <> <p2> })
+    -->
+    (<h11> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o9> -)
+}
+
+sp {answerx7*apply*move-disk*target-not-clear*OpNoChange*t26-7
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <p7> <> <t2> <> <p6> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8> ^holds { <h10> <> <h1> } ^holds <h11>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p7> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p3> } ^disk <d7>)
+   -{ (<d7> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h9>)
+      (<h9> ^on <p3> ^disk <l1>)}
+    (<d7> ^larger <d2>)
+    (<h10> ^disk <u1> ^on { <o8> <> <p1> } ^above <a1>)
+    (<o8> ^name <n3>)
+    (<h11> ^disk <d7> ^on { <o9> <> <p2> })
+    -->
+    (<h10> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o8> -)
+}
+
+sp {answerx6*apply*move-disk*target-not-clear*OpNoChange*t26-6
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <p6> <> <t2> <> <p5> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>
+          ^holds { <h9> <> <h1> } ^holds <h10>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+   -{ (<d6> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h8>)
+      (<h8> ^on <p3> ^disk <l1>)}
+    (<d6> ^larger <d2>)
+    (<h9> ^disk <u1> ^on { <o7> <> <p1> } ^above <a1>)
+    (<o7> ^name <n3>)
+    (<h10> ^disk <d6> ^on { <o8> <> <p2> })
+    -->
+    (<h9> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o7> -)
+}
+
+sp {answerx5*apply*move-disk*target-not-clear*OpNoChange*t26-5
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds { <h8> <> <h1> }
+          ^holds <h9>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+   -{ (<d5> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h7>)
+      (<h7> ^on <p3> ^disk <l1>)}
+    (<d5> ^larger <d2>)
+    (<h8> ^disk <u1> ^on { <o6> <> <p1> } ^above <a1>)
+    (<o6> ^name <n3>)
+    (<h9> ^disk <d5> ^on { <o7> <> <p2> })
+    -->
+    (<h8> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o6> -)
+}
+
+sp {answerx4*apply*move-disk*target-not-clear*OpNoChange*t26-4
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <p4> <> <t2> <> <p3> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>
+          ^holds { <h7> <> <h1> } ^holds <h8>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+   -{ (<d4> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h6>)
+      (<h6> ^on <p3> ^disk <l1>)}
+    (<d4> ^larger <d2>)
+    (<h7> ^disk <u1> ^on { <o5> <> <p1> } ^above <a1>)
+    (<o5> ^name <n3>)
+    (<h8> ^disk <d4> ^on { <o6> <> <p2> })
+    -->
+    (<h7> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o5> -)
+}
+
+sp {answerx3*apply*move-disk*target-not-clear*OpNoChange*t26-3
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <p3> <> <t2> <> <p2> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds { <h6> <> <h1> } ^holds <h7>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p3> ^disk <d2>)
+    (<h3> ^above <d2> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^above <d1> ^on { <o3> <> <p3> } ^disk <d3>)
+   -{ (<d3> ^larger <l1>)
+      (<l1> ^larger <d2>)
+      (<t1> ^holds <h5>)
+      (<h5> ^on <p3> ^disk <l1>)}
+    (<d3> ^larger <d2>)
+    (<h6> ^disk <u1> ^on { <o4> <> <p1> } ^above <a1>)
+    (<o4> ^name <n3>)
+    (<h7> ^disk <d3> ^on { <o5> <> <p2> })
+    -->
+    (<h6> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o4> -)
+}
+
+sp {answerx2*apply*move-disk*target-not-clear*OpNoChange*t26-2
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1>
+          ^peg { <p2> <> <t2> <> <p1> } ^holds <h2> ^holds <h3> ^holds <h4>
+          ^holds { <h5> <> <h2> } ^holds <h6>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<d1> ^larger <l1>)
+   -{ (<d1> ^larger <l2>)
+      (<l2> ^larger <l1>)
+      (<t1> ^holds <h1>)
+      (<h1> ^on <t2> ^disk <l2>)}
+    (<h2> ^on <p1> ^disk <u2>)
+    (<h3> ^above <l1> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h4> ^on <t2> ^disk <l1>)
+    (<h5> ^disk <u1> ^on { <o3> <> <p1> } ^above <a1>)
+    (<o3> ^name <n3>)
+    (<h6> ^disk <d1> ^on { <o4> <> <p2> })
+    -->
+    (<h5> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o3> -)
+}
+
+sp {answer*apply*move-disk*target-not-clear*OpNoChange*t26-1
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg { <p1> <> <t2> } ^holds <h1>
+          ^holds <h2> ^holds { <h3> <> <h1> })
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^above <d1> ^disk <u1> ^on { <o2> <> <p1> })
+    (<h3> ^disk <u1> ^on { <o3> <> <p1> } ^above <a1>)
+    (<o3> ^name <n3>)
+    -->
+    (<h3> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o3> -)
+}
+
+sp {answerx8*apply*move-disk*source-not-clear*target-clear*t23-14
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> }
+          ^peg { <p7> <> <t2> <> <p6> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p1> } ^disk <d8>)
+    (<h8> ^above <d8> ^disk <u1> ^on { <o9> <> <c1> })
+    (<h9> ^disk <u1> ^on { <o10> <> <c1> } ^above { <a1> <> none })
+    (<o10> ^name <n3>)
+    -->
+    (<h9> ^above none + ^above <a1> - ^on <c1> + ^on <o10> -)
+}
+
+sp {answerx7*apply*move-disk*source-not-clear*target-clear*OpNoChange*t23-13
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <p6> <> <t2> <> <p5> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p1> } ^disk <d7>)
+    (<h7> ^above <d7> ^disk <u1> ^on { <o8> <> <c1> })
+    (<h8> ^disk <u1> ^on { <o9> <> <c1> } ^above { <a1> <> none })
+    (<o9> ^name <n3>)
+    -->
+    (<h8> ^above none + ^above <a1> - ^on <c1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*source-not-clear*target-clear*OpNoChange*t23-12
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p1> } ^disk <d6>)
+    (<h6> ^above <d6> ^disk <u1> ^on { <o7> <> <c1> })
+    (<h7> ^disk <u1> ^on { <o8> <> <c1> } ^above { <a1> <> none })
+    (<o8> ^name <n3>)
+    -->
+    (<h7> ^above none + ^above <a1> - ^on <c1> + ^on <o8> -)
+}
+
+sp {answerx5*apply*move-disk*source-not-clear*target-clear*OpNoChange*t23-11
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <> <p3> <p3> }
+          ^peg { <p4> <> <t2> <> <p3> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p1> } ^disk <d5>)
+    (<h5> ^above <d5> ^disk <u1> ^on { <o6> <> <c1> })
+    (<h6> ^disk <u1> ^on { <o7> <> <c1> } ^above { <a1> <> none })
+    (<o7> ^name <n3>)
+    -->
+    (<h6> ^above none + ^above <a1> - ^on <c1> + ^on <o7> -)
+}
+
+sp {answerx4*apply*move-disk*source-not-clear*target-clear*OpNoChange*t23-10
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <p1> } ^peg { <p3> <> <t2> <> <p2> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p3> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p2> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p1> } ^disk <d4>)
+    (<h4> ^above <d4> ^disk <u1> ^on { <o5> <> <c1> })
+    (<h5> ^disk <u1> ^on { <o6> <> <c1> } ^above { <a1> <> none })
+    (<o6> ^name <n3>)
+    -->
+    (<h5> ^above none + ^above <a1> - ^on <c1> + ^on <o6> -)
+}
+
+sp {answerx9*apply*move-disk*target-not-clear*t23-9
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> } ^peg { <> <p8> <p8> }
+          ^peg { <p9> <> <t2> <> <p8> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds <h10> ^holds { <h12> <> <h1> } ^holds <h13>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p9> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p8> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p7> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p6> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p5> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p4> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p3> } ^disk <d8>)
+    (<h10> ^above <d8> ^on { <o9> <> <p2> } ^disk <d9>)
+   -{ (<d9> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h11>)
+      (<h11> ^on <p2> ^disk <l1>)}
+    (<d9> ^larger <u1>)
+    (<h12> ^disk <u1> ^on { <o10> <> <p1> } ^above <a1>)
+    (<o10> ^name <n3>)
+    (<h13> ^disk <d9> ^on { <o11> <> <p1> })
+    -->
+    (<h12> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o10> -)
+}
+
+sp {answerx8*apply*move-disk*target-not-clear*OpNoChange*t23-8
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds { <h11> <> <h1> } ^holds <h12>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p8> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p7> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p3> } ^disk <d7>)
+    (<h9> ^above <d7> ^on { <o8> <> <p2> } ^disk <d8>)
+   -{ (<d8> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h10>)
+      (<h10> ^on <p2> ^disk <l1>)}
+    (<d8> ^larger <u1>)
+    (<h11> ^disk <u1> ^on { <o9> <> <p1> } ^above <a1>)
+    (<o9> ^name <n3>)
+    (<h12> ^disk <d8> ^on { <o10> <> <p1> })
+    -->
+    (<h11> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o9> -)
+}
+
+sp {answerx7*apply*move-disk*target-not-clear*OpNoChange*t23-7
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <> <p6> <p6> } ^peg { <p7> <> <t2> <> <p6> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8> ^holds { <h10> <> <h1> } ^holds <h11>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h8> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+   -{ (<d7> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h9>)
+      (<h9> ^on <p2> ^disk <l1>)}
+    (<d7> ^larger <u1>)
+    (<h10> ^disk <u1> ^on { <o8> <> <p1> } ^above <a1>)
+    (<o8> ^name <n3>)
+    (<h11> ^disk <d7> ^on { <o9> <> <p1> })
+    -->
+    (<h10> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o8> -)
+}
+
+sp {answerx6*apply*move-disk*target-not-clear*OpNoChange*t23-6
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> } ^peg { <> <p5> <p5> }
+          ^peg { <p6> <> <t2> <> <p5> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>
+          ^holds { <h9> <> <h1> } ^holds <h10>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h7> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+   -{ (<d6> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h8>)
+      (<h8> ^on <p2> ^disk <l1>)}
+    (<d6> ^larger <u1>)
+    (<h9> ^disk <u1> ^on { <o7> <> <p1> } ^above <a1>)
+    (<o7> ^name <n3>)
+    (<h10> ^disk <d6> ^on { <o8> <> <p1> })
+    -->
+    (<h9> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o7> -)
+}
+
+sp {answerx5*apply*move-disk*target-not-clear*OpNoChange*t23-5
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds { <h8> <> <h1> }
+          ^holds <h9>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h6> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+   -{ (<d5> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h7>)
+      (<h7> ^on <p2> ^disk <l1>)}
+    (<d5> ^larger <u1>)
+    (<h8> ^disk <u1> ^on { <o6> <> <p1> } ^above <a1>)
+    (<o6> ^name <n3>)
+    (<h9> ^disk <d5> ^on { <o7> <> <p1> })
+    -->
+    (<h8> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o6> -)
+}
+
+sp {answerx4*apply*move-disk*target-not-clear*OpNoChange*t23-4
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <> <p3> <p3> } ^peg { <p4> <> <t2> <> <p3> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>
+          ^holds { <h7> <> <h1> } ^holds <h8>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h5> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+   -{ (<d4> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h6>)
+      (<h6> ^on <p2> ^disk <l1>)}
+    (<d4> ^larger <u1>)
+    (<h7> ^disk <u1> ^on { <o5> <> <p1> } ^above <a1>)
+    (<o5> ^name <n3>)
+    (<h8> ^disk <d4> ^on { <o6> <> <p1> })
+    -->
+    (<h7> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o5> -)
+}
+
+sp {answerx3*apply*move-disk*target-not-clear*OpNoChange*t23-3
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1> ^peg { <> <p2> <p2> }
+          ^peg { <p3> <> <t2> <> <p2> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds { <h6> <> <h1> } ^holds <h7>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p3> } ^disk <d2>)
+    (<h4> ^above <d2> ^on { <o3> <> <p2> } ^disk <d3>)
+   -{ (<d3> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h5>)
+      (<h5> ^on <p2> ^disk <l1>)}
+    (<d3> ^larger <u1>)
+    (<h6> ^disk <u1> ^on { <o4> <> <p1> } ^above <a1>)
+    (<o4> ^name <n3>)
+    (<h7> ^disk <d3> ^on { <o5> <> <p1> })
+    -->
+    (<h6> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o4> -)
+}
+
+sp {answerx2*apply*move-disk*target-not-clear*OpNoChange*t23-2
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg <p1>
+          ^peg { <p2> <> <t2> <> <p1> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds { <h5> <> <h1> } ^holds <h6>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+    (<h1> ^on <p1> ^disk <u2>)
+    (<h2> ^on <p2> ^disk <u1>)
+    (<h3> ^above <d1> ^on { <o2> <> <p2> } ^disk <d2>)
+   -{ (<d2> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h4>)
+      (<h4> ^on <p2> ^disk <l1>)}
+    (<d2> ^larger <u1>)
+    (<h5> ^disk <u1> ^on { <o3> <> <p1> } ^above <a1>)
+    (<o3> ^name <n3>)
+    (<h6> ^disk <d2> ^on { <o4> <> <p1> })
+    -->
+    (<h5> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o3> -)
+}
+
+sp {answer*apply*move-disk*target-not-clear*OpNoChange*t23-1
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^upper-disk <u1> ^upper-disk <u2> ^peg { <p1> <> <t2> } ^holds <h2>
+          ^holds <h3> ^holds { <h4> <> <h2> } ^holds <h5>)
+    (<u1> ^name <n1>)
+    (<u2> ^larger <u1>)
+    (<p1> ^name <n2>)
+   -{ (<d1> ^larger <l1>)
+      (<l1> ^larger <u1>)
+      (<t1> ^holds <h1>)
+      (<h1> ^on <t2> ^disk <l1>)}
+    (<d1> ^larger <u1>)
+    (<h2> ^on <p1> ^disk <u2>)
+    (<h3> ^on <t2> ^disk <u1>)
+    (<h4> ^disk <u1> ^on { <o2> <> <p1> } ^above <a1>)
+    (<o2> ^name <n3>)
+    (<h5> ^disk <d1> ^on { <o3> <> <p1> })
+    -->
+    (<h4> ^above <u2> + ^above <a1> - ^on <p1> + ^on <o2> -)
+}
+
+sp {answerx9*apply*move-disk*source-not-clear*target-clear*t22-17
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds <h10>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p8> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p7> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p3> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p2> } ^disk <d8>)
+    (<h8> ^above <d8> ^on { <o9> <> <p1> } ^disk <d9>)
+    (<h9> ^above <d9> ^disk <u1> ^on { <o10> <> <c1> })
+    (<h10> ^disk <u1> ^on { <o11> <> <c1> } ^above { <a1> <> none })
+    (<o11> ^name <n3>)
+    -->
+    (<h10> ^above none + ^above <a1> - ^on <c1> + ^on <o11> -)
+}
+
+sp {answerx8*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-16
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> }
+          ^peg { <p7> <> <t2> <> <p6> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p1> } ^disk <d8>)
+    (<h8> ^above <d8> ^disk <u1> ^on { <o9> <> <c1> })
+    (<h9> ^disk <u1> ^on { <o10> <> <c1> } ^above { <a1> <> none })
+    (<o10> ^name <n3>)
+    -->
+    (<h9> ^above none + ^above <a1> - ^on <c1> + ^on <o10> -)
+}
+
+sp {answerx7*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-15
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <p6> <> <t2> <> <p5> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p1> } ^disk <d7>)
+    (<h7> ^above <d7> ^disk <u1> ^on { <o8> <> <c1> })
+    (<h8> ^disk <u1> ^on { <o9> <> <c1> } ^above { <a1> <> none })
+    (<o9> ^name <n3>)
+    -->
+    (<h8> ^above none + ^above <a1> - ^on <c1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-14
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p1> } ^disk <d6>)
+    (<h6> ^above <d6> ^disk <u1> ^on { <o7> <> <c1> })
+    (<h7> ^disk <u1> ^on { <o8> <> <c1> } ^above { <a1> <> none })
+    (<o8> ^name <n3>)
+    -->
+    (<h7> ^above none + ^above <a1> - ^on <c1> + ^on <o8> -)
+}
+
+sp {answerx5*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-13
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> }
+          ^peg { <p4> <> <t2> <> <p3> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p1> } ^disk <d5>)
+    (<h5> ^above <d5> ^disk <u1> ^on { <o6> <> <c1> })
+    (<h6> ^disk <u1> ^on { <o7> <> <c1> } ^above { <a1> <> none })
+    (<o7> ^name <n3>)
+    -->
+    (<h6> ^above none + ^above <a1> - ^on <c1> + ^on <o7> -)
+}
+
+sp {answerx4*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-12
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <> <p2> <p2> } ^peg { <p3> <> <t2> <> <p2> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p3> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p2> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p1> } ^disk <d4>)
+    (<h4> ^above <d4> ^disk <u1> ^on { <o5> <> <c1> })
+    (<h5> ^disk <u1> ^on { <o6> <> <c1> } ^above { <a1> <> none })
+    (<o6> ^name <n3>)
+    -->
+    (<h5> ^above none + ^above <a1> - ^on <c1> + ^on <o6> -)
+}
+
+sp {answerx3*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-11
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <c1> }
+          ^peg { <p2> <> <t2> <> <p1> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p2> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p1> } ^disk <d3>)
+    (<h3> ^above <d3> ^disk <u1> ^on { <o4> <> <c1> })
+    (<h4> ^disk <u1> ^on { <o5> <> <c1> } ^above { <a1> <> none })
+    (<o5> ^name <n3>)
+    -->
+    (<h4> ^above none + ^above <a1> - ^on <c1> + ^on <o5> -)
+}
+
+sp {answerx10*apply*move-disk*source-not-clear*target-clear*t22-10
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <> <p8> <p8> } ^peg { <p9> <> <t2> <> <p8> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8> ^holds <h9> ^holds <h10> ^holds <h11>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p9> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p8> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p7> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p6> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p5> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p4> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p3> } ^disk <d8>)
+    (<h8> ^above <d8> ^on { <o9> <> <p2> } ^disk <d9>)
+    (<h9> ^above <d9> ^on { <o10> <> <p1> } ^disk <d10>)
+    (<h10> ^above <d10> ^disk <u1> ^on { <o11> <> <c1> })
+    (<h11> ^disk <u1> ^on { <o12> <> <c1> } ^above { <a1> <> none })
+    (<o12> ^name <n3>)
+    -->
+    (<h11> ^above none + ^above <a1> - ^on <c1> + ^on <o12> -)
+}
+
+sp {answerx9*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-9
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> } ^peg { <> <p7> <p7> }
+          ^peg { <p8> <> <t2> <> <p7> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9> ^holds <h10>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p8> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p7> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p6> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p5> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p4> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p3> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p2> } ^disk <d8>)
+    (<h8> ^above <d8> ^on { <o9> <> <p1> } ^disk <d9>)
+    (<h9> ^above <d9> ^disk <u1> ^on { <o10> <> <c1> })
+    (<h10> ^disk <u1> ^on { <o11> <> <c1> } ^above { <a1> <> none })
+    (<o11> ^name <n3>)
+    -->
+    (<h10> ^above none + ^above <a1> - ^on <c1> + ^on <o11> -)
+}
+
+sp {answerx8*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-8
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <> <p6> <p6> }
+          ^peg { <p7> <> <t2> <> <p6> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7> ^holds <h8>
+          ^holds <h9>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p7> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p6> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p5> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p4> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p3> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p2> } ^disk <d7>)
+    (<h7> ^above <d7> ^on { <o8> <> <p1> } ^disk <d8>)
+    (<h8> ^above <d8> ^disk <u1> ^on { <o9> <> <c1> })
+    (<h9> ^disk <u1> ^on { <o10> <> <c1> } ^above { <a1> <> none })
+    (<o10> ^name <n3>)
+    -->
+    (<h9> ^above none + ^above <a1> - ^on <c1> + ^on <o10> -)
+}
+
+sp {answerx7*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-7
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <> <p5> <p5> } ^peg { <p6> <> <t2> <> <p5> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5> ^holds <h6>
+          ^holds <h7> ^holds <h8>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p6> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p5> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p4> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p3> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p2> } ^disk <d6>)
+    (<h6> ^above <d6> ^on { <o7> <> <p1> } ^disk <d7>)
+    (<h7> ^above <d7> ^disk <u1> ^on { <o8> <> <c1> })
+    (<h8> ^disk <u1> ^on { <o9> <> <c1> } ^above { <a1> <> none })
+    (<o9> ^name <n3>)
+    -->
+    (<h8> ^above none + ^above <a1> - ^on <c1> + ^on <o9> -)
+}
+
+sp {answerx6*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-6
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> } ^peg { <> <p4> <p4> }
+          ^peg { <p5> <> <t2> <> <p4> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6> ^holds <h7>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p5> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p4> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p3> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p2> } ^disk <d5>)
+    (<h5> ^above <d5> ^on { <o6> <> <p1> } ^disk <d6>)
+    (<h6> ^above <d6> ^disk <u1> ^on { <o7> <> <c1> })
+    (<h7> ^disk <u1> ^on { <o8> <> <c1> } ^above { <a1> <> none })
+    (<o8> ^name <n3>)
+    -->
+    (<h7> ^above none + ^above <a1> - ^on <c1> + ^on <o8> -)
+}
+
+sp {answerx5*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-5
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <> <p3> <p3> }
+          ^peg { <p4> <> <t2> <> <p3> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4> ^holds <h5> ^holds <h6>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p4> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p3> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p2> } ^disk <d4>)
+    (<h4> ^above <d4> ^on { <o5> <> <p1> } ^disk <d5>)
+    (<h5> ^above <d5> ^disk <u1> ^on { <o6> <> <c1> })
+    (<h6> ^disk <u1> ^on { <o7> <> <c1> } ^above { <a1> <> none })
+    (<o7> ^name <n3>)
+    -->
+    (<h6> ^above none + ^above <a1> - ^on <c1> + ^on <o7> -)
+}
+
+sp {answerx4*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-4
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <> <p2> <p2> } ^peg { <p3> <> <t2> <> <p2> } ^holds <h1>
+          ^holds <h2> ^holds <h3> ^holds <h4> ^holds <h5>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p3> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p2> } ^disk <d3>)
+    (<h3> ^above <d3> ^on { <o4> <> <p1> } ^disk <d4>)
+    (<h4> ^above <d4> ^disk <u1> ^on { <o5> <> <c1> })
+    (<h5> ^disk <u1> ^on { <o6> <> <c1> } ^above { <a1> <> none })
+    (<o6> ^name <n3>)
+    -->
+    (<h5> ^above none + ^above <a1> - ^on <c1> + ^on <o6> -)
+}
+
+sp {answerx3*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-3
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <> <p1> <p1> }
+          ^peg { <p2> <> <t2> <> <p1> } ^holds <h1> ^holds <h2> ^holds <h3>
+          ^holds <h4>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p2> } ^disk <d2>)
+    (<h2> ^above <d2> ^on { <o3> <> <p1> } ^disk <d3>)
+    (<h3> ^above <d3> ^disk <u1> ^on { <o4> <> <c1> })
+    (<h4> ^disk <u1> ^on { <o5> <> <c1> } ^above { <a1> <> none })
+    (<o5> ^name <n3>)
+    -->
+    (<h4> ^above none + ^above <a1> - ^on <c1> + ^on <o5> -)
+}
+
+sp {answerx2*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-2
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear <c1> ^peg <c1> ^upper-disk <u1> ^peg { <p1> <> <t2> <> <c1> }
+          ^holds <h1> ^holds <h2> ^holds <h3>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^on { <o2> <> <p1> } ^disk <d2>)
+    (<h2> ^above <d2> ^disk <u1> ^on { <o3> <> <c1> })
+    (<h3> ^disk <u1> ^on { <o4> <> <c1> } ^above { <a1> <> none })
+    (<o4> ^name <n3>)
+    -->
+    (<h3> ^above none + ^above <a1> - ^on <c1> + ^on <o4> -)
+}
+
+sp {answer*apply*move-disk*source-not-clear*target-clear*OpNoChange*t22-1
+    (state <s1> ^top-state <t1> ^operator <o1>)
+    (<o1> ^to <t2> ^disk <d1>)
+    (<t1> ^clear { <c1> <> <t2> } ^peg <c1> ^upper-disk <u1> ^holds <h1>
+          ^holds <h2>)
+    (<c1> ^name <n1>)
+    (<u1> ^name <n2>)
+    (<h1> ^above <d1> ^disk <u1> ^on { <o2> <> <c1> })
+    (<h2> ^disk <u1> ^on { <o3> <> <c1> } ^above { <a1> <> none })
+    (<o3> ^name <n3>)
+    -->
+    (<h2> ^above none + ^above <a1> - ^on <c1> + ^on <o3> -)
+}
+
+
+

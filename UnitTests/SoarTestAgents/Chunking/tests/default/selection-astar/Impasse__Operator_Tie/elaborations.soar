@@ -1,0 +1,124 @@
+sp {selection*learn
+ #interrupt
+   :default
+   (state <s> ^name selection)
+-->
+   (force-learn <s>)}
+
+
+sp {evaluate-operator*monitor
+   :default
+   (state <s> ^name selection
+              ^operator <op>)
+   (<op> ^name evaluate-operator
+         ^superoperator.next-waypoint.id <nx>)
+-->
+  (write (crlf) |Next waypoint: | <nx>)
+ 
+}
+
+sp {evaluate-operator*elaborate*forward*visited
+   :default
+   (state <s> ^name selection
+              ^superstate.superstate.operator.evaluation.visited <ewp>
+              ^operator <op>)
+   (<ewp> ^id <id>)
+   (<op> ^name evaluate-operator
+         ^evaluation <e>)
+-->
+ ##(write (crlf) |Visited from superstate evaluation: | <ewp> |: | <id>)
+   (<e> ^visited <ewp>)
+}
+
+sp {evaluate-operator*elaborate*visited*current-location
+   :default
+  #interrupt
+   (state <s> ^name selection
+              ^operator <op>
+              ^superstate.top-state.current-location <wp>)
+   (<op> ^name evaluate-operator
+         ^evaluation <e>)
+-->
+ ##(write (crlf) <e> | Mark superstate current location as visited: | <wp>)
+   (<e> ^visited <wp>)
+}
+
+sp {selection*elaborate*state*all-objects-total-estimated-cost
+   :default
+   (state <s> ^name selection)
+   (<s> ^operator <o> +)
+   (<o> ^name evaluate-operator
+       -^evaluation.total-estimated-cost)
+-->
+ ##(write (crlf) |Not all operators total estimated cost|)
+   (<s> ^not-all-operators-total-estimated-cost true)}
+
+#
+sp {selection*elaborate*evaluation*estimated-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>
+             -^top-state.current-location <cloc>
+              ^superstate.desired.location <dloc>)
+   (<e> ^current-location <cloc>
+       -^updated-estimate true)
+   (<cloc> ^x <cx> ^y <cy> ^id <cid>)
+   (<dloc> ^x <dx> ^y <dy> ^id <did>)
+-->
+ ##(write (crlf) |current x | <cx> | y | <cy>)
+ ##(write (crlf) |desired x | <dx> | y | <dy>)
+ ##(write (crlf) |range:    | (compute-range <cx> <cy> <dx> <dy>))
+ ##(write (crlf) |Estimated Cost: | (compute-range <cx> <cy> <dx> <dy>) | : | <e> | : | <cid>)
+   (<e> ^estimated-cost (compute-range <cx> <cy> <dx> <dy>)  )
+}
+sp {selection*elaborate*evaluation*total-estimated-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^estimated-cost { <> 0 <ec> }
+        ^path-cost <pc>)
+-->
+ ##(write (crlf) |Total Estmated Cost: | (+  <ec> <pc>) | : | <e>)
+   (<e> ^total-estimated-cost (+  <ec> <pc>))
+}
+
+sp {selection*elaborate*evaluation*final-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e>)
+   (<e> ^estimated-cost 0
+        ^path-cost <pc>)
+-->
+ ##(write (crlf) |Final Cost: | <pc> | : | <e>)
+   (<e> ^final-cost <pc>
+        ^total-estimated-cost <pc>
+        ^value true)
+}
+
+sp {selection*elaborate*superstate*preferences*final-cost*equal
+   :default
+   (state <s> ^name selection
+              ^evaluation <e1> { <e2> <> <e1> }
+              ^superstate <ss>)
+   (<e1> ^superoperator <so1>
+         ^final-cost <fc>)
+   (<e2> ^superoperator <so2>
+         ^final-cost <fc>)
+-->
+   (<ss> ^operator <so1> = <so2>)}
+
+#######JEL NEW
+sp {selection*elaborate*superstate*preferences*indifferent*better*final-cost
+   :default
+   (state <s> ^name selection
+              ^evaluation <e1> { <e2> <> <e1> }
+              ^superstate <ss>)
+  -{(<s> ^operator <o1> +)
+   (<o1> ^name compare-evaluations)}
+   (<e1> ^superoperator <so1>
+         ^final-cost <fc>)
+   (<e2> ^superoperator <so2>
+         ^symbolic-value indifferent)
+-->
+#   (<ss> ^operator <so1> > <so2>)}
+   (<ss> ^operator <so2> -)}

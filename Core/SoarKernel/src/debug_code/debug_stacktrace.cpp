@@ -45,7 +45,7 @@
 
 #ifndef WIN32
 #ifndef DEBUG_MAC_STACKTRACE
-std::string get_stacktrace(const char* prefix) {}
+void get_stacktrace(std::string& return_string) {}
 #else // !DEBUG_MAC_STACKTRACE
 
 
@@ -1206,7 +1206,7 @@ namespace tthread
 
 }
 
-std::string get_stacktrace(const char* prefix)
+void get_stacktrace(std::string& return_string)
 {
     // storage array for stack trace data
     // you can change the size of the array to increase the depth of
@@ -1218,7 +1218,8 @@ std::string get_stacktrace(const char* prefix)
 
     if (addrlen == 0)
     {
-        return std::string("<empty, possibly corrupt>");
+        return_string = "<empty, possibly corrupt>";
+        return;
     }
 
     char** symbollist = backtrace_symbols(addrlist, addrlen);
@@ -1226,12 +1227,7 @@ std::string get_stacktrace(const char* prefix)
     // allocate string which will be filled with the demangled function name
     size_t funcnamesize = 256;
     char* funcname = (char*)malloc(funcnamesize);
-    std::string return_string;
-    if (prefix)
-    {
-        return_string += prefix;
-        return_string +=  " | ";
-    }
+
     // iterate over the returned symbol lines. skip the first two
     for (int i = 2; i < addrlen; i++)
     {
@@ -1243,7 +1239,7 @@ std::string get_stacktrace(const char* prefix)
     }
     free(funcname);
     free(symbollist);
-    return return_string;
+    return;
 }
 #endif
 #endif

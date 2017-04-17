@@ -8,12 +8,9 @@
 #include "soar_instance.h"
 
 #include "agent.h"
-#include "debug.h"
 #include "dprint.h"
 #include "memory_manager.h"
 #include "output_manager.h"
-//#include "preference.h"
-#include "print.h"
 #include "sml_Client.h"
 #include "sml_AgentSML.h"
 
@@ -21,9 +18,8 @@
 
 Soar_Instance::Soar_Instance()
 {
-//    std::cout << "= Creating Soar instance =\n";
+    //std::cout << "= Creating Soar instance =\n";
     m_Kernel = NULL;
-    m_Memory_Manager = NULL;
     m_Output_Manager = NULL;
     m_launched_by_unit_test = false;
     m_tcl_enabled = false;
@@ -37,9 +33,6 @@ void Soar_Instance::init_Soar_Instance(sml::Kernel* pKernel)
 
     /* -- Sets up the Output Manager -- */
     m_Output_Manager = &Output_Manager::Get_OM();
-    m_Output_Manager->init_Output_Manager(pKernel, this);
-    m_Memory_Manager = &Memory_Manager::Get_MPM();
-    m_Memory_Manager->init_MemPool_Manager(pKernel, this);
 }
 
 Soar_Instance::~Soar_Instance()
@@ -65,6 +58,7 @@ Soar_Instance::~Soar_Instance()
     dprint(DT_SOAR_INSTANCE, "= Soar instance destroyed =\n");
 }
 
+
 void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName, MessageFunction pMessageFunction)
 {
     // Convert to lower case
@@ -89,11 +83,6 @@ void Soar_Instance::Register_Library(sml::Kernel* pKernel, const char* pLibName,
         dprint(DT_SOAR_INSTANCE, "CLI Extension %s registered.\n", lLibName.c_str());
 
     }
-}
-
-void Soar_Instance::Clean_Up_Libraries()
-{
-
 }
 
 std::string Soar_Instance::Tcl_Message_Library(const char* pMessage)

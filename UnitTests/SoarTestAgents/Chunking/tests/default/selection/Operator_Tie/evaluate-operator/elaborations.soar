@@ -1,0 +1,547 @@
+###
+###      7.3.2   The evaluation subgoal
+###
+
+###
+### These productions which fire once an evaluation subgoal has been created
+### have also been generalized.
+
+
+sp {evaluate-operator*elaborate*state*desired
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+             -^problem-space.no-local-negations <nln>
+              ^superstate.operator <so>)
+   (<so>  -^default-desired-copy yes
+           ^name evaluate-operator
+           ^evaluation.desired <d>)
+-->
+   (<s> ^desired <d>)}
+
+sp {evaluate-operator*elaborate*state*desired*nln
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^problem-space.no-local-negations <nln>
+              ^superstate.operator <so>)
+   (<so>   ^name evaluate-operator # ddc is assumed no with nln
+           ^evaluation.desired <d>)
+-->
+   (<s> ^desired <d>)}
+
+sp {evaluate-operator*elaborate*state*name
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superstate.name {<> evaluate-operator <name> })
+-->
+   (<s> ^name <name>)}
+
+## install a copy of the state, when ^default-state-copying and there
+## is an operator tie.
+
+sp {evaluate-operator*elaborate*state*duplicate-of
+   :default
+   (state <s> ^superstate <ss>
+              ^default-state-copy yes)
+   (<ss> ^operator <so>)
+   (<so> ^name evaluate-operator
+         ^superstate <sss>)
+-->
+   (<s> ^duplicate-of <sss>)}
+
+### Copy down operator
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*copy
+   :default
+   (state <s> ^problem-space.name <n>
+              ^default-operator-copy yes
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superoperator <o>
+         ^superproblem-space.name <n>)
+-->
+   (<s> ^look-ahead-operator <copy-o>)
+   (<s> ^untried-tied-operator <copy-o>) # SBW 5/7/07-- -^tried-tied-operator -> ^untried-tied-operator
+   (<copy-o> ^duplicate-of <o>)}
+
+
+## Create pointer for uniform access even in no copy
+
+### Added test for superproblem-space.  This restricts these productions
+### to only fire in a lookahead.  Previously, these productions made it
+### impossible to use evaluation problem spaces other than lookahead.
+
+sp {evaluate-operator*elaborate*state*look-ahead-operator*no-copy
+   :default
+   (state <s> ^problem-space.name <p>
+              ^default-operator-copy no
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+         ^superoperator <o>
+         ^superproblem-space.name <p>)
+-->
+   (<s> ^look-ahead-operator <o>)
+   (<s> ^untried-tied-operator <o>)}
+
+### install copy of operator in lookahead context.
+
+################################## Return Results
+sp {evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^ { << required-success success partial-success
+                   indifferent partial-failure exhaustion-failure failure prohibit-failure
+                   >> <svalue> } <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}
+
+##  Added to handle duplicated desireds
+sp {evaluate-operator*elaborate*evaluation*from-subgoal*duplicate-desired
+   :default
+   (state <s> ^superstate <ss>
+              ^ { << required-success success partial-success
+                  indifferent partial-failure exhaustion-failure failure prohibit-failure
+                  >> <svalue> } <deb>)
+   (<ss> ^operator <so>
+         ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+   (<deb> ^duplicate-of <eb>)
+-->
+   (<e> ^symbolic-value <svalue>)}
+
+sp {evaluate-operator*elaborate*numeric-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^desired <eb>
+               ^numeric-value <v>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^numeric-value <v>)}
+
+sp {evaluate-operator*elaborate*expected-evaluation*from-subgoal
+   :default
+   (state <ss> ^superstate <s>
+               ^desired <eb>
+               ^expected-value <v>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
+-->
+   (<e> ^expected-value <v>)}
+
+
+###
+###      7.3.2.1. State Copying
+###
+
+## Switch to look at current problem space, not super
+## If no signals on problem space, the default is to copy both state and operator
+
+sp {evaluate-operator*elaborate*default-for-default-state-copy-is-yes
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space <p>)
+  -(<p> ^default-state-copy no)
+-->
+   (<s> ^default-state-copy yes)}
+
+sp {evaluate-operator*elaborate*default-state-copy-from-problem-space
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space.default-state-copy <yes-or-no>)
+-->
+   (<s> ^default-state-copy <yes-or-no>)}
+
+### Default is that all-attributes-at-level are copied
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate.operator.name evaluate-operator
+              ^problem-space <p>)
+   (<p> -^all-attributes-at-level two
+        -^one-level-attributes
+        -^two-level-attributes
+        -^dont-copy
+        -^dont-copy-anything)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+sp {evaluate-operator*elaborate*state*default-copy-is-all-attributes-at-level-one*no-problem-space
+   :default
+   (state <s> ^impasse no-change
+             -^problem-space
+              ^attribute operator
+              ^superstate.operator <so>)
+   (<so> ^name evaluate-operator
+        -^superproblem-space <p>)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+### We want ^all-attributes-at-level one to be on the goal, but if someone
+### puts it on the space along with the other copying flags, we should allow
+### that.  So, copy it from the space to the goal.
+
+sp {evaluate-operator*elaborate*state*copy-all-attributes-at-level-one-from-problem-space
+   :default
+   (state <s> ^problem-space.all-attributes-at-level one
+              ^default-state-copy yes)
+-->
+   (<s> ^all-attributes-at-level one)}
+
+### Set up identifier mapping table for state duplication.
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^default-state-copy yes
+              ^superstate.operator.name evaluate-operator)
+-->
+   (<s> ^duplicates <d>)}
+
+### Copy one-level-attributes.
+
+sp {evaluate-operator*elaborate*state*add-one-level-attributes
+   :default
+   (state <s> ^problem-space.one-level-attributes <att>
+              ^duplicate-of.<att> <val>
+              ^default-state-copy yes)
+-->
+   (<s> ^<att> <val>)}
+
+## Copy all attributes, when ^all-attributes-at-level one.
+
+sp {evaluate-operator*elaborate*state*add-all-attributes-at-level-one
+   :default
+   (state <s> ^problem-space <p>
+              ^default-state-copy yes
+              ^all-attributes-at-level one
+              ^duplicate-of <ss>)
+   (<p> -^dont-copy-anything
+        -^dont-copy <att>)
+   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
+            <> impasse <> attribute <> choices <> quiescence
+            <> operator <> superstate <> type <> name <> look-ahead-operator
+            <att> } <val>)
+-->
+   (<s> ^<att> <val>)}
+
+### If we copied a one-level-attribute, and it later turned
+### out that its value happened to be something that was pointed to by a
+### two-level-attribute, change its value to be the copied object.
+
+sp {evaluate-operator*elaborate*state*change-one-level-attribute-to-duplicate
+   :default
+   (state <s> ^problem-space.one-level-attributes <att>
+              ^duplicates.<id> <new-id>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+-->
+   (<s> ^<att> <id> -
+        ^<att> <new-id>)}
+
+### Fixes, when all-attributess-at-level one.
+
+sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
+   :default
+   (state <s> -^problem-space.dont-copy <att>
+               ^default-state-copy yes
+               ^all-attributes-at-level one
+               ^duplicates.<id> <new-id>
+               ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
+-->
+   (<s> ^<att> <id> -
+        ^<att> <new-id>)}
+
+### Create new ids for two-level-attributes.
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-attribute
+   :default
+   (state <s> ^problem-space.two-level-attributes <att>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+-->
+   (<d> ^<id> <new-id>
+        ^<new-id> <att>)}   #JEL 11/11/2016
+
+### Create new ids for all attributes, when ^all-attributes-at-level two.
+
+sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
+   :default
+   (state <s> ^problem-space <p>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of <ss>)
+   (<p> -^dont-copy-anything
+        -^dont-copy <att>
+         ^all-attributes-at-level two
+        -^one-level-attributes <att>)
+   (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
+            <> impasse <> attribute <> choices <> quiescence
+            <> operator <> superstate
+            <att> } <id>)
+-->
+   (<d> ^<id> <new-id>
+        ^<new-id> <att>)}   #JEL 11/11/2016
+
+### Create a copy of the old object on the new link.  First copy
+### augmentations that don't point to objects that have been
+### duplicated.
+
+output warnings off
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate
+   :default
+   (state <s> ^duplicates <d>
+             -^problem-space.no-local-negations <nln>
+             -^problem-space.dont-copy <sub-att>
+              ^default-state-copy yes)
+   (<d> ^<id> { <=> <d> <new-id> }
+       - ^<sub-val>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <sub-val>)}
+
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
+   :default
+   (state <s> ^duplicates <d>
+              ^problem-space.no-local-negations <nln>
+              ^default-state-copy yes)
+   (<d> ^<id> { <=> <d> <new-id> })    
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <sub-val>)}
+                        output warnings on
+### Next copy augmentations that point to duplicated objects:
+                        output warnings off
+sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
+   :default
+   (state <s> ^duplicates <d>
+              ^default-state-copy yes)
+   (<d> ^<id> { <=> <d> <new-id> }
+        ^<sub-val> <new-val>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <new-val>)}
+                        
+output warnings on
+### Added ^two-level-attributes <att>.  Previously, it
+### would copy any attribute that happened to point to the same value as
+### one of the two-level-attributes.
+sp {evaluate-operator*elaborate*state*add-duplicate-to-state
+   :default
+   (state <s> ^problem-space.two-level-attributes <att>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of.<att> <id>)
+   (<d> ^<id> <new-id>
+        ^<new-id> <att>)
+-->
+   (<s> ^<att> <new-id>)}
+
+
+### moves the new links to the state when ^all-atts two.
+
+sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
+   :default
+   (state <s> ^problem-space <p>
+              ^duplicates <d>
+              ^default-state-copy yes
+              ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
+   (<d> ^<id> <new-id>
+        ^<new-id> <att>)  # New JEL 11/11/2016
+   (<p> ^all-attributes-at-level two
+     - ^dont-copy-anything
+     - ^dont-copy <att>
+     - ^one-level-attributes <att>)
+-->
+   (<s> ^<att> <new-id>)}
+
+## -------------------------------
+## Desired copying:
+## -------------------------------
+
+## Copy attributes to the duplicate desired state.  We
+## do this after the state is installed so that the duplicates table
+## will already have been filled in.  We just copy all attributes over
+## from the original operator, except that attributes that pointed to
+## objects that have been duplicated (on the state) are modified to point
+## to the duplicate objects.
+
+sp {evaluate-operator*elaborate*state*eval*desired
+   :default
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator <so>)
+   (<so> ^name evaluate-operator
+         ^evaluation.desired <d>
+         ^default-desired-copy yes)
+-->
+   (<s> ^desired <d-copy>)
+   (<d-copy> ^duplicate-of <d>)}
+
+
+## Copy attributes whose values haven't been duplicated.
+
+### SBH/mvp 9-2-94
+### Also, added the condition that the desired be attached to
+### an evaluation superoperator.  This is because if we use the same
+### desired in a lower lookahead context, this production re-firing
+### can cause stupid chunks.
+
+sp {duplicate-desired*copy-old-value
+   :default
+   (state <s> ^superstate.operator <so>
+              ^problem-space <p>
+              ^duplicates <d>
+              ^desired <o-copy>)
+   (<so> ^name evaluate-operator
+         ^evaluation.desired <o>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^{ <> duplicate-of <att> } <val>)
+ - (<p> ^dont-copy <att>)
+ - (<d> ^<val>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+## Copy attributes whose values have been duplicated.
+
+sp {duplicate-desired*replace-old-value
+   :default
+   (state <s> ^duplicates.<id> <copy-id>
+              ^problem-space <p> 
+              ^desired <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <id>)
+   (<p> - ^dont-copy <att>)
+-->
+   (<o-copy> ^<att> <copy-id>)}
+
+
+
+###      7.3.2.3 Operator copying
+###
+### Copy attributes to the duplicate operator.  We
+### do this after the state is installed so that the duplicates table
+### will already have been filled in.  We just copy all attributes over
+### from the original operator, except that attributes that pointed to
+### objects that have been duplicated (on the state) are modified to point
+### to the duplicate objects.
+
+sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space <ps>)
+   (<ps> -^default-operator-copy no)
+-->
+   (<s> ^default-operator-copy yes)}
+
+
+sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space
+   :default
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space.default-operator-copy <yes-or-no>)
+-->
+   (<s> ^default-operator-copy <yes-or-no>)}
+
+### Set up identifier mapping table for operator
+
+sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^default-operator-copy yes
+                                    - ^default-state-copy yes)
+-->
+   (<s> ^duplicates <d>)}
+
+### Copy attributes whose values haven't been duplicated.
+###
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator
+   :default
+   (state <s> ^duplicates <d>
+          ^problem-space <p>
+        ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <val>)
+   (<p> -^dont-copy <att>
+        -^no-local-negations <nln>)
+   (<d> - ^<val>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+### Copy attributes whose values have been duplicated.
+
+sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
+   :default
+   (state <s> ^duplicates <d>
+          ^problem-space <p>
+              ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <id>)
+  (<p> -^dont-copy <att>
+       -^no-local-negations <nln>)
+   (<d> ^<id> <copy-id>)
+-->
+   (<o-copy> ^<att> <copy-id>)}
+
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator*nln
+   :default
+   (state <s> ^problem-space <p>
+              ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <val>)
+   (<p> ^no-local-negations <nln>)
+-->
+   (<o-copy> ^<att> <val>)}
+
+###
+###      7.5     Execution monitoring
+###
+
+### If the state is marked with ^success <d>, the goal succeeds.
+
+#sp {monitor*goal*success
+#   :default
+#   (state <s> ^top-state <ts>
+#              ^name <gname>
+#              ^desired <d>
+#              ^<< partial-success required-success success >> <d>)
+#   (<ts> ^superstate nil
+#        -^verbose false)
+#-->
+##   (write (crlf) |  Goal | <gname> | succeeded. |)}
+#
+#### If the state is marked with ^failure <d>, the goal fails.
+#
+#sp {monitor*goal*failure
+#   :default
+#   (state <s> ^top-state <ts>
+#              ^name <gname>
+#              ^desired <d>
+#              ^<< partial-failure failure exhaustion-failure prohibit-failure >> <d>)
+#   (<ts> ^superstate nil
+#        -^verbose false)
+#-->
+##   (write (crlf) |  Goal | <gname> | failed. |)}
+

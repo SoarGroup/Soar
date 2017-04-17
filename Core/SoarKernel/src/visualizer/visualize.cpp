@@ -63,10 +63,12 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
 
     settings = new Viz_Parameters(thisAgent);
     m_file_count = 0;
+    m_next_color = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
 {
+    delete settings;
 }
 
 void GraphViz_Visualizer::visualize_wm(Symbol* pSym, int pDepth)
@@ -196,25 +198,29 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_inst_record:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
+                "      colorscheme=\"X11\"\n"
                 "      penwidth = \"0\"\n"
+                "      \n"
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%s\xF3/TD\xF2 \xF3/TR\xF2\n", node_id, pName.c_str());
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLACK\"\xF2 \xF3\FONT COLOR=\"WHITE\"\xF2Instantiation (i %u) of rule\xF3\x42R/\xF2%s\xF3/FONT\xF2\xF3/TD\xF2\xF3/TR\xF2\n", node_id, pName.c_str());
             break;
 
         case viz_chunk_record:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   chunk%u [\n"
                 "      style = \"dashed, bold, rounded\"\n"
+                "      colorscheme=\"X11\"\n"
                 "      label = \xF3", node_id);
             viz_table_start();
             outputManager->sprinta_sf(thisAgent, graphviz_output,
-                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\"\xF2%s (i %u)\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str(), node_id);
+                "                \xF3TR\xF2 \xF3TD COLSPAN=\"3\" BGCOLOR=\"BLUE\"\xF2 \xF3\FONT COLOR=\"YELLOW\"\xF2%s (i %u)\xF3/FONT\xF2\xF3/TD\xF2 \xF3/TR\xF2\n", pName.c_str(), node_id);
             break;
         case viz_id_and_augs:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      penwidth = \"0\"\n"
                 "      label = \xF3", nodeName.c_str());
             viz_table_start();
@@ -224,19 +230,21 @@ void GraphViz_Visualizer::viz_object_start_string(std::string &pName, uint64_t n
         case viz_simple_inst:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   rule%u [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"box\" style = \"rounded\"\n"
                 "      label = \"%s (i %u)", node_id, pName.c_str(), node_id);
             break;
         case viz_wme:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"circle\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
-
         case viz_wme_terminal:
             outputManager->sprinta_sf(thisAgent, graphviz_output,
                 "   \"%s\" [\n"
+                "      colorscheme=\"X11\"\n"
                 "      shape = \"box\"\n"
                 "      label = \"%s", nodeName.c_str(), pName.c_str());
             break;
@@ -297,26 +305,31 @@ void GraphViz_Visualizer::viz_table_end()
     graphviz_output += "              \xF3/TABLE\xF2\n";
 }
 
-void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
+void GraphViz_Visualizer::viz_table_element_conj_start(uint64_t pNodeID, char pTypeChar, WME_Field pField, bool pRowBorder, const char* pModStr)
 {
+    const char* borderString;
+    if (pRowBorder) borderString =  " BORDER=\"3\""; else borderString =  " ";
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
-            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s%sPORT=\"%c_%u%s\"\xF2 ",
+            borderString, pModStr, pTypeChar, pNodeID, ((pField == ID_ELEMENT) ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\n                \xF3TD%s%s\xF2 ", borderString, pModStr);
     }
     viz_table_start();
 }
 
-void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, bool pIsLeftPort, bool pColor)
+void GraphViz_Visualizer::viz_table_element_start(uint64_t pNodeID, char pTypeChar, WME_Field pField, bool pRowBorder, const char* pModStr)
 {
+    const char* borderString;
+    if (pRowBorder) borderString =  " BORDER=\"3\""; else borderString =  " ";
+
     if (pNodeID)
     {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%sPORT=\"%c_%u%s\"\xF2 ",
-            (pColor ? " bgcolor=\"lightgrey\" " : " "), pTypeChar, pNodeID, (pIsLeftPort ? "_l" : "_r"));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%sPORT=\"%c_%u%s\"\xF2 ",
+            borderString, pModStr, pTypeChar, pNodeID, ((pField == ID_ELEMENT) ? "_l" : "_r"));
     } else {
-        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s\xF2 ", (pColor ? " bgcolor=\"lightgrey\" " : " "));
+        outputManager->sprinta_sf(thisAgent, graphviz_output, "\xF3TD%s%s\xF2 ", borderString, pModStr);
     }
 }
 

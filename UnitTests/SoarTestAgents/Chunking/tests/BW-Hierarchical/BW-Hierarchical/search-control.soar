@@ -1,0 +1,33 @@
+sp {P7*evaluate*move-block*better*move-to-goal
+   (state <s> ^name blocks-world
+              ^inplace-object <block2>
+              ^desired <d>
+              ^operator <op1> +
+              ^operator { <> <op1> <op2> } +)
+   (<d> ^ontop <ontop>)
+   (<ontop>  ^top-block <block1>
+             ^bottom-block <block2>)
+   (<op1> ^name move-block
+          ^moving-block <block1>
+          ^destination <block2>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {P6*evaluate*move-block*best*move-block-to-table
+   (state <s> ^name blocks-world
+             -^inplace-object <block1>
+              ^object <table>
+              ^ontop <ontop>
+              ^desired <d>
+              ^operator <op1> +)
+   (<table> ^name table)
+   (<ontop> ^top-block <block1>
+            ^bottom-block { <> <table> <block2> })
+   (<op1> ^name move-block
+          ^moving-block <block1>
+          ^destination <table>)
+-->
+   (<s> ^operator <op1> >)
+}
+

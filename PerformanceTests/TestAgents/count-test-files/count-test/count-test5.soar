@@ -1,0 +1,9 @@
+# Test 5 - generate proposal in subgoal - no proposal here, just applicaiton
+# Done with operator application
+sp {count-test*apply*count-test5
+   (state <s> ^operator.name count-test5
+              ^count <c>)
+--> 
+   (<s> ^count <c> -
+               (- <c> 1))
+}

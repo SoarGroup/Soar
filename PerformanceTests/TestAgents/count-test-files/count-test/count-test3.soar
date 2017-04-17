@@ -1,0 +1,19 @@
+## Test 3 - count all in one decision but without removing old counts
+
+sp {count-test*propose*count-test3
+   (state <s> ^name count-test
+              ^current-test <ct>
+             -^count 0)
+   (<ct> ^test-number 3
+         ^test-initialized true
+        -^test-complete true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name count-test3)
+}
+sp {count-test*apply*count-test3
+   (state <s> ^operator.name count-test3
+              ^count { <count> > 0 })
+-->
+   (<s> ^count (- <count> 1))
+}

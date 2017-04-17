@@ -31,9 +31,9 @@
 #ifndef WMEM_H
 #define WMEM_H
 
-
 #include "kernel.h"
 
+#include "debug_inventories.h"
 #include "stl_typedefs.h"
 #include "semantic_memory.h"
 #include "symbol.h"
@@ -57,27 +57,27 @@ class WM_Manager
 
         void clean_up_for_agent_deletion();
 
-        wma_param_container* wma_params;
-        wma_stat_container* wma_stats;
-        wma_timer_container* wma_timers;
+        wma_param_container*    wma_params;
+        wma_stat_container*     wma_stats;
+        wma_timer_container*    wma_timers;
 
-        wme_set* wma_touched_elements;
-        wma_forget_p_queue* wma_forget_pq;
-        wma_decay_cycle_set* wma_touched_sets;
+        wme_set*                wma_touched_elements;
+        wma_forget_p_queue*     wma_forget_pq;
+        wma_decay_cycle_set*    wma_touched_sets;
 
-        unsigned int wma_power_size;
-        double* wma_power_array;
-        wma_d_cycle* wma_approx_array;
-        double wma_thresh_exp;
-        bool wma_initialized;
-        tc_number wma_tc_counter;
-        wma_d_cycle wma_d_cycle_count;
+        unsigned int            wma_power_size;
+        double*                 wma_power_array;
+        wma_d_cycle*            wma_approx_array;
+        double                  wma_thresh_exp;
+        bool                    wma_initialized;
+        tc_number               wma_tc_counter;
+        wma_d_cycle             wma_d_cycle_count;
 
-        deep_copy_wme_list glbDeepCopyWMEs;
+        deep_copy_wme_list      glbDeepCopyWMEs;
 
     private:
 
-        agent* thisAgent;
+        agent*                  thisAgent;
 
 };
 
@@ -97,13 +97,14 @@ typedef struct wme_struct
     struct wme_struct           *next, *prev;
 
     struct preference_struct*   preference;             /* pref. supporting it, or NIL */
-    struct wme_struct*          deep_copied_wme;
     struct output_link_struct*  output_link;            /* for top-state output commands */
 
     tc_number                   tc;
     struct condition_struct*    chunker_bt_last_ground_cond;
     bool                        is_singleton;
     bool                        singleton_status_checked;
+    IdentitySet*                local_singleton_id_identity_set;
+    IdentitySet*                local_singleton_value_identity_set;
 
     struct gds_struct*          gds;
     struct wme_struct*          gds_next, *gds_prev;   /* wmes in gds */
@@ -114,7 +115,9 @@ typedef struct wme_struct
     wma_decay_element*          wma_decay_el;
     tc_number                   wma_tc_value;
 
+    #ifdef DEBUG_WME_INVENTORY
     uint64_t                    w_id;                   /* used by WME debug inventory mechanism */
+    #endif
 } wme;
 
 inline void wme_add_ref(wme* w, bool always_add = false)
@@ -126,13 +129,6 @@ inline void wme_remove_ref(agent* thisAgent, wme* w)
 {
     if ((w)->reference_count != 0) (w)->reference_count--;
     if ((w)->reference_count == 0) deallocate_wme(thisAgent, w);
-}
-inline const char* field_to_string(WME_Field f)
-{
-    if (f == ID_ELEMENT) return "ID";
-    if (f == ATTR_ELEMENT) return "attribute";
-    if (f == VALUE_ELEMENT) return "value";
-    return "NO-ELEMENT";
 }
 
 inline Symbol* get_wme_element(wme* w, WME_Field f)

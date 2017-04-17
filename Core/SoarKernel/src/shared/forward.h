@@ -13,6 +13,7 @@ typedef struct agent_struct agent;
 typedef struct chunk_cond_struct chunk_cond;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
+typedef struct constraint_struct constraint;
 typedef struct dl_cons_struct dl_cons;
 typedef struct exploration_parameter_struct exploration_parameter;
 typedef struct gds_struct goal_dependency_set;
@@ -42,12 +43,15 @@ typedef byte ms_trace_type;
 typedef byte wme_trace_type;
 typedef char varnames;
 typedef char* rhs_value;
+typedef struct rhs_struct rhs_info;
+typedef rhs_info* rhs_symbol;
 typedef cons cons;
 typedef signed short goal_stack_level;
 typedef test_info* test;
 typedef uint64_t tc_number;
 typedef unsigned short rete_node_level;
 
+class soar_timer;
 class Soar_Instance;
 class Memory_Manager;
 class Symbol_Manager;
@@ -78,6 +82,7 @@ class production_param_container;
 class wm_param_container;
 
 class Explanation_Based_Chunker;
+class ebc_timer_container;
 class Repair_Path;
 class Explanation_Memory;
 class action_record;
@@ -88,6 +93,7 @@ class ebc_param_container;
 class identity_record;
 class instantiation_record;
 class production_record;
+class IdentitySet;
 
 class EpMem_Manager;
 class epmem_common_statement_container;
@@ -150,12 +156,17 @@ namespace cli
  * your debugger to always break on these, you can just add them to stop Soar at the point where
  * problem structures are being processed.  Since we can throw these in anywhere, we're forward
  * declaring them here so that we don't need to include debug.h everywhere.*/
-extern bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
+extern void debug_set_mode_info(trace_mode_info mode_info[num_trace_modes], bool pEnabled);
+extern void initialize_debug_trace(trace_mode_info mode_info[num_trace_modes]);
+extern void debug_trace_set(int dt_num, bool pEnable);
+extern void debug_trace_on();
+extern void debug_trace_off();extern bool break_if_wme_matches_string(wme *w, const char* match_id, const char* match_attr, const char* match_value);
 extern bool break_if_pref_matches_string(preference *w, const char* match_id, const char* match_attr, const char* match_value);
 extern bool break_if_symbol_matches_string(Symbol* sym, const char* match);
 extern bool break_if_id_matches(uint64_t lID, uint64_t lID_to_match);
+extern bool break_if_bool(bool shouldBreak);
 extern bool break_if_test_symbol_matches_string(test t, const char* match);
-extern void debug_refcount_change_start(agent* thisAgent, const char* symString, bool twoPart);
-extern void debug_refcount_change_end(agent* thisAgent, const char* symString, const char* callerString, bool twoPart);
+extern void debug_refcount_change_start(agent* thisAgent, bool twoPart);
+extern void debug_refcount_change_end(agent* thisAgent, const char* callerName, const char* callerString, bool twoPart);
 
 #endif /* CORE_SOARKERNEL_SRC_SHARED_FORWARD_H_ */

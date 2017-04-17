@@ -1,0 +1,272 @@
+sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t23-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <c1> <> <a1> })
+    (<g1> ^position down ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<c1> ^type block)
+    (<o3> ^moving-block <c1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t20-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <c1> <> <a1> <> <h1> })
+    (<g1> ^position up ^above <a1> ^holding { <h1> <> nothing })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <c1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <c1> +)
+}
+
+sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t20-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <c1> <> <a1> <> <h1> })
+    (<g1> ^position down ^above <a1> ^holding { <h1> <> nothing })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <c1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t19-3
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <c1> <> <a1> })
+    (<g1> ^position up ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<c1> ^type block)
+    (<o3> ^moving-block <c1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <c1> +)
+}
+
+sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t19-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> })
+    (<g1> ^position down ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<c1> ^type block)
+    (<o3> ^moving-block <c1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answer*apply*up-gripper*pass*top-state*OpNoChange*t19-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position down ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^name pick-up ^moving-block { <m1> <> <a1> })
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answerx2*apply*open-gripper*pass*top-state*OpNoChange*t14-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^clear <a1> ^io <i1>)
+    (<g1> ^position down ^open no ^above <a1>
+          ^holding { <h1> <> nothing <> <a1> })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <a1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command open +)
+}
+
+sp {answer*apply*open-gripper*pass*top-state*OpNoChange*t14-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position down ^open no ^above <a1> ^holding <h1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <a1> ^name put-down ^moving-block <m1>)
+    -->
+    (<g2> ^command open +)
+}
+
+sp {answerx2*apply*down-gripper*pass*top-state*OpNoChange*t13-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^clear <a1> ^io <i1>)
+    (<g1> ^position up ^above <a1> ^holding { <h1> <> nothing <> <a1> })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <a1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command down +)
+}
+
+sp {answer*apply*down-gripper*pass*top-state*OpNoChange*t13-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position up ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <a1> ^name put-down ^moving-block <m1>)
+    -->
+    (<g2> ^command down +)
+}
+
+sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t12-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> <> <h1> })
+    (<g1> ^position up ^above <a1> ^holding { <h1> <> nothing })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <c1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <c1> +)
+}
+
+sp {answer*apply*move-gripper-above*pass*top-state*OpNoChange*t12-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position up ^above <a1> ^holding <h1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^moving-block <h1> ^name put-down ^destination { <d1> <> <a1> })
+    -->
+    (<g2> ^command move-gripper-above + ^destination <d1> +)
+}
+
+sp {answerx2*apply*up-gripper*pass*top-state*OpNoChange*t11-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> <> <h1> })
+    (<g1> ^position down ^above <a1> ^holding { <h1> <> nothing })
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^destination <c1> ^name move-block ^moving-block <m1>)
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answer*apply*up-gripper*pass*top-state*OpNoChange*t11-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position down ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^name put-down ^destination { <d1> <> <a1> } ^moving-block <m1>)
+    -->
+    (<g2> ^command up +)
+}
+
+sp {answerx2*apply*close-gripper*pass*top-state*OpNoChange*t8-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear <c1>)
+    (<g1> ^position down ^open yes ^holding nothing ^above <a1>)
+    (<a1> ^name <n1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<c1> ^name <n1> ^type block)
+    (<o3> ^moving-block <c1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command close +)
+}
+
+sp {answer*apply*close-gripper*pass*top-state*OpNoChange*t8-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position down ^open yes ^holding nothing ^above <a1>)
+    (<a1> ^name <n1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^name pick-up ^moving-block <m1>)
+    (<m1> ^name <n1>)
+    -->
+    (<g2> ^command close +)
+}
+
+sp {answerx2*apply*down-gripper*pass*top-state*OpNoChange*t7-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^clear <a1> ^io <i1>)
+    (<g1> ^position up ^holding nothing ^above <a1>)
+    (<a1> ^type block)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^moving-block <a1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command down +)
+}
+
+sp {answer*apply*down-gripper*pass*top-state*OpNoChange*t7-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1>)
+    (<g1> ^position up ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^moving-block <a1> ^name pick-up)
+    -->
+    (<g2> ^command down +)
+}
+
+sp {answerx2*apply*move-gripper-above*pass*top-state*OpNoChange*t6-2
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <> <c1> <c1> })
+    (<g1> ^position up ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<c1> ^type block)
+    (<o3> ^moving-block <c1> ^name move-block ^destination <d1>)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <c1> +)
+}
+
+sp {answer*apply*move-gripper-above*pass*top-state*OpNoChange*t6-1
+    (state <s1> ^top-state <t1> ^operator <o3>)
+   -{ (<s1> ^operator <o1>)
+      (<o1> ^name evaluate-operator)}
+    (<t1> ^gripper <g1> ^io <i1> ^clear { <c1> <> <a1> })
+    (<g1> ^position up ^holding nothing ^above <a1>)
+    (<i1> ^output-link <o2>)
+    (<o2> ^gripper <g2>)
+    (<o3> ^moving-block <c1> ^name pick-up)
+    -->
+    (<g2> ^command move-gripper-above + ^destination <c1> +)
+}
+
+
+

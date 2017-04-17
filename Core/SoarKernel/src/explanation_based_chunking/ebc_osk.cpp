@@ -8,6 +8,7 @@
 #include "preference.h"
 #include "slot.h"
 #include "symbol.h"
+#include "test.h"
 
 /* ------------------------------------------------------------------
                   Add a preference to a slot's OSK prefs
@@ -91,8 +92,7 @@ void Explanation_Based_Chunker::add_to_OSK(slot* pSlot, preference* pPref, bool 
 
 void Explanation_Based_Chunker::copy_proposal_OSK(instantiation* inst, cons* newOSK)
 {
-    condition* cond;
-    preference* pref, *new_pref;
+    preference* pref;
     cons* l_OSK_prefs;
 
     assert (!inst->OSK_proposal_prefs);
@@ -113,7 +113,7 @@ void Explanation_Based_Chunker::copy_proposal_OSK(instantiation* inst, cons* new
 void Explanation_Based_Chunker::copy_OSK(instantiation* inst)
 {
     condition* cond;
-    preference* pref, *new_pref;
+    preference* pref;
     cons* l_OSK_prefs;
 
     inst->OSK_prefs = NIL;
@@ -137,7 +137,6 @@ void Explanation_Based_Chunker::copy_OSK(instantiation* inst)
             pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
             while (pref)
             {
-                new_pref = NIL;
                 push(thisAgent, pref, inst->OSK_prefs);
                 preference_add_ref(pref);
                 dprint(DT_OSK, "Adding OSK prohibit preference %p to instantiation.\n",  pref);

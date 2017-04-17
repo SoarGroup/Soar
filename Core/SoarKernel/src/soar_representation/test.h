@@ -18,6 +18,7 @@
 
 #include "kernel.h"
 #include "stl_typedefs.h"
+#include "debug_inventories.h"
 
 template <typename T> inline void allocate_cons(agent* thisAgent, T* dest_cons_pointer);
 
@@ -40,13 +41,18 @@ typedef struct test_struct
     TestType        type;                  /* see definitions in enums.h */
     union test_info_union
     {
-        Symbol*        referent;         /* for relational tests */
-        cons*        disjunction_list;   /* for disjunction tests */
-        cons*        conjunct_list;      /* for conjunctive tests */
+        Symbol*     referent;         /* for relational tests */
+        cons*       disjunction_list;   /* for disjunction tests */
+        cons*       conjunct_list;      /* for conjunctive tests */
     } data;
-    test_struct*     eq_test;
-    tc_number        tc_num;
-    uint64_t         identity;
+    test_struct*    eq_test;
+    uint64_t        identity;
+    uint64_t        clone_identity;
+    IdentitySet*    identity_set;
+    #ifdef DEBUG_TEST_INVENTORY
+    uint64_t            t_id;
+    #endif
+
 } test_info;
 
 /* --- Note that the test typedef is a *pointer* to a test struct. A test is
@@ -65,7 +71,7 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type);
 uint32_t hash_test(agent* thisAgent, test t);
 void deallocate_test(agent* thisAgent, test t);
 
-test copy_test(agent* thisAgent, test t, bool pUnify_variablization_identity = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
+test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet = false, bool pStripLiteralConjuncts = false, bool remove_state_impasse = false, bool* removed_goal = NULL, bool* removed_impasse = NULL);
 
 bool add_test(agent* thisAgent, test* dest_address, test new_test, bool merge_disjunctions = false);
 void add_test_if_not_already_there(agent* thisAgent, test* t, test new_test, bool neg, bool merge_disjunctions = false);
@@ -95,4 +101,5 @@ inline bool test_can_be_transitive_constraint(test t)
     return ((t->type != EQUALITY_TEST) && (t->type != CONJUNCTIVE_TEST) &&
             (t->type != GOAL_ID_TEST) && (t->type != IMPASSE_ID_TEST));
 };
+
 #endif /* TEST_H_ */
