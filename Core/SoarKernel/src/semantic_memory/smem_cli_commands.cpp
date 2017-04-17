@@ -1043,7 +1043,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
 
                                                 // add to ltms
                                                 (*str_to_LTMs)[temp_key2] = l_ltm_temp;
-                                                lexer->get_lexeme();
+                                                //lexer->get_lexeme();
 
                                                 // possibly a newbie (could be a self-loop)
                                                 newbies->insert(l_ltm_temp);

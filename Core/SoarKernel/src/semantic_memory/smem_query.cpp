@@ -772,7 +772,14 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
             ////////////////////////////////////////////////////////////////////////////
             timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
-            install_memory(state, (*(all_king_ids.rbegin())).second, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            if (needFullSearch)
+            {
+                install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            }
+            else
+            {
+                install_memory(state, (*(all_king_ids.rbegin())).second, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
+            }
         }
         else
         {
