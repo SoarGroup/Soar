@@ -1071,8 +1071,13 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                         {
                                             l_ltm_value->val_lti.edge_weight = lexer->current_lexeme.float_val;
                                         }
+                                        else if (lexer->current_lexeme.type == INT_CONSTANT_LEXEME)
+                                        {
+                                            l_ltm_value->val_lti.edge_weight = static_cast<double>(lexer->current_lexeme.int_val);
+                                        }
                                         else
                                         {
+                                            thisAgent->outputManager->printa_sf(thisAgent, "Edge weight input for smem -add clause for @%u is not float or integer: %s\n", l_ltm->lti_id, lexer->current_lexeme.string());
                                             //error: The syntax suggested that an edge-weight value was going to be provided
                                             //but this was not encountered
                                         }
@@ -1084,6 +1089,7 @@ bool SMem_Manager::parse_add_clause(soar::Lexer* lexer, str_to_ltm_map* str_to_L
                                         else
                                         {
                                             //horrible syntax error. missing right paren. fix.
+                                            thisAgent->outputManager->printa_sf(thisAgent, "Edge weight input for smem -add clause for @%u is missing right paren.\n", l_ltm->lti_id);
                                         }
                                     }
                                     else
