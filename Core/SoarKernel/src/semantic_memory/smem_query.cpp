@@ -772,7 +772,7 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
             ////////////////////////////////////////////////////////////////////////////
             timers->query->stop();
             ////////////////////////////////////////////////////////////////////////////
-            if (needFullSearch)
+            if (needFullSearch && mathQuery != NIL)
             {
                 install_memory(state, king_id, NIL, (settings->activate_on_query->get_value() == on), meta_wmes, retrieval_wmes, install_type, depth);
             }
@@ -803,7 +803,14 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
 
     if (!all_king_ids.empty())
     {
-        return (*(all_king_ids.rbegin())).second;
+        if (needFullSearch && mathQuery != NIL)
+        {
+            return king_id;
+        }
+        else
+        {
+            return (*(all_king_ids.rbegin())).second;
+        }
     }
     else
     {
