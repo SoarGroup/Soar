@@ -114,8 +114,8 @@
      * to add these counts.  Compiled out in optimized build.
      *
      * Note: Unit tests that use multiple agents will fail if inventories are enabled. If
-     *       someone wanted to use this stuff with multiple agents, they'd need to move the
-     *       inventory tracking maps somewhere that they can be agent specific. */
+     *       someone wanted to use this stuff with multiple agents, they'd need to refactor
+     *       the code to be agent specific. */
 
     //#define DEBUG_GDS_INVENTORY
     //#define DEBUG_INSTANTIATION_INVENTORY
