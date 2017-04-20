@@ -109,6 +109,7 @@ rhs_value copy_rhs_value(agent* thisAgent, rhs_value rv, bool get_identity_set, 
             {
                 if (l_identity->get_clone_identity())
                 {
+                    assert(false);
                     l_identity = thisAgent->explanationBasedChunker->get_identity_for_id(l_identity->get_clone_identity());
                 }
                 else
