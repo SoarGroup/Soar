@@ -972,11 +972,11 @@ void epmem_graph_statement_container::create_graph_tables()
     add_structure("CREATE TABLE IF NOT EXISTS epmem_nodes (n_id INTEGER PRIMARY KEY, lti_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_episodes (episode_id INTEGER PRIMARY KEY)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant_now (wc_id INTEGER,start_episode_id INTEGER)");
-    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_now (wi_id INTEGER,start_episode_id INTEGER)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_now (wi_id INTEGER,start_episode_id INTEGER, lti_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant_point (wc_id INTEGER,episode_id INTEGER)");
-    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_point (wi_id INTEGER,episode_id INTEGER)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_point (wi_id INTEGER,episode_id INTEGER, lti_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant_range (rit_id INTEGER,start_episode_id INTEGER,end_episode_id INTEGER,wc_id INTEGER)");
-    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_range (rit_id INTEGER,start_episode_id INTEGER,end_episode_id INTEGER,wi_id INTEGER)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_range (rit_id INTEGER,start_episode_id INTEGER,end_episode_id INTEGER,wi_id INTEGER, lti_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant (wc_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER, value_s_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier (wi_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_n_id INTEGER,attribute_s_id INTEGER,child_n_id INTEGER, last_episode_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)");
@@ -1105,16 +1105,16 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
     find_epmem_wmes_constant = new soar_module::sqlite_statement(new_db, "SELECT wc_id FROM epmem_wmes_constant WHERE parent_n_id=? AND attribute_s_id=? AND value_s_id=?");
     add(find_epmem_wmes_constant);
 
-    add_epmem_wmes_identifier_now = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_now (wi_id,start_episode_id) VALUES (?,?)");
+    add_epmem_wmes_identifier_now = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_now (wi_id,start_episode_id,lti_id) VALUES (?,?,?)");
     add(add_epmem_wmes_identifier_now);
 
     delete_epmem_wmes_identifier_now = new soar_module::sqlite_statement(new_db, "DELETE FROM epmem_wmes_identifier_now WHERE wi_id=?");
     add(delete_epmem_wmes_identifier_now);
 
-    add_epmem_wmes_identifier_point = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_point (wi_id,episode_id) VALUES (?,?)");
+    add_epmem_wmes_identifier_point = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_point (wi_id,episode_id,lti_id) VALUES (?,?,?)");
     add(add_epmem_wmes_identifier_point);
 
-    add_epmem_wmes_identifier_range = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_range (rit_id,start_episode_id,end_episode_id,wi_id) VALUES (?,?,?,?)");
+    add_epmem_wmes_identifier_range = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier_range (rit_id,start_episode_id,end_episode_id,wi_id,lti_id) VALUES (?,?,?,?,?)");
     add(add_epmem_wmes_identifier_range);
 
     add_epmem_wmes_identifier = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_wmes_identifier (parent_n_id,attribute_s_id,child_n_id,last_episode_id) VALUES (?,?,?,?)");
@@ -1147,14 +1147,21 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
     add(get_wmes_with_constant_values);
 
     get_wmes_with_identifier_values = new soar_module::sqlite_statement(new_db,
-            "SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, n.lti_id "
+            "WITH timetables AS ( "
+            "SELECT n.wi_id, n.lti_id FROM epmem_wmes_identifier_now n WHERE n.start_episode_id<= ? UNION ALL "
+            "SELECT p.wi_id, p.lti_id FROM epmem_wmes_identifier_point p WHERE p.episode_id = ? UNION ALL "
+            "SELECT e1.wi_id, e1.lti_id FROM epmem_wmes_identifier_range e1, epmem_rit_left_nodes lt WHERE e1.rit_id=lt.rit_min AND e1.end_episode_id >= ? UNION ALL "
+            "SELECT e2.wi_id, e2.lti_id FROM epmem_wmes_identifier_range e2, epmem_rit_right_nodes rt WHERE e2.rit_id = rt.rit_id AND e2.start_episode_id <= ?) "
+            "SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, n.lti_id FROM epmem_wmes_identifier f, timetables n WHERE f.wi_id=n.wi_id "
+            "ORDER BY f.parent_n_id ASC, f.child_n_id ASC", new_agent->EpMem->epmem_timers->ncb_edge);
+            /*"SELECT f.parent_n_id, f.attribute_s_id, f.child_n_id, n.lti_id "
             "FROM epmem_wmes_identifier f, epmem_nodes n "
             "WHERE (f.child_n_id=n.n_id) AND f.wi_id IN "
             "(SELECT n.wi_id FROM epmem_wmes_identifier_now n WHERE n.start_episode_id<= ? UNION ALL "
             "SELECT p.wi_id FROM epmem_wmes_identifier_point p WHERE p.episode_id = ? UNION ALL "
             "SELECT e1.wi_id FROM epmem_wmes_identifier_range e1, epmem_rit_left_nodes lt WHERE e1.rit_id=lt.rit_min AND e1.end_episode_id >= ? UNION ALL "
             "SELECT e2.wi_id FROM epmem_wmes_identifier_range e2, epmem_rit_right_nodes rt WHERE e2.rit_id = rt.rit_id AND e2.start_episode_id <= ?) "
-            "ORDER BY f.parent_n_id ASC, f.child_n_id ASC", new_agent->EpMem->epmem_timers->ncb_edge);
+            "ORDER BY f.parent_n_id ASC, f.child_n_id ASC", new_agent->EpMem->epmem_timers->ncb_edge);*/
     add(get_wmes_with_identifier_values);
 
     update_epmem_wmes_identifier_last_episode_id = new soar_module::sqlite_statement(new_db, "UPDATE epmem_wmes_identifier SET last_episode_id=? WHERE wi_id=?");
@@ -1638,7 +1645,7 @@ void epmem_rit_prep_left_right(agent* thisAgent, int64_t lower, int64_t upper, e
  * Author       : Nate Derbinsky
  * Notes        : Inserts an interval in the RIT
  **************************************************************************/
-void epmem_rit_insert_interval(agent* thisAgent, int64_t lower, int64_t upper, epmem_node_id id, epmem_rit_state* rit_state)
+void epmem_rit_insert_interval(agent* thisAgent, int64_t lower, int64_t upper, epmem_node_id id, epmem_rit_state* rit_state, int64_t lti_id = 0)
 {
     // initialize offset
     int64_t offset = rit_state->offset.stat->get_value();
@@ -1710,6 +1717,10 @@ void epmem_rit_insert_interval(agent* thisAgent, int64_t lower, int64_t upper, e
     rit_state->add_query->bind_int(2, lower);
     rit_state->add_query->bind_int(3, upper);
     rit_state->add_query->bind_int(4, id);
+    if (lti_id)
+    {
+        rit_state->add_query->bind_int(5, lti_id);
+    }
     rit_state->add_query->execute(soar_module::op_reinit);
 }
 
@@ -2236,7 +2247,7 @@ void epmem_init_db(agent* thisAgent, bool readonly)
             {
                 time_last = (time_max - 1);
 
-                const char* now_select[] = { "SELECT wc_id,start_episode_id FROM epmem_wmes_constant_now", "SELECT wi_id,start_episode_id FROM epmem_wmes_identifier_now" };
+                const char* now_select[] = { "SELECT wc_id,start_episode_id FROM epmem_wmes_constant_now", "SELECT wi_id,start_episode_id,lti_id FROM epmem_wmes_identifier_now" };
                 soar_module::sqlite_statement* now_add[] = { thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point, thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point };
                 const char* now_delete[] = { "DELETE FROM epmem_wmes_constant_now", "DELETE FROM epmem_wmes_identifier_now" };
 
@@ -2255,11 +2266,15 @@ void epmem_init_db(agent* thisAgent, bool readonly)
                         if (range_start == time_last)
                         {
                             temp_q->bind_int(1, temp_q2->column_int(0));
+                            if (i == EPMEM_RIT_STATE_EDGE)
+                            {
+                                temp_q->bind_int(3, temp_q2->column_int(2));
+                            }
                             temp_q->execute(soar_module::op_reinit);
                         }
                         else
                         {
-                            epmem_rit_insert_interval(thisAgent, range_start, time_last, temp_q2->column_int(0), &(thisAgent->EpMem->epmem_rit_state_graph[i]));
+                            epmem_rit_insert_interval(thisAgent, range_start, time_last, temp_q2->column_int(0), &(thisAgent->EpMem->epmem_rit_state_graph[i]), temp_q2->column_int(2));
                         }
 
                         if (i == EPMEM_RIT_STATE_EDGE)
@@ -2420,7 +2435,7 @@ inline void _epmem_store_level(agent* thisAgent,
                                std::map< wme*, epmem_id_reservation* >& id_reservations,
                                std::set< Symbol* >& new_identifiers,
                                std::queue< epmem_node_id >& epmem_node,
-                               std::queue< epmem_node_id >& epmem_edge)
+                               std::queue<std::pair<epmem_node_id,int64_t>>& epmem_edge)
 {
     epmem_wme_list::iterator w_p;
     bool value_known_apriori = false;
@@ -2570,7 +2585,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->epmem_id);
                 thisAgent->EpMem->epmem_stmts_graph->update_node->execute(soar_module::op_reinit);
                 (*w_p)->value->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
-            }
+            }// Steven - This is an important point - It's where we know we're adding an lti for which there wasn't already a known epmem id correspondence assigned to it.
             {
                 // in the case of a known value, we already have a reservation (case 1)
                 if (value_known_apriori)
@@ -2740,7 +2755,7 @@ inline void _epmem_store_level(agent* thisAgent,
                     fprintf(stderr, "   Adding new n_id and setting wme id for VALUE to %d\n", (unsigned int)(*w_p)->value->id->epmem_id);
 #endif
                     // Update the node database with the new n_id
-                    thisAgent->EpMem->epmem_stmts_graph->add_node->bind_int(1, (*w_p)->value->id->epmem_id);
+                    thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(1, (*w_p)->value->id->epmem_id);
                     if (!(*w_p)->value->id->LTI_ID)
                     {
                         thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, 0);
@@ -2748,7 +2763,7 @@ inline void _epmem_store_level(agent* thisAgent,
                         thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->LTI_ID);
                         (*w_p)->value->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
                     }
-                    thisAgent->EpMem->epmem_stmts_graph->add_node->execute(soar_module::op_reinit);
+                    thisAgent->EpMem->epmem_stmts_graph->update_node->execute(soar_module::op_reinit);
 
                     // add repository for possible future children
                     (*thisAgent->EpMem->epmem_id_repository)[(*w_p)->value->id->epmem_id ] = new epmem_hashed_id_pool;
@@ -2782,7 +2797,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
 
                 // new nodes definitely start
-                epmem_edge.push((*w_p)->epmem_id);
+                epmem_edge.emplace((*w_p)->epmem_id,((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
                 thisAgent->EpMem->epmem_edge_mins->push_back(time_counter);
                 thisAgent->EpMem->epmem_edge_maxes->push_back(false);
             }
@@ -2792,12 +2807,12 @@ inline void _epmem_store_level(agent* thisAgent,
                 fprintf(stderr, "   No success but already has id, so don't remove.\n");
 #endif
                 // definitely don't remove
-                (*thisAgent->EpMem->epmem_edge_removals)[(*w_p)->epmem_id ] = false;
+                (*thisAgent->EpMem->epmem_edge_removals)[std::make_pair((*w_p)->epmem_id, (*w_p)->value->id->LTI_ID) ] = false;
 
                 // we add ONLY if the last thing we did was remove
                 if ((*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)])
                 {
-                    epmem_edge.push((*w_p)->epmem_id);
+                    epmem_edge.emplace((*w_p)->epmem_id,((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
                     (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)] = false;
                 }
             }
@@ -2937,7 +2952,7 @@ void epmem_new_episode(agent* thisAgent)
     {
         // seen nodes (non-identifiers) and edges (identifiers)
         std::queue<epmem_node_id> epmem_node;
-        std::queue<epmem_node_id> epmem_edge;
+        std::queue<std::pair<epmem_node_id,int64_t>> epmem_edge;//epmem_edge now needs to keep track of the lti status/identity of the wmenode/epmemedge
 
         // walk appropriate levels
         {
@@ -2986,6 +3001,7 @@ void epmem_new_episode(agent* thisAgent)
         // all inserts
         {
             epmem_node_id* temp_node;
+            int64_t* lti_id;
 
             // nodes
             while (!epmem_node.empty())
@@ -3006,13 +3022,18 @@ void epmem_new_episode(agent* thisAgent)
 
             // edges
             while (!epmem_edge.empty())
-            {
-                temp_node = & epmem_edge.front();
+            {//For the identifiers that are lti instances and for which they previously were not stored with the lti metadata they currently possess,
+             //we need to make a new interval. The lti instance metadata will be stored as a field on the interval. The most recent lti will be
+             //treated as the "default" and splitting of intervals will happen only if a change from the most recent is detected.
+             //It will function similarly to a removal and replacement with respect to the relational interval tree.
+                temp_node = & epmem_edge.front().first;
+                lti_id = & epmem_edge.front().second;
 
                 // add NOW entry
                 // id = ?, start_episode_id = ?
                 thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_now->bind_int(1, (*temp_node));
                 thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_now->bind_int(2, time_counter);
+                thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_now->bind_int(3, (*lti_id));
                 thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_now->execute(soar_module::op_reinit);
 
                 // update min
@@ -3028,78 +3049,82 @@ void epmem_new_episode(agent* thisAgent)
 
         // all removals
         {
-            epmem_id_removal_map::iterator r;
+
             epmem_time_id range_start;
             epmem_time_id range_end;
 
             // wme's with constant values
-            r = thisAgent->EpMem->epmem_node_removals->begin();
-            while (r != thisAgent->EpMem->epmem_node_removals->end())
             {
-                if (r->second)
+                epmem_id_removal_map::iterator r;
+                r = thisAgent->EpMem->epmem_node_removals->begin();
+                while (r != thisAgent->EpMem->epmem_node_removals->end())
                 {
-
-                    // remove NOW entry
-                    // id = ?
-                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_constant_now->bind_int(1, r->first);
-                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_constant_now->execute(soar_module::op_reinit);
-
-                    range_start = (*thisAgent->EpMem->epmem_node_mins)[static_cast<size_t>(r->first - 1)];
-                    range_end = (time_counter - 1);
-
-                    // point (id, start_episode_id)
-                    if (range_start == range_end)
+                    if (r->second)
                     {
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->bind_int(1, r->first);
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->bind_int(2, range_start);
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->execute(soar_module::op_reinit);
-                    }
-                    // node
-                    else
-                    {
-                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ]));
+
+                        // remove NOW entry
+                        // id = ?
+                        thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_constant_now->bind_int(1, r->first);
+                        thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_constant_now->execute(soar_module::op_reinit);
+
+                        range_start = (*thisAgent->EpMem->epmem_node_mins)[static_cast<size_t>(r->first - 1)];
+                        range_end = (time_counter - 1);
+
+                        // point (id, start_episode_id)
+                        if (range_start == range_end)
+                        {
+                            thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->bind_int(1, r->first);
+                            thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->bind_int(2, range_start);
+                            thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_constant_point->execute(soar_module::op_reinit);
+                        }
+                        // node
+                        else
+                        {
+                            epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ]));
+                        }
+
+                        // update max
+                        (*thisAgent->EpMem->epmem_node_maxes)[static_cast<size_t>(r->first - 1)] = true;
                     }
 
-                    // update max
-                    (*thisAgent->EpMem->epmem_node_maxes)[static_cast<size_t>(r->first - 1)] = true;
+                    r++;
                 }
-
-                r++;
+                thisAgent->EpMem->epmem_node_removals->clear();
             }
-            thisAgent->EpMem->epmem_node_removals->clear();
 
             // wme's with identifier values
-            r = thisAgent->EpMem->epmem_edge_removals->begin();
+            epmem_edge_removal_map::iterator r = thisAgent->EpMem->epmem_edge_removals->begin();
             while (r != thisAgent->EpMem->epmem_edge_removals->end())
             {
                 if (r->second)
                 {
                     // remove NOW entry
                     // id = ?
-                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->bind_int(1, r->first);
+                    thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->bind_int(1, r->first.first);
                     thisAgent->EpMem->epmem_stmts_graph->delete_epmem_wmes_identifier_now->execute(soar_module::op_reinit);
 
-                    range_start = (*thisAgent->EpMem->epmem_edge_mins)[static_cast<size_t>(r->first - 1)];
+                    range_start = (*thisAgent->EpMem->epmem_edge_mins)[static_cast<size_t>(r->first.first - 1)];
                     range_end = (time_counter - 1);
 
                     thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(1, range_end);
-                    thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, r->first);
+                    thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->bind_int(2, r->first.first);
                     thisAgent->EpMem->epmem_stmts_graph->update_epmem_wmes_identifier_last_episode_id->execute(soar_module::op_reinit);
                     // point (id, start_episode_id)
                     if (range_start == range_end)
                     {
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(1, r->first);
+                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(1, r->first.first);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(2, range_start);
+                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(3, r->first.first);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->execute(soar_module::op_reinit);
                     }
                     // node
                     else
                     {
-                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]));
+                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first.first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]));
                     }
 
                     // update max
-                    (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>(r->first - 1)] = true;
+                    (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>(r->first.first - 1)] = true;
                 }
 
                 r++;
@@ -5971,8 +5996,8 @@ EpMem_Manager::EpMem_Manager(agent* myAgent)
      epmem_id_ref_counts = new epmem_id_ref_counter();
 
  #ifdef USE_MEM_POOL_ALLOCATORS
-     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
-     epmem_edge_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
+     epmem_node_removals = new epmem_id_removal_map(std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< std::pair<epmem_node_id,int64_t>, bool > >(thisAgent));
+     epmem_edge_removals = new epmem_edge_removal_map(std::less< std::pair<epmem_node_id,int64_t> >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >(thisAgent));
      epmem_wme_adds = new epmem_symbol_set(std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
      epmem_id_removes = new epmem_symbol_stack(soar_module::soar_memory_pool_allocator< Symbol* >(thisAgent));
  #else
