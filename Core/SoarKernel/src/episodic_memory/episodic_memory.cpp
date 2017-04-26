@@ -3114,13 +3114,13 @@ void epmem_new_episode(agent* thisAgent)
                     {
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(1, r->first.first);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(2, range_start);
-                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(3, r->first.first);
+                        thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->bind_int(3, r->first.second);
                         thisAgent->EpMem->epmem_stmts_graph->add_epmem_wmes_identifier_point->execute(soar_module::op_reinit);
                     }
                     // node
                     else
                     {
-                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first.first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]));
+                        epmem_rit_insert_interval(thisAgent, range_start, range_end, r->first.first, &(thisAgent->EpMem->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ]), r->first.second);
                     }
 
                     // update max
@@ -5102,7 +5102,7 @@ void epmem_print_episode(agent* thisAgent, epmem_time_id memory_id, std::string*
 
                 epmem_reverse_hash_print(thisAgent, my_q->column_int(1), temp_s);
 
-                val_is_short_term = (my_q->column_type(3) == soar_module::null_t);
+                val_is_short_term = (my_q->column_type(3) == soar_module::null_t || my_q->column_int(3) == 0);
                 if (val_is_short_term)
                 {
                     temp_s2 = _epmem_print_sti(child_n_id);
@@ -5258,7 +5258,7 @@ void epmem_visualize_episode(agent* thisAgent, epmem_time_id memory_id, std::str
                 to_string(child_n_id, temp2);
                 temp3.append(temp2);
 
-                val_is_short_term = (my_q->column_type(3) == soar_module::null_t);
+                val_is_short_term = (my_q->column_type(3) == soar_module::null_t || my_q->column_int(3) == 0);
                 if (val_is_short_term)
                 {
                     sti_p = stis.find(child_n_id);
