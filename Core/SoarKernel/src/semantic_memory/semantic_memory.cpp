@@ -726,7 +726,9 @@ void SMem_Manager::respond_to_cmd(bool store_only)
                         thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->attr);
                         thisAgent->symbolManager->symbol_remove_ref(&(*mw_it)->value);
 
-                        delete(*mw_it);
+                        //delete(*mw_it);
+                        thisAgent->memoryManager->free_with_pool(MP_sym_triple, (*mw_it));
+
                     }
                     meta_wmes.clear();
                 }
