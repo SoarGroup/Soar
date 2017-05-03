@@ -969,7 +969,7 @@ epmem_common_statement_container::epmem_common_statement_container(agent* new_ag
 void epmem_graph_statement_container::create_graph_tables()
 {
 
-    add_structure("CREATE TABLE IF NOT EXISTS epmem_nodes (n_id INTEGER PRIMARY KEY, lti_id INTEGER)");
+    add_structure("CREATE TABLE IF NOT EXISTS epmem_nodes (n_id INTEGER, lti_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_episodes (episode_id INTEGER PRIMARY KEY)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_constant_now (wc_id INTEGER,start_episode_id INTEGER)");
     add_structure("CREATE TABLE IF NOT EXISTS epmem_wmes_identifier_now (wi_id INTEGER,start_episode_id INTEGER, lti_id INTEGER)");
@@ -984,7 +984,7 @@ void epmem_graph_statement_container::create_graph_tables()
 
 void epmem_graph_statement_container::create_graph_indices()
 {
-
+    add_structure("CREATE UNIQUE INDEX IF NOT EXISTS epmem_node_lti ON epmem_nodes (n_id, lti_id)");
     add_structure("CREATE INDEX IF NOT EXISTS epmem_lti ON epmem_nodes (lti_id)");
 
     add_structure("CREATE INDEX IF NOT EXISTS epmem_wmes_constant_now_start ON epmem_wmes_constant_now (start_episode_id)");
@@ -1083,7 +1083,7 @@ epmem_graph_statement_container::epmem_graph_statement_container(agent* new_agen
     add_node = new soar_module::sqlite_statement(new_db, "INSERT INTO epmem_nodes (n_id,lti_id) VALUES (?,?)");
     add(add_node);
 
-    update_node = new soar_module::sqlite_statement(new_db, "UPDATE epmem_nodes SET lti_id=? where n_id=?");
+    update_node = new soar_module::sqlite_statement(new_db, "INSERT OR REPLACE INTO epmem_nodes (n_id, lti_id) VALUES (?,?)");//"UPDATE epmem_nodes SET lti_id=? where n_id=?");
     add(update_node);
 
 
@@ -2578,11 +2578,11 @@ inline void _epmem_store_level(agent* thisAgent,
             value_known_apriori = (((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD) && ((*w_p)->value->id->epmem_valid == thisAgent->EpMem->epmem_validation));
 
             // if long-term identifier as value, special processing
-            if ((*w_p)->value->id->LTI_ID && ((*w_p)->value->id->LTI_epmem_valid != thisAgent->EpMem->epmem_validation))
+            if ((*w_p)->value->id->LTI_ID && ((*w_p)->value->id->LTI_epmem_valid != thisAgent->EpMem->epmem_validation) && ((*w_p)->value->id->epmem_id != EPMEM_NODEID_BAD))
             {
                 // Update the node database with the new lti_id
-                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(1, (*w_p)->value->id->LTI_ID);
-                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->epmem_id);
+                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(2, (*w_p)->value->id->LTI_ID);
+                thisAgent->EpMem->epmem_stmts_graph->update_node->bind_int(1, (*w_p)->value->id->epmem_id);
                 thisAgent->EpMem->epmem_stmts_graph->update_node->execute(soar_module::op_reinit);
                 (*w_p)->value->id->LTI_epmem_valid = thisAgent->EpMem->epmem_validation;
             }// Steven - This is an important point - It's where we know we're adding an lti for which there wasn't already a known epmem id correspondence assigned to it.
@@ -3832,6 +3832,22 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
         literal->is_leaf = true;
         literal->child_n_id = epmem_temporal_hash(thisAgent, value);
         leaf_literals.insert(literal);
+    }
+    else if (value->id->is_lti() && value->id->LTI_ID)
+    {
+        // This is an attempt to reintegrate matching of ltis into epmem queries despite the
+        // change to make ltis into instances. The idea is that ltis require both a structure match
+        // like normal identifiers, and also a direct match of the lti in question.
+        // Treating ltis purely like normal identifiers (lacking this "else", essentially)
+        // is done with an additional command when the query is issued to epmem.
+        // TODO: Actually implement that extra (agent-initiated epmem-link) command.
+        /*
+         * scijones - May 2 2017 My first try at implementing this is just to copy the old code
+         * that was here in the first place before we changed ltis to be instance-based.
+         */
+        // The first step is to find the LTI at all in the first place. If it's not present,
+        // we can just return failure.
+
     }
     else     // WME is a normal identifier
     {
