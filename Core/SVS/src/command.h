@@ -4,6 +4,9 @@
 #include <string>
 #include "soar_interface.h"
 
+#define SVS_READ_COMMAND 0
+#define SVS_WRITE_COMMAND 1
+
 class svs_state;
 class scene;
 class filter;
@@ -12,7 +15,11 @@ class command
 {
     public:
         virtual std::string description() = 0;
-        virtual bool early() = 0;
+
+		// Should return either SVS_READ_COMMAND or SVS_WRITE_COMMAND
+		// Generally commands that change SVS should return SVS_WRITE_COMMAND
+		//    and commands that extract information should return SVS_READ_COMMAND
+        virtual int command_type() = 0;
         
         bool update()
         {

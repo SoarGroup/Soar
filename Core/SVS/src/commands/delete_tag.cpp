@@ -66,9 +66,9 @@ class delete_tag_command : public command
             return true;
         }
         
-        bool early()
+        int command_type()
         {
-            return false;
+            return SVS_WRITE_COMMAND;
         }
         
         bool parse()
