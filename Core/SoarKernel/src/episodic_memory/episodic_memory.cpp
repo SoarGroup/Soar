@@ -3365,7 +3365,7 @@ void epmem_install_memory(agent* thisAgent, Symbol* state, epmem_time_id memory_
                 // parent_n_id, attribute_s_id, child_n_id, epmem_node.lti_id
                 parent_n_id = my_q->column_int(0);
                 child_n_id = my_q->column_int(2);
-                val_lti_id = static_cast<uint64_t>(my_q->column_int(3));
+                val_lti_id = (my_q->column_type(3) == soar_module::null_t ? 0 : static_cast<uint64_t>(my_q->column_int(3)));
                 attr = epmem_reverse_hash(thisAgent, my_q->column_int(1));
 
                 // get a reference to the parent
