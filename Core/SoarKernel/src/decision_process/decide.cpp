@@ -1179,14 +1179,15 @@ byte run_preference_semantics(agent* thisAgent,
     preference* candidates;
     Symbol* value;
 
+    assert(s->isa_context_slot);
+
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore OSK prefs when:
      * - Run_preference_semantics is called for a consistency check (don't want side effects)
      * - For non-context slots (only makes sense for operators)
      * - For context-slots at the top level (will never be backtraced through)
      * - when the learning system parameter is set off (note, this is independent of whether learning is on) */
-
-    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] && s->isa_context_slot && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
+    add_OSK = (thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_ADD_OSK] && !consistency && (s->id->id->level > TOP_GOAL_LEVEL));
 
     /* Empty the context-dependent preference set in the slot */
 
@@ -1199,10 +1200,6 @@ byte run_preference_semantics(agent* thisAgent,
 
     if (!s->all_preferences)
     {
-        if (!s->isa_context_slot)
-        {
-            mark_slot_for_possible_removal(thisAgent, s);
-        }
         *result_candidates = NIL;
         if (add_OSK) thisAgent->explanationBasedChunker->update_proposal_OSK(s, NULL);
         return NONE_IMPASSE_TYPE;
@@ -1210,7 +1207,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If this is the true decision slot and selection has been made, attempt force selection */
 
-    if (s->isa_context_slot && !consistency)
+    if (!consistency)
     {
         if (select_get_operator(thisAgent) != NULL)
         {
@@ -1238,7 +1235,7 @@ byte run_preference_semantics(agent* thisAgent,
 
     /* If debugging a context-slot, print all preferences that we're deciding through */
 
-//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM] && s->isa_context_slot)
+//    if (thisAgent->trace_settings[TRACE_BACKTRACING_SYSPARAM])
 //    {
 //
 //        thisAgent->outputManager->printa_sf(thisAgent,
@@ -1354,14 +1351,6 @@ byte run_preference_semantics(agent* thisAgent,
             /* --- Unmark it, in order to prevent it from being added twice --- */
             p->value->decider_flag = NOTHING_DECIDER_FLAG;
         }
-    }
-
-    /* If this is not a decidable context slot, then we're done */
-
-    if (!s->isa_context_slot)
-    {
-        *result_candidates = candidates;
-        return NONE_IMPASSE_TYPE;
     }
 
     /* If there are reject or prohibit preferences, then
@@ -2062,25 +2051,27 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
    slot.
 ------------------------------------------------------------------ */
 
-void create_new_attribute_impasse_for_slot(agent* thisAgent, slot* s, byte impasse_type)
-{
-    Symbol* id;
-
-    s->impasse_type = impasse_type;
-    id = create_new_impasse(thisAgent, false, s->id, s->attr, impasse_type,
-                            ATTRIBUTE_IMPASSE_LEVEL);
-    s->impasse_id = id;
-    id->id->isa_impasse = true;
-
-    soar_invoke_callbacks(thisAgent,
-                          CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
-                          static_cast<soar_call_data>(s));
-}
+//void create_new_attribute_impasse_for_slot(agent* thisAgent, slot* s, byte impasse_type)
+//{
+//    Symbol* id;
+//
+//    s->impasse_type = impasse_type;
+//    id = create_new_impasse(thisAgent, false, s->id, s->attr, impasse_type,
+//                            ATTRIBUTE_IMPASSE_LEVEL);
+//    s->impasse_id = id;
+//    id->id->isa_impasse = true;
+//
+//    soar_invoke_callbacks(thisAgent,
+//                          CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
+//                          static_cast<soar_call_data>(s));
+//}
 
 void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
 {
     Symbol* id;
 
+    /* MToDo | We might be able to remove this function*/
+    assert(false);
     soar_invoke_callbacks(thisAgent,
                           REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
                           static_cast<soar_call_data>(s));
