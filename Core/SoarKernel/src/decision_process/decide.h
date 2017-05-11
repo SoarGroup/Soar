@@ -148,6 +148,7 @@ extern int GDS_PrintCmd(/****ClientData****/ int clientData,
 
 void rl_update_for_one_candidate(agent* thisAgent, slot* s, bool consistency, preference* candidates);
 extern byte run_preference_semantics(agent* thisAgent, slot* s, preference** result_candidates, bool consistency = false, bool predict = false);
+extern preference* run_non_context_preference_semantics(agent* thisAgent, slot* s);
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines

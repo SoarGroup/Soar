@@ -85,6 +85,7 @@ class Explanation_Based_Chunker
         void    copy_OSK(instantiation* inst);
         void    copy_proposal_OSK(instantiation* inst, cons* newOSK);
         void    update_proposal_OSK(slot* s, preference* winner);
+        void    generate_relevant_OSK(preference* winner, preference* candidates);
 
         /* Methods for identity set propagation and analysis */
         Identity*   create_new_identity(Symbol* pGoal);
