@@ -33,9 +33,9 @@ class delete_node_command : public command
             return string("delete_node");
         }
         
-        bool early()
+        int command_type()
         {
-            return false;
+            return SVS_WRITE_COMMAND;
         }
         
         bool update_sub()

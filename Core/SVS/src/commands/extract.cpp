@@ -91,9 +91,9 @@ class extract_command : public command, public filter_input::listener
             return true;
         }
         
-        bool early()
+        int command_type()
         {
-            return false;
+            return SVS_READ_COMMAND;
         }
         
         void reset_results()

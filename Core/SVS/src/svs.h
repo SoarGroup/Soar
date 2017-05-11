@@ -81,7 +81,7 @@ class svs_state : public cliproxy
         ~svs_state();
         
         void           process_cmds();
-        void           update_cmd_results(bool early);
+        void           update_cmd_results(int command_type);
         void           update_scene_num();
         void           clear_scene();
         
