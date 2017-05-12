@@ -245,12 +245,12 @@ void svs_state::update_scene_num()
     }
 }
 
-void svs_state::update_cmd_results(bool early)
+void svs_state::update_cmd_results(int command_type)
 {
     command_set_it i;
     for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i)
     {
-        if (i->cmd->early() == early)
+        if (i->cmd->command_type() == command_type)
         {
             i->cmd->update();
         }
@@ -446,10 +446,10 @@ void svs::output_callback()
     {
         (**i).process_cmds();
     }
-    for (i = state_stack.begin(); i != state_stack.end(); ++i)
-    {
-        (**i).update_cmd_results(true);
-    }
+    //for (i = state_stack.begin(); i != state_stack.end(); ++i)
+    //{
+    //    (**i).update_cmd_results(true);
+    //}
     
 }
 
@@ -463,9 +463,15 @@ void svs::input_callback()
     proc_input(topstate);
     
     vector<svs_state*>::iterator i;
+	
     for (i = state_stack.begin(); i != state_stack.end(); ++i)
     {
-        (**i).update_cmd_results(false);
+        (**i).update_cmd_results(SVS_WRITE_COMMAND);
+    }
+
+    for (i = state_stack.begin(); i != state_stack.end(); ++i)
+    {
+        (**i).update_cmd_results(SVS_READ_COMMAND);
     }
 
     svs::filter_dirty_bit = false;

@@ -62,9 +62,9 @@ class add_node_command : public command
         }
         
         
-        bool early()
+        int command_type()
         {
-            return false;
+            return SVS_WRITE_COMMAND;
         }
         
         
