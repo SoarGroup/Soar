@@ -1712,14 +1712,26 @@ void epmem_rit_insert_interval(agent* thisAgent, int64_t lower, int64_t upper, e
     }
 
     // perform insert
-    // ( node, start, end, id )
+
+    /*std::ostringstream temp;
+    temp << "\nInserting element with id: ";
+    temp << id;
+    temp << ", and lti_id: ";
+    temp << static_cast<int64_t>(lti_id);//lti_id;
+    temp << ".\n";
+    std::string temp2 = temp.str();
+    thisAgent->outputManager->print(temp2.c_str());*/
+
     rit_state->add_query->bind_int(1, node);
     rit_state->add_query->bind_int(2, lower);
     rit_state->add_query->bind_int(3, upper);
     rit_state->add_query->bind_int(4, id);
-    if (lti_id)
+    //if (lti_id)
+    //A horrible error was occuring where instead of defaulting to null in the absense of a given
+    //lti_id, another value was used, which ended up effectively assigning lti status to absurd things
+    //when they were recorded into the history for episodic memory.
     {
-        rit_state->add_query->bind_int(5, lti_id);
+        rit_state->add_query->bind_int(5, (lti_id));
     }
     rit_state->add_query->execute(soar_module::op_reinit);
 }
@@ -2797,7 +2809,7 @@ inline void _epmem_store_level(agent* thisAgent,
                 (*thisAgent->EpMem->epmem_id_replacement)[(*w_p)->epmem_id ] = my_id_repo2;
 
                 // new nodes definitely start
-                epmem_edge.emplace((*w_p)->epmem_id,((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
+                epmem_edge.emplace((*w_p)->epmem_id,static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
                 thisAgent->EpMem->epmem_edge_mins->push_back(time_counter);
                 thisAgent->EpMem->epmem_edge_maxes->push_back(false);
             }
@@ -2807,12 +2819,12 @@ inline void _epmem_store_level(agent* thisAgent,
                 fprintf(stderr, "   No success but already has id, so don't remove.\n");
 #endif
                 // definitely don't remove
-                (*thisAgent->EpMem->epmem_edge_removals)[std::make_pair((*w_p)->epmem_id, (*w_p)->value->id->LTI_ID) ] = false;
+                (*thisAgent->EpMem->epmem_edge_removals)[std::make_pair((*w_p)->epmem_id, static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0)) ] = false;
 
                 // we add ONLY if the last thing we did was remove
                 if ((*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)])
                 {
-                    epmem_edge.emplace((*w_p)->epmem_id,((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
+                    epmem_edge.emplace((*w_p)->epmem_id,static_cast<int64_t>((*w_p)->value->id->is_lti() ? (*w_p)->value->id->LTI_ID : 0));
                     (*thisAgent->EpMem->epmem_edge_maxes)[static_cast<size_t>((*w_p)->epmem_id - 1)] = false;
                 }
             }
