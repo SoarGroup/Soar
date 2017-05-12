@@ -585,11 +585,8 @@ void garbage_collect_id(agent* thisAgent, Symbol* id)
 
     for (s = id->id->slots; s != NIL; s = s->next)
     {
-        /* --- remove any existing attribute impasse for the slot --- */
-        if (s->impasse_type != NONE_IMPASSE_TYPE)
-        {
-            remove_existing_attribute_impasse_for_slot(thisAgent, s);
-        }
+        /* MToDo | Remove. Attribute impasses were previously removed here if type wasn't none.  */
+        assert(s->impasse_type == NONE_IMPASSE_TYPE);
 
         /* --- remove all wme's from the slot --- */
         remove_wme_list_from_wm(thisAgent, s->wmes);
@@ -2045,47 +2042,6 @@ Symbol* create_new_impasse(agent* thisAgent, bool isa_goal, Symbol* object, Symb
 }
 
 /* ------------------------------------------------------------------
-               Create/Remove Attribute Impasse for Slot
-
-   These routines create and remove an attribute impasse for a given
-   slot.
------------------------------------------------------------------- */
-
-//void create_new_attribute_impasse_for_slot(agent* thisAgent, slot* s, byte impasse_type)
-//{
-//    Symbol* id;
-//
-//    s->impasse_type = impasse_type;
-//    id = create_new_impasse(thisAgent, false, s->id, s->attr, impasse_type,
-//                            ATTRIBUTE_IMPASSE_LEVEL);
-//    s->impasse_id = id;
-//    id->id->isa_impasse = true;
-//
-//    soar_invoke_callbacks(thisAgent,
-//                          CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
-//                          static_cast<soar_call_data>(s));
-//}
-
-void remove_existing_attribute_impasse_for_slot(agent* thisAgent, slot* s)
-{
-    Symbol* id;
-
-    /* MToDo | We might be able to remove this function*/
-    assert(false);
-    soar_invoke_callbacks(thisAgent,
-                          REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
-                          static_cast<soar_call_data>(s));
-
-    id = s->impasse_id;
-    s->impasse_id = NIL;
-    s->impasse_type = NONE_IMPASSE_TYPE;
-    remove_wme_list_from_wm(thisAgent, id->id->impasse_wmes);
-    id->id->impasse_wmes = NIL;
-    post_link_removal(thisAgent, NIL, id);   /* remove the special link */
-    thisAgent->symbolManager->symbol_remove_ref(&id);
-}
-
-/* ------------------------------------------------------------------
                        Update Impasse Items
 
    This routine updates the set of ^item wmes on a goal or attribute
@@ -2245,11 +2201,8 @@ void decide_non_context_slot(agent* thisAgent, slot* s)
     dprint(DT_WME_CHANGES, "Deciding non-context slot (%y ^%y _?_)\n", s->id, s->attr);
     candidates = run_non_context_preference_semantics(thisAgent, s);
 
-    /* --- no impasse, so remove any existing one and update the wmes --- */
-    if (s->impasse_type != NONE_IMPASSE_TYPE)
-    {
-        remove_existing_attribute_impasse_for_slot(thisAgent, s);
-    }
+    /* MToDo | Remove. Attribute impasses were previously removed here if type wasn't none.  */
+    assert(s->impasse_type == NONE_IMPASSE_TYPE);
 
     /* --- reset marks on existing wme values to "NOTHING" --- */
     for (w = s->wmes; w != NIL; w = w->next)
