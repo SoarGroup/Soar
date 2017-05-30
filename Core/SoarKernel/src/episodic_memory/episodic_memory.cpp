@@ -3845,8 +3845,8 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
         literal->child_n_id = epmem_temporal_hash(thisAgent, value);
         leaf_literals.insert(literal);
     }
-    else if (value->id->is_lti() && value->id->LTI_ID)
-    {
+    //else if (value->id->is_lti() && value->id->LTI_ID)
+    //{
         // This is an attempt to reintegrate matching of ltis into epmem queries despite the
         // change to make ltis into instances. The idea is that ltis require both a structure match
         // like normal identifiers, and also a direct match of the lti in question.
@@ -3860,7 +3860,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cach
         // The first step is to find the LTI at all in the first place. If it's not present,
         // we can just return failure.
 
-    }
+    //}
     else     // WME is a normal identifier
     {
         // we determine whether it is a leaf by checking for children
