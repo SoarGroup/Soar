@@ -161,7 +161,7 @@ void Repair_Manager::add_state_link_WMEs(goal_stack_level pTargetGoal, tc_number
 
 void Repair_Manager::add_path_to_goal_WMEs(chunk_element* pTargetSym, tc_number cond_tc)
 {
-    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->instantiated_sym, pTargetSym->variable_sym, pTargetSym->identity);
+    dprint(DT_REPAIR, "Searching for path to goal for %y [%y/%u]...\n", pTargetSym->instantiated_sym, pTargetSym->variable_sym, pTargetSym->inst_identity);
     wme_list* l_WMEPath = find_path_to_goal_for_symbol(pTargetSym->instantiated_sym);
     dprint(DT_REPAIR, "...search complete.  Adding %d WMEs to repair wme path...\n", l_WMEPath->size());
     for (auto it = l_WMEPath->begin(); it != l_WMEPath->end(); it++)
@@ -237,7 +237,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym)
             {
-                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->identity);
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.id_test->eq_test->inst_identity);
             }
 
             /* Check if the value element is a state */
@@ -256,7 +256,7 @@ void Repair_Manager::mark_states_WMEs_and_store_variablizations(condition* pCond
             }
             if (lMatchedSym && lMatchedSym->is_sti())
             {
-                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->identity);
+                thisAgent->explanationBasedChunker->add_sti_variablization(lMatchedSym, lSym, lCond->data.tests.value_test->eq_test->inst_identity);
             }
         }
     }
@@ -282,7 +282,7 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
     {
         lDanglingSymInfo = *it;
         dprint(DT_REPAIR, "Processing dangling sym %y/%y [%u] at level %d...\n", lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym,
-            lDanglingSymInfo->identity, static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level));
+            lDanglingSymInfo->inst_identity, static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level));
         if(lDanglingSymInfo->instantiated_sym->id->level < targetLevel)
         {
             targetLevel = lDanglingSymInfo->instantiated_sym->id->level;
@@ -290,7 +290,7 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
             dprint(DT_REPAIR, "...symbol is at Lower level %d than current target level of %d...\n",
                 static_cast<int64_t>(lDanglingSymInfo->instantiated_sym->id->level), static_cast<int64_t>(targetLevel));
         }
-        thisAgent->explanationBasedChunker->add_sti_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->identity);
+        thisAgent->explanationBasedChunker->add_sti_variablization(lDanglingSymInfo->instantiated_sym, lDanglingSymInfo->variable_sym, lDanglingSymInfo->inst_identity);
     }
 
     tc_number tc;
@@ -313,7 +313,9 @@ void Repair_Manager::repair_rule(condition*& p_lhs_top, matched_symbol_list* p_d
         }
     }
 
-    thisAgent->explanationMemory->increment_stat_grounding_conds_added(m_repair_WMEs.size());
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_grounding_conds_added(m_repair_WMEs.size());
+    #endif
 
     dprint(DT_REPAIR, "Step 4:  Creating repair condition based on connecting set of WMEs: \n");
     condition* new_cond, *prev_cond = p_lhs_top, *first_cond = p_lhs_top;
@@ -372,7 +374,9 @@ bool Explanation_Based_Chunker::reorder_and_validate_chunk()
         }
         thisAgent->outputManager->display_soar_feedback(thisAgent, ebc_error_invalid_chunk, thisAgent->trace_settings[TRACE_CHUNKS_WARNINGS_SYSPARAM]);
         delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);
-        thisAgent->explanationMemory->increment_stat_could_not_repair();
+        #ifdef EBC_DEBUG_STATISTICS
+            thisAgent->explanationMemory->increment_stat_could_not_repair();
+        #endif
         return false;
     }
     delete_ungrounded_symbol_list(thisAgent, &unconnected_syms);

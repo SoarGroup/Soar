@@ -64,6 +64,7 @@ GraphViz_Visualizer::GraphViz_Visualizer(agent* myAgent)
     settings = new Viz_Parameters(thisAgent);
     m_file_count = 0;
     m_next_color = 0;
+    m_unique_counter = 0;
 }
 
 GraphViz_Visualizer::~GraphViz_Visualizer()
@@ -434,14 +435,20 @@ void GraphViz_Visualizer::viz_connect_action_to_cond(uint64_t pSrcRuleID, uint64
     }
 }
 
-void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID, uint64_t pTargetCondID)
+void GraphViz_Visualizer::viz_connect_inst_to_chunk(uint64_t pSrcRuleID, uint64_t pTargetRuleID)
 {
     graphviz_output += "   rule";
     graphviz_output += std::to_string(pSrcRuleID);
     graphviz_output += " -\xF2 chunk";
     graphviz_output += std::to_string(pTargetRuleID);
-    graphviz_output += ":c_";
-    graphviz_output += std::to_string(pTargetCondID);
-    graphviz_output += "_l [style = \"dashed\"  penwidth = \"2\"]\n";
+    graphviz_output += "[style = \"dashed\"  penwidth = \"2\"]\n";
 }
 
+void GraphViz_Visualizer::viz_connect_identities(uint64_t pSrcRuleID, uint64_t pTargetRuleID)
+{
+    graphviz_output += "   Identity_";
+    graphviz_output += std::to_string(pSrcRuleID);
+    graphviz_output += " -\xF2 Identity_";
+    graphviz_output += std::to_string(pTargetRuleID);
+    graphviz_output += "[style = \"dashed\"  penwidth = \"2\"]\n";
+}

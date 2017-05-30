@@ -6,7 +6,7 @@
  */
 
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "ebc_timers.h"
 
 #include "condition.h"
@@ -20,7 +20,7 @@
 #include "test.h"
 #include "working_memory.h"
 
-void Explanation_Based_Chunker::unify_backtraced_conditions(condition* lhs_cond, identity_set_quadruple &rhs_id_sets, const rhs_quadruple rhs_funcs)
+void Explanation_Based_Chunker::unify_lhs_rhs_connection(condition* lhs_cond, identity_set_quadruple &rhs_id_sets, const rhs_quadruple rhs_funcs)
 {
     test lId = 0, lAttr = 0, lValue = 0;
     lId = lhs_cond->data.tests.id_test->eq_test;
@@ -31,101 +31,120 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* lhs_cond,
 
     if (rhs_id_sets.id)
     {
-        if (lId->identity_set)
+        if (lId->identity)
         {
-            if (rhs_id_sets.id->super_join != lId->identity_set->super_join)
+            if (rhs_id_sets.id->joined_identity != lId->identity->joined_identity)
             {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->idset_id, lId->identity_set->get_identity(), rhs_id_sets.id->idset_id, rhs_id_sets.id->get_identity());
-//                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.id->super_join, lId->identity_set->super_join);
-                join_identity_sets(rhs_id_sets.id, lId->identity_set);
-            } else {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lId->identity, lId->identity_set->idset_id, lId->identity_set->get_identity(), rhs_id_sets.id->idset_id, rhs_id_sets.id->get_identity());
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lId->inst_identity, lId->identity->idset_id, lId->identity->get_identity(), rhs_id_sets.id->idset_id, rhs_id_sets.id->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_join, rhs_id_sets.id, lId->identity);
+                join_identities(rhs_id_sets.id, lId->identity);
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", rhs_id_sets.id->idset_id, rhs_id_sets.id->get_identity(), lId);
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, o_ids_to_replace.id->super_join, NULL);
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_LHS_literal, rhs_id_sets.id, NULL);
             rhs_id_sets.id->literalize();
-
         }
     }
     else
     {
-        if (rhs_funcs.id && rhs_value_is_literalizing_function(rhs_funcs.id))
+        if (rhs_funcs.id)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
-            literalize_RHS_function_args(rhs_funcs.id, lhs_cond->inst->i_id);
+            if (rhs_value_is_literalizing_function(rhs_funcs.id))
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.id);
+                literalize_RHS_function_args(rhs_funcs.id, lhs_cond->inst->i_id);
+            }
+            if (lId->identity)
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested RHS function\n", lId->inst_identity, lId->identity->idset_id, lId->identity->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_function_compare, lId->identity, NULL);
+                lId->identity->literalize();
+            }
         }
-        if (lId->identity_set)
+        else if (lId->identity)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested %s\n", lId->identity, lId->identity_set->idset_id, lId->identity_set->get_identity(), rhs_funcs.id ? "RHS function" : "literal value");
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, lId->identity_set->super_join, NULL);
-            lId->identity_set->literalize();
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested literal value\n", lId->inst_identity, lId->identity->idset_id, lId->identity->get_identity());
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_literal, lId->identity, NULL);
+            lId->identity->literalize();
         }
     }
     if (rhs_id_sets.attr)
     {
-        if (lAttr->identity_set)
+        if (lAttr->identity)
         {
-            if (rhs_id_sets.attr->super_join != lAttr->identity_set->super_join)
+            if (rhs_id_sets.attr->joined_identity != lAttr->identity->joined_identity)
             {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->idset_id, lAttr->identity_set->get_identity(), rhs_id_sets.attr->idset_id, rhs_id_sets.attr->get_identity());
-//                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.attr->super_join, lAttr->identity_set->super_join);
-                join_identity_sets(rhs_id_sets.attr, lAttr->identity_set);
-            } else {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lAttr->identity, lAttr->identity_set->idset_id, lAttr->identity_set->get_identity(), rhs_id_sets.attr->idset_id, rhs_id_sets.attr->get_identity());
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lAttr->inst_identity, lAttr->identity->idset_id, lAttr->identity->get_identity(), rhs_id_sets.attr->idset_id, rhs_id_sets.attr->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_join, rhs_id_sets.attr, lAttr->identity);
+                join_identities(rhs_id_sets.attr, lAttr->identity);
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", rhs_id_sets.attr->idset_id, rhs_id_sets.attr->get_identity(), lAttr);
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, o_ids_to_replace.attr->super_join, NULL);
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_LHS_literal, rhs_id_sets.attr, NULL);
             rhs_id_sets.attr->literalize();
-
         }
     }
     else
     {
-        if (rhs_funcs.attr && rhs_value_is_literalizing_function(rhs_funcs.attr))
+        if (rhs_funcs.attr)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.attr);
-            literalize_RHS_function_args(rhs_funcs.attr, lhs_cond->inst->i_id);
+            if (rhs_value_is_literalizing_function(rhs_funcs.attr))
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.attr);
+                literalize_RHS_function_args(rhs_funcs.attr, lhs_cond->inst->i_id);
+            }
+            if (lAttr->identity)
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested RHS function\n", lAttr->inst_identity, lAttr->identity->idset_id, lAttr->identity->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_function_compare, lAttr->identity, NULL);
+                lAttr->identity->literalize();
+            }
         }
-        if (lAttr->identity_set)
+        else if (lAttr->identity)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested %s\n", lAttr->identity, lAttr->identity_set->idset_id, lAttr->identity_set->get_identity(), rhs_funcs.attr ? "RHS function" : "literal value");
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, lAttr->identity_set->super_join, NULL);
-            lAttr->identity_set->literalize();
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested literal value\n", lAttr->inst_identity, lAttr->identity->idset_id, lAttr->identity->get_identity());
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_literal, lAttr->identity, NULL);
+            lAttr->identity->literalize();
         }
     }
 
     if (rhs_id_sets.value)
     {
-        if (lValue->identity_set)
+        if (lValue->identity)
         {
-            if (rhs_id_sets.value->super_join != lValue->identity_set->super_join)
+            if (rhs_id_sets.value->joined_identity != lValue->identity->joined_identity)
             {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->idset_id, lValue->identity_set->get_identity(), rhs_id_sets.value->idset_id, rhs_id_sets.value->get_identity());
-//                thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_join, o_ids_to_replace.value->get_identity(), lValue->identity_set->get_identity());
-                join_identity_sets(rhs_id_sets.value, lValue->identity_set);
-            } else {
-                dprint(DT_UNIFY_IDENTITY_SETS, "Both identities are already in the same identity set: %u/%us%u -> %us%u\n", lValue->identity, lValue->identity_set->idset_id, lValue->identity_set->get_identity(), rhs_id_sets.value->idset_id, rhs_id_sets.value->get_identity());
+                dprint(DT_UNIFY_IDENTITY_SETS, "Unifying identity sets of identifier element: %u/%us%u -> %us%u\n", lValue->inst_identity, lValue->identity->idset_id, lValue->identity->get_identity(), rhs_id_sets.value->idset_id, rhs_id_sets.value->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_join, rhs_id_sets.value, lValue->identity);
+                join_identities(rhs_id_sets.value, lValue->identity);
             }
         } else {
             dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set of identifier element: %us%u -> %t\n", rhs_id_sets.value->idset_id, rhs_id_sets.value->get_identity(), lValue);
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, o_ids_to_replace.value->get_identity(), NULL);
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_LHS_literal, rhs_id_sets.value, NULL);
             rhs_id_sets.value->literalize();
         }
     }
     else
     {
-        if (rhs_funcs.value && rhs_value_is_literalizing_function(rhs_funcs.value))
+        if (rhs_funcs.value)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.value);
-            literalize_RHS_function_args(rhs_funcs.value, lhs_cond->inst->i_id);
+            if (rhs_value_is_literalizing_function(rhs_funcs.value))
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing arguments of RHS function in identifier element %r\n", rhs_funcs.value);
+                literalize_RHS_function_args(rhs_funcs.value, lhs_cond->inst->i_id);
+            }
+            if (lValue->identity)
+            {
+                dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested RHS function\n", lValue->inst_identity, lValue->identity->idset_id, lValue->identity->get_identity());
+                thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_function_compare, lValue->identity, NULL);
+                lValue->identity->literalize();
+            }
         }
-        if (lValue->identity_set)
+        else if (lValue->identity)
         {
-            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested %s\n", lValue->identity, lValue->identity_set->idset_id, lValue->identity_set->get_identity(), rhs_funcs.value ? "RHS function" : "literal value");
-//            thisAgent->explanationMemory->add_identity_set_mapping(parent_cond->inst->i_id, IDS_literalized_RHS_function_arg, lAttr->identity_set->super_join, NULL);
-            lValue->identity_set->literalize();
+            dprint(DT_UNIFY_IDENTITY_SETS, "Literalizing identity set %u/%us%u that tested literal value\n", lValue->inst_identity, lValue->identity->idset_id, lValue->identity->get_identity());
+            thisAgent->explanationMemory->add_identity_set_mapping(lhs_cond->inst->i_id, IDS_literalized_RHS_literal, lValue->identity, NULL);
+            lValue->identity->literalize();
         }
     }
 
@@ -139,26 +158,28 @@ void Explanation_Based_Chunker::unify_backtraced_conditions(condition* lhs_cond,
 /* Requires: pCond is being added to grounds and is the second condition being added to grounds
  *           that matched a given wme, which guarantees chunker_bt_last_ground_cond points to the
  *           first condition that matched. */
-void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* pCond)
+void Explanation_Based_Chunker::check_for_singleton_unification(condition* pCond)
 {
     if (wme_is_a_singleton(pCond->bt.wme_) || ebc_settings[SETTING_EBC_UNIFY_ALL])
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
         dprint(DT_UNIFY_SINGLETONS, "Unifying value element of second condition that matched singleton wme: %l\n", pCond);
         dprint(DT_UNIFY_SINGLETONS, "-- Original condition seen: %l\n", pCond->bt.wme_->chunker_bt_last_ground_cond);
-        if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
+        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
             ebc_timers->dependency_analysis->stop();
-            if (!pCond->data.tests.value_test->eq_test->identity_set)
+            if (!pCond->data.tests.value_test->eq_test->identity)
             {
-                last_cond->data.tests.value_test->eq_test->identity_set->literalize();
-            } else if (!last_cond->data.tests.value_test->eq_test->identity_set)
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, last_cond->data.tests.value_test->eq_test->identity, NULL);
+                last_cond->data.tests.value_test->eq_test->identity->literalize();
+            } else if (!last_cond->data.tests.value_test->eq_test->identity)
             {
-                pCond->data.tests.value_test->eq_test->identity_set->literalize();
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, NULL);
+                pCond->data.tests.value_test->eq_test->identity->literalize();
             } else
             {
-//                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set->super_join, last_cond->data.tests.value_test->eq_test->identity_set->super_join);
-                join_identity_sets(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                join_identities(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
             }
             ebc_timers->dependency_analysis->start();
         }
@@ -169,15 +190,15 @@ void Explanation_Based_Chunker::add_singleton_unification_if_needed(condition* p
         (!pCond->test_for_acceptable_preference))
     {
         condition* last_cond = pCond->bt.wme_->chunker_bt_last_ground_cond;
-        if (pCond->data.tests.value_test->eq_test->identity_set || last_cond->data.tests.value_test->eq_test->identity_set)
+        if (pCond->data.tests.value_test->eq_test->identity || last_cond->data.tests.value_test->eq_test->identity)
         {
-            IdentitySet* pCondIDSet = get_joined_identity_set(pCond->data.tests.value_test->eq_test->identity_set);
-            IdentitySet* pLCondIDSet = get_joined_identity_set(last_cond->data.tests.value_test->eq_test->identity_set);
+            Identity* pCondIDSet = get_joined_identity(pCond->data.tests.value_test->eq_test->identity);
+            Identity* pLCondIDSet = get_joined_identity(last_cond->data.tests.value_test->eq_test->identity);
             if (pCondIDSet != pLCondIDSet)
             {
                 ebc_timers->dependency_analysis->stop();
-//                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
-                join_identity_sets(pCond->data.tests.value_test->eq_test->identity_set, last_cond->data.tests.value_test->eq_test->identity_set);
+                thisAgent->explanationMemory->add_identity_set_mapping(pCond->inst->i_id, IDS_unified_with_singleton, pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
+                join_identities(pCond->data.tests.value_test->eq_test->identity, last_cond->data.tests.value_test->eq_test->identity);
                 ebc_timers->dependency_analysis->start();
             }
         }
@@ -205,12 +226,11 @@ void Explanation_Based_Chunker::literalize_RHS_function_args(const rhs_value rv,
             } else {
                 rhs_symbol rs = rhs_value_to_rhs_symbol(static_cast<char*>(c->first));
                 dprint(DT_RHS_FUN_VARIABLIZATION, "Literalizing RHS function argument %r\n", static_cast<char*>(c->first));
-                IdentitySet* lIDSet = rs->identity_set;
-                if (lIDSet && !rs->referent->is_sti())
+                Identity* l_identity = rs->identity;
+                if (l_identity && !rs->referent->is_sti())
                 {
-//                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, lIDSet, 0);
-                    lIDSet->literalize();
-                    thisAgent->explanationMemory->increment_stat_rhs_arguments_literalized(m_rule_type);
+                    thisAgent->explanationMemory->add_identity_set_mapping(inst_id, IDS_literalized_RHS_function_arg, l_identity, NULL);
+                    l_identity->literalize();
                 }
             }
         }

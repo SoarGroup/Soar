@@ -26,7 +26,9 @@ void Explanation_Based_Chunker::merge_values_in_conds(condition* pDestCond, cond
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.attr_test), pSrcCond->data.tests.attr_test);
     dprint(DT_MERGE, "...merging conditions in value element...\n");
     copy_non_identical_tests(thisAgent, &(pDestCond->data.tests.value_test), pSrcCond->data.tests.value_test);
-    thisAgent->explanationMemory->increment_stat_merged_conditions();
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_merged_conditions();
+    #endif
 }
 
 condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
@@ -39,31 +41,16 @@ condition* Explanation_Based_Chunker::get_previously_seen_cond(condition* pCond)
     iter_id = cond_merge_map->find(pCond->data.tests.id_test->eq_test->data.referent);
     if (iter_id != cond_merge_map->end())
     {
-        dprint(DT_MERGE, "...Found.  Looking  for attr equality test %y\n", pCond->data.tests.attr_test->eq_test->data.referent);
         iter_attr = iter_id->second.find(pCond->data.tests.attr_test->eq_test->data.referent);
         if (iter_attr != iter_id->second.end())
         {
-            dprint(DT_MERGE, "...Found.  Looking  for value equality test %y\n", pCond->data.tests.value_test->eq_test->data.referent);
-
             iter_value = iter_attr->second.find(pCond->data.tests.value_test->eq_test->data.referent);
             if (iter_value != iter_attr->second.end())
             {
                 dprint(DT_MERGE, "          ...found similar condition: %l\n", iter_value->second);
                 return iter_value->second;
             }
-            else
-            {
-                dprint(DT_MERGE, "...no previously seen similar condition with that value element.\n");
-            }
         }
-        else
-        {
-            dprint(DT_MERGE, "...no previously seen similar condition with that attribute element.\n");
-        }
-    }
-    else
-    {
-        dprint(DT_MERGE, "...no previously seen similar condition with that ID element.\n");
     }
 
     return NULL;

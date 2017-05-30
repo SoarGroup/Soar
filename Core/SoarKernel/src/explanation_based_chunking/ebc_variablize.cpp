@@ -6,7 +6,7 @@
  */
 
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -33,7 +33,6 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         rhs_value lRhsValue, *lc;
 
         dprint(DT_RHS_FUN_VARIABLIZATION, "Variablizing RHS funcall %r\n", pRhs_val);
-        //dprint_identity_to_id_set_map(DT_RHS_FUN_VARIABLIZATION);
         for (c = fl->rest; c != NIL; c = c->rest)
         {
             lRhsValue = static_cast<rhs_value>(c->first);
@@ -46,21 +45,21 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
     }
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
-    IdentitySet* lIDSet = rs->identity_set;
+    Identity* l_identity = rs->identity;
 
-    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y [%u].\n", rs->referent, lIDSet ? lIDSet->get_identity() : 0);
+    dprint(DT_RHS_VARIABLIZATION, "variablize_rhs_symbol called for %y [%u].\n", rs->referent, l_identity ? l_identity->get_identity() : 0);
 
-    if (lIDSet)
+    if (l_identity)
     {
-        dprint(DT_RHS_VARIABLIZATION, "...searching for variablization of identity %u...\n", lIDSet->get_identity());
-        has_variablization = (lIDSet->get_var() != NULL);
+        dprint(DT_RHS_VARIABLIZATION, "...searching for variablization of identity %u...\n", l_identity->get_identity());
+        has_variablization = (l_identity->get_var() != NULL);
     }
     else
     {
         if (rs->referent->is_sti())
         {
+            /* Can this still occur now.  I thought it could when trying to variablize a locally promoted STI, but assert hasn't fired in anything.*/
             assert(false);
-            /* I think this can only occur now when trying to variablize a locally promoted STI.*/
             dprint(DT_RHS_VARIABLIZATION, "...sti with no identity.  Must be architectural or locally promoted.\n");
             return LITERAL_VALUE;
         }
@@ -71,17 +70,17 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         prefix[0] = static_cast<char>(tolower(rs->referent->id->name_letter));
         prefix[1] = 0;
         var = thisAgent->symbolManager->generate_new_variable(prefix);
-        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%us%u].\n", rs->referent, var, rs->identity, lIDSet ? lIDSet->get_identity() : 0);
+        dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y = %y [%us%u].\n", rs->referent, var, rs->inst_identity, l_identity ? l_identity->get_identity() : 0);
 
-        lIDSet->store_variablization(var, rs->referent);
+        l_identity->store_variablization(var, rs->referent);
         has_variablization = true;
     }
     if (has_variablization)
     {
         rhs_value lMatchedSym_with_LTI_Link = NULL;
-        Symbol* new_var = lIDSet->get_var();
+        Symbol* new_var = l_identity->get_var();
 
-        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y with identity %u.\n", new_var, lIDSet->get_identity());
+        dprint(DT_RHS_VARIABLIZATION, "... using variablization %y with identity %u.\n", new_var, l_identity->get_identity());
         if (rs->referent->is_lti() && lti_link_tc && (rs->referent->id->level == m_inst->match_goal_level) && (rs->referent->tc_num != lti_link_tc))
         {
             dprint(DT_RHS_LTI_LINKING, "Found RHS symbol with LTI link during variablization: %y and LTI %u \n", rs->referent, rs->referent->id->LTI_ID);
@@ -92,10 +91,9 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         thisAgent->symbolManager->symbol_add_ref(new_var);
         rs->referent = new_var;
-        rs->identity = lIDSet->get_identity();
-        uint64_t returnID = lIDSet->get_clone_identity();
-//        rs->identity_set_wp.reset();
-        rs->identity_set = NULL;
+        rs->inst_identity = l_identity->get_identity();
+        uint64_t returnID = l_identity->get_clone_identity();
+        rs->identity = NULL;
 
         /* If matched symbol had an LTI link, add the symbol to list of variables that we will later create news LTM-linking actions for */
         if (lMatchedSym_with_LTI_Link)
@@ -105,9 +103,8 @@ uint64_t Explanation_Based_Chunker::variablize_rhs_value(rhs_value &pRhs_val, tc
         }
         return returnID;
     }
-    rs->identity_set = NULL;
-//    rs->identity_set_wp.reset();
-    rs->identity = LITERAL_VALUE;
+    rs->identity = NULL;
+    rs->inst_identity = LITERAL_VALUE;
     return LITERAL_VALUE;
 }
 
@@ -131,19 +128,19 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
 
     if (!pTest->eq_test->data.referent->is_variable())
     {
-        if (pTest->eq_test->identity_set && !pTest->eq_test->identity_set->literalized())
+        if (pTest->eq_test->identity && !pTest->eq_test->identity->literalized())
         {
             dprint(DT_LHS_VARIABLIZATION, "Variablizing equality test %t %g from %t %g\n", pTest->eq_test, pTest->eq_test, pTest, pTest);
-            Symbol* new_var = pTest->eq_test->identity_set->get_var();
+            Symbol* new_var = pTest->eq_test->identity->get_var();
             if (new_var)
             {
                 thisAgent->symbolManager->symbol_remove_ref(&(pTest->eq_test->data.referent));
                 pTest->eq_test->data.referent = new_var;
                 thisAgent->symbolManager->symbol_add_ref(new_var);
-                pTest->eq_test->identity = pTest->eq_test->identity_set->get_identity();
-                pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
-                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u/%u]\n", new_var, pTest->eq_test->identity, pTest->eq_test->clone_identity);
-                clear_test_identity_set(thisAgent, pTest->eq_test);
+                pTest->eq_test->inst_identity = pTest->eq_test->identity->get_identity();
+                pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_clone_identity();
+                dprint(DT_LHS_VARIABLIZATION, "...with found variablization info %y [%u/%u]\n", new_var, pTest->eq_test->inst_identity, pTest->eq_test->chunk_inst_identity);
+                clear_test_identity(thisAgent, pTest->eq_test);
             } else {
                 lOldSym = pTest->eq_test->data.referent;
                 if (lOldSym->is_sti())
@@ -164,23 +161,23 @@ void Explanation_Based_Chunker::variablize_equality_tests(test pTest)
                 prefix[1] = 0;
                 lNewVariable = thisAgent->symbolManager->generate_new_variable(prefix);
 
-                pTest->eq_test->identity_set->store_variablization(lNewVariable, pTest->eq_test->data.referent);
+                pTest->eq_test->identity->store_variablization(lNewVariable, pTest->eq_test->data.referent);
 
                 thisAgent->symbolManager->symbol_remove_ref(&lOldSym);
                 pTest->eq_test->data.referent = lNewVariable;
                 thisAgent->symbolManager->symbol_add_ref(lNewVariable);
 
-                pTest->eq_test->identity = pTest->eq_test->identity_set->get_identity();
-                pTest->eq_test->clone_identity = pTest->eq_test->identity_set->get_clone_identity();
-                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->identity, pTest->eq_test->clone_identity);
+                pTest->eq_test->inst_identity = pTest->eq_test->identity->get_identity();
+                pTest->eq_test->chunk_inst_identity = pTest->eq_test->identity->get_clone_identity();
+                dprint(DT_LHS_VARIABLIZATION, "...with newly created variablization info for new variable %y [%u/%u]\n", lNewVariable, pTest->eq_test->inst_identity, pTest->eq_test->chunk_inst_identity);
 
-                clear_test_identity_set(thisAgent, pTest->eq_test);
+                clear_test_identity(thisAgent, pTest->eq_test);
 
             }
         } else {
-            pTest->eq_test->identity = LITERAL_VALUE;
-            pTest->eq_test->clone_identity = LITERAL_VALUE;
-            clear_test_identity_set(thisAgent, pTest->eq_test);
+            pTest->eq_test->inst_identity = LITERAL_VALUE;
+            pTest->eq_test->chunk_inst_identity = LITERAL_VALUE;
+            clear_test_identity(thisAgent, pTest->eq_test);
         }
     }
 }
@@ -189,24 +186,24 @@ bool Explanation_Based_Chunker::variablize_test_by_lookup(test t, bool pSkipTopL
 {
 
     if (pSkipTopLevelEqualities && (t->type == EQUALITY_TEST)) return true;
-    Symbol* new_var = t->identity_set ? t->identity_set->get_var() : NULL;
+    Symbol* new_var = t->identity ? t->identity->get_var() : NULL;
 
     if (new_var)
     {
-        dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t %g...with found variablization info %y [%u]\n", t, t, new_var, t->identity_set->get_clone_identity());
+        dprint(DT_LHS_VARIABLIZATION, "Variablizing by lookup %t %g...with found variablization info %y [%u]\n", t, t, new_var, t->identity->get_clone_identity());
         thisAgent->symbolManager->symbol_remove_ref(&t->data.referent);
         t->data.referent = new_var;
         thisAgent->symbolManager->symbol_add_ref(new_var);
-        t->identity = t->identity_set->get_identity();
-        t->clone_identity = t->identity_set->get_clone_identity();
-        clear_test_identity_set(thisAgent, t);
+        t->inst_identity = t->identity->get_identity();
+        t->chunk_inst_identity = t->identity->get_clone_identity();
+        clear_test_identity(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "--> t: %t %g\n", t, t);
     }
     else
     {
-        t->identity = LITERAL_VALUE;
-        t->clone_identity = LITERAL_VALUE;
-        clear_test_identity_set(thisAgent, t);
+        t->inst_identity = LITERAL_VALUE;
+        t->chunk_inst_identity = LITERAL_VALUE;
+        clear_test_identity(thisAgent, t);
         dprint(DT_LHS_VARIABLIZATION, "%s", t->data.referent->is_sti() ?
             "Ungrounded STI in in relational test.  Will delete.\n" :
             "Not variablizing constraint b/c referent not grounded in chunk.\n");
@@ -237,7 +234,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
                         continue;
                     }
                 }
-                else if (tt->identity_set && !tt->data.referent->is_variable())
+                else if (tt->identity && !tt->data.referent->is_variable())
                 {
                     variablize_test_by_lookup(tt, pSkipTopLevelEqualities);
                 }
@@ -248,7 +245,7 @@ void Explanation_Based_Chunker::variablize_tests_by_lookup(test t, bool pSkipTop
     }
     else
     {
-        if (test_has_referent(t) && t->identity_set)
+        if (test_has_referent(t) && t->identity)
         {
             variablize_test_by_lookup(t, pSkipTopLevelEqualities);
         }
@@ -310,82 +307,82 @@ void Explanation_Based_Chunker::variablize_condition_list(condition* top_cond, b
 
 action* Explanation_Based_Chunker::variablize_result_into_action(preference* result, tc_number lti_link_tc)
 {
-    uint64_t lIdentity = 0;
+    uint64_t l_inst_identity = 0;
 
     action* a = make_action(thisAgent);
     a->type = MAKE_ACTION;
     a->preference_type = result->type;
 
-    if (!result->rhs_funcs.id)
+    if (!result->rhs_func_inst_identities.id)
     {
-        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->identities.id, result->identity_sets.id, result->was_unbound_vars.id);
+        a->id = allocate_rhs_value_for_symbol(thisAgent, result->id, result->inst_identities.id, result->identities.id, result->was_unbound_vars.id);
     } else {
-        a->id = copy_rhs_value(thisAgent, result->rhs_funcs.id);
+        a->id = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.id);
     }
-    if (!result->rhs_funcs.attr)
+    if (!result->rhs_func_inst_identities.attr)
     {
-        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->identities.attr, result->identity_sets.attr, result->was_unbound_vars.attr);
+        a->attr = allocate_rhs_value_for_symbol(thisAgent, result->attr, result->inst_identities.attr, result->identities.attr, result->was_unbound_vars.attr);
     } else {
-        a->attr = copy_rhs_value(thisAgent, result->rhs_funcs.attr);
+        a->attr = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.attr);
     }
-    if (!result->rhs_funcs.value)
+    if (!result->rhs_func_inst_identities.value)
     {
-        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->identities.value, result->identity_sets.value, result->was_unbound_vars.value);
+        a->value = allocate_rhs_value_for_symbol(thisAgent, result->value, result->inst_identities.value, result->identities.value, result->was_unbound_vars.value);
     } else {
-        a->value = copy_rhs_value(thisAgent, result->rhs_funcs.value);
+        a->value = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.value);
     }
     if (preference_is_binary(result->type))
     {
-        if (!result->rhs_funcs.referent)
+        if (!result->rhs_func_inst_identities.referent)
         {
-            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, result->identities.referent, result->identity_sets.referent, result->was_unbound_vars.referent);
+            a->referent = allocate_rhs_value_for_symbol(thisAgent, result->referent, result->inst_identities.referent, result->identities.referent, result->was_unbound_vars.referent);
         } else {
-            a->referent = copy_rhs_value(thisAgent, result->rhs_funcs.referent);
+            a->referent = copy_rhs_value(thisAgent, result->rhs_func_inst_identities.referent);
         }
     }
 
     dprint(DT_RHS_VARIABLIZATION, "Variablizing preference for %p\n", result);
 
-    lIdentity = variablize_rhs_value(a->id, lti_link_tc);
-    if (!result->rhs_funcs.id)
+    l_inst_identity = variablize_rhs_value(a->id, lti_link_tc);
+    if (!result->rhs_func_inst_identities.id)
     {
-        result->clone_identities.id = lIdentity;
+        result->chunk_inst_identities.id = l_inst_identity;
     } else {
-        result->clone_identities.id = lIdentity;
-        result->cloned_rhs_funcs.id = a->id;
-        a->id = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.id, false, true);
+        result->chunk_inst_identities.id = LITERAL_VALUE;
+        result->rhs_func_chunk_inst_identities.id = a->id;
+        a->id = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.id, false, true);
     }
 
-    lIdentity = variablize_rhs_value(a->attr, lti_link_tc);
-    if (!result->rhs_funcs.attr)
+    l_inst_identity = variablize_rhs_value(a->attr, lti_link_tc);
+    if (!result->rhs_func_inst_identities.attr)
     {
-        result->clone_identities.attr = lIdentity;
+        result->chunk_inst_identities.attr = l_inst_identity;
     } else {
-        result->clone_identities.attr = lIdentity;
-        result->cloned_rhs_funcs.attr = a->attr;
-        a->attr = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.attr, false, true);
+        result->chunk_inst_identities.attr = LITERAL_VALUE;
+        result->rhs_func_chunk_inst_identities.attr = a->attr;
+        a->attr = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.attr, false, true);
     }
 
-    lIdentity = variablize_rhs_value(a->value, lti_link_tc);
-    if (!result->rhs_funcs.value)
+    l_inst_identity = variablize_rhs_value(a->value, lti_link_tc);
+    if (!result->rhs_func_inst_identities.value)
     {
-        result->clone_identities.value = lIdentity;
+        result->chunk_inst_identities.value = l_inst_identity;
     } else {
-        result->clone_identities.value = lIdentity;
-        result->cloned_rhs_funcs.value = a->value;
-        a->value = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.value, false, true);
+        result->chunk_inst_identities.value = LITERAL_VALUE;
+        result->rhs_func_chunk_inst_identities.value = a->value;
+        a->value = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.value, false, true);
     }
 
     if (preference_is_binary(result->type))
     {
-        lIdentity = variablize_rhs_value(a->referent, lti_link_tc);
-        if (!result->rhs_funcs.value)
+        l_inst_identity = variablize_rhs_value(a->referent, lti_link_tc);
+        if (!result->rhs_func_inst_identities.referent)
         {
-            result->clone_identities.referent = lIdentity;
+            result->chunk_inst_identities.referent = l_inst_identity;
         } else {
-            result->clone_identities.referent = lIdentity;
-            result->cloned_rhs_funcs.referent = a->value;
-            a->referent = copy_rhs_value(thisAgent, result->cloned_rhs_funcs.referent, false, true);
+            result->chunk_inst_identities.referent = LITERAL_VALUE;
+            result->rhs_func_chunk_inst_identities.referent = a->referent;
+            a->referent = copy_rhs_value(thisAgent, result->rhs_func_chunk_inst_identities.referent, false, true);
         }
     }
 
@@ -397,8 +394,6 @@ action* Explanation_Based_Chunker::variablize_result_into_action(preference* res
 action* Explanation_Based_Chunker::variablize_results_into_actions()
 {
     dprint(DT_VARIABLIZATION_MANAGER, "Result preferences before variablizing: \n%6", NULL, m_results);
-    //dprint_identity_to_id_set_map(DT_RHS_VARIABLIZATION);
-    //dprint_variablization_table(DT_RHS_VARIABLIZATION);
     action* returnAction, *lAction, *lLastAction;
     preference* lPref;
 
@@ -439,10 +434,10 @@ void Explanation_Based_Chunker::add_LTM_linking_actions(action* pLastAction)
     {
         lRSym = rhs_value_to_rhs_symbol(*it);
 
-        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->identity, lRSym->identity_set, false);
+        lIntRV = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_int_constant(lRSym->referent->var->instantiated_sym->id->LTI_ID), lRSym->inst_identity, lRSym->identity, false);
         lRV = copy_rhs_value(thisAgent, (*it));
 
-        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y (%u) to LTI ID %u", lRSym->referent, lRSym->identity_set ? lRSym->identity_set->get_identity() : 0, lRSym->referent->var->instantiated_sym->id->LTI_ID);
+        dprint_noprefix(DT_RHS_LTI_LINKING, "Creating action to linking %y (%u) to LTI ID %u", lRSym->referent, lRSym->identity ? lRSym->identity->get_identity() : 0, lRSym->referent->var->instantiated_sym->id->LTI_ID);
 
         funcall_list = NULL;
         push(thisAgent, lti_link_function, funcall_list);

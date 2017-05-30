@@ -166,12 +166,7 @@ struct varSymbol   : public Symbol
     Symbol* current_binding_value;
     uint64_t gensym_number;
     cons* rete_binding_locations;
-    /* instantiated_sym is a temporary pointer that is only guaranteed to be
-     * valid after variablization and while learning the rule that set its
-     * value.  It is used to create the instantiated version of the conditions
-     * for the rule instantiation and, in the case of justifications, the rule
-     * itself. */
-    Symbol* instantiated_sym;
+    Symbol* instantiated_sym;               /* Used by EBC to reinstantiate a condition or rhs value */
 };
 
 struct idSymbol    : public Symbol

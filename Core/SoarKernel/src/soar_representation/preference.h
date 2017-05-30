@@ -121,13 +121,15 @@ typedef struct preference_struct
     Symbol*                         value;
     Symbol*                         referent;
 
-    identity_quadruple              identities;         /* identities for a preferences in relation to instantiation that created*/
-    identity_quadruple              clone_identities;   /* identities for a result preference in relation to chunk formed*/
-    identity_set_quadruple          identity_sets;      /* identity join sets for all four elements */
-    bool_quadruple                  was_unbound_vars;
-    rhs_quadruple                   rhs_funcs;          /* identities of syms in rhs functions*/
-    rhs_quadruple                   cloned_rhs_funcs;   /* identities of syms in clone prefs rhs functions*/
-    action*                         parent_action;      /* Action that created pref.  Used by the explainer */
+    /* Identity information used by EBC */
+    identity_set_quadruple          identities;                  /* identity sets for all four elements */
+    identity_quadruple              inst_identities;                /* identities for a preferences in relation to instantiation that created*/
+    identity_quadruple              chunk_inst_identities;          /* identities for a result preference in relation to chunk formed*/
+    rhs_quadruple                   rhs_func_inst_identities;       /* identities of syms in rhs functions*/
+    rhs_quadruple                   rhs_func_chunk_inst_identities; /* identities of syms in chunk instantiation's rhs functions */
+
+    bool_quadruple                  was_unbound_vars;               /* Whether a RHS variable is a newly created unbound RHS var.  Used by re-orderer */
+    action*                         parent_action;                  /* Action that created pref.  Used by the explainer */
 
     struct slot_struct*             slot;
     struct preference_struct*       next, *prev;                            /* dll of pref's of same type in same slot */

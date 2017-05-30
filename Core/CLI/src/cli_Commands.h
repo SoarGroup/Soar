@@ -1563,6 +1563,7 @@ namespace cli
                 OptionsData optionsData[] =
                 {
                     {'d', "decision",   OPTARG_NONE},
+                    {'l', "learning",   OPTARG_NONE},
                     {'m', "memory",     OPTARG_NONE},
                     {'M', "max",        OPTARG_NONE},
                     {'r', "rete",       OPTARG_NONE},
@@ -1596,6 +1597,9 @@ namespace cli
                     {
                         case 'd':
                             options.set(cli::STATS_DECISION);
+                            break;
+                        case 'l':
+                            options.set(cli::STATS_EBC);
                             break;
                         case 'm':
                             options.set(cli::STATS_MEMORY);

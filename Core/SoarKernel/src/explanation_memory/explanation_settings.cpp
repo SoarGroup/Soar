@@ -23,9 +23,10 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     explanation_trace = new soar_module::boolean_param("explanation-trace", on, new soar_module::f_predicate<boolean>());
     wm_trace = new soar_module::boolean_param("wm-trace", on, new soar_module::f_predicate<boolean>());
     formation = new soar_module::boolean_param("formation", on, new soar_module::f_predicate<boolean>());
-    constraints = new soar_module::boolean_param("constraints", on, new soar_module::f_predicate<boolean>());
-    identity = new soar_module::boolean_param("identity", on, new soar_module::f_predicate<boolean>());
+    constraint_analysis = new soar_module::boolean_param("constraints", on, new soar_module::f_predicate<boolean>());
+    identity_analysis = new soar_module::boolean_param("identity", on, new soar_module::f_predicate<boolean>());
     stats = new soar_module::boolean_param("stats", on, new soar_module::f_predicate<boolean>());
+    after_action_report = new soar_module::boolean_param("after-action-report", off, new soar_module::f_predicate<boolean>());
 
     help_cmd = new soar_module::boolean_param("help", on, new soar_module::f_predicate<boolean>());
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
@@ -42,11 +43,12 @@ Explainer_Parameters::Explainer_Parameters(agent* new_agent): soar_module::param
     add(explanation_trace);
     add(wm_trace);
     add(formation);
-    add(constraints);
-    add(identity);
+    add(constraint_analysis);
+    add(identity_analysis);
     add(stats);
     add(help_cmd);
     add(qhelp_cmd);
+    add(after_action_report);
 }
 
 void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
@@ -74,8 +76,10 @@ void Explainer_Parameters::print_explanation_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "------------ Supporting Analysis --------------\n");
     outputManager->printa_sf(thisAgent, "constraints                %-%-%s\n", "Display extra transitive constraints required by problem-solving");
     outputManager->printa_sf(thisAgent, "identity                   %-%-%s\n", "Display identity to identity set mappings");
-    outputManager->printa_sf(thisAgent, "only-chunk-identities      %-%s%-%s\n", capitalizeOnOff(only_print_chunk_identities->get_value()), "Identity analysis only prints identities sets found in chunk");
     outputManager->printa_sf(thisAgent, "stats                      %-%-%s\n", "Display statistics about currently discussed chunk");
+    outputManager->printa_sf(thisAgent, "------------------ Settings -------------------\n");
+    outputManager->printa_sf(thisAgent, "after-action-report        %-%s%-%s\n", capitalizeOnOff(after_action_report->get_value()), "Print statistics to file on init and exit");
+    outputManager->printa_sf(thisAgent, "only-chunk-identities      %-%s%-%s\n", capitalizeOnOff(only_print_chunk_identities->get_value()), "Identity analysis only prints identities sets found in chunk");
     outputManager->printa_sf(thisAgent, "-----------------------------------------------\n");
 
     outputManager->printa_sf(thisAgent, "\nTo change a setting: %-%- explain <setting> [<value>]\n");

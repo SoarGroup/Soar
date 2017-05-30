@@ -39,8 +39,9 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     pEBC_settings[SETTING_EBC_REORDER_JUSTIFICATIONS] = false;
     pEBC_settings[SETTING_EBC_ADD_LTM_LINKS] = false;
     pEBC_settings[SETTING_EBC_TIMERS] = false;
+    pEBC_settings[SETTING_EBC_AFTER_ACTION_REPORT] = false;
 
-    /* This setting doesn't have a parameter to toggle.  Just keeping so we can toggle for experimenting */
+    /* This setting doesn't have a cli parameter to toggle.  Just keeping so we can toggle for experimenting */
     pEBC_settings[SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS] = false;
 
     pMaxChunks = 50;
@@ -83,8 +84,10 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     qhelp_cmd = new soar_module::boolean_param("?", on, new soar_module::f_predicate<boolean>());
     add(qhelp_cmd);
 
-    singleton = new soar_module::boolean_param("singleton",  setting_on(SETTING_EBC_USER_SINGLETONS), new soar_module::f_predicate<boolean>());
+    singleton = new soar_module::boolean_param("singleton", on, new soar_module::f_predicate<boolean>());
     add(singleton);
+
+
     timers_cmd = new soar_module::boolean_param("timers",  setting_on(SETTING_EBC_TIMERS), new soar_module::f_predicate<boolean>());
     add(timers_cmd);
 
@@ -151,6 +154,7 @@ ebc_param_container::ebc_param_container(agent* new_agent, bool pEBC_settings[],
     add(allow_probabilistic_operators);
     allow_conflated_reasoning = new soar_module::boolean_param("allow-conflated-reasoning", setting_on(SETTING_EBC_ALLOW_CONFLATED), new soar_module::f_predicate<boolean>());
     add(allow_conflated_reasoning);
+
 }
 
 void ebc_param_container::update_ebc_settings(agent* thisAgent, soar_module::boolean_param* pChangedParam, soar_module::integer_param* pChangedIntParam)

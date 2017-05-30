@@ -6,7 +6,7 @@
  */
 
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 
 #include "agent.h"
 #include "condition.h"
@@ -45,7 +45,9 @@ void Explanation_Based_Chunker::cache_constraints_in_test(test t)
             new_constraint->constraint_test = ctest;
             dprint(DT_CONSTRAINTS, "Caching constraints on %t [%g]: %t [%g]\n", new_constraint->eq_test, new_constraint->eq_test, new_constraint->constraint_test, new_constraint->constraint_test);
             constraints->push_back(new_constraint);
-            thisAgent->explanationMemory->increment_stat_constraints_collected();
+            #ifdef EBC_DETAILED_STATISTICS
+                thisAgent->explanationMemory->increment_stat_constraints_collected();
+            #endif
         }
     }
 }
@@ -106,7 +108,9 @@ void Explanation_Based_Chunker::attach_relational_test(test pRelational_test, co
     {
         add_test(thisAgent, &(pCond->data.tests.id_test), pRelational_test, true);
     }
-    thisAgent->explanationMemory->increment_stat_constraints_attached();
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_constraints_attached();
+    #endif
 }
 
 void Explanation_Based_Chunker::add_additional_constraints()
@@ -119,30 +123,28 @@ void Explanation_Based_Chunker::add_additional_constraints()
     for (constraint_list::iterator iter = constraints->begin(); iter != constraints->end();)
     {
         lConstraint = *iter;
-        condition* lOperationalCond = lConstraint->eq_test->identity_set ? lConstraint->eq_test->identity_set->get_operational_cond() : NULL;
-        condition* lOperationalConstraintCond = lConstraint->constraint_test->identity_set ? lConstraint->constraint_test->identity_set->get_operational_cond() : NULL;
+        condition* lOperationalCond = lConstraint->eq_test->identity ? lConstraint->eq_test->identity->get_operational_cond() : NULL;
+        condition* lOperationalConstraintCond = lConstraint->constraint_test->identity ? lConstraint->constraint_test->identity->get_operational_cond() : NULL;
         dprint(DT_CONSTRAINTS, "Attempting to add constraint %t %g to %t %g: ", lConstraint->constraint_test, lConstraint->constraint_test, lConstraint->eq_test, lConstraint->eq_test);
 
-        if (lOperationalCond && !lConstraint->eq_test->identity_set->literalized())
+        if (lOperationalCond && !lConstraint->eq_test->identity->literalized())
         {
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
-            attach_relational_test(constraint_test, lOperationalCond, lConstraint->eq_test->identity_set->get_operational_field());
+            attach_relational_test(constraint_test, lOperationalCond, lConstraint->eq_test->identity->get_operational_field());
             dprint(DT_CONSTRAINTS, "...constraint added.  Condition is now %l\n", lOperationalCond);
-            thisAgent->explanationMemory->increment_stat_constraints_attached();
         }
-        else if (lOperationalConstraintCond && !lConstraint->constraint_test->identity_set->literalized())
+        else if (lOperationalConstraintCond && !lConstraint->constraint_test->identity->literalized())
         {
             eq_copy = copy_test(thisAgent, lConstraint->eq_test, true);
             constraint_test = copy_test(thisAgent, lConstraint->constraint_test, true);
             invert_relational_test(&eq_copy, &constraint_test);
-            attach_relational_test(constraint_test, lOperationalConstraintCond, lConstraint->constraint_test->identity_set->get_operational_field());
+            attach_relational_test(constraint_test, lOperationalConstraintCond, lConstraint->constraint_test->identity->get_operational_field());
             deallocate_test(thisAgent, eq_copy);
             dprint(DT_CONSTRAINTS, "...complement of constraint added.  Condition is now %l\n", lOperationalConstraintCond);
-            thisAgent->explanationMemory->increment_stat_constraints_attached();
         } else {
             dprint(DT_CONSTRAINTS, "...did not add constraint:\n    eq_test: %t %g, literalized = %s\n    reltest: %t %g, literalized = %s\n",
-                lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity_set && lConstraint->eq_test->identity_set->literalized()) ? "true" : "false",
-                    lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity_set && lConstraint->constraint_test->identity_set->literalized()) ? "true" : "false");
+                lConstraint->eq_test, lConstraint->eq_test, (lConstraint->eq_test->identity && lConstraint->eq_test->identity->literalized()) ? "true" : "false",
+                    lConstraint->constraint_test, lConstraint->constraint_test, (lConstraint->constraint_test->identity && lConstraint->constraint_test->identity->literalized()) ? "true" : "false");
         }
         ++iter;
     }

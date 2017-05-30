@@ -6,14 +6,14 @@
 #include "rhs.h"
 #include "test.h"
 
-void Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pIdentity)
+void Explanation_Based_Chunker::add_sti_variablization(Symbol* pSym, Symbol* pVar, uint64_t pInstIdentity)
 {
-    dprint(DT_LHS_VARIABLIZATION, "Adding variablization found for %y -> %y [%u]\n", pSym, pVar, pIdentity);
+    dprint(DT_LHS_VARIABLIZATION, "Adding variablization found for %y -> %y [%u]\n", pSym, pVar, pInstIdentity);
     chunk_element* lVarInfo;
     thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lVarInfo);
     lVarInfo->variable_sym = pVar;
     pVar->var->instantiated_sym = pSym;
-    lVarInfo->identity = pIdentity;
+    lVarInfo->inst_identity = pInstIdentity;
     (*m_sym_to_var_map)[pSym] = lVarInfo;
 }
 
@@ -42,18 +42,18 @@ void Explanation_Based_Chunker::sti_variablize_test(test pTest, bool generate_id
         prefix[1] = 0;
         lNewVar = thisAgent->symbolManager->generate_new_variable(prefix);
         lNewVar->var->instantiated_sym = lMatchedSym;
-        if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(lNewVar);
+        if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(lNewVar);
     }
     else
     {
         lNewVar = iter_sym->second->variable_sym;
         thisAgent->symbolManager->symbol_add_ref(lNewVar);
-        if (generate_identity) lMatchedIdentity = iter_sym->second->identity;
+        if (generate_identity) lMatchedIdentity = iter_sym->second->inst_identity;
     }
 
     add_sti_variablization(lMatchedSym, lNewVar, lMatchedIdentity);
     pTest->data.referent = lNewVar;
-    pTest->identity = lMatchedIdentity;
+    pTest->inst_identity = lMatchedIdentity;
     thisAgent->symbolManager->symbol_remove_ref(&lMatchedSym);
 }
 
@@ -82,7 +82,7 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
 
     rhs_symbol rs = rhs_value_to_rhs_symbol(pRhs_val);
 
-    dprint(DT_RHS_VARIABLIZATION, "STI-variablizing %y [%u].\n", rs->referent, rs->identity);
+    dprint(DT_RHS_VARIABLIZATION, "STI-variablizing %y [%u].\n", rs->referent, rs->inst_identity);
 
     auto iter_sym = m_sym_to_var_map->find(rs->referent);
     has_variablization = (iter_sym != m_sym_to_var_map->end());
@@ -95,13 +95,13 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         prefix[1] = 0;
         var = thisAgent->symbolManager->generate_new_variable(prefix);
         dprint(DT_RHS_VARIABLIZATION, "...created new variable for unbound var %y: %y\n", rs->referent, var);
-        if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_identity_for_sym(var);
+        if (generate_identity) lMatchedIdentity = thisAgent->explanationBasedChunker->get_or_create_inst_identity_for_sym(var);
         add_sti_variablization(rs->referent, var, lMatchedIdentity);
         has_variablization = true;
         was_unbound = true;
     } else if (rs->referent->is_sti()) {
         var = iter_sym->second->variable_sym;
-        if (generate_identity) lMatchedIdentity = iter_sym->second->identity;
+        if (generate_identity) lMatchedIdentity = iter_sym->second->inst_identity;
         has_variablization = true;
     }
     if (has_variablization)
@@ -110,16 +110,16 @@ void Explanation_Based_Chunker::sti_variablize_rhs_symbol(rhs_value &pRhs_val, b
         thisAgent->symbolManager->symbol_remove_ref(&rs->referent);
         thisAgent->symbolManager->symbol_add_ref(var);
         rs->referent = var;
-        rs->identity = lMatchedIdentity;
+        rs->inst_identity = lMatchedIdentity;
 //        rs->identity_set_wp.reset();
-        rs->identity_set = NULL;
+        rs->identity = NULL;
         rs->was_unbound_var = was_unbound;
     }
     else
     {
         dprint(DT_RHS_VARIABLIZATION, "...literal RHS symbol, maps to null identity set or has an identity not found on LHS.  Not variablizing.\n");
-        rs->identity = LITERAL_VALUE;
-        rs->identity_set = NULL;
+        rs->inst_identity = LITERAL_VALUE;
+        rs->identity = NULL;
 //        rs->identity_set_wp.reset();
     }
 }

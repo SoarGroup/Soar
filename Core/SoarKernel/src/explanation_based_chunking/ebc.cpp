@@ -51,7 +51,7 @@ Explanation_Based_Chunker::Explanation_Based_Chunker(agent* myAgent)
     /* Create data structures used for EBC */
     instantiation_identities = new sym_to_id_map();
     constraints = new constraint_list();
-    identities_to_id_sets = new id_to_join_map();
+    inst_id_to_identity_map = new id_to_join_map();
     cond_merge_map = new triple_merge_map();
     local_linked_STIs = new rhs_value_list();
     m_sym_to_var_map = new sym_to_sym_id_map();
@@ -77,7 +77,7 @@ Explanation_Based_Chunker::~Explanation_Based_Chunker()
 
     delete instantiation_identities;
     delete constraints;
-    delete identities_to_id_sets;
+    delete inst_id_to_identity_map;
     delete cond_merge_map;
     delete local_linked_STIs;
     delete m_sym_to_var_map;
@@ -94,8 +94,8 @@ void Explanation_Based_Chunker::reinit()
     ebc_timers->reset();
     inst_id_counter                     = 0;
     prod_id_counter                     = 0;
-    identity_set_counter                = 0;
-    variablization_identity_counter     = 0;
+    identity_counter                = 0;
+    inst_identity_counter     = 0;
     backtrace_number                    = 0;
     chunk_naming_counter                = 0;
     justification_naming_counter        = 0;
@@ -274,7 +274,9 @@ void Explanation_Based_Chunker::set_up_rule_name()
         m_prod_type = JUSTIFICATION_PRODUCTION_TYPE;
         m_should_print_name = (thisAgent->trace_settings[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
         m_should_print_prod = (thisAgent->trace_settings[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-        thisAgent->explanationMemory->increment_stat_justifications_attempted();
+        #ifdef EBC_DEBUG_STATISTICS
+            thisAgent->explanationMemory->increment_stat_justifications_attempted();
+        #endif
     }
 
     if (m_should_print_name)
@@ -294,10 +296,10 @@ void Explanation_Based_Chunker::clear_data()
     {
         dprint(DT_VARIABLIZATION_MANAGER, "Clearing all EBC maps.\n");
         clear_cached_constraints();
-        clean_up_identity_sets();
+        clean_up_identities();
         clear_merge_map();
         clear_symbol_identity_map();
-        clear_identity_to_id_set_map();
+        clear_id_to_identity_map();
     }
 }
 
@@ -310,7 +312,7 @@ void Explanation_Based_Chunker::sanity_chunk_test (test pTest)
             sanity_chunk_test(static_cast<test>(c->first));
         }
     } else {
-        assert((!test_has_referent(pTest) || !pTest->data.referent->is_sti()) && !pTest->identity_set);
+        assert((!test_has_referent(pTest) || !pTest->data.referent->is_sti()) && !pTest->identity);
     }
 }
 
@@ -342,13 +344,21 @@ void Explanation_Based_Chunker::sanity_justification_test (test pTest, bool pIsN
     } else {
         if (pIsNCC)
         {
-            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity_set));
+            assert(!test_has_referent(pTest) || (!pTest->data.referent->is_variable() || !pTest->identity));
 
         } else {
-            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity_set);
+            assert(!test_has_referent(pTest) || !pTest->data.referent->is_variable() || !pTest->identity);
         }
     }
 }
+
+goal_stack_level Explanation_Based_Chunker::get_inst_match_level()
+{
+    if (m_inst)
+        return m_inst->match_goal_level;
+    else return 0;
+}
+
 ebc_timer_container::ebc_timer_container(agent* new_agent): soar_module::timer_container(new_agent)
 {
     instantiation_creation = new ebc_timer("1.00 Instantiation creation", thisAgent, soar_module::timer::one);

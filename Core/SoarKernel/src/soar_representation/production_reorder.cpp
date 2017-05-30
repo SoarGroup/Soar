@@ -78,11 +78,11 @@
 
 bool legal_to_execute_action(action* a, tc_number tc);
 
-bool isNewUngroundedElement(matched_symbol_list* ungrounded_syms, Symbol* pSym, uint64_t pIdentity)
+bool isNewUngroundedElement(matched_symbol_list* ungrounded_syms, Symbol* pSym, uint64_t pInstIdentity)
 {
     for (auto it = ungrounded_syms->begin(); it != ungrounded_syms->end(); it++)
     {
-        if (((*it)->instantiated_sym == pSym) && ((*it)->identity == pIdentity))
+        if (((*it)->instantiated_sym == pSym) && ((*it)->inst_identity == pInstIdentity))
             return false;
     }
     return true;
@@ -182,15 +182,15 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
                 } else {
                     lInstSym = lSym->var->instantiated_sym;
                 }
-                lNewID = rhs_value_to_o_id(lAction->id);
+                lNewID = rhs_value_to_inst_identity(lAction->id);
                 if (isNewUngroundedElement(ungrounded_syms, lInstSym,  lNewID))
                 {
                     chunk_element* lNewUngroundedSym;
                     thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                     lNewUngroundedSym->variable_sym = lVarSym;
                     lNewUngroundedSym->instantiated_sym = lInstSym;
-                    lNewUngroundedSym->identity = lNewID;
-                    dprint(DT_VALIDATE, "Adding unconnected rhs sym: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->identity);
+                    lNewUngroundedSym->inst_identity = lNewID;
+                    dprint(DT_VALIDATE, "Adding unconnected rhs sym: %y/%y [%u]\n",  lNewUngroundedSym->variable_sym, lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->inst_identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 }
             }
@@ -207,7 +207,9 @@ bool reorder_action_list(agent* thisAgent, action** action_list,
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Attempted to add rule with ungrounded action action(s).  Repair required.";
         }
+#ifdef EBC_DEBUG_STATISTICS
         thisAgent->explanationMemory->increment_stat_rhs_unconnected();
+#endif
         /* --- reconstruct list of all actions --- */
         if (last_action)
         {
@@ -353,7 +355,7 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
 
             dprint(DT_REORDERER, "...Processing conjunctive test.  First find sym to index saved tests by...\n");
             sym = ct->eq_test->data.referent;
-            sym_identity = ct->eq_test->identity;
+            sym_identity = ct->eq_test->inst_identity;
             sym_identity_set_test = ct->eq_test;
             dprint(DT_REORDERER, "...Setting equality symbol %y as index.\n", sym);
             /* --- if no equality test was found, generate a dummy variable for it --- */
@@ -391,11 +393,11 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
                     old_sts = saved;
                     saved->var = sym;
                     thisAgent->symbolManager->symbol_add_ref(sym);
-                    saved->identity = sym_identity;
-                    if (sym_identity_set_test->identity_set)
-                        saved->identity_set = sym_identity_set_test->identity_set;
+                    saved->inst_identity = sym_identity;
+                    if (sym_identity_set_test->identity)
+                        saved->identity = sym_identity_set_test->identity;
                     else
-                        saved->identity_set = NULL;
+                        saved->identity = NULL;
                     saved->the_test = subtest;
                     if (prev_c)
                     {
@@ -441,8 +443,8 @@ saved_test* simplify_test(agent* thisAgent, test* t, saved_test* old_sts)
             saved->next = old_sts;
             old_sts = saved;
             saved->var = var;
-            saved->identity = LITERAL_VALUE;
-            saved->identity_set = NULL;
+            saved->inst_identity = LITERAL_VALUE;
+            saved->identity = NULL;
             // thisAgent->symbolManager->symbol_add_ref(var);
             saved->the_test = *t;
             *t = New;
@@ -580,8 +582,8 @@ saved_test* restore_saved_tests_to_test(agent* thisAgent,
                         dprint(DT_REORDERER, "REVERSING test and adding if not already there...\n");
                         st->the_test->type = reverse_direction_of_relational_test(thisAgent, st->the_test->type);
                         st->the_test->data.referent = st->var;
+                        st->the_test->inst_identity = st->inst_identity;
                         st->the_test->identity = st->identity;
-                        st->the_test->identity_set = st->identity_set;
                         st->var = referent;
                         add_test_if_not_already_there(thisAgent, t, st->the_test, neg);
                         added_it = true;
@@ -870,7 +872,7 @@ cons* collect_root_variables(agent* thisAgent,
      * that aren't in a value element */
 
     Symbol* lSym, *lMatchedSym;
-    uint64_t lIdentity;
+    uint64_t l_inst_identity;
 
     /* --- find everthing that's in the value slot of some condition --- */
     for (cond = cond_list; cond != NIL; cond = cond->next)
@@ -885,9 +887,9 @@ cons* collect_root_variables(agent* thisAgent,
             /* Dummy variables and literals won't have a matched sym */
             if (!lMatchedSym) lMatchedSym = cond->data.tests.value_test->eq_test->data.referent;
             lSym = cond->data.tests.value_test->eq_test->data.referent;
-            lIdentity = cond->data.tests.value_test->eq_test->identity;
+            l_inst_identity = cond->data.tests.value_test->eq_test->inst_identity;
             dprint(DT_VALIDATE, "Adding possible root from value element %y/%y...", lSym, lMatchedSym);
-            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_value_slot);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, l_inst_identity, tc, new_vars_from_value_slot);
         }
     }
     /* --- now see what else we can add by throwing in the id slot --- */
@@ -903,9 +905,9 @@ cons* collect_root_variables(agent* thisAgent,
             if (!lMatchedSym) lMatchedSym = cond->data.tests.id_test->eq_test->data.referent;
 
             lSym = cond->data.tests.id_test->eq_test->data.referent;
-            lIdentity = cond->data.tests.id_test->eq_test->identity;
+            l_inst_identity = cond->data.tests.id_test->eq_test->inst_identity;
             dprint(DT_VALIDATE, "Adding possible root from id element %y/%y...", lSym, lMatchedSym);
-            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, lIdentity, tc, new_vars_from_id_slot);
+            add_bound_variable_with_identity(thisAgent, lSym, lMatchedSym, l_inst_identity, tc, new_vars_from_id_slot);
         }
     }
 
@@ -938,15 +940,15 @@ cons* collect_root_variables(agent* thisAgent,
             if (! found_goal_impasse_test)
             {
                 dprint_noprefix(DT_REORDERER, "not found\n");
-                if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->identity))
+                if (add_ungrounded && isNewUngroundedElement(ungrounded_syms,  (*it)->instantiated_sym,  (*it)->inst_identity))
                 {
                     chunk_element* lNewUngroundedSym;
                     thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                     chunk_element* lOldMatchedSym = (*it);
                     lNewUngroundedSym->variable_sym = (*it)->variable_sym;
                     lNewUngroundedSym->instantiated_sym = (*it)->instantiated_sym;
-                    lNewUngroundedSym->identity = (*it)->identity;
-                    dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->identity);
+                    lNewUngroundedSym->inst_identity = (*it)->inst_identity;
+                    dprint(DT_VALIDATE, "Adding ungrounded lhs sym: %y/%y [%u]\n",  lNewUngroundedSym->instantiated_sym, lNewUngroundedSym->variable_sym, lNewUngroundedSym->inst_identity);
                     ungrounded_syms->push_back(lNewUngroundedSym);
                 } else {
                     thisAgent->outputManager->sprinta_sf(thisAgent, errorStr, "\nWarning: On the LHS of production %s, identifier %y is not connected to any goal or impasse.\n",
@@ -1584,8 +1586,9 @@ bool reorder_lhs(agent* thisAgent, condition** lhs_top, bool reorder_nccs, match
             thisAgent->stop_soar = true;
             thisAgent->reason_for_stopping = "Chunking issue detected.  Soar has learned a rule with with ungrounded condition(s).  Repair required.";
         }
+        #ifdef EBC_DEBUG_STATISTICS
         thisAgent->explanationMemory->increment_stat_lhs_unconnected();
-
+        #endif
         return false;
     }
 

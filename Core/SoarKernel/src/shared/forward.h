@@ -93,7 +93,7 @@ class ebc_param_container;
 class identity_record;
 class instantiation_record;
 class production_record;
-class IdentitySet;
+class Identity;
 
 class EpMem_Manager;
 class epmem_common_statement_container;

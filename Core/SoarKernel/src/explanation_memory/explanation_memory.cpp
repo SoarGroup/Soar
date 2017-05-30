@@ -6,6 +6,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
+#include "ebc_identity.h"
 #include "instantiation_record.h"
 #include "instantiation.h"
 #include "memory_manager.h"
@@ -42,13 +43,14 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     last_printed_id = 0;
 
     /* Create data structures used for EBC */
+    all_actions = new std::unordered_map< uint64_t, action_record* >();
+    all_conditions = new std::unordered_map< uint64_t, condition_record* >();
+    all_identities_in_goal = new sym_to_identity_set_map();
+    cached_production = new production_record_set();
     chunks = new std::unordered_map< Symbol*, chunk_record* >();
     chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
     instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
-    all_conditions = new std::unordered_map< uint64_t, condition_record* >();
-    all_actions = new std::unordered_map< uint64_t, action_record* >();
     production_id_map = new std::unordered_map< uint64_t, production* >();
-    cached_production = new production_record_set();
 }
 
 Explanation_Memory::~Explanation_Memory()
@@ -58,15 +60,18 @@ Explanation_Memory::~Explanation_Memory()
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
     clear_explanations();
+    clear_identity_sets();
 
+    delete all_actions;
+    delete all_conditions;
+    delete all_identities_in_goal;
+    delete cached_production;
     delete chunks;
     delete chunks_by_ID;
-    delete all_conditions;
-    delete all_actions;
     delete instantiations;
     delete production_id_map;
-    delete cached_production;
     delete settings;
+
     dprint(DT_EXPLAIN, "Done deleting explanation logger.\n");
 }
 
@@ -83,12 +88,10 @@ void Explanation_Memory::initialize_counters()
     stats.max_chunks = 0;
     stats.max_dupes = 0;
     stats.tested_local_negation = 0;
-    stats.rhs_arguments_literalized = 0;
     stats.tested_deep_copy = 0;
     stats.tested_quiescence = 0;
     stats.tested_ltm_recall = 0;
     stats.tested_local_negation_just = 0;
-    stats.rhs_arguments_literalized_just = 0;
     stats.tested_deep_copy_just = 0;
     stats.tested_ltm_recall_just = 0;
     stats.merged_conditions = 0;
@@ -107,14 +110,22 @@ void Explanation_Memory::initialize_counters()
     stats.lhs_unconnected = 0;
     stats.rhs_unconnected = 0;
     stats.repair_failed = 0;
-    stats.ungrounded_justifications = 0;
     stats.chunks_repaired = 0;
     stats.chunks_reverted = 0;
-    stats.justifications_repaired = 0;
-    stats.ungrounded_justifications_added = 0;
-    stats.ungrounded_justifications_ignored = 0;
-    stats.chunks_explained = 0;
-    stats.justifications_explained = 0;
+    stats.identities_created                = 0;
+    stats.identities_joined                 = 0;
+    stats.identities_joined_variable        = 0;
+    stats.identities_joined_local_singleton = 0;
+    stats.identities_joined_singleton       = 0;
+    stats.identities_joined_child_results   = 0;
+    stats.identities_literalized_rhs_literal    = 0;
+    stats.identities_participated           = 0;
+    stats.identity_propagations             = 0;
+    stats.identity_propagations_blocked     = 0;
+    stats.operational_constraints           = 0;
+    stats.OSK_instantiations                = 0;
+    stats.identities_literalized_rhs_func_arg       = 0;
+    stats.identities_literalized_rhs_func_compare   = 0;
 }
 
 void Explanation_Memory::clear_explanations()
@@ -172,6 +183,8 @@ void Explanation_Memory::re_init()
 {
     dprint(DT_EXPLAIN_CACHE, "Re-initializing explanation logger.\n");
     clear_explanations();
+    /* MToDo | Might not need to do.  They might get popped with stack */
+    clear_identity_sets();
     initialize_counters();
     current_recording_chunk = NULL;
     current_discussed_chunk = NULL;
@@ -190,14 +203,6 @@ void Explanation_Memory::add_chunk_record(instantiation* pBaseInstantiation)
 
     thisAgent->memoryManager->allocate_with_pool(MP_chunk_record, &current_recording_chunk);
     current_recording_chunk->init(thisAgent, chunk_id_count++);
-
-    //dprint(DT_DEBUG, "Chunk number %u from prod %y\n", chunk_id_count, pBaseInstantiation->prod_name);
-    //if (this->chunk_id_count == 35)
-    //{
-    //    dprint(DT_DEBUG, "Chunk found.\n");
-    //    debug_trace_set(DT_RHS_VARIABLIZATION, true);
-    //    debug_trace_set(DT_VARIABLIZATION_MANAGER, true);
-    //}
 }
 
 void Explanation_Memory::end_chunk_record()
@@ -262,7 +267,7 @@ void Explanation_Memory::record_chunk_contents(production* pProduction, conditio
     }
 }
 
-condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst , bool pMakeNegative)
+condition_record* Explanation_Memory::add_condition(condition_record_list* pCondList, condition* pCond, instantiation_record* pInst, bool pMakeNegative, bool isChunkInstantiation)
 {
     dprint(DT_EXPLAIN_CONDS, "   Creating condition: %l\n", pCond);
     condition_record* lCondRecord;
@@ -271,8 +276,7 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
     {
         thisAgent->memoryManager->allocate_with_pool(MP_condition_record, &lCondRecord);
         increment_counter(condition_id_count);
-        lCondRecord->init(thisAgent, pCond, condition_id_count);
-        lCondRecord->set_instantiation(pInst);
+        lCondRecord->init(thisAgent, pCond, condition_id_count, pInst, isChunkInstantiation);
         if (pMakeNegative)
         {
             lCondRecord->type = CONJUNCTIVE_NEGATION_CONDITION;
@@ -289,13 +293,13 @@ condition_record* Explanation_Memory::add_condition(condition_record_list* pCond
         condition_record* new_cond_record;
         for (condition* cond = pCond->data.ncc.top; cond != NIL; cond = cond->next)
         {
-            new_cond_record = add_condition(pCondList, cond, pInst, true);
+            new_cond_record = add_condition(pCondList, cond, pInst, true, isChunkInstantiation);
         }
         return new_cond_record;
     }
 }
 
-instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst, uint64_t pChunkID)
+instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst, uint64_t pChunkID, bool isChunkInstantiation)
 {
     if (pInst->explain_depth > EXPLAIN_MAX_BT_DEPTH) return NULL;
 
@@ -328,9 +332,8 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
 
         instantiation_record* lInstRecord;
         thisAgent->memoryManager->allocate_with_pool(MP_instantiation_record, &lInstRecord);
-        lInstRecord->init(thisAgent, pInst);
+        lInstRecord->init(thisAgent, pInst, isChunkInstantiation);
         instantiations->insert({pInst->i_id, lInstRecord});
-        lInstRecord->terminal = lIsTerminalInstantiation;
         lInstRecord->creating_chunk = pChunkID;
         dprint(DT_EXPLAIN_ADD_INST, "- Returning new instantiation record for i%u (%y).\n",
             pInst->i_id, pInst->prod_name);
@@ -350,7 +353,6 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         pInst->explain_tc_num = backtrace_number;
 
         instantiation_record* lInstRecord = get_instantiation(pInst);
-        lInstRecord->terminal = lIsTerminalInstantiation;
         dprint(DT_EXPLAIN_ADD_INST, "- Updated instantiation record for i%u (%y).\n", pInst->i_id, pInst->prod_name);
         return lInstRecord;
     } else if (pInst->explain_status == explain_recording) {
@@ -365,13 +367,13 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
     return get_instantiation(pInst);
 }
 
-action_record* Explanation_Memory::add_result(preference* pPref, action* pAction)
+action_record* Explanation_Memory::add_result(preference* pPref, action* pAction, bool isChunkInstantiation)
 {
     increment_counter(action_id_count);
     dprint(DT_EXPLAIN_CONDS, "   Adding action record %u for pref: %p\n", action_id_count, pPref);
     action_record* lActionRecord;
     thisAgent->memoryManager->allocate_with_pool(MP_action_record, &lActionRecord);
-    lActionRecord->init(thisAgent, pPref, pAction, action_id_count);
+    lActionRecord->init(thisAgent, pPref, pAction, action_id_count, isChunkInstantiation);
 
     all_actions->insert({lActionRecord->actionID, lActionRecord});
     return lActionRecord;
@@ -472,6 +474,10 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
         if (!print_chunk_explanation_for_id(lObjectID))
         {
             outputManager->printa_sf(thisAgent, "Could not find a rule name or id %s.\nType 'explain list-chunks' or 'explain list-justifications' to see a list of rule formations Soar has recorded.\n", pStringParameter->c_str());
+        } else {
+            outputManager->printa_sf(thisAgent, "Now explaining %y.\n", current_discussed_chunk->name);
+            print_chunk_explanation();
+            return true;
         }
     } else {
 
@@ -483,6 +489,8 @@ bool Explanation_Memory::explain_chunk(const std::string* pStringParameter)
             if (lFoundChunk)
             {
                 discuss_chunk(lFoundChunk);
+                outputManager->printa_sf(thisAgent, "Now explaining %y.\n\n", lFoundChunk->name);
+                print_chunk_explanation();
                 return true;
             }
 
@@ -497,7 +505,6 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
 {
     if (current_discussed_chunk != pChunkRecord)
     {
-        outputManager->printa_sf(thisAgent, "Now explaining %y.\n", pChunkRecord->name);
         if (current_discussed_chunk)
         {
             clear_chunk_from_instantiations();
@@ -507,7 +514,6 @@ void Explanation_Memory::discuss_chunk(chunk_record* pChunkRecord)
         current_discussed_chunk->generate_dependency_paths();
     }
     last_printed_id = 0;
-    print_chunk_explanation();
 
 }
 
@@ -563,10 +569,76 @@ bool Explanation_Memory::explain_instantiation(const std::string* pObjectIDStrin
     return lSuccess;
 }
 
-void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, uint64_t pFromJoinSetID, uint64_t pToJoinSetID)
+
+void Explanation_Memory::add_identity(Identity* pNewIdentity, Symbol* pGoal)
+{
+    assert(pNewIdentity && pGoal);
+    identity_set* lIdentities;
+
+    auto iter = all_identities_in_goal->find(pGoal);
+    if (iter == all_identities_in_goal->end())
+    {
+        dprint(DT_EXPLAIN_IDENTITIES, "Creating new identities set and increasing refcount on goal %y\n", pGoal);
+        lIdentities = new identity_set();
+        (*all_identities_in_goal)[pGoal] = lIdentities;
+        thisAgent->symbolManager->symbol_add_ref(pGoal);
+    } else {
+        lIdentities = iter->second;
+    }
+    dprint(DT_EXPLAIN_IDENTITIES, "Increasing refcount of identity %u and adding to identities set of goal %y\n", pNewIdentity->idset_id, pGoal);
+    lIdentities->insert(pNewIdentity);
+    pNewIdentity->add_ref();
+}
+
+void Explanation_Memory::clear_identities_in_set(identity_set* lIdenty_set)
+{
+    Identity*        l_inst_identity;
+
+    for (auto it = lIdenty_set->begin(); it != lIdenty_set->end(); ++it)
+    {
+        l_inst_identity = (*it);
+        dprint(DT_EXPLAIN_IDENTITIES, "Removing refcount %u \n", l_inst_identity->idset_id);
+        IdentitySet_remove_ref(thisAgent, l_inst_identity);
+    }
+    delete lIdenty_set;
+}
+
+void Explanation_Memory::clear_identity_sets()
+{
+    Symbol*             lSym;
+
+    assert(all_identities_in_goal->size() == 0);
+    for (auto it1 = all_identities_in_goal->begin(); it1 != all_identities_in_goal->end(); ++it1)
+    {
+        lSym = it1->first;
+        dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", it1->first);
+        clear_identities_in_set(it1->second);
+        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", it1->first);
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
+    }
+    all_identities_in_goal->clear();
+}
+
+void Explanation_Memory::clear_identity_sets_for_goal(Symbol* pGoal)
+{
+    Symbol*             lSym;
+
+    dprint(DT_EXPLAIN_IDENTITIES, "Clearing identity refcounts for goal %y\n", pGoal);
+    auto iter = all_identities_in_goal->find(pGoal);
+    if (iter != all_identities_in_goal->end())
+    {
+        lSym = iter->first;
+        clear_identities_in_set(iter->second);
+        dprint(DT_EXPLAIN_IDENTITIES, "... decreasing refcount for goal %y\n", pGoal);
+        thisAgent->symbolManager->symbol_remove_ref(&lSym);
+        all_identities_in_goal->erase(iter);
+    }
+}
+
+void Explanation_Memory::add_identity_set_mapping(uint64_t pI_ID, IDSet_Mapping_Type pType, Identity* pFromJoinSet, Identity* pToJoinSet)
 {
     if (current_recording_chunk)
-        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSetID, pToJoinSetID);
+        current_recording_chunk->identity_analysis.add_identity_mapping(pI_ID, pType, pFromJoinSet, pToJoinSet);
 }
 
 bool Explanation_Memory::current_discussed_chunk_exists()
@@ -591,11 +663,11 @@ void Explanation_Memory::increment_stat_duplicates(production* duplicate_rule)
 
 void Explanation_Memory::increment_stat_grounding_conds_added(int pNumConds)
 {
-    increment_counter(stats.grounding_conditions_added);
+    add_to_counter(stats.grounding_conditions_added, pNumConds);
     if (current_recording_chunk)
     {
         dprint(DT_EXPLAIN, "Incrementing stats for %d grounding conditions in rule %y.\n", pNumConds, current_recording_chunk->name);
-        add_to_counter(current_recording_chunk->stats.num_grounding_conditions_added, pNumConds);
+        add_to_counter(current_recording_chunk->stats.grounding_conditions_added, pNumConds);
     }
 };
 
@@ -652,9 +724,7 @@ void Explanation_Memory::visualize_instantiation_graph()
 
 void Explanation_Memory::visualize_contributors()
 {
-    bool old_Simple_Setting = (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name);
     thisAgent->visualizationManager->viz_graph_start();
-    current_discussed_chunk->visualize();
     for (auto it = current_discussed_chunk->backtraced_inst_records->begin(); it != current_discussed_chunk->backtraced_inst_records->end(); it++)
     {
         (*it)->visualize();
@@ -663,7 +733,27 @@ void Explanation_Memory::visualize_contributors()
     {
         (*it)->viz_connect_conditions();
     }
+    current_discussed_chunk->visualize();
     thisAgent->visualizationManager->viz_graph_end();
+}
+
+void Explanation_Memory::visualize_identity_graph()
+{
+    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
+    vm->viz_graph_start();
+    current_discussed_chunk->identity_analysis.visualize();
+    vm->viz_graph_end();
+}
+
+void Explanation_Memory::visualize_identity_graph_for_goal(Symbol* pGoal)
+{
+    GraphViz_Visualizer* vm = thisAgent->visualizationManager;
+    vm->viz_graph_start();
+//    auto iter = all_identities_in_goal->find(thisAgent->bottom_goal);
+//    if (iter != all_identities_in_goal->end())
+//    {
+//    current_discussed_chunk->identity_analysis.visualize();
+    vm->viz_graph_end();
 }
 
 bool Explanation_Memory::visualize_instantiation_explanation_for_id(uint64_t pInstID)

@@ -13,42 +13,69 @@
 void FunctionalTests::testWaterJug()
 {
     runTest("testWaterJug", -1);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
-
 }
 void FunctionalTests::testWaterJugHierarchy()
 {
     runTest("testWaterJugHierarchy", -1);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testTowersOfHanoi()
 {
     runTest("testTowersOfHanoi", 2048);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testTowersOfHanoiFast()
 {
     runTest("testTowersOfHanoiFast", 2047);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testEightPuzzle()
 {
     runTest("testEightPuzzle", -1);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testBlocksWorld()
 {
 	runTest("testBlocksWorld", -1);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
 void FunctionalTests::testBlocksWorldOperatorSubgoaling()
 {
 	runTest("testBlocksWorldOperatorSubgoaling", 5);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
@@ -58,6 +85,10 @@ void FunctionalTests::testBlocksWorldLookAhead()
 	runTestSetup(testName);
 	agent->ExecuteCommandLine("srand 1");
 	runTestExecute(testName, -1);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 
@@ -65,6 +96,10 @@ void FunctionalTests::testArithmetic()
 {
 	runTest("testArithmetic", -1);
 	assertTrue(SoarHelper::getD_CYCLE_COUNT(agent) > 40000);
+    if (SoarHelper::save_after_action_report)
+    {
+        SoarHelper::agent_command(agent,"explain after-action-report on");
+    }
     SoarHelper::init_check_to_find_refcount_leaks(agent);
 }
 

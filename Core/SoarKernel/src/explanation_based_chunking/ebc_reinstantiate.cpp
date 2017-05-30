@@ -1,5 +1,5 @@
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 
 #include "agent.h"
 #include "dprint.h"
@@ -18,14 +18,20 @@ void Explanation_Based_Chunker::reinstantiate_test (test pTest, bool pIsInstanti
         }
     }
     //else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity)
-    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->identity && pTest->data.referent->var->instantiated_sym)
+    else if (test_has_referent(pTest) && pTest->data.referent->is_variable() && pTest->inst_identity && pTest->data.referent->var->instantiated_sym)
     {
         Symbol* oldSym = pTest->data.referent;
         pTest->data.referent = pTest->data.referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(pTest->data.referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
     }
-    if (test_has_referent(pTest) && pTest->identity && pIsInstantiationCond) pTest->identity = pTest->clone_identity;
+    if (test_has_referent(pTest) && pTest->inst_identity && pIsInstantiationCond)
+    {
+        uint64_t temp;
+        temp = pTest->inst_identity;
+        pTest->inst_identity = pTest->chunk_inst_identity;
+        pTest->chunk_inst_identity = temp;
+    }
 }
 
 void Explanation_Based_Chunker::reinstantiate_condition_list(condition* top_cond, bool pIsInstantiationCond, bool pIsNCC)
@@ -71,12 +77,12 @@ condition* Explanation_Based_Chunker::reinstantiate_lhs(condition* top_cond)
             /* This case is rare (if it should happen at all any more).  It occurs when a learning attempt fails
              * and is being reverted to a justification instead */
             reinstantiate_condition(cond, false);
-            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond = copy_condition(thisAgent, cond, false, false, false, false);
             reinstantiate_condition(cond, true);
             lCond->inst = m_chunk_inst;
             lCond->bt = cond->bt;
         } else {
-            lCond = copy_condition(thisAgent, cond, false, false, false);
+            lCond = copy_condition(thisAgent, cond, false, false, false, false);
             lCond->bt = cond->bt;
             lCond->inst = m_chunk_inst;
             reinstantiate_condition(lCond, true);
@@ -127,20 +133,21 @@ void Explanation_Based_Chunker::reinstantiate_rhs_symbol(rhs_value pRhs_val)
 
     if (rs->referent->is_variable())
     {
-        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y [%u] -> %y.\n", rs->referent, rs->identity, rs->referent->var->instantiated_sym);
+        dprint(DT_REINSTANTIATE, "Reversing variablization for RHS symbol %y [%u] -> %y.\n", rs->referent, rs->inst_identity, rs->referent->var->instantiated_sym);
         Symbol* oldSym = rs->referent;
         rs->referent = rs->referent->var->instantiated_sym;
         thisAgent->symbolManager->symbol_add_ref(rs->referent);
         thisAgent->symbolManager->symbol_remove_ref(&oldSym);
-        IdentitySet* lIDSet = rs->identity_set;
-        if (lIDSet)
+        Identity* l_identity = rs->identity;
+        if (l_identity)
         {
-            rs->identity = lIDSet->get_clone_identity();
-//            rs->identity_set_wp.reset();
-            rs->identity_set = NULL;
+            rs->inst_identity = l_identity->get_clone_identity();
+            rs->identity = NULL;
         }
     } else {
-        dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->identity);
+        dprint(DT_REINSTANTIATE, "Not a variable.  Ignoring %y [%u]\n", rs->referent, rs->inst_identity);
+        rs->inst_identity = LITERAL_VALUE;
+        rs->identity = NULL;
     }
 }
 

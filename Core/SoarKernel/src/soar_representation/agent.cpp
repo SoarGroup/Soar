@@ -17,7 +17,6 @@
  * =======================================================================
  */
 
-
 #include "agent.h"
 
 #include "action_record.h"
@@ -30,7 +29,7 @@
 #include "decision_manipulation.h"
 #include "dprint.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "ebc_repair.h"
 #include "episodic_memory.h"
 #include "explanation_memory.h"
@@ -95,12 +94,12 @@ void init_soar_agent(agent* thisAgent)
     select_init(thisAgent);
     predict_init(thisAgent);
 
-    thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk condition");
+    thisAgent->memoryManager->init_memory_pool(MP_chunk_cond, sizeof(chunk_cond), "chunk_condition");
     thisAgent->memoryManager->init_memory_pool(MP_constraints, sizeof(constraint_struct), "constraints");
     thisAgent->memoryManager->init_memory_pool(MP_sym_triple, sizeof(symbol_triple), "symbol_triple");
-    thisAgent->memoryManager->init_memory_pool(MP_identity_mapping, sizeof(identity_mapping), "identity_map");
+    thisAgent->memoryManager->init_memory_pool(MP_identity_mapping, sizeof(identity_mapping), "id_mapping");
     thisAgent->memoryManager->init_memory_pool(MP_chunk_element, sizeof(chunk_element), "chunk_element");
-    thisAgent->memoryManager->init_memory_pool(MP_identity_sets, sizeof(IdentitySet), "identity_set");
+    thisAgent->memoryManager->init_memory_pool(MP_identity_sets, sizeof(Identity), "identities");
 
     thisAgent->memoryManager->init_memory_pool(MP_action_record, sizeof(action_record), "action_record");
     thisAgent->memoryManager->init_memory_pool(MP_condition_record, sizeof(condition_record), "cond_record");
@@ -315,6 +314,9 @@ agent* create_soar_agent(char* agent_name)                                      
 void destroy_soar_agent(agent* delete_agent)
 {
 
+    /* Tell explainer to write out after action report before we clean up everything */
+    delete_agent->explanationMemory->after_action_report_for_exit();
+
     delete delete_agent->visualizationManager;
     delete delete_agent->explanationBasedChunker;
     delete_agent->explanationBasedChunker = NULL;
@@ -421,6 +423,8 @@ void destroy_soar_agent(agent* delete_agent)
 
 void reinitialize_agent(agent* thisAgent)
 {
+    /* Tell explainer to write out after action report before we clean up everything */
+    thisAgent->explanationMemory->after_action_report_for_init();
 
     /* Clean up explanation-based chunking, episodic and semantic memory data structures */
     epmem_reinit(thisAgent);

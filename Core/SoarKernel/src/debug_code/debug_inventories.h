@@ -29,6 +29,12 @@
 //#define DEBUG_TEST_INVENTORY
 //#define DEBUG_REFCOUNT_CHANGE_REGIONS
 
+#if (defined(DEBUG_GDS_INVENTORY) || defined(DEBUG_INSTANTIATION_INVENTORY) || defined(DEBUG_PREFERENCE_INVENTORY) || \
+     defined(DEBUG_WME_INVENTORY) || defined(DEBUG_IDSET_INVENTORY) || defined(DEBUG_RHS_SYMBOL_INVENTORY) || \
+     defined(DEBUG_RHS_FUNCTION_INVENTORY) || defined(DEBUG_ACTION_INVENTORY) || defined(DEBUG_TEST_INVENTORY))
+    #define DEBUG_SOME_INVENTORY_ON
+#endif
+
 /* These are used to record the change in a refcount across the two calls.  The
  * twoPart argument is used when there is a range you want to look at while tracking
  * another range of calls, for example the refcount changes during chunking that
@@ -54,8 +60,8 @@ void GDI_add(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_remove(agent* thisAgent, goal_dependency_set* pGDS);
 void GDI_print_and_cleanup(agent* thisAgent);
 
-void ISI_add(agent* thisAgent, uint64_t pIDSetID);
-void ISI_remove(agent* thisAgent, uint64_t pIDSetID);
+void ISI_add(agent* thisAgent, uint64_t pIdentityID);
+void ISI_remove(agent* thisAgent, uint64_t pIdentityID);
 void ISI_print_and_cleanup(agent* thisAgent);
 
 void RSI_add(agent* thisAgent, rhs_symbol pRHS);

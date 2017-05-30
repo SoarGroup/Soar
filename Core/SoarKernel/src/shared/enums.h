@@ -93,8 +93,8 @@ enum TraceMode
     DT_VALIDATE                 = 57,
     DT_OSK                      = 58,
     DT_IDSET_REFCOUNTS          = 59,
-    DT_PROPAGATE_ID_SETS        = 60,
-    DT_DEALLOCATE_ID_SETS       = 61,
+    DT_PROPAGATE                = 60,
+    DT_DEALLOCATE_IDENTITIES    = 61,
     num_trace_modes
 };
 
@@ -168,16 +168,18 @@ enum ChunkingSettings {
     SETTING_EBC_ADD_LTM_LINKS,
     SETTING_EBC_DONT_ADD_INVALID_JUSTIFICATIONS,
     SETTING_EBC_TIMERS,
+    SETTING_EBC_AFTER_ACTION_REPORT,
     num_ebc_settings
  };
 
 enum IDSet_Mapping_Type {
     IDS_join,
-    IDS_unified_with_local_singleton,
     IDS_unified_with_singleton,
     IDS_unified_child_result,
-    IDS_literalized,
+    IDS_literalized_RHS_literal,
+    IDS_literalized_LHS_literal,
     IDS_literalized_RHS_function_arg,
+    IDS_literalized_RHS_function_compare,
 };
 
 enum IDSet_Deallocation_Type {
@@ -500,8 +502,6 @@ enum SOAR_CALLBACK_TYPE             // if you change this, update soar_callback_
     WM_CHANGES_CALLBACK,
     CREATE_NEW_CONTEXT_CALLBACK,
     POP_CONTEXT_STACK_CALLBACK,
-    CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK,
-    REMOVE_ATTRIBUTE_IMPASSE_CALLBACK,
     PRODUCTION_JUST_ADDED_CALLBACK,
     PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK,
     AFTER_INTERRUPT_CALLBACK,

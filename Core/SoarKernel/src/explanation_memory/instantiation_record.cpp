@@ -19,7 +19,7 @@
 #include "working_memory.h"
 #include "visualize.h"
 
-void instantiation_record::init(agent* myAgent, instantiation* pInst)
+void instantiation_record::init(agent* myAgent, instantiation* pInst, bool isChunkInstantiation)
 {
     thisAgent               = myAgent;
     instantiationID         = pInst->i_id;
@@ -28,7 +28,6 @@ void instantiation_record::init(agent* myAgent, instantiation* pInst)
     excised_production      = NULL;
     creating_chunk          = 0;
     match_level             = pInst->match_goal_level;
-    terminal                = false;
     path_to_base            = NULL;
     lhs_identities          = NULL;
 
@@ -46,13 +45,13 @@ void instantiation_record::init(agent* myAgent, instantiation* pInst)
     action_record* new_action_record;
     for (preference* pref = pInst->preferences_generated; pref != NIL; pref = pref->inst_next)
     {
-        new_action_record = thisAgent->explanationMemory->add_result(pref);
+        new_action_record = thisAgent->explanationMemory->add_result(pref, NULL, isChunkInstantiation);
         actions->push_front(new_action_record);
         //actions->push_back(new_action_record);
     }
     for (preference* pref = pInst->preferences_cached; pref != NIL; pref = pref->inst_next)
     {
-        new_action_record = thisAgent->explanationMemory->add_result(pref);
+        new_action_record = thisAgent->explanationMemory->add_result(pref, NULL, isChunkInstantiation);
         actions->push_front(new_action_record);
         //actions->push_back(new_action_record);
     }
@@ -89,29 +88,32 @@ void instantiation_record::delete_instantiation()
     }
 }
 
-void instantiation_record::record_instantiation_contents()
+void instantiation_record::record_instantiation_contents(bool isChunkInstantiation)
 {
     dprint(DT_EXPLAIN_ADD_INST, "- Recording instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Create condition and action records */
     for (condition* cond = cached_inst->top_of_instantiated_conditions; cond != NIL; cond = cond->next)
     {
-        condition_record* lCondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, this);
-        lCondRecord->connect_to_action();
+        condition_record* lCondRecord = thisAgent->explanationMemory->add_condition(conditions, cond, this, false, isChunkInstantiation);
+        if (!isChunkInstantiation)
+        {
+            lCondRecord->connect_to_action();
+        }
     }
 }
 
 
-void instantiation_record::viz_connect_conditions()
+void instantiation_record::viz_connect_conditions(bool isChunkInstantiation)
 {
     condition_record* lCondRecord;
     for (auto it = conditions->begin(); it != conditions->end(); it++)
     {
         lCondRecord = (*it);
-        lCondRecord->viz_connect_to_action(this->match_level);
+        lCondRecord->viz_connect_to_action(this->match_level, isChunkInstantiation);
     }
 }
 
-void instantiation_record::update_instantiation_contents()
+void instantiation_record::update_instantiation_contents(bool isChunkInstantiation)
 {
     dprint(DT_EXPLAIN_UPDATE, "- Updating instantiation contents for i%u (%y)\n", cached_inst->i_id, production_name);
     /* Update condition and action records */
@@ -122,8 +124,11 @@ void instantiation_record::update_instantiation_contents()
     for (condition_record_list::iterator it = conditions->begin(); it != conditions->end() && cond != NIL; it++, cond = cond->next)
     {
         lCondRecord = (*it);
-        lCondRecord->update_condition(cond, this);
-        lCondRecord->connect_to_action();
+        lCondRecord->update_condition(cond, this, isChunkInstantiation);
+        if (!isChunkInstantiation)
+        {
+            lCondRecord->connect_to_action();
+        }
     }
 }
 
@@ -206,20 +211,13 @@ void instantiation_record::create_identity_paths(const inst_record_list* pInstPa
         lParentInst = (*it)->get_parent_inst();
         if (lParentInst && (lParentInst->get_match_level() == match_level))
         {
-            //            if ((match_level > 0) && ((*it)->get_level() < match_level))
-            //            {
             lParentInst->create_identity_paths(path_to_base);
-            //            } else {
-            //                dprint(DT_EXPLAIN_PATHS, "...not recursing because match level is 0 or condition level < match level\n");
-            //                dprint(DT_EXPLAIN_PATHS, "...%d >= %d...\n", static_cast<int64_t>(match_level), static_cast<int64_t>((*it)->get_level()));
-            //            }
-            //            path_to_base->pop_back();
             dprint(DT_EXPLAIN_PATHS, "...creating identity path for i%u (%y) at level %d\n", lParentInst->instantiationID, lParentInst->production_name, static_cast<int64_t>(match_level));
         } else {
             dprint(DT_EXPLAIN_PATHS, "...not recursing because %s: %d%s%d\n", lParentInst ? "parent inst level != match level for " : "no parent instantiation! ", (lParentInst ? static_cast<int64_t>(lParentInst->get_match_level()) : 0), (lParentInst ? " != " : " "), static_cast<int64_t>(match_level));
             condition_record* lCond = (*it);
-            dprint(DT_EXPLAIN_PATHS, "   pref: %p\n", (*it)->cached_pref);
-            dprint(DT_EXPLAIN_PATHS, "   tests: (%t ^%t %t)\n", lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
+            dprint(DT_EXPLAIN_PATHS, "   pref: %p\n", lCond ? lCond->cached_pref : NULL);
+            dprint(DT_EXPLAIN_PATHS, "   cond: (%t ^%t %t)\n", lCond->condition_tests.id, lCond->condition_tests.attr, lCond->condition_tests.value);
         }
     }
 }
@@ -244,7 +242,7 @@ id_set* instantiation_record::get_lhs_identities()
     }
     return lhs_identities;
 }
-void instantiation_record::print_for_wme_trace(bool printFooter)
+void instantiation_record::print_for_wme_trace(bool isChunk, bool printFooter)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
 
@@ -323,7 +321,7 @@ void instantiation_record::print_for_wme_trace(bool printFooter)
         }
     }
 }
-void instantiation_record::print_for_explanation_trace(bool printFooter)
+void instantiation_record::print_for_explanation_trace(bool isChunk, bool printFooter)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
 
@@ -359,8 +357,8 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                     "\nWarning:  Cannot print explanation trace for this instantiation because no underlying\n"
                     "            rule found in RETE.  Printing working memory trace instead.\n\n");
                 thisAgent->explanationMemory->print_explanation_trace = false;
-//                print_for_wme_trace(printFooter);
-                print_arch_inst_for_explanation_trace(printFooter);
+//                print_for_wme_trace(isChunk, printFooter);
+                print_arch_inst_for_explanation_trace(isChunk, printFooter);
                 thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
@@ -375,16 +373,24 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
             currentNegativeCond = NULL;
         }
         /* Print header */
-        outputManager->set_column_indent(0, 7);
-        outputManager->set_column_indent(1, 57);
-        outputManager->set_column_indent(2, 100);
-        outputManager->set_column_indent(3, 115);
+        if (isChunk)
+        {
+            outputManager->set_column_indent(0, 7);
+            outputManager->set_column_indent(1, 60);
+            outputManager->set_column_indent(2, 110);
+            outputManager->printa_sf(thisAgent, "                  %-Using variable identity IDs   %-Shortest Path to Result Instantiation\n\n");
+            outputManager->printa_sf(thisAgent, "sp {%y\n", production_name);
+        } else {
+            outputManager->set_column_indent(0, 7);
+            outputManager->set_column_indent(1, 57);
+            outputManager->set_column_indent(2, 100);
+            outputManager->set_column_indent(3, 115);
+            outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n\n",
+                instantiationID, production_name, match_level);
+            outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
+        }
         thisAgent->outputManager->set_print_test_format(true, false);
-        outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
-            instantiationID, production_name, match_level);
-        thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
-        outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
-
+        thisAgent->outputManager->set_print_indents("");
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
             lCond = (*it);
@@ -412,19 +418,23 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
                 lCond->condition_tests.id, ((lCond->type == NEGATIVE_CONDITION) ? " -" : " "),
                 lCond->condition_tests.attr, lCond->condition_tests.value,
                 lCond->test_for_acceptable_preference ? " +" : "");
-
-            bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
-            outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
-            if (lCond->parent_instantiation)
+            if (isChunk)
             {
-                outputManager->printa_sf(thisAgent, "%-i %u (%y)%-",
-                    (lCond->parent_instantiation->instantiationID),
-                    (lCond->parent_instantiation->production_name));
-            } else if (lCond->type == POSITIVE_CONDITION)
-            {
-                outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                thisAgent->explanationMemory->print_path_to_base(lCond->get_path_to_base(), true);
             } else {
-                outputManager->printa_sf(thisAgent, "%-N/A%-");
+                bool isSuper = (match_level > 0) && (lCond->wme_level_at_firing < match_level);
+                outputManager->printa_sf(thisAgent, "%s", (isSuper ? "    Yes" : "    No"));
+                if (lCond->parent_instantiation)
+                {
+                    outputManager->printa_sf(thisAgent, "%-i %u (%y)%-",
+                        (lCond->parent_instantiation->instantiationID),
+                        (lCond->parent_instantiation->production_name));
+                } else if (lCond->type == POSITIVE_CONDITION)
+                {
+                    outputManager->printa_sf(thisAgent, isSuper ? "%-Higher-level Problem Space%-" : "%-Soar Architecture%-");
+                } else {
+                    outputManager->printa_sf(thisAgent, "%-N/A%-");
+                }
             }
             if (currentNegativeCond)
             {
@@ -448,13 +458,22 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         {
             outputManager->printa(thisAgent, "     }\n");
         }
+
         outputManager->printa(thisAgent, "   -->\n");
         thisAgent->explanationMemory->print_instantiation_actions(actions, originalProduction, rhs);
+
+        thisAgent->explanationMemory->print_path_to_base(path_to_base, false, "\nThis instantiation produced results in a superstate.", "\nShortest path from this instantiation to an instantiation that produced a result: ");
         outputManager->printa(thisAgent, "\n");
-        thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(instantiationID);
-        if (printFooter) {
-            thisAgent->explanationMemory->print_footer();
+        if (!isChunk)
+        {
+            thisAgent->explanationMemory->current_discussed_chunk->identity_analysis.print_instantiation_mappings(instantiationID);
         }
+        thisAgent->outputManager->clear_print_indents();
+        thisAgent->outputManager->clear_print_test_format();
+//        if (printFooter)
+//        {
+//            thisAgent->explanationMemory->print_footer();
+//        }
 
         if (original_productionID && originalProduction->p_node)
         {
@@ -462,7 +481,7 @@ void instantiation_record::print_for_explanation_trace(bool printFooter)
         }
     }
 }
-void instantiation_record::print_arch_inst_for_explanation_trace(bool printFooter)
+void instantiation_record::print_arch_inst_for_explanation_trace(bool isChunk, bool printFooter)
 {
 
     Output_Manager* outputManager = thisAgent->outputManager;
@@ -488,7 +507,7 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool printFoote
         outputManager->printa_sf(thisAgent, "Explanation trace of instantiation # %u %-(match of rule %y at level %d)\n",
             instantiationID, production_name, match_level);
         thisAgent->explanationMemory->print_path_to_base(path_to_base, false, " (produced chunk result)", "- Shortest path to a result: ");
-        outputManager->printa_sf(thisAgent, "%- %-Identities instead of variables %-Operational %-Creator\n\n");
+        outputManager->printa_sf(thisAgent, "\n%- %-Identities instead of variables %-Operational %-Creator\n\n");
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -545,14 +564,14 @@ void instantiation_record::print_arch_inst_for_explanation_trace(bool printFoote
     }
 }
 
-void instantiation_record::viz_simple_instantiation()
+void instantiation_record::viz_simple_instantiation(visObjectType objectType)
 {
-    thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_simple_inst);
-    thisAgent->visualizationManager->viz_object_end(viz_simple_inst);
+    thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
+    thisAgent->visualizationManager->viz_object_end(objectType);
 }
 
 
-void instantiation_record::viz_wm_instantiation()
+void instantiation_record::viz_wm_instantiation(visObjectType objectType)
 {
 
     Output_Manager* outputManager = thisAgent->outputManager;
@@ -572,7 +591,7 @@ void instantiation_record::viz_wm_instantiation()
         action* rhs;
 
         thisAgent->outputManager->set_print_test_format(false, true);
-        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -606,11 +625,11 @@ void instantiation_record::viz_wm_instantiation()
         }
         thisAgent->visualizationManager->viz_seperator();
         action_record::viz_action_list(thisAgent, actions, thisAgent->explanationMemory->get_production(original_productionID), rhs, excised_production);
-        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(objectType);
     }
 }
 
-void instantiation_record::viz_et_instantiation()
+void instantiation_record::viz_et_instantiation(visObjectType objectType)
 {
     Output_Manager* outputManager = thisAgent->outputManager;
     GraphViz_Visualizer* visualizer = thisAgent->visualizationManager;
@@ -641,7 +660,7 @@ void instantiation_record::viz_et_instantiation()
                 assert(rhs);
             } else {
                 thisAgent->explanationMemory->print_explanation_trace = false;
-                viz_wm_instantiation();
+                viz_wm_instantiation(objectType);
                 thisAgent->explanationMemory->print_explanation_trace = true;
                 return;
             }
@@ -657,7 +676,7 @@ void instantiation_record::viz_et_instantiation()
         }
         outputManager->set_print_test_format(true, false);
 
-        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, viz_inst_record);
+        thisAgent->visualizationManager->viz_object_start(production_name, instantiationID, objectType);
 
         for (condition_record_list::iterator it = conditions->begin(); it != conditions->end(); it++)
         {
@@ -681,7 +700,15 @@ void instantiation_record::viz_et_instantiation()
             } else {
                 print_cond = current_cond;
             }
-            lCond->visualize_for_explanation_trace(print_cond, match_level);
+
+            /* Visualize it */
+            if (print_cond)
+            {
+                lCond->visualize_for_explanation_trace(print_cond, match_level);
+            } else {
+                /* For deep copy */
+                lCond->visualize_for_chunk();
+            }
             if (currentNegativeCond)
             {
                 currentNegativeCond = currentNegativeCond->next;
@@ -692,7 +719,7 @@ void instantiation_record::viz_et_instantiation()
                     lInNegativeConditions = false;
                 }
             } else {
-                current_cond = current_cond->next;
+                if (current_cond) current_cond = current_cond->next;
             }
             if (current_cond && (current_cond->type == CONJUNCTIVE_NEGATION_CONDITION) && !currentNegativeCond)
             {
@@ -713,7 +740,7 @@ void instantiation_record::viz_et_instantiation()
         {
             deallocate_condition_list(thisAgent, top);
         }
-        thisAgent->visualizationManager->viz_object_end(viz_inst_record);
+        thisAgent->visualizationManager->viz_object_end(objectType);
     }
 }
 
@@ -721,13 +748,13 @@ void instantiation_record::visualize()
 {
     if (thisAgent->visualizationManager->settings->rule_format->get_value() == viz_name)
     {
-        viz_simple_instantiation();
+        viz_simple_instantiation(viz_simple_inst);
     } else {
         if (thisAgent->explanationMemory->print_explanation_trace)
         {
-            viz_et_instantiation();
+            viz_et_instantiation(viz_inst_record);
         } else {
-            viz_wm_instantiation();
+            viz_wm_instantiation(viz_inst_record);
         }
     }
 }

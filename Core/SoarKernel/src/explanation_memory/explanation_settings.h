@@ -29,10 +29,12 @@ class Explainer_Parameters: public soar_module::param_container
         soar_module::boolean_param* explanation_trace;
         soar_module::boolean_param* wm_trace;
         soar_module::boolean_param* formation;
-        soar_module::boolean_param* constraints;
-        soar_module::boolean_param* identity;
+        soar_module::boolean_param* constraint_analysis;
+        soar_module::boolean_param* identity_analysis;
         soar_module::boolean_param* stats;
         soar_module::boolean_param* only_print_chunk_identities;
+
+        soar_module::boolean_param* after_action_report;
 
         soar_module::boolean_param* help_cmd;
         soar_module::boolean_param* qhelp_cmd;

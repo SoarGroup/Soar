@@ -1003,9 +1003,7 @@ void rl_perform_update(agent* thisAgent, double op_value, bool op_rl, Symbol* go
 
                     // Change value of rule
                     Symbol* lSym = rhs_value_to_symbol(prod->action_list->referent);
-                    thisAgent->symbolManager->symbol_remove_ref(&lSym);
-
-                    // No refcount needed here because make_float_constant will increase
+                    deallocate_rhs_value(thisAgent, prod->action_list->referent);
                     prod->action_list->referent = allocate_rhs_value_for_symbol_no_refcount(thisAgent, thisAgent->symbolManager->make_float_constant(new_combined), 0);
 
                     prod->rl_update_count += 1;

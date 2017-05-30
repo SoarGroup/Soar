@@ -25,7 +25,7 @@ class condition_record
         condition_record() {};
         ~condition_record() {};
 
-        void init(agent* myAgent, condition* pCond, uint64_t pCondID);
+        void init(agent* myAgent, condition* pCond, uint64_t pCondID, instantiation_record* pInst, bool isChunkInstantiation = false);
         void clean_up();
 
         uint64_t                        get_conditionID()   { return conditionID; };
@@ -37,7 +37,7 @@ class condition_record
         wme*                            get_cached_wme()    { return cached_wme; };
 
         void        connect_to_action();
-        void        viz_connect_to_action(goal_stack_level pMatchLevel);
+        void        viz_connect_to_action(goal_stack_level pMatchLevel, bool isChunkInstantiation = false);
         void        set_path_to_base(inst_record_list* pPath)
                     {   assert(pPath);
                         if (!path_to_base) path_to_base = new inst_record_list();
@@ -45,7 +45,7 @@ class condition_record
                         (*path_to_base) = (*pPath); }
         void        set_instantiation(instantiation_record* pInst) { my_instantiation = pInst; };
         void        set_matched_wme_for_cond(condition* pCond);
-        void        update_condition(condition* pCond, instantiation_record* pInst);
+        void        update_condition(condition* pCond, instantiation_record* pInst, bool isChunkInstantiation = false);
 
         void        viz_combo_test(test pTest, test pTestIdentity, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printAcceptable, bool isSuper);
         void        viz_matched_test(test pTest, Symbol* pMatchedWME, uint64_t pNode_id, WME_Field pField, bool isNegative, bool printIdentity, bool printAcceptable, bool isSuper);

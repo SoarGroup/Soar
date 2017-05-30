@@ -163,7 +163,7 @@ class Output_Manager
         void debug_print_header(TraceMode mode, Print_Header_Type whichHeaders, const char* format, ...);
 
         void test_to_string(test t, std::string &destString, bool show_equality = false);
-        void identity_to_string(agent* thisAgent, uint64_t pID, const IdentitySet* pIDSet, std::string &destString);
+        void identity_to_string(agent* thisAgent, uint64_t pID, const Identity* pIdentity, std::string &destString);
         const char* phase_to_string(top_level_phase pPhase);
         void rhs_value_to_string(rhs_value rv, std::string &destString, bool rereadable = true, struct token_struct* tok = NULL, wme* w = NULL, bool pEmptyStringForNullIdentity = false);
         void rhs_value_to_cstring(rhs_value rv, char* dest, size_t dest_size);
@@ -197,16 +197,16 @@ class Output_Manager
                 }
             }
         }
-        void set_default_print_test_format(bool pActual, bool pIdentity)
+        void set_default_print_test_format(bool pActual, bool pPrintIdentity)
         {
             m_print_actual = pActual;
-            m_print_identity = pIdentity;
+            m_print_identity = pPrintIdentity;
         }
 
-        void set_print_test_format(bool pActual, bool pIdentity)
+        void set_print_test_format(bool pActual, bool pPrintIdentity)
         {
             m_print_actual_effective = pActual;
-            m_print_identity_effective = pIdentity;
+            m_print_identity_effective = pPrintIdentity;
         }
         void clear_print_test_format()
         {
@@ -286,7 +286,7 @@ inline const char* field_to_string(WME_Field f)
  *       %r   rhs value
  *       %y   symbol
  *       %t   test
- *       %g   variablization identity of test
+ *       %g   identity of test
  *       %h   like %g but with second argument with symbol to use if STI
  *       %w   wme
  *
@@ -314,7 +314,7 @@ inline const char* field_to_string(WME_Field f)
  *       %d   int64_t
  *       %e   fresh line (adds newline if not at column 1)
  *       %f   double
- *       %g   variablization identity of test
+ *       %g   identity of test
  *       %h   like %g but with second argument containing symbol to use if STI
  *       %l   condition
  *       %n   funcall list

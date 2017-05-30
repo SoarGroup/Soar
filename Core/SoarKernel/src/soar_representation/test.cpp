@@ -11,7 +11,7 @@
 #include "condition.h"
 #include "dprint.h"
 #include "ebc.h"
-#include "ebc_identity_set.h"
+#include "ebc_identity.h"
 #include "ebc_repair.h"
 #include "explanation_memory.h"
 #include "output_manager.h"
@@ -54,7 +54,7 @@ cons* copy_test_list(agent* thisAgent, cons* c, test* pEq_test, bool pUnify_vari
 /* ----------------------------------------------------------------
    Takes a test and returns a new copy of it.
 ---------------------------------------------------------------- */
-inline bool in_null_identity_set(test t) { if (t->identity_set) return t->identity_set->literalized(); return true; };
+inline bool in_null_identity_set(test t) { if (t->identity) return t->identity->literalized(); return true; };
 
 test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStripLiteralConjuncts, bool remove_state_impasse, bool* removed_goal, bool* removed_impasse)
 {
@@ -90,20 +90,20 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
                 new_ct = make_test(thisAgent, t->eq_test->data.referent, t->eq_test->type);
                 if (pUseUnifiedIdentitySet)
                 {
-                    if (t->eq_test->identity_set)
+                    if (t->eq_test->identity)
                     {
-                        new_ct->identity     = t->eq_test->identity_set->get_identity();
-                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set->super_join);
-                        new_ct->clone_identity = t->eq_test->identity_set->get_clone_identity();
+                        new_ct->inst_identity     = t->eq_test->identity->get_identity();
+                        set_test_identity(thisAgent, new_ct, t->eq_test->identity->joined_identity);
+                        new_ct->chunk_inst_identity = t->eq_test->identity->get_clone_identity();
                     } else {
-                        new_ct->identity = t->eq_test->identity;
-                        set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
-                        new_ct->clone_identity = t->eq_test->clone_identity;
+                        new_ct->inst_identity = t->eq_test->inst_identity;
+                        set_test_identity(thisAgent, new_ct, t->eq_test->identity);
+                        new_ct->chunk_inst_identity = t->eq_test->chunk_inst_identity;
                     }
                 } else {
-                    new_ct->identity = t->eq_test->identity;
-                    set_test_identity_set(thisAgent, new_ct, t->eq_test->identity_set);
-                    new_ct->clone_identity = t->eq_test->clone_identity;
+                    new_ct->inst_identity = t->eq_test->inst_identity;
+                    set_test_identity(thisAgent, new_ct, t->eq_test->identity);
+                    new_ct->chunk_inst_identity = t->eq_test->chunk_inst_identity;
                 }
             }
             else if (remove_state_impasse)
@@ -131,19 +131,19 @@ test copy_test(agent* thisAgent, test t, bool pUseUnifiedIdentitySet, bool pStri
             break;
         default:
             new_ct = make_test(thisAgent, t->data.referent, t->type);
-            new_ct->identity = t->identity;
-            new_ct->clone_identity = t->clone_identity;
+            new_ct->inst_identity = t->inst_identity;
+            new_ct->chunk_inst_identity = t->chunk_inst_identity;
             if (t->type == EQUALITY_TEST)
             {
                 new_ct->eq_test = new_ct;
             }
-            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity_set)
+            if (pUseUnifiedIdentitySet && thisAgent->explanationBasedChunker->ebc_settings[SETTING_EBC_LEARNING_ON] && new_ct->identity)
             {
-                new_ct->identity        = get_joined_identity_id(new_ct->identity_set);
-                new_ct->clone_identity  = get_joined_identity_clone_id(new_ct->identity_set);
-                set_test_identity_set(thisAgent, new_ct, get_joined_identity_set(new_ct->identity_set));
+                new_ct->inst_identity        = get_joined_identity_id(new_ct->identity);
+                new_ct->chunk_inst_identity  = get_joined_identity_chunk_inst_id(new_ct->identity);
+                set_test_identity(thisAgent, new_ct, get_joined_identity(new_ct->identity));
             } else {
-                set_test_identity_set(thisAgent, new_ct, t->identity_set);
+                set_test_identity(thisAgent, new_ct, t->identity);
             }
 
             break;
@@ -199,7 +199,7 @@ void deallocate_test(agent* thisAgent, test t)
             break;
     }
 
-    if (t->identity_set) IdentitySet_remove_ref(thisAgent, t->identity_set);
+    if (t->identity) IdentitySet_remove_ref(thisAgent, t->identity);
 
     thisAgent->memoryManager->free_with_pool(MP_test, t);
 }
@@ -255,10 +255,11 @@ void merge_disjunction_tests(agent* thisAgent, test destination, test new_test)
         ++final_count;
     }
     destination->data.disjunction_list = c_first;
-    thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
-    thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
-    thisAgent->explanationMemory->increment_stat_merged_disjunctions();
-
+    #ifdef EBC_DETAILED_STATISTICS
+        thisAgent->explanationMemory->increment_stat_merged_disjunction_values(final_count*2);
+        thisAgent->explanationMemory->increment_stat_eliminated_disjunction_values((new_count - final_count) + (dest_count - final_count));
+        thisAgent->explanationMemory->increment_stat_merged_disjunctions();
+    #endif
 }
 
 bool add_test_merge_disjunctions(agent* thisAgent, test* dest_test_address, test new_test)
@@ -384,6 +385,10 @@ void add_test_if_not_already_there(agent* thisAgent, test* t, test add_me, bool 
                 deallocate_test(thisAgent, add_me);
                 return;
             }
+
+    #ifdef EBC_DETAILED_STATISTICS
+    if (thisAgent->explanationBasedChunker->is_learning_chunk()) thisAgent->explanationMemory->increment_stat_operational_constraints();
+    #endif
 
     add_test(thisAgent, t, add_me, merge_disjunctions);
 }
@@ -552,7 +557,7 @@ bool tests_identical(test t1, test t2, bool considerIdentity)
             }
             if (considerIdentity)
             {
-                return (t1->identity_set->super_join == t2->identity_set->super_join);
+                return (t1->identity->joined_identity == t2->identity->joined_identity);
             }
             return true;
         }
@@ -757,7 +762,7 @@ void add_bound_variables_in_test(agent* thisAgent, test t, tc_number tc, cons** 
     return;
 }
 
-void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pIdentity,  tc_number tc, matched_symbol_list* var_list)
+void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pMatchedSym, uint64_t pInstIdentity,  tc_number tc, matched_symbol_list* var_list)
 {
     Symbol* referent;
 
@@ -771,7 +776,7 @@ void add_bound_variable_with_identity(agent* thisAgent, Symbol* pSym, Symbol* pM
                 chunk_element* lNewUngroundedSym;
                 thisAgent->memoryManager->allocate_with_pool(MP_chunk_element, &lNewUngroundedSym);
                 lNewUngroundedSym->variable_sym = pSym;
-                lNewUngroundedSym->identity = pIdentity;
+                lNewUngroundedSym->inst_identity = pInstIdentity;
                 lNewUngroundedSym->instantiated_sym = pMatchedSym ? pMatchedSym : pSym;
                 var_list->push_back(lNewUngroundedSym);
             }
@@ -966,8 +971,8 @@ test make_test(agent* thisAgent, Symbol* sym, TestType test_type)
     thisAgent->memoryManager->allocate_with_pool(MP_test, &new_ct);
     new_ct->type = test_type;
     new_ct->data.referent = sym;
-    new_ct->identity = new_ct->clone_identity = LITERAL_VALUE;
-    new_ct->identity_set = NULL_IDENTITY_SET;
+    new_ct->inst_identity = new_ct->chunk_inst_identity = LITERAL_VALUE;
+    new_ct->identity = NULL_IDENTITY_SET;
     new_ct->eq_test = (test_type == EQUALITY_TEST) ? new_ct : NULL;
     if (sym) thisAgent->symbolManager->symbol_add_ref(sym);
 

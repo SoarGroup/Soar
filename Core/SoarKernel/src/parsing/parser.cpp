@@ -1566,7 +1566,11 @@ rhs_value parse_rhs_value(agent* thisAgent, Lexer* lexer)
     {
         Symbol* new_sym = make_symbol_for_lexeme(thisAgent, &(lexer->current_lexeme), false);
         rv = allocate_rhs_value_for_symbol_no_refcount(thisAgent, new_sym, 0);
-        if (!lexer->get_lexeme()) return NULL;
+        if (!lexer->get_lexeme())
+        {
+            deallocate_rhs_value(thisAgent, rv);
+            return NULL;
+        }
         return rv;
     }
     thisAgent->outputManager->printa_sf(thisAgent,  "Illegal value for RHS value\n");
@@ -1997,7 +2001,7 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
     thisAgent->outputManager->rhs_value_to_string(attr, attr_str, false);
 
     all_actions = NIL;
-
+    rhs_value lNewRHSValue;
     /*  allow dot notation "." in RHS attribute path  10/15/98 KJC */
     while (lexer->current_lexeme.type == PERIOD_LEXEME)
     {
@@ -2014,12 +2018,13 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
         if (attr_str != "operator")
         {
-            new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr,
-                          allocate_rhs_value_for_symbol(thisAgent, new_var, 0));
+            lNewRHSValue = allocate_rhs_value_for_symbol(thisAgent, new_var, 0);
+            new_actions = parse_preferences_soar8_non_operator(thisAgent, lexer, id, attr, lNewRHSValue);
         }
         else
         {
-            new_actions = parse_preferences(thisAgent, lexer, id, attr, allocate_rhs_value_for_symbol(thisAgent, new_var, 0));
+            lNewRHSValue = allocate_rhs_value_for_symbol(thisAgent, new_var, 0);
+            new_actions = parse_preferences(thisAgent, lexer, id, attr, lNewRHSValue);
         }
 
         for (last = new_actions; last->next != NIL; last = last->next)
@@ -2030,7 +2035,8 @@ action* parse_attr_value_make(agent* thisAgent, Lexer* lexer, Symbol* id)
 
         /* Remove references for dummy var used to represent dot notation links */
         deallocate_rhs_value(thisAgent, attr);
-        thisAgent->symbolManager->symbol_remove_ref(&new_var);
+        deallocate_rhs_value(thisAgent, lNewRHSValue);
+//        thisAgent->symbolManager->symbol_remove_ref(&new_var);
 
         /* if there was a "." then there must be another attribute
            set id for next action and get the next attribute */

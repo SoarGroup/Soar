@@ -1,0 +1,20 @@
+sp {Impasse__Operator_Tie*elaborate*superstate-set
+   (state <s> ^superstate <ss>)
+-->
+   (<s> ^superstate-set <ss>)
+}
+
+sp {Impasse__Operator_Tie*elaborate*superstate-set2
+   (state <s> ^superstate.superstate-set <ss>)
+-->
+   (<s> ^superstate-set <ss>)
+}
+
+#sp {select*pour
+#   (state <s> ^name selection
+#              ^operator <o> +)
+#  (<o> ^name evaluate-operator
+#        ^superoperator.name pour)
+#-->
+#   (<s> ^operator <o> >)
+#}

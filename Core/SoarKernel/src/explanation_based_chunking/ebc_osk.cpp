@@ -165,3 +165,8 @@ void Explanation_Based_Chunker::update_proposal_OSK(slot* s, preference* winner)
         copy_proposal_OSK(winner->inst, s->OSK_prefs);
     }
 }
+
+void Explanation_Based_Chunker::generate_relevant_OSK(preference* winner, preference* candidates)
+{
+
+}

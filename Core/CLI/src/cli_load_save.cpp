@@ -764,6 +764,11 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         return SetError("Failed to open file for reading: " + path);
     }
 
+    if (m_first_sourced_file.empty() && (filename != "settings.soar") && (filename != "settings_mazin.soar"))
+    {
+        m_first_sourced_file = filename;
+    }
+
     // obtain file size:
     fseek(pFile, 0, SEEK_END);
     long lSize = ftell(pFile);
