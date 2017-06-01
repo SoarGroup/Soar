@@ -334,6 +334,14 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-update-policy", base_update->get_string(), 55).c_str(), "stable, naive, incremental");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-incremental-threshes", base_incremental_threshes->get_string(), 55).c_str(), "integer > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("thresh", thresh->get_string(), 55).c_str(), "integer >= 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("base-inhibition", base_inhibition->get_string(), 55).c_str(), "on, off");
+    outputManager->printa(thisAgent, "------------ Experimental Spreading Activation --------\n");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading", spreading->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-limit", spreading_limit->get_string(), 55).c_str(), "integer > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-depth-limit", spreading_depth_limit->get_string(), 55).c_str(), "integer > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-baseline", spreading_baseline->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-continue-probability", spreading_continue_probability->get_string(), 55).c_str(), "1 > decimal > 0");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-loop-avoidance", spreading_loop_avoidance->get_string(), 55).c_str(), "on, off");
     outputManager->printa(thisAgent, "------------- Database Optimization Settings ----------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("lazy-commit", lazy_commit->get_string(), 55).c_str(), "Delay writing semantic store until exit");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("optimization", opt->get_string(), 55).c_str(), "safety, performance");
