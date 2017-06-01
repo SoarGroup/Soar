@@ -58,7 +58,7 @@ for (int i=0; i<names.size(); ++i) {
       stage('Test')
       {
           if (isUnix()) {
-            sh 'pushd out; ./UnitTests -e PRIMS_Sanity1; popd'
+            sh 'pushd out; ./UnitTests -e PRIMS_Sanity1 -f testSmemArithmetic; popd'
             junit 'out/TestResults.xml'
           } else {
             bat 'out\\UnitTests.exe -e testCommandToFile -e testHamilton -e testSmemArithmetic -e PRIMS_Sanity1'
