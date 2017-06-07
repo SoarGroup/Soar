@@ -1108,11 +1108,11 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_3->start();
                 ////////////////////////////////////////////////////////////////////////////
-                /*if (updated_candidates.find(*candidate) == updated_candidates.end())
+                if (updated_candidates.find(*candidate) == updated_candidates.end())
                 {//If we have yet to update the spread to this candidate this cycle, we need to reset it to 0.
                     spread = 0;
                     updated_candidates.insert(*candidate);
-                }*/
+                }
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_3->stop();
                 ////////////////////////////////////////////////////////////////////////////
