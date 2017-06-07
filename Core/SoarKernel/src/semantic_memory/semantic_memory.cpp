@@ -722,6 +722,15 @@ void SMem_Manager::reinit()
     }
 }
 
+bool SMem_Manager::edge_updating_on()
+{
+    if (thisAgent->SMem->settings->spreading_edge_updating->get_value() == on)
+    {
+        return true;
+    }
+    return false;
+}
+
 SMem_Manager::SMem_Manager(agent* myAgent)
 {
     thisAgent = myAgent;

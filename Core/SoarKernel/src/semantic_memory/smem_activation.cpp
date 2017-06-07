@@ -1066,7 +1066,7 @@ void SMem_Manager::calc_spread(std::set<uint64_t>* current_candidates, bool do_m
         {
             //First, I need to get the existing info for this lti_id.
             bool already_in_spread_table = false;
-statistics->stores->set_value(statistics->stores->get_value() + 1);
+
             bool addition = (((int)(calc_current_spread->column_int(3))) == 1);
             if (addition)
             {
@@ -1108,11 +1108,11 @@ statistics->stores->set_value(statistics->stores->get_value() + 1);
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_3->start();
                 ////////////////////////////////////////////////////////////////////////////
-                if (updated_candidates.find(*candidate) == updated_candidates.end())
+                /*if (updated_candidates.find(*candidate) == updated_candidates.end())
                 {//If we have yet to update the spread to this candidate this cycle, we need to reset it to 0.
                     spread = 0;
                     updated_candidates.insert(*candidate);
-                }
+                }*/
                 ////////////////////////////////////////////////////////////////////////////
                 timers->spreading_7_2_3->stop();
                 ////////////////////////////////////////////////////////////////////////////

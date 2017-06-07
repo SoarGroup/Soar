@@ -259,7 +259,15 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
         {
             return SetError("Invalid setting for SMem parameter.");
         }
-
+        if (!strcmp(pArg1->c_str(), "spreading") && thisAgent->SMem->settings->activation_mode->get_value() != smem_param_container::act_base)
+        {
+            return SetError("Spreading activation cannot be turned on until the 'activation-mode' is also set to base-level.\n"
+                    "Run 'smem --set activation-mode base-level' first if you intend to use spreading.");
+        }
+        if (!strcmp(pArg1->c_str(), "activation-mode") && thisAgent->SMem->settings->activation_mode->get_value() == smem_param_container::act_base && thisAgent->SMem->settings->spreading->get_value() == on)
+        {
+            return SetError("activation-mode cannot be changed while spreading activation is on.");
+        }
         if (thisAgent->SMem->settings->spreading->get_value() == on
                 && !(
                         strcmp(pArg1->c_str(), "spreading-baseline") &&

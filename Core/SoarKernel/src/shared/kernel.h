@@ -62,6 +62,10 @@
 //    #define DETAILED_TIMING_STATS
 #endif
 
+/* Spreading Activation Switch: Spreading can incur some small cost even when off
+ * because of record-keeping in case it is later turned on. To reduce this cost,
+ * spreading can be "more disabled" by eliminating that record-keeping.*/
+#define SPREADING_ACTIVATION_ENABLED
 
 /* --------------- Compiler directives for debugging ---------------------- *
  *   Note: #defines that enable trace messages pf SQL processing and errors   *

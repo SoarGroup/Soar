@@ -590,8 +590,9 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             temp_el->num_references += num_references;
             thisAgent->WM->wma_touched_elements->insert(w);
         }
+#ifdef SPREADING_ACTIVATION_ENABLED
         thisAgent->SMem->timers->spreading_wma_1->start();
-        if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
+        if (thisAgent->SMem->edge_updating_on() && w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
             if (w->value->id && w->value->id->LTI_ID)
             {
@@ -618,6 +619,7 @@ void wma_activate_wme(agent* thisAgent, wme* w, wma_reference num_references, wm
             }
         }
         thisAgent->SMem->timers->spreading_wma_1->stop();
+#endif
     }
     // i-supported, non-architectural WME
     else if (!o_only && (w->preference) && (w->preference->reference_count))

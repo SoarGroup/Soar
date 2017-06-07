@@ -136,6 +136,10 @@ smem_param_container::smem_param_container(agent* new_agent): soar_module::param
     // inhibition for use with base-level activation. defaults to off.
     base_inhibition = new soar_module::boolean_param("base-inhibition", off, new soar_module::f_predicate<boolean>());
     add(base_inhibition);
+
+    // using working memory activation for wmes that are LTI-to-LTI edges instanced in working memory to increase edge weight in SMEM
+    spreading_edge_updating = new soar_module::boolean_param("spreading-edge-updating", off, new soar_module::f_predicate<boolean>());
+    add(spreading_edge_updating);
 }
 
 //
@@ -342,6 +346,7 @@ void smem_param_container::print_settings(agent* thisAgent)
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-baseline", spreading_baseline->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-continue-probability", spreading_continue_probability->get_string(), 55).c_str(), "1 > decimal > 0");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-loop-avoidance", spreading_loop_avoidance->get_string(), 55).c_str(), "on, off");
+    outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("spreading-edge-updating", spreading_edge_updating->get_string(), 55).c_str(), "on, off");
     outputManager->printa(thisAgent, "------------- Database Optimization Settings ----------\n");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("lazy-commit", lazy_commit->get_string(), 55).c_str(), "Delay writing semantic store until exit");
     outputManager->printa_sf(thisAgent, "%s   %-%s\n", concatJustified("optimization", opt->get_string(), 55).c_str(), "safety, performance");

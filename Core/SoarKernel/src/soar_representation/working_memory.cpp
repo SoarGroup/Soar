@@ -268,6 +268,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     for (c = thisAgent->wmes_to_add; c != NIL; c = c->rest)
     {
         w = (wme_struct*)(c->first);
+#ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {//We attempt to keep track of ltis currently in wmem.
             if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) == thisAgent->SMem->smem_in_wmem->end())
@@ -285,6 +286,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] = (*(thisAgent->SMem->smem_in_wmem))[w->id->id->LTI_ID] + 1;
             }
         }
+#endif
         dprint(DT_WME_CHANGES, "...adding %w to rete\n", static_cast<wme_struct*>(c->first));
         add_wme_to_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }
@@ -292,6 +294,7 @@ void do_buffered_wm_changes(agent* thisAgent)
     for (c = thisAgent->wmes_to_remove; c != NIL; c = c->rest)
     {
         w = (wme_struct*)(c->first);
+#ifdef SPREADING_ACTIVATION_ENABLED
         if (w->id->symbol_type == IDENTIFIER_SYMBOL_TYPE && w->id->id->LTI_ID)
         {
             if (thisAgent->SMem->smem_in_wmem->find(w->id->id->LTI_ID) != thisAgent->SMem->smem_in_wmem->end())
@@ -314,6 +317,7 @@ void do_buffered_wm_changes(agent* thisAgent)
                 }
             }
         }
+#endif
         dprint(DT_WME_CHANGES, "...removing %w from rete.\n", static_cast<wme_struct*>(c->first));
         remove_wme_from_rete(thisAgent, static_cast<wme_struct*>(c->first));
     }

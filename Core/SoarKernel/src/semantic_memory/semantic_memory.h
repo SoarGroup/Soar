@@ -95,6 +95,10 @@ class SMem_Manager
         void        add_to_invalidate_from_lti_table(uint64_t invalid_parent);
         void        batch_invalidate_from_lti();
 
+        /* I need access to a setting from within WMA, so I use a function to do it instead of making settings public.*/
+
+        bool        edge_updating_on();
+
         smem_timer_container*           timers; /* The following remains public because used in run_soar.cpp */
         std::map<uint64_t, uint64_t>* smem_in_wmem;
         smem_wma_map* smem_wmas;
