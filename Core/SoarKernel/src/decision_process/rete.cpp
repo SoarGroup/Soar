@@ -833,7 +833,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
     goal_stack_level lowest_level_so_far;
     token* tok;
 
-    dprint(DT_WATERFALL, "Match goal for assertion: %y", msc->p_node->b.p.prod->name);
+    //dprint(DT_WATERFALL, "Match goal for assertion: %y", msc->p_node->b.p.prod->name);
 
     lowest_goal_wme = NIL;
     lowest_level_so_far = -1;
@@ -892,7 +892,7 @@ Symbol* find_goal_for_match_set_change_assertion(agent* thisAgent, ms_change* ms
 Symbol* find_goal_for_match_set_change_retraction(ms_change* msc)
 {
 
-    dprint(DT_WATERFALL, "Match goal level for retraction: %y", msc->inst->prod_name);
+    //dprint(DT_WATERFALL, "Match goal level for retraction: %y", msc->inst->prod_name);
 
     if (msc->inst->match_goal)
     {
@@ -1646,8 +1646,6 @@ void remove_wme_from_rete(agent* thisAgent, wme* w)
         }
     }
 
-    dprint(DT_RETE_PNODE_ADD, "Removing WME from RETE: %w\n", w);
-
     /* --- remove w from all_wmes_in_rete --- */
     remove_from_dll(thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
     thisAgent->num_wmes_in_rete--;
@@ -1854,7 +1852,6 @@ void update_node_with_matches_from_above(agent* thisAgent, rete_node* child)
     right_mem* rm;
     token* tok;
 
-    //dprint(DT_RETE_PNODE_ADD, "update_node_with_matches_from_above called with child node %d\n", child->node_id);
     if (bnode_is_bottom_of_split_mp(child->node_type))
     {
         char msg[BUFFER_MSG_SIZE];
@@ -2551,7 +2548,6 @@ bool find_var_location(Symbol* var, rete_node_level current_depth,
     dummy = var->var->rete_binding_locations->first;
     result->levels_up = current_depth - dummy_to_varloc_depth(dummy);
     result->field_num = dummy_to_varloc_field_num(dummy);
-    //dprint(DT_DEBUG, "find_var_location returning %d %d", result->levels_up, result->field_num);
     return true;
 }
 
@@ -2732,7 +2728,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
     if (varnames_is_one_var(vn))
     {
         temp = varnames_to_one_var(vn);
-        dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
+        //dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from one_var.\n", temp->var->name);
         New = make_test(thisAgent, temp, EQUALITY_TEST);
         add_test(thisAgent, t, New);
     }
@@ -2741,7 +2737,7 @@ void add_varnames_to_test(agent* thisAgent, varnames* vn, test* t)
         for (c = varnames_to_var_list(vn); c != NIL; c = c->rest)
         {
             temp = static_cast<Symbol*>(c->first);
-            dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
+            //dprint(DT_ADD_EXPLANATION_TRACE, "add_varnames_to_test adding varname %s from varlist.\n", temp->var->name);
             New =  make_test(thisAgent, temp, EQUALITY_TEST);
             add_test(thisAgent, t, New);
         }
@@ -3763,10 +3759,6 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
     action* a;
     byte production_addition_result;
 
-    dprint(DT_RETE_PNODE_ADD, "add_production_to_rete called for production %y:\n", p->name);
-    dprint(DT_RETE_PNODE_ADD, "instantiation:\n%7", refracted_inst);
-    dprint(DT_RETE_PNODE_ADD, "lhs:\n%1", lhs_top);
-
     /* --- build the network for all the conditions --- */
     build_network_for_condition_list(thisAgent, lhs_top, 1, thisAgent->dummy_top_node,
                                      &bottom_node, &bottom_depth, &vars_bound);
@@ -3905,7 +3897,7 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         msc->level = NO_WME_LEVEL;
         msc->goal = NIL;
 
-        dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
+        //dprint(DT_WATERFALL, " %y is a refracted instantiation\n", refracted_inst->prod_name);
 
         insert_at_head_of_dll(thisAgent->nil_goal_retractions,
                               msc, next_in_level, prev_in_level);
@@ -3931,9 +3923,9 @@ byte add_production_to_rete(agent* thisAgent, production* p, condition* lhs_top,
         remove_from_dll(p->instantiations, refracted_inst, next, prev);
         if (p_node->b.p.tentative_retractions)
         {
-            /* This doesn't seem to always work */
-//            dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
-//            dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
+            /* This doesn't seem to always work but can be useful to detect bad rules learned */
+            //dprint(DT_VARIABLIZATION_MANAGER, "Refracted instantiation did not match!  Printing partial matches...\n");
+            //dprint_partial_matches(DT_VARIABLIZATION_MANAGER, p_node);
 
             production_addition_result = REFRACTED_INST_DID_NOT_MATCH;
             msc = p_node->b.p.tentative_retractions;
@@ -4201,23 +4193,22 @@ void rete_node_to_conditions(agent* thisAgent,
     if (node->node_type == CN_BNODE)
     {
         cond->type = CONJUNCTIVE_NEGATION_CONDITION;
-        /* MToDo | Comment these back out */
-        dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
+        //dprint(DT_NCC_VARIABLIZATION, "CONJUNCTIVE_NEGATION_CONDITION encountered.  Making recursive call.\n");
         rete_node_to_conditions(thisAgent, node->b.cn.partner->parent, nvn ? nvn->data.bottom_of_subconditions : NIL, node->parent, NIL, NIL, cond->prev, &(cond->data.ncc.top), &(cond->data.ncc.bottom), ebcTraceType, true);
         cond->data.ncc.top->prev = NIL;
     }
     else
     {
-        dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
+        //dprint(DT_NCC_VARIABLIZATION, "RETE Non-recursive call to rete_node_to_conditions.\n");
         if (bnode_is_positive(node->node_type))
         {
             cond->type = POSITIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
+            //dprint(DT_NCC_VARIABLIZATION, "POSITIVE_CONDITION encountered:\n");
         }
         else
         {
             cond->type = NEGATIVE_CONDITION;
-            dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
+            //dprint(DT_NCC_VARIABLIZATION, "NEGATIVE_CONDITION encountered.\n");
         }
 
         if (w && (cond->type == POSITIVE_CONDITION))
@@ -4234,7 +4225,7 @@ void rete_node_to_conditions(agent* thisAgent,
             {
                 thisAgent->explanationBasedChunker->add_explanation_to_condition(node, cond, nvn, ebcTraceType, inNegativeNodes);
             }
-//            dprint(DT_NCC_VARIABLIZATION, "%l", cond);
+            //dprint(DT_NCC_VARIABLIZATION, "%l", cond);
         }
         else
         {
@@ -5060,7 +5051,6 @@ void mp_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w
     rete_test* rt;
     bool failed_a_test;
 
-    //dprint(DT_RETE_PNODE_ADD, "mp_node_left_addition called with node %d, token %u, and wme %w\n", node->node_id, tok, w);
     activation_entry_sanity_check();
     left_node_activation(node, true);
 
@@ -5326,11 +5316,6 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
     rete_test* rt;
     bool failed_a_test;
     rete_node* child;
-    //static uint64_t callcount = 0;
-    //uint64_t lastcallcount = 0;
-
-    //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition called for %u time with node %d and wme %w\n", ++callcount, node->node_id, w);
-    //lastcallcount = callcount;
 
     activation_entry_sanity_check();
     right_node_activation(node, true);
@@ -5348,22 +5333,9 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
 
     referent = w->id;
     hv = node->node_id ^ referent->hash_id;
-    //uint64_t childcount = 0;
-
-    //dprint(DT_RETE_PNODE_ADD, "Starting token list we're iterating through: ");
-    //for (tok = left_ht_bucket(thisAgent, hv); tok != NIL; tok = tok->a.ht.next_in_bucket)
-    //{
-    //    childcount++;
-    //    dprint(DT_RETE_PNODE_ADD, "%u: %w", tok, tok->w);
-    //}
-    //dprint(DT_RETE_PNODE_ADD, "\nnum children: %u\n", childcount);
-    //childcount = 0;
 
     for (tok = left_ht_bucket(thisAgent, hv); tok != NIL; tok = tok->a.ht.next_in_bucket)
     {
-        //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition checking token %u, (#%u) for node %d \n", tok, ++childcount, node->node_id);
-        //dprint(DT_RETE_PNODE_ADD, "tok: %u, next: %u\n", tok, tok->a.ht.next_in_bucket);
-
         if (tok->node != node)
         {
             continue;
@@ -5391,10 +5363,8 @@ void mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
         {
             (*(left_addition_routines[child->node_type]))(thisAgent, child, tok, w);
         }
-        //dprint(DT_RETE_PNODE_ADD, "left_addition done.  end of loop.  tok: %u, next: %u\n", tok, tok->a.ht.next_in_bucket);
     }
     activation_exit_sanity_check();
-    //dprint(DT_RETE_PNODE_ADD, "mp_node_right_addition finished for %u time with node %d and wme %w\n", ++callcount, node->node_id, w);
 }
 
 void unhashed_mp_node_right_addition(agent* thisAgent, rete_node* node, wme* w)
@@ -5871,22 +5841,13 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     wme* current_wme;
     rete_node* current_node;
     bool match_found;
-
-
-    /* RCHONG: begin 10.11 */
-
     int prod_type;
     token* OPERAND_curr_tok, *temp_tok;
-
     action*    act;
     bool      operator_proposal, op_elab;
-
     int pass;
     wme* lowest_goal_wme;
 
-    /* RCHONG: end 10.11 */
-
-    //dprint(DT_RETE_PNODE_ADD, "p_node_left_addition called with node %d, token %u, and wme %w\n", node->node_id, tok, w);
     activation_entry_sanity_check();
     left_node_activation(node, true);
 
@@ -5968,13 +5929,11 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
         }
 
         thisAgent->memoryManager->free_with_pool(MP_ms_change, msc);
-        dprint(DT_RETE_PNODE_ADD, "Removing tentative retraction: %y\n", node->b.p.prod->name);
         activation_exit_sanity_check();
         return;
     }
 
     /* --- no match found, so add new assertion --- */
-    dprint(DT_RETE_PNODE_ADD, "Adding tentative assertion: %y\n", node->b.p.prod->name);
 
     thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
     msc->tok = tok;
@@ -6008,7 +5967,7 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
     msc->goal = find_goal_for_match_set_change_assertion(thisAgent, msc);
     msc->level = msc->goal->id->level;
 
-    dprint(DT_WATERFALL, "    Level of goal is  %d\n", static_cast<int64_t>(msc->level));
+    //dprint(DT_WATERFALL, "    Level of goal is  %d\n", static_cast<int64_t>(msc->level));
 
     prod_type = IE_PRODS;
 
@@ -6255,8 +6214,6 @@ void p_node_left_addition(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
     insert_at_head_of_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
     activation_exit_sanity_check();
-    //dprint(DT_RETE_PNODE_ADD, "p_node_left_addition finished for node %d, token %u, and wme %w\n", node->node_id, tok, w);
-
 }
 
 /* ----------------------------------------------------------------------
@@ -6286,8 +6243,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     {
         if ((msc->tok == tok) && (msc->w == w))
         {
-            dprint(DT_RETE_PNODE_ADD, "Removing tentative assertion: %y", node->b.p.prod->name);
-
             /* --- match found in tentative_assertions, so remove it --- */
             remove_from_dll(node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
 
@@ -6304,7 +6259,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
 
             if (node->b.p.prod->OPERAND_which_assert_list == O_LIST)
             {
-                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_o_assertions\n");
                 remove_from_dll(thisAgent->ms_o_assertions, msc, next, prev);
                 /* msc already defined for the assertion so the goal should be defined
                 as well. */
@@ -6312,7 +6266,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             }
             else if (node->b.p.prod->OPERAND_which_assert_list == I_LIST)
             {
-                dprint(DT_RETE_PNODE_ADD, "...also removing from ms_i_assertions\n");
                 remove_from_dll(thisAgent->ms_i_assertions, msc, next, prev);
                 remove_from_dll(msc->goal->id->ms_i_assertions, msc, next_in_level, prev_in_level);
             }
@@ -6333,7 +6286,6 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
     if (inst)
     {
         /* --- add that instantiation to tentative_retractions --- */
-        dprint(DT_RETE_PNODE_ADD, "Adding tentative retraction: %y", node->b.p.prod->name);
         inst->rete_token = NIL;
         inst->rete_wme = NIL;
         thisAgent->memoryManager->allocate_with_pool(MP_ms_change, &msc);
@@ -6350,7 +6302,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
         msc->goal = find_goal_for_match_set_change_retraction(msc);
         msc->level = msc->goal->id->level;
 
-        dprint(DT_WATERFALL, "    Level of retraction is: %d\n", msc->level);
+        //dprint(DT_WATERFALL, "    Level of retraction is: %d\n", msc->level);
 
         if (msc->goal->id->link_count == 0)
         {
@@ -6387,7 +6339,7 @@ void p_node_left_removal(agent* thisAgent, rete_node* node, token* tok, wme* w)
             insert_at_head_of_dll(thisAgent->nil_goal_retractions,  msc, next_in_level, prev_in_level);
         }
 
-        dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
+        //dprint(DT_WATERFALL, "Retraction: %y is active at level %d.  Enable DEBUG_WATERFALL for retraction lists.\n", msc->inst->prod_name, msc->level);
 
         #ifdef DEBUG_WATERFALL
 

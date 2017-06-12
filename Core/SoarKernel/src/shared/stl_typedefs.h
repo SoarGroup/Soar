@@ -117,7 +117,12 @@ struct IDSetLessThan;
     typedef std::unordered_map< Symbol*, chunk_element* >           sym_to_sym_id_map;
     typedef std::unordered_map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
     typedef std::unordered_map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
-
+    typedef std::unordered_map< Symbol*, chunk_record* >            chunk_record_symbol_map;
+    typedef std::unordered_map< uint64_t, chunk_record* >           chunk_record_id_map;
+    typedef std::unordered_map< uint64_t, instantiation_record* >   instantiation_record_map;
+    typedef std::unordered_map< uint64_t, condition_record* >       condition_record_map;
+    typedef std::unordered_map< uint64_t, action_record* >          action_record_map;
+    typedef std::unordered_map< uint64_t, production* >             production_map;
     /*------ SMem stl typedefs ------*/
     // - Could create allocator versions of a lot of these
     // - Many of these could be replaced by more general versions above.  Same with epmem
@@ -172,28 +177,40 @@ struct IDSetLessThan;
                           soar_module::soar_memory_pool_allocator< std::pair< std::string, ltm_object* > > >          str_to_ltm_map;
     typedef std::map< Symbol*, ltm_object*, std::less< Symbol* >,
                           soar_module::soar_memory_pool_allocator< std::pair< Symbol*, ltm_object* > > >              sym_to_ltm_map;
+    typedef std::map< Symbol*, chunk_record*, std::less< Symbol* >,
+        soar_module::soar_memory_pool_allocator< std::pair< Symbol*, chunk_record* > > >                              chunk_record_symbol_map;
+    typedef std::map< uint64_t, chunk_record*, std::less< uint64_t >,
+        soar_module::soar_memory_pool_allocator< std::pair< uint64_t, chunk_record* > > >                             chunk_record_id_map;
+    typedef std::map< uint64_t, instantiation_record*, std::less< uint64_t >,
+        soar_module::soar_memory_pool_allocator< std::pair< uint64_t, instantiation_record* > > >                     instantiation_record_map;
+    typedef std::map< uint64_t, condition_record*, std::less< uint64_t >,
+        soar_module::soar_memory_pool_allocator< std::pair< uint64_t, condition_record* > > >                         condition_record_map;
+    typedef std::map< uint64_t, action_record*, std::less< uint64_t >,
+        soar_module::soar_memory_pool_allocator< std::pair< uint64_t, action_record* > > >                            action_record_map;
+    typedef std::map< uint64_t, production*, std::less< uint64_t >,
+        soar_module::soar_memory_pool_allocator< std::pair< uint64_t, production* > > >                               production_map;
 
-    /* A version with no pools just for testing */
-//    typedef std::set< augmentation* >                     augmentation_set;
-//    typedef std::set< uint64_t >                          id_set;
-//    typedef std::set< ltm_object* >                       ltm_set;
-//    typedef std::list< ltm_value* >                       ltm_slot;
-//    typedef std::list< smem_weighted_cue_element* >       smem_weighted_cue_list;
-//    typedef std::map< uint64_t, uint64_t >                id_to_id_map;
-//    typedef std::map< uint64_t, Symbol* >                 id_to_sym_map;
-//    typedef std::map< uint64_t, IdentitySet* >            id_to_join_map;
-//    typedef std::map< uint64_t, std::string >             id_to_string_map;
-//    typedef std::map< uint64_t, identity_mapping_list* >  inst_identities_map;
-//    typedef std::map< rhs_value, std::string >            rhs_val_to_string_map;
-//    typedef std::map< Symbol*, augmentation_set* >        sym_to_aug_map;
-//    typedef std::map< Symbol*, condition* >               sym_to_cond_map;
-//    typedef std::map< Symbol*, uint64_t >                 sym_to_id_map;
-//    typedef std::map< Symbol*, chunk_element* >           sym_to_sym_id_map;
-//    typedef std::map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
-//    typedef std::map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
-//    typedef std::map< Symbol*, ltm_slot* >                ltm_slot_map;
-//    typedef std::map< std::string, ltm_object* >          str_to_ltm_map;
-//    typedef std::map< Symbol*, ltm_object* >              sym_to_ltm_map;
+    /* A version with no pools just for performance testing */
+    //    typedef std::set< augmentation* >                     augmentation_set;
+    //    typedef std::set< uint64_t >                          id_set;
+    //    typedef std::set< ltm_object* >                       ltm_set;
+    //    typedef std::list< ltm_value* >                       ltm_slot;
+    //    typedef std::list< smem_weighted_cue_element* >       smem_weighted_cue_list;
+    //    typedef std::map< uint64_t, uint64_t >                id_to_id_map;
+    //    typedef std::map< uint64_t, Symbol* >                 id_to_sym_map;
+    //    typedef std::map< uint64_t, IdentitySet* >            id_to_join_map;
+    //    typedef std::map< uint64_t, std::string >             id_to_string_map;
+    //    typedef std::map< uint64_t, identity_mapping_list* >  inst_identities_map;
+    //    typedef std::map< rhs_value, std::string >            rhs_val_to_string_map;
+    //    typedef std::map< Symbol*, augmentation_set* >        sym_to_aug_map;
+    //    typedef std::map< Symbol*, condition* >               sym_to_cond_map;
+    //    typedef std::map< Symbol*, uint64_t >                 sym_to_id_map;
+    //    typedef std::map< Symbol*, chunk_element* >           sym_to_sym_id_map;
+    //    typedef std::map< Symbol*, sym_to_cond_map >          sym_to_sym_to_cond_map;
+    //    typedef std::map< Symbol*, sym_to_sym_to_cond_map >   triple_merge_map;
+    //    typedef std::map< Symbol*, ltm_slot* >                ltm_slot_map;
+    //    typedef std::map< std::string, ltm_object* >          str_to_ltm_map;
+    //    typedef std::map< Symbol*, ltm_object* >              sym_to_ltm_map;
 
     #endif
 
