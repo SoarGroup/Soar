@@ -155,7 +155,7 @@ void identity_record::analyze_chunk_identities(uint64_t pInstID, condition* lhs)
     dprint(DT_EXPLAIN_IDENTITIES, "Building identity mappings based on conditions of chunk...\n");
     generate_identity_sets_from_conditions(thisAgent, lhs, pInstID, identities_in_chunk, idset_to_var_map);
 
-    /* MToDo | Might need to generate identity sets for RHS as well for unbound vars */
+    /* MToDo | Might need to generate identity sets for RHS as well (for unbound vars) */
 
     #ifdef EBC_DETAILED_STATISTICS
     for (auto it = identities_in_chunk->begin(); it != identities_in_chunk->end(); ++it)

@@ -123,7 +123,6 @@ Identity* Explanation_Based_Chunker::get_or_add_identity(uint64_t pID, Identity*
     } else
     #endif
     {
-        assert(pGoal);
         Identity* newIdentitySet = create_new_identity(pGoal);
         (*inst_id_to_identity_map)[pID] = newIdentitySet;
 

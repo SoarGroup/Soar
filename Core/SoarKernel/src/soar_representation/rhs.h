@@ -129,20 +129,13 @@ inline uint16_t   rhs_value_to_reteloc_levels_up(rhs_value rv) { return static_c
 inline Symbol*    rhs_value_to_symbol(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->referent; }
 inline uint64_t   rhs_value_to_inst_identity(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->inst_identity; }
 inline bool       rhs_value_to_was_unbound_var(rhs_value rv) { return reinterpret_cast<rhs_symbol>(rv)->was_unbound_var; }
-
-/* MToDo |Remove ones with assert */
-//inline rhs_value  rhs_symbol_to_rhs_value(rhs_symbol rs) { return reinterpret_cast<rhs_value>(rs); }
+inline rhs_value  rhs_symbol_to_rhs_value(rhs_symbol rs) { return reinterpret_cast<rhs_value>(rs); }
 inline rhs_value  unboundvar_to_rhs_value(uint64_t n) { return reinterpret_cast<rhs_value>((n << 2) + 3); }
-//inline rhs_value  funcall_list_to_rhs_value(cons* fl) { return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1); }
+inline rhs_value  funcall_list_to_rhs_value(cons* fl) { return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1); }
 inline rhs_value  reteloc_to_rhs_value(byte field_num, rete_node_level levels_up) { return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2; }
 
-#include "assert.h"
-inline rhs_value  rhs_symbol_to_rhs_value(rhs_symbol rs) { assert(rs); return reinterpret_cast<rhs_value>(rs); }
-inline rhs_value  funcall_list_to_rhs_value(cons* fl) { assert(fl); return reinterpret_cast<rhs_value>(reinterpret_cast<char*>(fl) + 1); }
-
 /* -- Comparison functions -- */
-inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2) { return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent);
-}
+inline bool rhs_values_symbols_equal(rhs_value rv1, rhs_value rv2) { return (reinterpret_cast<rhs_symbol>(rv1)->referent == reinterpret_cast<rhs_symbol>(rv2)->referent); }
 
 inline bool rhs_values_equal(rhs_value rv1, rhs_value rv2)
 {

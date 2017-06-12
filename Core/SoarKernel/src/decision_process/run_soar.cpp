@@ -182,7 +182,7 @@ void init_trace_settings(agent* thisAgent)
 
     /* --- set all params to zero, except the following: --- */
     thisAgent->trace_settings[TRACE_CONTEXT_DECISIONS_SYSPARAM] = true;
-    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = FULL_WME_TRACE;
+    thisAgent->trace_settings[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM] = NONE_WME_TRACE;
 }
 
 /* ===================================================================

@@ -4330,8 +4330,6 @@ void p_node_to_conditions_and_rhs(agent* thisAgent,
 
     prod = p_node->b.p.prod;
 
-    assert(tok || !w);
-
     thisAgent->symbolManager->reset_variable_generator(NIL, NIL);  /* we'll be gensymming new vars */
     rete_node_to_conditions(thisAgent, p_node->parent, p_node->b.p.parents_nvn, thisAgent->dummy_top_node, tok, w, NIL, dest_top_cond, dest_bottom_cond, ebcTraceType, false);
 

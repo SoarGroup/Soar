@@ -1128,10 +1128,6 @@ preference* run_non_context_preference_semantics(agent* thisAgent, slot* s)
 {
     preference* p, *candidates = NULL;
 
-    assert(!s->isa_context_slot);
-    assert(!s->preferences[REQUIRE_PREFERENCE_TYPE]);
-    assert(!s->preferences[PROHIBIT_PREFERENCE_TYPE]);
-
     /* If the slot has no preferences at all, things are trivial --- */
     if (!s->all_preferences)
     {
@@ -1174,8 +1170,6 @@ byte run_preference_semantics(agent* thisAgent,
     bool match_found, not_all_indifferent, some_numeric, add_OSK, some_not_worst = false;
     preference* candidates;
     Symbol* value;
-
-    assert(s->isa_context_slot);
 
     /* Set a flag to determine if a context-dependent preference set makes sense in this context.
      * We can ignore OSK prefs when:
