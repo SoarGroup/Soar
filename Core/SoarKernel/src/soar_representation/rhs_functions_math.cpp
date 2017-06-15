@@ -411,7 +411,7 @@ Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
 
 	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
     {
-        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to size function\n",arg1);
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to sum function\n",arg1);
         return NIL;
     }
 	int sum = 0;
@@ -424,6 +424,30 @@ Symbol* sum_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
         }
     }
 	return thisAgent->symbolManager->make_int_constant(sum);
+}
+Symbol* product_rhs_function_code(agent* thisAgent, cons* args, void* /*user_data*/)
+{
+	Symbol* arg1;
+	slot* s;
+	wme* w;
+
+    arg1 = static_cast<symbol_struct*>(args->first);
+
+	if (arg1->symbol_type != IDENTIFIER_SYMBOL_TYPE)
+    {
+        thisAgent->outputManager->printa_sf(thisAgent, "Error: non-symbol (%y) passed to product function\n",arg1);
+        return NIL;
+    }
+	int product = 1;
+
+	for (s = arg1->id->slots; s != NULL; s = s->next)
+    {
+        for (w = s->wmes; w != NULL; w = w->next)
+        {
+            product = product * static_cast<int>(w->value->ic->value);
+        }
+    }
+	return thisAgent->symbolManager->make_int_constant(product);
 }
 
 /* --------------------------------------------------------------------
@@ -1813,6 +1837,7 @@ void init_built_in_rhs_math_functions(agent* thisAgent)
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("div"), div_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("size"), size_rhs_function_code, 1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("sum"), sum_rhs_function_code, 1, true, false, 0, true);
+	add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("product"), product_rhs_function_code, 1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("mod"), mod_rhs_function_code, 2, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("min"), min_rhs_function_code, -1, true, false, 0, true);
     add_rhs_function(thisAgent, thisAgent->symbolManager->make_str_constant("max"), max_rhs_function_code, -1, true, false, 0, true);
@@ -1849,6 +1874,7 @@ void remove_built_in_rhs_math_functions(agent* thisAgent)
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("div"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("size"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("sum"));
+	remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("product"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("mod"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("min"));
     remove_rhs_function(thisAgent, thisAgent->symbolManager->find_str_constant("max"));
