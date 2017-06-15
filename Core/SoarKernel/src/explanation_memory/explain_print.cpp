@@ -494,7 +494,7 @@ void Explanation_Memory::print_chunk_list(short pNumToPrint, bool pChunks)
         desired_type = ebc_justification;
     }
 
-    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         Symbol* d1 = it->first;
         chunk_record* d2 = it->second;

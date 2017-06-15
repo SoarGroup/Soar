@@ -78,7 +78,7 @@ void Explanation_Memory::after_action_report_for_exit()
     lCmdBase = "output command-to-file -a reports/";
     lCmdBase += after_action_report_file;
 
-    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         Symbol* d1 = it->first;
         chunk_record* d2 = it->second;

@@ -43,14 +43,14 @@ Explanation_Memory::Explanation_Memory(agent* myAgent)
     last_printed_id = 0;
 
     /* Create data structures used for EBC */
-    all_actions = new std::unordered_map< uint64_t, action_record* >();
-    all_conditions = new std::unordered_map< uint64_t, condition_record* >();
+    all_actions = new action_record_map();
+    all_conditions = new condition_record_map();
     all_identities_in_goal = new sym_to_identity_set_map();
     cached_production = new production_record_set();
-    chunks = new std::unordered_map< Symbol*, chunk_record* >();
-    chunks_by_ID = new std::unordered_map< uint64_t, chunk_record* >();
-    instantiations = new std::unordered_map< uint64_t, instantiation_record* >();
-    production_id_map = new std::unordered_map< uint64_t, production* >();
+    chunks = new chunk_record_symbol_map();
+    chunks_by_ID = new chunk_record_id_map();
+    instantiations = new instantiation_record_map();
+    production_id_map = new production_map();
 }
 
 Explanation_Memory::~Explanation_Memory()
@@ -132,7 +132,7 @@ void Explanation_Memory::clear_explanations()
 {
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d chunk records...\n", chunks->size());
     Symbol* lSym;
-    for (std::unordered_map< Symbol*, chunk_record* >::iterator it = (*chunks).begin(); it != (*chunks).end(); ++it)
+    for (auto it = (*chunks).begin(); it != (*chunks).end(); ++it)
     {
         lSym = it->first;
         thisAgent->symbolManager->symbol_remove_ref(&lSym);
@@ -143,7 +143,7 @@ void Explanation_Memory::clear_explanations()
     chunks_by_ID->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d instantiation records...\n", instantiations->size());
-    for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+    for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
     {
         it->second->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_instantiation_record, it->second);
@@ -151,7 +151,7 @@ void Explanation_Memory::clear_explanations()
     instantiations->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d condition records...\n", all_conditions->size());
-    for (std::unordered_map< uint64_t, condition_record* >::iterator it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
+    for (auto it = (*all_conditions).begin(); it != (*all_conditions).end(); ++it)
     {
         it->second->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_condition_record, it->second);
@@ -159,7 +159,7 @@ void Explanation_Memory::clear_explanations()
     all_conditions->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d action records...\n", all_actions->size());
-    for (std::unordered_map< uint64_t, action_record* >::iterator it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
+    for (auto it = (*all_actions).begin(); it != (*all_actions).end(); ++it)
     {
         it->second->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_action_record, static_cast<action_record *>(it->second));
@@ -167,7 +167,7 @@ void Explanation_Memory::clear_explanations()
     all_actions->clear();
 
     dprint(DT_EXPLAIN_CACHE, "Explanation logger clearing %d cached productions...\n", cached_production->size());
-    for (std::set< production_record* >::iterator it = (*cached_production).begin(); it != (*cached_production).end(); ++it)
+    for (auto it = (*cached_production).begin(); it != (*cached_production).end(); ++it)
     {
         (*it)->clean_up();
         thisAgent->memoryManager->free_with_pool(MP_production_record, (*it));
@@ -359,7 +359,7 @@ instantiation_record* Explanation_Memory::add_instantiation(instantiation* pInst
         dprint(DT_EXPLAIN_ADD_INST, "- Currently recording instantiation record for i%u (%y) in a parent call.  Did not create new record.\n", pInst->i_id, pInst->prod_name);
     } else {
         dprint(DT_EXPLAIN_ADD_INST, "- Already recorded instantiation record for i%u (%y).  Did not create new record.\n", pInst->i_id, pInst->prod_name);
-        for (std::unordered_map< uint64_t, instantiation_record* >::iterator it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
+        for (auto it = (*instantiations).begin(); it != (*instantiations).end(); ++it)
         {
             dprint(DT_EXPLAIN_ADD_INST, "i%u (%y)\n", it->second->instantiationID, it->second->production_name);
         }
@@ -534,9 +534,7 @@ void Explanation_Memory::save_excised_production(production* pProd)
 
 bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
 {
-    std::unordered_map< uint64_t, chunk_record* >::iterator iter_chunk;
-
-    iter_chunk = chunks_by_ID->find(pChunkID);
+    auto iter_chunk = chunks_by_ID->find(pChunkID);
     if (iter_chunk == chunks_by_ID->end()) return false;
     discuss_chunk(iter_chunk->second);
     return true;
@@ -544,9 +542,7 @@ bool Explanation_Memory::print_chunk_explanation_for_id(uint64_t pChunkID)
 
 bool Explanation_Memory::print_instantiation_explanation_for_id(uint64_t pInstID)
 {
-    std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
-
-    iter_inst = instantiations->find(pInstID);
+    auto iter_inst = instantiations->find(pInstID);
     if (iter_inst == instantiations->end())
     {
         outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
@@ -758,9 +754,7 @@ void Explanation_Memory::visualize_identity_graph_for_goal(Symbol* pGoal)
 
 bool Explanation_Memory::visualize_instantiation_explanation_for_id(uint64_t pInstID)
 {
-    std::unordered_map< uint64_t, instantiation_record* >::iterator iter_inst;
-
-    iter_inst = instantiations->find(pInstID);
+    auto iter_inst = instantiations->find(pInstID);
     if (iter_inst == instantiations->end())
     {
         outputManager->printa_sf(thisAgent, "Could not find an instantiation with ID %u.\n", pInstID);
