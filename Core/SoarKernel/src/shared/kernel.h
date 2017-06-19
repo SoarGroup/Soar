@@ -13,7 +13,7 @@
 #include "forward.h"
 #include "macros.h"
 
-//#define SOAR_RELEASE_VERSION
+#define SOAR_RELEASE_VERSION
 
 #ifdef NDEBUG
     #define SOAR_RELEASE_VERSION
@@ -24,10 +24,8 @@
  * 1 -  Remove debug trace statements
  * 2 -  Soar will not re-direct all printing output from callbacks to cout
  *         (useful for debugging, keeps things in the right order)
- * 3 -  Use a union for type-specific Symbol pointers (artifact of refactoring)
- * 4 -  Chunking debug information that maps identities to variables will NOT be cached
- * 5 -  Memory pools and memory pool allocators will be turned on (if disabled below)
- * 6 -  Debugging flags below will be disabled
+ * 3 -  Memory pools and memory pool allocators will be turned on (if disabled below)
+ * 4 -  Debugging flags below will be disabled
  *
  * Note:  The default build is optimized, so NDEBUG will be true, which will automatically
  *        make SOAR_RELEASE_VERSION also true.
