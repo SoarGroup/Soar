@@ -949,6 +949,31 @@ void SMem_Manager::init_db()
                 switch_to_memory_db(version_error_message);
                 return;
             }
+            else
+            {
+                // Spreading activation violates an assumption that the database be somewhat stateless
+                // for the sake of backup. TODO: Make the state-dependent parts of spreading in-memory.
+                // In the meantime, the solution is simply to clear out those tables which contain state
+                // when restoring from a backup.
+                soar_module::sqlite_statement* temp_spread = new soar_module::sqlite_statement(DB, "SELECT name FROM sqlite_master WHERE type='table' AND name='smem_current_spread';");
+                temp_spread->prepare();
+                if (temp_spread->get_status() == soar_module::ready)
+                {
+                    if (temp_spread->execute() == soar_module::row)
+                    {
+                        soar_module::sqlite_statement* temp_spread_q_1 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread");
+                        temp_spread_q_1->prepare();
+                        temp_spread_q_1->execute(soar_module::op_reinit);
+                        soar_module::sqlite_statement* temp_spread_q_2 = new soar_module::sqlite_statement(DB, "DELETE FROM smem_current_spread_activations");
+                        temp_spread_q_2->prepare();
+                        temp_spread_q_2->execute(soar_module::op_reinit);
+                        delete temp_spread_q_1;
+                        delete temp_spread_q_2;
+                    }
+                }
+                temp_spread->reinitialize();
+                delete temp_spread;
+            }
         }
 
         // apply performance options
