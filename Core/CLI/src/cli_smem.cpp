@@ -274,7 +274,8 @@ bool CommandLineInterface::DoSMem(const char pOp, const std::string* pArg1, cons
                         strcmp(pArg1->c_str(), "spreading-depth-limit") &&
                         strcmp(pArg1->c_str(), "spreading-limit") &&
                         strcmp(pArg1->c_str(), "spreading-loop-avoidance") &&
-                        strcmp(pArg1->c_str(), "spreading-continue-probability")))
+                        strcmp(pArg1->c_str(), "spreading-continue-probability") &&
+                        strcmp(pArg1->c_str(), "spreading-wma-source")))
         {
             return SetError("Some spreading activation settings cannot be changed once spreading activation has been turned on.");
         }
