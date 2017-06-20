@@ -582,13 +582,16 @@ uint64_t SMem_Manager::process_query(Symbol* state, std::list<Symbol*> query, Sy
 
                     more_rows = (q->execute() == soar_module::row);
                 }
-                soar_module::sqlite_statement* spread_q = setup_web_crawl_spread(*cand_set);
-                //uint64_t highest_so_far = 0;
-                while (spread_q->execute() == soar_module::row)
+                if (thisAgent->SMem->settings->spreading->get_value() == on)
                 {
-                    plentiful_parents.push(std::make_pair<double, uint64_t>(spread_q->column_double(1), spread_q->column_int(0)));
+                    soar_module::sqlite_statement* spread_q = setup_web_crawl_spread(*cand_set);
+                    //uint64_t highest_so_far = 0;
+                    while (spread_q->execute() == soar_module::row)
+                    {
+                        plentiful_parents.push(std::make_pair<double, uint64_t>(spread_q->column_double(1), spread_q->column_int(0)));
+                    }
+                    spread_q->reinitialize();
                 }
-                spread_q->reinitialize();
                 bool first_element = false;
                 while (((match_ids->size() < number_to_retrieve) || (needFullSearch)) && ((more_rows) || (!plentiful_parents.empty())))
                 {
